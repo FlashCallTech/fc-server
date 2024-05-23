@@ -32,7 +32,7 @@ const HomePage = () => {
 	if (loading) return <Loader />;
 	return (
 		<section className="flex size-full flex-col gap-5 ">
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center justify-start h-full pb-6">
+			<div className="grid grid-cols-1 xl:grid-cols-2 gap-10 items-center justify-start h-full pb-6">
 				{creators.map((creator, index) => (
 					<Link
 						href={`/creator/${creator._id}`}

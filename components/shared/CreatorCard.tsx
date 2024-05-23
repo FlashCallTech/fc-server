@@ -13,13 +13,13 @@ const CreatorCard = ({ creator }: CreatorCardProps) => {
 	return (
 		<section
 			key={creator._id}
-			className="w-full lg:mx-auto h-full grid grid-cols-1 gap-10 items-start text-center justify-center"
+			className="w-full xl:mx-auto h-full grid grid-cols-1 gap-10 items-start text-center justify-center"
 		>
 			{/* User Details */}
 			<div className="flex flex-col items-center px-7 justify-center">
 				<div
 					className={`relative flex flex-col items-center w-fit mx-auto gap-4 p-7 rounded-xl z-10 ${
-						!pathname.includes("/creator") && "w-4/5"
+						!pathname.includes("/creator") && "!w-4/5"
 					}`}
 					style={{ backgroundColor: creator.themeSelected }}
 				>
@@ -28,9 +28,9 @@ const CreatorCard = ({ creator }: CreatorCardProps) => {
 						alt="profile picture"
 						width={24}
 						height={24}
-						className={`rounded-xl w-full min-h-full max-w-60 h-60 lg:max-w-80 lg:h-80 object-cover ${
+						className={`rounded-xl w-full min-h-full max-w-64 h-60 xl:max-w-80 xl:h-80 object-cover ${
 							!pathname.includes("/creator") &&
-							"max-w-full lg:!max-w-full lg:h-80"
+							"!max-w-full xl:!max-w-full xl:h-80"
 						} `}
 					/>
 					<div className="text-white flex flex-col items-start w-full">
@@ -64,11 +64,15 @@ const CreatorCard = ({ creator }: CreatorCardProps) => {
 				</div>
 				{/* User Description */}
 				{creator.bio && (
-					<p className=" border-2 border-gray-200 p-4 -mt-7 pt-10 text-md text-center rounded-3xl rounded-tr-none lg:max-w-[80%] h-full   relative">
+					<p
+						className={`border-2 border-gray-200 p-4 -mt-7 pt-10 text-md text-center rounded-3xl rounded-tr-none  h-full w-full relative ${
+							pathname.includes("/creator") && "lg:max-w-[80%] xl:max-w-[55%]"
+						}`}
+					>
 						{creator.bio}
 
 						<span
-							className="absolute max-lg:-top-2 lg:-bottom-2 -left-4"
+							className="absolute max-xl:-top-2 xl:-bottom-2 -left-4"
 							style={{ color: creator.themeSelected }}
 						>
 							{sparkles}
@@ -82,7 +86,7 @@ const CreatorCard = ({ creator }: CreatorCardProps) => {
 				<div className="flex flex-col gap-7 items-center ">
 					{/* Book Video Call */}
 					<div
-						className="flex flex-col gap-2 border border-gray-300 w-[80%] rounded-xl py-3 px-4 justify-center items-center lg:w-[50%]"
+						className="flex flex-col gap-2 border border-gray-300 w-[80%] rounded-xl py-3 px-4 justify-center items-center xl:w-[50%]"
 						style={{
 							boxShadow: `5px 5px 5px 0px ${creator.themeSelected}`,
 						}}
@@ -100,7 +104,7 @@ const CreatorCard = ({ creator }: CreatorCardProps) => {
 					</div>
 					{/* Book Audio Call */}
 					<div
-						className="flex flex-col gap-2 border border-gray-300 w-[80%] rounded-xl py-3 px-4 justify-center items-center lg:w-[50%]"
+						className="flex flex-col gap-2 border border-gray-300 w-[80%] rounded-xl py-3 px-4 justify-center items-center xl:w-[50%]"
 						style={{
 							boxShadow: `5px 5px 5px 0px ${creator.themeSelected}`,
 						}}
@@ -118,7 +122,7 @@ const CreatorCard = ({ creator }: CreatorCardProps) => {
 					</div>
 					{/* Book Chat */}
 					<div
-						className="flex flex-col gap-2 border border-gray-300 w-[80%] rounded-xl py-3 px-4 justify-center items-center lg:w-[50%]"
+						className="flex flex-col gap-2 border border-gray-300 w-[80%] rounded-xl py-3 px-4 justify-center items-center xl:w-[50%]"
 						style={{
 							boxShadow: `5px 5px 5px 0px ${creator.themeSelected}`,
 						}}
