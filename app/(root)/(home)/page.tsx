@@ -10,7 +10,9 @@ import React, { useEffect, useState } from "react";
 
 const HomePage = () => {
 	const [creators, setCreators] = useState<creatorUser[]>([]);
+	const [loading, setLoading] = useState(false);
 	useEffect(() => {
+		setLoading(true);
 		try {
 			const getCreators = async () => {
 				const response = await getUsers();
@@ -20,15 +22,22 @@ const HomePage = () => {
 			getCreators();
 		} catch (error) {
 			console.error(error);
+		} finally {
+			setTimeout(() => {
+				setLoading(false);
+			}, 1000);
 		}
 	}, []);
 
-	if (!creators) return <Loader />;
+	if (loading) return <Loader />;
 	return (
 		<section className="flex size-full flex-col gap-5 ">
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center justify-start h-full pb-6">
 				{creators.map((creator, index) => (
-					<Link href={`/creator/${creator._id}`} className="min-w-full">
+					<Link
+						href={`/creator/${creator._id}`}
+						className="min-w-full transition-all duration-500 hover:scale-105"
+					>
 						<CreatorCard creator={creator} />
 					</Link>
 				))}

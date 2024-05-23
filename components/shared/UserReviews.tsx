@@ -16,14 +16,12 @@ const customStyles = {
 
 const UserReviews = ({ theme }: any) => {
 	return (
-		<div
-			className="flex overflow-x-scroll no-scrollbar items-center text-white  md:rounded-xl lg:w-[75%]"
-			style={{ backgroundColor: theme }}
-		>
+		<div className="flex overflow-x-scroll no-scrollbar items-center text-white  rounded-t-xl md:rounded-xl lg:w-[75%]">
 			{feedbacks.map((feedback, index) => (
 				<div
 					key={index}
 					className="min-w-full h-full grid grid-cols-1 gap-4 items-center text-center justify-center px-7 py-14"
+					style={{ backgroundColor: theme }}
 				>
 					<h2 className="text-2xl font-semibold">Happy Client's</h2>
 					<div className="relative flex flex-col items-center justify-center">
