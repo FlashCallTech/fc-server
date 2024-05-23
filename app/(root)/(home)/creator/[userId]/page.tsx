@@ -1,0 +1,35 @@
+"use client";
+
+import CreatorCard from "@/components/shared/CreatorCard";
+import Loader from "@/components/shared/Loader";
+import { getUserById } from "@/lib/actions/creator.actions";
+import { useParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+
+const CreatorProfile = () => {
+	const { userId } = useParams();
+	const [creator, setCreator] = useState(null);
+
+	useEffect(() => {
+		try {
+			const getCreator = async () => {
+				const response = await getUserById(String(userId));
+				setCreator(response);
+			};
+
+			getCreator();
+		} catch (error) {
+			console.log(error);
+		}
+	}, [userId]);
+
+	if (!creator) return <Loader />;
+
+	return (
+		<div className="flex items-start justify-start h-full overflow-scroll no-scrollbar">
+			<CreatorCard creator={creator} />
+		</div>
+	);
+};
+
+export default CreatorProfile;

@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+:root {
+	--default-color: #0e78f9;
+	--secondary-color: #03a8f477;
+	--primary-color: #ffffff; /* Default color */
+}
+
+/* scrollbar styles */
+
+.no-scrollbar::-webkit-scrollbar {
+	display: none !important;
+}
+
+::-webkit-scrollbar {
+	height: 0.25rem;
+	width: 0.5rem;
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: #0e78f9;
+	border-radius: 15px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: #03a8f477;
+}
+
+::-webkit-scrollbar-track {
+	background-color: transparent;
+	border-radius: 9999px;
+}
+
+/* clerk custom styles */
+
+.cl-internal-1j7ahlv {
+	width: 2.2rem;
+	height: 2.2rem;
+}
+
+@layer base {
+	body {
+		@apply !font-default;
+	}
+}
+
+@layer utilities {
+	.flex-center {
+		@apply flex justify-center items-center;
+	}
+
+	.flex-between {
+		@apply flex justify-between items-center;
+	}
+
+	.input-field {
+		@apply bg-gray-50 h-[54px] focus-visible:ring-offset-0 placeholder:text-gray-500 rounded-xl px-4 py-3 border-none focus-visible:ring-transparent !important;
+	}
+
+	.textarea {
+		@apply bg-gray-50 flex flex-1 placeholder:text-gray-500 px-5 py-3 border-none focus-visible:ring-transparent !important;
+	}
+
+	/* styles.css */
+	.dynamic-shadow {
+		box-shadow: 10px 10px 20px var(--shadow-color, rgba(0, 0, 0, 0.1));
+	}
+
+	/* styles/HappyClient.module.css */
+	.tilted-banner {
+		position: relative;
+		overflow: hidden;
+		padding: 2rem 0;
+	}
+
+	.tilted-banner::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: #00000025; /* Tailwind's blue-900 */
+		transform: rotate(-3deg);
+		transform-origin: bottom right;
+		z-index: -1;
+	}
+}
