@@ -9,7 +9,6 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 	const pathname = usePathname();
 	return (
 		<>
-			{" "}
 			<div className="flex flex-col items-center px-7 justify-center">
 				<div
 					className={`relative flex flex-col items-center w-fit mx-auto gap-4 p-7 rounded-xl z-10 ${
@@ -59,8 +58,10 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 				{/* User Description */}
 				{creator.bio && (
 					<p
-						className={`border-2 border-gray-200 p-4 -mt-7 pt-10 text-md text-center rounded-3xl rounded-tr-none  h-full w-full relative ${
-							pathname.includes("/creator") && "lg:max-w-[80%] xl:max-w-[55%]"
+						className={`border-2 border-gray-200 p-4 -mt-7 pt-10 text-center rounded-3xl rounded-tr-none  h-full w-full relative ${
+							pathname.includes("/creator")
+								? "text-base lg:max-w-[80%] xl:max-w-[55%]"
+								: "text-lg"
 						}`}
 					>
 						{creator.bio}

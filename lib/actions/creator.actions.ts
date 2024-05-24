@@ -50,14 +50,19 @@ export async function getUsers() {
 export async function updateUser(userId: string, user: UpdateCreatorParams) {
 	try {
 		await connectToDatabase();
-
-		const updatedUser = await Creator.findOneAndUpdate({ userId }, user, {
+		const updatedUser = await Creator.findByIdAndUpdate(userId, user, {
 			new: true,
 		});
 
-		if (!updatedUser) throw new Error("User update failed");
+		if (!updatedUser) {
+			throw new Error("User not found"); // Throw error if user is not found
+		}
+
 		return JSON.parse(JSON.stringify(updatedUser));
-	} catch (error) {}
+	} catch (error) {
+		console.error("Error updating user:", error); // Log the error
+		throw new Error("User update failed"); // Throw the error to be caught by the caller
+	}
 }
 
 export async function updateTheme(userId: any, otherDetails: any) {

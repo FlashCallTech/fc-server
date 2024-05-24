@@ -10,14 +10,10 @@ const config = {
 	],
 	prefix: "",
 	theme: {
-		container: {
-			center: true,
-			padding: "2rem",
-			screens: {
-				"2xl": "1400px",
-			},
-		},
 		extend: {
+			screens: {
+				"3xl": "1780px",
+			},
 			fontFamily: {
 				default: ["Helvetica", "sans-serif"],
 			},
@@ -58,10 +54,30 @@ const config = {
 					from: { height: "var(--radix-accordion-content-height)" },
 					to: { height: "0" },
 				},
+				enterFromRight: {
+					"0%": { opacity: "0", transform: "translateX(100%)" },
+					"100%": { opacity: "1", transform: "translateX(0)" },
+				},
+				exitToLeft: {
+					"0%": { opacity: "1", transform: "translateX(0)" },
+					"100%": { opacity: "0", transform: "translateX(-100%)" },
+				},
+				enterFromLeft: {
+					"0%": { opacity: "0", transform: "translateX(-100%)" },
+					"100%": { opacity: "1", transform: "translateX(0)" },
+				},
+				exitToRight: {
+					"0%": { opacity: "1", transform: "translateX(0)" },
+					"100%": { opacity: "0", transform: "translateX(100%)" },
+				},
 			},
 			animation: {
 				"accordion-down": "accordion-down 0.2s ease-out",
 				"accordion-up": "accordion-up 0.2s ease-out",
+				enterFromRight: "enterFromRight 1s ease-in-out forwards",
+				exitToLeft: "exitToLeft 1s ease-in-out forwards",
+				enterFromLeft: "enterFromLeft 1s ease-in-out forwards",
+				exitToRight: "exitToRight 1s ease-in-out forwards",
 			},
 			backgroundImage: {
 				hero: "url('/images/hero-background.png')",
