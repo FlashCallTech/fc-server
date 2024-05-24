@@ -6,7 +6,7 @@ import { UpdateUserParams } from "@/types";
 import { useUser } from "@clerk/nextjs";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import Image from "next/image";
-import EditProfile from "@/components/shared/EditProfile";
+import EditProfile from "@/components/forms/EditProfile";
 import Loader from "@/components/shared/Loader";
 
 const UserProfilePage = () => {

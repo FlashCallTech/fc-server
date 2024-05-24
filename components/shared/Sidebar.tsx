@@ -49,7 +49,7 @@ const Sidebar = () => {
 					);
 				})}
 			</div>
-			{user && (
+			{user ? (
 				<Link
 					href={`/profile/${user?.id}`}
 					className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start transition-all duration-500 hover:scale-105  ${
@@ -70,6 +70,8 @@ const Sidebar = () => {
 						<span className="text-xs text-blue-1">@{user?.username}</span>
 					</div>
 				</Link>
+			) : (
+				<div className="rounded-full bg-slate-300 h-10 w-10 animate-pulse"></div>
 			)}
 		</section>
 	);

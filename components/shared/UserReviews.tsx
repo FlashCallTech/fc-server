@@ -20,14 +20,15 @@ const customStyles = {
 const UserReviews = ({ theme }: any) => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const lastIndex = feedbacks.length - 1;
+	const [direction, setDirection] = useState("right");
 
 	// Auto slider (uncomment if needed)
-	// useEffect(() => {
-	//     let sliderInterval = setInterval(() => {
-	//         setCurrentIndex((prev) => (prev + 1 > lastIndex ? 0 : prev + 1));
-	//     }, 7500);
-	//     return () => clearInterval(sliderInterval);
-	// }, [currentIndex]);
+	useEffect(() => {
+		let sliderInterval = setInterval(() => {
+			setCurrentIndex((prev) => (prev + 1 > lastIndex ? 0 : prev + 1));
+		}, 10000);
+		return () => clearInterval(sliderInterval);
+	}, [currentIndex]);
 
 	const getSliderState = (feedbackIndex: number) => {
 		if (feedbackIndex === currentIndex) return "active";
@@ -35,27 +36,46 @@ const UserReviews = ({ theme }: any) => {
 	};
 
 	const nextSlide = () => {
+		setDirection("right");
 		setCurrentIndex((prev) => (prev + 1 > lastIndex ? 0 : prev + 1));
 	};
 
 	const previousSlide = () => {
+		setDirection("left");
 		setCurrentIndex((prev) => (prev - 1 < 0 ? lastIndex : prev - 1));
 	};
 
 	return (
-		<div className="flex overflow-x-scroll no-scrollbar items-center text-white w-full rounded-t-xl md:rounded-xl xl:w-[60%]">
+		<div
+			className="flex overflow-x-scroll no-scrollbar items-center text-white w-full rounded-t-xl md:rounded-xl xl:w-[60%]"
+			style={{ backgroundColor: theme }}
+		>
 			{feedbacks.map((feedback, index) => {
 				const adjustedIndex = (index + feedbacks.length) % feedbacks.length;
 				const slideState = getSliderState(adjustedIndex);
 
+				let transitionClass = "";
+
+				if (slideState === "active") {
+					transitionClass =
+						direction === "right"
+							? "animate-enterFromRight"
+							: "animate-enterFromLeft";
+				} else {
+					transitionClass =
+						direction === "right"
+							? "animate-exitToLeft"
+							: "animate-exitToRight";
+				}
 				return (
 					<div
 						key={index + adjustedIndex}
-						className={`${slideState} `}
-						style={{ backgroundColor: theme }}
+						className={` ${slideState} relative`}
 					>
 						<h2 className="text-2xl font-semibold">Happy Client&apos;s</h2>
-						<div className="relative flex flex-col items-center justify-center">
+						<div
+							className={`${transitionClass} flex flex-col items-center justify-center`}
+						>
 							{/* Profile Image */}
 							<div className="flex w-fit mx-auto rounded-full items-center justify-center gap-2 bg-black px-4 py-2 z-10">
 								<img
@@ -71,7 +91,7 @@ const UserReviews = ({ theme }: any) => {
 								{/* Rating */}
 								<div className="flex gap-1 items-center">
 									<Rating
-										style={{ maxWidth: 150, fill: "white" }}
+										style={{ maxWidth: 180, fill: "white" }}
 										value={Math.floor(feedback.ratings)}
 										itemStyles={customStyles}
 										items={5}
@@ -102,7 +122,7 @@ const UserReviews = ({ theme }: any) => {
 							>
 								{arrowLeft}
 							</button>
-							<div className="flex gap-2 items-center">
+							<div className="flex gap-2 items-center max-w-[75%] py-2 overflow-x-scroll no-scrollbar">
 								{feedbacks.map((_, index) => (
 									<button
 										key={index}

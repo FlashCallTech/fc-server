@@ -73,28 +73,7 @@
 		@apply min-w-full h-full grid grid-cols-1 gap-5 items-center text-center justify-center px-7 py-14;
 	}
 
-	/* styles.css */
-	.dynamic-shadow {
-		box-shadow: 10px 10px 20px var(--shadow-color, rgba(0, 0, 0, 0.1));
-	}
-
-	/* styles/HappyClient.module.css */
-	.tilted-banner {
-		position: relative;
-		overflow: hidden;
-		padding: 2rem 0;
-	}
-
-	.tilted-banner::before {
-		content: "";
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: #00000025; /* Tailwind's blue-900 */
-		transform: rotate(-3deg);
-		transform-origin: bottom right;
-		z-index: -1;
+	.callOptionContainer {
+		@apply flex flex-col gap-2 border border-gray-300 w-[80%] rounded-xl py-3 px-4 justify-center items-center xl:w-[50%] transition-all duration-300 hover:scale-105 cursor-pointer;
 	}
 }
