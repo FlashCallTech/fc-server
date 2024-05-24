@@ -1,7 +1,7 @@
 "use client";
 
 import OtpVerification from "@/components/forms/OtpVerification";
-import CreatorCard from "@/components/shared/CreatorCard";
+import CreatorDetails from "@/components/shared/CreatorDetails";
 import Loader from "@/components/shared/Loader";
 import { getUsers } from "@/lib/actions/creator.actions";
 import { creatorUser } from "@/types";
@@ -37,8 +37,9 @@ const HomePage = () => {
 					<Link
 						href={`/creator/${creator._id}`}
 						className="min-w-full transition-all duration-500 hover:scale-105"
+						key={creator._id || index}
 					>
-						<CreatorCard creator={creator} />
+						<CreatorDetails creator={creator} />
 					</Link>
 				))}
 			</div>
