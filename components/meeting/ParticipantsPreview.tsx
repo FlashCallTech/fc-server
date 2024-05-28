@@ -11,8 +11,8 @@ export const ParticipantsPreview = () => {
 		<div>
 			<div>Already in call ({session.participants.length}):</div>
 			<div style={{ display: "flex" }}>
-				{session.participants.map((participant) => (
-					<div>
+				{session.participants.map((participant, index) => (
+					<div key={index}>
 						<Avatar
 							name={participant.user.name}
 							imageSrc={participant.user.image}
