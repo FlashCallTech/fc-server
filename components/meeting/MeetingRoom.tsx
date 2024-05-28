@@ -20,7 +20,7 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import EndCallButton from "../shared/EndCallButton";
+import EndCallButton from "../calls/EndCallButton";
 import Loader from "../shared/Loader";
 
 type CallLayoutType = "grid" | "speaker-left" | "speaker-right";
@@ -29,7 +29,7 @@ const MeetingRoom = () => {
 	const searchParams = useSearchParams();
 	const isPersonalRoom = !!searchParams.get("personal");
 	const router = useRouter();
-	const [layout, setLayout] = useState<CallLayoutType>("speaker-left");
+	const [layout, setLayout] = useState<CallLayoutType>("grid");
 	const [showParticipants, setShowParticipants] = useState(false);
 	const { useCallCallingState } = useCallStateHooks();
 
@@ -64,7 +64,7 @@ const MeetingRoom = () => {
 				</div>
 			</div>
 			{/* video layout and call controls */}
-			<div className="fixed bottom-0 pb-4 md:pb-0 flex flex-wrap w-full items-center justify-center gap-4">
+			<div className="fixed bottom-0 pb-4 md:pb-0 flex flex-wrap-reverse w-full items-center justify-center gap-2 px-4">
 				<CallControls onLeave={() => router.push(`/`)} />
 
 				<DropdownMenu>
@@ -74,19 +74,21 @@ const MeetingRoom = () => {
 						</DropdownMenuTrigger>
 					</div>
 					<DropdownMenuContent className="border-dark-1 bg-dark-1 text-white">
-						{["Grid", "Speaker-Left", "Speaker-Right"].map((item, index) => (
-							<div key={index}>
-								<DropdownMenuItem
-									onClick={() =>
-										setLayout(item.toLowerCase() as CallLayoutType)
-									}
-									className="text-white cursor-pointer hover:bg-blue-1"
-								>
-									{item}
-								</DropdownMenuItem>
-								<DropdownMenuSeparator className="border-dark-1" />
-							</div>
-						))}
+						{["Grid", "Speaker-Left", "Speaker-Right"].map(
+							(item: any, index: any) => (
+								<div key={index}>
+									<DropdownMenuItem
+										onClick={() =>
+											setLayout(item.toLowerCase() as CallLayoutType)
+										}
+										className="text-white cursor-pointer hover:bg-blue-1"
+									>
+										{item}
+									</DropdownMenuItem>
+									<DropdownMenuSeparator className="border-dark-1" />
+								</div>
+							)
+						)}
 					</DropdownMenuContent>
 				</DropdownMenu>
 				<CallStatsButton />

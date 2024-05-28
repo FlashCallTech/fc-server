@@ -8,6 +8,7 @@ import {
 } from "@stream-io/video-react-sdk";
 import { Alert } from "../ui/alert";
 import { Button } from "../ui/button";
+import { ParticipantsPreview } from "./ParticipantsPreview";
 
 const MeetingSetup = ({
 	setIsSetupComplete,
@@ -31,7 +32,7 @@ const MeetingSetup = ({
 	}
 
 	// https://getstream.io/video/docs/react/ui-cookbook/replacing-call-controls/
-	const [isMicCamToggled, setIsMicCamToggled] = useState(false);
+	const [isMicCamToggled, setIsMicCamToggled] = useState(true);
 
 	useEffect(() => {
 		if (isMicCamToggled) {
@@ -68,6 +69,8 @@ const MeetingSetup = ({
 				Join with mic and camera off
 			</label>
 
+			<ParticipantsPreview />
+
 			<div className="flex gap-4 items-center justify-center">
 				<Button
 					className="rounded-md bg-green-500 text-white font-semibold px-4 py-2.5"
@@ -78,6 +81,16 @@ const MeetingSetup = ({
 					}}
 				>
 					Join meeting
+				</Button>
+
+				<Button
+					className="rounded-md bg-red-500 text-white font-semibold px-4 py-2.5"
+					onClick={() => {
+						call.endCall();
+						setIsSetupComplete(true);
+					}}
+				>
+					Cancel
 				</Button>
 				<DeviceSettings />
 			</div>

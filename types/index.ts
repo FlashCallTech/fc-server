@@ -70,3 +70,12 @@ export type UpdateCreatorParams = {
 	dob?: string;
 	bio?: string;
 };
+
+export interface CreateFeedbackParams {
+	creatorId: string;
+	clientId: string;
+	rating: number;
+	feedbackText: string;
+	callId: string;
+	createdAt: Date;
+}

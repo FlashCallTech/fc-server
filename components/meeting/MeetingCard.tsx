@@ -4,32 +4,17 @@ import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 import { avatarImages } from "@/constants";
-import { useToast } from "../ui/use-toast";
-import { Button } from "../ui/button";
 import { usePathname } from "next/navigation";
+import FeedbackCheck from "../feedbacks/FeedbackCheck";
 
 interface MeetingCardProps {
 	title: string;
 	date: string;
 	icon: string;
-	isPreviousMeeting?: boolean;
-	buttonIcon1?: string;
-	buttonText?: string;
-	handleClick: () => void;
-	link: string;
+	callId: string;
 }
 
-const MeetingCard = ({
-	icon,
-	title,
-	date,
-	isPreviousMeeting,
-	buttonIcon1,
-	handleClick,
-	link,
-	buttonText,
-}: MeetingCardProps) => {
-	const { toast } = useToast();
+const MeetingCard = ({ icon, title, date, callId }: MeetingCardProps) => {
 	const pathname = usePathname();
 	return (
 		<section
@@ -46,7 +31,11 @@ const MeetingCard = ({
 					</div>
 				</div>
 			</article>
-			<article className={cn("flex justify-center relative", {})}>
+			<article
+				className={cn(
+					"flex flex-col sm:flex-row items-start justify-center sm:items-center relative gap-7 pt-5"
+				)}
+			>
 				<div className="relative flex w-full max-xs:hidden">
 					{avatarImages.map((img, index) => (
 						<Image
@@ -59,40 +48,11 @@ const MeetingCard = ({
 							style={{ top: 0, left: index * 28 }}
 						/>
 					))}
-					<div className="flex-center absolute left-[136px] size-10 rounded-full border-[5px] border-dark-3 bg-dark-4">
+					<div className="flex items-center justify-center absolute left-[136px] size-10 rounded-full border-[5px] border-dark-3 bg-dark-4">
 						+5
 					</div>
 				</div>
-				{!isPreviousMeeting && (
-					<div className="flex gap-2">
-						<Button
-							onClick={handleClick}
-							className="rounded bg-blue-1 px-6 text-center"
-						>
-							{buttonIcon1 && (
-								<Image src={buttonIcon1} alt="feature" width={20} height={20} />
-							)}
-							{buttonText}
-						</Button>
-						<Button
-							onClick={() => {
-								navigator.clipboard.writeText(link);
-								toast({
-									title: "Link Copied",
-								});
-							}}
-							className="bg-dark-4 px-6"
-						>
-							<Image
-								src="/icons/copy.svg"
-								alt="feature"
-								width={20}
-								height={20}
-							/>
-							&nbsp; Copy Link
-						</Button>
-					</div>
-				)}
+				<FeedbackCheck callId={callId} />
 			</article>
 		</section>
 	);

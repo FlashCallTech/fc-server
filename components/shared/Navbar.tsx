@@ -7,7 +7,7 @@ import MobileNav from "./MobileNav";
 
 const Navbar = () => {
 	return (
-		<nav className="flex-between fixed z-50 w-full px-6 py-4 lg:px-10 bg-white">
+		<nav className="flex-between fixed z-40 w-full px-6 py-4 lg:px-10 bg-white">
 			<Link
 				href="/"
 				className="flex items-center gap-1 transition-all duration-500 hover:scale-110"
@@ -22,13 +22,13 @@ const Navbar = () => {
 				<p className="text-[26px] font-extrabold  max-sm:hidden">UNITE</p>
 			</Link>
 
-			<div className="flex-between gap-3 text-white">
-				<SignedIn>
+			<SignedIn>
+				<div className="flex-between gap-3 text-white">
 					<UserButton afterSignOutUrl="/sign-in" />
-				</SignedIn>
+					<MobileNav />
+				</div>
+			</SignedIn>
 
-				<MobileNav />
-			</div>
 			<SignedOut>
 				<Button
 					asChild
