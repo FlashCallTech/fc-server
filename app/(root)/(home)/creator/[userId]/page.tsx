@@ -1,6 +1,6 @@
 "use client";
 
-import CreatorCard from "@/components/shared/CreatorCard";
+import CreatorCard from "@/components/creator/CreatorCard";
 import Loader from "@/components/shared/Loader";
 import { getUserById } from "@/lib/actions/creator.actions";
 import { useParams } from "next/navigation";

@@ -9,34 +9,58 @@ import { ReactNode, useEffect, useState } from "react";
 const API_KEY = process.env.NEXT_PUBLIC_STREAM_API_KEY;
 
 const StreamVideoProvider = ({ children }: { children: ReactNode }) => {
-	const [videoClient, setVideoClient] = useState<StreamVideoClient>();
+	const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(
+		null
+	);
+	const [loading, setLoading] = useState(true);
 	const { user, isLoaded } = useUser();
 	const userId = user?.publicMetadata?.userId as string | undefined;
 
 	useEffect(() => {
-		if (!isLoaded || !user || !userId) return;
-		if (!API_KEY) throw new Error("Stream API key is missing");
-		const client = new StreamVideoClient({
-			apiKey: API_KEY,
-			user: {
-				id: userId,
-				name: user?.username || userId,
-				image: user?.imageUrl,
-			},
-			tokenProvider: tokenProvider,
-		});
+		const initializeVideoClient = async () => {
+			if (!isLoaded) return;
 
-		setVideoClient(client);
-	}, [user, isLoaded, userId]);
+			if (!user || !userId) {
+				setLoading(false);
+				return;
+			}
 
-	if (!videoClient)
+			if (!API_KEY) throw new Error("Stream API key is missing");
+
+			try {
+				const client = new StreamVideoClient({
+					apiKey: API_KEY,
+					user: {
+						id: userId,
+						name: user?.username || userId,
+						image: user?.imageUrl,
+					},
+					tokenProvider: tokenProvider,
+				});
+				setVideoClient(client);
+			} catch (error) {
+				console.error("Failed to initialize StreamVideoClient:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		initializeVideoClient();
+	}, [isLoaded, user, userId]);
+
+	if (loading) {
 		return (
 			<div className="flex items-center justify-center w-full h-screen">
 				<Loader />
 			</div>
 		);
+	}
 
-	return <StreamVideo client={videoClient}>{children}</StreamVideo>;
+	return videoClient ? (
+		<StreamVideo client={videoClient}>{children}</StreamVideo>
+	) : (
+		<>{children}</>
+	);
 };
 
 export default StreamVideoProvider;

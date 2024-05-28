@@ -46,6 +46,11 @@
 	height: 2.2rem;
 }
 
+/* feedback styles */
+.rc-slider-mark {
+	top: -40px !important;
+}
+
 @layer base {
 	body {
 		@apply !font-default;

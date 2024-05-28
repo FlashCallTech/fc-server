@@ -1,7 +1,7 @@
 "use client";
 
-import CreatorDetails from "@/components/shared/CreatorDetails";
-import Loader from "@/components/shared/Loader";
+import CreatorDetails from "@/components/creator/CreatorDetails";
+import Experiment from "@/components/shared/Experiment";
 import PostLoader from "@/components/shared/PostLoader";
 import { getUsers } from "@/lib/actions/creator.actions";
 import { creatorUser } from "@/types";
@@ -27,15 +27,16 @@ const HomePage = () => {
 		} finally {
 			setTimeout(() => {
 				setLoading(false);
-			}, 2000);
+			}, 2500);
 		}
 	}, []);
 
-	if (loading) return <PostLoader items={creators} />;
+	if (!creators || loading) return <PostLoader items={creators} />;
 
 	return (
 		<section className="flex size-full flex-col gap-5 ">
-			<div className="grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 gap-10 items-center justify-start h-full pb-6">
+			{/* <Experiment /> */}
+			<div className="grid grid-cols-1 xl:grid-cols-2 gap-10 items-center 3xl:items-start justify-start h-full pb-6">
 				{creators.map((creator, index) => (
 					<Link
 						href={`/creator/${creator._id}`}
