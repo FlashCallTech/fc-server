@@ -74,7 +74,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 			<Dialog>
 				<DialogTrigger className="flex flex-col gap-1 items-start justify-start sm:justify-center">
 					<Rating
-						style={{ maxWidth: 180, fill: "white" }}
+						style={{ maxWidth: 150, fill: "white" }}
 						value={userFeedbacks[0].rating}
 						items={5}
 						spaceBetween="medium"
@@ -85,7 +85,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 						{userFeedbacks[0].feedback}
 					</span>
 				</DialogTrigger>
-				<DialogContent className="bg-white rounded-lg">
+				<DialogContent className="bg-white rounded-lg max-h-[500px] overflow-y-scroll no-scrollbar">
 					<DialogHeader className="flex flex-col items-start justify-center">
 						<DialogTitle>All Feedbacks</DialogTitle>
 						<DialogDescription>
@@ -94,27 +94,20 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 					</DialogHeader>
 					{userFeedbacks.map((feedback, feedbackIndex) => (
 						<div
-							className="flex items-center justify-start -ml-2 w-full"
+							className="flex items-center justify-start w-full"
 							key={feedbackIndex}
 						>
 							<div className="flex flex-col gap-1 items-start justify-center w-full">
 								<Rating
-									style={{ maxWidth: 180, fill: "white" }}
+									style={{ maxWidth: 100, fill: "white" }}
 									value={feedback.rating}
 									items={5}
 									spaceBetween="medium"
 									transition="zoom"
 									readOnly
 								/>
-								<div className="pl-2 flex flex-col items-start justify-center gap-2">
-									<span className="">
-										{feedback.feedback} Lorem, ipsum dolor sit amet consectetur
-										adipisicing elit. Quo iste ipsa ullam aliquam et aspernatur,
-										earum quae distinctio necessitatibus deserunt nesciunt,
-										consectetur optio provident debitis alias ad nihil adipisci
-										perferendis laborum obcaecati sit? Quaerat consequatur,
-										impedit provident eaque obcaecati quis.
-									</span>
+								<div className="pl-1 flex flex-col items-start justify-center gap-2">
+									<span className="">{feedback.feedback}</span>
 									<div className="flex items-center justify-start w-full gap-2">
 										<div className="flex items-center justify-start gap-2">
 											<Image

@@ -2,27 +2,39 @@ import React, { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCalls, CallingState } from "@stream-io/video-react-sdk";
 import MyIncomingCallUI from "./MyIncomingCallUI";
+import { useUser } from "@clerk/nextjs";
 // import MyOutgoingCallUI from "./MyOutgoingCallUI";
 
 const MyCallUI = () => {
 	const router = useRouter();
 	const calls = useCalls();
 	const pathname = usePathname();
+	const { user } = useUser();
 	let hide = pathname.includes("/meeting");
 
 	useEffect(() => {
 		// Add event listeners for call state changes
 		calls.forEach((call) => {
+			const isMeetingOwner =
+				user && user.publicMetadata.userId === call?.state?.createdBy?.id;
+
 			const handleCallEnded = () => {
+				if (!isMeetingOwner) {
+					router.push("/");
+				}
+			};
+
+			const handleCallRejected = () => {
 				router.push("/");
 			};
+
 			call.on("call.ended", handleCallEnded);
-			call.on("call.rejected", handleCallEnded);
+			call.on("call.rejected", handleCallRejected);
 
 			// Cleanup listeners on component unmount
 			return () => {
 				call.off("call.ended", handleCallEnded);
-				call.off("call.rejected", handleCallEnded);
+				call.off("call.rejected", handleCallRejected);
 			};
 		});
 	}, [calls, router]);

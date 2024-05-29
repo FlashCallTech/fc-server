@@ -22,6 +22,7 @@ export const tokenProvider = async () => {
 		id: userId,
 		name: user.username || userId,
 		image: user.imageUrl,
+		role: "admin",
 	};
 
 	const users = {

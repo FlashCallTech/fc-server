@@ -4,6 +4,7 @@ const ClientSchema = new Schema(
 	{
 		clerkId: { type: String, required: true, unique: true },
 		username: { type: String, required: true, unique: true },
+		onlineStatus: { type: Boolean, default: false },
 		phone: { type: String, required: true, unique: true },
 		fullName: { type: String },
 		firstName: { type: String },
