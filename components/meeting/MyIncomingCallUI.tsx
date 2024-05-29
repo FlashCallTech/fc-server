@@ -9,7 +9,7 @@ const MyIncomingCallUI = ({
 	onAccept: () => void;
 }) => {
 	return (
-		<div className="text-center bg-dark-2 text-white fixed h-fit  z-50 w-[60%] lg:w-[30%] 3xl:[25%] flex flex-col items-center justify-between  py-10 rounded-xl top-2 right-2 gap-5">
+		<div className="text-center bg-dark-2 text-white fixed h-fit  z-50 w-full md:w-[60%] lg:w-[30%] 3xl:[25%] flex flex-col items-center justify-between  py-10 rounded-xl rounded-t-none sm:rounded-t-xl top-0 right-0 md:top-2 md:right-2 gap-5">
 			<h1 className="font-bold text-xl mb-2">Incoming Call ...</h1>
 			<div className="flex flex-col items-center justify-center gap-4">
 				<p className="text-sm">Caller From </p>
@@ -40,7 +40,7 @@ const MyIncomingCallUI = ({
 				</button>
 				<button
 					className="bg-red-500 text-white p-4 rounded-full transition-all duration-500 hover:scale-110"
-					onClick={() => call.reject()}
+					onClick={() => call.endCall()}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

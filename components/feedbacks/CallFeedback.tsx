@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
-import { Button } from "../ui/button";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Sheet, SheetContent } from "../ui/sheet";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { useUser } from "@clerk/nextjs";
@@ -8,21 +9,16 @@ import { createFeedback } from "@/lib/actions/feedback.actions";
 import { useToast } from "../ui/use-toast";
 import { success } from "@/constants/icons";
 import { useGetCallById } from "@/hooks/useGetCallById";
+import { Button } from "../ui/button";
 
-const UserFeedback = ({
+const CallFeedback = ({
 	callId,
-	checkFeedback,
 	isOpen,
 	onOpenChange,
-	text,
-	buttonColor,
 }: {
 	callId: string;
-	checkFeedback: () => void;
 	isOpen: boolean;
 	onOpenChange: (isOpen: boolean) => void;
-	text?: string;
-	buttonColor?: string;
 }) => {
 	const [rating, setRating] = useState(2);
 	const [feedbackMessage, setFeedbackMessage] = useState("");
@@ -51,11 +47,14 @@ const UserFeedback = ({
 			</div>
 		),
 	};
+
 	const handleSliderChange = (value: any) => {
 		setRating(value);
 	};
 
-	const handleFeedbackChange = (event: any) => {
+	const handleFeedbackChange = (
+		event: React.ChangeEvent<HTMLTextAreaElement>
+	) => {
 		setFeedbackMessage(event.target.value);
 	};
 
@@ -73,6 +72,9 @@ const UserFeedback = ({
 				createdAt: new Date(),
 			});
 			setFeedbackSubmitted(true);
+			toast({
+				title: "Feedback Submitted Successfully",
+			});
 		} catch (error: any) {
 			toast({
 				title: "Failed to Submit Feedback",
@@ -86,9 +88,8 @@ const UserFeedback = ({
 
 	if (!user || isCallLoading)
 		return (
-			<div className="flex items-center space-x-4 w-full animate-pulse">
+			<div className="flex items-center space-x-4 w-full max-w-[100px] animate-pulse">
 				<div className="flex-1 space-y-4 py-1">
-					<div className="h-3 bg-slate-300 rounded w-3/4"></div>
 					<div className="space-y-3">
 						<div className="grid grid-cols-3 gap-4">
 							<div className="h-2 bg-slate-300 rounded col-span-2"></div>
@@ -100,31 +101,15 @@ const UserFeedback = ({
 			</div>
 		);
 
-	// console.log(call?.state.members[0].user_id);
-
 	return (
 		<Sheet
 			open={isOpen}
 			onOpenChange={(open) => {
-				onOpenChange(open);
 				if (!open) {
-					checkFeedback();
-					setFeedbackSubmitted(false);
+					onOpenChange(false); // Trigger the closing function only when the sheet is closed
 				}
 			}}
 		>
-			<SheetTrigger asChild>
-				<Button
-					onClick={() => onOpenChange(true)}
-					className={`${
-						buttonColor === "primary"
-							? "bg-blue-1 hover:opacity-80 mx-auto"
-							: "bg-black/30 hover:bg-black/50"
-					} text-white font-semibold w-44`}
-				>
-					{text}
-				</Button>
-			</SheetTrigger>
 			<SheetContent
 				side="bottom"
 				className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto"
@@ -176,9 +161,7 @@ const UserFeedback = ({
 
 						<Button
 							onClick={handleSubmitFeedback}
-							className={
-								"bg-blue-1 font-semibold text-white px-4 py-2 rounded-lg hover:opacity-80"
-							}
+							className="bg-blue-1 font-semibold text-white px-4 py-2 rounded-lg hover:opacity-80"
 						>
 							Submit Feedback
 						</Button>
@@ -196,4 +179,4 @@ const UserFeedback = ({
 	);
 };
 
-export default UserFeedback;
+export default CallFeedback;

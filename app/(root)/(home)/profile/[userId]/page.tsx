@@ -134,7 +134,7 @@ const UserProfilePage = () => {
 			</h1>
 
 			{/* user's calls */}
-			<div className="grid grid-cols-1 lg:grid-cols-2 items-center w-full mt-14 gap-14 xl:gap-0"></div>
+			{/* <div className="grid grid-cols-1 lg:grid-cols-2 items-center w-full mt-14 gap-14 xl:gap-0"></div> */}
 		</div>
 	);
 };

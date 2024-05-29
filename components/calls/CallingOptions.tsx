@@ -48,9 +48,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			const members: MemberRequest[] = [
 				{
-					user_id: "6650d35ae736527f808fbc8d",
-					role: "admin",
+					user_id: "6650d3f9e736527f808fbc93",
 					custom: { name: String(creator.username) },
+					role: "admin",
+				},
+
+				{
+					user_id: String(user?.publicMetadata?.userId),
+					custom: { name: String(user.username) },
+					role: "admin",
 				},
 			];
 
@@ -72,7 +78,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				ring: true,
 			});
 
-			window.location.href = `/meeting/${call.id}?reload=true`; // Include query parameter
+			window.location.href = `/meeting/${call.id}?reload=true`;
 			toast({
 				title: "Meeting Created",
 			});

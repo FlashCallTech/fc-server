@@ -8,11 +8,11 @@ export const ParticipantsPreview = () => {
 		return null;
 
 	return (
-		<div>
-			<div>Already in call ({session.participants.length}):</div>
-			<div style={{ display: "flex" }}>
+		<div className="text-black flex flex-col items-center justify-center gap-2 pb-2">
+			<span className="text-blue-1">Already in Session</span>
+			<div className="flex items-center justify-center gap-2">
 				{session.participants.map((participant, index) => (
-					<div key={index}>
+					<div key={index} className="flex items-center justify-center gap-2">
 						<Avatar
 							name={participant.user.name}
 							imageSrc={participant.user.image}
