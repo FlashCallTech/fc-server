@@ -53,7 +53,7 @@ const Sidebar = () => {
 			{user ? (
 				<Link
 					href={`/profile/${user?.id}`}
-					className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start transition-all duration-500 hover:scale-105  ${
+					className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start transition-all duration-500 hover:scale-95  ${
 						pathname.includes("/profile/") && "opacity-80"
 					}`}
 				>

@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCalls, CallingState } from "@stream-io/video-react-sdk";
 import MyIncomingCallUI from "./MyIncomingCallUI";
+import MyOutgoingCallUI from "./MyOutgoingCallUI";
 import { useUser } from "@clerk/nextjs";
-// import MyOutgoingCallUI from "./MyOutgoingCallUI";
 
 const MyCallUI = () => {
 	const router = useRouter();
@@ -47,11 +47,11 @@ const MyCallUI = () => {
 	);
 
 	// // Filter outgoing ringing calls
-	// const outgoingCalls = calls.filter(
-	// 	(call) =>
-	// 		call.isCreatedByMe === true &&
-	// 		call.state.callingState === CallingState.RINGING
-	// );
+	const outgoingCalls = calls.filter(
+		(call) =>
+			call.isCreatedByMe === true &&
+			call.state.callingState === CallingState.RINGING
+	);
 
 	// Handle incoming call UI
 	const [incomingCall] = incomingCalls;
@@ -67,14 +67,14 @@ const MyCallUI = () => {
 	}
 
 	// Handle outgoing call UI
-	// const [outgoingCall] = outgoingCalls;
-	// if (outgoingCall) {
-	// 	return (
-	// 		<div className="bg-white p-4 shadow-lg rounded-md">
-	// 			<MyOutgoingCallUI call={outgoingCall} />
-	// 		</div>
-	// 	);
-	// }
+	const [outgoingCall] = outgoingCalls;
+	if (outgoingCall) {
+		return (
+			<div className="bg-white p-4 shadow-lg rounded-md">
+				<MyOutgoingCallUI call={outgoingCall} />
+			</div>
+		);
+	}
 
 	<div className="bg-white p-4 shadow-lg rounded-md">
 		<MyIncomingCallUI call={incomingCall} onAccept={() => {}} />

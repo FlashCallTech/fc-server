@@ -46,6 +46,12 @@
 	height: 2.2rem;
 }
 
+@media only screen and (max-width: 768px) {
+	.cl-internal-qk5yrq {
+		max-width: 100% !important;
+	}
+}
+
 /* feedback styles */
 .rc-slider-mark {
 	top: -40px !important;

@@ -5,7 +5,7 @@ export const generateToken = (phone: string, otp: string): string => {
 		const secret = process.env.JWT_KEY || "DEFAULT"; // Fallback value
 
 		const token = jwt.sign({ phone, otp }, secret, {
-			expiresIn: "3m",
+			expiresIn: "10m",
 		});
 		return token;
 	} catch (error) {

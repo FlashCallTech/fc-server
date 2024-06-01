@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
 import Loader from "../shared/Loader";
-import { useStreamVideoClient } from "@stream-io/video-react-sdk";
+import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useUser } from "@clerk/nextjs";
 import { Input } from "../ui/input";
 import MeetingModal from "../meeting/MeetingModal";
@@ -32,11 +32,25 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const { user } = useUser();
 	const { toast } = useToast();
 
+	const handleCallAccepted = (call: Call) => {
+		toast({
+			title: "Call Accepted",
+			description: "The call has been accepted. Redirecting to meeting...",
+		});
+		router.push(`/meeting/${call.id}?reload=true`);
+	};
+
+	const handleCallRejected = () => {
+		toast({
+			title: "Call Rejected",
+			description: "The call was rejected. Please try again later.",
+		});
+	};
+
 	const createMeeting = async () => {
 		if (!client || !user) return;
 		try {
 			const id = crypto.randomUUID();
-
 			const call =
 				callType === "video"
 					? client.call("default", id)
@@ -44,7 +58,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			if (!call) throw new Error("Failed to create meeting");
 
-			const expertId = String(creator._id);
+			setMeetingState(undefined);
+			// const expertId = String(creator._id);
 
 			const members: MemberRequest[] = [
 				{
@@ -78,7 +93,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				ring: true,
 			});
 
-			window.location.href = `/meeting/${call.id}?reload=true`;
+			call.on("call.accepted", () => handleCallAccepted(call));
+			call.on("call.rejected", handleCallRejected);
+
+			// window.location.href = `/meeting/${call.id}?reload=true`;
 			toast({
 				title: "Meeting Created",
 			});

@@ -34,7 +34,7 @@ const Navbar = () => {
 				<>
 					<SignedIn>
 						<div className="flex-between gap-3 text-white">
-							<UserButton afterSignOutUrl="/sign-in" />
+							{/* <UserButton afterSignOutUrl="/sign-in" /> */}
 							<MobileNav />
 						</div>
 					</SignedIn>
