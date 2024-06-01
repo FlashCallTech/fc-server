@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 		const token = generateToken(fullPhoneNumber, otp); // Token expires in 3 minutes
 
 		await client.messages.create({
-			body: `Your verification code is ${otp}`,
+			body: `${otp} is your one time password(OTP) to log in to FLASHCALL. Please enter the OTP to proceed.`,
 			from: process.env.TWILIO_PHONE_NUMBER!,
 			to: fullPhoneNumber,
 		});

@@ -9,10 +9,10 @@ const MyIncomingCallUI = ({
 	onAccept: () => void;
 }) => {
 	return (
-		<div className="text-center bg-dark-2 text-white fixed h-fit  z-50 w-full md:w-[60%] lg:w-[30%] 3xl:[25%] flex flex-col items-center justify-between  py-10 rounded-xl rounded-t-none sm:rounded-t-xl top-0 right-0 md:top-2 md:right-2 gap-5">
+		<div className="text-center bg-dark-2 text-white fixed h-fit  z-50 w-full md:w-[60%] lg:w-[30%] 3xl:[25%] flex flex-col items-center justify-between  py-10 rounded-xl rounded-b-none sm:rounded-t-xl -bottom-0 right-0 md:top-4 md:right-4 gap-5">
 			<h1 className="font-bold text-xl mb-2">Incoming Call ...</h1>
 			<div className="flex flex-col items-center justify-center gap-4">
-				<p className="text-sm">Caller From </p>
+				<p className="text-sm">Call From </p>
 				<p className="font-semibold text-xl">{call.state.createdBy?.name}</p>
 			</div>
 			<div className="flex items-center justify-evenly w-full">

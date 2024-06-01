@@ -70,6 +70,10 @@ const config = {
 					"0%": { opacity: "1", transform: "translateX(0)" },
 					"100%": { opacity: "0", transform: "translateX(100%)" },
 				},
+				enterFromBottom: {
+					"0%": { opacity: "0", transform: "translateY(100%)" },
+					"100%": { opacity: "1", transform: "translateY(0)" },
+				},
 			},
 			animation: {
 				"accordion-down": "accordion-down 0.2s ease-out",
@@ -78,6 +82,7 @@ const config = {
 				exitToLeft: "exitToLeft 1s ease-in-out forwards",
 				enterFromLeft: "enterFromLeft 1s ease-in-out forwards",
 				exitToRight: "exitToRight 1s ease-in-out forwards",
+				enterFromBottom: "enterFromBottom 1s ease-in-out forwards",
 			},
 			backgroundImage: {
 				hero: "url('/images/hero-background.png')",

@@ -32,7 +32,7 @@ export default function RootLayout({
 				}}
 			>
 				<TooltipProvider>
-					<body>
+					<body className="no-scrollbar">
 						<Toaster />
 						{children}
 					</body>

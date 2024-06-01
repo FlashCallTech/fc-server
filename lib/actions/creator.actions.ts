@@ -34,6 +34,19 @@ export async function getUserById(userId: string) {
 	}
 }
 
+export async function getUserByPhone(phone: string) {
+	try {
+		await connectToDatabase();
+
+		const user = await Creator.find({ phone });
+
+		if (!user) throw new Error("User not found");
+		return JSON.parse(JSON.stringify(user));
+	} catch (error) {
+		handleError(error);
+	}
+}
+
 export async function getUsers() {
 	try {
 		await connectToDatabase();
