@@ -120,7 +120,6 @@ export interface RegisterUserKycParams {
 }
 
 export interface UpdateUserKycParams {
-	transactionId?: string;
 	status?: "auto_approved" | "auto_declined" | "needs_review";
 	details?: {
 		fullName?: string;

@@ -8,7 +8,7 @@ export async function createCall(call: RegisterCallParams) {
 		await connectToDatabase();
 
 		const newCall = await Call.create(call);
-		console.log(newCall);
+		// console.log(newCall);
 		return newCall.toJSON();
 	} catch (error) {
 		handleError(error);
@@ -44,7 +44,7 @@ export async function getCallById(callId: string) {
 export async function updateCall(callId: string, call: UpdateCallParams) {
 	try {
 		await connectToDatabase();
-		const updatedCall = await Call.findByIdAndUpdate(callId, call, {
+		const updatedCall = await Call.findOneAndUpdate({ callId }, call, {
 			new: true,
 		});
 

@@ -42,13 +42,13 @@ export async function getUserKycById(userKycId: string) {
 }
 
 export async function updateUserKyc(
-	userKycId: string,
+	transactionId: string,
 	userKycData: UpdateUserKycParams
 ) {
 	try {
 		await connectToDatabase();
-		const updatedUserKyc = await UserKyc.findByIdAndUpdate(
-			userKycId,
+		const updatedUserKyc = await UserKyc.findOneAndUpdate(
+			{ transactionId },
 			userKycData,
 			{
 				new: true,
