@@ -14,6 +14,8 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
 	const [recordings, setRecordings] = useState<CallRecording[]>([]);
 	const [callsCount, setCallsCount] = useState(6);
 
+	console.log(endedCalls && endedCalls[0]);
+
 	useEffect(() => {
 		const fetchRecordings = async () => {
 			try {

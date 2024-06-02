@@ -4,12 +4,14 @@ import { useCalls, CallingState } from "@stream-io/video-react-sdk";
 import MyIncomingCallUI from "./MyIncomingCallUI";
 import MyOutgoingCallUI from "./MyOutgoingCallUI";
 import { useUser } from "@clerk/nextjs";
+import { useToast } from "../ui/use-toast";
 
 const MyCallUI = () => {
 	const router = useRouter();
 	const calls = useCalls();
 	const pathname = usePathname();
 	const { user } = useUser();
+	const { toast } = useToast();
 	let hide = pathname.includes("/meeting");
 
 	useEffect(() => {
@@ -20,6 +22,10 @@ const MyCallUI = () => {
 
 			const handleCallEnded = () => {
 				if (!isMeetingOwner) {
+					toast({
+						title: "Call Ended",
+						description: "The call Ended. Redirecting to HomePage...",
+					});
 					router.push("/");
 				}
 			};
@@ -60,7 +66,7 @@ const MyCallUI = () => {
 			<div className="bg-white p-4 shadow-lg rounded-md">
 				<MyIncomingCallUI
 					call={incomingCall}
-					onAccept={() => router.push(`/meeting/creator/${incomingCall.id}`)}
+					onAccept={() => router.push(`/meeting/${incomingCall.id}`)}
 				/>
 			</div>
 		);

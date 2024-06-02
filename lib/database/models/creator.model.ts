@@ -16,6 +16,7 @@ const CreatorSchema = new Schema(
 		gender: { type: String },
 		dob: { type: String },
 		bio: { type: String },
+		kyc_status: { type: String },
 	},
 	{
 		timestamps: true,

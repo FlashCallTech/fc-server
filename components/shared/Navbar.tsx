@@ -15,19 +15,19 @@ const Navbar = () => {
 	}, []);
 
 	return (
-		<nav className="flex-between fixed z-40 w-full px-6 py-4 lg:px-10 bg-white">
+		<nav className="flex-between fixed z-40 w-full px-6 py-4 lg:px-7 bg-white">
 			<Link
 				href="/"
-				className="flex items-center gap-1 transition-all duration-500 hover:scale-110"
+				className="flex items-center gap-4 "
 			>
 				<Image
-					src="/icons/logo.jpg"
-					width={32}
-					height={32}
+					src="/icons/logoDesktop.png"
+					width={100}
+					height={100}
 					alt="unite logo"
-					className="max-sm:size-10"
+					className="w-full h-full rounded-xl transition-all duration-500 hover:scale-110"
 				/>
-				<p className="text-[26px] font-extrabold  max-sm:hidden">UNITE</p>
+			
 			</Link>
 
 			{isMounted && (

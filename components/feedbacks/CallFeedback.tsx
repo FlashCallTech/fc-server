@@ -58,13 +58,17 @@ const CallFeedback = ({
 		setFeedbackMessage(event.target.value);
 	};
 
+	const expert = call?.state?.members?.find(
+		(member) => member.custom.type === "expert"
+	);
+
 	const handleSubmitFeedback = async () => {
 		if (!user || !call) return;
 		try {
 			const userId = user.publicMetadata?.userId as string;
 
 			await createFeedback({
-				creatorId: call.state.members[0].user_id,
+				creatorId: expert?.user_id as string,
 				clientId: userId,
 				rating: rating,
 				feedbackText: feedbackMessage,

@@ -8,7 +8,7 @@ export const ParticipantsPreview = () => {
 		return null;
 
 	return (
-		<div className="text-black flex flex-col items-center justify-center gap-2 pb-2">
+		<div className="flex flex-col items-center justify-center gap-2 pb-2">
 			<span className="text-blue-1">Already in Session</span>
 			<div className="flex items-center justify-center gap-2">
 				{session.participants.map((participant, index) => (

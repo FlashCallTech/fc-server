@@ -1,10 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+	Call,
 	CallParticipantsList,
 	CallStatsButton,
 	CallingState,
 	PaginatedGridLayout,
+	useCall,
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { useSearchParams } from "next/navigation";
@@ -13,15 +15,32 @@ import EndCallButton from "../calls/EndCallButton";
 import Loader from "../shared/Loader";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
+import { useUser } from "@clerk/nextjs";
 
 const MeetingRoom = () => {
 	const searchParams = useSearchParams();
 	const isPersonalRoom = !!searchParams.get("personal");
 	const [showParticipants, setShowParticipants] = useState(false);
 	const { useCallCallingState } = useCallStateHooks();
+	const [hasJoined, setHasJoined] = useState(false);
+	const call = useCall();
+	const { user } = useUser();
+
+	const isVideoCall = call?.type === "default";
 
 	// for more detail about types of CallingState see: https://getstream.io/video/docs/react/ui-cookbook/ringing-call/#incoming-call-panel
 	const callingState = useCallCallingState();
+
+	useEffect(() => {
+		if (callingState !== CallingState.JOINED && !hasJoined) {
+			call?.join().catch((error) => {
+				if (error.message !== "Illegal State: Already joined") {
+					console.error("Already Joined ... ", error);
+				}
+			});
+			setHasJoined(true);
+		}
+	}, [callingState, call, hasJoined]);
 
 	if (callingState !== CallingState.JOINED) return <Loader />;
 
@@ -44,7 +63,7 @@ const MeetingRoom = () => {
 			{/* video layout and call controls */}
 			<div className="fixed bottom-0 pb-4 flex flex-wrap-reverse w-full items-center justify-center gap-2 px-4">
 				<AudioToggleButton />
-				<VideoToggleButton />
+				{isVideoCall && <VideoToggleButton />}
 
 				<CallStatsButton />
 				<button onClick={() => setShowParticipants((prev) => !prev)}>
