@@ -36,6 +36,7 @@ export type creatorUser = {
 	videoRate: string;
 	audioRate: string;
 	chatRate: string;
+	kyc_status: string;
 };
 
 export type CreateCreatorParams = {
@@ -50,6 +51,7 @@ export type CreateCreatorParams = {
 	gender?: string;
 	dob?: string;
 	bio?: string;
+	kyc_status: string;
 };
 
 export type UpdateCreatorParams = {
@@ -69,6 +71,7 @@ export type UpdateCreatorParams = {
 	gender?: string;
 	dob?: string;
 	bio?: string;
+	kyc_status: string;
 };
 
 export interface CreateFeedbackParams {
@@ -78,4 +81,54 @@ export interface CreateFeedbackParams {
 	feedbackText: string;
 	callId: string;
 	createdAt: Date;
+}
+
+export interface RegisterCallParams {
+	callId: string;
+	type: string;
+	members: {
+		clientId: string;
+		creatorId: string;
+	}[];
+	startedAt: Date;
+	endedAt?: Date;
+}
+
+export interface UpdateCallParams {
+	callId?: string;
+	type?: string;
+	members?: {
+		clientId: string;
+		creatorId: string;
+	}[];
+	startedAt?: Date;
+	endedAt?: Date;
+}
+
+export interface RegisterUserKycParams {
+	transactionId: string;
+	status: "auto_approved" | "auto_declined" | "needs_review";
+	details: {
+		fullName: string;
+		countrySelected: string;
+		dateOfBirth: string;
+		dateOfIssue: string;
+		selfieImage: string;
+		idFrontImage: string;
+		idBackImage: string;
+	};
+}
+
+export interface UpdateUserKycParams {
+	transactionId?: string;
+	status?: "auto_approved" | "auto_declined" | "needs_review";
+	details?: {
+		fullName?: string;
+		countrySelected?: string;
+		dateOfBirth?: string;
+		dateOfIssue?: string;
+		selfieImage?: string;
+		idFrontImage?: string;
+		idBackImage?: string;
+	};
 }

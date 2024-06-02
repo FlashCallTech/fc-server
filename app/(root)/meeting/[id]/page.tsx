@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { StreamCall, StreamTheme } from "@stream-io/video-react-sdk";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 
 import { useGetCallById } from "@/hooks/useGetCallById";
 import { Alert } from "@/components/ui/alert";
@@ -15,16 +15,17 @@ import Link from "next/link";
 
 const MeetingPage = () => {
 	const { id } = useParams();
-	const router = useRouter();
 	const searchParams = useSearchParams();
 	const { isLoaded, user } = useUser();
 	const { call, isCallLoading } = useGetCallById(id);
-	const [isSetupComplete, setIsSetupComplete] = useState(false);
+	// const [isSetupComplete, setIsSetupComplete] = useState(false);
+	const [isReloading, setIsReloading] = useState(false);
 
 	useEffect(() => {
 		// Check for the reload query parameter
 		const reload = searchParams.get("reload");
 		if (reload) {
+			setIsReloading(true);
 			// Remove the query parameter to prevent infinite reloads
 			const url = new URL(window.location.href);
 			url.searchParams.delete("reload");
@@ -35,12 +36,12 @@ const MeetingPage = () => {
 		}
 	}, [searchParams]);
 
-	if (!isLoaded || isCallLoading) return <Loader />;
+	if (isReloading || !isLoaded || isCallLoading) return <Loader />;
 
 	if (!call)
 		return (
 			<div className="flex flex-col w-full items-center justify-center h-screen gap-7">
-				<h1 className="text-3xl font-semibold text-black">Call Not Found</h1>
+				<h1 className="text-3xl font-semibold">Call Not Found</h1>
 				<Link
 					href="/"
 					className="flex gap-4 items-center p-4 rounded-lg justify-center bg-blue-1 hover:opacity-80 mx-auto w-fit"
@@ -61,15 +62,18 @@ const MeetingPage = () => {
 	if (notAllowed)
 		return <Alert title="You are not allowed to join this meeting" />;
 
+	const isMeetingOwner =
+		user?.publicMetadata?.userId === call?.state?.createdBy?.id;
+
 	return (
 		<main className="h-full w-full">
 			<StreamCall call={call}>
 				<StreamTheme>
-					{!isSetupComplete ? (
+					{/* {!isSetupComplete && !isMeetingOwner ? (
 						<MeetingSetup setIsSetupComplete={setIsSetupComplete} />
-					) : (
-						<MeetingRoom />
-					)}
+					) : ( )} */}
+
+					<MeetingRoom />
 				</StreamTheme>
 			</StreamCall>
 		</main>

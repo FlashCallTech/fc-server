@@ -64,13 +64,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const members: MemberRequest[] = [
 				{
 					user_id: "6650d3f9e736527f808fbc93",
-					custom: { name: String(creator.username) },
+					custom: { name: String(creator.username), type: "expert" },
 					role: "admin",
 				},
 
 				{
 					user_id: String(user?.publicMetadata?.userId),
-					custom: { name: String(user.username) },
+					custom: { name: String(user.username), type: "client" },
 					role: "admin",
 				},
 			];

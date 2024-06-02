@@ -19,7 +19,6 @@ const MobileNav = () => {
 	const pathname = usePathname();
 	const { user } = useUser();
 	const { signOut } = useClerk();
-	console.log(user?.primaryPhoneNumber?.phoneNumber);
 	return (
 		<section className="w-full max-w-[264px]">
 			<Sheet>
@@ -36,7 +35,7 @@ const MobileNav = () => {
 						alt="Profile"
 						width={24}
 						height={24}
-						className="rounded-full w-full max-w-[44px] cursor-pointer transition-all duration-500 hover:scale-110"
+						className="rounded-full w-10 h-10 cursor-pointer transition-all duration-500 hover:scale-110"
 					/>
 				</SheetTrigger>
 				<SheetContent

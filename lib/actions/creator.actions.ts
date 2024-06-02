@@ -21,6 +21,19 @@ export async function createUser(user: CreateCreatorParams) {
 	}
 }
 
+export async function getUsers() {
+	try {
+		await connectToDatabase();
+		const users = await Creator.find();
+		if (!users || users.length === 0) {
+			throw new Error("No users found");
+		}
+		return JSON.parse(JSON.stringify(users));
+	} catch (error) {
+		console.log(error);
+	}
+}
+
 export async function getUserById(userId: string) {
 	try {
 		await connectToDatabase();
@@ -47,19 +60,6 @@ export async function getUserByPhone(phone: string) {
 	}
 }
 
-export async function getUsers() {
-	try {
-		await connectToDatabase();
-		const users = await Creator.find();
-		if (!users || users.length === 0) {
-			throw new Error("No users found");
-		}
-		return JSON.parse(JSON.stringify(users));
-	} catch (error) {
-		console.log(error);
-	}
-}
-
 export async function updateUser(userId: string, user: UpdateCreatorParams) {
 	try {
 		await connectToDatabase();
@@ -75,24 +75,6 @@ export async function updateUser(userId: string, user: UpdateCreatorParams) {
 	} catch (error) {
 		console.error("Error updating user:", error); // Log the error
 		throw new Error("User update failed"); // Throw the error to be caught by the caller
-	}
-}
-
-export async function updateTheme(userId: any, otherDetails: any) {
-	try {
-		await connectToDatabase();
-		const updatedUser = await Creator.findOneAndUpdate(
-			{ userId },
-			otherDetails,
-			{
-				new: true,
-			}
-		);
-
-		if (!updatedUser) throw new Error("User update failed");
-		return JSON.parse(JSON.stringify(updatedUser));
-	} catch (error) {
-		handleError(error);
 	}
 }
 

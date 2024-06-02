@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import CallFeedback from "../feedbacks/CallFeedback";
+import { useToast } from "../ui/use-toast";
 
 const EndCallButton = () => {
 	const call = useCall();
 	const router = useRouter();
 	const [showFeedback, setShowFeedback] = useState(false);
-
+	const { toast } = useToast();
 	if (!call)
 		throw new Error(
 			"useStreamCall must be used within a StreamCall component."
@@ -33,12 +34,19 @@ const EndCallButton = () => {
 	const handleFeedbackClose = async () => {
 		setShowFeedback(false);
 		await call.endCall();
+		toast({
+			title: "Call Ended",
+			description: "The call Ended. Redirecting to HomePage...",
+		});
 		router.push("/"); // Redirect to the homepage
 	};
 
 	return (
 		<>
-			<Button onClick={endCall} className="bg-red-500 font-semibold">
+			<Button
+				onClick={endCall}
+				className="bg-red-500 font-semibold hover:opacity-80"
+			>
 				End Call
 			</Button>
 			{showFeedback && (

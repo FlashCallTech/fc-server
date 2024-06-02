@@ -78,10 +78,18 @@ const MeetingSetup = ({
 	const isMeetingOwner =
 		user && user.publicMetadata.userId === call?.state?.createdBy?.id;
 
+	const expert = call?.state?.members?.find(
+		(member) => member.custom.type === "expert"
+	);
+
+	const client = call?.state?.members?.find(
+		(member) => member.custom.type === "client"
+	);
+
 	const videoCall = call.type === "default";
 
 	return (
-		<div className="flex h-screen w-full flex-col items-center justify-center gap-3 text-white">
+		<div className="flex h-screen w-full flex-col items-center justify-center gap-5 text-white bg-dark-1">
 			<h1 className="text-center text-blue-1 text-3xl pb-4 font-bold">
 				{videoCall ? "Video Call Setup" : "Audio Call Setup"}
 			</h1>
@@ -89,61 +97,26 @@ const MeetingSetup = ({
 				<div className="flex items-center justify-center w-full px-4 overflow-hidden rounded-xl">
 					<VideoPreview />
 				</div>
-			) : isMeetingOwner ? (
-				<div className="flex flex-col items-center text-black">
-					<div className="flex items-center justify-center gap-4">
-						<Image
-							src={call.state.members[0].user.image!}
-							alt=""
-							width={44}
-							height={44}
-							className="rounded-full w-14 h-14"
-						/>
-						<div className="flex flex-col items-start justif-center">
-							<span className="text-lg text-blue-1">
-								{call.state.members[0].user.name}
-							</span>
-							<span className="text-xs">Session&apos;s Expert</span>
-						</div>
-					</div>
-
-					<h1 className="text-2xl text-black font-semibold mt-7">
-						<Typewriter
-							words={[
-								`Hi There ${user?.username}`,
-								"Unite Welcomes You",
-								"Glad to Have You",
-							]}
-							loop={true}
-							cursor
-							cursorStyle="_"
-							typeSpeed={70}
-							deleteSpeed={50}
-							delaySpeed={2000}
-						/>
-						<Cursor cursorColor="#0E78F9" />
-					</h1>
-				</div>
 			) : (
-				<div className="flex flex-col items-center text-black">
+				<div className="flex flex-col items-center">
 					<div className="flex items-center justify-center gap-4">
 						<Image
-							src={user?.imageUrl!}
+							src={expert?.user?.image!}
 							alt=""
 							width={44}
 							height={44}
 							className="rounded-full w-14 h-14"
 						/>
 						<div className="flex flex-col items-start justif-center">
-							<span className="text-lg text-blue-1">{user?.username}</span>
+							<span className="text-lg text-blue-1">{client?.user?.name}</span>
 							<span className="text-xs">Session&apos;s Client</span>
 						</div>
 					</div>
 
-					<h1 className="text-2xl text-black font-semibold mt-7">
+					<h1 className="text-2xl font-semibold mt-7">
 						<Typewriter
 							words={[
-								`Hi There ${user?.username}`,
+								`Hi There ${expert?.user?.name}`,
 								"Unite Welcomes You",
 								"Glad to Have You",
 							]}
