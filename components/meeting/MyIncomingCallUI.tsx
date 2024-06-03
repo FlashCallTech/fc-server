@@ -1,5 +1,6 @@
 import React from "react";
 import { Call } from "@stream-io/video-react-sdk";
+import Image from "next/image";
 
 const MyIncomingCallUI = ({
 	call,
@@ -9,11 +10,21 @@ const MyIncomingCallUI = ({
 	onAccept: () => void;
 }) => {
 	return (
-		<div className="text-center bg-dark-2 text-white fixed h-fit  z-50 w-full md:w-[60%] lg:w-[30%] 3xl:[25%] flex flex-col items-center justify-between  py-10 rounded-xl rounded-b-none sm:rounded-t-xl -bottom-0 right-0 md:top-4 md:right-4 gap-5">
+		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:w-[35%] 3xl:[25%] flex flex-col items-center justify-between  py-10 sm:rounded-xl bottom-0 right-0 sm:top-4 sm:right-4 gap-5">
 			<h1 className="font-bold text-xl mb-2">Incoming Call ...</h1>
-			<div className="flex flex-col items-center justify-center gap-4">
-				<p className="text-sm">Call From </p>
-				<p className="font-semibold text-xl">{call.state.createdBy?.name}</p>
+			<div className="flex flex-col items-center justify-center gap-10">
+				<Image
+					src={call?.state?.createdBy?.image!}
+					alt=""
+					width={100}
+					height={100}
+					className="rounded-full w-28 h-28 object-cover"
+				/>
+
+				<div className="flex flex-col items-center justify-center gap-2">
+					<p className="text-xs">Call From </p>
+					<p className="font-semibold text-xl">{call.state.createdBy?.name}</p>
+				</div>
 			</div>
 			<div className="flex items-center justify-evenly w-full">
 				<button

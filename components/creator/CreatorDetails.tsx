@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { sparkles } from "@/constants/icons";
 import { creatorUser } from "@/types";
 import { usePathname } from "next/navigation";
@@ -7,6 +7,7 @@ interface CreatorDetailsProps {
 }
 const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 	const pathname = usePathname();
+
 	return (
 		<>
 			<div className="flex flex-col items-center px-7 justify-center">

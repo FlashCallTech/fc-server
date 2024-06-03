@@ -12,6 +12,7 @@ import { useUser } from "@clerk/nextjs";
 import { Input } from "../ui/input";
 import MeetingModal from "../meeting/MeetingModal";
 import { MemberRequest } from "@stream-io/video-react-sdk";
+import Link from "next/link";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -159,12 +160,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			</div>
 
 			{/* Book Chat */}
-			<div
+			<Link
+				href="/chat"
 				className="callOptionContainer"
 				style={{
 					boxShadow: theme,
 				}}
-				onClick={() => setMeetingState("isJoiningMeeting")}
 			>
 				<div
 					className={`flex gap-4 items-center font-semibold`}
@@ -176,7 +177,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				<span className="text-xs tracking-widest">
 					Rs. {creator.chatRate}/Min
 				</span>
-			</div>
+			</Link>
 
 			<MeetingModal
 				isOpen={meetingState === "isJoiningMeeting"}

@@ -12,7 +12,7 @@ import React, { useEffect, useState } from "react";
 const HomePage = () => {
 	const [creators, setCreators] = useState<creatorUser[]>([]);
 	const [loading, setLoading] = useState(false);
-	const { user } = useUser();
+
 	useEffect(() => {
 		setLoading(true);
 		try {
