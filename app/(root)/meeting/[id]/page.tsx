@@ -7,7 +7,7 @@ import { useParams, useSearchParams } from "next/navigation";
 
 import { useGetCallById } from "@/hooks/useGetCallById";
 import { Alert } from "@/components/ui/alert";
-import MeetingSetup from "@/components/meeting/MeetingSetup";
+// import MeetingSetup from "@/components/meeting/MeetingSetup";
 import MeetingRoom from "@/components/meeting/MeetingRoom";
 import Image from "next/image";
 import Loader from "@/components/shared/Loader";
@@ -62,8 +62,8 @@ const MeetingPage = () => {
 	if (notAllowed)
 		return <Alert title="You are not allowed to join this meeting" />;
 
-	const isMeetingOwner =
-		user?.publicMetadata?.userId === call?.state?.createdBy?.id;
+	// const isMeetingOwner =
+	// 	user?.publicMetadata?.userId === call?.state?.createdBy?.id;
 
 	return (
 		<main className="h-full w-full">

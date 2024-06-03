@@ -1,17 +1,26 @@
 import React from "react";
 import { Call } from "@stream-io/video-react-sdk";
-import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
 
 const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"
 	);
 	return (
-		<div className="text-center bg-dark-2 text-white fixed h-fit  z-50 w-full md:w-[60%] lg:w-[30%] 3xl:[25%] flex flex-col items-center justify-between  py-10 rounded-xl rounded-t-none sm:rounded-t-xl top-0 right-0 md:top-2 md:right-2 gap-5">
+		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:w-[35%] 3xl:[25%] flex flex-col items-center justify-between  py-10 sm:rounded-xl bottom-0 right-0 sm:top-2 sm:right-2 gap-5">
 			<h1 className="font-bold text-xl mb-2">Outgoing Call ...</h1>
-			<div className="flex flex-col items-center justify-center gap-4">
-				<p className="text-sm">Connecting With </p>
-				<p className="font-semibold text-xl">{expert?.user?.name}</p>
+			<div className="flex flex-col items-center justify-center gap-10">
+				<Image
+					src={expert?.user?.image!}
+					alt=""
+					width={100}
+					height={100}
+					className="rounded-full w-28 h-28 object-cover"
+				/>
+				<div className="flex flex-col items-center justify-center gap-2">
+					<p className="text-xs">Connecting Call With </p>
+					<p className="font-semibold text-xl">{expert?.user?.name}</p>
+				</div>
 			</div>
 			<div className="flex items-center justify-center w-full">
 				<button

@@ -20,9 +20,7 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	return user ? (
 		<StreamVideoProvider>
 			<div className="relative min-h-screen w-full">
-				<div className="absolute top-0 right-0 md:top-4 md:right-4 z-50">
-					<MyCallUI />
-				</div>
+				<MyCallUI />
 				{children}
 			</div>
 		</StreamVideoProvider>

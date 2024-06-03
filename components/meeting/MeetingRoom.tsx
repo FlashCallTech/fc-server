@@ -1,4 +1,3 @@
-"use client";
 import { useEffect, useState } from "react";
 import {
 	Call,
@@ -6,6 +5,7 @@ import {
 	CallStatsButton,
 	CallingState,
 	PaginatedGridLayout,
+	SpeakingWhileMutedNotification,
 	useCall,
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
@@ -16,6 +16,7 @@ import Loader from "../shared/Loader";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import { useUser } from "@clerk/nextjs";
+import CallTimer from "../calls/CallTimer";
 
 const MeetingRoom = () => {
 	const searchParams = useSearchParams();
@@ -23,35 +24,51 @@ const MeetingRoom = () => {
 	const [showParticipants, setShowParticipants] = useState(false);
 	const { useCallCallingState } = useCallStateHooks();
 	const [hasJoined, setHasJoined] = useState(false);
-	const call = useCall();
 	const { user } = useUser();
+	const call = useCall();
 
 	const isVideoCall = call?.type === "default";
-
-	// for more detail about types of CallingState see: https://getstream.io/video/docs/react/ui-cookbook/ringing-call/#incoming-call-panel
+	const expert = call?.state?.members?.find(
+		(member) => member.custom.type === "expert"
+	);
+	const isMeetingOwner =
+		user?.publicMetadata?.userId === call?.state?.createdBy?.id;
 	const callingState = useCallCallingState();
 
-	useEffect(() => {
-		if (callingState !== CallingState.JOINED && !hasJoined) {
-			call?.join().catch((error) => {
-				if (error.message !== "Illegal State: Already joined") {
-					console.error("Already Joined ... ", error);
-				}
-			});
-			setHasJoined(true);
-		}
-	}, [callingState, call, hasJoined]);
+	const [walletBalance, setWalletBalance] = useState(52); // Rs. 55 initial balance
+	const lowBalanceThreshold = 50; // Rs. 50 low balance threshold
 
-	if (callingState !== CallingState.JOINED) return <Loader />;
+	const endCall = () => {
+		call?.leave();
+		alert("Your balance is empty. The call has ended.");
+	};
+
+	useEffect(() => {
+		const calling = async () => {
+			if (callingState !== CallingState.JOINED && !hasJoined) {
+				call?.camera.disable();
+				call?.microphone.disable();
+				call?.join().catch((error) => {
+					if (error.message !== "Illegal State: Already joined") {
+						console.warn("Already Joined ... ", error);
+					}
+				});
+				setHasJoined(true);
+			}
+		};
+		calling();
+	}, [callingState, call, hasJoined]);
 
 	const CallLayout = () => {
 		return <PaginatedGridLayout />;
 	};
 
+	if (callingState !== CallingState.JOINED) return <Loader />;
+
 	return (
 		<section className="relative h-screen w-full overflow-hidden pt-4 text-white bg-dark-2">
 			<div className="relative flex size-full items-center justify-center">
-				<div className=" flex size-full max-w-[1000px] items-center">
+				<div className="flex size-full max-w-[1000px] items-center">
 					<CallLayout />
 				</div>
 				{showParticipants && (
@@ -60,15 +77,27 @@ const MeetingRoom = () => {
 					</div>
 				)}
 			</div>
-			{/* video layout and call controls */}
+			{/* Timer Display */}
+			{isMeetingOwner && (
+				<CallTimer
+					isVideoCall={isVideoCall}
+					initialWalletBalance={walletBalance}
+					lowBalanceThreshold={lowBalanceThreshold}
+					call={call}
+					endCall={endCall}
+					setWalletBalance={setWalletBalance}
+				/>
+			)}
+			{/* Video layout and call controls */}
 			<div className="fixed bottom-0 pb-4 flex flex-wrap-reverse w-full items-center justify-center gap-2 px-4">
-				<AudioToggleButton />
+				<SpeakingWhileMutedNotification>
+					<AudioToggleButton />
+				</SpeakingWhileMutedNotification>
 				{isVideoCall && <VideoToggleButton />}
-
 				<CallStatsButton />
 				<button onClick={() => setShowParticipants((prev) => !prev)}>
-					<div className=" cursor-pointer rounded-2xl bg-[#19232d] px-4 py-2 hover:bg-[#4c535b]  ">
-						<Users size={20} className="text-white " />
+					<div className="cursor-pointer rounded-2xl bg-[#19232d] px-4 py-2 hover:bg-[#4c535b]">
+						<Users size={20} className="text-white" />
 					</div>
 				</button>
 				{!isPersonalRoom && <EndCallButton />}
