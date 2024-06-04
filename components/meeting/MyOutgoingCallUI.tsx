@@ -24,7 +24,7 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 			</div>
 			<div className="flex items-center justify-center w-full">
 				<button
-					className="bg-red-500 text-white p-4 rounded-full transition-all duration-500 hover:scale-110"
+					className="bg-red-500 text-white p-4 rounded-full hoverScaleEffect"
 					onClick={() => call.endCall()}
 				>
 					<svg

@@ -36,7 +36,7 @@ const MeetingPage = () => {
 		}
 	}, [searchParams]);
 
-	if (isReloading || !isLoaded || isCallLoading) return <Loader />;
+	if (isReloading || isCallLoading) return <Loader />;
 
 	if (!call)
 		return (
@@ -64,6 +64,8 @@ const MeetingPage = () => {
 
 	// const isMeetingOwner =
 	// 	user?.publicMetadata?.userId === call?.state?.createdBy?.id;
+
+	console.log(isReloading, isLoaded, isCallLoading, user);
 
 	return (
 		<main className="h-full w-full">

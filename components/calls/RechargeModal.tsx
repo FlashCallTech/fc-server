@@ -47,7 +47,7 @@ const RechargeModal = ({
 		<div>
 			<Sheet>
 				<SheetTrigger asChild>
-					<Button className="bg-red-500 mt-2 w-full transition-all duration-500 hover:scale-105">
+					<Button className="bg-red-500 mt-2 w-full hoverScaleEffect">
 						Recharge
 					</Button>
 				</SheetTrigger>
@@ -76,7 +76,7 @@ const RechargeModal = ({
 							<Button
 								key={amount}
 								onClick={() => handlePredefinedAmountClick(amount)}
-								className="w-full bg-gray-200 hover:bg-gray-300"
+								className="w-full bg-gray-200 hover:bg-gray-300 hoverScaleEffect"
 							>
 								₹{amount}
 							</Button>

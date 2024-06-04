@@ -28,14 +28,14 @@ const MobileNav = () => {
 						width={33}
 						height={33}
 						alt="hamburger icon"
-						className="cursor-pointer invert transition-all duration-500 hover:scale-110"
+						className="cursor-pointer invert hoverScaleEffect"
 					/> */}
 					<Image
 						src={user?.imageUrl || "/images/defaultProfile.png"}
 						alt="Profile"
 						width={24}
 						height={24}
-						className="rounded-full w-10 h-10 cursor-pointer transition-all duration-500 hover:scale-110"
+						className="rounded-full w-10 h-10 cursor-pointer hoverScaleEffect"
 					/>
 				</SheetTrigger>
 				<SheetContent

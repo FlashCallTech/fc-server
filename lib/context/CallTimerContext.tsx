@@ -91,8 +91,8 @@ export const CallTimerProvider = ({
 					if (!lowBalanceNotified) {
 						setLowBalanceNotified(true);
 						toast({
-							title: "Low Balance",
-							description: "Your wallet balance is low.",
+							title: "Call Will End Soon",
+							description: "Client's wallet balance is low.",
 						});
 					}
 				} else if (newWalletBalance > lowBalanceThreshold) {
