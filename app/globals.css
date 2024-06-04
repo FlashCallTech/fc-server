@@ -64,6 +64,13 @@
 }
 
 @layer utilities {
+	.hoverScaleEffect {
+		@apply transition-all duration-500 hover:scale-105;
+	}
+
+	.hoverScaleDownEffect {
+		@apply transition-all duration-500 hover:scale-95;
+	}
 	.flex-center {
 		@apply flex justify-center items-center;
 	}

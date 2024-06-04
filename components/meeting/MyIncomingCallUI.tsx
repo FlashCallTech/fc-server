@@ -28,7 +28,7 @@ const MyIncomingCallUI = ({
 			</div>
 			<div className="flex items-center justify-evenly w-full">
 				<button
-					className="bg-green-500 text-white p-4 rounded-full transition-all duration-500 hover:scale-110"
+					className="bg-green-500 text-white p-4 rounded-full hoverScaleEffect"
 					onClick={() => {
 						call.accept();
 						onAccept();
@@ -50,7 +50,7 @@ const MyIncomingCallUI = ({
 					</svg>
 				</button>
 				<button
-					className="bg-red-500 text-white p-4 rounded-full transition-all duration-500 hover:scale-110"
+					className="bg-red-500 text-white p-4 rounded-full hoverScaleEffect"
 					onClick={() => call.endCall()}
 				>
 					<svg
