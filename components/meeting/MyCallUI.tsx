@@ -31,6 +31,10 @@ const MyCallUI = () => {
 			};
 
 			const handleCallRejected = () => {
+				toast({
+					title: "Call Ended",
+					description: "The call was Rejected. Redirecting to HomePage...",
+				});
 				router.push("/");
 			};
 
