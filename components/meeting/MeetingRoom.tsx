@@ -41,7 +41,7 @@ const MeetingRoom = () => {
 	useEffect(() => {
 		const calling = async () => {
 			if (callingState !== CallingState.JOINED && !hasJoined) {
-				call?.camera.disable();
+				!isVideoCall && call?.camera.disable();
 				call?.microphone.disable();
 				try {
 					await call?.join();

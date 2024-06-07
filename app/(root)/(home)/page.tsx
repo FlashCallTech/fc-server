@@ -1,11 +1,9 @@
 "use client";
 
 import CreatorDetails from "@/components/creator/CreatorDetails";
-import Experiment from "@/components/shared/Experiment";
 import PostLoader from "@/components/shared/PostLoader";
 import { getUsers } from "@/lib/actions/creator.actions";
 import { creatorUser } from "@/types";
-import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
@@ -35,7 +33,6 @@ const HomePage = () => {
 
 	return (
 		<section className="flex size-full flex-col gap-5 ">
-			{/* <Experiment /> */}
 			<div className="grid grid-cols-1 xl:grid-cols-2 gap-10 items-center 3xl:items-start justify-start h-full pb-6">
 				{creators.map((creator, index) => (
 					<Link
