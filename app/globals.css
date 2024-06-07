@@ -46,6 +46,11 @@
 	height: 2.2rem;
 }
 
+.cl-logoImage {
+	height: 2rem;
+	border-radius: 10px;
+}
+
 @media only screen and (max-width: 768px) {
 	.cl-internal-qk5yrq {
 		max-width: 100% !important;

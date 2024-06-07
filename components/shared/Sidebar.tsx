@@ -51,26 +51,33 @@ const Sidebar = () => {
 				})}
 			</div>
 			{user ? (
-				<Link
-					href={`/profile/${user?.id}`}
-					className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start hoverScaleDownEffect  ${
-						pathname.includes("/profile/") && "opacity-80"
-					}`}
-				>
-					<Image
-						src={user?.imageUrl || "/images/defaultProfile.png"}
-						alt="Profile"
-						width={24}
-						height={24}
-						className="rounded-full w-full max-w-[44px]"
-					/>
-					<div className="flex flex-col items-start justify-center max-lg:hidden">
-						<span className="text-lg capitalize">
-							{user?.fullName || "Hey User"}
-						</span>
-						<span className="text-xs text-blue-1">@{user?.username}</span>
-					</div>
-				</Link>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Link
+							href={`/profile/${user?.id}`}
+							className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start hoverScaleDownEffect  ${
+								pathname.includes("/profile/") && "opacity-80"
+							}`}
+						>
+							<Image
+								src={user?.imageUrl || "/images/defaultProfile.png"}
+								alt="Profile"
+								width={24}
+								height={24}
+								className="rounded-full w-full max-w-[44px]"
+							/>
+							<div className="flex flex-col items-start justify-center max-lg:hidden">
+								<span className="text-lg capitalize">
+									{user?.fullName || "Hey User"}
+								</span>
+								<span className="text-xs text-blue-1">@{user?.username}</span>
+							</div>
+						</Link>
+					</TooltipTrigger>
+					<TooltipContent>
+						<p>Profile</p>
+					</TooltipContent>
+				</Tooltip>
 			) : (
 				<SignedOut>
 					<Button

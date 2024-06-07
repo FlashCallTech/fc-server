@@ -63,7 +63,7 @@ const MobileNav = () => {
 						</div>
 					</div>
 					<div className="flex h-[calc(100vh-72px)] flex-col justify-between overflow-y-auto">
-						<div className="w-full border border-white my-10" />
+						<div className="w-full border border-gray-500 my-10" />
 						<SheetClose asChild>
 							<section className="relative flex h-full items-start flex-col gap-6 text-white">
 								{sidebarLinks.map((item) => {
@@ -95,7 +95,7 @@ const MobileNav = () => {
 
 								<Button
 									className={cn(
-										"absolute bottom-7 flex gap-4 items-center p-6 rounded-lg w-full bg-blue-1 outline-none focus:ring-0"
+										"absolute bottom-7 flex gap-4 items-center p-6 rounded-lg w-full bg-blue-1 outline-none focus:ring-0 hoverScaleDownEffect"
 									)}
 									onClick={() => signOut({ redirectUrl: "/" })}
 								>
