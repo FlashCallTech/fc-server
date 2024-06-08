@@ -5,6 +5,7 @@ import Loader from "@/components/shared/Loader";
 import { useUser } from "@clerk/nextjs";
 import { StreamVideo, StreamVideoClient } from "@stream-io/video-react-sdk";
 import { ReactNode, useEffect, useState } from "react";
+import MyCallUI from "@/components/meeting/MyCallUI";
 
 const API_KEY = process.env.NEXT_PUBLIC_STREAM_API_KEY;
 
@@ -57,7 +58,11 @@ const StreamVideoProvider = ({ children }: { children: ReactNode }) => {
 	}
 
 	return videoClient ? (
-		<StreamVideo client={videoClient}>{children}</StreamVideo>
+		<StreamVideo client={videoClient}>
+			{" "}
+			<MyCallUI />
+			{children}
+		</StreamVideo>
 	) : (
 		<>{children}</>
 	);
