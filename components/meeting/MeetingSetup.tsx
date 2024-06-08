@@ -71,8 +71,6 @@ const MeetingSetup = ({
 	if (callHasEnded)
 		return <Alert title="The call has been ended by the host" />;
 
-	console.log(call.state.participants);
-
 	if (!isLoaded && !call) return <Loader />;
 
 	const isMeetingOwner =
