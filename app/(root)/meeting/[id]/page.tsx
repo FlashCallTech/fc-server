@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { StreamCall, StreamTheme } from "@stream-io/video-react-sdk";
+import {
+	StreamCall,
+	StreamTheme,
+	useCallStateHooks,
+} from "@stream-io/video-react-sdk";
 import { useParams, useSearchParams } from "next/navigation";
 
 import { useGetCallById } from "@/hooks/useGetCallById";
@@ -15,11 +19,14 @@ import Link from "next/link";
 
 const MeetingPage = () => {
 	const { id } = useParams();
+	const { useCallEndedAt } = useCallStateHooks();
 	const searchParams = useSearchParams();
 	const { isLoaded, user } = useUser();
 	const { call, isCallLoading } = useGetCallById(id);
 	// const [isSetupComplete, setIsSetupComplete] = useState(false);
 	const [isReloading, setIsReloading] = useState(false);
+	const callEndedAt = useCallEndedAt();
+	const callHasEnded = !!callEndedAt;
 
 	useEffect(() => {
 		// Check for the reload query parameter
@@ -36,7 +43,7 @@ const MeetingPage = () => {
 		}
 	}, [searchParams]);
 
-	if (isReloading || !isLoaded || isCallLoading) return <Loader />;
+	if (isReloading || isCallLoading) return <Loader />;
 
 	if (!call)
 		return (
@@ -61,6 +68,9 @@ const MeetingPage = () => {
 
 	if (notAllowed)
 		return <Alert title="You are not allowed to join this meeting" />;
+
+	if (callHasEnded)
+		return <Alert title="The call has been ended by the host" />;
 
 	// const isMeetingOwner =
 	// 	user?.publicMetadata?.userId === call?.state?.createdBy?.id;

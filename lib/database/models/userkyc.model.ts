@@ -10,34 +10,56 @@ const UserKycSchema = new Schema({
 		enum: ["auto_approved", "auto_declined", "needs_review"],
 		required: true,
 	},
-	details: {
-		fullName: {
+	data: {
+		poa_front_dob: {
 			type: String,
-			required: true,
+			default: null,
 		},
-		countrySelected: {
+		poi_imagePath: {
 			type: String,
-			required: true,
 		},
-		dateOfBirth: {
+		face_imagePath: {
 			type: String,
-			required: true,
 		},
-		dateOfIssue: {
+		digilocker_address: {
 			type: String,
-			required: true,
+			default: null,
 		},
-		selfieImage: {
+		poa_backImagePath: {
 			type: String,
-			required: true,
 		},
-		idFrontImage: {
+		poa_front_name: {
 			type: String,
-			required: true,
 		},
-		idBackImage: {
+		poi_name: {
 			type: String,
-			required: true,
+		},
+		poa_back_name: {
+			type: String,
+			default: null,
+		},
+		poa_front_idNumber: {
+			type: String,
+		},
+		poa_back_idNumber: {
+			type: String,
+		},
+		poa_back_dob: {
+			type: String,
+		},
+		digilocker_idPhoto: {
+			type: String,
+			default: null,
+		},
+		poi_dob: {
+			type: String,
+		},
+		poa_frontImagePath: {
+			type: String,
+		},
+		digilocker_dob: {
+			type: String,
+			default: null,
 		},
 	},
 });

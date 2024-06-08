@@ -117,7 +117,7 @@ const UserReviews = ({ theme }: any) => {
 						{/* navigation arrow */}
 						<div className="flex items-center justify-evenly">
 							<button
-								className="bg-black/10 text-white w-10 h-10 rounded-full p-2 transition-all duration-500 hover:scale-110 hover:bg-black/50"
+								className="bg-black/10 text-white w-10 h-10 rounded-full p-2 hoverScaleEffect hover:bg-black/50"
 								onClick={previousSlide}
 							>
 								{arrowLeft}
@@ -128,7 +128,7 @@ const UserReviews = ({ theme }: any) => {
 										key={index}
 										className={`${
 											index === currentIndex && "!bg-black/50"
-										} bg-black/10 w-5 h-5 rounded-full p-5 flex items-center justify-center transition-all duration-500 hover:scale-110 hover:bg-black/50`}
+										} bg-black/10 w-5 h-5 rounded-full p-5 flex items-center justify-center hoverScaleEffect hover:bg-black/50`}
 										onClick={() => setCurrentIndex(index)}
 									>
 										<span className="mx-auto">{index + 1}</span>
@@ -136,7 +136,7 @@ const UserReviews = ({ theme }: any) => {
 								))}
 							</div>
 							<button
-								className="bg-black/10 text-white w-10 h-10 rounded-full p-2 transition-all duration-500 hover:scale-110 hover:bg-black/50"
+								className="bg-black/10 text-white w-10 h-10 rounded-full p-2 hoverScaleEffect hover:bg-black/50"
 								onClick={nextSlide}
 							>
 								{arrowRight}
