@@ -55,8 +55,8 @@ const UserProfilePage = () => {
 				<Image
 					src={userData.photo}
 					alt="profile picture"
-					width={24}
-					height={24}
+					width={1000}
+					height={1000}
 					className="rounded-full w-full min-w-24 lg:min-w-32 max-w-40 "
 				/>
 
@@ -66,7 +66,7 @@ const UserProfilePage = () => {
 						<div className="flex flex-col items-start justify-center">
 							<span className="text-lg font-semibold capitalize">
 								{userData?.fullName?.length === 0
-									? "Welcome User"
+									? userData.username
 									: userData.fullName}
 							</span>
 							<span className="text-sm text-blue-1 font-semibold">
