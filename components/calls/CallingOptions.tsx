@@ -136,8 +136,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			localStorage.setItem(
 				"user2",
 				JSON.stringify({
-					_id: "665f1a1d33d3505c2a86a91e",
-					fullName: "Chirag Goel",
+					_id: "6663fd3cc853de56645ccbae",
+					fullName: "Aseem Gupta",
 					photo:
 						"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
 				})
@@ -148,7 +148,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				"userchats",
 				user?.publicMetadata?.userId as string
 			);
-			const creatorDocRef = doc(db, "userchats", "665f1a1d33d3505c2a86a91e");
+			const creatorDocRef = doc(db, "userchats", "6663fd3cc853de56645ccbae");
 
 			const userDocSnapshot = await getDoc(userDocRef);
 			const creatorDocSnapshot = await getDoc(creatorDocRef);
@@ -175,7 +175,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const listenForChatRequests = () => {
 		const q = query(
 			chatRequestsRef,
-			where("creatorId", "==", "665f1a1d33d3505c2a86a91e"),
+			where("creatorId", "==", "6663fd3cc853de56645ccbae"),
 			where("status", "==", "pending")
 		);
 
@@ -282,7 +282,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		return () => {
 			unsubscribe();
 		};
-	}, ["665f1a1d33d3505c2a86a91e"]);
+	}, ["6663fd3cc853de56645ccbae"]);
 
 	if (!client || !user) return <Loader />;
 
@@ -381,7 +381,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			/>
 
 			{chatRequest &&
-				user?.publicMetadata?.userId === "665f1a1d33d3505c2a86a91e" && (
+				user?.publicMetadata?.userId === "6663fd3cc853de56645ccbae" && (
 					<div className="chatRequestModal">
 						<p>Incoming chat request from {chatRequest.clientId}</p>
 						<Button onClick={handleAcceptChat}>Accept</Button>
