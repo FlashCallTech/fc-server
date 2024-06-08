@@ -2,8 +2,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { arrayUnion, doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { useParams, useRouter } from 'next/navigation';
+import { arrayUnion, deleteDoc, doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useUser } from '@clerk/nextjs';
 import upload from '../../../../lib/upload';
@@ -46,6 +46,7 @@ const ChatInterface: React.FC = () => {
     const audioChunksRef = useRef<Blob[]>([]);
     const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
     const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
+    const router = useRouter();
 
     const handleImageClick = (imageUrl: string) => {
         setFullImageUrl(imageUrl);
@@ -54,6 +55,8 @@ const ChatInterface: React.FC = () => {
     const handleCloseModal = () => {
         setFullImageUrl(null);
     };
+
+    
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -210,6 +213,14 @@ const ChatInterface: React.FC = () => {
         }
     };
 
+    const handleEnd = async () => {
+        try {
+            await deleteDoc(doc(db, 'chats', chatId as string));
+            router.push('/');
+        } catch (error) {
+            console.error("Error ending chat:", error);
+        }
+    }
     return (
         <div className="relative flex flex-col h-screen z-50" style={{ backgroundBlendMode: "luminosity" }}>
             <div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center filter brightness-[0.25] blur-sx z-0" />
@@ -224,9 +235,10 @@ const ChatInterface: React.FC = () => {
                             <div className="text-white font-bold leading-6 text-xl">{user2?.fullName || "Username"}</div>
                         </div>
                     </div>
-                    <Link href='/'>
-                        <button className="bg-[rgba(255,81,81,1)] text-white px-4 py-3 rounded-lg">End Chat</button>
-                    </Link>
+                    {/* <Link href='/'> */}
+                        <button onClick={handleEnd} className="bg-[rgba(255,81,81,1)] text-white px-4 py-3 rounded-lg">End Chat</button>
+                    {/* </Link> */}
+                    
                 </div>
 
                 <div className="leading-5 text-center text-white font-bold py-1 bg-[rgba(255,255,255,0.36)] mb-4">
