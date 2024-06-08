@@ -2,7 +2,6 @@
 
 import React, { ReactNode, useEffect, useState } from "react";
 import StreamVideoProvider from "@/providers/streamClientProvider";
-import { useUser } from "@clerk/nextjs";
 import Loader from "@/components/shared/Loader";
 
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {
