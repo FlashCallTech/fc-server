@@ -47,7 +47,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [isSheetOpen, setSheetOpen] = useState(false);
 
 	const chatRequestsRef = collection(db, "chatRequests");
-	const clientId = user?.publicMetadata?.userId;
+	const clientId = user?.publicMetadata?.userId as string;
 
 	const handleCallAccepted = (call: Call) => {
 		toast({
@@ -145,7 +145,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				})
 			);
 
-			const userDocRef = doc(db, "userchats", clientId as string);
+			const userDocRef = doc(
+				db,
+				"userchats",
+				clientId as string
+			);
 			const creatorDocRef = doc(db, "userchats", "6663fd3cc853de56645ccbae");
 
 			const userDocSnapshot = await getDoc(userDocRef);
