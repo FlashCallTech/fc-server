@@ -59,7 +59,6 @@ const StreamVideoProvider = ({ children }: { children: ReactNode }) => {
 
 	return videoClient ? (
 		<StreamVideo client={videoClient}>
-			{" "}
 			<MyCallUI />
 			{children}
 		</StreamVideo>
