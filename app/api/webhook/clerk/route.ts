@@ -82,6 +82,7 @@ export async function POST(req: Request) {
 				phone: phone_numbers[0]?.phone_number || "",
 				role: "client",
 				bio: "",
+				walletBalance: 0,
 			};
 
 			const newUser = await createUser(user);
