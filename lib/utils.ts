@@ -6,8 +6,14 @@ import Razorpay from "razorpay";
 const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 const key_secret = process.env.NEXT_PUBLIC_RAZORPAY_SECRET;
 
+if (!key_id || !key_secret) {
+	throw new Error(
+		"Razorpay key_id and key_secret must be defined in environment variables"
+	);
+}
+
 export const razorpay = new Razorpay({
-	key_id: key_id!,
+	key_id: key_id,
 	key_secret: key_secret,
 });
 
