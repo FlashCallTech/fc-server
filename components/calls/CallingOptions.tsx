@@ -47,6 +47,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [isSheetOpen, setSheetOpen] = useState(false);
 
 	const chatRequestsRef = collection(db, "chatRequests");
+	const clientId = user?.publicMetadata?.userId;
 
 	const handleCallAccepted = (call: Call) => {
 		toast({
@@ -127,7 +128,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			await setDoc(newChatRequestRef, {
 				creatorId: "6663fd3cc853de56645ccbae",
-				clientId: user?.publicMetadata?.userId,
+				clientId: clientId,
 				status: "pending",
 				chatId,
 				createdAt: serverTimestamp(),
@@ -137,17 +138,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				"user2",
 				JSON.stringify({
 					_id: "6663fd3cc853de56645ccbae",
+					clientId: clientId,
 					fullName: "Aseem Gupta",
 					photo:
 						"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
 				})
 			);
 
-			const userDocRef = doc(
-				db,
-				"userchats",
-				user?.publicMetadata?.userId as string
-			);
+			const userDocRef = doc(db, "userchats", clientId as string);
 			const creatorDocRef = doc(db, "userchats", "6663fd3cc853de56645ccbae");
 
 			const userDocSnapshot = await getDoc(userDocRef);
@@ -165,6 +163,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			// 	title: "Chat Request Sent",
 			// 	description: "Waiting for the expert to accept your chat request.",
 			// });
+			
 			setSheetOpen(true);
 		} catch (error) {
 			console.error(error);
@@ -195,15 +194,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleAcceptChat = async () => {
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
-
+	
 		try {
-			// Create a new chat document
 			await setDoc(doc(db, "chats", chatId), {
 				createdAt: serverTimestamp(),
+				clientId: clientId as string,
+				status: "active",
 				messages: [],
 			});
-
-			// Update the chat lists of both users involved
+	
 			const creatorChatUpdate = updateDoc(
 				doc(userChatsRef, chatRequest.creatorId),
 				{
@@ -215,7 +214,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}),
 				}
 			);
-
+	
 			const clientChatUpdate = updateDoc(
 				doc(userChatsRef, chatRequest.clientId),
 				{
@@ -227,22 +226,19 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}),
 				}
 			);
-
-			// Update the status of the chat request to "accepted"
+	
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
 				status: "accepted",
 			});
-
-			// Wait for all updates to complete
+	
 			await Promise.all([creatorChatUpdate, clientChatUpdate]);
-
-			// Close the sheet
 			setSheetOpen(false);
 		} catch (error) {
 			console.error(error);
 			toast({ title: "Failed to accept chat request" });
 		}
 	};
+	
 
 	const handleRejectChat = async () => {
 		if (!chatRequest) return;
@@ -269,7 +265,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (data && data.status === "accepted") {
 				unsubscribe();
 
-				console.log(chatRequest.chatId);
+				// console.log(chatRequest.chatId);
 				router.push(`/chat/${chatRequest.chatId}`);
 			}
 		});
