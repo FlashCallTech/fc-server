@@ -12,6 +12,7 @@ const ClientSchema = new Schema(
 		photo: { type: String, required: true },
 		role: { type: String, required: true },
 		bio: { type: String },
+		walletBalance: { type: Number, default: 0 },
 	},
 	{
 		timestamps: true,
