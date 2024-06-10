@@ -1,9 +1,11 @@
 import React from "react";
 
-const PostLoader = ({ items }: any) => {
+const PostLoader = ({ count = 6 }: { count?: number }) => {
+	const placeholders = Array.from({ length: count });
+
 	return (
 		<div className="grid grid-cols-1 lg:grid-cols-2 3xl:grid-cols-3 gap-10 items-start justify-start h-full pb-6">
-			{items.map((_: any, index: any) => (
+			{placeholders.map((_, index) => (
 				<div
 					key={index}
 					className="flex flex-col justify-center items-start gap-5 shadow-md rounded-lg p-6 max-w-lg h-full w-full mx-auto animate-pulse"
