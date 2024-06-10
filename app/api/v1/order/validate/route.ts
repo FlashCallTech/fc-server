@@ -5,9 +5,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export async function POST(req: NextRequest) {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
 
-  const sha = crypto.createHmac('sha256', process.env.RAZORPAY_SECRET!);
+  const sha = crypto.createHmac('sha256', process.env.NEXT_PUBLIC_RAZORPAY_SECRET!);
   sha.update(`${razorpay_order_id}|${razorpay_payment_id}`);
   const digest = sha.digest('hex');
 
@@ -20,4 +21,9 @@ export async function POST(req: NextRequest) {
     orderId: razorpay_order_id,
     paymentId: razorpay_payment_id,
   });
+  } catch (error) {
+    console.log(error)
+    return NextResponse.json(error)
+  }
+  
 }

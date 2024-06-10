@@ -147,3 +147,53 @@ export interface UpdateUserKycParams {
 		digilocker_dob?: string | null;
 	};
 }
+
+export interface Options {
+	key: string;
+	amount: number;
+	currency: string;
+	name: string;
+	description: string;
+	image: string;
+	order_id: string;
+	handler: (response: PaymentResponse) => void;
+	prefill: {
+		name: string;
+		email: string;
+		contact: string;
+		method: string;
+	};
+	notes: {
+		address: string;
+	};
+	theme: {
+		color: string;
+	};
+}
+
+export interface PaymentResponse {
+	razorpay_payment_id: string;
+	razorpay_order_id: string;
+	razorpay_signature: string;
+}
+
+export interface PaymentFailedResponse {
+	error: {
+		code: string;
+		description: string;
+		source: string;
+		step: string;
+		reason: string;
+		metadata: {
+			order_id: string;
+			payment_id: string;
+		};
+	};
+}
+
+interface Window {
+    Razorpay: new (options: Options) => {
+      on: (event: string, callback: (response: PaymentFailedResponse) => void) => void;
+      open: () => void;
+    };
+}
