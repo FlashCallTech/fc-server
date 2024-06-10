@@ -60,24 +60,6 @@ export async function updateUser(clerkId: string, user: UpdateUserParams) {
 	} catch (error) {}
 }
 
-export async function updateTheme(userId: any, otherDetails: any) {
-	try {
-		await connectToDatabase();
-		const updatedUser = await Client.findOneAndUpdate(
-			{ userId },
-			otherDetails,
-			{
-				new: true,
-			}
-		);
-
-		if (!updatedUser) throw new Error("User update failed");
-		return JSON.parse(JSON.stringify(updatedUser));
-	} catch (error) {
-		handleError(error);
-	}
-}
-
 export async function deleteUser(clerkId: string) {
 	try {
 		await connectToDatabase();
