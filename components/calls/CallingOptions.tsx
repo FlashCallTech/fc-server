@@ -240,8 +240,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			toast({ title: "Failed to accept chat request" });
 		}
 	};
-	
-	
 
 	const handleRejectChat = async () => {
 		if (!chatRequest) return;
