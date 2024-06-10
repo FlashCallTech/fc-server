@@ -63,7 +63,7 @@ const MeetingRoom = () => {
 	if (callingState !== CallingState.JOINED) return <Loader />;
 
 	return (
-		<WalletBalanceProvider>
+		
 			<CallTimerProvider
 				isVideoCall={isVideoCall}
 				isMeetingOwner={isMeetingOwner}
@@ -97,7 +97,6 @@ const MeetingRoom = () => {
 					</div>
 				</section>
 			</CallTimerProvider>
-		</WalletBalanceProvider>
 	);
 };
 

@@ -1,14 +1,15 @@
-'use client'
+'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { arrayUnion, doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useUser } from '@clerk/nextjs';
 import upload from '../../../../lib/upload';
-import AudioVisualizer from '../../../../lib/AudioVisualizer'; // Import the AudioVisualizer component
+import AudioVisualizer from '../../../../lib/AudioVisualizer';
 import ImageModal from '@/lib/imageModal';
+import RechargeModal from '@/components/calls/RechargeModal';
+import { useWalletBalanceContext } from '@/lib/context/WalletBalanceContext';
 
 interface Chat {
     messages: {
@@ -22,8 +23,9 @@ interface Chat {
 
 interface User2 {
     _id: string;
+    clientId: string;
     fullName: string;
-    photo: string;
+    photo: string; 
 }
 
 const ChatInterface: React.FC = () => {
@@ -31,8 +33,11 @@ const ChatInterface: React.FC = () => {
     const [chat, setChat] = useState<Chat | undefined>();
     const [creator, setCreator] = useState<any>(null);
     const { chatId } = useParams();
+    const [chatEnded, setChatEnded] = useState(false);
     const { user } = useUser();
     const [user2, setUser2] = useState<User2>();
+    const { walletBalance, setWalletBalance } = useWalletBalanceContext();
+
     const [img, setImg] = useState({
         file: null,
         url: "",
@@ -46,6 +51,10 @@ const ChatInterface: React.FC = () => {
     const audioChunksRef = useRef<Blob[]>([]);
     const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
     const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
+    const router = useRouter();
+
+    const [isImgUploading, setIsImgUploading] = useState(false);
+    const [isAudioUploading, setIsAudioUploading] = useState(false);
 
     const handleImageClick = (imageUrl: string) => {
         setFullImageUrl(imageUrl);
@@ -56,23 +65,29 @@ const ChatInterface: React.FC = () => {
     };
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const storedUser = localStorage.getItem("user2");
-            if (storedUser) {
-                setUser2(JSON.parse(storedUser));
-            }
+        const storedUser = localStorage.getItem("user2");
+        
+        if (storedUser) {
+            setUser2(JSON.parse(storedUser));
         }
     }, []);
 
     useEffect(() => {
         const unSub = onSnapshot(doc(db, "chats", chatId as string), (res: any) => {
             setChat(res.data());
+            setChatEnded(res.data()?.status === "ended");
         });
 
         return () => {
             unSub();
         };
     }, [chatId]);
+
+    useEffect(() => {
+        if (chatEnded) {
+            router.replace('/chat-ended');
+        }
+    }, [chatEnded, router]);
 
     const handleImg = (e: any) => {
         if (e.target.files && e.target.files[0]) {
@@ -81,7 +96,7 @@ const ChatInterface: React.FC = () => {
                 url: URL.createObjectURL(e.target.files[0]),
             });
         }
-    }
+    };
 
     const handleAudio = async (): Promise<string | null> => {
         if (audio.file) {
@@ -89,12 +104,12 @@ const ChatInterface: React.FC = () => {
             return audioUrl;
         }
         return null;
-    }
+    };
 
     const startRecording = (): void => {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({ audio: true }).then((stream: MediaStream) => {
-                setAudioStream(stream); // Set the audio stream for the visualizer
+                setAudioStream(stream);
                 mediaRecorderRef.current = new MediaRecorder(stream);
                 mediaRecorderRef.current.ondataavailable = (e: BlobEvent) => {
                     audioChunksRef.current.push(e.data);
@@ -103,22 +118,19 @@ const ChatInterface: React.FC = () => {
                     const audioBlob: Blob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
                     const audioUrl: string = URL.createObjectURL(audioBlob);
 
-                    // Calculate the duration of the audio
-                    const audioElement: HTMLAudioElement = new Audio(audioUrl);
-                    audioElement.onloadedmetadata = () => {
-                        setAudio({
-                            file: audioBlob,
-                            url: audioUrl,
-                        });
-                        audioChunksRef.current = [];
-                    };
+                    setAudio({
+                        file: audioBlob,
+                        url: audioUrl,
+                    });
+                    audioChunksRef.current = [];
 
-                    // Stop all audio tracks to release the microphone
                     stream.getTracks().forEach(track => track.stop());
                     setAudioStream(null);
+
+                    await handleSendAudio(audioBlob, audioUrl);
                 };
                 mediaRecorderRef.current.start();
-                setIsRecording(true); // Start recording
+                setIsRecording(true); 
             }).catch((error: Error) => {
                 console.error("Error accessing microphone:", error);
             });
@@ -130,12 +142,13 @@ const ChatInterface: React.FC = () => {
     const stopRecording = (): void => {
         if (mediaRecorderRef.current) {
             mediaRecorderRef.current.stop();
-            setIsRecording(false); // Stop recording
+            setIsRecording(false);
         }
     };
 
     const handleSend = async () => {
         if (text === "" && !img.file && !audio.file) return;
+
         let imgUrl = null;
         let audioUrl = null;
 
@@ -148,10 +161,14 @@ const ChatInterface: React.FC = () => {
             if (text === "" && !img.file && !audio.file) return;
 
             if (img.file) {
+                setIsImgUploading(true);
                 imgUrl = await upload(img.file, 'image');
+                setIsImgUploading(false);
             }
             if (audio.file) {
+                setIsAudioUploading(true);
                 audioUrl = await handleAudio();
+                setIsAudioUploading(false);
             }
 
             await updateDoc(doc(db, "chats", chatId as string), {
@@ -202,11 +219,69 @@ const ChatInterface: React.FC = () => {
         }
     };
 
+    const handleSendAudio = async (audioBlob: Blob, audioUrl: string) => {
+        setIsAudioUploading(true);
+
+        try {
+            const audioUploadUrl = await upload(audioBlob, 'audio');
+            
+            await updateDoc(doc(db, "chats", chatId as string), {
+                messages: arrayUnion({
+                    senderId: user?.publicMetadata?.userId as string,
+                    createdAt: new Date(),
+                    audio: audioUploadUrl,
+                }),
+            });
+
+            const userIDs = [user?.publicMetadata?.userId as string, user2?._id as string];
+
+            userIDs.forEach(async (id) => {
+                const userChatsRef = doc(db, "userchats", id);
+                const userChatsSnapshot = await getDoc(userChatsRef);
+
+                if (userChatsSnapshot.exists()) {
+                    const userChatsData = userChatsSnapshot.data();
+
+                    const chatIndex = userChatsData.chats.findIndex(
+                        (c: { chatId: string | string[]; }) => c.chatId === chatId
+                    );
+
+                    userChatsData.chats[chatIndex].lastMessage = 'Audio Message';
+                    userChatsData.chats[chatIndex].isSeen = id === user?.publicMetadata?.userId as string ? true : false;
+                    userChatsData.chats[chatIndex].updatedAt = Date.now();
+
+                    await updateDoc(userChatsRef, {
+                        chats: userChatsData.chats,
+                    });
+                }
+            });
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsAudioUploading(false);
+            setAudio({
+                file: null,
+                url: "",
+            });
+        }
+    };
+
     const toggleRecording = () => {
         if (isRecording) {
             stopRecording();
         } else {
             startRecording();
+        }
+    };
+
+    const handleEnd = async () => {
+        try {
+            await updateDoc(doc(db, 'chats', chatId as string), {
+                status: "ended"
+            });
+        } catch (error) {
+            console.error("Error ending chat:", error);
         }
     };
 
@@ -220,13 +295,11 @@ const ChatInterface: React.FC = () => {
                     <div className="flex items-center gap-2">
                         <Image src={user2?.photo || "/avatar.svg"} alt="profile" width={40} height={40} className="rounded-full" />
                         <div className='flex flex-col'>
-                            <p className='text-sm leading-4' style={{ color: 'rgba(112, 112, 112, 1)' }}>On going chat with</p>
+                            <p className='text-sm leading-4' style={{ color: 'rgba(112, 112, 112, 1)' }}>Ongoing chat with</p>
                             <div className="text-white font-bold leading-6 text-xl">{user2?.fullName || "Username"}</div>
                         </div>
                     </div>
-                    <Link href='/'>
-                        <button className="bg-[rgba(255,81,81,1)] text-white px-4 py-3 rounded-lg">End Chat</button>
-                    </Link>
+                    <button onClick={handleEnd} className="bg-[rgba(255,81,81,1)] text-white px-4 py-3 rounded-lg">End Chat</button>
                 </div>
 
                 <div className="leading-5 text-center text-white font-bold py-1 bg-[rgba(255,255,255,0.36)] mb-4">
@@ -258,8 +331,8 @@ const ChatInterface: React.FC = () => {
                                     <ImageModal imageUrl={fullImageUrl} onClose={handleCloseModal} />
                                 )}
                                 {message.audio && (
-                                    <div className='w-full items-center justify-center'> {/* Container to fit audio element */}
-                                        <audio controls src={message.audio} style={{ width: '40vw' }}></audio> {/* Set width to 50% of viewport */}
+                                    <div className='w-full items-center justify-center'>
+                                        <audio controls src={message.audio} style={{ width: '40vw' }}></audio>
                                     </div>
                                 )}
                                 {message.text && (
@@ -283,6 +356,7 @@ const ChatInterface: React.FC = () => {
                                         className='w-full h-auto cursor-pointer'
                                         onClick={() => handleImageClick(img.url)}
                                     />
+                                    {isImgUploading && <p>Uploading image...</p>}
                                 </div>
                             </div>
                         )}
@@ -291,9 +365,7 @@ const ChatInterface: React.FC = () => {
 
                 <div className="flex justify-between items-center p-4 bg-[rgba(255,255,255,0.24)] mb-3">
                     <div className="leading-5 font-normal text-white">Recharge to continue this <br /> Audio call.</div>
-                    <Link href="/">
-                        <button className="bg-black font-bold leading-5 text-white py-2 px-3 rounded-lg">Recharge</button>
-                    </Link>
+                    <RechargeModal setWalletBalance={setWalletBalance} />
                 </div>
 
                 <div className="flex items-center p-4 mb-4">
