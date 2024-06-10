@@ -3,6 +3,7 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import StreamVideoProvider from "@/providers/streamClientProvider";
 import Loader from "@/components/shared/Loader";
+import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
 
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	const [isMounted, setIsMounted] = useState(false);
@@ -16,9 +17,16 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	}
 
 	return (
+		<WalletBalanceProvider>
+
 		<StreamVideoProvider>
+			        <WalletBalanceProvider>
+
+
 			<div className="relative min-h-screen w-full">{children}</div>
+					</WalletBalanceProvider>
 		</StreamVideoProvider>
+		</WalletBalanceProvider>
 	);
 };
 
