@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import {
 	PaymentFailedResponse,
 	PaymentResponse,
-	Options,
+	RazorpayOptions,
 } from "@/types";
 
 const About: React.FC = () => {
@@ -47,7 +47,7 @@ const About: React.FC = () => {
 
 			const order = await response.json();
 
-			const options: Options = {
+			const options: RazorpayOptions = {
 				key: "rzp_test_d8fM9sk9S2Cb2m",
 				amount,
 				currency,
