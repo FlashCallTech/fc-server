@@ -17,6 +17,7 @@ const CreatorSchema = new Schema(
 		dob: { type: String },
 		bio: { type: String },
 		kyc_status: { type: String },
+		walletBalance: { type: Number, default: 0 },
 	},
 	{
 		timestamps: true,

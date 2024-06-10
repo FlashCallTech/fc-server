@@ -1,3 +1,5 @@
+// User Params
+
 export type CreateUserParams = {
 	clerkId: string;
 	firstName: string;
@@ -20,6 +22,8 @@ export type UpdateUserParams = {
 	bio?: string;
 	role?: string;
 };
+
+// Creator Params
 
 export type creatorUser = {
 	_id: string;
@@ -74,16 +78,20 @@ export type UpdateCreatorParams = {
 	kyc_status: string;
 };
 
-export interface CreateFeedbackParams {
+// Feedback Params
+
+export type CreateFeedbackParams = {
 	creatorId: string;
 	clientId: string;
 	rating: number;
 	feedbackText: string;
 	callId: string;
 	createdAt: Date;
-}
+};
 
-export interface RegisterCallParams {
+// Call Params
+
+export type RegisterCallParams = {
 	callId: string;
 	type: string;
 	members: {
@@ -92,9 +100,9 @@ export interface RegisterCallParams {
 	}[];
 	startedAt: Date;
 	endedAt?: Date;
-}
+};
 
-export interface UpdateCallParams {
+export type UpdateCallParams = {
 	callId?: string;
 	type?: string;
 	members?: {
@@ -103,52 +111,11 @@ export interface UpdateCallParams {
 	}[];
 	startedAt?: Date;
 	endedAt?: Date;
-}
+};
 
-export interface RegisterUserKycParams {
-	transactionId: string;
-	status: "auto_approved" | "auto_declined" | "needs_review";
-	data?: {
-		poa_front_dob: string | null;
-		poi_imagePath: string;
-		face_imagePath: string;
-		digilocker_address: string | null;
-		poa_backImagePath: string;
-		poa_front_name: string;
-		poi_name: string;
-		poa_back_name: string | null;
-		poa_front_idNumber: string;
-		poa_back_idNumber: string;
-		poa_back_dob: string;
-		digilocker_idPhoto: string | null;
-		poi_dob: string;
-		poa_frontImagePath: string;
-		digilocker_dob: string | null;
-	};
-}
+// app/razorpay.d.ts
 
-export interface UpdateUserKycParams {
-	status?: "auto_approved" | "auto_declined" | "needs_review";
-	data?: {
-		poa_front_dob?: string | null;
-		poi_imagePath?: string;
-		face_imagePath?: string;
-		digilocker_address?: string | null;
-		poa_backImagePath?: string;
-		poa_front_name?: string;
-		poi_name?: string;
-		poa_back_name?: string | null;
-		poa_front_idNumber?: string;
-		poa_back_idNumber?: string;
-		poa_back_dob?: string;
-		digilocker_idPhoto?: string | null;
-		poi_dob?: string;
-		poa_frontImagePath?: string;
-		digilocker_dob?: string | null;
-	};
-}
-
-export interface Options {
+export interface RazorpayOptions {
 	key: string;
 	amount: number;
 	currency: string;
@@ -188,12 +155,75 @@ export interface PaymentFailedResponse {
 			order_id: string;
 			payment_id: string;
 		};
+		data?: {
+			poa_front_dob?: string | null;
+			poi_imagePath?: string;
+			face_imagePath?: string;
+			digilocker_address?: string | null;
+			poa_backImagePath?: string;
+			poa_front_name?: string;
+			poi_name?: string;
+			poa_back_name?: string | null;
+			poa_front_idNumber?: string;
+			poa_back_idNumber?: string;
+			poa_back_dob?: string;
+			digilocker_idPhoto?: string | null;
+			poi_dob?: string;
+			poa_frontImagePath?: string;
+			digilocker_dob?: string | null;
+		};
 	};
 }
 
-interface Window {
-    Razorpay: new (options: Options) => {
-      on: (event: string, callback: (response: PaymentFailedResponse) => void) => void;
-      open: () => void;
-    };
-}
+// User Kyc Params
+
+export type RegisterUserKycParams = {
+	transactionId: string;
+	status: "auto_approved" | "auto_declined" | "needs_review";
+	data?: {
+		poa_front_dob: string | null;
+		poi_imagePath: string;
+		face_imagePath: string;
+		digilocker_address: string | null;
+		poa_backImagePath: string;
+		poa_front_name: string;
+		poi_name: string;
+		poa_back_name: string | null;
+		poa_front_idNumber: string;
+		poa_back_idNumber: string;
+		poa_back_dob: string;
+		digilocker_idPhoto: string | null;
+		poi_dob: string;
+		poa_frontImagePath: string;
+		digilocker_dob: string | null;
+	};
+};
+
+export type UpdateUserKycParams = {
+	status?: "auto_approved" | "auto_declined" | "needs_review";
+	data?: {
+		poa_front_dob?: string | null;
+		poi_imagePath?: string;
+		face_imagePath?: string;
+		digilocker_address?: string | null;
+		poa_backImagePath?: string;
+		poa_front_name?: string;
+		poi_name?: string;
+		poa_back_name?: string | null;
+		poa_front_idNumber?: string;
+		poa_back_idNumber?: string;
+		poa_back_dob?: string;
+		digilocker_idPhoto?: string | null;
+		poi_dob?: string;
+		poa_frontImagePath?: string;
+		digilocker_dob?: string | null;
+	};
+};
+
+// Wallet Params
+
+export type WalletParams = {
+	userId: string;
+	userType: string;
+	amount: number;
+};
