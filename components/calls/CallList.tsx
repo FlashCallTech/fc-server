@@ -90,7 +90,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
 		<div
 			className={`grid grid-cols-1 ${
 				calls && calls.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
-			} items-center justify-center gap-5 w-full h-full text-white`}
+			} items-start justify-center gap-5 w-full h-full text-white`}
 		>
 			{calls && calls.length > 0 ? (
 				visibleCalls &&
