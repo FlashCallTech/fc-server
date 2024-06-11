@@ -116,8 +116,8 @@ const RechargeModal = ({
 
 						toast({
 							title: "Recharge Successful",
-							description: `Credited Rs. ${amount} to your balance`,
-						});
+							description: `Credited Rs. ${(amount / 100).toFixed(2)} to your balance`,
+						  });
 						setRechargeAmount("");
 					} catch (error) {
 						console.error("Validation request failed:", error);
