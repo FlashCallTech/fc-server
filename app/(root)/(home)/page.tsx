@@ -31,7 +31,7 @@ const HomePage = () => {
 		}
 	}, []);
 
-	if (!creators || loading) return <PostLoader items={creators} />;
+	if (!creators || loading) return <PostLoader count={6} />;
 
 	return (
 		<section className="flex size-full flex-col gap-5 ">

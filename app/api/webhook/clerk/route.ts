@@ -7,6 +7,7 @@ import {
 	updateUser,
 } from "@/lib/actions/client.actions";
 import { NextResponse } from "next/server";
+import { addMoney } from "@/lib/actions/wallet.actions";
 
 export async function POST(req: Request) {
 	// You can find this in the Clerk Dashboard -> Webhooks -> choose the endpoint
@@ -98,6 +99,13 @@ export async function POST(req: Request) {
 					},
 				});
 			}
+
+			// Initialize the user's wallet with a starting balance
+			await addMoney({
+				userId: newUser._id,
+				userType: "Client",
+				amount: 0, // Set the initial balance here
+			});
 
 			return NextResponse.json({ message: "OK", user: newUser });
 		}
