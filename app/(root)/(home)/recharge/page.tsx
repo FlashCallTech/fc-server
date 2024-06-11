@@ -8,12 +8,17 @@ import {
 	PaymentResponse,
 	RazorpayOptions,
 } from "@/types";
+import { useUser } from "@clerk/nextjs";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 const About: React.FC = () => {
 	const searchParams = useSearchParams();
 	const amount = searchParams.get("amount");
+	const { setWalletBalance } = useWalletBalanceContext();
+
 
 	const [method, setMethod] = useState("");
+	const {user} = useUser()
 
 	const amountInt: number | null = amount ? parseInt(amount) : null;
 
@@ -81,15 +86,26 @@ const About: React.FC = () => {
 						);
 
 						const jsonRes: any = await validateRes.json();
-						// console.log(jsonRes);
+						
+						// Add money to user wallet upon successful validation
+						const userId = user?.publicMetadata?.userId as string; // Replace with actual user ID
+						const userType = "Client"; // Replace with actual user type
+						setWalletBalance(amountInt!)
+
+						await fetch("/api/v1/wallet/addMoney", {
+							method: "POST",
+							body: JSON.stringify({ userId, userType, amount: amountInt }),
+							headers: { "Content-Type": "application/json" },
+						});
+						
 					} catch (error) {
 						console.error("Validation request failed:", error);
 					}
 				},
 				prefill: {
-					name: "Gaurav Kumar",
-					email: "gaurav.kumar@example.com",
-					contact: "9000090000",
+					name: "",
+					email: "",
+					contact: "",
 					method: method,
 				},
 				notes: {
@@ -103,11 +119,6 @@ const About: React.FC = () => {
 			const rzp1 = new window.Razorpay(options);
 			rzp1.on("payment.failed", (response: PaymentFailedResponse): void => {
 				alert(response.error.code);
-				// alert(response.error.description);
-				// alert(response.error.source);
-				// alert(response.error.step);
-				// alert(response.error.reason);
-				// alert(response.error.metadata.order_id);
 				alert(response.error.metadata.payment_id);
 			});
 
