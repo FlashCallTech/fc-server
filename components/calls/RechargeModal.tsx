@@ -12,6 +12,12 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+	PaymentFailedResponse,
+	PaymentResponse,
+	RazorpayOptions,
+} from "@/types";
+import { useUser } from "@clerk/nextjs";
 import { useToast } from "../ui/use-toast";
 
 const RechargeModal = ({
@@ -21,7 +27,8 @@ const RechargeModal = ({
 }) => {
 	const [rechargeAmount, setRechargeAmount] = useState("");
 	const { toast } = useToast();
-
+	const {user} = useUser()
+	
 	const handleRecharge = () => {
 		const amount = parseFloat(rechargeAmount);
 		if (!isNaN(amount) && amount > 0) {
@@ -39,8 +46,114 @@ const RechargeModal = ({
 		}
 	};
 
-	const handlePredefinedAmountClick = (amount: number) => {
-		setRechargeAmount(amount.toString());
+	const subtotal: number | null = rechargeAmount !== null ? parseInt(rechargeAmount) : null;
+	const gstRate: number = 18; // GST rate is 18%
+	const gstAmount: number | null =
+		subtotal !== null ? (subtotal * gstRate) / 100 : null;
+	const totalPayable: number | null =
+		subtotal !== null && gstAmount !== null ? subtotal + gstAmount : null;
+
+	const PaymentHandler = async (
+		e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+	): Promise<void> => {
+		e.preventDefault();
+
+		if (typeof window.Razorpay === "undefined") {
+			console.error("Razorpay SDK is not loaded");
+			return;
+		}
+
+		const amount: number = totalPayable! * 100;
+		const currency: string = "INR";
+		const receiptId: string = "kuchbhi";
+
+		try {
+			const response: Response = await fetch("/api/v1/order", {
+				method: "POST",
+				body: JSON.stringify({ amount, currency, receipt: receiptId }),
+				headers: { "Content-Type": "application/json" },
+			});
+
+			const order = await response.json();
+
+			const options: RazorpayOptions = {
+				key: "rzp_test_d8fM9sk9S2Cb2m",
+				amount,
+				currency,
+				name: "FlashCall.me",
+				description: "Test Transaction",
+				image: "https://example.com/your_logo",
+				order_id: order.id,
+				handler: async (response: PaymentResponse): Promise<void> => {
+					const body: PaymentResponse = { ...response };
+
+					try {
+						const paymentId = body.razorpay_order_id;
+
+						await fetch("/api/v1/payment", {
+							method: "POST",
+							body: paymentId,
+							headers: { "Content-Type": "text/plain" },
+						});
+					} catch (error) {
+						console.log(error);
+					}
+
+					try {
+						const validateRes: Response = await fetch(
+							"/api/v1/order/validate",
+							{
+								method: "POST",
+								body: JSON.stringify(body),
+								headers: { "Content-Type": "application/json" },
+							}
+						);
+
+						const jsonRes: any = await validateRes.json();
+						
+						// Add money to user wallet upon successful validation
+						const userId = user?.publicMetadata?.userId as string; // Replace with actual user ID
+						const userType = "Client"; // Replace with actual user type
+						setWalletBalance(parseInt(rechargeAmount))
+
+						await fetch("/api/v1/wallet/addMoney", {
+							method: "POST",
+							body: JSON.stringify({ userId, userType, amount: rechargeAmount }),
+							headers: { "Content-Type": "application/json" },
+						});
+						
+					} catch (error) {
+						console.error("Validation request failed:", error);
+					}
+				},
+				prefill: {
+					name: "",
+					email: "",
+					contact: "",
+					method: "",
+				},
+				notes: {
+					address: "Razorpay Corporate Office",
+				},
+				theme: {
+					color: "#F37254",
+				},
+			};
+
+			const rzp1 = new window.Razorpay(options);
+			rzp1.on("payment.failed", (response: PaymentFailedResponse): void => {
+				alert(response.error.code);
+				alert(response.error.metadata.payment_id);
+			});
+
+			rzp1.open();
+		} catch (error) {
+			console.error("Payment request failed:", error);
+		}
+	};
+
+	const handlePredefinedAmountClick = (amount: string) => {
+		setRechargeAmount(amount);
 	};
 
 	return (
@@ -72,7 +185,7 @@ const RechargeModal = ({
 						/>
 					</div>
 					<div className="grid grid-cols-3 gap-4 mt-4">
-						{[99, 199, 299, 499, 999, 2999].map((amount) => (
+						{["99", "199", "299", "499", "999", "2999"].map((amount) => (
 							<Button
 								key={amount}
 								onClick={() => handlePredefinedAmountClick(amount)}
