@@ -80,7 +80,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			const members: MemberRequest[] = [
 				{
-					user_id: "6663fd3cc853de56645ccbae",
+					// user_id: "6668228bbad947e0e80b2b7f",
+					user_id: "66681d96436f89b49d8b498b",
 					custom: { name: String(creator.username), type: "expert" },
 					role: "admin",
 				},
@@ -127,7 +128,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const newChatRequestRef = doc(chatRequestsRef);
 
 			await setDoc(newChatRequestRef, {
-				creatorId: "6663fd3cc853de56645ccbae",
+				creatorId: "6668228bbad947e0e80b2b7f",
 				clientId: clientId,
 				status: "pending",
 				chatId,
@@ -137,7 +138,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			localStorage.setItem(
 				"user2",
 				JSON.stringify({
-					_id: "6663fd3cc853de56645ccbae",
+					_id: "6668228bbad947e0e80b2b7f",
 					clientId: clientId,
 					fullName: "Aseem Gupta",
 					photo:
@@ -145,12 +146,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				})
 			);
 
-			const userDocRef = doc(
-				db,
-				"userchats",
-				clientId as string
-			);
-			const creatorDocRef = doc(db, "userchats", "6663fd3cc853de56645ccbae");
+			const userDocRef = doc(db, "userchats", clientId as string);
+			const creatorDocRef = doc(db, "userchats", "6668228bbad947e0e80b2b7f");
 
 			const userDocSnapshot = await getDoc(userDocRef);
 			const creatorDocSnapshot = await getDoc(creatorDocRef);
@@ -167,7 +164,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			// 	title: "Chat Request Sent",
 			// 	description: "Waiting for the expert to accept your chat request.",
 			// });
-			
+
 			setSheetOpen(true);
 		} catch (error) {
 			console.error(error);
@@ -178,7 +175,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const listenForChatRequests = () => {
 		const q = query(
 			chatRequestsRef,
-			where("creatorId", "==", "6663fd3cc853de56645ccbae"),
+			where("creatorId", "==", "6668228bbad947e0e80b2b7f"),
 			where("status", "==", "pending")
 		);
 
@@ -198,7 +195,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleAcceptChat = async () => {
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
-	
+
 		try {
 			await setDoc(doc(db, "chats", chatId), {
 				createdAt: serverTimestamp(),
@@ -206,7 +203,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				status: "active",
 				messages: [],
 			});
-	
+
 			const creatorChatUpdate = updateDoc(
 				doc(userChatsRef, chatRequest.creatorId),
 				{
@@ -218,7 +215,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}),
 				}
 			);
-	
+
 			const clientChatUpdate = updateDoc(
 				doc(userChatsRef, chatRequest.clientId),
 				{
@@ -230,11 +227,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}),
 				}
 			);
-	
+
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
 				status: "accepted",
 			});
-	
+
 			await Promise.all([creatorChatUpdate, clientChatUpdate]);
 			setSheetOpen(false);
 		} catch (error) {
@@ -242,7 +239,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			toast({ title: "Failed to accept chat request" });
 		}
 	};
-	
 
 	const handleRejectChat = async () => {
 		if (!chatRequest) return;
@@ -282,7 +278,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		return () => {
 			unsubscribe();
 		};
-	}, ["6663fd3cc853de56645ccbae"]);
+	}, ["6668228bbad947e0e80b2b7f"]);
 
 	if (!client || !user) return <Loader />;
 
@@ -381,7 +377,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			/>
 
 			{chatRequest &&
-				user?.publicMetadata?.userId === "6663fd3cc853de56645ccbae" && (
+				user?.publicMetadata?.userId === "6668228bbad947e0e80b2b7f" && (
 					<div className="chatRequestModal">
 						<p>Incoming chat request from {chatRequest.clientId}</p>
 						<Button onClick={handleAcceptChat}>Accept</Button>

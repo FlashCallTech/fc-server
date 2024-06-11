@@ -19,6 +19,7 @@ import {
 } from "@/types";
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "../ui/use-toast";
+import Script from "next/script";
 
 const RechargeModal = ({
 	setWalletBalance,
@@ -26,27 +27,12 @@ const RechargeModal = ({
 	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
 }) => {
 	const [rechargeAmount, setRechargeAmount] = useState("");
+	const [isSheetOpen, setIsSheetOpen] = useState(false);
 	const { toast } = useToast();
-	const {user} = useUser()
-	
-	const handleRecharge = () => {
-		const amount = parseFloat(rechargeAmount);
-		if (!isNaN(amount) && amount > 0) {
-			setWalletBalance((prevBalance: number) => prevBalance + amount);
-			toast({
-				title: "Recharge Successful",
-				description: `Credited Rs. ${amount} to your balance`,
-			});
-			setRechargeAmount("");
-		} else {
-			toast({
-				title: "Something Went Wrong",
-				description: `Please enter a valid amount`,
-			});
-		}
-	};
+	const { user } = useUser();
 
-	const subtotal: number | null = rechargeAmount !== null ? parseInt(rechargeAmount) : null;
+	const subtotal: number | null =
+		rechargeAmount !== null ? parseInt(rechargeAmount) : null;
 	const gstRate: number = 18; // GST rate is 18%
 	const gstAmount: number | null =
 		subtotal !== null ? (subtotal * gstRate) / 100 : null;
@@ -62,6 +48,8 @@ const RechargeModal = ({
 			console.error("Razorpay SDK is not loaded");
 			return;
 		}
+
+		setIsSheetOpen(false); // Close the sheet
 
 		const amount: number = totalPayable! * 100;
 		const currency: string = "INR";
@@ -110,20 +98,33 @@ const RechargeModal = ({
 						);
 
 						const jsonRes: any = await validateRes.json();
-						
+
 						// Add money to user wallet upon successful validation
 						const userId = user?.publicMetadata?.userId as string; // Replace with actual user ID
 						const userType = "Client"; // Replace with actual user type
-						setWalletBalance(parseInt(rechargeAmount))
+						setWalletBalance(parseInt(rechargeAmount));
 
 						await fetch("/api/v1/wallet/addMoney", {
 							method: "POST",
-							body: JSON.stringify({ userId, userType, amount: rechargeAmount }),
+							body: JSON.stringify({
+								userId,
+								userType,
+								amount: rechargeAmount,
+							}),
 							headers: { "Content-Type": "application/json" },
 						});
-						
+
+						toast({
+							title: "Recharge Successful",
+							description: `Credited Rs. ${amount} to your balance`,
+						});
+						setRechargeAmount("");
 					} catch (error) {
 						console.error("Validation request failed:", error);
+						toast({
+							title: "Something Went Wrong",
+							description: `Please enter a valid amount`,
+						});
 					}
 				},
 				prefill: {
@@ -157,10 +158,15 @@ const RechargeModal = ({
 	};
 
 	return (
-		<div>
-			<Sheet>
+		<section>
+			<Script src="https://checkout.razorpay.com/v1/checkout.js" />
+
+			<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
 				<SheetTrigger asChild>
-					<Button className="bg-red-500 mt-2 w-full hoverScaleEffect">
+					<Button
+						className="bg-red-500 mt-2 w-full hoverScaleEffect"
+						onClick={() => setIsSheetOpen(true)}
+					>
 						Recharge
 					</Button>
 				</SheetTrigger>
@@ -197,14 +203,14 @@ const RechargeModal = ({
 					</div>
 					<SheetFooter className="mt-4">
 						<SheetClose asChild>
-							<Button onClick={handleRecharge} className="bg-blue-1 text-white">
+							<Button onClick={PaymentHandler} className="bg-blue-1 text-white">
 								Recharge
 							</Button>
 						</SheetClose>
 					</SheetFooter>
 				</SheetContent>
 			</Sheet>
-		</div>
+		</section>
 	);
 };
 
