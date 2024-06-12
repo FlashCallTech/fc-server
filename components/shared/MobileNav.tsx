@@ -14,11 +14,15 @@ import { sidebarLinks } from "@/constants";
 import { cn } from "@/lib/utils";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { Button } from "../ui/button";
+// import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 const MobileNav = () => {
 	const pathname = usePathname();
 	const { user } = useUser();
 	const { signOut } = useClerk();
+
+	// const { walletBalance } = useWalletBalanceContext();
+	// console.log(walletBalance);
 	return (
 		<section className="w-full max-w-[264px]">
 			<Sheet>

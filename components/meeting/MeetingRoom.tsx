@@ -1,6 +1,7 @@
+"use client";
+
 import { useEffect, useState, useCallback, useMemo } from "react";
 import {
-	Call,
 	CallParticipantsList,
 	CallStatsButton,
 	CallingState,
@@ -17,17 +18,18 @@ import { AudioToggleButton } from "../calls/AudioToggleButton";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import { useUser } from "@clerk/nextjs";
 import CallTimer from "../calls/CallTimer";
-import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
 import { CallTimerProvider } from "@/lib/context/CallTimerContext";
 
 const MeetingRoom = () => {
 	const searchParams = useSearchParams();
 	const isPersonalRoom = !!searchParams.get("personal");
 	const [showParticipants, setShowParticipants] = useState(false);
-	const { useCallCallingState } = useCallStateHooks();
+	const { useCallCallingState, useCallEndedAt } = useCallStateHooks();
 	const [hasJoined, setHasJoined] = useState(false);
 	const { user } = useUser();
 	const call = useCall();
+	const callEndedAt = useCallEndedAt();
+	const callHasEnded = !!callEndedAt;
 
 	const isVideoCall = useMemo(() => call?.type === "default", [call]);
 
@@ -40,7 +42,7 @@ const MeetingRoom = () => {
 
 	useEffect(() => {
 		const calling = async () => {
-			if (callingState !== CallingState.JOINED && !hasJoined) {
+			if (callingState !== CallingState.JOINED && !callHasEnded && !hasJoined) {
 				!isVideoCall && call?.camera.disable();
 				call?.microphone.disable();
 				try {
@@ -66,6 +68,7 @@ const MeetingRoom = () => {
 		<CallTimerProvider
 			isVideoCall={isVideoCall}
 			isMeetingOwner={isMeetingOwner}
+			expert={expert}
 		>
 			<section className="relative h-screen w-full overflow-hidden pt-4 text-white bg-dark-2">
 				<div className="relative flex size-full items-center justify-center">
@@ -80,7 +83,7 @@ const MeetingRoom = () => {
 						</div>
 					)}
 				</div>
-				{isMeetingOwner && <CallTimer />}
+				{!callHasEnded && isMeetingOwner && <CallTimer />}
 				<div className="fixed bottom-0 pb-4 flex flex-wrap-reverse w-full items-center justify-center gap-2 px-4">
 					<SpeakingWhileMutedNotification>
 						<AudioToggleButton />

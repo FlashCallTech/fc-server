@@ -16,12 +16,14 @@ import MeetingRoom from "@/components/meeting/MeetingRoom";
 import Image from "next/image";
 import Loader from "@/components/shared/Loader";
 import Link from "next/link";
+import { Toast } from "@/components/ui/toast";
+import { connectStorageEmulator } from "firebase/storage";
 
 const MeetingPage = () => {
 	const { id } = useParams();
 	const { useCallEndedAt } = useCallStateHooks();
 	const searchParams = useSearchParams();
-	const { isLoaded, user } = useUser();
+	const { user } = useUser();
 	const { call, isCallLoading } = useGetCallById(id);
 	// const [isSetupComplete, setIsSetupComplete] = useState(false);
 	const [isReloading, setIsReloading] = useState(false);
@@ -67,23 +69,31 @@ const MeetingPage = () => {
 			));
 
 	if (notAllowed)
-		return <Alert title="You are not allowed to join this meeting" />;
-
-	if (callHasEnded)
-		return <Alert title="The call has been ended by the host" />;
-
-	// const isMeetingOwner =
-	// 	user?.publicMetadata?.userId === call?.state?.createdBy?.id;
+		return <Toast title="You are not allowed to join this meeting" />;
 
 	return (
 		<main className="h-full w-full">
 			<StreamCall call={call}>
 				<StreamTheme>
-					{/* {!isSetupComplete && !isMeetingOwner ? (
-						<MeetingSetup setIsSetupComplete={setIsSetupComplete} />
-					) : ( )} */}
-
-					<MeetingRoom />
+					{callHasEnded ? (
+						<MeetingRoom />
+					) : (
+						<div className="flex flex-col w-full items-center justify-center h-screen gap-7">
+							<h1 className="text-3xl font-semibold">Call Has Ended</h1>
+							<Link
+								href="/"
+								className="flex gap-4 items-center p-4 rounded-lg justify-center bg-blue-1 hover:opacity-80 mx-auto w-fit"
+							>
+								<Image
+									src="/icons/Home.svg"
+									alt="Home"
+									width={24}
+									height={24}
+								/>
+								<p className="text-lg font-semibold text-white">Return Home</p>
+							</Link>
+						</div>
+					)}
 				</StreamTheme>
 			</StreamCall>
 		</main>
