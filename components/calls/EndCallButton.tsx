@@ -6,12 +6,15 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import CallFeedback from "../feedbacks/CallFeedback";
 import { useToast } from "../ui/use-toast";
+import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 
 const EndCallButton = () => {
 	const call = useCall();
 	const router = useRouter();
 	const [showFeedback, setShowFeedback] = useState(false);
+	const { pauseTimer } = useCallTimerContext();
 	const { toast } = useToast();
+
 	if (!call)
 		throw new Error(
 			"useStreamCall must be used within a StreamCall component."
@@ -25,20 +28,29 @@ const EndCallButton = () => {
 		call.state.createdBy &&
 		localParticipant.userId === call.state.createdBy.id;
 
-	if (!isMeetingOwner) return null;
-
 	const endCall = async () => {
-		setShowFeedback(true); // Show the feedback form
+		if (isMeetingOwner) {
+			pauseTimer();
+			setShowFeedback(true); // Show the feedback form
+		} else {
+			router.push("/");
+			await call.leave();
+			toast({
+				title: "You Left the Call",
+				description: "Redirecting to HomePage...",
+			});
+		}
 	};
 
 	const handleFeedbackClose = async () => {
-		setShowFeedback(false);
 		await call.endCall();
-		toast({
-			title: "Call Ended",
-			description: "The call Ended. Redirecting to HomePage...",
-		});
-		router.push("/"); // Redirect to the homepage
+		setShowFeedback(false);
+		isMeetingOwner &&
+			toast({
+				title: "Call Ended",
+				description: "The call Ended. Redirecting to HomePage...",
+			});
+		isMeetingOwner && router.push("/"); // Redirect to the homepage
 	};
 
 	return (
@@ -49,6 +61,7 @@ const EndCallButton = () => {
 			>
 				End Call
 			</Button>
+
 			{showFeedback && (
 				<CallFeedback
 					callId={call.id}

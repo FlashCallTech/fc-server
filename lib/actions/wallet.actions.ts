@@ -6,80 +6,104 @@ import Transaction from "../database/models/transaction.model";
 import Wallet from "../database/models/wallet.models";
 
 export async function addMoney({ userId, userType, amount }: WalletParams) {
-    try {
-        await connectToDatabase();
-        
-        let user;
-        if (userType === "Client") {
-            user = await Client.findById(userId);
-        } else if (userType === "Creator") {
-            user = await Creator.findById(userId);
-        } else {
-            throw new Error("Invalid user type");
-        }
+	try {
+		await connectToDatabase();
 
-        if (!user) throw new Error("User not found");
+		let user;
+		if (userType === "Client") {
+			user = await Client.findById(userId);
+		} else if (userType === "Creator") {
+			user = await Creator.findById(userId);
+		} else {
+			throw new Error("Invalid user type");
+		}
 
-        user.walletBalance += amount;
-        await user.save();
+		if (!user) throw new Error("User not found");
 
-        const wallet = await Wallet.findOneAndUpdate(
-            { userId, userType },
-            { $inc: { balance: amount } },
-            { new: true, upsert: true }
-        );
+		// Ensure amount is a number
+		const numericAmount = Number(amount);
+		if (isNaN(numericAmount)) {
+			throw new Error("Amount must be a number");
+		}
 
-        await Transaction.create({
-            userId,
-            userType,
-            amount,
-            type: "credit",
-        });
+		// Increment the user's wallet balance
+		user.walletBalance = Number(user.walletBalance) + numericAmount;
+		await user.save();
 
-        return JSON.parse(JSON.stringify(wallet));
-    } catch (error) {
-        console.error("Error in addMoney:", error);
-        throw new Error("Error adding money");
-    }
+		// Update the Wallet collection
+		const wallet = await Wallet.findOneAndUpdate(
+			{ userId, userType },
+			{ $inc: { balance: numericAmount } },
+			{ new: true, upsert: true }
+		);
+
+		// Create a transaction record
+		await Transaction.create({
+			userId,
+			userType,
+			amount: numericAmount,
+			type: "credit",
+		});
+
+		return JSON.parse(JSON.stringify(wallet));
+	} catch (error) {
+		console.error("Error in addMoney:", error);
+		throw new Error("Error adding money");
+	}
 }
 
-export async function processPayout({ userId, userType, amount }: WalletParams) {
-    try {
-        await connectToDatabase();
+export async function processPayout({
+	userId,
+	userType,
+	amount,
+}: WalletParams) {
+	try {
+		await connectToDatabase();
 
-        let user;
-        if (userType === "Client") {
-            user = await Client.findById(userId);
-        } else if (userType === "Creator") {
-            user = await Creator.findById(userId);
-        } else {
-            throw new Error("Invalid user type");
-        }
+		let user;
+		if (userType === "Client") {
+			user = await Client.findById(userId);
+		} else if (userType === "Creator") {
+			user = await Creator.findById(userId);
+		} else {
+			throw new Error("Invalid user type");
+		}
 
-        if (!user) throw new Error("User not found");
-        if (user.walletBalance < amount) throw new Error("Insufficient balance");
+		if (!user) throw new Error("User not found");
+		if (user.walletBalance < amount) throw new Error("Insufficient balance");
 
-        user.walletBalance -= amount;
-        await user.save();
+		// Ensure amount is a number
+		const numericAmount = Number(amount);
+		if (isNaN(numericAmount)) {
+			throw new Error("Amount must be a number");
+		}
 
-        const wallet = await Wallet.findOneAndUpdate(
-            { userId, userType },
-            { $inc: { balance: -amount } },
-            { new: true, upsert: true }
-        );
+		// Decrement the user's wallet balance
+		user.walletBalance = Number(user.walletBalance) - numericAmount;
+		await user.save();
 
-        await Transaction.create({
-            userId,
-            userType,
-            amount,
-            type: "debit",
-        });
+		console.log("Wallet Balance: " + user.walletBalance);
 
-        // Implement Razorpay payout logic here
+		// Update the Wallet collection
+		const wallet = await Wallet.findOneAndUpdate(
+			{ userId, userType },
+			{ $inc: { balance: -numericAmount } },
+			{ new: true, upsert: true }
+		);
 
-        return JSON.parse(JSON.stringify(wallet));
-    } catch (error) {
-        console.error("Error in processPayout:", error);
-        throw new Error("Error processing payout");
-    }
+		// Create a transaction record
+		await Transaction.create({
+			userId,
+			userType,
+			amount: numericAmount,
+			type: "debit",
+		});
+
+		// Implement Razorpay payout logic here
+
+		return JSON.parse(JSON.stringify(wallet));
+	} catch (error) {
+		console.error("Error in processPayout:", error);
+		throw new Error("Error processing payout");
+	}
 }
