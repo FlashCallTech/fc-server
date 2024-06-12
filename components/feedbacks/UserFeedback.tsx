@@ -24,7 +24,7 @@ const UserFeedback = ({
 	text?: string;
 	buttonColor?: string;
 }) => {
-	const [rating, setRating] = useState(2);
+	const [rating, setRating] = useState(5);
 	const [feedbackMessage, setFeedbackMessage] = useState("");
 	const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 	const { toast } = useToast();
