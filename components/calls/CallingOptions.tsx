@@ -47,6 +47,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [isSheetOpen, setSheetOpen] = useState(false);
 
 	const chatRequestsRef = collection(db, "chatRequests");
+	const chatRef = collection(db, "chats");
 	const clientId = user?.publicMetadata?.userId as string;
 
 	const handleCallAccepted = (call: Call) => {
@@ -93,11 +94,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
+			const description = `${callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-			}`;
+				}`;
 
 			await call.getOrCreate({
 				data: {
@@ -123,15 +123,46 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
-		try {
-			const chatId = crypto.randomUUID();
-			const newChatRequestRef = doc(chatRequestsRef);
+		
+		console.log(chatRef);
+		const chatRequestsRef = collection(db, "chatRequests");
 
+		try {
+			const userChatsDocRef = doc(db, "userchats", clientId);
+			const creatorChatsDocRef = doc(db, "userchats", "6668228bbad947e0e80b2b7f");
+
+			const userChatsDocSnapshot = await getDoc(userChatsDocRef);
+			const creatorChatsDocSnapshot = await getDoc(creatorChatsDocRef);
+
+			let existingChatId = null;
+
+			if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
+				const userChatsData = userChatsDocSnapshot.data();
+				const creatorChatsData = creatorChatsDocSnapshot.data();
+
+				console.log(userChatsData)
+
+				const existingChat = userChatsData.chats.find(
+					(chat: any) => chat.receiverId === "6668228bbad947e0e80b2b7f"
+				) || creatorChatsData.chats.find(
+					(chat: any) => chat.receiverId === clientId
+				);
+
+				if (existingChat) {
+					existingChatId = existingChat.chatId;
+				}
+			}
+
+			// Use existing chatId if found, otherwise create a new one
+			const chatId = existingChatId || doc(chatRef).id;
+
+			// Create a new chat request
+			const newChatRequestRef = doc(chatRequestsRef);
 			await setDoc(newChatRequestRef, {
 				creatorId: "6668228bbad947e0e80b2b7f",
 				clientId: clientId,
 				status: "pending",
-				chatId,
+				chatId: chatId,
 				createdAt: serverTimestamp(),
 			});
 
@@ -146,24 +177,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				})
 			);
 
-			const userDocRef = doc(db, "userchats", clientId as string);
-			const creatorDocRef = doc(db, "userchats", "6668228bbad947e0e80b2b7f");
-
-			const userDocSnapshot = await getDoc(userDocRef);
-			const creatorDocSnapshot = await getDoc(creatorDocRef);
-
-			if (!userDocSnapshot.exists()) {
-				await setDoc(userDocRef, { chats: [] });
+			if (!userChatsDocSnapshot.exists()) {
+				await setDoc(userChatsDocRef, { chats: [] });
 			}
 
-			if (!creatorDocSnapshot.exists()) {
-				await setDoc(creatorDocRef, { chats: [] });
+			if (!creatorChatsDocSnapshot.exists()) {
+				await setDoc(creatorChatsDocRef, { chats: [] });
 			}
-
-			// toast({
-			// 	title: "Chat Request Sent",
-			// 	description: "Waiting for the expert to accept your chat request.",
-			// });
 
 			setSheetOpen(true);
 		} catch (error) {
@@ -197,42 +217,50 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		const chatId = chatRequest.chatId;
 
 		try {
-			await setDoc(doc(db, "chats", chatId), {
-				createdAt: serverTimestamp(),
-				clientId: clientId as string,
-				status: "active",
-				messages: [],
-			});
+			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
+			if (!existingChatDoc.exists()) {
+				await setDoc(doc(db, "chats", chatId), {
+					createdAt: serverTimestamp(),
+					clientId: clientId,
+					status: "active",
+					messages: [],
+				});
 
-			const creatorChatUpdate = updateDoc(
-				doc(userChatsRef, chatRequest.creatorId),
-				{
-					chats: arrayUnion({
-						chatId: chatId,
-						lastMessage: "",
-						receiverId: chatRequest.clientId,
-						updatedAt: Date.now(),
-					}),
-				}
-			);
+				const creatorChatUpdate = updateDoc(
+					doc(userChatsRef, chatRequest.creatorId),
+					{
+						chats: arrayUnion({
+							chatId: chatId,
+							lastMessage: "",
+							receiverId: chatRequest.clientId,
+							updatedAt: Date.now(),
+						}),
+					}
+				);
 
-			const clientChatUpdate = updateDoc(
-				doc(userChatsRef, chatRequest.clientId),
-				{
-					chats: arrayUnion({
-						chatId: chatId,
-						lastMessage: "",
-						receiverId: chatRequest.creatorId,
-						updatedAt: Date.now(),
-					}),
-				}
-			);
+				const clientChatUpdate = updateDoc(
+					doc(userChatsRef, chatRequest.clientId),
+					{
+						chats: arrayUnion({
+							chatId: chatId,
+							lastMessage: "",
+							receiverId: chatRequest.creatorId,
+							updatedAt: Date.now(),
+						}),
+					}
+				);
+				await Promise.all([creatorChatUpdate, clientChatUpdate]);
+			}
 
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
 				status: "accepted",
 			});
 
-			await Promise.all([creatorChatUpdate, clientChatUpdate]);
+			await updateDoc(doc(chatRef, chatId), {
+				status: "active",
+			})
+
+			
 			setSheetOpen(false);
 		} catch (error) {
 			console.error(error);
@@ -264,8 +292,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const data = doc.data();
 			if (data && data.status === "accepted") {
 				unsubscribe();
-
-				// console.log(chatRequest.chatId);
 				router.push(`/chat/${chatRequest.chatId}`);
 			}
 		});
@@ -279,6 +305,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			unsubscribe();
 		};
 	}, ["6668228bbad947e0e80b2b7f"]);
+
 
 	if (!client || !user) return <Loader />;
 
