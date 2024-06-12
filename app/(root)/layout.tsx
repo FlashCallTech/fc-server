@@ -18,14 +18,9 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 
 	return (
 		<WalletBalanceProvider>
-
-		<StreamVideoProvider>
-			        <WalletBalanceProvider>
-
-
-			<div className="relative min-h-screen w-full">{children}</div>
-					</WalletBalanceProvider>
-		</StreamVideoProvider>
+			<StreamVideoProvider>
+				<div className="relative min-h-screen w-full">{children}</div>
+			</StreamVideoProvider>
 		</WalletBalanceProvider>
 	);
 };

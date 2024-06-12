@@ -44,7 +44,7 @@ export const CallTimerProvider = ({
 	const { toast } = useToast();
 	const audioRatePerMinute = 2; // Rs. 2 per minute
 	const videoRatePerMinute = 5; // Rs. 5 per minute
-	const [timeLeft, setTimeLeft] = useState(0);
+	const [timeLeft, setTimeLeft] = useState(1);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
 	const [hasLowBalance, setHasLowBalance] = useState(false);
 	const { walletBalance, setWalletBalance } = useWalletBalanceContext();
@@ -53,14 +53,14 @@ export const CallTimerProvider = ({
 	const router = useRouter();
 	const call = useCall();
 
-	const endCall = useCallback(async () => {
+	const endCall = async () => {
 		await call?.endCall();
 		toast({
-			title: "Call Ended",
+			title: "Call Disconnected",
 			description: "The call Ended. Redirecting to HomePage...",
 		});
 		router.push("/"); // Redirect to the homepage
-	}, []);
+	};
 
 	useEffect(() => {
 		const ratePerMinute = isVideoCall ? videoRatePerMinute : audioRatePerMinute;
@@ -71,7 +71,7 @@ export const CallTimerProvider = ({
 			setTimeLeft((prevTimeLeft) => {
 				if (prevTimeLeft <= 0) {
 					clearInterval(intervalId);
-					endCall();
+					isMeetingOwner && walletBalanceRef.current === 0 && endCall();
 					return 0;
 				}
 
