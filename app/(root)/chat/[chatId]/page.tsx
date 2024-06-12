@@ -25,7 +25,7 @@ interface User2 {
     _id: string;
     clientId: string;
     fullName: string;
-    photo: string; 
+    photo: string;
 }
 
 const ChatInterface: React.FC = () => {
@@ -66,7 +66,7 @@ const ChatInterface: React.FC = () => {
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user2");
-        
+
         if (storedUser) {
             setUser2(JSON.parse(storedUser));
         }
@@ -130,7 +130,7 @@ const ChatInterface: React.FC = () => {
                     await handleSendAudio(audioBlob, audioUrl);
                 };
                 mediaRecorderRef.current.start();
-                setIsRecording(true); 
+                setIsRecording(true);
             }).catch((error: Error) => {
                 console.error("Error accessing microphone:", error);
             });
@@ -224,7 +224,7 @@ const ChatInterface: React.FC = () => {
 
         try {
             const audioUploadUrl = await upload(audioBlob, 'audio');
-            
+
             await updateDoc(doc(db, "chats", chatId as string), {
                 messages: arrayUnion({
                     senderId: user?.publicMetadata?.userId as string,
@@ -264,6 +264,15 @@ const ChatInterface: React.FC = () => {
                 file: null,
                 url: "",
             });
+
+            // Ensure to stop the audio stream and recorder
+            if (audioStream) {
+                audioStream.getTracks().forEach(track => track.stop());
+                setAudioStream(null);
+            }
+            if (mediaRecorderRef.current) {
+                mediaRecorderRef.current.stop();
+            }
         }
     };
 
@@ -274,6 +283,26 @@ const ChatInterface: React.FC = () => {
             startRecording();
         }
     };
+
+    const discardAudio = () => {
+        setIsAudioUploading(false);
+        setIsRecording(false);
+        setAudio({
+            file: null,
+            url: "",
+        });
+    
+        if (audioStream) {
+            audioStream.getTracks().forEach(track => track.stop());
+            setAudioStream(null);
+        }
+        if (mediaRecorderRef.current) {
+            // Remove the onstop handler before stopping the media recorder
+            mediaRecorderRef.current.onstop = null;
+            mediaRecorderRef.current.stop();
+        }
+    };
+    
 
     const handleEnd = async () => {
         try {
@@ -317,7 +346,7 @@ const ChatInterface: React.FC = () => {
                                     "bg-[rgba(255,255,255,1)] p-3 mb-3 max-w-[60%] w-fit rounded-lg rounded-tr-none ml-auto text-black font-normal leading-5 relative" :
                                     "bg-[rgba(80,166,92,1)] p-3 mb-3 max-w-[60%] w-fit rounded-lg rounded-tl-none text-white font-normal leading-5 relative"}
                                 key={message?.createdAt}
-                                style={{ wordBreak: 'break-word', justifyContent:'center' }}
+                                style={{ wordBreak: 'break-word', justifyContent: 'center' }}
                             >
                                 {message.img && (
                                     <img
@@ -370,7 +399,10 @@ const ChatInterface: React.FC = () => {
 
                 <div className="flex items-center p-4 mb-4">
                     {isRecording ? (
-                        <div className="flex-1 mr-5">
+                        <div className="flex flex-row gap-3 flex-1 mr-5">
+                            <button onClick={discardAudio}>
+                                <Image src='/delete.svg' width={20} height={20} alt='discard' />
+                            </button>
                             <AudioVisualizer audioStream={audioStream!} />
                         </div>
                     ) : (
