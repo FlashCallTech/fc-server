@@ -55,6 +55,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			title: "Call Accepted",
 			description: "The call has been accepted. Redirecting to meeting...",
 		});
+		setSheetOpen(false);
 		router.push(`/meeting/${call.id}?reload=true`);
 	};
 
@@ -94,10 +95,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${callType === "video"
+			const description = `${
+				callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-				}`;
+			}`;
 
 			await call.getOrCreate({
 				data: {
@@ -123,13 +125,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
-		
 		console.log(chatRef);
 		const chatRequestsRef = collection(db, "chatRequests");
 
 		try {
 			const userChatsDocRef = doc(db, "userchats", clientId);
-			const creatorChatsDocRef = doc(db, "userchats", "6668228bbad947e0e80b2b7f");
+			const creatorChatsDocRef = doc(
+				db,
+				"userchats",
+				"6668228bbad947e0e80b2b7f"
+			);
 
 			const userChatsDocSnapshot = await getDoc(userChatsDocRef);
 			const creatorChatsDocSnapshot = await getDoc(creatorChatsDocRef);
@@ -140,13 +145,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				const userChatsData = userChatsDocSnapshot.data();
 				const creatorChatsData = creatorChatsDocSnapshot.data();
 
-				console.log(userChatsData)
+				console.log(userChatsData);
 
-				const existingChat = userChatsData.chats.find(
-					(chat: any) => chat.receiverId === "6668228bbad947e0e80b2b7f"
-				) || creatorChatsData.chats.find(
-					(chat: any) => chat.receiverId === clientId
-				);
+				const existingChat =
+					userChatsData.chats.find(
+						(chat: any) => chat.receiverId === "6668228bbad947e0e80b2b7f"
+					) ||
+					creatorChatsData.chats.find(
+						(chat: any) => chat.receiverId === clientId
+					);
 
 				if (existingChat) {
 					existingChatId = existingChat.chatId;
@@ -258,9 +265,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			await updateDoc(doc(chatRef, chatId), {
 				status: "active",
-			})
+			});
 
-			
 			setSheetOpen(false);
 		} catch (error) {
 			console.error(error);
@@ -305,7 +311,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			unsubscribe();
 		};
 	}, ["6668228bbad947e0e80b2b7f"]);
-
 
 	if (!client || !user) return <Loader />;
 
