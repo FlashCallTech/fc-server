@@ -20,6 +20,8 @@ interface CallTimerContextProps {
 	endCall: () => void;
 	pauseTimer: () => void;
 	resumeTimer: () => void;
+	anyModalOpen: boolean;
+	setAnyModalOpen: any;
 }
 
 interface CallTimerProviderProps {
@@ -50,6 +52,7 @@ export const CallTimerProvider = ({
 	const { toast } = useToast();
 	const [audioRatePerMinute, setAudioRatePerMinute] = useState(2); // Rs. 2 per minute
 	const [videoRatePerMinute, setVideoRatePerMinute] = useState(5); // Rs. 5 per minute
+	const [anyModalOpen, setAnyModalOpen] = useState(false);
 	const [currentCreator, setCurrentCreator] = useState<creatorUser>();
 	const [timeLeft, setTimeLeft] = useState(0);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
@@ -135,7 +138,15 @@ export const CallTimerProvider = ({
 
 	return (
 		<CallTimerContext.Provider
-			value={{ timeLeft, hasLowBalance, endCall, pauseTimer, resumeTimer }}
+			value={{
+				timeLeft,
+				hasLowBalance,
+				endCall,
+				pauseTimer,
+				resumeTimer,
+				anyModalOpen,
+				setAnyModalOpen,
+			}}
 		>
 			{children}
 		</CallTimerContext.Provider>

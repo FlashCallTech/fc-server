@@ -12,7 +12,7 @@ const EndCallButton = () => {
 	const call = useCall();
 	const router = useRouter();
 	const [showFeedback, setShowFeedback] = useState(false);
-	const { pauseTimer } = useCallTimerContext();
+	const { pauseTimer, setAnyModalOpen } = useCallTimerContext();
 	const { toast } = useToast();
 
 	if (!call)
@@ -30,8 +30,8 @@ const EndCallButton = () => {
 
 	const endCall = async () => {
 		if (isMeetingOwner) {
-			pauseTimer();
 			setShowFeedback(true); // Show the feedback form
+			setAnyModalOpen(true);
 		} else {
 			router.push("/");
 			await call.leave();
