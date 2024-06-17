@@ -67,23 +67,17 @@ const MyCallUI = () => {
 	const [incomingCall] = incomingCalls;
 	if (incomingCall && !hide) {
 		return (
-			<div className="bg-white p-4 shadow-lg rounded-md">
-				<MyIncomingCallUI
-					call={incomingCall}
-					onAccept={() => router.push(`/meeting/creator/${incomingCall.id}`)}
-				/>
-			</div>
+			<MyIncomingCallUI
+				call={incomingCall}
+				onAccept={() => router.push(`/meeting/creator/${incomingCall.id}`)}
+			/>
 		);
 	}
 
 	// Handle outgoing call UI
 	const [outgoingCall] = outgoingCalls;
 	if (outgoingCall) {
-		return (
-			<div className="bg-white p-4 shadow-lg rounded-md">
-				<MyOutgoingCallUI call={outgoingCall} />
-			</div>
-		);
+		return <MyOutgoingCallUI call={outgoingCall} />;
 	}
 
 	<div className="bg-white p-4 shadow-lg rounded-md">

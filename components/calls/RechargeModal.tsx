@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,16 +20,29 @@ import {
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "../ui/use-toast";
 import Script from "next/script";
+import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 
 const RechargeModal = ({
 	setWalletBalance,
+	walletBalance,
 }: {
 	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
+	walletBalance: number;
 }) => {
 	const [rechargeAmount, setRechargeAmount] = useState("");
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
+	const [onGoingPayment, setOnGoingPayment] = useState(false);
 	const { toast } = useToast();
 	const { user } = useUser();
+	const { pauseTimer, resumeTimer } = useCallTimerContext();
+
+	useEffect(() => {
+		if (isSheetOpen || onGoingPayment) {
+			pauseTimer();
+		} else {
+			resumeTimer();
+		}
+	}, [isSheetOpen, onGoingPayment, pauseTimer, resumeTimer]);
 
 	const subtotal: number | null =
 		rechargeAmount !== null ? parseInt(rechargeAmount) : null;
@@ -56,6 +69,7 @@ const RechargeModal = ({
 		const receiptId: string = "kuchbhi";
 
 		try {
+			setOnGoingPayment(true);
 			const response: Response = await fetch("/api/v1/order", {
 				method: "POST",
 				body: JSON.stringify({ amount, currency, receipt: receiptId }),
@@ -102,7 +116,7 @@ const RechargeModal = ({
 						// Add money to user wallet upon successful validation
 						const userId = user?.publicMetadata?.userId as string; // Replace with actual user ID
 						const userType = "Client"; // Replace with actual user type
-						setWalletBalance(parseInt(rechargeAmount));
+						setWalletBalance((prev) => prev + parseInt(rechargeAmount));
 
 						await fetch("/api/v1/wallet/addMoney", {
 							method: "POST",
@@ -116,8 +130,11 @@ const RechargeModal = ({
 
 						toast({
 							title: "Recharge Successful",
-							description: `Credited Rs. ${(amount / 100).toFixed(2)} to your balance`,
-						  });
+							description: `Credited Rs. ${parseInt(
+								rechargeAmount,
+								10
+							)} to your balance`,
+						});
 						setRechargeAmount("");
 					} catch (error) {
 						console.error("Validation request failed:", error);
@@ -150,6 +167,9 @@ const RechargeModal = ({
 			rzp1.open();
 		} catch (error) {
 			console.error("Payment request failed:", error);
+		} finally {
+			setOnGoingPayment(false);
+			resumeTimer();
 		}
 	};
 

@@ -7,86 +7,123 @@ import {
 	StreamTheme,
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
-import { useParams, useSearchParams } from "next/navigation";
-
-import { useGetCallById } from "@/hooks/useGetCallById";
-import { Alert } from "@/components/ui/alert";
-// import MeetingSetup from "@/components/meeting/MeetingSetup";
-import MeetingRoom from "@/components/meeting/MeetingRoom";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Loader from "@/components/shared/Loader";
-import Link from "next/link";
+import { useToast } from "@/components/ui/use-toast";
+import { CallTimerProvider } from "@/lib/context/CallTimerContext";
+import MeetingRoom from "@/components/meeting/MeetingRoom";
+import { useGetCallById } from "@/hooks/useGetCallById";
 
 const MeetingPage = () => {
 	const { id } = useParams();
-	const { useCallEndedAt } = useCallStateHooks();
 	const searchParams = useSearchParams();
-	const { isLoaded, user } = useUser();
+	const router = useRouter();
+	const { toast } = useToast();
 	const { call, isCallLoading } = useGetCallById(id);
-	// const [isSetupComplete, setIsSetupComplete] = useState(false);
+	const { user } = useUser();
+
 	const [isReloading, setIsReloading] = useState(false);
-	const callEndedAt = useCallEndedAt();
-	const callHasEnded = !!callEndedAt;
 
 	useEffect(() => {
-		// Check for the reload query parameter
 		const reload = searchParams.get("reload");
 		if (reload) {
 			setIsReloading(true);
-			// Remove the query parameter to prevent infinite reloads
 			const url = new URL(window.location.href);
 			url.searchParams.delete("reload");
 			window.history.replaceState({}, document.title, url.toString());
-
-			// Reload the page
 			window.location.reload();
 		}
 	}, [searchParams]);
 
+	useEffect(() => {
+		if (!isCallLoading && !call) {
+			toast({
+				title: "Call Not Found",
+				description: "Redirecting to HomePage...",
+			});
+			setTimeout(() => {
+				router.push("/");
+			}, 3000);
+		}
+	}, [isCallLoading, call, router, toast]);
+
 	if (isReloading || isCallLoading) return <Loader />;
 
-	if (!call)
+	if (!call) {
 		return (
 			<div className="flex flex-col w-full items-center justify-center h-screen gap-7">
-				<h1 className="text-3xl font-semibold">Call Not Found</h1>
-				<Link
-					href="/"
-					className="flex gap-4 items-center p-4 rounded-lg justify-center bg-blue-1 hover:opacity-80 mx-auto w-fit"
-				>
-					<Image src="/icons/Home.svg" alt="Home" width={24} height={24} />
-					<p className="text-lg font-semibold text-white">Return Home</p>
-				</Link>
+				<Image
+					src="/icons/notFound.gif"
+					alt="Home"
+					width={1000}
+					height={1000}
+					className="w-96 h-auto rounded-xl object-cover"
+				/>
 			</div>
 		);
+	}
 
-	const notAllowed =
-		call.type === "invited" &&
-		(!user ||
-			!call.state.members.find(
-				(m: any) => m.user.id === user.publicMetadata.userId
-			));
-
-	if (notAllowed)
-		return <Alert title="You are not allowed to join this meeting" />;
-
-	if (callHasEnded)
-		return <Alert title="The call has been ended by the host" />;
-
-	// const isMeetingOwner =
-	// 	user?.publicMetadata?.userId === call?.state?.createdBy?.id;
+	const isVideoCall = call?.type === "default";
+	const expert = call?.state?.members?.find(
+		(member) => member.custom.type === "expert"
+	);
+	const isMeetingOwner =
+		user?.publicMetadata?.userId === call?.state?.createdBy?.id;
 
 	return (
 		<main className="h-full w-full">
 			<StreamCall call={call}>
 				<StreamTheme>
-					{/* {!isSetupComplete && !isMeetingOwner ? (
-						<MeetingSetup setIsSetupComplete={setIsSetupComplete} />
-					) : ( )} */}
-
-					<MeetingRoom />
+					<CallTimerProvider
+						isVideoCall={isVideoCall}
+						isMeetingOwner={isMeetingOwner}
+						expert={expert}
+					>
+						<MeetingRoomWrapper />
+					</CallTimerProvider>
 				</StreamTheme>
 			</StreamCall>
 		</main>
+	);
+};
+
+const MeetingRoomWrapper = () => {
+	const { useCallEndedAt } = useCallStateHooks();
+	const callEndedAt = useCallEndedAt();
+	const callHasEnded = !!callEndedAt;
+
+	if (callHasEnded) {
+		return <CallEnded />;
+	} else {
+		return <MeetingRoom />;
+	}
+};
+
+const CallEnded = () => {
+	const { toast } = useToast();
+	const router = useRouter();
+
+	useEffect(() => {
+		toast({
+			title: "Call Has Ended",
+			description: "Redirecting to HomePage...",
+		});
+		setTimeout(() => {
+			router.push("/");
+		}, 3000);
+	}, [router, toast]);
+
+	return (
+		<div className="flex flex-col w-full items-center justify-center h-screen gap-7">
+			<Image
+				src="/icons/notFound.gif"
+				alt="Home"
+				width={1000}
+				height={1000}
+				className="w-96 h-auto rounded-xl object-cover"
+			/>
+		</div>
 	);
 };
 
