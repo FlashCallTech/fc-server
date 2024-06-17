@@ -124,7 +124,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	const handleChat = async () => {
 		
-		console.log(chatRef);
+		// console.log(chatRef);
 		const chatRequestsRef = collection(db, "chatRequests");
 
 		try {
@@ -140,7 +140,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				const userChatsData = userChatsDocSnapshot.data();
 				const creatorChatsData = creatorChatsDocSnapshot.data();
 
-				console.log(userChatsData)
+				// console.log(userChatsData)
 
 				const existingChat = userChatsData.chats.find(
 					(chat: any) => chat.receiverId === "6668228bbad947e0e80b2b7f"
@@ -165,17 +165,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				chatId: chatId,
 				createdAt: serverTimestamp(),
 			});
-
-			localStorage.setItem(
-				"user2",
-				JSON.stringify({
-					_id: "6668228bbad947e0e80b2b7f",
-					clientId: clientId,
-					fullName: "Aseem Gupta",
-					photo:
-						"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
-				})
-			);
 
 			if (!userChatsDocSnapshot.exists()) {
 				await setDoc(userChatsDocRef, { chats: [] });
@@ -216,6 +205,19 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
 
+		localStorage.setItem(
+			"user2",
+			JSON.stringify({
+				_id: "6668228bbad947e0e80b2b7f",
+				clientId: chatRequest.clientId,
+				creatorId: chatRequest.creatorId,
+				requestId: chatRequest.id,
+				fullName: "Aseem Gupta",
+				photo:
+					"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
+			})
+		);
+
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
 			if (!existingChatDoc.exists()) {
@@ -233,7 +235,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							chatId: chatId,
 							lastMessage: "",
 							receiverId: chatRequest.clientId,
-							updatedAt: Date.now(),
+							updatedAt: new Date(),
 						}),
 					}
 				);
@@ -245,11 +247,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							chatId: chatId,
 							lastMessage: "",
 							receiverId: chatRequest.creatorId,
-							updatedAt: Date.now(),
+							updatedAt: new Date(),
 						}),
 					}
 				);
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
+			}
+			else{
+				await updateDoc(doc(db, "chats", chatId), {
+					createdAt: new Date()
+				})
 			}
 
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {

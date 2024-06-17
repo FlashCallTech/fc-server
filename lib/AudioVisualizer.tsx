@@ -1,17 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 
 interface AudioVisualizerProps {
+    audioContext: AudioContext;  // Pass AudioContext as a prop
     audioStream: MediaStream;
 }
 
-const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ audioStream }) => {
+const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ audioContext, audioStream }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const audioContextRef = useRef<AudioContext | null>(null);
     const analyserRef = useRef<AnalyserNode | null>(null);
     const dataArrayRef = useRef<Float32Array | null>(null);
+    const animationFrameRef = useRef<number | null>(null);
 
     useEffect(() => {
-        const audioContext = new AudioContext();
         const analyser = audioContext.createAnalyser();
         const source = audioContext.createMediaStreamSource(audioStream);
 
@@ -21,7 +21,6 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ audioStream }) => {
 
         source.connect(analyser);
 
-        audioContextRef.current = audioContext;
         analyserRef.current = analyser;
         dataArrayRef.current = dataArray;
 
@@ -31,7 +30,7 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ audioStream }) => {
         const draw = () => {
             if (!canvas || !canvasCtx || !analyserRef.current || !dataArrayRef.current) return;
 
-            requestAnimationFrame(draw);
+            animationFrameRef.current = requestAnimationFrame(draw);
 
             analyserRef.current.getFloatTimeDomainData(dataArrayRef.current);
 
@@ -68,9 +67,10 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ audioStream }) => {
         draw();
 
         return () => {
-            audioContext.close();
+            cancelAnimationFrame(animationFrameRef.current!);
+            // Don't close the audioContext here to prevent it from being closed multiple times
         };
-    }, [audioStream]);
+    }, [audioContext, audioStream]);
 
     return <canvas ref={canvasRef} width="300" height="50" className='rounded-full w-full h-8'/>;
 };
