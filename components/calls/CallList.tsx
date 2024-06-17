@@ -121,7 +121,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
 					</h1>
 					<Link
 						href="/"
-						className="flex gap-4 items-center p-4 rounded-lg justify-center bg-blue-1 hover:opacity-80 mx-auto w-fit"
+						className="flex gap-4 items-center p-4 rounded-lg justify-center bg-green-1 hover:opacity-80 mx-auto w-fit"
 					>
 						<Image src="/icons/Home.svg" alt="Home" width={24} height={24} />
 						<p className="text-lg font-semibold">Return Home</p>

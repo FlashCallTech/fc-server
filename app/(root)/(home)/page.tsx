@@ -5,7 +5,6 @@ import Experiment from "@/components/shared/Experiment";
 import PostLoader from "@/components/shared/PostLoader";
 import { getUsers } from "@/lib/actions/creator.actions";
 import { creatorUser } from "@/types";
-import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
@@ -20,7 +19,6 @@ const HomePage = () => {
 				const response = await getUsers();
 				setCreators(response);
 			};
-
 			getCreators();
 		} catch (error) {
 			console.error(error);

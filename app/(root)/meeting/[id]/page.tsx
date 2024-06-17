@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import {
 	StreamCall,
@@ -14,6 +14,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { CallTimerProvider } from "@/lib/context/CallTimerContext";
 import MeetingRoom from "@/components/meeting/MeetingRoom";
 import { useGetCallById } from "@/hooks/useGetCallById";
+import { handleTransaction } from "@/utils/TransactionUtils";
+import { Cursor, Typewriter } from "react-simple-typewriter";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import SinglePostLoader from "@/components/shared/SinglePostLoader";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -22,7 +26,6 @@ const MeetingPage = () => {
 	const { toast } = useToast();
 	const { call, isCallLoading } = useGetCallById(id);
 	const { user } = useUser();
-
 	const [isReloading, setIsReloading] = useState(false);
 
 	useEffect(() => {
@@ -80,7 +83,7 @@ const MeetingPage = () => {
 						isMeetingOwner={isMeetingOwner}
 						expert={expert}
 					>
-						<MeetingRoomWrapper />
+						<MeetingRoomWrapper toast={toast} router={router} call={call} />
 					</CallTimerProvider>
 				</StreamTheme>
 			</StreamCall>
@@ -88,41 +91,137 @@ const MeetingPage = () => {
 	);
 };
 
-const MeetingRoomWrapper = () => {
+const MeetingRoomWrapper = ({ toast, router, call }: any) => {
 	const { useCallEndedAt } = useCallStateHooks();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
 
 	if (callHasEnded) {
-		return <CallEnded />;
+		return <CallEnded toast={toast} router={router} call={call} />;
 	} else {
 		return <MeetingRoom />;
 	}
 };
 
-const CallEnded = () => {
-	const { toast } = useToast();
-	const router = useRouter();
+const CallEnded = ({ toast, router, call }: any) => {
+	const callEndedAt = call?.state?.endedAt;
+	const callStartsAt = call?.state?.startsAt;
+	const { updateWalletBalance } = useWalletBalanceContext();
+	const [loading, setLoading] = useState(false);
+	const [toastShown, setToastShown] = useState(false);
+	const transactionHandled = useRef(false);
+	const { user } = useUser();
+
+	const isMeetingOwner =
+		user?.publicMetadata?.userId === call?.state?.createdBy?.id;
+
+	console.log(isMeetingOwner);
 
 	useEffect(() => {
-		toast({
-			title: "Call Has Ended",
-			description: "Redirecting to HomePage...",
-		});
-		setTimeout(() => {
-			router.push("/");
-		}, 3000);
-	}, [router, toast]);
+		const handleCallEnd = async () => {
+			if (transactionHandled.current) return;
+
+			transactionHandled.current = true;
+
+			const callEndedTime = new Date(callEndedAt);
+			const callStartsAtTime = new Date(callStartsAt);
+			const duration = (
+				(callEndedTime.getTime() - callStartsAtTime.getTime()) /
+				1000
+			).toFixed(2);
+
+			if (!toastShown) {
+				isMeetingOwner
+					? toast({
+							title: "Call Has Ended",
+							description: "Checking for Pending Transactions ...",
+					  })
+					: toast({
+							title: "Call Has Ended",
+							description: "Redirecting ...",
+					  });
+				setToastShown(true);
+			}
+
+			setLoading(true);
+			await handleTransaction({
+				call,
+				callId: call?.id,
+				duration: duration,
+				isVideoCall: call?.type === "default",
+				toast,
+				router,
+				updateWalletBalance,
+			});
+		};
+
+		if (!callEndedAt || !callStartsAt) {
+			if (!toastShown) {
+				toast({
+					title: "Call Has Ended",
+					description: "Call data is missing. Redirecting...",
+				});
+				setToastShown(true);
+			}
+			setTimeout(() => {
+				router.push("/");
+			}, 3000);
+			return;
+		}
+
+		if (isMeetingOwner) {
+			handleCallEnd();
+		} else {
+			router.push(`/feedback/${call?.id}`);
+		}
+	}, [
+		callEndedAt,
+		callStartsAt,
+		isMeetingOwner,
+		call?.id,
+		router,
+		toast,
+		toastShown,
+		updateWalletBalance,
+	]);
+
+	if (loading) {
+		return (
+			<section className="w-full h-screen flex flex-col items-center justify-center gap-4">
+				<div className="flex flex-col justify-center items-start gap-5 rounded-lg max-w-lg h-fit w-full mx-auto animate-pulse">
+					<div className="flex items-center space-x-4 w-full">
+						<div className="rounded-full bg-slate-300 h-12 w-12"></div>
+						<div className="flex-1 space-y-4 py-1">
+							<div className="h-3 bg-slate-300 rounded w-3/4"></div>
+							<div className="space-y-3">
+								<div className="grid grid-cols-3 gap-4">
+									<div className="h-2 bg-slate-300 rounded col-span-2"></div>
+									<div className="h-2 bg-slate-300 rounded col-span-1"></div>
+								</div>
+								<div className="h-2 bg-slate-300 rounded w-full"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<h1 className="text-2xl font-semibold mt-7">
+					<Typewriter
+						words={["Checking For Any Pending Transactions", "Please Wait ..."]}
+						loop={true}
+						cursor
+						cursorStyle="_"
+						typeSpeed={50}
+						deleteSpeed={50}
+						delaySpeed={2000}
+					/>
+					<Cursor cursorColor="#50A65C" />
+				</h1>
+			</section>
+		);
+	}
 
 	return (
 		<div className="flex flex-col w-full items-center justify-center h-screen gap-7">
-			<Image
-				src="/icons/notFound.gif"
-				alt="Home"
-				width={1000}
-				height={1000}
-				className="w-96 h-auto rounded-xl object-cover"
-			/>
+			<SinglePostLoader />
 		</div>
 	);
 };

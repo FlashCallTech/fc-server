@@ -6,19 +6,22 @@ import {
 	CallStatsButton,
 	CallingState,
 	PaginatedGridLayout,
+	ReactionsButton,
+	ScreenShareButton,
+	SpeakerLayout,
 	SpeakingWhileMutedNotification,
+	ToggleAudioPublishingButton,
+	ToggleVideoPublishingButton,
 	useCall,
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { useSearchParams } from "next/navigation";
 import { Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
-import Loader from "../shared/Loader";
-import { AudioToggleButton } from "../calls/AudioToggleButton";
-import { VideoToggleButton } from "../calls/VideoToggleButton";
 import { useUser } from "@clerk/nextjs";
 import CallTimer from "../calls/CallTimer";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
+import { useToast } from "../ui/use-toast";
 
 const MeetingRoom = () => {
 	const searchParams = useSearchParams();
@@ -31,13 +34,13 @@ const MeetingRoom = () => {
 	const call = useCall();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
-
+	const { toast } = useToast();
 	const isVideoCall = useMemo(() => call?.type === "default", [call]);
 
 	const callingState = useCallCallingState();
 	const participantCount = useParticipantCount();
 
-	const { pauseTimer, resumeTimer, anyModalOpen } = useCallTimerContext();
+	const { anyModalOpen } = useCallTimerContext();
 
 	useEffect(() => {
 		const joinCall = async () => {
@@ -62,12 +65,50 @@ const MeetingRoom = () => {
 	}, [callingState, call, hasJoined, callHasEnded]);
 
 	useEffect(() => {
-		if (participantCount < 2 || anyModalOpen) {
-			pauseTimer();
-		} else {
-			resumeTimer();
+		let timeoutId: NodeJS.Timeout;
+
+		if (
+			participantCount < 2 ||
+			anyModalOpen ||
+			callingState === CallingState.OFFLINE ||
+			callingState === CallingState.UNKNOWN
+		) {
+			timeoutId = setTimeout(() => {
+				toast({
+					title: "Call Ended ...",
+					description: "Less than 2 Participants or Due to Inactivity",
+				});
+				call?.endCall();
+			}, 60000); // 1 minute
 		}
-	}, [participantCount, pauseTimer, resumeTimer]);
+
+		return () => clearTimeout(timeoutId);
+	}, [participantCount, anyModalOpen, call]);
+
+	const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+		event.preventDefault();
+		event.returnValue = ""; // This triggers the browser's confirmation dialog.
+	};
+
+	const handleUnload = () => {
+		call?.endCall();
+	};
+
+	useEffect(() => {
+		window.addEventListener("beforeunload", handleBeforeUnload);
+		window.addEventListener("unload", handleUnload);
+
+		return () => {
+			window.removeEventListener("beforeunload", handleBeforeUnload);
+			window.removeEventListener("unload", handleUnload);
+		};
+	}, []);
+
+	// Call Layouts
+	const CallLayoutMobile = useCallback(
+		() => <SpeakerLayout participantsBarPosition="bottom" />,
+		[]
+	);
 
 	const CallLayout = useCallback(() => <PaginatedGridLayout />, []);
 
@@ -79,11 +120,14 @@ const MeetingRoom = () => {
 	return (
 		<section className="relative h-screen w-full overflow-hidden pt-4 text-white bg-dark-2">
 			<div className="relative flex size-full items-center justify-center">
-				<div className="flex size-full max-w-[1000px] items-center">
+				<div className="hidden md:flex size-full max-w-[1000px] items-center">
 					<CallLayout />
 				</div>
+				<div className="flex md:hidden size-full max-w-[85%] items-center">
+					<CallLayoutMobile />
+				</div>
 				{showParticipants && (
-					<div className="h-fit w-full fixed right-0 top-0 md:top-2 md:right-2 lg:w-[400px] rounded-xl ml-2 p-4 z-20 bg-black">
+					<div className="h-fit w-full fixed right-0 top-0 md:top-2 md:right-2 md:max-w-[400px] rounded-xl ml-2 p-4 z-20 bg-black">
 						<CallParticipantsList onClose={() => setShowParticipants(false)} />
 					</div>
 				)}
@@ -91,15 +135,20 @@ const MeetingRoom = () => {
 			{!callHasEnded && isMeetingOwner && <CallTimer />}
 			<div className="fixed bottom-0 pb-4 flex flex-wrap-reverse w-full items-center justify-center gap-2 px-4">
 				<SpeakingWhileMutedNotification>
-					<AudioToggleButton />
+					<ToggleAudioPublishingButton />
 				</SpeakingWhileMutedNotification>
-				{isVideoCall && <VideoToggleButton />}
-				<CallStatsButton />
+				{isVideoCall && <ToggleVideoPublishingButton />}
+				<ScreenShareButton />
+				<ReactionsButton />
+				<div className="hidden md:flex gap-2">
+					<CallStatsButton />
+				</div>
 				<button onClick={() => setShowParticipants((prev) => !prev)}>
 					<div className="cursor-pointer rounded-2xl bg-[#19232d] px-4 py-2 hover:bg-[#4c535b]">
 						<Users size={20} className="text-white" />
 					</div>
 				</button>
+
 				{!isPersonalRoom && <EndCallButton />}
 			</div>
 		</section>

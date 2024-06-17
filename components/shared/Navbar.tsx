@@ -1,11 +1,12 @@
 "use client";
 
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import MobileNav from "./MobileNav";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 const Navbar = () => {
 	const [isMounted, setIsMounted] = useState(false);
@@ -13,9 +14,11 @@ const Navbar = () => {
 	useEffect(() => {
 		setIsMounted(true);
 	}, []);
+	const theme = `5px 5px 0px 0px #000000`;
+	const { walletBalance } = useWalletBalanceContext();
 
 	return (
-		<nav className="flex-between fixed z-40 w-full px-6 py-4 lg:px-7 bg-white">
+		<nav className="flex-between items-center fixed z-40 w-full px-6 py-4 lg:px-7 bg-white">
 			<Link href="/" className="flex items-center gap-4 ">
 				<Image
 					src="/icons/logoDesktop.png"
@@ -29,7 +32,25 @@ const Navbar = () => {
 			{isMounted && (
 				<>
 					<SignedIn>
-						<div className="flex-between gap-3 text-white">
+						<div className=" w-fit flex-between gap-5 text-white">
+							<Link
+								href="/payment"
+								className="w-full flex items-center justify-center gap-2 text-black px-5 py-3 border border-black rounded-lg  hover:bg-green-1 group"
+								style={{
+									boxShadow: theme,
+								}}
+							>
+								<Image
+									src="/wallet.svg"
+									width={100}
+									height={100}
+									alt="wallet"
+									className="w-4 h-4 group-hover:text-white group-hover:invert"
+								/>
+								<span className="w-full text-xs whitespace-nowrap font-semibold group-hover:text-white">
+									Rs. {walletBalance.toFixed(2)}
+								</span>
+							</Link>
 							{/* <UserButton afterSignOutUrl="/sign-in" /> */}
 							<MobileNav />
 						</div>

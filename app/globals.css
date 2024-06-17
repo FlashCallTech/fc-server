@@ -9,7 +9,7 @@
 }
 
 :root {
-	--default-color: #0e78f9;
+	--default-color: #50a65c;
 	--secondary-color: #03a8f477;
 	--primary-color: #ffffff; /* Default color */
 }
@@ -55,7 +55,6 @@
 	.cl-internal-qk5yrq {
 		max-width: 100% !important;
 	}
-
 }
 
 /* feedback styles */

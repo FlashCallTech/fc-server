@@ -223,7 +223,10 @@ const RechargeModal = ({
 					</div>
 					<SheetFooter className="mt-4">
 						<SheetClose asChild>
-							<Button onClick={PaymentHandler} className="bg-blue-1 text-white">
+							<Button
+								onClick={PaymentHandler}
+								className="bg-green-1 text-white"
+							>
 								Recharge
 							</Button>
 						</SheetClose>

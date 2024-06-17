@@ -2,17 +2,16 @@ import React, { useEffect } from "react";
 import { sparkles } from "@/constants/icons";
 import { creatorUser } from "@/types";
 import { usePathname } from "next/navigation";
-import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 interface CreatorDetailsProps {
 	creator: creatorUser;
 }
 const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
-	const { setCurrentCreator } = useCurrentUsersContext();
 	const pathname = usePathname();
 
 	useEffect(() => {
-		setCurrentCreator(creator);
-	}, [creator, setCurrentCreator]);
+		pathname.includes("/creator") &&
+			localStorage.setItem("currentCreator", JSON.stringify(creator));
+	}, [creator]);
 
 	return (
 		<>

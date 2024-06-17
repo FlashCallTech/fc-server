@@ -33,6 +33,9 @@ const config = {
 				blue: {
 					1: "#0E78F9",
 				},
+				green: {
+					1: "#50A65C",
+				},
 				sky: {
 					1: "#C9DDFF",
 					2: "#ECF0FF",

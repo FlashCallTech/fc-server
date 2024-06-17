@@ -10,6 +10,8 @@ import { useToast } from "../ui/use-toast";
 import { success } from "@/constants/icons";
 import { useGetCallById } from "@/hooks/useGetCallById";
 import { Button } from "../ui/button";
+import { usePathname } from "next/navigation";
+import SinglePostLoader from "../shared/SinglePostLoader";
 
 const CallFeedback = ({
 	callId,
@@ -24,6 +26,7 @@ const CallFeedback = ({
 	const [feedbackMessage, setFeedbackMessage] = useState("");
 	const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 	const { toast } = useToast();
+	const pathname = usePathname();
 	const { call, isCallLoading } = useGetCallById(String(callId));
 
 	const ratingItems = ["😒", "😞", "😑", "🙂", "😄"];
@@ -92,17 +95,23 @@ const CallFeedback = ({
 
 	if (!user || isCallLoading)
 		return (
-			<div className="flex items-center space-x-4 w-full max-w-[100px] animate-pulse">
-				<div className="flex-1 space-y-4 py-1">
-					<div className="space-y-3">
-						<div className="grid grid-cols-3 gap-4">
-							<div className="h-2 bg-slate-300 rounded col-span-2"></div>
-							<div className="h-2 bg-slate-300 rounded col-span-1"></div>
+			<>
+				{pathname.includes("meeting") ? (
+					<div className="flex items-center space-x-4 w-full max-w-[100px] animate-pulse">
+						<div className="flex-1 space-y-4 py-1">
+							<div className="space-y-3">
+								<div className="grid grid-cols-3 gap-4">
+									<div className="h-2 bg-slate-300 rounded col-span-2"></div>
+									<div className="h-2 bg-slate-300 rounded col-span-1"></div>
+								</div>
+								<div className="h-2 bg-slate-300 rounded w-full"></div>
+							</div>
 						</div>
-						<div className="h-2 bg-slate-300 rounded w-full"></div>
 					</div>
-				</div>
-			</div>
+				) : (
+					<SinglePostLoader />
+				)}
+			</>
 		);
 
 	return (
@@ -165,7 +174,7 @@ const CallFeedback = ({
 
 						<Button
 							onClick={handleSubmitFeedback}
-							className="bg-blue-1 font-semibold text-white px-4 py-2 rounded-lg hover:opacity-80"
+							className="bg-green-1 font-semibold text-white px-4 py-2 rounded-lg hover:opacity-80"
 						>
 							Submit Feedback
 						</Button>

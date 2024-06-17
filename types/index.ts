@@ -237,3 +237,18 @@ export type WalletParams = {
 	userType: string;
 	amount: number;
 };
+
+// Call Transactions
+export interface RegisterCallTransactionParams {
+	callId: string;
+	amountPaid: number;
+	isDone?: boolean;
+	callDuration: number;
+}
+
+export interface UpdateCallTransactionParams {
+	callId: string;
+	amountPaid?: number;
+	isDone?: boolean;
+	callDuration?: number;
+}

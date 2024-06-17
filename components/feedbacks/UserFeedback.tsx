@@ -120,7 +120,7 @@ const UserFeedback = ({
 					onClick={() => onOpenChange(true)}
 					className={`${
 						buttonColor === "primary"
-							? "bg-blue-1 hover:opacity-80 mx-auto"
+							? "bg-green-1 hover:opacity-80 mx-auto"
 							: "bg-black/30 hover:bg-black/50"
 					} text-white font-semibold w-44`}
 				>
@@ -179,7 +179,7 @@ const UserFeedback = ({
 						<Button
 							onClick={handleSubmitFeedback}
 							className={
-								"bg-blue-1 font-semibold text-white px-4 py-2 rounded-lg hover:opacity-80"
+								"bg-green-1 font-semibold text-white px-4 py-2 rounded-lg hover:opacity-80"
 							}
 						>
 							Submit Feedback
