@@ -14,26 +14,16 @@ import { sidebarLinks } from "@/constants";
 import { cn } from "@/lib/utils";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { Button } from "../ui/button";
-// import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 const MobileNav = () => {
 	const pathname = usePathname();
 	const { user } = useUser();
 	const { signOut } = useClerk();
 
-	// const { walletBalance } = useWalletBalanceContext();
-	// console.log(walletBalance);
 	return (
 		<section className="w-full max-w-[264px]">
 			<Sheet>
 				<SheetTrigger asChild>
-					{/* <Image
-						src="/icons/hamburger.svg"
-						width={33}
-						height={33}
-						alt="hamburger icon"
-						className="cursor-pointer invert hoverScaleEffect"
-					/> */}
 					<Image
 						src={user?.imageUrl || "/images/defaultProfile.png"}
 						alt="Profile"
@@ -60,7 +50,7 @@ const MobileNav = () => {
 							<span className="text-lg capitalize">
 								{user?.fullName || user?.username}
 							</span>
-							<span className="text-sm text-blue-1">
+							<span className="text-sm text-green-1">
 								{user?.primaryPhoneNumber?.phoneNumber ||
 									`@${user?.username} || "Authenticate"`}
 							</span>
@@ -79,9 +69,9 @@ const MobileNav = () => {
 												href={item.route}
 												key={item.label}
 												className={cn(
-													"flex gap-4 items-center p-4 rounded-lg w-full max-w-60 hover:bg-blue-1",
+													"flex gap-4 items-center p-4 rounded-lg w-full max-w-60 hover:bg-green-1",
 													{
-														"bg-blue-1": isActive,
+														"bg-green-1": isActive,
 													}
 												)}
 											>
@@ -90,6 +80,7 @@ const MobileNav = () => {
 													alt={item.label}
 													width={20}
 													height={20}
+													className="invert-0 brightness-200"
 												/>
 												<p className="font-semibold">{item.label}</p>
 											</Link>
@@ -99,7 +90,7 @@ const MobileNav = () => {
 
 								<Button
 									className={cn(
-										"absolute bottom-7 flex gap-4 items-center p-6 rounded-lg w-full bg-blue-1 outline-none focus:ring-0 hoverScaleDownEffect"
+										"absolute bottom-7 flex gap-4 items-center p-6 rounded-lg w-full bg-green-1 outline-none focus:ring-0 hoverScaleDownEffect"
 									)}
 									onClick={() => signOut({ redirectUrl: "/" })}
 								>

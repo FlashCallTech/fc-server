@@ -1,6 +1,5 @@
 import React from "react";
 import { Call } from "@stream-io/video-react-sdk";
-import Image from "next/image";
 
 const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 	const expert = call?.state?.members?.find(
@@ -10,11 +9,9 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:w-[35%] 3xl:[25%] flex flex-col items-center justify-between  py-10 sm:rounded-xl bottom-0 right-0 sm:top-2 sm:right-2 gap-5">
 			<h1 className="font-bold text-xl mb-2">Outgoing Call ...</h1>
 			<div className="flex flex-col items-center justify-center gap-10">
-				<Image
+				<img
 					src={expert?.user?.image!}
 					alt=""
-					width={100}
-					height={100}
 					className="rounded-full w-28 h-28 object-cover"
 				/>
 				<div className="flex flex-col items-center justify-center gap-2">

@@ -88,7 +88,7 @@ const MeetingSetup = ({
 
 	return (
 		<div className="flex h-screen w-full flex-col items-center justify-center gap-5 text-white bg-dark-1">
-			<h1 className="text-center text-blue-1 text-3xl pb-4 font-bold">
+			<h1 className="text-center text-green-1 text-3xl pb-4 font-bold">
 				{videoCall ? "Video Call Setup" : "Audio Call Setup"}
 			</h1>
 			{videoCall ? (
@@ -106,7 +106,7 @@ const MeetingSetup = ({
 							className="rounded-full w-14 h-14"
 						/>
 						<div className="flex flex-col items-start justif-center">
-							<span className="text-lg text-blue-1">{client?.user?.name}</span>
+							<span className="text-lg text-green-1">{client?.user?.name}</span>
 							<span className="text-xs">Session&apos;s Client</span>
 						</div>
 					</div>
@@ -130,7 +130,7 @@ const MeetingSetup = ({
 				</div>
 			)}
 
-			<label className="flex items-center justify-center gap-2 text-blue-1 text-base py-4">
+			<label className="flex items-center justify-center gap-2 text-green-1 text-base py-4">
 				<input
 					type="checkbox"
 					checked={isMicCamToggled}

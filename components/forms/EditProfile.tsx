@@ -205,7 +205,7 @@ const EditProfile = ({
 				/>
 
 				<Button
-					className="bg-blue-1 hover:opacity-80 w-3/4 mx-auto text-white"
+					className="bg-green-1 hover:opacity-80 w-3/4 mx-auto text-white"
 					type="submit"
 				>
 					Update Details

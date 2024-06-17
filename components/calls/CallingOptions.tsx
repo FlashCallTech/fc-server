@@ -24,6 +24,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -35,6 +36,7 @@ const initialValues = {
 
 const CallingOptions = ({ creator }: CallingOptions) => {
 	const router = useRouter();
+	const { walletBalance } = useWalletBalanceContext();
 	const [meetingState, setMeetingState] = useState<
 		"isJoiningMeeting" | "isInstantMeeting" | undefined
 	>(undefined);
@@ -85,7 +87,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					user_id: "6668228bbad947e0e80b2b7f",
 					// user_id: "66681d96436f89b49d8b498b",
 					custom: { name: String(creator.username), type: "expert" },
-					role: "admin",
+					role: "call_member",
 				},
 				{
 					user_id: String(user?.publicMetadata?.userId),
@@ -101,6 +103,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					: `Audio Call With Expert ${creator.username}`
 			}`;
 
+			const ratePerMinute =
+				callType === "video"
+					? parseInt(creator?.videoRate, 10)
+					: parseInt(creator?.audioRate, 10);
+			let maxCallDuration = (walletBalance / ratePerMinute) * 60; // in seconds
+			maxCallDuration =
+				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+
+			console.log(maxCallDuration, ratePerMinute);
+
 			await call.getOrCreate({
 				data: {
 					starts_at: startsAt,
@@ -108,7 +120,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					custom: {
 						description,
 					},
+					settings_override: {
+						limits: {
+							max_duration_seconds: maxCallDuration,
+							max_participants: 2,
+						},
+					},
 				},
+
 				ring: true,
 			});
 

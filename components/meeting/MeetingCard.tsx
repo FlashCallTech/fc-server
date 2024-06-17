@@ -18,12 +18,18 @@ const MeetingCard = ({ icon, title, date, callId }: MeetingCardProps) => {
 	const pathname = usePathname();
 	return (
 		<section
-			className={`flex min-h-[258px] w-full flex-col justify-between rounded-[14px] px-5 py-8 xl:max-w-[568px] bg-blue-1 ${
+			className={`flex min-h-[258px] w-full flex-col justify-between rounded-[14px] px-5 py-8 xl:max-w-[568px] bg-green-1 ${
 				pathname.includes("/profile") && "mx-auto"
 			}`}
 		>
 			<article className="flex flex-col gap-5">
-				<Image src={icon} alt="upcoming" width={28} height={28} />
+				<Image
+					src={icon}
+					alt="upcoming"
+					width={28}
+					height={28}
+					className="invert-1 brightness-200"
+				/>
 				<div className="flex justify-between">
 					<div className="flex flex-col gap-2">
 						<h1 className="text-2xl font-bold">{title}</h1>

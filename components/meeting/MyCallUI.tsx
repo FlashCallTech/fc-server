@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCalls, CallingState } from "@stream-io/video-react-sdk";
 import MyIncomingCallUI from "./MyIncomingCallUI";
@@ -13,18 +13,32 @@ const MyCallUI = () => {
 	const { user } = useUser();
 	const { toast } = useToast();
 	let hide = pathname.includes("/meeting");
+	const [hasRedirected, setHasRedirected] = useState(false);
 
 	useEffect(() => {
-		// Add event listeners for call state changes
+		const storedCallId = localStorage.getItem("activeCallId");
+
+		if (storedCallId && !hide && !hasRedirected) {
+			toast({
+				title: "Ongoing Call",
+				description: "You have an ongoing call. Redirecting you back...",
+			});
+			router.push(`/meeting/${storedCallId}`);
+			setHasRedirected(true); // Set the state to prevent repeated redirects
+		}
+	}, [router, hide, toast, hasRedirected]);
+
+	useEffect(() => {
 		calls.forEach((call) => {
 			const isMeetingOwner =
 				user && user.publicMetadata.userId === call?.state?.createdBy?.id;
 
 			const handleCallEnded = () => {
 				if (!isMeetingOwner) {
+					localStorage.removeItem("activeCallId");
 					toast({
 						title: "Call Ended",
-						description: "The call Ended. Redirecting to HomePage...",
+						description: "The call ended. Redirecting to HomePage...",
 					});
 					router.push("/");
 				}
@@ -32,22 +46,28 @@ const MyCallUI = () => {
 
 			const handleCallRejected = () => {
 				toast({
-					title: "Call Ended",
-					description: "The call was Rejected. Redirecting to HomePage...",
+					title: "Call Rejected",
+					description: "The call was rejected. Redirecting to HomePage...",
 				});
 				router.push("/");
 			};
 
+			const handleCallStarted = () => {
+				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
+			};
+
 			call.on("call.ended", handleCallEnded);
 			call.on("call.rejected", handleCallRejected);
+			call.on("call.accepted", handleCallStarted);
 
 			// Cleanup listeners on component unmount
 			return () => {
 				call.off("call.ended", handleCallEnded);
 				call.off("call.rejected", handleCallRejected);
+				call.off("call.accepted", handleCallStarted);
 			};
 		});
-	}, [calls, router]);
+	}, [calls, router, user, toast]);
 
 	// Filter incoming ringing calls
 	const incomingCalls = calls.filter(
@@ -56,7 +76,7 @@ const MyCallUI = () => {
 			call.state.callingState === CallingState.RINGING
 	);
 
-	// // Filter outgoing ringing calls
+	// Filter outgoing ringing calls
 	const outgoingCalls = calls.filter(
 		(call) =>
 			call.isCreatedByMe === true &&
@@ -79,10 +99,6 @@ const MyCallUI = () => {
 	if (outgoingCall) {
 		return <MyOutgoingCallUI call={outgoingCall} />;
 	}
-
-	<div className="bg-white p-4 shadow-lg rounded-md">
-		<MyIncomingCallUI call={incomingCall} onAccept={() => {}} />
-	</div>;
 
 	return null; // No ringing calls
 };

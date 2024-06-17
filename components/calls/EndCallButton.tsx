@@ -1,56 +1,48 @@
 "use client";
 
-import { useCall, useCallStateHooks } from "@stream-io/video-react-sdk";
+import { useCall } from "@stream-io/video-react-sdk";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "../ui/button";
-import CallFeedback from "../feedbacks/CallFeedback";
 import { useToast } from "../ui/use-toast";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 
+import EndCallDecision from "./EndCallDecision";
+import { useUser } from "@clerk/nextjs";
+
 const EndCallButton = () => {
 	const call = useCall();
-	const router = useRouter();
-	const [showFeedback, setShowFeedback] = useState(false);
-	const { pauseTimer, setAnyModalOpen } = useCallTimerContext();
-	const { toast } = useToast();
+	const [showDialog, setShowDialog] = useState(false);
+	const { setAnyModalOpen, totalTimeUtilized } = useCallTimerContext();
+	const { user } = useUser();
 
-	if (!call)
+	if (!call) {
 		throw new Error(
 			"useStreamCall must be used within a StreamCall component."
 		);
-
-	const { useLocalParticipant } = useCallStateHooks();
-	const localParticipant = useLocalParticipant();
+	}
 
 	const isMeetingOwner =
-		localParticipant &&
-		call.state.createdBy &&
-		localParticipant.userId === call.state.createdBy.id;
+		user?.publicMetadata?.userId === call?.state?.createdBy?.id;
 
 	const endCall = async () => {
-		if (isMeetingOwner) {
-			setShowFeedback(true); // Show the feedback form
-			setAnyModalOpen(true);
-		} else {
-			router.push("/");
-			await call.leave();
-			toast({
-				title: "You Left the Call",
-				description: "Redirecting to HomePage...",
-			});
-		}
+		setShowDialog(true); // Show the confirmation dialog
+		setAnyModalOpen(true);
 	};
 
-	const handleFeedbackClose = async () => {
+	const handleDecisionDialog = async () => {
 		await call.endCall();
-		setShowFeedback(false);
-		isMeetingOwner &&
-			toast({
-				title: "Call Ended",
-				description: "The call Ended. Redirecting to HomePage...",
-			});
-		isMeetingOwner && router.push("/"); // Redirect to the homepage
+		setShowDialog(false);
+		// isMeetingOwner && router.push(`/feedback/${call?.id}/${totalTimeUtilized}`);
+		// toast({
+		// 	title: "Call Ended",
+		// 	description: "The call Ended. Redirecting ...",
+		// });
+	};
+
+	const handleCloseDialog = () => {
+		setShowDialog(false);
+		setAnyModalOpen(false);
 	};
 
 	return (
@@ -62,11 +54,10 @@ const EndCallButton = () => {
 				End Call
 			</Button>
 
-			{showFeedback && (
-				<CallFeedback
-					callId={call.id}
-					isOpen={showFeedback}
-					onOpenChange={handleFeedbackClose}
+			{showDialog && (
+				<EndCallDecision
+					handleDecisionDialog={handleDecisionDialog}
+					setShowDialog={handleCloseDialog}
 				/>
 			)}
 		</>

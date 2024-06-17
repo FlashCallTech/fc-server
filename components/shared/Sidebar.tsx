@@ -26,15 +26,15 @@ const Sidebar = () => {
 									href={item.route}
 									key={item.label}
 									className={`flex gap-4 items-center p-4 rounded-lg justify-center lg:justify-start 
-							group hover:bg-blue-1  ${isActive && "bg-blue-1 text-white"}`}
+							group hover:bg-green-1  ${isActive && "bg-green-1 text-white"}`}
 								>
 									<Image
 										src={item.imgURL}
 										alt={item.label}
 										width={24}
 										height={24}
-										className={`invert group-hover:invert-0 ${
-											isActive && "invert-0"
+										className={`invert group-hover:invert-0 group-hover:brightness-200 ${
+											isActive && "invert-0 brightness-200"
 										}`}
 									/>
 
@@ -70,7 +70,7 @@ const Sidebar = () => {
 								<span className="text-lg capitalize">
 									{user?.fullName || "Hey User"}
 								</span>
-								<span className="text-xs text-blue-1">@{user?.username}</span>
+								<span className="text-xs text-green-1">@{user?.username}</span>
 							</div>
 						</Link>
 					</TooltipTrigger>
@@ -82,7 +82,7 @@ const Sidebar = () => {
 				<SignedOut>
 					<Button
 						asChild
-						className="text-white hover:opacity-80 bg-blue-1"
+						className="text-white hover:opacity-80 bg-green-1"
 						size="lg"
 					>
 						<Link href="/sign-in">Login</Link>

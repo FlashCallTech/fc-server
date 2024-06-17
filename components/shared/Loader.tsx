@@ -9,6 +9,7 @@ const Loader = () => {
 				width={50}
 				height={50}
 				className="invert"
+				priority
 			/>
 		</div>
 	);

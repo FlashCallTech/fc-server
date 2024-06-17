@@ -3,25 +3,23 @@ import React, {
 	useContext,
 	useState,
 	useEffect,
-	useRef,
-	useCallback,
 	ReactNode,
 } from "react";
 import { useWalletBalanceContext } from "./WalletBalanceContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-import { useCall } from "@stream-io/video-react-sdk";
-import { getUserById } from "../actions/creator.actions";
+import { useCall, useCallStateHooks } from "@stream-io/video-react-sdk";
 import { creatorUser } from "@/types";
 
 interface CallTimerContextProps {
-	timeLeft: number;
+	timeLeft: string;
 	hasLowBalance: boolean;
 	endCall: () => void;
 	pauseTimer: () => void;
 	resumeTimer: () => void;
 	anyModalOpen: boolean;
-	setAnyModalOpen: any;
+	setAnyModalOpen: (isOpen: boolean) => void;
+	totalTimeUtilized: number;
 }
 
 interface CallTimerProviderProps {
@@ -43,6 +41,14 @@ export const useCallTimerContext = () => {
 	return context;
 };
 
+const formatTimeLeft = (timeLeft: number): string => {
+	const minutes = Math.floor(timeLeft);
+	const seconds = Math.floor((timeLeft - minutes) * 60);
+	const paddedMinutes = minutes.toString().padStart(2, "0");
+	const paddedSeconds = seconds.toString().padStart(2, "0");
+	return `${paddedMinutes}:${paddedSeconds}`;
+};
+
 export const CallTimerProvider = ({
 	children,
 	isVideoCall,
@@ -50,102 +56,123 @@ export const CallTimerProvider = ({
 	expert,
 }: CallTimerProviderProps) => {
 	const { toast } = useToast();
-	const [audioRatePerMinute, setAudioRatePerMinute] = useState(2); // Rs. 2 per minute
-	const [videoRatePerMinute, setVideoRatePerMinute] = useState(5); // Rs. 5 per minute
+	const [audioRatePerMinute, setAudioRatePerMinute] = useState(0);
+	const [videoRatePerMinute, setVideoRatePerMinute] = useState(0);
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
-	const [currentCreator, setCurrentCreator] = useState<creatorUser>();
+	// const [currentCreator, setCurrentCreator] = useState<creatorUser | null>(null);
+	const { useCallStartsAt } = useCallStateHooks();
+
 	const [timeLeft, setTimeLeft] = useState(0);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
 	const [hasLowBalance, setHasLowBalance] = useState(false);
 	const [isTimerRunning, setIsTimerRunning] = useState(true);
-	const { walletBalance, setWalletBalance } = useWalletBalanceContext();
-	const walletBalanceRef = useRef(walletBalance);
-	const lowBalanceThreshold = 195; // Rs. 50 low balance threshold
+	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
+	const { walletBalance } = useWalletBalanceContext();
+	const lowBalanceThreshold = 50; // Threshold in seconds
 	const router = useRouter();
 	const call = useCall();
+	const callStartedAt = useCallStartsAt();
 
 	const endCall = async () => {
 		await call?.endCall();
 		toast({
 			title: "Call Disconnected",
-			description: "The call Ended. Redirecting to HomePage...",
+			description: "Wallet is Empty. Redirecting ...",
 		});
-		router.push("/"); // Redirect to the homepage
+		router.push("/");
 	};
 
 	const pauseTimer = () => setIsTimerRunning(false);
 	const resumeTimer = () => setIsTimerRunning(true);
 
 	useEffect(() => {
+		const storedCreator = localStorage.getItem("currentCreator");
+		if (storedCreator) {
+			const parsedCreator: creatorUser = JSON.parse(storedCreator);
+			// setCurrentCreator(parsedCreator);
+			if (parsedCreator.audioRate) {
+				setAudioRatePerMinute(parseInt(parsedCreator.audioRate, 10));
+			}
+			if (parsedCreator.videoRate) {
+				setVideoRatePerMinute(parseInt(parsedCreator.videoRate, 10));
+			}
+		}
+	}, []);
+
+	useEffect(() => {
 		const ratePerMinute = isVideoCall ? videoRatePerMinute : audioRatePerMinute;
-		const initialTimeLeft = (walletBalance / ratePerMinute) * 60; // in seconds
-		setTimeLeft(initialTimeLeft);
+		let maxCallDuration = (walletBalance / ratePerMinute) * 60; // in seconds
+		maxCallDuration = maxCallDuration > 3600 ? 3600 : maxCallDuration; // Limit to 60 minutes (3600 seconds)
+		if (!callStartedAt) {
+			// If call hasn't started yet, set timeLeft to maxCallDuration
+			setTimeLeft(maxCallDuration);
+			return;
+		}
+
+		const callStartedTime = new Date(callStartedAt);
 
 		const intervalId = setInterval(() => {
 			if (isTimerRunning) {
-				setTimeLeft((prevTimeLeft) => {
-					if (prevTimeLeft <= 0) {
-						clearInterval(intervalId);
-						isMeetingOwner && walletBalanceRef.current === 0 && endCall();
-						return 0;
+				const now = new Date();
+				const timeUtilized = (now.getTime() - callStartedTime.getTime()) / 1000; // Time in seconds
+
+				const newTimeLeft = maxCallDuration - timeUtilized;
+
+				setTimeLeft(newTimeLeft > 0 ? newTimeLeft : 0);
+				setTotalTimeUtilized(timeUtilized);
+
+				if (newTimeLeft <= 0) {
+					clearInterval(intervalId);
+					if (isMeetingOwner) {
+						endCall();
 					}
+				}
 
-					const newTimeLeft = prevTimeLeft - 1;
-					const elapsedMinutes = (initialTimeLeft - newTimeLeft) / 60;
-					const newWalletBalance =
-						walletBalanceRef.current - elapsedMinutes * ratePerMinute;
-					walletBalanceRef.current = newWalletBalance;
-					setWalletBalance(newWalletBalance);
-
-					if (
-						isMeetingOwner &&
-						newWalletBalance <= lowBalanceThreshold &&
-						newWalletBalance > 0
-					) {
-						setHasLowBalance(true);
-						if (!lowBalanceNotified) {
-							setLowBalanceNotified(true);
-							toast({
-								title: "Call Will End Soon",
-								description: "Client's wallet balance is low.",
-							});
-						}
-					} else if (newWalletBalance > lowBalanceThreshold) {
-						setHasLowBalance(false);
-						setLowBalanceNotified(false);
+				if (
+					isMeetingOwner &&
+					newTimeLeft <= lowBalanceThreshold &&
+					newTimeLeft > 0
+				) {
+					setHasLowBalance(true);
+					if (!lowBalanceNotified) {
+						setLowBalanceNotified(true);
+						toast({
+							title: "Call Will End Soon",
+							description: "Client's wallet balance is low.",
+						});
 					}
-
-					return newTimeLeft;
-				});
+				} else if (newTimeLeft > lowBalanceThreshold) {
+					setHasLowBalance(false);
+					setLowBalanceNotified(false);
+				}
 			}
 		}, 1000);
 
 		return () => clearInterval(intervalId);
 	}, [
-		walletBalance,
-		lowBalanceNotified,
-		toast,
-		endCall,
-		isVideoCall,
-		isMeetingOwner,
-		setWalletBalance,
 		isTimerRunning,
+		isMeetingOwner,
+		audioRatePerMinute,
+		videoRatePerMinute,
+		lowBalanceNotified,
+		lowBalanceThreshold,
+		endCall,
+		toast,
+		callStartedAt,
+		walletBalance,
 	]);
-
-	useEffect(() => {
-		walletBalanceRef.current = walletBalance;
-	}, [walletBalance]);
 
 	return (
 		<CallTimerContext.Provider
 			value={{
-				timeLeft,
+				timeLeft: formatTimeLeft(timeLeft),
 				hasLowBalance,
 				endCall,
 				pauseTimer,
 				resumeTimer,
 				anyModalOpen,
 				setAnyModalOpen,
+				totalTimeUtilized,
 			}}
 		>
 			{children}
