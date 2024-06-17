@@ -30,7 +30,6 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 
 		try {
 			const response = callId && (await getCallFeedbacks(callId));
-			console.log(response);
 			const hasFeedback = response.length > 0;
 			setFeedbackExists(hasFeedback);
 

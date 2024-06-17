@@ -17,7 +17,12 @@ const CallTimer = () => {
 					.padStart(2, "0")}
 			</p>
 			<p>Balance: Rs. {walletBalance.toFixed(2)}</p>
-			{hasLowBalance && <RechargeModal setWalletBalance={setWalletBalance} />}
+			{hasLowBalance && (
+				<RechargeModal
+					walletBalance={walletBalance}
+					setWalletBalance={setWalletBalance}
+				/>
+			)}
 		</div>
 	);
 };

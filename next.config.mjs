@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
+    reactStrictMode: false,
+
     images: {
         remotePatterns: [
             {
@@ -8,6 +11,9 @@ const nextConfig = {
             {
                 hostname: 'images.unsplash.com'
             },
+            {
+                hostname: 'drive.google.com'
+            }
         ],
     },
 };
