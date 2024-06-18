@@ -86,8 +86,11 @@ const MeetingRoom = () => {
 	}, [participantCount, anyModalOpen, call]);
 
 	useEffect(() => {
-		const handleBeforeUnload = () => {
+		const handleBeforeUnload = (event: any) => {
+			event.preventDefault();
+			event.returnValue = "";
 			call?.endCall();
+			return event.returnValue;
 		};
 
 		const handlePageHide = (event: any) => {
