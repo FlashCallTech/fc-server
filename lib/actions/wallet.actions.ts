@@ -4,6 +4,7 @@ import Client from "../database/models/client.model";
 import Creator from "../database/models/creator.model";
 import Transaction from "../database/models/transaction.model";
 import Wallet from "../database/models/wallet.models";
+import { handleError } from "../utils";
 
 export async function addMoney({ userId, userType, amount }: WalletParams) {
 	try {
@@ -105,5 +106,44 @@ export async function processPayout({
 	} catch (error) {
 		console.error("Error in processPayout:", error);
 		throw new Error("Error processing payout");
+	}
+}
+
+export async function getTransactionsByUserId(userId: string) {
+	try {
+		await connectToDatabase();
+		const transactions = await Transaction.find({ userId }).lean();
+		console.log(transactions);
+		return transactions;
+	} catch (error) {
+		console.error(error);
+		handleError(error);
+	}
+}
+
+export async function getTransactionsByType(type: "debit" | "credit") {
+	try {
+		await connectToDatabase();
+		const transactions = await Transaction.find({ type }).lean();
+		console.log(transactions);
+		return transactions;
+	} catch (error) {
+		console.error(error);
+		handleError(error);
+	}
+}
+
+export async function getTransactionsByUserIdAndType(
+	userId: string,
+	type: "debit" | "credit"
+) {
+	try {
+		await connectToDatabase();
+		const transactions = await Transaction.find({ userId, type }).lean();
+		console.log(transactions);
+		return transactions;
+	} catch (error) {
+		console.error(error);
+		handleError(error);
 	}
 }

@@ -48,7 +48,6 @@ export const handleTransaction = async ({
 				title: "Transaction Done",
 				description: "Redirecting ...",
 			});
-			router.push(`/feedback/${callId}`);
 			return;
 		}
 
@@ -93,7 +92,6 @@ export const handleTransaction = async ({
 
 		// remove the activeCallId after transaction is done otherwise user will be redirected to this page and then transactons will take place
 		localStorage.removeItem("activeCallId");
-		router.push(`/feedback/${callId}`);
 	} catch (error) {
 		console.error("Error handling wallet changes:", error);
 		toast({
@@ -103,6 +101,7 @@ export const handleTransaction = async ({
 		router.push("/");
 	} finally {
 		// Update wallet balance after transaction
+		router.push(`/feedback/${callId}`);
 		updateWalletBalance();
 	}
 };

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Script from "next/script";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
 	PaymentFailedResponse,
 	PaymentResponse,
@@ -10,24 +10,29 @@ import {
 } from "@/types";
 import { useUser } from "@clerk/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import Link from "next/link";
 
 const About: React.FC = () => {
 	const searchParams = useSearchParams();
 	const amount = searchParams.get("amount");
 	const { setWalletBalance } = useWalletBalanceContext();
 
-
 	const [method, setMethod] = useState("");
-	const {user} = useUser()
+	const { user } = useUser();
+	const router = useRouter();
+	const amountInt: number | null = amount ? parseFloat(amount) : null;
 
-	const amountInt: number | null = amount ? parseInt(amount) : null;
-
-	const subtotal: number | null = amountInt !== null ? amountInt : null;
+	const subtotal: number | null =
+		amountInt !== null ? parseFloat(amountInt.toFixed(2)) : null;
 	const gstRate: number = 18; // GST rate is 18%
 	const gstAmount: number | null =
-		subtotal !== null ? (subtotal * gstRate) / 100 : null;
+		subtotal !== null
+			? parseFloat(((subtotal * gstRate) / 100).toFixed(2))
+			: null;
 	const totalPayable: number | null =
-		subtotal !== null && gstAmount !== null ? subtotal + gstAmount : null;
+		subtotal !== null && gstAmount !== null
+			? parseFloat((subtotal + gstAmount).toFixed(2))
+			: null;
 
 	const PaymentHandler = async (
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -86,18 +91,22 @@ const About: React.FC = () => {
 						);
 
 						const jsonRes: any = await validateRes.json();
-						
+
 						// Add money to user wallet upon successful validation
 						const userId = user?.publicMetadata?.userId as string; // Replace with actual user ID
 						const userType = "Client"; // Replace with actual user type
-						setWalletBalance(amountInt!)
+						setWalletBalance(parseFloat(amountInt!.toFixed(2)));
 
 						await fetch("/api/v1/wallet/addMoney", {
 							method: "POST",
-							body: JSON.stringify({ userId, userType, amount: amountInt }),
+							body: JSON.stringify({
+								userId,
+								userType,
+								amount: parseFloat(amountInt!.toFixed(2)),
+							}),
 							headers: { "Content-Type": "application/json" },
 						});
-						
+						router.push("/payment");
 					} catch (error) {
 						console.error("Validation request failed:", error);
 					}
@@ -129,15 +138,19 @@ const About: React.FC = () => {
 	};
 
 	return (
-		<div className="overflow-y-scroll no-scrollbar p-4 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+		<div className="overflow-y-scroll no-scrollbar p-4 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center justify-center w-full">
 			<Script src="https://checkout.razorpay.com/v1/checkout.js" />
 
 			{/* Payment Information */}
-			<section className="mb-8">
-				<button className="mb-4 text-lg font-bold text-black">
-					&larr; Payment Information
-				</button>
-
+			<section className="w-full mb-8">
+				<div className="flex items-center gap-2 mb-4">
+					<Link href="/payment" className="text-xl font-bold">
+						&larr;
+					</Link>
+					<span className="text-lg font-bold text-black">
+						Payment Information
+					</span>
+				</div>
 				{/* Payment Details */}
 				<div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
 					<h2 className="text-sm text-gray-500 mb-4">Payment Details</h2>
@@ -147,22 +160,22 @@ const About: React.FC = () => {
 					</div>
 					<div className="flex justify-between mb-2">
 						<span>GST(18%)</span>
-						<span>{`₹${gstAmount}`}</span>
+						<span>{`₹${gstAmount?.toFixed(2)}`}</span>
 					</div>
 					<div className="flex justify-between font-bold">
 						<span>Total Payable Amount</span>
-						<span>{`₹${totalPayable}`}</span>
+						<span>{`₹${totalPayable?.toFixed(2)}`}</span>
 					</div>
 				</div>
 			</section>
 
 			{/* UPI Payment Options */}
-			<section className="mb-8">
-				<div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-					<h3 className="text-sm text-gray-500 mb-4">
+			<section className="w-full grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4 mb-8">
+				<div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow flex flex-col items-start justify-center gap-4 w-full ">
+					<h3 className="text-sm text-gray-500">
 						Pay directly with your favourite UPI apps
 					</h3>
-					<div className="grid grid-cols-2 gap-4 mb-4 text-sm text-gray-500">
+					<div className="w-full grid grid-cols-2 gap-4 text-sm text-gray-500">
 						{[
 							{ name: "UPI", icon: "/upi.svg" },
 							{ name: "NetBanking", icon: "/netbanking.svg" },
@@ -171,7 +184,7 @@ const About: React.FC = () => {
 						].map((app) => (
 							<button
 								key={app.name}
-								className="flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
+								className="flex flex-col items-center max-w-44 bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
 								onClick={() => setMethod(app.name.toLowerCase())}
 							>
 								<Image
@@ -187,10 +200,9 @@ const About: React.FC = () => {
 					</div>
 					<button className="text-black">Pay with other UPI apps &rarr;</button>
 				</div>
-			</section>
 
-			{/* Other Payment Methods */}
-			<section className="mb-8">
+				{/* Other Payment Methods */}
+
 				<div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
 					<h3 className="text-sm text-gray-500 font-medium mb-4">
 						Other Payment Methods
@@ -210,7 +222,7 @@ const About: React.FC = () => {
 				</div>
 			</section>
 
-			<div className="flex flex-row items-center justify-center opacity-[75%] mb-8">
+			<div className="w-full flex flex-row items-center justify-center opacity-[75%] mb-8">
 				<Image
 					src="/secure.svg"
 					width={20}
@@ -225,7 +237,7 @@ const About: React.FC = () => {
 
 			{/* Payment Button */}
 			<button
-				className="w-full py-3 text-black bg-white rounded-lg border-2 border-black"
+				className="w-full md:w-1/3 mx-auto py-3 text-black bg-white rounded-lg border-2 border-black hover:bg-green-1 hover:text-white"
 				style={{ boxShadow: "3px 3px black" }}
 				onClick={PaymentHandler}
 			>
