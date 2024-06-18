@@ -84,7 +84,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			const members: MemberRequest[] = [
 				{
-					user_id: "6668228bbad947e0e80b2b7f",
+					user_id: "66715dd9ed259b141bc99683",
 					// user_id: "66681d96436f89b49d8b498b",
 					custom: { name: String(creator.username), type: "expert" },
 					role: "call_member",
@@ -97,11 +97,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
-					? `Video Call With Expert ${creator.username}`
-					: `Audio Call With Expert ${creator.username}`
-			}`;
+			const description = `${callType === "video"
+				? `Video Call With Expert ${creator.username}`
+				: `Audio Call With Expert ${creator.username}`
+				}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -144,7 +143,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
-		
+
 		// console.log(chatRef);
 		const chatRequestsRef = collection(db, "chatRequests");
 
@@ -153,7 +152,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const creatorChatsDocRef = doc(
 				db,
 				"userchats",
-				"6668228bbad947e0e80b2b7f"
+				"66715dd9ed259b141bc99683"
 			);
 
 			const userChatsDocSnapshot = await getDoc(userChatsDocRef);
@@ -169,7 +168,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 				const existingChat =
 					userChatsData.chats.find(
-						(chat: any) => chat.receiverId === "6668228bbad947e0e80b2b7f"
+						(chat: any) => chat.receiverId === "66715dd9ed259b141bc99683"
 					) ||
 					creatorChatsData.chats.find(
 						(chat: any) => chat.receiverId === clientId
@@ -186,7 +185,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			// Create a new chat request
 			const newChatRequestRef = doc(chatRequestsRef);
 			await setDoc(newChatRequestRef, {
-				creatorId: "6668228bbad947e0e80b2b7f",
+				creatorId: "66715dd9ed259b141bc99683",
 				clientId: clientId,
 				status: "pending",
 				chatId: chatId,
@@ -202,267 +201,277 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			}
 
 			setSheetOpen(true);
-		} catch (error) {
-			console.error(error);
-			toast({ title: "Failed to send chat request" });
-		}
-	};
 
-	const listenForChatRequests = () => {
-		const q = query(
-			chatRequestsRef,
-			where("creatorId", "==", "6668228bbad947e0e80b2b7f"),
-			where("status", "==", "pending")
-		);
-
-		const unsubscribe = onSnapshot(q, (snapshot) => {
-			const chatRequests = snapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			}));
-			if (chatRequests.length > 0) {
-				setChatRequest(chatRequests[0]);
-			}
-		});
-
-		return unsubscribe;
-	};
-
-	const handleAcceptChat = async () => {
-		const userChatsRef = collection(db, "userchats");
-		const chatId = chatRequest.chatId;
-
-		localStorage.setItem(
-			"user2",
-			JSON.stringify({
-				_id: "6668228bbad947e0e80b2b7f",
-				clientId: chatRequest.clientId,
-				creatorId: chatRequest.creatorId,
-				requestId: chatRequest.id,
-				fullName: "Aseem Gupta",
-				photo:
-					"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
+			const chatRequestDoc = doc(chatRequestsRef, newChatRequestRef.id);
+			const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
+				const data = doc.data();
+				if (data && data.status === "accepted") {
+					unsubscribe();
+					localStorage.setItem(
+						"user2",
+						JSON.stringify({
+							_id: "66715dd9ed259b141bc99683",
+							clientId: data.clientId,
+							creatorId: data.creatorId,
+							requestId: doc.id,
+							fullName: "Aseem Gupta",
+							photo:
+								"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
+						})
+					);
+					// router.push(`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}&startedAt=${data.startedAt}`);
+				}
 			})
-		);
+		 } catch (error) {
+				console.error(error);
+				toast({ title: "Failed to send chat request" });
+			}
+		};
 
-		try {
-			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
-			if (!existingChatDoc.exists()) {
-				await setDoc(doc(db, "chats", chatId), {
-					createdAt: serverTimestamp(),
-					clientId: clientId,
-					status: "active",
-					messages: [],
+		const listenForChatRequests = () => {
+			const q = query(
+				chatRequestsRef,
+				where("creatorId", "==", "66715dd9ed259b141bc99683"),
+				where("status", "==", "pending")
+			);
+
+			const unsubscribe = onSnapshot(q, (snapshot) => {
+				const chatRequests = snapshot.docs.map((doc) => ({
+					id: doc.id,
+					...doc.data(),
+				}));
+				if (chatRequests.length > 0) {
+					setChatRequest(chatRequests[0]);
+				}
+			});
+
+			return unsubscribe;
+		};
+
+		const handleAcceptChat = async () => {
+			const userChatsRef = collection(db, "userchats");
+			const chatId = chatRequest.chatId;
+
+			try {
+				const existingChatDoc = await getDoc(doc(db, "chats", chatId));
+				if (!existingChatDoc.exists()) {
+					await setDoc(doc(db, "chats", chatId), {
+						startedAt: new Date(),
+						endedAt: null,
+						clientId: clientId,
+						status: "active",
+						messages: [],
+					});
+
+					const creatorChatUpdate = updateDoc(
+						doc(userChatsRef, chatRequest.creatorId),
+						{
+							chats: arrayUnion({
+								chatId: chatId,
+								lastMessage: "",
+								receiverId: chatRequest.clientId,
+								updatedAt: new Date(),
+							}),
+						}
+					);
+
+					const clientChatUpdate = updateDoc(
+						doc(userChatsRef, chatRequest.clientId),
+						{
+							chats: arrayUnion({
+								chatId: chatId,
+								lastMessage: "",
+								receiverId: chatRequest.creatorId,
+								updatedAt: new Date(),
+							}),
+						}
+					);
+					await Promise.all([creatorChatUpdate, clientChatUpdate]);
+				}
+				else {
+					await updateDoc(doc(db, "chats", chatId), {
+						startedAt: new Date(),
+						endedAt: null
+					})
+				}
+
+				await updateDoc(doc(chatRequestsRef, chatRequest.id), {
+					status: "accepted",
 				});
 
-				const creatorChatUpdate = updateDoc(
-					doc(userChatsRef, chatRequest.creatorId),
-					{
-						chats: arrayUnion({
-							chatId: chatId,
-							lastMessage: "",
-							receiverId: chatRequest.clientId,
-							updatedAt: new Date(),
-						}),
-					}
-				);
+				await updateDoc(doc(chatRef, chatId), {
+					status: "active",
+				});
 
-				const clientChatUpdate = updateDoc(
-					doc(userChatsRef, chatRequest.clientId),
-					{
-						chats: arrayUnion({
-							chatId: chatId,
-							lastMessage: "",
-							receiverId: chatRequest.creatorId,
-							updatedAt: new Date(),
-						}),
-					}
-				);
-				await Promise.all([creatorChatUpdate, clientChatUpdate]);
+				setSheetOpen(false);
+			} catch (error) {
+				console.error(error);
+				toast({ title: "Failed to accept chat request" });
 			}
-			else{
-				await updateDoc(doc(db, "chats", chatId), {
-					createdAt: new Date()
-				})
-			}
-
-			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
-				status: "accepted",
-			});
-
-			await updateDoc(doc(chatRef, chatId), {
-				status: "active",
-			});
-
-			setSheetOpen(false);
-		} catch (error) {
-			console.error(error);
-			toast({ title: "Failed to accept chat request" });
-		}
-	};
-
-	const handleRejectChat = async () => {
-		if (!chatRequest) return;
-
-		try {
-			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
-				status: "rejected",
-			});
-
-			setChatRequest(null);
-			setSheetOpen(false);
-		} catch (error) {
-			console.error(error);
-			toast({ title: "Failed to reject chat request" });
-		}
-	};
-
-	useEffect(() => {
-		if (!chatRequest) return;
-
-		const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
-		const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
-			const data = doc.data();
-			if (data && data.status === "accepted") {
-				unsubscribe();
-				router.push(`/chat/${chatRequest.chatId}`);
-			}
-		});
-
-		return () => unsubscribe();
-	}, [chatRequest, router]);
-
-	useEffect(() => {
-		const unsubscribe = listenForChatRequests();
-		return () => {
-			unsubscribe();
 		};
-	}, ["6668228bbad947e0e80b2b7f"]);
 
-	if (!client || !user) return <Loader />;
+		const handleRejectChat = async () => {
+			if (!chatRequest) return;
 
-	const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
+			try {
+				await updateDoc(doc(chatRequestsRef, chatRequest.id), {
+					status: "rejected",
+				});
 
-	return (
-		<div className="flex flex-col w-full items-center justify-center gap-4">
-			{/* Book Video Call */}
-			<div
-				className="callOptionContainer"
-				style={{
-					boxShadow: theme,
-				}}
-				onClick={() => {
-					setMeetingState("isInstantMeeting");
-					setCallType("video");
-				}}
-			>
+				setChatRequest(null);
+				setSheetOpen(false);
+			} catch (error) {
+				console.error(error);
+				toast({ title: "Failed to reject chat request" });
+			}
+		};
+
+		useEffect(() => {
+			if (!chatRequest) return;
+
+			const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
+			const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
+				const data = doc.data();
+				if (data && data.status === "accepted") {
+					unsubscribe();
+					router.push(`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}&startedAt=${chatRequest.startedAt}`)
+				}
+			});
+
+			return () => unsubscribe();
+		}, [chatRequest, router]);
+
+		useEffect(() => {
+			const unsubscribe = listenForChatRequests();
+			return () => {
+				unsubscribe();
+			};
+		}, ["66715dd9ed259b141bc99683"]);
+
+		if (!client || !user) return <Loader />;
+
+		const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
+
+		return (
+			<div className="flex flex-col w-full items-center justify-center gap-4">
+				{/* Book Video Call */}
 				<div
-					className={`flex gap-4 items-center font-semibold`}
-					style={{ color: creator.themeSelected }}
+					className="callOptionContainer"
+					style={{
+						boxShadow: theme,
+					}}
+					onClick={() => {
+						setMeetingState("isInstantMeeting");
+						setCallType("video");
+					}}
 				>
-					{video}
-					Book Video Call
+					<div
+						className={`flex gap-4 items-center font-semibold`}
+						style={{ color: creator.themeSelected }}
+					>
+						{video}
+						Book Video Call
+					</div>
+					<span className="text-xs tracking-widest">
+						Rs. {creator.videoRate}/Min
+					</span>
 				</div>
-				<span className="text-xs tracking-widest">
-					Rs. {creator.videoRate}/Min
-				</span>
-			</div>
 
-			{/* Book Audio Call */}
-			<div
-				className="callOptionContainer"
-				style={{
-					boxShadow: theme,
-				}}
-				onClick={() => {
-					setMeetingState("isInstantMeeting");
-					setCallType("audio");
-				}}
-			>
+				{/* Book Audio Call */}
 				<div
-					className={`flex gap-4 items-center font-semibold`}
-					style={{ color: creator.themeSelected }}
+					className="callOptionContainer"
+					style={{
+						boxShadow: theme,
+					}}
+					onClick={() => {
+						setMeetingState("isInstantMeeting");
+						setCallType("audio");
+					}}
 				>
-					{audio}
-					Book Audio Call
+					<div
+						className={`flex gap-4 items-center font-semibold`}
+						style={{ color: creator.themeSelected }}
+					>
+						{audio}
+						Book Audio Call
+					</div>
+					<span className="text-xs tracking-widest">
+						Rs. {creator.audioRate}/Min
+					</span>
 				</div>
-				<span className="text-xs tracking-widest">
-					Rs. {creator.audioRate}/Min
-				</span>
-			</div>
 
-			{/* Book Chat */}
-			<div
-				className="callOptionContainer"
-				style={{
-					boxShadow: theme,
-				}}
-				onClick={handleChat}
-			>
-				<button
-					className={`flex gap-4 items-center font-semibold`}
-					style={{ color: creator.themeSelected }}
+				{/* Book Chat */}
+				<div
+					className="callOptionContainer"
+					style={{
+						boxShadow: theme,
+					}}
+					onClick={handleChat}
 				>
-					{chat}
-					Chat Now
-				</button>
-				<span className="text-xs tracking-widest">
-					Rs. {creator.chatRate}/Min
-				</span>
-			</div>
+					<button
+						className={`flex gap-4 items-center font-semibold`}
+						style={{ color: creator.themeSelected }}
+					>
+						{chat}
+						Chat Now
+					</button>
+					<span className="text-xs tracking-widest">
+						Rs. {creator.chatRate}/Min
+					</span>
+				</div>
 
-			<MeetingModal
-				isOpen={meetingState === "isJoiningMeeting"}
-				onClose={() => setMeetingState(undefined)}
-				title="Type the link here"
-				className="text-center"
-				buttonText="Join Meeting"
-				handleClick={() => router.push(values.link)}
-			>
-				<Input
-					placeholder="Meeting link"
-					onChange={(e: any) => setValues({ ...values, link: e.target.value })}
-					className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+				<MeetingModal
+					isOpen={meetingState === "isJoiningMeeting"}
+					onClose={() => setMeetingState(undefined)}
+					title="Type the link here"
+					className="text-center"
+					buttonText="Join Meeting"
+					handleClick={() => router.push(values.link)}
+				>
+					<Input
+						placeholder="Meeting link"
+						onChange={(e: any) => setValues({ ...values, link: e.target.value })}
+						className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+					/>
+				</MeetingModal>
+
+				<MeetingModal
+					isOpen={meetingState === "isInstantMeeting"}
+					onClose={() => setMeetingState(undefined)}
+					title="Request will be sent to Expert"
+					className="text-center"
+					buttonText="Start Session"
+					handleClick={createMeeting}
 				/>
-			</MeetingModal>
 
-			<MeetingModal
-				isOpen={meetingState === "isInstantMeeting"}
-				onClose={() => setMeetingState(undefined)}
-				title="Request will be sent to Expert"
-				className="text-center"
-				buttonText="Start Session"
-				handleClick={createMeeting}
-			/>
-
-			{chatRequest &&
-				user?.publicMetadata?.userId === "6668228bbad947e0e80b2b7f" && (
-					<div className="chatRequestModal">
-						<p>Incoming chat request from {chatRequest.clientId}</p>
-						<Button onClick={handleAcceptChat}>Accept</Button>
-						<Button onClick={handleRejectChat}>Reject</Button>
-					</div>
-				)}
-
-			<Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
-				<SheetTrigger asChild>
-					<div className="hidden"></div>
-				</SheetTrigger>
-				<SheetContent
-					side="bottom"
-					className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[200px] max-h-fit w-full sm:max-w-[444px] mx-auto"
-				>
-					<div className="relative flex flex-col items-center gap-7">
-						<div className="flex flex-col py-5 items-center justify-center gap-4 w-full text-center">
-							<span className="font-semibold text-xl">
-								Waiting for the creator to accept your chat request...
-							</span>
+				{chatRequest &&
+					user?.publicMetadata?.userId === "66715dd9ed259b141bc99683" && (
+						<div className="chatRequestModal">
+							<p>Incoming chat request from {chatRequest.clientId}</p>
+							<Button onClick={handleAcceptChat}>Accept</Button>
+							<Button onClick={handleRejectChat}>Reject</Button>
 						</div>
-					</div>
-				</SheetContent>
-			</Sheet>
-		</div>
-	);
-};
+					)}
 
-export default CallingOptions;
+				<Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+					<SheetTrigger asChild>
+						<div className="hidden"></div>
+					</SheetTrigger>
+					<SheetContent
+						side="bottom"
+						className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[200px] max-h-fit w-full sm:max-w-[444px] mx-auto"
+					>
+						<div className="relative flex flex-col items-center gap-7">
+							<div className="flex flex-col py-5 items-center justify-center gap-4 w-full text-center">
+								<span className="font-semibold text-xl">
+									Waiting for the creator to accept your chat request...
+								</span>
+							</div>
+						</div>
+					</SheetContent>
+				</Sheet>
+			</div>
+		);
+	};
+
+	export default CallingOptions;
