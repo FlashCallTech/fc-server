@@ -10,6 +10,7 @@ import { useWalletBalanceContext } from "./WalletBalanceContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { creatorUser } from "@/types";
+import chatTime from "@/hooks/chatTime";
 
 interface ChatTimerContextProps {
 	timeLeft: string;
@@ -26,7 +27,6 @@ interface ChatTimerProviderProps {
 	children: ReactNode;
 	clientId: string;
 	creatorId: string;
-    startedAt: string;
 }
 
 const ChatTimerContext = createContext<ChatTimerContextProps | null>(null);
@@ -53,7 +53,6 @@ export const ChatTimerProvider = ({
 	children,
 	clientId,
 	creatorId,
-	startedAt,
 }: ChatTimerProviderProps) => {
 	const { toast } = useToast();
 	const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
@@ -67,6 +66,7 @@ export const ChatTimerProvider = ({
 	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
 	const lowBalanceThreshold = 300; // Threshold in seconds
 	const router = useRouter();
+	const {startedAt} = chatTime();
 
 	const endChat = async () => {
 		toast({
@@ -94,7 +94,7 @@ export const ChatTimerProvider = ({
 		let maxChatDuration = (walletBalance / ratePerMinute) * 60; // in seconds
 		maxChatDuration = maxChatDuration > 3600 ? 3600 : maxChatDuration; // Limit to 60 minutes (3600 seconds)
 
-		const chatStartedTime = new Date(startedAt);
+		const chatStartedTime = new Date(startedAt!);
 
 		const intervalId = setInterval(() => {
 			if (isTimerRunning) {

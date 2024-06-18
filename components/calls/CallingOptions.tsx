@@ -212,7 +212,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				clientId: clientId,
 				status: "pending",
 				chatId: chatId,
-				createdAt: serverTimestamp(),
+				createdAt: Date.now(),
 			});
 
 			if (!userChatsDocSnapshot.exists()) {
@@ -279,7 +279,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
 			if (!existingChatDoc.exists()) {
 				await setDoc(doc(db, "chats", chatId), {
-					startedAt: new Date(),
+					startedAt: Date.now(),
 					endedAt: null,
 					clientId: clientId,
 					status: "active",
@@ -312,7 +312,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
 			} else {
 				await updateDoc(doc(db, "chats", chatId), {
-					startedAt: new Date(),
+					startedAt: Date.now(),
 					endedAt: null,
 				});
 			}

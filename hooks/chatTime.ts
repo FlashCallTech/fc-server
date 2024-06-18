@@ -4,7 +4,7 @@ import { Timestamp, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 interface Chat {
-    createdAt: Timestamp;
+    startedAt: number;
     endedAt: Timestamp;
     messages: {
         senderId: string;
@@ -19,7 +19,7 @@ interface Chat {
 const chatTime = () => {
     const { chatId } = useParams();
     const [chat, setChat] = useState<Chat | undefined>();
-    const [startedAt, setStartedAt] = useState()
+    const [startedAt, setStartedAt] = useState<number>()
     const [creator, setCreator] = useState();
 
     useEffect(() => {
@@ -39,7 +39,7 @@ const chatTime = () => {
 
     useEffect(() => {
         const unSub = onSnapshot(doc(db, "chats", chatId as string), (res: any) => {
-            setStartedAt(res.data().startedAt);
+            setStartedAt(res.data().startedAt as number);
         });
 
         return () => unSub();
