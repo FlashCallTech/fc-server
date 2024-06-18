@@ -16,7 +16,11 @@ const CallTimer = () => {
 		.padStart(2, "0");
 
 	return (
-		<div className="fixed top-4 right-4 bg-green-1 p-4 rounded-lg">
+		<div
+			className={`fixed top-4 right-4  ${
+				hasLowBalance ? "#ffffff3d" : "bg-green-1"
+			} p-4 rounded-lg`}
+		>
 			{isLoading ? (
 				<p>Loading...</p>
 			) : (

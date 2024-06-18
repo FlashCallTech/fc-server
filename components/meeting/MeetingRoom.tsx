@@ -85,24 +85,25 @@ const MeetingRoom = () => {
 		return () => clearTimeout(timeoutId);
 	}, [participantCount, anyModalOpen, call]);
 
-	const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-		event.preventDefault();
-		event.returnValue = ""; // This triggers the browser's confirmation dialog.
-	};
-
-	const handleUnload = () => {
-		call?.endCall();
-	};
-
 	useEffect(() => {
+		const handleBeforeUnload = () => {
+			call?.endCall();
+		};
+
+		const handlePageHide = (event: any) => {
+			if (!event.persisted) {
+				call?.endCall();
+			}
+		};
+
 		window.addEventListener("beforeunload", handleBeforeUnload);
-		window.addEventListener("unload", handleUnload);
+		window.addEventListener("pagehide", handlePageHide);
 
 		return () => {
 			window.removeEventListener("beforeunload", handleBeforeUnload);
-			window.removeEventListener("unload", handleUnload);
+			window.removeEventListener("pagehide", handlePageHide);
 		};
-	}, []);
+	}, [call]);
 
 	// Call Layouts
 	const CallLayoutMobile = useCallback(

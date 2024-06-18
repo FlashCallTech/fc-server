@@ -84,7 +84,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			const members: MemberRequest[] = [
 				{
-					user_id: "6668228bbad947e0e80b2b7f",
+					user_id: "66715dd9ed259b141bc99683",
 					// user_id: "66681d96436f89b49d8b498b",
 					custom: { name: String(creator.username), type: "expert" },
 					role: "call_member",
@@ -110,6 +110,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			let maxCallDuration = (walletBalance / ratePerMinute) * 60; // in seconds
 			maxCallDuration =
 				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+
+			// Check if maxCallDuration is less than 5 minutes (300 seconds)
+			if (maxCallDuration < 300) {
+				toast({
+					title: "Insufficient Balance",
+					description: "Your balance is below the minimum amount.",
+				});
+				router.push("/payment");
+				return;
+			}
 
 			console.log(maxCallDuration, ratePerMinute);
 
@@ -144,7 +154,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
-		
 		// console.log(chatRef);
 		const chatRequestsRef = collection(db, "chatRequests");
 
@@ -279,11 +288,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}
 				);
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
-			}
-			else{
+			} else {
 				await updateDoc(doc(db, "chats", chatId), {
-					createdAt: new Date()
-				})
+					createdAt: new Date(),
+				});
 			}
 
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {

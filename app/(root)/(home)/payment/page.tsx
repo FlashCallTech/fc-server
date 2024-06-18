@@ -1,39 +1,79 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import { useUser } from "@clerk/nextjs";
+import axios from "axios";
+import Loader from "@/components/shared/Loader";
+import ContentLoading from "@/components/shared/ContentLoading";
+
+interface Transaction {
+	_id: string;
+	amount: number;
+	createdAt: string;
+	type: "credit" | "debit";
+}
 
 const Home: React.FC = () => {
-	const [btn, setBtn] = useState("All");
-
+	const [btn, setBtn] = useState<"All" | "Credit" | "Debit">("All");
+	const { walletBalance } = useWalletBalanceContext();
 	const [rechargeAmount, setRechargeAmount] = useState("");
+	const { user, isLoaded } = useUser();
+	const [loading, setLoading] = useState(false);
+	const [errorMessage, setErrorMessage] = useState("");
+	const [transactions, setTransactions] = useState<Transaction[]>([]);
 
 	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setRechargeAmount(event.target.value);
 	};
 
+	useEffect(() => {
+		const fetchTransactions = async () => {
+			try {
+				setLoading(true);
+				const response = await axios.get(
+					`/api/v1/transaction/getUserTransactions?userId=${
+						user?.publicMetadata?.userId
+					}&filter=${btn.toLowerCase()}`
+				);
+				setTransactions(response.data);
+			} catch (error) {
+				console.error("Error fetching transactions:", error);
+				setErrorMessage("Unable to fetch transactions");
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		if (user) {
+			fetchTransactions();
+		}
+	}, [btn, user]);
+
+	if (!isLoaded) return <Loader />;
+
 	return (
-		<div className="overflow-y-scroll no-scrollbar p-4 bg-white text-gray-800">
+		<div className="overflow-y-scroll no-scrollbar p-4 bg-white text-gray-800 w-full h-full">
 			{/* Balance Section */}
 			<section className="flex flex-col pb-5">
-				<h1 className="w-[91px] h-[28px] top-[159px] left-[16px] text-2xl leading-7 font-bold">
-					Rs. 0.00
-				</h1>
-				<h2 className="w-[97px] h-[18px] top-[191px] left-[16px] text-gray-500 font-normal leading-5">
+				<span className="w-fit text-2xl leading-7 font-bold">
+					Rs. {walletBalance.toFixed(2)}
+				</span>
+				<h2 className="w-fit text-gray-500 font-normal leading-5">
 					Total Balance
 				</h2>
 			</section>
 
 			{/* Recharge Section */}
-			<section className="flex flex-col items-center justify-center pb-7">
-				<div className="w-[100%] h-[56px] top-[229px] left-[16px] flex justify-center items-center font-normal leading-5 border-[1px] rounded-[8px] px-2 pb-9">
+			<section className="flex flex-col gap-5 items-center justify-center md:items-start pb-7">
+				<div className="w-[100%] flex justify-center items-center font-normal leading-5 border-[1px] rounded-lg p-4">
 					<input
 						type="text"
 						placeholder="Enter amount in INR"
 						value={rechargeAmount}
 						onChange={handleInputChange}
-						className="w-[146px] h-[18px] top-[248px] left-[32px] flex-grow mr-2"
+						className="w-full flex-grow mr-2 outline-none"
 					/>
 					<Link href={`/recharge?amount=${rechargeAmount}`}>
 						<button className="w-[88px] h-[32px] top-[241px] left-[236px] bg-gray-800 text-white font-bold leading-4 text-sm rounded-[6px]">
@@ -41,11 +81,11 @@ const Home: React.FC = () => {
 						</button>
 					</Link>
 				</div>
-				<div className="grid grid-cols-3 gap-6 m:gap-8 md:grid-cols-6 md:gap-8 text-sm m:text-[18px] sm:text-[19px] md:text-[17px] lg:text-[20px] xl:text-[21px] 2xl:text-[20px] font-bold leading-4 top-[309px]">
+				<div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8 text-sm font-semibold leading-4 w-full">
 					{["99", "199", "299", "499", "999", "2999"].map((amount) => (
 						<button
 							key={amount}
-							className="w-[92px] h-[55px] m:w-[110px] m:h-[60px] sm:w-[150px] sm:h-[65px] md:w-[100px] md:h-[60px] lg:w-[140px] lg:h-[70px] xl:w-[180px] xl:h-[75px] 2xl:w-[220px] 2xl:h-[60px] border-2 border-black rounded shadow hover:bg-gray-200 dark:hover:bg-gray-800"
+							className="px-4 py-3 border-2 border-black rounded shadow hover:bg-gray-200 dark:hover:bg-gray-800"
 							style={{ boxShadow: "3px 3px black" }}
 							onClick={() => setRechargeAmount(amount)}
 						>
@@ -56,15 +96,15 @@ const Home: React.FC = () => {
 			</section>
 
 			{/* Transaction History Section */}
-			<section>
+			<section className="flex flex-col items-start justify-start gap-4 w-full h-fit">
 				<h2 className=" text-gray-500 font-normal leading-7">
 					Transaction History
 				</h2>
-				<div className="flex space-x-2  text-xs font-bold leading-4">
+				<div className="flex space-x-2  text-xs font-bold leading-4 w-fit">
 					{["All", "Credit", "Debit"].map((filter) => (
 						<button
 							key={filter}
-							onClick={() => setBtn(filter)}
+							onClick={() => setBtn(filter as "All" | "Credit" | "Debit")}
 							className={`px-5 py-1 border-2 border-black rounded-full ${
 								filter === btn
 									? "bg-gray-800 text-white"
@@ -75,56 +115,41 @@ const Home: React.FC = () => {
 						</button>
 					))}
 				</div>
-				<ul className="space-y-4">
-					{[
-						{
-							id: "546332145",
-							date: "17 May 2024, 12:30 PM",
-							amount: "+ ₹700.00",
-							type: "credit",
-						},
-						{
-							id: "546332146",
-							date: "15 May 2024, 11:30 AM",
-							amount: "- ₹700.00",
-							type: "debit",
-						},
-						{
-							id: "546332147",
-							date: "15 May 2024, 11:30 AM",
-							amount: "- ₹700.00",
-							type: "debit",
-						},
-						{
-							id: "546332148",
-							date: "15 May 2024, 11:30 AM",
-							amount: "+ ₹700.00",
-							type: "credit",
-						},
-					].map((transaction) => (
-						<li
-							key={transaction.id}
-							className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 border-b-2"
-						>
-							<div>
-								<p className="font-normal text-sm leading-4">
-									Transaction ID {transaction.id}
-								</p>
-								<p className="text-gray-500 font-normal text-xs leading-4">
-									{transaction.date}
-								</p>
+				<ul className="space-y-4 w-full">
+					{!loading ? (
+						transactions.length === 0 ? (
+							<div className="flex flex-col items-center justify-center size-full text-xl flex-1 min-h-44 text-red-500 font-semibold">
+								<span>No {btn} transactions Listed</span>
 							</div>
-							<p
-								className={`font-bold text-sm leading-4 ${
-									transaction.type === "credit"
-										? "text-green-500"
-										: "text-red-500"
-								}`}
-							>
-								{transaction.amount}
-							</p>
-						</li>
-					))}
+						) : (
+							transactions.map((transaction) => (
+								<li
+									key={transaction?._id}
+									className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 border-b-2"
+								>
+									<div className="flex flex-col items-start justify-center gap-2">
+										<p className="font-normal text-sm leading-4">
+											Transaction ID <strong>{transaction?._id}</strong>
+										</p>
+										<p className="text-gray-500 font-normal text-xs leading-4">
+											{new Date(transaction?.createdAt).toLocaleString()}
+										</p>
+									</div>
+									<p
+										className={`font-bold text-sm leading-4 ${
+											transaction?.type === "credit"
+												? "text-green-500"
+												: "text-red-500"
+										}`}
+									>
+										₹{transaction?.amount.toFixed(2)}
+									</p>
+								</li>
+							))
+						)
+					) : (
+						<ContentLoading />
+					)}
 				</ul>
 			</section>
 		</div>

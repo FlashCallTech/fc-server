@@ -59,7 +59,7 @@ const Navbar = () => {
 					<SignedOut>
 						<Button
 							asChild
-							className="text-white hover:opacity-80 bg-blue-1"
+							className="text-white hover:opacity-80 bg-green-1"
 							size="lg"
 						>
 							<Link href="/sign-in">Login</Link>
