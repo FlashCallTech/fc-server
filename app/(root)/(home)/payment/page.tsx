@@ -142,7 +142,7 @@ const Home: React.FC = () => {
 												: "text-red-500"
 										}`}
 									>
-										₹{transaction?.amount.toFixed(2)}
+										{transaction?.type === "credit" ? (`+ ₹${transaction?.amount.toFixed(2)}`): (`- ₹${transaction?.amount.toFixed(2)}`)}	
 									</p>
 								</li>
 							))

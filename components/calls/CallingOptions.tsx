@@ -121,7 +121,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				return;
 			}
 
-			console.log(maxCallDuration, ratePerMinute);
+			// console.log(maxCallDuration, ratePerMinute);
 
 			await call.getOrCreate({
 				data: {
@@ -154,6 +154,19 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
+		let maxCallDuration = (walletBalance / parseInt(creator?.chatRate, 10)) * 60; // in seconds
+			maxCallDuration =
+				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+
+			// Check if maxCallDuration is less than 5 minutes (300 seconds)
+			if (maxCallDuration < 300) {
+				toast({
+					title: "Insufficient Balance",
+					description: "Your balance is below the minimum amount.",
+				});
+				router.push("/payment");
+				return;
+			}
 		// console.log(chatRef);
 		const chatRequestsRef = collection(db, "chatRequests");
 
