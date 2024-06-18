@@ -9,3 +9,10 @@ export const editProfileFormSchema = z.object({
 		.min(3, "Description must be at least 3 characters")
 		.max(400, "Description must be less than 400 characters"),
 });
+
+export const enterAmountSchema = z.object({
+	rechargeAmount: z
+		.string()
+		.min(1, "Amount must be at least 1 rupees")
+		.max(100000, "Amount must be at most 1,00,000 rupees"),
+});

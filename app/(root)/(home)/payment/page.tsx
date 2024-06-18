@@ -7,6 +7,20 @@ import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import Loader from "@/components/shared/Loader";
 import ContentLoading from "@/components/shared/ContentLoading";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { enterAmountSchema } from "@/lib/validator";
 
 interface Transaction {
 	_id: string;
@@ -18,15 +32,23 @@ interface Transaction {
 const Home: React.FC = () => {
 	const [btn, setBtn] = useState<"All" | "Credit" | "Debit">("All");
 	const { walletBalance } = useWalletBalanceContext();
-	const [rechargeAmount, setRechargeAmount] = useState("");
 	const { user, isLoaded } = useUser();
 	const [loading, setLoading] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		setRechargeAmount(event.target.value);
-	};
+	// 1. Define your form.
+	const form = useForm<z.infer<typeof enterAmountSchema>>({
+		resolver: zodResolver(enterAmountSchema),
+		defaultValues: {
+			rechargeAmount: "",
+		},
+	});
+
+	// 2. Define a submit handler.
+	function onSubmit(values: z.infer<typeof enterAmountSchema>) {
+		console.log(values);
+	}
 
 	useEffect(() => {
 		const fetchTransactions = async () => {
@@ -67,19 +89,36 @@ const Home: React.FC = () => {
 
 			{/* Recharge Section */}
 			<section className="flex flex-col gap-5 items-center justify-center md:items-start pb-7">
-				<div className="w-[100%] flex justify-center items-center font-normal leading-5 border-[1px] rounded-lg p-4">
-					<input
-						type="text"
-						placeholder="Enter amount in INR"
-						value={rechargeAmount}
-						onChange={handleInputChange}
-						className="w-full flex-grow mr-2 outline-none"
-					/>
-					<Link href={`/recharge?amount=${rechargeAmount}`}>
-						<button className="w-[88px] h-[32px] top-[241px] left-[236px] bg-gray-800 text-white font-bold leading-4 text-sm rounded-[6px]">
-							Recharge
-						</button>
-					</Link>
+				<div className="w-[100%] flex justify-center items-center font-normal leading-5 border-[1px] rounded-lg p-3">
+					<Form {...form}>
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="w-full flex items-center"
+						>
+							<FormField
+								control={form.control}
+								name="rechargeAmount"
+								render={({ field }) => (
+									<FormItem className="flex-grow mr-2">
+										<FormControl>
+											<Input
+												placeholder="Enter amount in INR"
+												{...field}
+												className="w-full outline-none border-none focus-visible:ring-offset-0 focus-visible:!ring-transparent placeholder:text-grey-500"
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<Button
+								type="submit"
+								className="w-fit px-4 py-3 bg-gray-800 text-white font-bold leading-4 text-sm rounded-[6px]"
+							>
+								Recharge
+							</Button>
+						</form>
+					</Form>
 				</div>
 				<div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8 text-sm font-semibold leading-4 w-full">
 					{["99", "199", "299", "499", "999", "2999"].map((amount) => (
@@ -87,7 +126,7 @@ const Home: React.FC = () => {
 							key={amount}
 							className="px-4 py-3 border-2 border-black rounded shadow hover:bg-gray-200 dark:hover:bg-gray-800"
 							style={{ boxShadow: "3px 3px black" }}
-							onClick={() => setRechargeAmount(amount)}
+							onClick={() => form.setValue("rechargeAmount", amount)}
 						>
 							₹{amount}
 						</button>
@@ -118,9 +157,9 @@ const Home: React.FC = () => {
 				<ul className="space-y-4 w-full">
 					{!loading ? (
 						transactions.length === 0 ? (
-							<div className="flex flex-col items-center justify-center size-full text-xl flex-1 min-h-44 text-red-500 font-semibold">
-								<span>No {btn} transactions Listed</span>
-							</div>
+							<p className="flex flex-col items-center justify-center size-full text-xl flex-1 min-h-44 text-red-500 font-semibold">
+								{errorMessage ? errorMessage : `No ${btn} transactions Listed`}
+							</p>
 						) : (
 							transactions.map((transaction) => (
 								<li
@@ -142,7 +181,9 @@ const Home: React.FC = () => {
 												: "text-red-500"
 										}`}
 									>
-										{transaction?.type === "credit" ? (`+ ₹${transaction?.amount.toFixed(2)}`): (`- ₹${transaction?.amount.toFixed(2)}`)}	
+										{transaction?.type === "credit"
+											? `+ ₹${transaction?.amount.toFixed(2)}`
+											: `- ₹${transaction?.amount.toFixed(2)}`}
 									</p>
 								</li>
 							))
