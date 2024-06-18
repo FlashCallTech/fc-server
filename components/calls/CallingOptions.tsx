@@ -162,7 +162,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const creatorChatsDocRef = doc(
 				db,
 				"userchats",
-				"6668228bbad947e0e80b2b7f"
+				"66715dd9ed259b141bc99683"
 			);
 
 			const userChatsDocSnapshot = await getDoc(userChatsDocRef);
@@ -178,7 +178,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 				const existingChat =
 					userChatsData.chats.find(
-						(chat: any) => chat.receiverId === "6668228bbad947e0e80b2b7f"
+						(chat: any) => chat.receiverId === "66715dd9ed259b141bc99683"
 					) ||
 					creatorChatsData.chats.find(
 						(chat: any) => chat.receiverId === clientId
@@ -195,7 +195,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			// Create a new chat request
 			const newChatRequestRef = doc(chatRequestsRef);
 			await setDoc(newChatRequestRef, {
-				creatorId: "6668228bbad947e0e80b2b7f",
+				creatorId: "66715dd9ed259b141bc99683",
 				clientId: clientId,
 				status: "pending",
 				chatId: chatId,
@@ -211,6 +211,27 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			}
 
 			setSheetOpen(true);
+
+			const chatRequestDoc = doc(chatRequestsRef, newChatRequestRef.id);
+			const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
+				const data = doc.data();
+				if (data && data.status === "accepted") {
+					unsubscribe();
+					localStorage.setItem(
+						"user2",
+						JSON.stringify({
+							_id: "66715dd9ed259b141bc99683",
+							clientId: data.clientId,
+							creatorId: data.creatorId,
+							requestId: doc.id,
+							fullName: "Aseem Gupta",
+							photo:
+								"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
+						})
+					);
+					// router.push(`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}&startedAt=${data.startedAt}`);
+				}
+			});
 		} catch (error) {
 			console.error(error);
 			toast({ title: "Failed to send chat request" });
@@ -220,7 +241,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const listenForChatRequests = () => {
 		const q = query(
 			chatRequestsRef,
-			where("creatorId", "==", "6668228bbad947e0e80b2b7f"),
+			where("creatorId", "==", "66715dd9ed259b141bc99683"),
 			where("status", "==", "pending")
 		);
 
@@ -241,24 +262,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
 
-		localStorage.setItem(
-			"user2",
-			JSON.stringify({
-				_id: "6668228bbad947e0e80b2b7f",
-				clientId: chatRequest.clientId,
-				creatorId: chatRequest.creatorId,
-				requestId: chatRequest.id,
-				fullName: "Aseem Gupta",
-				photo:
-					"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
-			})
-		);
-
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
 			if (!existingChatDoc.exists()) {
 				await setDoc(doc(db, "chats", chatId), {
-					createdAt: serverTimestamp(),
+					startedAt: new Date(),
+					endedAt: null,
 					clientId: clientId,
 					status: "active",
 					messages: [],
@@ -290,7 +299,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
 			} else {
 				await updateDoc(doc(db, "chats", chatId), {
-					createdAt: new Date(),
+					startedAt: new Date(),
+					endedAt: null,
 				});
 			}
 
@@ -333,7 +343,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const data = doc.data();
 			if (data && data.status === "accepted") {
 				unsubscribe();
-				router.push(`/chat/${chatRequest.chatId}`);
+				router.push(
+					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}&startedAt=${chatRequest.startedAt}`
+				);
 			}
 		});
 
@@ -345,7 +357,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		return () => {
 			unsubscribe();
 		};
-	}, ["6668228bbad947e0e80b2b7f"]);
+	}, ["66715dd9ed259b141bc99683"]);
 
 	if (!client || !user) return <Loader />;
 
@@ -444,7 +456,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			/>
 
 			{chatRequest &&
-				user?.publicMetadata?.userId === "6668228bbad947e0e80b2b7f" && (
+				user?.publicMetadata?.userId === "66715dd9ed259b141bc99683" && (
 					<div className="chatRequestModal">
 						<p>Incoming chat request from {chatRequest.clientId}</p>
 						<Button onClick={handleAcceptChat}>Accept</Button>
