@@ -10,9 +10,12 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 			<h1 className="font-bold text-xl mb-2">Outgoing Call ...</h1>
 			<div className="flex flex-col items-center justify-center gap-10">
 				<img
-					src={expert?.user?.image!}
+					src={expert?.user?.image || "/images/defaultProfileImage.png"}
 					alt=""
 					className="rounded-full w-28 h-28 object-cover"
+					onError={(e) => {
+						e.currentTarget.src = "/images/defaultProfileImage.png";
+					}}
 				/>
 				<div className="flex flex-col items-center justify-center gap-2">
 					<p className="text-xs">Connecting Call With </p>
