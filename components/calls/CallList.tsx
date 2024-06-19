@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import MeetingCard from "../meeting/MeetingCard";
 import Link from "next/link";
 import Image from "next/image";
+import ContentLoading from "../shared/ContentLoading";
 
 const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
 	const { endedCalls, upcomingCalls, callRecordings, isLoading } =
@@ -112,10 +113,12 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
 							(meeting as CallRecording).start_time?.toLocaleString()
 						}
 						callId={(meeting as Call).id}
+						members={(meeting as Call).state?.members}
 					/>
 				))
 			) : (
 				<div className="flex flex-col w-full items-center justify-center h-full gap-7">
+					<ContentLoading />
 					<h1 className="text-2xl font-semibold text-black">
 						{noCallsMessage}
 					</h1>

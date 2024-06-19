@@ -19,6 +19,9 @@ const MyIncomingCallUI = ({
 					width={100}
 					height={100}
 					className="rounded-full w-28 h-28 object-cover"
+					onError={(e) => {
+						e.currentTarget.src = "/images/defaultProfileImage.png";
+					}}
 				/>
 
 				<div className="flex flex-col items-center justify-center gap-2">

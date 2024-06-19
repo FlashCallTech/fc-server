@@ -24,7 +24,7 @@ const Navbar = () => {
 					src="/icons/logoDesktop.png"
 					width={100}
 					height={100}
-					alt="unite logo"
+					alt="flashcall logo"
 					className="w-full h-full rounded-xl hoverScaleEffect"
 				/>
 			</Link>
