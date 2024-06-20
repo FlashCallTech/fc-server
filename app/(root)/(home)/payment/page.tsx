@@ -195,11 +195,11 @@ const Home: React.FC = () => {
 										</p>
 									</div>
 									<p
-										className={`font-bold text-sm leading-4 ${
+										className={`font-bold text-sm leading-4 flex-shrink-0 truncate ${
 											transaction?.type === "credit"
 												? "text-green-500"
 												: "text-red-500"
-										}`}
+										} `}
 									>
 										{transaction?.type === "credit"
 											? `+ ₹${transaction?.amount.toFixed(2)}`
