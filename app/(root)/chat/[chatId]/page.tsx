@@ -1,22 +1,34 @@
 'use client'
-import React from 'react'
-import ChatInterface from '@/components/chat/ChatInterface'
-import { useParams } from 'next/navigation'
-import { ChatTimerProvider } from '@/lib/context/ChatTimerContext'
-import { useUser } from '@clerk/nextjs'
-import { Timestamp } from 'firebase/firestore'
-const page = () => {
-	const { clientId, creatorId } = useParams();
-	return (
-		<div>
-			<ChatTimerProvider
-				clientId={clientId as string}
-				creatorId={creatorId as string}
-			>
-				<ChatInterface />
-			</ChatTimerProvider>
-		</div>
-	)
-}
+import React, { useEffect, useState } from 'react';
+import ChatInterface from '@/components/chat/ChatInterface';
+import { ChatTimerProvider } from '@/lib/context/ChatTimerContext';
 
-export default page
+const Page = () => {
+    const [queryParams, setQueryParams] = useState<{ clientId: string | null, creatorId: string | null }>({ clientId: null, creatorId: null });
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        const clientId = params.get('clientId');
+        const creatorId = params.get('creatorId');
+
+        setQueryParams({ clientId, creatorId });
+    }, []);
+
+    if (!queryParams.clientId || !queryParams.creatorId) {
+        return null; // or Loading indicator or some error handling
+    }
+
+    return (
+        <div>
+            <ChatTimerProvider
+                clientId={queryParams.clientId as string}
+                creatorId={queryParams.creatorId as string}
+            >
+                <ChatInterface />
+            </ChatTimerProvider>
+        </div>
+    );
+};
+
+export default Page;

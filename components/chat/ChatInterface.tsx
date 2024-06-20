@@ -395,7 +395,7 @@ const ChatInterface: React.FC = () => {
 							setShowDialog={handleCloseDialog}
 						/>
 					)}
-				<ChatTimer />
+				<ChatTimer endCall={endCall}/>
 				<div className="w-1/4 mx-auto text-center bg-[rgba(255,255,255,0.24)] py-1 text-white text-xs leading-6 font-bold rounded-lg mt-2 mb-4">
 					07 Dec 2024
 				</div>
