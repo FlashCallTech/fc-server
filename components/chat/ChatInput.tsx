@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { ChangeEventHandler } from 'react';
+
 import Image from 'next/image';
 import AudioVisualizer from '@/lib/AudioVisualizer';
 
@@ -7,7 +8,7 @@ interface Props {
     discardAudio: () => void;
     text: string;
     setText: (text: string) => void;
-    handleImg: (imageDataUrlOrFile: string | File) => void; // Updated to handle both types
+    handleImg: ChangeEventHandler<HTMLInputElement>; // Updated to handle both types
     handleSend: () => void;
     toggleRecording: () => void;
     img: { file: File | null; url: string };
@@ -29,30 +30,7 @@ const ChatInput: React.FC<Props> = ({
     audioStream,
     audioContext,
 }) => {
-    const [capturedImage, setCapturedImage] = useState<string | null>(null);
-
-    // Function to handle capturing image
-    const captureImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imageDataUrl = e.target?.result as string;
-                setCapturedImage(imageDataUrl); // Store captured image
-                handleImg(file); // Pass File to handleImg function
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    // Function to handle approval of captured image
-    const approveCapturedImage = () => {
-        if (capturedImage) {
-            handleImg(capturedImage); // Pass imageDataUrl to handleImg function
-            setCapturedImage(null); // Clear captured image after handling
-        }
-    };
-
+    
     if (isRecording && !audioStream) {
         console.warn('Audio stream is not valid when recording:', audioStream);
     }
@@ -83,7 +61,7 @@ const ChatInput: React.FC<Props> = ({
                             type="file"
                             id="file"
                             style={{ display: "none" }}
-                            onChange={captureImage} // Use captureImage for file input
+                            onChange={handleImg} 
                         />
                         {!text.trim() && (
                             <label htmlFor="capture">
@@ -94,7 +72,7 @@ const ChatInput: React.FC<Props> = ({
                                     accept="image/*"
                                     capture="environment"
                                     style={{ display: "none" }}
-                                    onChange={captureImage} // Use captureImage for camera capture
+                                    onChange={handleImg} 
                                 />
                             </label>
                         )}
@@ -107,7 +85,7 @@ const ChatInput: React.FC<Props> = ({
                     <Image src="/send.svg" width={30} height={30} alt="Send" className="w-10 h-10 bg-[rgba(80,166,92,1)] rounded-full px-1 py-1" />
                 </button>
             ) : (
-                <button onClick={isRecording ? approveCapturedImage : toggleRecording}>
+                <button onClick={toggleRecording}>
                     <Image src={isRecording ? '/send.svg' : "/mic.svg"} width={30} height={30} alt="Mic" className="w-10 h-10 bg-[rgba(80,166,92,1)] rounded-full px-1 py-1" />
                 </button>
             )}

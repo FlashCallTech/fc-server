@@ -159,7 +159,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
 			// Check if maxCallDuration is less than 5 minutes (300 seconds)
-			if (maxCallDuration < 300) {
+			if (maxCallDuration < 60) {
 				toast({
 					title: "Insufficient Balance",
 					description: "Your balance is below the minimum amount.",
