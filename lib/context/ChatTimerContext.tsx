@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { creatorUser } from "@/types";
 import chatTime from "@/hooks/chatTime";
 import { useUser } from "@clerk/nextjs";
+import useChat from "@/hooks/useChat";
 
 interface ChatTimerContextProps {
 	timeLeft: string;
@@ -69,6 +70,7 @@ export const ChatTimerProvider = ({
 	const lowBalanceThreshold = 300; // Threshold in seconds
 	const router = useRouter();
 	const {startedAt} = chatTime();
+	const {chatId, user2, handleEnd} = useChat();
 
 	const endChat = async () => {
 		toast({
@@ -111,7 +113,7 @@ export const ChatTimerProvider = ({
 				if (newTimeLeft <= 0) {
 					clearInterval(intervalId);
 					if(clientId===user?.publicMetadata?.userId){
-						endChat();
+						handleEnd(chatId, user2);
 					}	
 				}
 
