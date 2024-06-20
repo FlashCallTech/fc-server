@@ -18,13 +18,13 @@ const Navbar = () => {
 	const { walletBalance } = useWalletBalanceContext();
 
 	return (
-		<nav className="flex-between items-center fixed z-40 w-full px-6 py-4 lg:px-7 bg-white">
+		<nav className="flex-between items-center fixed z-40 w-full px-2 sm:px-6 py-4 lg:px-7 bg-white">
 			<Link href="/" className="flex items-center gap-4 ">
 				<Image
 					src="/icons/logoDesktop.png"
 					width={100}
 					height={100}
-					alt="unite logo"
+					alt="flashcall logo"
 					className="w-full h-full rounded-xl hoverScaleEffect"
 				/>
 			</Link>
@@ -32,7 +32,7 @@ const Navbar = () => {
 			{isMounted && (
 				<>
 					<SignedIn>
-						<div className=" w-fit flex-between gap-5 text-white">
+						<div className=" w-fit flex-between gap-2 text-white">
 							<Link
 								href="/payment"
 								className="w-full flex items-center justify-center gap-2 text-black px-5 py-3 border border-black rounded-lg  hover:bg-green-1 group"

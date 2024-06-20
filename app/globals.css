@@ -26,7 +26,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-	background-color: #0e78f9;
+	background-color: #50a65c;
 	border-radius: 15px;
 }
 
@@ -112,7 +112,7 @@
 }
 
 :root {
-	--default-color: #0e78f9;
+	--default-color: #50a65c;
 	--secondary-color: #03a8f477;
 	--primary-color: #ffffff; /* Default color */
 }
@@ -129,7 +129,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-	background-color: #0e78f9;
+	background-color: #50a65c;
 	border-radius: 15px;
 }
 

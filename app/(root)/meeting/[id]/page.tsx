@@ -57,13 +57,7 @@ const MeetingPage = () => {
 	if (!call) {
 		return (
 			<div className="flex flex-col w-full items-center justify-center h-screen gap-7">
-				<Image
-					src="/icons/notFound.gif"
-					alt="Home"
-					width={1000}
-					height={1000}
-					className="w-96 h-auto rounded-xl object-cover"
-				/>
+				<ContentLoading />
 			</div>
 		);
 	}
