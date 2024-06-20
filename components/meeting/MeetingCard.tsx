@@ -5,7 +5,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import FeedbackCheck from "../feedbacks/FeedbackCheck";
-import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 interface MeetingCardProps {
 	title: string;
@@ -79,30 +79,34 @@ const MeetingCard = ({
 				) : (
 					<div className="relative animate-enterFromBottom flex w-fit items-start justify-center gap-4 max-xs:hidden">
 						{users.map((member, index) => (
-							<Link
-								href={
-									member?.custom?.type === "expert"
-										? `/creator/${member?.user?.id}`
-										: `/profile/${member?.user?.id}`
-								}
-								key={index}
-								className="flex items-center justify-center gap-2 hover:bg-black/20 rounded-xl px-2 py-1"
-							>
-								<Image
-									src={member?.user?.image}
-									alt="attendees"
-									width={40}
-									height={40}
-									className={"rounded-full shadow-md shadow-black/20"}
-									onError={(e) => {
-										e.currentTarget.src = "/images/defaultProfileImage.png";
-									}}
-								/>
-								<div className="flex flex-col w-full">
-									<span className="text-xs">{member?.user?.name}</span>
-									<span className="text-[10px]">{member?.custom?.type}</span>
-								</div>
-							</Link>
+							<Tooltip key={member?.user?.name}>
+								<TooltipTrigger asChild>
+									<article
+										key={index}
+										className="flex items-center justify-center gap-2 hover:bg-black/20 hoverScaleEffect rounded-xl px-3 pl-1 py-1 cursor-pointer"
+									>
+										<Image
+											src={member?.user?.image}
+											alt="attendees"
+											width={40}
+											height={40}
+											className={"rounded-full shadow-md shadow-black/20"}
+											onError={(e) => {
+												e.currentTarget.src = "/images/defaultProfileImage.png";
+											}}
+										/>
+										<div className="flex flex-col w-full">
+											<span className="text-xs">{member?.user?.name}</span>
+											<span className="text-[10px]">
+												{member?.custom?.type}
+											</span>
+										</div>
+									</article>
+								</TooltipTrigger>
+								<TooltipContent>
+									<p className="text-black">{member?.custom?.type}</p>
+								</TooltipContent>
+							</Tooltip>
 						))}
 					</div>
 				)}
