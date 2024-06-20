@@ -29,7 +29,7 @@ const MobileNav = () => {
 						alt="Profile"
 						width={24}
 						height={24}
-						className="rounded-full w-10 h-10 cursor-pointer hoverScaleEffect"
+						className="rounded-full w-10 h-10 mx-auto cursor-pointer hoverScaleEffect"
 					/>
 				</SheetTrigger>
 				<SheetContent

@@ -1,21 +1,43 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
-
 import { cn } from "@/lib/utils";
-import { avatarImages } from "@/constants";
 import { usePathname } from "next/navigation";
 import FeedbackCheck from "../feedbacks/FeedbackCheck";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 interface MeetingCardProps {
 	title: string;
 	date: string;
 	icon: string;
 	callId: string;
+	members: Array<any>;
 }
 
-const MeetingCard = ({ icon, title, date, callId }: MeetingCardProps) => {
+const MeetingCard = ({
+	icon,
+	title,
+	date,
+	callId,
+	members,
+}: MeetingCardProps) => {
 	const pathname = usePathname();
+	const [isLoading, setIsLoading] = useState(true);
+
+	const expert = members?.find((member) => member.custom.type === "expert");
+	const client = members?.find((member) => member.custom.type === "client");
+
+	const users = [expert, client];
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setIsLoading(false);
+		}, 2000); // Set the loading time to 2 seconds
+
+		return () => clearTimeout(timer);
+	}, []);
+
 	return (
 		<section
 			className={`flex min-h-[258px] w-full flex-col justify-between rounded-[14px] px-5 py-8 xl:max-w-[568px] bg-green-1 ${
@@ -39,25 +61,55 @@ const MeetingCard = ({ icon, title, date, callId }: MeetingCardProps) => {
 			</article>
 			<article
 				className={cn(
-					"flex flex-col sm:flex-row items-start justify-center sm:items-center relative gap-7 pt-5"
+					"flex flex-col sm:flex-row items-start justify-center sm:items-center sm:justify-between relative gap-7 pt-5"
 				)}
 			>
-				<div className="relative flex w-full max-xs:hidden">
-					{avatarImages.map((img, index) => (
-						<Image
-							key={index}
-							src={img}
-							alt="attendees"
-							width={40}
-							height={40}
-							className={cn("rounded-full", { absolute: index > 0 })}
-							style={{ top: 0, left: index * 28 }}
-						/>
-					))}
-					<div className="flex items-center justify-center absolute left-[136px] size-10 rounded-full border-[5px] border-dark-3 bg-dark-4">
-						+5
+				{isLoading ? (
+					<div className="flex items-center space-x-4 sm:w-1/2 w-full animate-pulse">
+						<div className="flex-1 space-y-4 py-1">
+							<div className="space-y-3">
+								<div className="grid grid-cols-3 gap-4">
+									<div className="h-2 bg-slate-300 rounded col-span-2"></div>
+									<div className="h-2 bg-slate-300 rounded col-span-1"></div>
+								</div>
+								<div className="h-2 bg-slate-300 rounded w-full"></div>
+							</div>
+						</div>
 					</div>
-				</div>
+				) : (
+					<div className="relative animate-enterFromBottom flex w-fit items-start justify-center gap-4 max-xs:hidden">
+						{users.map((member, index) => (
+							<Tooltip key={member?.user?.name}>
+								<TooltipTrigger asChild>
+									<article
+										key={index}
+										className="flex items-center justify-center gap-2 hover:bg-black/20 hoverScaleEffect rounded-xl px-3 pl-1 py-1 cursor-pointer"
+									>
+										<Image
+											src={member?.user?.image}
+											alt="attendees"
+											width={40}
+											height={40}
+											className={"rounded-full shadow-md shadow-black/20"}
+											onError={(e) => {
+												e.currentTarget.src = "/images/defaultProfileImage.png";
+											}}
+										/>
+										<div className="flex flex-col w-full">
+											<span className="text-xs">{member?.user?.name}</span>
+											<span className="text-[10px]">
+												{member?.custom?.type}
+											</span>
+										</div>
+									</article>
+								</TooltipTrigger>
+								<TooltipContent>
+									<p className="text-black">{member?.custom?.type}</p>
+								</TooltipContent>
+							</Tooltip>
+						))}
+					</div>
+				)}
 				<FeedbackCheck callId={callId} />
 			</article>
 		</section>

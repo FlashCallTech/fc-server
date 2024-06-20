@@ -23,7 +23,9 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 					style={{ backgroundColor: creator.themeSelected }}
 				>
 					<img
-						src={creator.photo}
+						src={
+							creator.photo ? creator.photo : "/images/defaultProfileImage.png"
+						}
 						alt="profile picture"
 						width={24}
 						height={24}
@@ -31,6 +33,9 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 							!pathname.includes("/creator") &&
 							"!max-w-full xl:!max-w-full xl:h-80"
 						} `}
+						onError={(e) => {
+							e.currentTarget.src = "/images/defaultProfileImage.png";
+						}}
 					/>
 					<div className="text-white flex flex-col items-start w-full">
 						{/* Username*/}

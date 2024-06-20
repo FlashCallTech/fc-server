@@ -53,9 +53,8 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 
 	if (feedbackExists === null) {
 		return (
-			<div className="flex items-center space-x-4 w-full animate-pulse">
-				<div className="flex-1 space-y-4 py-1">
-					<div className="h-3 bg-slate-300 rounded w-3/4"></div>
+			<div className="flex items-center space-x-4 sm:w-1/2 w-full animate-pulse">
+				<div className="flex-1 space-y-4 py-1 w-full">
 					<div className="space-y-3">
 						<div className="grid grid-cols-3 gap-4">
 							<div className="h-2 bg-slate-300 rounded col-span-2"></div>
@@ -69,7 +68,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 	}
 
 	return feedbackExists && userFeedbacks && userFeedbacks.length > 0 ? (
-		<div className="w-full flex items-center justify-start md:justify-end">
+		<div className="w-fit flex items-center justify-start md:justify-end">
 			<Dialog>
 				<DialogTrigger className="flex flex-col gap-1 items-start justify-start sm:justify-center">
 					<Rating
@@ -115,6 +114,10 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 												width={44}
 												height={44}
 												className="w-5 h-5 rounded-full"
+												onError={(e) => {
+													e.currentTarget.src =
+														"/images/defaultProfileImage.png";
+												}}
 											/>
 
 											<span className="text-xs">

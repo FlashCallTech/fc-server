@@ -44,7 +44,7 @@ const Sidebar = () => {
 								</Link>
 							</TooltipTrigger>
 							<TooltipContent>
-								<p>{item.label}</p>
+								<p className="text-black">{item.label}</p>
 							</TooltipContent>
 						</Tooltip>
 					);

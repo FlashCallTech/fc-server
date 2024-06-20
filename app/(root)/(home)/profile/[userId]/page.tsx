@@ -120,7 +120,7 @@ const UserProfilePage = () => {
 				<Typewriter
 					words={[
 						`Hi There ${userData.username}`,
-						"Unite Welcomes You",
+						"FlashCall Welcomes You",
 						"Glad to Have You",
 					]}
 					loop={true}
@@ -130,7 +130,7 @@ const UserProfilePage = () => {
 					deleteSpeed={50}
 					delaySpeed={2000}
 				/>
-				<Cursor cursorColor="#0E78F9" />
+				<Cursor cursorColor="#50A65C" />
 			</h1>
 
 			{/* user's calls */}

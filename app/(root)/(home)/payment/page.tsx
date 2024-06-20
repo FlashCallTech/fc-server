@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useUser } from "@clerk/nextjs";
 import axios from "axios";
@@ -10,7 +9,7 @@ import ContentLoading from "@/components/shared/ContentLoading";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -36,6 +35,7 @@ const Home: React.FC = () => {
 	const [loading, setLoading] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
+	const router = useRouter();
 
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof enterAmountSchema>>({
@@ -45,9 +45,13 @@ const Home: React.FC = () => {
 		},
 	});
 
-	// 2. Define a submit handler.
+	// 2. Watch the form values.
+	const rechargeAmount = form.watch("rechargeAmount");
+
+	// 3. Define a submit handler.
 	function onSubmit(values: z.infer<typeof enterAmountSchema>) {
-		console.log(values);
+		const rechargeAmount = values.rechargeAmount;
+		router.push(`/recharge?amount=${rechargeAmount}`);
 	}
 
 	useEffect(() => {
@@ -72,6 +76,18 @@ const Home: React.FC = () => {
 			fetchTransactions();
 		}
 	}, [btn, user]);
+
+	useEffect(() => {
+		const amountPattern = /^\d*$/;
+		if (!amountPattern.test(rechargeAmount)) {
+			form.setError("rechargeAmount", {
+				type: "manual",
+				message: "Amount must be a numeric value",
+			});
+		} else {
+			form.clearErrors("rechargeAmount");
+		}
+	}, [rechargeAmount, form]);
 
 	if (!isLoaded) return <Loader />;
 
@@ -105,6 +121,8 @@ const Home: React.FC = () => {
 												placeholder="Enter amount in INR"
 												{...field}
 												className="w-full outline-none border-none focus-visible:ring-offset-0 focus-visible:!ring-transparent placeholder:text-grey-500"
+												pattern="\d*"
+												title="Amount must be a numeric value"
 											/>
 										</FormControl>
 										<FormMessage />
@@ -113,7 +131,7 @@ const Home: React.FC = () => {
 							/>
 							<Button
 								type="submit"
-								className="w-fit px-4 py-3 bg-gray-800 text-white font-bold leading-4 text-sm rounded-[6px]"
+								className="w-fit px-4 py-3 bg-gray-800 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-black/60"
 							>
 								Recharge
 							</Button>
@@ -158,7 +176,9 @@ const Home: React.FC = () => {
 					{!loading ? (
 						transactions.length === 0 ? (
 							<p className="flex flex-col items-center justify-center size-full text-xl flex-1 min-h-44 text-red-500 font-semibold">
-								{errorMessage ? errorMessage : `No ${btn} transactions Listed`}
+								{errorMessage
+									? errorMessage
+									: `No transactions under ${btn} filter Listed`}
 							</p>
 						) : (
 							transactions.map((transaction) => (

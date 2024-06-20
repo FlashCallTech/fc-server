@@ -13,6 +13,7 @@ export const editProfileFormSchema = z.object({
 export const enterAmountSchema = z.object({
 	rechargeAmount: z
 		.string()
+		.regex(/^\d+$/, "Amount must be a numeric value")
 		.min(1, "Amount must be at least 1 rupees")
-		.max(100000, "Amount must be at most 1,00,000 rupees"),
+		.max(6, "Amount must be at most 1,00,000 rupees"),
 });

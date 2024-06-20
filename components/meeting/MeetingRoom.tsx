@@ -22,6 +22,7 @@ import { useUser } from "@clerk/nextjs";
 import CallTimer from "../calls/CallTimer";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 import { useToast } from "../ui/use-toast";
+import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 
 const MeetingRoom = () => {
 	const searchParams = useSearchParams();
@@ -41,6 +42,10 @@ const MeetingRoom = () => {
 	const participantCount = useParticipantCount();
 
 	const { anyModalOpen } = useCallTimerContext();
+
+	useWarnOnUnload("Are you sure you want to leave the meeting?", () =>
+		call?.endCall()
+	);
 
 	useEffect(() => {
 		const joinCall = async () => {
