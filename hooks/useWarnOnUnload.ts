@@ -10,10 +10,7 @@ const useWarnOnUnload = (message: string, onUnload: () => void) => {
 		};
 
 		const handleUnload = () => {
-			if (performance.navigation.type !== performance.navigation.TYPE_RELOAD) {
-				// Only call onUnload if it's not a page reload
-				onUnload();
-			}
+			onUnload();
 		};
 
 		window.addEventListener("beforeunload", handleBeforeUnload);

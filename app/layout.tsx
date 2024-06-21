@@ -1,11 +1,10 @@
 "use client";
-
+import "@stream-io/video-react-sdk/dist/css/styles.css";
+import "@smastrom/react-rating/style.css";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
-import "@stream-io/video-react-sdk/dist/css/styles.css";
-import "@smastrom/react-rating/style.css";
 import React, { useState, useEffect } from "react";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 

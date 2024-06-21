@@ -32,7 +32,7 @@ const Navbar = () => {
 			{isMounted && (
 				<>
 					<SignedIn>
-						<div className=" w-fit flex-between gap-2 text-white">
+						<div className=" w-fit h-full flex-between gap-2 text-white">
 							<Link
 								href="/payment"
 								className="w-full flex items-center justify-center gap-2 text-black px-5 py-3 border border-black rounded-lg  hover:bg-green-1 group"

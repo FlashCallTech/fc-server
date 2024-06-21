@@ -69,22 +69,27 @@ export const CallTimerProvider = ({
 	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
 	const { walletBalance } = useWalletBalanceContext();
 	const lowBalanceThreshold = 300;
-	const router = useRouter();
+	// const router = useRouter();
 	const call = useCall();
 	const callStartedAt = useCallStartsAt();
 	const [toastShown, setToastShown] = useState(false);
 
+	if (!call) {
+		throw new Error(
+			"useStreamCall must be used within a StreamCall component."
+		);
+	}
+
 	const endCall = async () => {
-		await call?.endCall();
 		if (!toastShown) {
+			setToastShown(true);
+			await call?.endCall();
 			toast({
 				title: "Call Has Ended",
 				description: "User Wallet is Empty ...",
 			});
-
-			setToastShown(true);
+			// router.push(`/feedback/${call?.id}`);
 		}
-		// router.push(`/feedback/${call?.id}`);
 	};
 
 	const pauseTimer = () => setIsTimerRunning(false);
@@ -128,9 +133,7 @@ export const CallTimerProvider = ({
 
 				if (newTimeLeft <= 0) {
 					clearInterval(intervalId);
-					if (isMeetingOwner) {
-						endCall();
-					}
+					endCall();
 				}
 
 				if (

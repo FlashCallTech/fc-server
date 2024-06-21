@@ -52,13 +52,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const chatRef = collection(db, "chats");
 	const clientId = user?.publicMetadata?.userId as string;
 
-	const handleCallAccepted = (call: Call) => {
+	const handleCallAccepted = async (call: Call) => {
 		toast({
 			title: "Call Accepted",
 			description: "The call has been accepted. Redirecting to meeting...",
 		});
 		setSheetOpen(false);
-		router.push(`/meeting/${call.id}?reload=true`);
+		call?.leave();
+		router.push(`/meeting/${call.id}`);
+		// router.push(`/meeting/${call.id}?reload=true`);
 	};
 
 	const handleCallRejected = () => {
@@ -84,7 +86,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			const members: MemberRequest[] = [
 				{
-					user_id: "66715dd9ed259b141bc99683",
+					user_id: "66743489cc9b328a2c2adb5c",
 					// user_id: "66681d96436f89b49d8b498b",
 					custom: { name: String(creator.username), type: "expert" },
 					role: "call_member",
@@ -123,7 +125,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			// console.log(maxCallDuration, ratePerMinute);
 
-			await call.getOrCreate({
+			await call.create({
+				ring: true,
 				data: {
 					starts_at: startsAt,
 					members: members,
@@ -137,8 +140,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						},
 					},
 				},
-
-				ring: true,
 			});
 
 			call.on("call.accepted", () => handleCallAccepted(call));
@@ -154,19 +155,20 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
-		let maxCallDuration = (walletBalance / parseInt(creator?.chatRate, 10)) * 60; // in seconds
-			maxCallDuration =
-				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+		let maxCallDuration =
+			(walletBalance / parseInt(creator?.chatRate, 10)) * 60; // in seconds
+		maxCallDuration =
+			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
-			// Check if maxCallDuration is less than 5 minutes (300 seconds)
-			if (maxCallDuration < 60) {
-				toast({
-					title: "Insufficient Balance",
-					description: "Your balance is below the minimum amount.",
-				});
-				router.push("/payment");
-				return;
-			}
+		// Check if maxCallDuration is less than 5 minutes (300 seconds)
+		if (maxCallDuration < 60) {
+			toast({
+				title: "Insufficient Balance",
+				description: "Your balance is below the minimum amount.",
+			});
+			router.push("/payment");
+			return;
+		}
 		// console.log(chatRef);
 		const chatRequestsRef = collection(db, "chatRequests");
 

@@ -7,8 +7,7 @@ import {
 	StreamTheme,
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
 import Loader from "@/components/shared/Loader";
 import { useToast } from "@/components/ui/use-toast";
 import { CallTimerProvider } from "@/lib/context/CallTimerContext";
@@ -22,23 +21,23 @@ import ContentLoading from "@/components/shared/ContentLoading";
 
 const MeetingPage = () => {
 	const { id } = useParams();
-	const searchParams = useSearchParams();
+	// const searchParams = useSearchParams();
 	const router = useRouter();
 	const { toast } = useToast();
 	const { call, isCallLoading } = useGetCallById(id);
 	const { user } = useUser();
 	const [isReloading, setIsReloading] = useState(false);
 
-	useEffect(() => {
-		const reload = searchParams.get("reload");
-		if (reload) {
-			setIsReloading(true);
-			const url = new URL(window.location.href);
-			url.searchParams.delete("reload");
-			window.history.replaceState({}, document.title, url.toString());
-			window.location.reload();
-		}
-	}, [searchParams]);
+	// useEffect(() => {
+	// 	const reload = searchParams.get("reload");
+	// 	if (reload) {
+	// 		setIsReloading(true);
+	// 		const url = new URL(window.location.href);
+	// 		url.searchParams.delete("reload");
+	// 		window.history.replaceState({}, document.title, url.toString());
+	// 		window.location.reload();
+	// 	}
+	// }, [searchParams]);
 
 	useEffect(() => {
 		if (!isCallLoading && !call) {
