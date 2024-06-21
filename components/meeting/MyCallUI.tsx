@@ -34,6 +34,8 @@ const MyCallUI = () => {
 				user && user.publicMetadata.userId === call?.state?.createdBy?.id;
 
 			const handleCallEnded = () => {
+				call.camera.disable();
+				call.microphone.disable();
 				if (!isMeetingOwner) {
 					localStorage.removeItem("activeCallId");
 					toast({

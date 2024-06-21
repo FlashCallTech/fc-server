@@ -103,6 +103,33 @@
 	border-radius: 15px;
 }
 
+.str-video__speaker-layout
+	.str-video__speaker-layout__spotlight
+	.str-video__video
+	.str-video__video--tall {
+	object-fit: cover !important;
+}
+
+.str-video__video--tall {
+	object-fit: cover !important;
+}
+
+.str-video__paginated-grid-layout .str-video__paginated-grid-layout__group {
+	max-width: 100% !important;
+}
+
+.str-video__device-settings {
+	min-width: 100%;
+}
+
+@media (min-width: 600px) {
+	.str-video__speaker-layout
+		.str-video__speaker-layout__spotlight
+		.str-video__video {
+		object-fit: cover !important;
+	}
+}
+
 @layer base {
 	body {
 		@apply !font-default;
