@@ -195,7 +195,7 @@ const Home: React.FC = () => {
 										</p>
 									</div>
 									<p
-										className={`font-bold text-sm leading-4 ${
+										className={`font-bold text-sm leading-4 w-fit whitespace-nowrap ${
 											transaction?.type === "credit"
 												? "text-green-500"
 												: "text-red-500"

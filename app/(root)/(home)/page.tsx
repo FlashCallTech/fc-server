@@ -38,7 +38,7 @@ const HomePage = () => {
 				{creators.map((creator, index) => (
 					<Link
 						href={`/creator/${creator._id}`}
-						className="min-w-full transition-all duration-500 hover:scale-95 hover:md:scale-105"
+						className="min-w-full transition-all duration-500 hover:scale-95 hover:lg:scale-105"
 						key={creator._id || index}
 					>
 						<CreatorDetails creator={creator} />

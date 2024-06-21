@@ -52,8 +52,10 @@ const MyCallUI = () => {
 				router.push("/");
 			};
 
-			const handleCallStarted = () => {
+			const handleCallStarted = async () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
+				// await call?.join();
+				router.push(`/meeting/${call.id}`);
 			};
 
 			call.on("call.ended", handleCallEnded);
@@ -86,12 +88,7 @@ const MyCallUI = () => {
 	// Handle incoming call UI
 	const [incomingCall] = incomingCalls;
 	if (incomingCall && !hide) {
-		return (
-			<MyIncomingCallUI
-				call={incomingCall}
-				onAccept={() => router.push(`/meeting/creator/${incomingCall.id}`)}
-			/>
-		);
+		return <MyIncomingCallUI call={incomingCall} />;
 	}
 
 	// Handle outgoing call UI

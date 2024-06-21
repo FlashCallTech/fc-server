@@ -62,6 +62,47 @@
 	top: -40px !important;
 }
 
+/* stream custom styles */
+
+.str-video__speaker-layout .str-video__speaker-layout__spotlight {
+	display: flex;
+	justify-content: center;
+	min-height: 0;
+	height: 89%;
+	/* margin-bottom: 16rem; */
+	position: absolute;
+	top: 0rem;
+	left: 0px;
+	width: 100%;
+	padding: 0rem 1rem;
+}
+
+.str-video__speaker-layout
+	.str-video__speaker-layout__participants-bar-buttons-wrapper {
+	position: absolute;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	bottom: 13%;
+	right: 7%;
+}
+
+.str-video__participant-view {
+	min-height: 172px !important;
+}
+
+.str-video__speaker-layout
+	.str-video__speaker-layout__participants-bar-wrapper
+	.str-video__speaker-layout__participants-bar
+	.str-video__speaker-layout__participant-tile {
+	width: 144px !important;
+	min-width: 144px;
+	max-width: 25vh;
+	padding: 0px;
+	border: 2px solid rgba(255, 255, 255, 0.233);
+	border-radius: 15px;
+}
+
 @layer base {
 	body {
 		@apply !font-default;
