@@ -199,7 +199,7 @@ const Home: React.FC = () => {
 											transaction?.type === "credit"
 												? "text-green-500"
 												: "text-red-500"
-										}`}
+										} `}
 									>
 										{transaction?.type === "credit"
 											? `+ ₹${transaction?.amount.toFixed(2)}`

@@ -177,7 +177,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const creatorChatsDocRef = doc(
 				db,
 				"userchats",
-				"66715dd9ed259b141bc99683"
+				"6675197dc56dfe13b3ccabd3"
 			);
 
 			const userChatsDocSnapshot = await getDoc(userChatsDocRef);
@@ -193,7 +193,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 				const existingChat =
 					userChatsData.chats.find(
-						(chat: any) => chat.receiverId === "66715dd9ed259b141bc99683"
+						(chat: any) => chat.receiverId === "6675197dc56dfe13b3ccabd3"
 					) ||
 					creatorChatsData.chats.find(
 						(chat: any) => chat.receiverId === clientId
@@ -210,7 +210,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			// Create a new chat request
 			const newChatRequestRef = doc(chatRequestsRef);
 			await setDoc(newChatRequestRef, {
-				creatorId: "66715dd9ed259b141bc99683",
+				creatorId: "6675197dc56dfe13b3ccabd3",
 				clientId: clientId,
 				status: "pending",
 				chatId: chatId,
@@ -235,7 +235,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					localStorage.setItem(
 						"user2",
 						JSON.stringify({
-							_id: "66715dd9ed259b141bc99683",
 							clientId: data.clientId,
 							creatorId: data.creatorId,
 							requestId: doc.id,
@@ -256,7 +255,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const listenForChatRequests = () => {
 		const q = query(
 			chatRequestsRef,
-			where("creatorId", "==", "66715dd9ed259b141bc99683"),
+			where("creatorId", "==", "6675197dc56dfe13b3ccabd3"),
 			where("status", "==", "pending")
 		);
 
@@ -372,7 +371,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		return () => {
 			unsubscribe();
 		};
-	}, ["66715dd9ed259b141bc99683"]);
+	}, ["6675197dc56dfe13b3ccabd3"]);
 
 	if (!client || !user) return <Loader />;
 
@@ -471,7 +470,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			/>
 
 			{chatRequest &&
-				user?.publicMetadata?.userId === "66715dd9ed259b141bc99683" && (
+				user?.publicMetadata?.userId === "6675197dc56dfe13b3ccabd3" && (
 					<div className="chatRequestModal">
 						<p>Incoming chat request from {chatRequest.clientId}</p>
 						<Button onClick={handleAcceptChat}>Accept</Button>

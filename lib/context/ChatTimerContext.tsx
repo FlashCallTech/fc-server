@@ -10,8 +10,8 @@ import { useWalletBalanceContext } from "./WalletBalanceContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { creatorUser } from "@/types";
-import chatTime from "@/hooks/chatTime";
 import { useUser } from "@clerk/nextjs";
+import useChat from "@/hooks/useChat";
 
 interface ChatTimerContextProps {
 	timeLeft: string;
@@ -22,6 +22,7 @@ interface ChatTimerContextProps {
 	anyModalOpen: boolean;
 	setAnyModalOpen: (isOpen: boolean) => void;
 	totalTimeUtilized: number;
+	chatRatePerMinute: number;
 }
 
 interface ChatTimerProviderProps {
@@ -68,7 +69,7 @@ export const ChatTimerProvider = ({
 	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
 	const lowBalanceThreshold = 300; // Threshold in seconds
 	const router = useRouter();
-	const {startedAt} = chatTime();
+	const {chatId, user2, handleEnd, startedAt} = useChat();
 
 	const endChat = async () => {
 		toast({
@@ -111,7 +112,7 @@ export const ChatTimerProvider = ({
 				if (newTimeLeft <= 0) {
 					clearInterval(intervalId);
 					if(clientId===user?.publicMetadata?.userId){
-						endChat();
+						handleEnd(chatId, user2);
 					}	
 				}
 
@@ -158,6 +159,7 @@ export const ChatTimerProvider = ({
 				anyModalOpen,
 				setAnyModalOpen,
 				totalTimeUtilized,
+				chatRatePerMinute,
 			}}
 		>
 			{children}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import ImageModal from '@/lib/imageModal';
 import { useUser } from '@clerk/nextjs';
@@ -30,7 +30,7 @@ interface Props {
 const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
     const { user } = useUser();
     const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
-
+    const endRef = useRef<HTMLDivElement | null>(null);
     const handleImageClick = (imageUrl: string) => {
         setFullImageUrl(imageUrl);
     };
@@ -38,6 +38,10 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
     const handleCloseModal = () => {
         setFullImageUrl(null);
     };
+
+    useEffect(() => {
+        endRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [chat]);
 
     const formatTime = (timestamp: Timestamp) => {
         const date = timestamp.toDate();
@@ -105,6 +109,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
                         </div>
                     </div>
                 )}
+                <div ref={endRef}></div>
             </div>
         </div>
     );

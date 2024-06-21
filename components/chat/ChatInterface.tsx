@@ -1,9 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
 import {
-	Timestamp,
 	arrayUnion,
 	doc,
 	getDoc,
@@ -13,30 +11,18 @@ import {
 import { db } from "@/lib/firebase";
 import { useUser } from "@clerk/nextjs";
 import upload from '../../lib/upload'
-import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import Messages from "@/components/chat/Messages";
 import ChatInput from "@/components/chat/ChatInput";
 import useChat from "@/hooks/useChat";
 import useUserStatus from "@/hooks/useUserStatus";
 import useMediaRecorder from "@/hooks/useMediaRecorder";
 import ChatTimer from "./ChatTimer";
-import chatTime from "@/hooks/chatTime";
 import EndCallDecision from "../calls/EndCallDecision";
 
-interface User2 {
-	_id: string;
-	clientId: string;
-	creatorId: string;
-	request: string;
-	fullName: string;
-	photo: string;
-}
 
 const ChatInterface: React.FC = () => {
-	const { chat, markMessagesAsSeen } = useChat();
+	const { chat, markMessagesAsSeen, handleEnd } = useChat();
 	const { user } = useUser();
-	const { walletBalance, setWalletBalance } = useWalletBalanceContext();
-	const { creator } = chatTime();
 	useUserStatus();
 	const {
 		audioStream,
@@ -49,7 +35,6 @@ const ChatInterface: React.FC = () => {
 		setIsRecording,
 	} = useMediaRecorder();
 	const [text, setText] = useState("");
-	const [user2, setUser2] = useState<User2>();
 	const [isImgUploading, setIsImgUploading] = useState(false);
 	const [isAudioUploading, setIsAudioUploading] = useState(false);
 	const [img, setImg] = useState({
@@ -57,21 +42,13 @@ const ChatInterface: React.FC = () => {
 		url: "",
 	});
 	const [showDialog, setShowDialog] = useState(false);
-	// const { setAnyModalOpen, totalTimeUtilized } = useChaTimerContext();
 	const [audio, setAudio] = useState<{ file: Blob | null; url: string }>({
 		file: null,
 		url: "",
 	});
 	const [receiverId, setReceiverId] = useState(null);
-	const { chatId } = useParams();
 	const audioContext = new AudioContext();
-
-	useEffect(() => {
-		const storedUser = localStorage.getItem("user2");
-		if (storedUser) {
-			setUser2(JSON.parse(storedUser));
-		}
-	}, []);
+	const { user2, chatId } = useChat();
 
 	useEffect(() => {
 		const fetchReceiverId = async () => {
@@ -300,7 +277,7 @@ const ChatInterface: React.FC = () => {
 	};
 
 	const handleDecisionDialog = async () => {
-		await handleEnd();
+		await handleEnd(chatId, user2);
 		setShowDialog(false);
 		// isMeetingOwner && router.push(`/feedback/${call?.id}/${totalTimeUtilized}`);
 		// toast({
@@ -311,45 +288,9 @@ const ChatInterface: React.FC = () => {
 
 	const handleCloseDialog = () => {
 		setShowDialog(false);
-		// setAnyModalOpen(false);
 	};
 
-	const getTime = (createdAt: Timestamp, endedAt: Timestamp) => {
-		const createdAtDate = createdAt.toDate();
-		const endedAtDate = endedAt.toDate();
-		const createdAtHoursInSeconds = createdAtDate.getHours() * 3600; // Convert hours to seconds
-		const endedAtHoursInSeconds = endedAtDate.getHours() * 3600;
-		const minutesInSeconds = createdAtDate.getMinutes() * 60; // Convert minutes to seconds
-		const endedAtMinutesInSeconds = endedAtDate.getMinutes() * 3600;
-		const createdAtInSeconds =
-			createdAtDate.getSeconds() + createdAtHoursInSeconds + minutesInSeconds;
-		const endedAtInSeconds =
-			endedAtDate.getSeconds() +
-			endedAtHoursInSeconds +
-			endedAtMinutesInSeconds;
-		return endedAtInSeconds - createdAtInSeconds;
-	};
-
-	const handleEnd = async () => {
-		try {
-			await updateDoc(doc(db, "chats", chatId as string), {
-				endedAt: new Date(),
-				status: "ended",
-			});
-			await updateDoc(doc(db, "userchats", user2?.clientId as string), {
-				online: false,
-			});
-			await updateDoc(doc(db, "userchats", user2?.creatorId as string), {
-				online: false,
-			});
-
-			// await updateDoc(doc(db, "chatRequests", user2?.request as string), {
-			// 	duration: getTime(chat?.createdAt!, chat?.endedAt!),
-			// });
-		} catch (error) {
-			console.error("Error ending chat:", error);
-		}
-	};
+	
 
 	return (
 		<div
@@ -387,15 +328,15 @@ const ChatInterface: React.FC = () => {
 					>
 						End Chat
 					</button>
-					
+
 				</div>
 				{showDialog && (
-						<EndCallDecision
-							handleDecisionDialog={handleDecisionDialog}
-							setShowDialog={handleCloseDialog}
-						/>
-					)}
-				<ChatTimer endCall={endCall}/>
+					<EndCallDecision
+						handleDecisionDialog={handleDecisionDialog}
+						setShowDialog={handleCloseDialog}
+					/>
+				)}
+				<ChatTimer endCall={endCall} />
 				<div className="w-1/4 mx-auto text-center bg-[rgba(255,255,255,0.24)] py-1 text-white text-xs leading-6 font-bold rounded-lg mt-2 mb-4">
 					07 Dec 2024
 				</div>

@@ -2,9 +2,21 @@
 import React, { useEffect, useState } from 'react';
 import ChatInterface from '@/components/chat/ChatInterface';
 import { ChatTimerProvider } from '@/lib/context/ChatTimerContext';
+import useChat from '@/hooks/useChat';
+import { handleTransaction } from '@/utils/ChatTransaction';
+import { useWalletBalanceContext } from '@/lib/context/WalletBalanceContext';
+
 
 const Page = () => {
     const [queryParams, setQueryParams] = useState<{ clientId: string | null, creatorId: string | null }>({ clientId: null, creatorId: null });
+    const {chatEnded, duration} = useChat();
+    const {updateWalletBalance} = useWalletBalanceContext();
+
+    // useEffect(() => {
+    //     if(chatEnded){
+    //         handleTransaction({duration: duration? duration?.toString(): ''});
+    //     }
+    // }, [chatEnded])
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
