@@ -1,9 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
 import {
-	Timestamp,
 	arrayUnion,
 	doc,
 	getDoc,
@@ -292,17 +290,7 @@ const ChatInterface: React.FC = () => {
 		setShowDialog(false);
 	};
 
-	const getTime = (createdAt: Timestamp, endedAt: Timestamp) => {
-		const createdAtDate = createdAt.toDate();
-		const endedAtDate = endedAt.toDate();
-		const createdAtHoursInSeconds = createdAtDate.getHours() * 3600; // Convert hours to seconds
-		const endedAtHoursInSeconds = endedAtDate.getHours() * 3600;
-		const minutesInSeconds = createdAtDate.getMinutes() * 60; // Convert minutes to seconds
-		const endedAtMinutesInSeconds = endedAtDate.getMinutes() * 3600;
-		const createdAtInSeconds = createdAtDate.getSeconds() + createdAtHoursInSeconds + minutesInSeconds;
-		const endedAtInSeconds = endedAtDate.getSeconds() + endedAtHoursInSeconds + endedAtMinutesInSeconds;
-		return endedAtInSeconds - createdAtInSeconds;
-	};
+	
 
 	return (
 		<div
