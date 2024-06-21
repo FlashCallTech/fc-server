@@ -76,7 +76,7 @@ const useChat = () => {
 
     useEffect(() => {
         if (startedAt && endedAt) {
-            const chatDuration = (endedAt - startedAt)/1000;
+            const chatDuration = (endedAt - startedAt);
             setDuration(chatDuration);
             const chatDurationMinutes = chatDuration / (1000 * 60); // Convert milliseconds to minutes
             const calculatedAmount = chatDurationMinutes * chatRatePerMinute;
