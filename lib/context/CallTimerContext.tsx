@@ -133,7 +133,7 @@ export const CallTimerProvider = ({
 
 				if (newTimeLeft <= 0) {
 					clearInterval(intervalId);
-					endCall();
+					// endCall();
 				}
 
 				if (
