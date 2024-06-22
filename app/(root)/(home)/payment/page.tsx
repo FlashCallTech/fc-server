@@ -175,7 +175,7 @@ const Home: React.FC = () => {
 				<ul className="space-y-4 w-full">
 					{!loading ? (
 						transactions.length === 0 ? (
-							<p className="flex flex-col items-center justify-center size-full text-xl flex-1 min-h-44 text-red-500 font-semibold">
+							<p className="flex flex-col items-center justify-center size-full text-xl px-7 text-center flex-1 min-h-44 text-red-500 font-semibold">
 								{errorMessage
 									? errorMessage
 									: `No transactions under ${btn} filter Listed`}
