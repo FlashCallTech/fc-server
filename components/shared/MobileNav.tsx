@@ -21,7 +21,7 @@ const MobileNav = () => {
 	const { signOut } = useClerk();
 
 	return (
-		<section className="w-full max-w-[264px]">
+		<section className="w-full max-w-[264px] relative">
 			<Sheet>
 				<SheetTrigger asChild>
 					<Image
@@ -34,7 +34,7 @@ const MobileNav = () => {
 				</SheetTrigger>
 				<SheetContent
 					side="right"
-					className="border-none bg-dark-1 rounded-l-xl"
+					className="border-none bg-dark-1 rounded-l-xl h-full"
 				>
 					<div
 						className={`flex gap-4 items-center rounded-lg   lg:px-2 justify-start  `}
@@ -56,10 +56,10 @@ const MobileNav = () => {
 							</span>
 						</div>
 					</div>
-					<div className="flex h-[calc(100vh-72px)] flex-col justify-between overflow-y-auto">
+					<div className="flex h-[calc(100vh-72px)]  flex-col justify-between overflow-y-auto">
 						<div className="w-full border border-gray-500 my-10" />
 						<SheetClose asChild>
-							<section className="relative flex h-full items-start flex-col gap-6 text-white">
+							<section className="flex h-full items-start flex-col gap-6 text-white">
 								{sidebarLinks.map((item) => {
 									const isActive = pathname === item.route;
 
@@ -90,7 +90,7 @@ const MobileNav = () => {
 
 								<Button
 									className={cn(
-										"absolute bottom-7 flex gap-4 items-center p-6 rounded-lg w-full bg-green-1 outline-none focus:ring-0 hoverScaleDownEffect"
+										"absolute bottom-4 md:bottom-6 flex gap-4 items-center p-6 rounded-lg w-[85%] bg-green-1 outline-none focus:ring-0 hoverScaleDownEffect"
 									)}
 									onClick={() => signOut({ redirectUrl: "/" })}
 								>

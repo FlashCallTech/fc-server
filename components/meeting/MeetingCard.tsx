@@ -90,21 +90,29 @@ const MeetingCard = ({
 											alt="attendees"
 											width={40}
 											height={40}
-											className={"rounded-full shadow-md shadow-black/20"}
+											className={
+												"rounded-full w-10 h-10 shadow-md object-cover shadow-black/20"
+											}
 											onError={(e) => {
 												e.currentTarget.src = "/images/defaultProfileImage.png";
 											}}
 										/>
 										<div className="flex flex-col w-full">
-											<span className="text-xs">{member?.user?.name}</span>
+											<span className="text-xs">
+												{member?.user?.name ? member?.user?.name : "Guest"}
+											</span>
 											<span className="text-[10px]">
-												{member?.custom?.type}
+												{member?.custom?.type
+													? member?.custom?.type
+													: "Unknown"}
 											</span>
 										</div>
 									</article>
 								</TooltipTrigger>
 								<TooltipContent>
-									<p className="text-black">{member?.custom?.type}</p>
+									<p className="text-black">
+										{member?.custom?.type ? member?.custom?.type : "Unknown"}
+									</p>
 								</TooltipContent>
 							</Tooltip>
 						))}
