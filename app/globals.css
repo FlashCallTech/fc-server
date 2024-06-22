@@ -126,6 +126,21 @@
 	min-width: 75vw !important;
 }
 
+.str-video__device-settings__option {
+	/* font-size: 10px !important; */
+	text-overflow: ellipsis;
+
+	overflow-x: hidden;
+	text-wrap: nowrap;
+}
+
+.str-video__device-settings__device-kind .str-video__option input[type="radio"],
+.str-video__device-settings__device-kind
+	.str-video__device-settings__option
+	input[type="radio"] {
+	height: 0.75rem !important;
+}
+
 @media (min-width: 600px) {
 	.str-video__speaker-layout
 		.str-video__speaker-layout__spotlight
@@ -139,6 +154,9 @@
 
 	.str-video__device-settings__device-kind {
 		min-width: 35vw !important;
+	}
+	.str-video__device-settings__option {
+		font-size: 14px !important;
 	}
 }
 

@@ -3,6 +3,7 @@ import {
 	CallParticipantsList,
 	CallStatsButton,
 	CallingState,
+	DeviceSelectorAudioInput,
 	DeviceSettings,
 	PaginatedGridLayout,
 	ScreenShareButton,
@@ -14,6 +15,7 @@ import {
 	useCall,
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
+
 import { useSearchParams } from "next/navigation";
 import { AudioLinesIcon, SwitchCamera, Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
@@ -25,6 +27,7 @@ import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
 import SinglePostLoader from "../shared/SinglePostLoader";
+import { connectStorageEmulator } from "firebase/storage";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -52,6 +55,7 @@ const MeetingRoom = () => {
 	const { useCallCallingState, useCallEndedAt, useParticipantCount } =
 		useCallStateHooks();
 	const [hasJoined, setHasJoined] = useState(false);
+	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
 	const { user } = useUser();
 	const call = useCall();
 	const callEndedAt = useCallEndedAt();
@@ -160,6 +164,21 @@ const MeetingRoom = () => {
 			</section>
 		);
 
+	const getAudioOutputDevice = async () => {
+		const audioOutputDevice = new Map();
+		const devices = await navigator.mediaDevices.enumerateDevices();
+		for (const device of devices) {
+			if (device.kind == "audiooutput")
+				audioOutputDevice.set(device.deviceId, device);
+		}
+		return audioOutputDevice;
+	};
+
+	const setAudioOutputDevice = (deviceId: any) => {
+		const audioTags = document.getElementsByTagName("audio");
+		console.log(audioTags);
+	};
+
 	return (
 		<section className="relative h-screen w-full overflow-hidden pt-4 text-white bg-dark-2">
 			<div className="relative flex size-full items-center justify-center transition-all">
@@ -187,7 +206,16 @@ const MeetingRoom = () => {
 
 				{isMobile && (
 					<button className="p-3 bg-[#ffffff14] rounded-full hover:bg-[#4c535b]">
-						<AudioLinesIcon size={20} className="text-white" />
+						<AudioLinesIcon
+							size={20}
+							className="text-white"
+							onClick={() => setShowAudioDeviceList((prev) => !prev)}
+						/>
+						{!showAudioDeviceList && (
+							<div className="absolute bottom-16 left-0 bg-dark-1 rounded-t-xl w-full">
+								<DeviceSelectorAudioInput />
+							</div>
+						)}
 					</button>
 				)}
 
@@ -218,7 +246,7 @@ const MeetingRoom = () => {
 
 				{!isPersonalRoom && <EndCallButton />}
 
-				<div className="absolute bottom-3 right-4 z-20 w-fit flex items-center gap-2">
+				<div className="absolute bottom-3 right-4 z-20 w-fit hidden md:flex items-center gap-2">
 					{/* <ToggleAudioOutputButton /> */}
 					<DeviceSettings />
 				</div>
