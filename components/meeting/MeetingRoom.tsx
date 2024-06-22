@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
 	CallParticipantsList,
 	CallStatsButton,
 	CallingState,
+	DeviceSettings,
 	PaginatedGridLayout,
 	ReactionsButton,
 	ScreenShareButton,
@@ -23,6 +24,27 @@ import CallTimer from "../calls/CallTimer";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 import { useToast } from "../ui/use-toast";
 import useWarnOnUnload from "@/hooks/useWarnOnUnload";
+import { VideoToggleButton } from "../calls/VideoToggleButton";
+import { AudioToggleButton } from "../calls/AudioToggleButton";
+
+type CallLayoutType = "grid" | "speaker-bottom";
+
+// Custom hook to track screen size
+const useScreenSize = () => {
+	const [isMobile, setIsMobile] = useState(false);
+
+	const handleResize = () => {
+		setIsMobile(window.innerWidth < 768);
+	};
+
+	useEffect(() => {
+		handleResize(); // Set initial value
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
+
+	return isMobile;
+};
 
 const MeetingRoom = () => {
 	const searchParams = useSearchParams();
@@ -42,10 +64,21 @@ const MeetingRoom = () => {
 	const participantCount = useParticipantCount();
 
 	const { anyModalOpen } = useCallTimerContext();
+	const [layout, setLayout] = useState<CallLayoutType>("grid");
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () =>
 		call?.endCall()
 	);
+
+	const isMobile = useScreenSize();
+
+	useEffect(() => {
+		if (isMobile) {
+			setLayout("speaker-bottom");
+		} else {
+			setLayout("grid");
+		}
+	}, [isMobile]);
 
 	useEffect(() => {
 		const joinCall = async () => {
@@ -90,47 +123,64 @@ const MeetingRoom = () => {
 		return () => clearTimeout(timeoutId);
 	}, [participantCount, anyModalOpen, call]);
 
-	// Call Layouts
-	const CallLayoutMobile = useCallback(
-		() => <SpeakerLayout participantsBarPosition="bottom" />,
-		[]
-	);
-
-	const CallLayout = useCallback(() => <PaginatedGridLayout />, []);
-
-	// if (callingState !== CallingState.JOINED) return <Loader />;
+	// Memoized Call Layout
+	const CallLayout = useMemo(() => {
+		switch (layout) {
+			case "grid":
+				return <PaginatedGridLayout />;
+			default:
+				return (
+					<SpeakerLayout
+						participantsBarPosition="bottom"
+						ParticipantViewUIBar={null}
+						ParticipantViewUISpotlight={null}
+					/>
+				);
+		}
+	}, [layout]);
 
 	const isMeetingOwner =
 		user?.publicMetadata?.userId === call?.state?.createdBy?.id;
 
 	return (
 		<section className="relative h-screen w-full overflow-hidden pt-4 text-white bg-dark-2">
-			<div className="relative flex size-full items-center justify-center">
-				<div className="hidden md:flex size-full max-w-[1000px] items-center">
-					<CallLayout />
+			<div className="relative flex size-full items-center justify-center transition-all">
+				<div className="flex size-full max-w-[95%] md:max-w-[1000px] items-center transition-all">
+					{CallLayout}
 				</div>
-				<div className="flex md:hidden size-full max-w-[85%] items-center">
-					<CallLayoutMobile />
-				</div>
+
 				{showParticipants && (
-					<div className="h-fit w-full fixed right-0 top-0 md:top-2 md:right-2 md:max-w-[400px] rounded-xl ml-2 p-4 z-20 bg-black">
+					<div className="h-fit w-full fixed right-0 top-0 md:top-2 md:right-2 md:max-w-[400px] rounded-xl ml-2 p-4 z-20 bg-black transition-all">
 						<CallParticipantsList onClose={() => setShowParticipants(false)} />
 					</div>
 				)}
 			</div>
+			<div className="absolute bottom-3 right-4 z-20 w-fit">
+				<DeviceSettings />
+			</div>
 			{!callHasEnded && isMeetingOwner && <CallTimer />}
-			<div className="fixed bottom-0 pb-4 flex flex-wrap-reverse w-full items-center justify-center gap-2 px-4">
+			<div className="fixed bg-dark-1 bottom-0  flex flex-wrap-reverse w-full items-center justify-center gap-4 py-2 px-4 transition-all">
 				<SpeakingWhileMutedNotification>
-					<ToggleAudioPublishingButton />
+					{isVideoCall &&
+						(isMobile ? (
+							<AudioToggleButton />
+						) : (
+							<ToggleAudioPublishingButton />
+						))}
 				</SpeakingWhileMutedNotification>
-				{isVideoCall && <ToggleVideoPublishingButton />}
-				<ScreenShareButton />
-				<ReactionsButton />
-				<div className="hidden md:flex gap-2">
+
+				{isVideoCall &&
+					(isMobile ? <VideoToggleButton /> : <ToggleVideoPublishingButton />)}
+
+				<div className="hidden md:flex gap-4 transition-all">
+					<ScreenShareButton />
 					<CallStatsButton />
 				</div>
-				<button onClick={() => setShowParticipants((prev) => !prev)}>
-					<div className="cursor-pointer rounded-2xl bg-[#19232d] px-4 py-2 hover:bg-[#4c535b]">
+				<button
+					onClick={() => setShowParticipants((prev) => !prev)}
+					className="hidden md:block"
+				>
+					<div className="cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[#4c535b] flex items-center">
 						<Users size={20} className="text-white" />
 					</div>
 				</button>

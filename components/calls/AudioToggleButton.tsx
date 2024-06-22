@@ -7,7 +7,7 @@ export const AudioToggleButton = () => {
 	return (
 		<div
 			onClick={() => microphone.toggle()}
-			className="cursor-pointer rounded-2xl bg-[#19232d] px-4 py-2 hover:bg-[#4c535b] flex items-center"
+			className="cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[#4c535b] flex items-center"
 		>
 			{!isMute ? (
 				<button>{mic}</button>

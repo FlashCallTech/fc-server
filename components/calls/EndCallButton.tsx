@@ -9,6 +9,7 @@ import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 
 import EndCallDecision from "./EndCallDecision";
 import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
 
 const EndCallButton = () => {
 	const call = useCall();
@@ -49,9 +50,15 @@ const EndCallButton = () => {
 		<>
 			<Button
 				onClick={endCall}
-				className="bg-red-500 font-semibold hover:opacity-80"
+				className="bg-red-500 font-semibold hover:opacity-80 h-11 w-11 rounded-full p-0"
 			>
-				End Call
+				<Image
+					src="/icons/endCall.png"
+					alt="End Call"
+					width={100}
+					height={100}
+					className="w-6 h-6"
+				/>
 			</Button>
 
 			{showDialog && (

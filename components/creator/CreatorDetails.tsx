@@ -15,10 +15,10 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 
 	return (
 		<>
-			<div className="flex flex-col items-center px-7 justify-center">
+			<div className="flex flex-col items-center px-4 sm:px-7 justify-center">
 				<div
-					className={`relative flex flex-col items-center w-fit mx-auto gap-4 p-7 rounded-xl z-10 ${
-						!pathname.includes("/creator") && "!w-4/5"
+					className={`relative flex flex-col items-center w-fit mx-auto gap-4 p-4 sm:p-7 rounded-xl z-10 ${
+						!pathname.includes("/creator") && "!w-[85%]"
 					}`}
 					style={{ backgroundColor: creator.themeSelected }}
 				>

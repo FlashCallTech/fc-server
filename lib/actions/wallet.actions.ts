@@ -39,12 +39,13 @@ export async function addMoney({ userId, userType, amount }: WalletParams) {
 		);
 
 		// Create a transaction record
-		await Transaction.create({
-			userId,
-			userType,
-			amount: numericAmount,
-			type: "credit",
-		});
+		numericAmount > 0 &&
+			(await Transaction.create({
+				userId,
+				userType,
+				amount: numericAmount,
+				type: "credit",
+			}));
 
 		return JSON.parse(JSON.stringify(wallet));
 	} catch (error) {

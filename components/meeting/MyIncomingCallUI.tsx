@@ -2,13 +2,7 @@ import React from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import Image from "next/image";
 
-const MyIncomingCallUI = ({
-	call,
-	onAccept,
-}: {
-	call: Call;
-	onAccept: () => void;
-}) => {
+const MyIncomingCallUI = ({ call }: { call: Call }) => {
 	return (
 		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:w-[35%] 3xl:[25%] flex flex-col items-center justify-between  py-10 sm:rounded-xl bottom-0 right-0 sm:top-4 sm:right-4 gap-5">
 			<h1 className="font-bold text-xl mb-2">Incoming Call ...</h1>
@@ -34,7 +28,6 @@ const MyIncomingCallUI = ({
 					className="bg-green-500 text-white p-4 rounded-full hoverScaleEffect"
 					onClick={() => {
 						call.accept();
-						onAccept();
 					}}
 				>
 					<svg
