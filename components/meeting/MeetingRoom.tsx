@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState, useMemo } from "react";
 import {
 	CallParticipantsList,
@@ -7,17 +5,17 @@ import {
 	CallingState,
 	DeviceSettings,
 	PaginatedGridLayout,
-	ReactionsButton,
 	ScreenShareButton,
 	SpeakerLayout,
 	SpeakingWhileMutedNotification,
+	ToggleAudioOutputButton,
 	ToggleAudioPublishingButton,
 	ToggleVideoPublishingButton,
 	useCall,
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { useSearchParams } from "next/navigation";
-import { Users } from "lucide-react";
+import { AudioLinesIcon, SwitchCamera, Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
 import { useUser } from "@clerk/nextjs";
 import CallTimer from "../calls/CallTimer";
@@ -26,6 +24,7 @@ import { useToast } from "../ui/use-toast";
 import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
+import SinglePostLoader from "../shared/SinglePostLoader";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -98,6 +97,7 @@ const MeetingRoom = () => {
 		if (!hasJoined && call) {
 			call.camera.disable();
 			call.microphone.disable();
+
 			joinCall();
 		}
 	}, [callingState, call, hasJoined, callHasEnded]);
@@ -111,17 +111,28 @@ const MeetingRoom = () => {
 			callingState === CallingState.OFFLINE ||
 			callingState === CallingState.UNKNOWN
 		) {
-			timeoutId = setTimeout(() => {
+			timeoutId = setTimeout(async () => {
 				toast({
 					title: "Call Ended ...",
 					description: "Less than 2 Participants or Due to Inactivity",
 				});
-				call?.endCall();
+				await call?.endCall();
 			}, 60000); // 1 minute
 		}
 
 		return () => clearTimeout(timeoutId);
 	}, [participantCount, anyModalOpen, call]);
+
+	// Function to toggle front and back camera
+	const toggleCamera = async () => {
+		if (call && call.camera) {
+			try {
+				await call.camera.flip();
+			} catch (error) {
+				console.error("Error toggling camera:", error);
+			}
+		}
+	};
 
 	// Memoized Call Layout
 	const CallLayout = useMemo(() => {
@@ -142,6 +153,13 @@ const MeetingRoom = () => {
 	const isMeetingOwner =
 		user?.publicMetadata?.userId === call?.state?.createdBy?.id;
 
+	if (callingState !== CallingState.JOINED)
+		return (
+			<section className="w-full h-screen flex items-center justify-center">
+				<SinglePostLoader />
+			</section>
+		);
+
 	return (
 		<section className="relative h-screen w-full overflow-hidden pt-4 text-white bg-dark-2">
 			<div className="relative flex size-full items-center justify-center transition-all">
@@ -155,11 +173,9 @@ const MeetingRoom = () => {
 					</div>
 				)}
 			</div>
-			<div className="absolute bottom-3 right-4 z-20 w-fit">
-				<DeviceSettings />
-			</div>
+
 			{!callHasEnded && isMeetingOwner && <CallTimer />}
-			<div className="fixed bg-dark-1 bottom-0  flex flex-wrap-reverse w-full items-center justify-center gap-4 py-2 px-4 transition-all">
+			<div className="fixed bg-dark-1 bottom-0 flex flex-wrap-reverse w-full items-center justify-center gap-4 py-2 px-4 transition-all">
 				<SpeakingWhileMutedNotification>
 					{isVideoCall &&
 						(isMobile ? (
@@ -169,8 +185,23 @@ const MeetingRoom = () => {
 						))}
 				</SpeakingWhileMutedNotification>
 
+				{isMobile && (
+					<button className="p-3 bg-[#ffffff14] rounded-full hover:bg-[#4c535b]">
+						<AudioLinesIcon size={20} className="text-white" />
+					</button>
+				)}
+
 				{isVideoCall &&
 					(isMobile ? <VideoToggleButton /> : <ToggleVideoPublishingButton />)}
+
+				{isMobile && (
+					<button
+						onClick={toggleCamera}
+						className="p-3 bg-[#ffffff14] rounded-full hover:bg-[#4c535b]"
+					>
+						<SwitchCamera size={20} className="text-white" />
+					</button>
+				)}
 
 				<div className="hidden md:flex gap-4 transition-all">
 					<ScreenShareButton />
@@ -186,6 +217,11 @@ const MeetingRoom = () => {
 				</button>
 
 				{!isPersonalRoom && <EndCallButton />}
+
+				<div className="absolute bottom-3 right-4 z-20 w-fit flex items-center gap-2">
+					{/* <ToggleAudioOutputButton /> */}
+					<DeviceSettings />
+				</div>
 			</div>
 		</section>
 	);

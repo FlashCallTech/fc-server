@@ -119,7 +119,11 @@
 }
 
 .str-video__device-settings {
-	min-width: 100%;
+	min-width: 75vw !important;
+}
+
+.str-video__device-settings__device-kind {
+	min-width: 75vw !important;
 }
 
 @media (min-width: 600px) {
@@ -127,6 +131,14 @@
 		.str-video__speaker-layout__spotlight
 		.str-video__video {
 		object-fit: cover !important;
+	}
+
+	.str-video__device-settings {
+		min-width: 35vw !important;
+	}
+
+	.str-video__device-settings__device-kind {
+		min-width: 35vw !important;
 	}
 }
 
