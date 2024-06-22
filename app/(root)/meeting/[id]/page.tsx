@@ -26,18 +26,6 @@ const MeetingPage = () => {
 	const { toast } = useToast();
 	const { call, isCallLoading } = useGetCallById(id);
 	const { user } = useUser();
-	const [isReloading, setIsReloading] = useState(false);
-
-	// useEffect(() => {
-	// 	const reload = searchParams.get("reload");
-	// 	if (reload) {
-	// 		setIsReloading(true);
-	// 		const url = new URL(window.location.href);
-	// 		url.searchParams.delete("reload");
-	// 		window.history.replaceState({}, document.title, url.toString());
-	// 		window.location.reload();
-	// 	}
-	// }, [searchParams]);
 
 	useEffect(() => {
 		if (!isCallLoading && !call) {
@@ -51,7 +39,7 @@ const MeetingPage = () => {
 		}
 	}, [isCallLoading, call, router, toast]);
 
-	if (isReloading || isCallLoading) return <Loader />;
+	if (isCallLoading) return <Loader />;
 
 	if (!call) {
 		return (

@@ -1,23 +1,22 @@
 import { useEffect, useState, useMemo } from "react";
 import {
 	CallParticipantsList,
-	CallStatsButton,
 	CallingState,
 	DeviceSelectorAudioInput,
 	DeviceSettings,
 	PaginatedGridLayout,
-	ScreenShareButton,
 	SpeakerLayout,
 	SpeakingWhileMutedNotification,
-	ToggleAudioOutputButton,
 	ToggleAudioPublishingButton,
 	ToggleVideoPublishingButton,
 	useCall,
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+
 import { useSearchParams } from "next/navigation";
-import { AudioLinesIcon, SwitchCamera, Users } from "lucide-react";
+import { SwitchCamera, Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
 import { useUser } from "@clerk/nextjs";
 import CallTimer from "../calls/CallTimer";
@@ -27,7 +26,6 @@ import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
 import SinglePostLoader from "../shared/SinglePostLoader";
-import { connectStorageEmulator } from "firebase/storage";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -50,7 +48,6 @@ const useScreenSize = () => {
 
 const MeetingRoom = () => {
 	const searchParams = useSearchParams();
-	const isPersonalRoom = !!searchParams.get("personal");
 	const [showParticipants, setShowParticipants] = useState(false);
 	const { useCallCallingState, useCallEndedAt, useParticipantCount } =
 		useCallStateHooks();
@@ -74,6 +71,14 @@ const MeetingRoom = () => {
 	);
 
 	const isMobile = useScreenSize();
+
+	const handleCallRejected = async () => {
+		toast({
+			title: "Call Ended ...",
+			description: "Less than 2 Participants",
+		});
+		await call?.endCall();
+	};
 
 	useEffect(() => {
 		if (isMobile) {
@@ -109,12 +114,10 @@ const MeetingRoom = () => {
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout;
 
-		if (
-			participantCount < 2 ||
-			anyModalOpen ||
-			callingState === CallingState.OFFLINE ||
-			callingState === CallingState.UNKNOWN
-		) {
+		participantCount === 2 &&
+			call?.on("call.session_participant_left", handleCallRejected);
+
+		if (participantCount < 2 || anyModalOpen) {
 			timeoutId = setTimeout(async () => {
 				toast({
 					title: "Call Ended ...",
@@ -164,21 +167,6 @@ const MeetingRoom = () => {
 			</section>
 		);
 
-	const getAudioOutputDevice = async () => {
-		const audioOutputDevice = new Map();
-		const devices = await navigator.mediaDevices.enumerateDevices();
-		for (const device of devices) {
-			if (device.kind == "audiooutput")
-				audioOutputDevice.set(device.deviceId, device);
-		}
-		return audioOutputDevice;
-	};
-
-	const setAudioOutputDevice = (deviceId: any) => {
-		const audioTags = document.getElementsByTagName("audio");
-		console.log(audioTags);
-	};
-
 	return (
 		<section className="relative h-screen w-full overflow-hidden pt-4 text-white bg-dark-2">
 			<div className="relative flex size-full items-center justify-center transition-all">
@@ -194,57 +182,117 @@ const MeetingRoom = () => {
 			</div>
 
 			{!callHasEnded && isMeetingOwner && <CallTimer />}
+
 			<div className="fixed bg-dark-1 bottom-0 flex flex-wrap-reverse w-full items-center justify-center gap-4 py-2 px-4 transition-all">
 				<SpeakingWhileMutedNotification>
 					{isVideoCall &&
 						(isMobile ? (
-							<AudioToggleButton />
+							<>
+								<Tooltip>
+									<TooltipTrigger>
+										<AudioToggleButton />
+									</TooltipTrigger>
+									<TooltipContent className="mb-2 bg-green-1  border-none">
+										<p className="!text-white">Audio</p>
+									</TooltipContent>
+								</Tooltip>
+							</>
 						) : (
 							<ToggleAudioPublishingButton />
 						))}
 				</SpeakingWhileMutedNotification>
 
 				{isMobile && (
-					<button className="p-3 bg-[#ffffff14] rounded-full hover:bg-[#4c535b]">
-						<AudioLinesIcon
-							size={20}
-							className="text-white"
-							onClick={() => setShowAudioDeviceList((prev) => !prev)}
-						/>
-						{!showAudioDeviceList && (
-							<div className="absolute bottom-16 left-0 bg-dark-1 rounded-t-xl w-full">
-								<DeviceSelectorAudioInput />
-							</div>
-						)}
-					</button>
+					<>
+						<Tooltip>
+							<TooltipTrigger>
+								<button
+									className="p-3 bg-[#ffffff14] rounded-full hover:bg-[#4c535b]"
+									onClick={() => setShowAudioDeviceList((prev) => !prev)}
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										strokeWidth={1.5}
+										stroke="currentColor"
+										className="size-6"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z"
+										/>
+									</svg>
+
+									{showAudioDeviceList && (
+										<div className="absolute bottom-16 left-0 bg-dark-1 rounded-t-xl w-full">
+											<DeviceSelectorAudioInput />
+										</div>
+									)}
+								</button>
+							</TooltipTrigger>
+							<TooltipContent className="mb-2 bg-green-1  border-none">
+								<p className="!text-white">Audio Source</p>
+							</TooltipContent>
+						</Tooltip>
+					</>
 				)}
 
 				{isVideoCall &&
-					(isMobile ? <VideoToggleButton /> : <ToggleVideoPublishingButton />)}
+					(isMobile ? (
+						<>
+							<Tooltip>
+								<TooltipTrigger>
+									<VideoToggleButton />
+								</TooltipTrigger>
+								<TooltipContent className="mb-2 bg-green-1  border-none">
+									<p className="!text-white">Video</p>
+								</TooltipContent>
+							</Tooltip>
+						</>
+					) : (
+						<ToggleVideoPublishingButton />
+					))}
 
 				{isMobile && (
-					<button
-						onClick={toggleCamera}
-						className="p-3 bg-[#ffffff14] rounded-full hover:bg-[#4c535b]"
-					>
-						<SwitchCamera size={20} className="text-white" />
-					</button>
+					<>
+						<Tooltip>
+							<TooltipTrigger>
+								<button
+									onClick={toggleCamera}
+									className="p-3 bg-[#ffffff14] rounded-full hover:bg-[#4c535b]"
+								>
+									<SwitchCamera size={20} className="text-white" />
+								</button>
+							</TooltipTrigger>
+							<TooltipContent className="mb-2 bg-green-1  border-none">
+								<p className="!text-white">Switch Video</p>
+							</TooltipContent>
+						</Tooltip>
+					</>
 				)}
+				<Tooltip>
+					<TooltipTrigger className="hidden md:block">
+						<button onClick={() => setShowParticipants((prev) => !prev)}>
+							<div className="cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[#4c535b] flex items-center">
+								<Users size={20} className="text-white" />
+							</div>
+						</button>
+					</TooltipTrigger>
+					<TooltipContent className="mb-2 bg-gray-700  border-none">
+						<p className="!text-white">Participants</p>
+					</TooltipContent>
+				</Tooltip>
 
-				<div className="hidden md:flex gap-4 transition-all">
-					<ScreenShareButton />
-					<CallStatsButton />
-				</div>
-				<button
-					onClick={() => setShowParticipants((prev) => !prev)}
-					className="hidden md:block"
-				>
-					<div className="cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[#4c535b] flex items-center">
-						<Users size={20} className="text-white" />
-					</div>
-				</button>
-
-				{!isPersonalRoom && <EndCallButton />}
+				<Tooltip>
+					<TooltipTrigger>
+						<EndCallButton />
+					</TooltipTrigger>
+					<TooltipContent className="mb-2 bg-red-500  border-none">
+						<p className="!text-white">End Call</p>
+					</TooltipContent>
+				</Tooltip>
 
 				<div className="absolute bottom-3 right-4 z-20 w-fit hidden md:flex items-center gap-2">
 					{/* <ToggleAudioOutputButton /> */}
