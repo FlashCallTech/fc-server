@@ -4,14 +4,14 @@ import {
 	RegisterCallTransactionParams,
 	UpdateCallTransactionParams,
 } from "@/types";
-import CallTransaction from "../database/models/callTransactions.model";
+import CallTransactions from "../database/models/callTransactions.model";
 
 export async function createCallTransaction(
-	transaction: RegisterCallTransactionParams
+	transaction: any
 ) {
 	try {
 		await connectToDatabase();
-		const newTransaction = await CallTransaction.create(transaction);
+		const newTransaction = await CallTransactions.create(transaction);
 		console.log(newTransaction);
 		return JSON.parse(JSON.stringify(newTransaction));
 	} catch (error) {
@@ -22,13 +22,13 @@ export async function createCallTransaction(
 
 export async function updateCallTransaction(
 	callId: string,
-	update: UpdateCallTransactionParams
+	update: any
 ) {
 	try {
 		await connectToDatabase();
-		const updatedTransaction = await CallTransaction.findOneAndUpdate(
+		const updatedTransaction = await CallTransactions.findOneAndUpdate(
 			{ callId },
-			update,
+			{ $push: { callDetails: update }, $set: { updatedAt: new Date() } },
 			{ new: true, upsert: true }
 		).lean();
 		console.log(updatedTransaction);
@@ -42,7 +42,7 @@ export async function updateCallTransaction(
 export async function getCallTransaction(callId: string) {
 	try {
 		await connectToDatabase();
-		const transaction = await CallTransaction.findOne({ callId }).lean();
+		const transaction = await CallTransactions.findOne({ callId }).lean();
 		console.log(transaction);
 		return transaction;
 	} catch (error) {
