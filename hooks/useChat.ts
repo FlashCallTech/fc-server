@@ -33,7 +33,7 @@ const useChat = () => {
     const [startedAt, setStartedAt] = useState<number>();
     const [endedAt, setEndedAt] = useState<number | undefined>();
     const [duration, setDuration] = useState<number | undefined>();
-    const [amount, setAmount] = useState<number>();
+    const [amount, setAmount] = useState<number | undefined>(); // Use state for amount
     const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
     const [user2, setUser2] = useState<User2 | undefined>();
     const { chatId } = useParams();
@@ -69,20 +69,20 @@ const useChat = () => {
     }, [chatId]);
 
     useEffect(() => {
-        if (chatEnded) {
-            router.replace('/chat-ended');
-        }
-    }, [chatEnded, router]);
-
-    useEffect(() => {
-        if (startedAt && endedAt) {
-            const chatDuration = (endedAt - startedAt);
+        if (chatEnded && startedAt && endedAt) {
+            const chatDuration = endedAt - startedAt;
             setDuration(chatDuration);
             const chatDurationMinutes = chatDuration / (1000 * 60); // Convert milliseconds to minutes
             const calculatedAmount = chatDurationMinutes * chatRatePerMinute;
             setAmount(calculatedAmount);
         }
-    }, [startedAt, endedAt, chatRatePerMinute]);
+    }, [chatEnded, startedAt, endedAt, chatRatePerMinute]);
+
+    useEffect(() => {
+        if (chatEnded) {
+            router.replace('/chat-ended');
+        }
+    }, [chatEnded, router]);
 
     const markMessagesAsSeen = async () => {
         if (!chatId) return;

@@ -5,18 +5,25 @@ import { ChatTimerProvider } from '@/lib/context/ChatTimerContext';
 import useChat from '@/hooks/useChat';
 import { handleTransaction } from '@/utils/ChatTransaction';
 import { useWalletBalanceContext } from '@/lib/context/WalletBalanceContext';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/use-toast';
 
 
 const Page = () => {
     const [queryParams, setQueryParams] = useState<{ clientId: string | null, creatorId: string | null }>({ clientId: null, creatorId: null });
-    const {chatEnded, duration} = useChat();
+    const {chatEnded, duration, user2, chatId} = useChat();
     const {updateWalletBalance} = useWalletBalanceContext();
+    const [check, setCheck] = useState(true);
+    const clientId = user2?.clientId;
+    const router = useRouter();
+    const {toast} = useToast()
 
-    // useEffect(() => {
-    //     if(chatEnded){
-    //         handleTransaction({duration: duration? duration?.toString(): ''});
-    //     }
-    // }, [chatEnded])
+    useEffect(() => {
+        if(chatEnded && duration !== undefined && check){
+            handleTransaction({duration: duration? duration?.toString(): '', clientId: clientId, chatId: chatId, updateWalletBalance, router, toast});
+            setCheck(false);
+        }
+    }, [chatEnded, duration])
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);

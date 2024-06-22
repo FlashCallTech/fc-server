@@ -241,6 +241,7 @@ export type WalletParams = {
 // Call Transactions
 export interface RegisterCallTransactionParams {
 	callId: string;
+	// callDetails
 	amountPaid: number;
 	isDone?: boolean;
 	callDuration: number;
