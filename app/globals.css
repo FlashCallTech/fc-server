@@ -133,6 +133,11 @@
 	text-wrap: nowrap;
 }
 
+.str-video__notification {
+	z-index: -1 !important;
+	background-color: #50a65c;
+}
+
 .str-video__device-settings__device-kind .str-video__option input[type="radio"],
 .str-video__device-settings__device-kind
 	.str-video__device-settings__option
