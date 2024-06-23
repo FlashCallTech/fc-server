@@ -47,7 +47,6 @@ const useScreenSize = () => {
 };
 
 const MeetingRoom = () => {
-	const searchParams = useSearchParams();
 	const [showParticipants, setShowParticipants] = useState(false);
 	const { useCallCallingState, useCallEndedAt, useParticipantCount } =
 		useCallStateHooks();
@@ -226,7 +225,7 @@ const MeetingRoom = () => {
 									</svg>
 
 									{showAudioDeviceList && (
-										<div className="absolute bottom-16 left-0 bg-dark-1 rounded-t-xl w-full">
+										<div className="absolute bottom-16 left-0 bg-dark-1 rounded-t-xl w-full z-40">
 											<DeviceSelectorAudioInput />
 										</div>
 									)}
