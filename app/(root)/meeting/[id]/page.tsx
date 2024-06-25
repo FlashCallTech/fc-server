@@ -165,9 +165,9 @@ const CallEnded = ({ toast, router, call }: any) => {
 		return (
 			<section className="w-full h-screen flex flex-col items-center justify-center gap-4">
 				<ContentLoading />
-				<h1 className="text-2xl font-semibold mt-7">
+				<h1 className="text-xl md:text-2xl font-semibold mt-7">
 					<Typewriter
-						words={["Checking For Any Pending Transactions", "Please Wait ..."]}
+						words={["Checking Pending Transactions", "Please Wait ..."]}
 						loop={true}
 						cursor
 						cursorStyle="_"

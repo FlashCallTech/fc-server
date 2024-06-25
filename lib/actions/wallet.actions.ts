@@ -84,7 +84,7 @@ export async function processPayout({
 		user.walletBalance = Number(user.walletBalance) - numericAmount;
 		await user.save();
 
-		console.log("Wallet Balance: " + user.walletBalance);
+		// console.log("Wallet Balance: " + user.walletBalance);
 
 		// Update the Wallet collection
 		const wallet = await Wallet.findOneAndUpdate(
@@ -114,7 +114,7 @@ export async function getTransactionsByUserId(userId: string) {
 	try {
 		await connectToDatabase();
 		const transactions = await Transaction.find({ userId }).lean();
-		console.log(transactions);
+		// console.log(transactions);
 		return transactions;
 	} catch (error) {
 		console.error(error);
@@ -126,7 +126,7 @@ export async function getTransactionsByType(type: "debit" | "credit") {
 	try {
 		await connectToDatabase();
 		const transactions = await Transaction.find({ type }).lean();
-		console.log(transactions);
+		// console.log(transactions);
 		return transactions;
 	} catch (error) {
 		console.error(error);
@@ -141,7 +141,7 @@ export async function getTransactionsByUserIdAndType(
 	try {
 		await connectToDatabase();
 		const transactions = await Transaction.find({ userId, type }).lean();
-		console.log(transactions);
+		// console.log(transactions);
 		return transactions;
 	} catch (error) {
 		console.error(error);

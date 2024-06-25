@@ -33,7 +33,7 @@ export async function createFeedback({
 				createdAt: createdAt, // Manually setting the createdAt field
 			};
 
-			console.log("Feedback Entry:", feedbackEntry); // Log feedbackEntry to verify the structure
+			// console.log("Feedback Entry:", feedbackEntry); // Log feedbackEntry to verify the structure
 
 			const existingCallFeedback = await CallFeedbacks.findOne({
 				callId,
@@ -42,7 +42,7 @@ export async function createFeedback({
 			if (existingCallFeedback) {
 				existingCallFeedback.feedbacks.push(feedbackEntry);
 				const updateResult = await existingCallFeedback.save();
-				console.log("Update Result:", updateResult); // Log update result to check if the update was successful
+				// console.log("Update Result:", updateResult); // Log update result to check if the update was successful
 			} else {
 				const newCallFeedback = new CallFeedbacks({
 					callId,
@@ -51,7 +51,7 @@ export async function createFeedback({
 				});
 
 				const saveResult = await newCallFeedback.save();
-				console.log("Save Result:", saveResult); // Log save result to check if the save was successful
+				// console.log("Save Result:", saveResult); // Log save result to check if the save was successful
 			}
 		}
 

@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 		// Initialize the Stream client
 		const client = Stream.connect(API_KEY, API_SECRET, APP_ID);
 
-		console.log(client);
+		// console.log(client);
 
 		// Ensure the user data is stored on Stream
 		await client.setUser({

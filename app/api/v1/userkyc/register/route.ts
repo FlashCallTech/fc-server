@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 			body: JSON.stringify({ transactionId }),
 		});
 
-		console.log(response);
+		// console.log(response);
 
 		if (!response.ok) {
 			throw new Error("Failed to verify transaction ID with HyperVerge");
