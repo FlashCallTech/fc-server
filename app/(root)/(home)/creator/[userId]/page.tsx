@@ -7,8 +7,8 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const CreatorProfile = () => {
-	const { userId } = useParams();
 	const [creator, setCreator] = useState(null);
+	const { userId } = useParams();
 
 	useEffect(() => {
 		try {
