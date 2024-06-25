@@ -10,7 +10,7 @@ export const handleTransaction = async ({
 	chatId,
 	router,
 	toast,
-	updateWalletBalance
+	updateWalletBalance,
 }: {
 	duration: string | undefined;
 	clientId: string | undefined;
@@ -19,7 +19,7 @@ export const handleTransaction = async ({
 	toast: any;
 	updateWalletBalance: () => Promise<void>;
 }) => {
-	console.log("duration in handleTransaction", duration);
+	// console.log("duration in handleTransaction", duration);
 	if (!duration) return;
 
 	const creatorId = "664c90ae43f0af8f1b3d5803";
@@ -27,10 +27,12 @@ export const handleTransaction = async ({
 	try {
 		const creator = await getUserById(creatorId);
 		const rate = creator.chatRate;
-		const amountToBePaid = ((parseInt(duration, 10) / (1000 * 60)) * rate).toFixed(2);
-		console.log("amount paid", amountToBePaid);
-		console.log("clientID: ", clientId)
-
+		const amountToBePaid = (
+			(parseInt(duration, 10) / (1000 * 60)) *
+			rate
+		).toFixed(2);
+		// console.log("amount paid", amountToBePaid);
+		// console.log("clientID: ", clientId)
 
 		if (amountToBePaid && clientId) {
 			const [existingTransaction] = await Promise.all([
@@ -47,8 +49,8 @@ export const handleTransaction = async ({
 						amountPaid: amountToBePaid,
 						isDone: true,
 						callDuration: parseInt(duration, 10),
-					})
-				})
+					}),
+				});
 			} else {
 				// Create a new document if no existing document is found
 				await fetch("/api/v1/calls/transaction/create", {
@@ -60,7 +62,7 @@ export const handleTransaction = async ({
 						callDuration: parseInt(duration, 10),
 					}),
 					headers: { "Content-Type": "application/json" },
-				})
+				});
 			}
 
 			await Promise.all([
@@ -94,4 +96,4 @@ export const handleTransaction = async ({
 	} finally {
 		updateWalletBalance();
 	}
-}
+};

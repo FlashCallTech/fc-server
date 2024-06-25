@@ -20,8 +20,8 @@ const MyCallUI = () => {
 
 		if (storedCallId && !hide && !hasRedirected) {
 			toast({
-				title: "Ongoing Call",
-				description: "You have an ongoing call. Redirecting you back...",
+				title: "Ongoing Call or Transaction Pending",
+				description: "Redirecting you back ...",
 			});
 			router.push(`/meeting/${storedCallId}`);
 			setHasRedirected(true); // Set the state to prevent repeated redirects
@@ -56,8 +56,8 @@ const MyCallUI = () => {
 
 			const handleCallStarted = async () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
-				// await call?.join();
 				router.push(`/meeting/${call.id}`);
+				// await call?.join();
 			};
 
 			call.on("call.ended", handleCallEnded);

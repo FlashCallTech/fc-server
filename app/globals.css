@@ -127,7 +127,6 @@
 }
 
 .str-video__device-settings__option {
-	/* font-size: 10px !important; */
 	text-overflow: ellipsis;
 	overflow-x: hidden;
 	text-wrap: nowrap;
@@ -136,6 +135,13 @@
 .str-video__notification {
 	z-index: -1 !important;
 	background-color: #50a65c;
+}
+
+.str-video__device-settings__device-selector-title {
+	font-size: 16px !important;
+	margin-left: 0.75rem;
+	font-weight: 700;
+	color: #50a65c;
 }
 
 .str-video__device-settings__device-kind .str-video__option input[type="radio"],

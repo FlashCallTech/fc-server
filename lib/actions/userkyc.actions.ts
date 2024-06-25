@@ -8,7 +8,7 @@ export async function createUserKyc(userKycData: RegisterUserKycParams) {
 		await connectToDatabase();
 
 		const newUserKyc = await UserKyc.create(userKycData);
-		console.log(newUserKyc);
+		// console.log(newUserKyc);
 		return newUserKyc.toJSON();
 	} catch (error) {
 		handleError(error);

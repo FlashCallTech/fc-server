@@ -14,7 +14,6 @@ import {
 	arrayUnion,
 	collection,
 	doc,
-	serverTimestamp,
 	setDoc,
 	updateDoc,
 	onSnapshot,
@@ -58,9 +57,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			description: "The call has been accepted. Redirecting to meeting...",
 		});
 		setSheetOpen(false);
-		call?.leave();
-		router.push(`/meeting/${call.id}`);
-		// router.push(`/meeting/${call.id}?reload=true`);
+		await call?.leave();
+		// router.push(`/meeting/${call.id}`);
 	};
 
 	const handleCallRejected = () => {
@@ -125,7 +123,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			// console.log(maxCallDuration, ratePerMinute);
 
-			await call.create({
+			await call.getOrCreate({
 				ring: true,
 				data: {
 					starts_at: startsAt,

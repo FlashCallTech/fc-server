@@ -20,7 +20,11 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 					className={`relative flex flex-col items-center w-fit mx-auto gap-4 p-4 sm:p-7 rounded-xl z-10 ${
 						!pathname.includes("/creator") && "!w-[85%]"
 					}`}
-					style={{ backgroundColor: creator.themeSelected }}
+					style={{
+						backgroundColor: creator.themeSelected
+							? creator.themeSelected
+							: "#50A65C",
+					}}
 				>
 					<img
 						src={
@@ -61,30 +65,35 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 
 					<span
 						className="absolute top-1/2 -right-8"
-						style={{ color: creator.themeSelected }}
+						style={{
+							color: creator.themeSelected ? creator.themeSelected : "#50A65C",
+						}}
 					>
 						{sparkles}
 					</span>
 				</div>
 				{/* User Description */}
-				{creator.bio && (
-					<p
-						className={`border-2 border-gray-200 p-4 -mt-7 pt-10 text-center rounded-3xl rounded-tr-none  h-full w-full relative ${
-							pathname.includes("/creator")
-								? "text-base lg:max-w-[80%] xl:max-w-[55%]"
-								: "text-base lg:text-lg"
-						}`}
-					>
-						{creator.bio}
 
-						<span
-							className="absolute max-xl:-top-2 xl:-bottom-2 -left-4"
-							style={{ color: creator.themeSelected }}
-						>
-							{sparkles}
-						</span>
-					</p>
-				)}
+				<p
+					className={`border-2 border-gray-200 p-4 -mt-7 pt-10 text-center rounded-3xl rounded-tr-none  h-full w-full relative ${
+						pathname.includes("/creator")
+							? "text-base lg:max-w-[80%] xl:max-w-[55%]"
+							: "text-base lg:text-lg"
+					}`}
+				>
+					{creator.bio
+						? creator.bio
+						: pathname.includes("/creator")
+						? "Select the Call Type Below ..."
+						: "Tap the Card to Visit Creator's Profile"}
+
+					<span
+						className="absolute max-xl:-top-2 xl:-bottom-2 -left-4"
+						style={{ color: creator.themeSelected }}
+					>
+						{sparkles}
+					</span>
+				</p>
 			</div>
 		</>
 	);

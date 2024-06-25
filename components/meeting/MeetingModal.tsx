@@ -44,7 +44,7 @@ const MeetingModal = ({
 					)}
 					<h1
 						className={cn(
-							"text-2xl md:text-3xl font-bold leading-[42px]",
+							"text-xl sm:text-2xl md:text-3xl font-bold leading-[42px]",
 							className
 						)}
 					>
