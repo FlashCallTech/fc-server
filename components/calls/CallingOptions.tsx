@@ -153,6 +153,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
+		if (!user) router.push("sign-in");
 		let maxCallDuration =
 			(walletBalance / parseInt(creator?.chatRate, 10)) * 60; // in seconds
 		maxCallDuration =
@@ -371,7 +372,19 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		};
 	}, ["6675197dc56dfe13b3ccabd3"]);
 
-	if (!client || !user) return <Loader />;
+	const handleClickOption = (
+		callType: string,
+		modalType: "isJoiningMeeting" | "isInstantMeeting"
+	) => {
+		if (user) {
+			setMeetingState(`${modalType}`);
+			setCallType(`${callType}`);
+		} else {
+			router.replace("/sign-in");
+		}
+	};
+
+	// if (!client || !user) return <Loader />;
 
 	const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
 
@@ -383,10 +396,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				style={{
 					boxShadow: theme,
 				}}
-				onClick={() => {
-					setMeetingState("isInstantMeeting");
-					setCallType("video");
-				}}
+				onClick={() => handleClickOption("video", "isInstantMeeting")}
 			>
 				<div
 					className={`flex gap-4 items-center font-semibold`}
@@ -406,10 +416,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				style={{
 					boxShadow: theme,
 				}}
-				onClick={() => {
-					setMeetingState("isInstantMeeting");
-					setCallType("audio");
-				}}
+				onClick={() => handleClickOption("audio", "isInstantMeeting")}
 			>
 				<div
 					className={`flex gap-4 items-center font-semibold`}
