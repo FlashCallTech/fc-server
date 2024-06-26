@@ -113,8 +113,9 @@ export async function processPayout({
 export async function getTransactionsByUserId(userId: string) {
 	try {
 		await connectToDatabase();
-		const transactions = await Transaction.find({ userId }).lean();
-		// console.log(transactions);
+		const transactions = await Transaction.find({ userId })
+			.sort({ createdAt: -1 })
+			.lean();
 		return transactions;
 	} catch (error) {
 		console.error(error);
@@ -125,8 +126,9 @@ export async function getTransactionsByUserId(userId: string) {
 export async function getTransactionsByType(type: "debit" | "credit") {
 	try {
 		await connectToDatabase();
-		const transactions = await Transaction.find({ type }).lean();
-		// console.log(transactions);
+		const transactions = await Transaction.find({ type })
+			.sort({ createdAt: -1 })
+			.lean();
 		return transactions;
 	} catch (error) {
 		console.error(error);
@@ -140,8 +142,9 @@ export async function getTransactionsByUserIdAndType(
 ) {
 	try {
 		await connectToDatabase();
-		const transactions = await Transaction.find({ userId, type }).lean();
-		// console.log(transactions);
+		const transactions = await Transaction.find({ userId, type })
+			.sort({ createdAt: -1 })
+			.lean();
 		return transactions;
 	} catch (error) {
 		console.error(error);

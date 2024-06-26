@@ -75,7 +75,7 @@ const Home: React.FC = () => {
 		if (user) {
 			fetchTransactions();
 		}
-	}, [btn, user]);
+	}, [btn, user, router]);
 
 	useEffect(() => {
 		const amountPattern = /^\d*$/;
