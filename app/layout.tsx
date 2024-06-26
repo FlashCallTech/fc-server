@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import React, { useState, useEffect } from "react";
 import { Cursor, Typewriter } from "react-simple-typewriter";
+import MovePageToTop from "@/components/shared/MovePageToTop";
 
 export default function RootLayout({
 	children,
@@ -94,6 +95,7 @@ export default function RootLayout({
 				<TooltipProvider>
 					<body className="no-scrollbar">
 						<Toaster />
+						<MovePageToTop />
 						{children}
 					</body>
 				</TooltipProvider>

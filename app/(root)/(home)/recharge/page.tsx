@@ -152,7 +152,7 @@ const About: React.FC = () => {
 	return (
 		<>
 			{loading ? (
-				<section className="fixed top-0 left-0 lg:left-20 flex-center justify-center items-center h-screen w-full z-40">
+				<section className="absolute top-0 left-0 lg:left-20 flex-center justify-center items-center h-screen w-full z-40">
 					<SinglePostLoader />
 				</section>
 			) : (
@@ -160,7 +160,7 @@ const About: React.FC = () => {
 					<Script src="https://checkout.razorpay.com/v1/checkout.js" />
 
 					{/* Payment Information */}
-					<section className="w-full mb-8">
+					<section className="w-full mb-8 sticky">
 						<div className="flex items-center gap-2 mb-4">
 							<Link href="/payment" className="text-xl font-bold">
 								&larr;
