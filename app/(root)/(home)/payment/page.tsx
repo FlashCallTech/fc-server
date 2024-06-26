@@ -92,9 +92,9 @@ const Home: React.FC = () => {
 	if (!isLoaded) return <Loader />;
 
 	return (
-		<div className="overflow-y-scroll no-scrollbar p-4 bg-white text-gray-800 w-full h-full">
+		<div className="flex flex-col p-4 bg-white text-gray-800 w-full h-full">
 			{/* Balance Section */}
-			<section className="flex flex-col pb-5">
+			<section className="w-full flex flex-col pb-5">
 				<span className="w-fit text-2xl leading-7 font-bold">
 					Rs. {walletBalance.toFixed(2)}
 				</span>
@@ -138,7 +138,7 @@ const Home: React.FC = () => {
 						</form>
 					</Form>
 				</div>
-				<div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8 text-sm font-semibold leading-4 w-full">
+				<div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8 text-sm font-semibold leading-4 w-full px-5">
 					{["99", "199", "299", "499", "999", "2999"].map((amount) => (
 						<button
 							key={amount}
@@ -153,66 +153,70 @@ const Home: React.FC = () => {
 			</section>
 
 			{/* Transaction History Section */}
-			<section className="flex flex-col items-start justify-start gap-4 w-full h-fit">
-				<h2 className=" text-gray-500 font-normal leading-7">
-					Transaction History
-				</h2>
-				<div className="flex space-x-2  text-xs font-bold leading-4 w-fit">
-					{["All", "Credit", "Debit"].map((filter) => (
-						<button
-							key={filter}
-							onClick={() => setBtn(filter as "All" | "Credit" | "Debit")}
-							className={`px-5 py-1 border-2 border-black rounded-full ${
-								filter === btn
-									? "bg-gray-800 text-white"
-									: "bg-white text-black dark:bg-gray-700 dark:text-white"
-							}`}
-						>
-							{filter}
-						</button>
-					))}
+			<section className="sticky top-16 bg-white z-50 w-full h-full pb-5">
+				<div className="flex flex-col items-start justify-start gap-4 w-full h-fit">
+					<h2 className=" text-gray-500 text-xl pt-4 font-normal leading-7">
+						Transaction History
+					</h2>
+					<div className="flex space-x-2  text-xs font-bold leading-4 w-fit">
+						{["All", "Credit", "Debit"].map((filter) => (
+							<button
+								key={filter}
+								onClick={() => setBtn(filter as "All" | "Credit" | "Debit")}
+								className={`px-5 py-1 border-2 border-black rounded-full ${
+									filter === btn
+										? "bg-gray-800 text-white"
+										: "bg-white text-black dark:bg-gray-700 dark:text-white"
+								}`}
+							>
+								{filter}
+							</button>
+						))}
+					</div>
 				</div>
-				<ul className="space-y-4 w-full">
-					{!loading ? (
-						transactions.length === 0 ? (
-							<p className="flex flex-col items-center justify-center size-full text-xl px-7 text-center flex-1 min-h-44 text-red-500 font-semibold">
-								{errorMessage
-									? errorMessage
-									: `No transactions under ${btn} filter Listed`}
-							</p>
-						) : (
-							transactions.map((transaction) => (
-								<li
-									key={transaction?._id}
-									className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 border-b-2"
-								>
-									<div className="flex flex-col items-start justify-center gap-2">
-										<p className="font-normal text-sm leading-4">
-											Transaction ID <strong>{transaction?._id}</strong>
-										</p>
-										<p className="text-gray-500 font-normal text-xs leading-4">
-											{new Date(transaction?.createdAt).toLocaleString()}
-										</p>
-									</div>
-									<p
-										className={`font-bold text-sm leading-4 w-fit whitespace-nowrap ${
-											transaction?.type === "credit"
-												? "text-green-500"
-												: "text-red-500"
-										} `}
-									>
-										{transaction?.type === "credit"
-											? `+ ₹${transaction?.amount.toFixed(2)}`
-											: `- ₹${transaction?.amount.toFixed(2)}`}
-									</p>
-								</li>
-							))
-						)
-					) : (
-						<ContentLoading />
-					)}
-				</ul>
 			</section>
+
+			{/* Transaction History List */}
+			<ul className="space-y-4 w-full">
+				{!loading ? (
+					transactions.length === 0 ? (
+						<p className="flex flex-col items-center justify-center size-full text-xl px-7 text-center flex-1 min-h-44 text-red-500 font-semibold">
+							{errorMessage
+								? errorMessage
+								: `No transactions under ${btn} filter Listed`}
+						</p>
+					) : (
+						transactions.map((transaction) => (
+							<li
+								key={transaction?._id}
+								className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 border-b-2"
+							>
+								<div className="flex flex-col items-start justify-center gap-2">
+									<p className="font-normal text-sm leading-4">
+										Transaction ID <strong>{transaction?._id}</strong>
+									</p>
+									<p className="text-gray-500 font-normal text-xs leading-4">
+										{new Date(transaction?.createdAt).toLocaleString()}
+									</p>
+								</div>
+								<p
+									className={`font-bold text-sm leading-4 w-fit whitespace-nowrap ${
+										transaction?.type === "credit"
+											? "text-green-500"
+											: "text-red-500"
+									} `}
+								>
+									{transaction?.type === "credit"
+										? `+ ₹${transaction?.amount.toFixed(2)}`
+										: `- ₹${transaction?.amount.toFixed(2)}`}
+								</p>
+							</li>
+						))
+					)
+				) : (
+					<ContentLoading />
+				)}
+			</ul>
 		</div>
 	);
 };
