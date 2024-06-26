@@ -2,16 +2,20 @@ import React, { useEffect } from "react";
 import { sparkles } from "@/constants/icons";
 import { creatorUser } from "@/types";
 import { usePathname } from "next/navigation";
+
 interface CreatorDetailsProps {
 	creator: creatorUser;
 }
+
 const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 	const pathname = usePathname();
+	const isCreatorOrExpressPath =
+		pathname.includes("/creator") || pathname.includes("/expert");
 
 	useEffect(() => {
-		pathname.includes("/creator") ||
-			(pathname.includes("/expert") &&
-				localStorage.setItem("currentCreator", JSON.stringify(creator)));
+		if (isCreatorOrExpressPath) {
+			localStorage.setItem("currentCreator", JSON.stringify(creator));
+		}
 	}, [creator]);
 
 	return (
@@ -19,8 +23,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 			<div className="flex flex-col items-center px-4 sm:px-7 justify-center">
 				<div
 					className={`relative flex flex-col items-center w-fit mx-auto gap-4 p-4 sm:p-7 rounded-xl z-10 ${
-						!pathname.includes("/creator") ||
-						(!pathname.includes("/expert") && "!w-[85%]")
+						!isCreatorOrExpressPath && "!w-[85%]"
 					}`}
 					style={{
 						backgroundColor: creator.themeSelected
@@ -36,9 +39,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 						width={24}
 						height={24}
 						className={`rounded-xl w-full min-h-full max-w-64 h-60 xl:max-w-80 xl:h-80 object-cover ${
-							!pathname.includes("/creator") ||
-							(!pathname.includes("/expert") &&
-								"!max-w-full xl:!max-w-full xl:h-80")
+							!isCreatorOrExpressPath && "!max-w-full xl:!max-w-full xl:h-80"
 						} `}
 						onError={(e) => {
 							e.currentTarget.src = "/images/defaultProfileImage.png";
@@ -79,14 +80,14 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 
 				<p
 					className={`border-2 border-gray-200 p-4 -mt-7 pt-10 text-center rounded-3xl rounded-tr-none  h-full w-full relative ${
-						pathname.includes("/creator") || pathname.includes("/expert")
+						isCreatorOrExpressPath
 							? "text-base lg:max-w-[80%] xl:max-w-[55%]"
 							: "text-base lg:text-lg"
 					}`}
 				>
 					{creator.bio
 						? creator.bio
-						: pathname.includes("/creator") || pathname.includes("/expert")
+						: isCreatorOrExpressPath
 						? "Select the Call Type Below ..."
 						: "Tap the Card to Visit Creator's Profile"}
 
