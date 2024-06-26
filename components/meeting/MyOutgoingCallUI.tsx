@@ -6,7 +6,7 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 		(member) => member.custom.type === "expert"
 	);
 	return (
-		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:w-[35%] 3xl:[25%] flex flex-col items-center justify-between  py-10 sm:rounded-xl bottom-0 right-0 sm:top-2 sm:right-2 gap-5">
+		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:w-[30%] 3xl:[25%] flex flex-col items-center justify-between py-10 sm:rounded-xl bottom-0 right-0 sm:top-2 sm:right-2 gap-5">
 			<h1 className="font-bold text-xl mb-2">Outgoing Call ...</h1>
 			<div className="flex flex-col items-center justify-center gap-10">
 				<img
@@ -25,7 +25,7 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 			<div className="flex items-center justify-center w-full">
 				<button
 					className="bg-red-500 text-white p-4 rounded-full hoverScaleEffect"
-					onClick={() => call.endCall()}
+					onClick={async () => await call.leave({ reject: true })}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

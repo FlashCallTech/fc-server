@@ -14,6 +14,7 @@ const MyCallUI = () => {
 	const { toast } = useToast();
 	let hide = pathname.includes("/meeting");
 	const [hasRedirected, setHasRedirected] = useState(false);
+	const [showCallUI, setShowCallUI] = useState(false);
 
 	useEffect(() => {
 		const storedCallId = localStorage.getItem("activeCallId");
@@ -39,6 +40,7 @@ const MyCallUI = () => {
 				if (!isMeetingOwner) {
 					localStorage.removeItem("activeCallId");
 				}
+				setShowCallUI(false); // Hide call UI
 			};
 
 			const handleCallRejected = () => {
@@ -47,12 +49,13 @@ const MyCallUI = () => {
 					description: "The call was rejected. Redirecting to HomePage...",
 				});
 				router.push("/");
+				setShowCallUI(false); // Hide call UI
 			};
 
 			const handleCallStarted = async () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
 				router.push(`/meeting/${call.id}`);
-				// await call?.join();
+				setShowCallUI(false); // Hide call UI
 			};
 
 			call.on("call.ended", handleCallEnded);
@@ -82,15 +85,24 @@ const MyCallUI = () => {
 			call.state.callingState === CallingState.RINGING
 	);
 
+	// Set showCallUI state if there are any incoming or outgoing calls
+	useEffect(() => {
+		if (incomingCalls.length > 0 || outgoingCalls.length > 0) {
+			setShowCallUI(true);
+		}
+	}, [incomingCalls, outgoingCalls]);
+
+	console.log(outgoingCalls, showCallUI);
+
 	// Handle incoming call UI
 	const [incomingCall] = incomingCalls;
-	if (incomingCall && !hide) {
+	if (incomingCall && !hide && showCallUI) {
 		return <MyIncomingCallUI call={incomingCall} />;
 	}
 
 	// Handle outgoing call UI
 	const [outgoingCall] = outgoingCalls;
-	if (outgoingCall) {
+	if (outgoingCall && showCallUI) {
 		return <MyOutgoingCallUI call={outgoingCall} />;
 	}
 

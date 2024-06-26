@@ -83,13 +83,11 @@ const MeetingCard = ({
 								<TooltipTrigger asChild>
 									<article
 										key={index}
-										className="flex items-center justify-center gap-2 hover:bg-black/20 hoverScaleEffect rounded-xl px-3 pl-1 py-1 cursor-pointer"
+										className="flex items-center justify-center gap-2 rounded-xl px-3 pl-1 py-1 cursor-pointer"
 									>
-										<Image
+										<img
 											src={member?.user?.image}
 											alt="attendees"
-											width={40}
-											height={40}
 											className={
 												"rounded-full w-10 h-10 shadow-md object-cover shadow-black/20"
 											}
@@ -98,7 +96,7 @@ const MeetingCard = ({
 											}}
 										/>
 										<div className="flex flex-col w-full">
-											<span className="text-xs">
+											<span className="text-xs tracking-wider">
 												{member?.user?.name ? member?.user?.name : "Guest"}
 											</span>
 											<span className="text-[10px]">
