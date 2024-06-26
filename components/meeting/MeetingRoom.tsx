@@ -105,7 +105,7 @@ const MeetingRoom = () => {
 		};
 
 		if (!hasJoined && call) {
-			call.camera.disable();
+			call.camera.enable();
 			call.microphone.disable();
 
 			joinCall();

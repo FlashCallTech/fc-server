@@ -38,11 +38,6 @@ const MyCallUI = () => {
 				call.microphone.disable();
 				if (!isMeetingOwner) {
 					localStorage.removeItem("activeCallId");
-					// toast({
-					// 	title: "Call Ended",
-					// 	description: "The call ended. Redirecting to HomePage...",
-					// });
-					// router.push("/");
 				}
 			};
 
