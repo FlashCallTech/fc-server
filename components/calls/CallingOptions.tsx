@@ -58,7 +58,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		});
 		setSheetOpen(false);
 		await call?.leave();
-		// router.push(`/meeting/${call.id}`);
+		router.push(`/meeting/${call.id}`);
 	};
 
 	const handleCallRejected = () => {
