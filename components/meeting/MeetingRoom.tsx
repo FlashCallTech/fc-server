@@ -28,6 +28,7 @@ import { AudioToggleButton } from "../calls/AudioToggleButton";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import SwitchCameraType from "../calls/SwitchCameraType";
 import AudioDeviceList from "../calls/AudioDeviceList";
+import PictureInPicture from "../calls/PictureInPicture";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -205,7 +206,10 @@ const MeetingRoom = () => {
 				{isVideoCall &&
 					(isMobile ? <VideoToggleButton /> : <ToggleVideoPublishingButton />)}
 
-				{isMobile && <SwitchCameraType toggleCamera={toggleCamera} />}
+				{isVideoCall && isMobile && (
+					<SwitchCameraType toggleCamera={toggleCamera} />
+				)}
+
 				<Tooltip>
 					<TooltipTrigger className="hidden md:block">
 						<button onClick={() => setShowParticipants((prev) => !prev)}>
@@ -230,6 +234,7 @@ const MeetingRoom = () => {
 
 				<div className="absolute bottom-3 right-4 z-20 w-fit hidden md:flex items-center gap-2">
 					{/* <ToggleAudioOutputButton /> */}
+					{/* <PictureInPicture /> */}
 					<DeviceSettings />
 				</div>
 			</div>

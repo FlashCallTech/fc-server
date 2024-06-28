@@ -24,13 +24,16 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 	const checkFeedback = async () => {
 		if (!callId) {
 			console.log("Error: CallId is not Valid.");
+
 			setFeedbackExists(false);
+
 			return;
 		}
 
 		try {
 			const response = callId && (await getCallFeedbacks(callId));
 			const hasFeedback = response.length > 0;
+
 			setFeedbackExists(hasFeedback);
 
 			if (user && hasFeedback) {
@@ -53,7 +56,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 
 	if (feedbackExists === null) {
 		return (
-			<div className="flex items-center space-x-4 sm:w-1/2 w-full animate-pulse">
+			<div className="flex items-center space-x-4 w-1/2 animate-pulse">
 				<div className="flex-1 space-y-4 py-1 w-full">
 					<div className="space-y-3">
 						<div className="grid grid-cols-3 gap-4">
@@ -68,9 +71,9 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 	}
 
 	return feedbackExists && userFeedbacks && userFeedbacks.length > 0 ? (
-		<div className="w-fit flex items-center justify-start md:justify-end">
+		<div className="animate-enterFromRight lg:animate-enterFromBottom w-fit flex items-center justify-start md:justify-end">
 			<Dialog>
-				<DialogTrigger className="flex flex-col gap-1 items-start justify-start sm:justify-center">
+				<DialogTrigger className="flex flex-col gap-1 items-end justify-center hoverScaleEffect">
 					<Rating
 						style={{ maxWidth: 150, fill: "white" }}
 						value={userFeedbacks[0].rating}
@@ -79,7 +82,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 						transition="zoom"
 						readOnly
 					/>
-					<span className="text-ellipsis overflow-hidden w-full max-w-[200px] whitespace-nowrap pl-2 text-start">
+					<span className="text-ellipsis overflow-hidden w-full max-w-[200px] whitespace-nowrap pr-2 text-sm text-end">
 						{userFeedbacks[0].feedback}
 					</span>
 				</DialogTrigger>
@@ -138,8 +141,10 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 						checkFeedback={checkFeedback}
 						isOpen={isSheetOpen}
 						onOpenChange={setIsSheetOpen}
-						text="Add Review"
+						text="Edit Review"
 						buttonColor="primary"
+						submitButtonText="Update Feedback"
+						existingFeedback={userFeedbacks[0]}
 					/>
 				</DialogContent>
 			</Dialog>

@@ -101,26 +101,35 @@ export type CreateFeedbackParams = {
 
 // Call Params
 
+export type MemberRequest = {
+	user_id: string;
+	custom: {
+		name: string;
+		type: string;
+		image: string;
+	};
+	role: string;
+};
+
 export type RegisterCallParams = {
 	callId: string;
 	type: string;
-	members: {
-		clientId: string;
-		creatorId: string;
-	}[];
-	startedAt: Date;
+	status: string;
+	creator: string;
+	members: MemberRequest[];
+	startedAt?: Date;
 	endedAt?: Date;
+	duration?: string;
 };
 
 export type UpdateCallParams = {
 	callId?: string;
 	type?: string;
-	members?: {
-		clientId: string;
-		creatorId: string;
-	}[];
+	status?: string;
+	members?: MemberRequest[];
 	startedAt?: Date;
 	endedAt?: Date;
+	duration?: string;
 };
 
 // app/razorpay.d.ts

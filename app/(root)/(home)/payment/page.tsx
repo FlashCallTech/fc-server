@@ -18,6 +18,7 @@ import {
 	FormItem,
 	FormMessage,
 } from "@/components/ui/form";
+
 import { Input } from "@/components/ui/input";
 import { enterAmountSchema } from "@/lib/validator";
 
@@ -68,7 +69,9 @@ const Home: React.FC = () => {
 				console.error("Error fetching transactions:", error);
 				setErrorMessage("Unable to fetch transactions");
 			} finally {
-				setLoading(false);
+				setTimeout(() => {
+					setLoading(false);
+				}, 1000);
 			}
 		};
 
@@ -92,9 +95,9 @@ const Home: React.FC = () => {
 	if (!isLoaded) return <Loader />;
 
 	return (
-		<div className="flex flex-col p-4 bg-white text-gray-800 w-full h-full">
+		<div className="flex flex-col py-4  bg-white text-gray-800 w-full h-full ">
 			{/* Balance Section */}
-			<section className="w-full flex flex-col pb-5">
+			<section className="w-full flex flex-col pb-5 px-4 ">
 				<span className="w-fit text-2xl leading-7 font-bold">
 					Rs. {walletBalance.toFixed(2)}
 				</span>
@@ -104,7 +107,7 @@ const Home: React.FC = () => {
 			</section>
 
 			{/* Recharge Section */}
-			<section className="flex flex-col gap-5 items-center justify-center md:items-start pb-7">
+			<section className="flex flex-col gap-5 items-center justify-center md:items-start pb-7 px-4 ">
 				<div className="w-[100%] flex justify-center items-center font-normal leading-5 border-[1px] rounded-lg p-3">
 					<Form {...form}>
 						<form
@@ -153,7 +156,7 @@ const Home: React.FC = () => {
 			</section>
 
 			{/* Transaction History Section */}
-			<section className="sticky top-16 bg-white z-50 w-full h-full pb-5">
+			<section className="sticky top-16 bg-white z-30 w-full h-full py-5 px-4 ">
 				<div className="flex flex-col items-start justify-start gap-4 w-full h-fit">
 					<h2 className=" text-gray-500 text-xl pt-4 font-normal leading-7">
 						Transaction History
@@ -177,7 +180,7 @@ const Home: React.FC = () => {
 			</section>
 
 			{/* Transaction History List */}
-			<ul className="space-y-4 w-full">
+			<ul className="space-y-4 w-full px-4">
 				{!loading ? (
 					transactions.length === 0 ? (
 						<p className="flex flex-col items-center justify-center size-full text-xl px-7 text-center flex-1 min-h-44 text-red-500 font-semibold">
@@ -189,7 +192,7 @@ const Home: React.FC = () => {
 						transactions.map((transaction) => (
 							<li
 								key={transaction?._id}
-								className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 border-b-2"
+								className="animate-enterFromBottom flex justify-between items-center p-4 bg-white dark:bg-gray-800 border-b-2"
 							>
 								<div className="flex flex-col items-start justify-center gap-2">
 									<p className="font-normal text-sm leading-4">

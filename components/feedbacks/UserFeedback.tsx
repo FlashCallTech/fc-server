@@ -9,6 +9,20 @@ import { useToast } from "../ui/use-toast";
 import { success } from "@/constants/icons";
 import { useGetCallById } from "@/hooks/useGetCallById";
 
+interface FeedbackProps {
+	callId: string;
+	checkFeedback: () => void;
+	isOpen: boolean;
+	onOpenChange: (isOpen: boolean) => void;
+	text?: string;
+	buttonColor?: string;
+	submitButtonText?: string;
+	existingFeedback?: {
+		rating: number;
+		feedback: string;
+	};
+}
+
 const UserFeedback = ({
 	callId,
 	checkFeedback,
@@ -16,16 +30,13 @@ const UserFeedback = ({
 	onOpenChange,
 	text,
 	buttonColor,
-}: {
-	callId: string;
-	checkFeedback: () => void;
-	isOpen: boolean;
-	onOpenChange: (isOpen: boolean) => void;
-	text?: string;
-	buttonColor?: string;
-}) => {
-	const [rating, setRating] = useState(5);
-	const [feedbackMessage, setFeedbackMessage] = useState("");
+	submitButtonText,
+	existingFeedback,
+}: FeedbackProps) => {
+	const [rating, setRating] = useState(existingFeedback?.rating || 5);
+	const [feedbackMessage, setFeedbackMessage] = useState(
+		existingFeedback?.feedback || ""
+	);
 	const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 	const { toast } = useToast();
 	const { call, isCallLoading } = useGetCallById(String(callId));
@@ -88,7 +99,7 @@ const UserFeedback = ({
 		}
 	};
 
-	if (!user || isCallLoading)
+	if (!user)
 		return (
 			<div className="flex items-center space-x-4 w-full animate-pulse">
 				<div className="flex-1 space-y-4 py-1">
@@ -116,16 +127,12 @@ const UserFeedback = ({
 			}}
 		>
 			<SheetTrigger asChild>
-				<Button
+				<button
 					onClick={() => onOpenChange(true)}
-					className={`${
-						buttonColor === "primary"
-							? "bg-green-1 hover:opacity-80 mx-auto"
-							: "bg-black/30 hover:bg-black/50"
-					} text-white font-semibold w-44`}
+					className={`animate-enterFromRight lg:animate-enterFromBottom bg-green-1 transition-all duration-300 hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs`}
 				>
 					{text}
-				</Button>
+				</button>
 			</SheetTrigger>
 			<SheetContent
 				side="bottom"
@@ -182,7 +189,7 @@ const UserFeedback = ({
 								"bg-green-1 font-semibold text-white px-4 py-2 rounded-lg hover:opacity-80"
 							}
 						>
-							Submit Feedback
+							{submitButtonText ? submitButtonText : "Submit Feedback"}
 						</Button>
 					</div>
 				) : (
