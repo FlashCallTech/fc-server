@@ -3,12 +3,15 @@
 import CreatorCard from "@/components/creator/CreatorCard";
 import Loader from "@/components/shared/Loader";
 import { getUserById } from "@/lib/actions/creator.actions";
+import { useUser } from "@clerk/nextjs";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const CreatorProfile = () => {
 	const [creator, setCreator] = useState(null);
 	const { userId } = useParams();
+	const {user }  = useUser();
+	console.log(user);
 
 	useEffect(() => {
 		try {
