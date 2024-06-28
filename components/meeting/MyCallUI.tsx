@@ -5,6 +5,7 @@ import MyIncomingCallUI from "./MyIncomingCallUI";
 import MyOutgoingCallUI from "./MyOutgoingCallUI";
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "../ui/use-toast";
+import { updateCall } from "@/lib/actions/call.actions";
 
 const MyCallUI = () => {
 	const router = useRouter();
@@ -34,19 +35,28 @@ const MyCallUI = () => {
 			const isMeetingOwner =
 				user && user.publicMetadata.userId === call?.state?.createdBy?.id;
 
-			const handleCallEnded = () => {
+			const handleCallEnded = async () => {
 				call.camera.disable();
 				call.microphone.disable();
 				if (!isMeetingOwner) {
 					localStorage.removeItem("activeCallId");
 				}
+
 				setShowCallUI(false); // Hide call UI
 			};
 
-			const handleCallRejected = () => {
+			const handleCallRejected = async () => {
 				toast({
 					title: "Call Rejected",
 					description: "The call was rejected. Redirecting to HomePage...",
+				});
+				await fetch("/api/v1/calls/updateCall", {
+					method: "POST",
+					body: JSON.stringify({
+						callId: call.id,
+						call: { status: "Rejected" },
+					}),
+					headers: { "Content-Type": "application/json" },
 				});
 				router.push("/");
 				setShowCallUI(false); // Hide call UI
@@ -54,6 +64,14 @@ const MyCallUI = () => {
 
 			const handleCallStarted = async () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
+				await fetch("/api/v1/calls/updateCall", {
+					method: "POST",
+					body: JSON.stringify({
+						callId: call.id,
+						call: { status: "Accepted" },
+					}),
+					headers: { "Content-Type": "application/json" },
+				});
 				router.push(`/meeting/${call.id}`);
 				setShowCallUI(false); // Hide call UI
 			};
@@ -91,8 +109,6 @@ const MyCallUI = () => {
 			setShowCallUI(true);
 		}
 	}, [incomingCalls, outgoingCalls]);
-
-	console.log(outgoingCalls, showCallUI);
 
 	// Handle incoming call UI
 	const [incomingCall] = incomingCalls;

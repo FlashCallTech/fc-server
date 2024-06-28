@@ -120,6 +120,21 @@ const CallEnded = ({ toast, router, call }: any) => {
 			}
 
 			setLoading(true);
+
+			await fetch("/api/v1/calls/updateCall", {
+				method: "POST",
+				body: JSON.stringify({
+					callId: call.id,
+					call: {
+						status: "Ended",
+						startedAt: callStartsAtTime,
+						endedAt: callEndedAt,
+						duration: duration,
+					},
+				}),
+				headers: { "Content-Type": "application/json" },
+			});
+
 			await handleTransaction({
 				call,
 				callId: call?.id,
@@ -145,7 +160,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 			return;
 		}
 
-		if (isMeetingOwner) {
+		if (isMeetingOwner && !transactionHandled.current) {
 			handleCallEnd();
 		} else {
 			router.push(`/feedback/${call?.id}`);

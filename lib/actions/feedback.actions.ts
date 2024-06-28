@@ -33,16 +33,24 @@ export async function createFeedback({
 				createdAt: createdAt, // Manually setting the createdAt field
 			};
 
-			// console.log("Feedback Entry:", feedbackEntry); // Log feedbackEntry to verify the structure
-
 			const existingCallFeedback = await CallFeedbacks.findOne({
 				callId,
 			}).exec();
 
 			if (existingCallFeedback) {
-				existingCallFeedback.feedbacks.push(feedbackEntry);
-				const updateResult = await existingCallFeedback.save();
-				// console.log("Update Result:", updateResult); // Log update result to check if the update was successful
+				const existingFeedbackIndex = existingCallFeedback.feedbacks.findIndex(
+					(feedback: any) => feedback.clientId.toString() === clientId
+				);
+
+				if (existingFeedbackIndex > -1) {
+					// Update existing feedback
+					existingCallFeedback.feedbacks[existingFeedbackIndex] = feedbackEntry;
+				} else {
+					// Add new feedback entry
+					existingCallFeedback.feedbacks.push(feedbackEntry);
+				}
+
+				await existingCallFeedback.save();
 			} else {
 				const newCallFeedback = new CallFeedbacks({
 					callId,
@@ -50,8 +58,7 @@ export async function createFeedback({
 					feedbacks: [feedbackEntry],
 				});
 
-				const saveResult = await newCallFeedback.save();
-				// console.log("Save Result:", saveResult); // Log save result to check if the save was successful
+				await newCallFeedback.save();
 			}
 		}
 
@@ -64,6 +71,7 @@ export async function createFeedback({
 		return { success: false, error: error.message };
 	}
 }
+
 export async function getCallFeedbacks(callId?: string, creatorId?: string) {
 	try {
 		await connectToDatabase();
@@ -91,6 +99,14 @@ export async function getCallFeedbacks(callId?: string, creatorId?: string) {
 			.populate("creatorId")
 			.populate("feedbacks.clientId")
 			.lean();
+
+		// Sort feedbacks by createdAt in descending order
+		feedbacks.forEach((feedback: any) => {
+			feedback.feedbacks.sort(
+				(a: any, b: any) =>
+					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+			);
+		});
 
 		// Return the feedbacks as JSON
 		return JSON.parse(JSON.stringify(feedbacks));
