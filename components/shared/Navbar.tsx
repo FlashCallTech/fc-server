@@ -18,7 +18,7 @@ const Navbar = () => {
 	const { walletBalance } = useWalletBalanceContext();
 
 	return (
-		<nav className="flex-between items-center fixed top-0 left-0 z-40 w-full px-2 sm:px-6 py-4 lg:px-7 bg-white">
+		<nav className="flex-between items-center fixed top-0 left-0 z-40 w-full px-2 sm:px-6 py-4 lg:px-7 bg-white shadow-md lg:shadow-sm">
 			<Link href="/" className="flex items-center gap-4 ">
 				<Image
 					src="/icons/logoDesktop.png"

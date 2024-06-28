@@ -5,6 +5,7 @@ import MyIncomingCallUI from "./MyIncomingCallUI";
 import MyOutgoingCallUI from "./MyOutgoingCallUI";
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "../ui/use-toast";
+import { updateCall } from "@/lib/actions/call.actions";
 
 const MyCallUI = () => {
 	const router = useRouter();
@@ -14,6 +15,7 @@ const MyCallUI = () => {
 	const { toast } = useToast();
 	let hide = pathname.includes("/meeting");
 	const [hasRedirected, setHasRedirected] = useState(false);
+	const [showCallUI, setShowCallUI] = useState(false);
 
 	useEffect(() => {
 		const storedCallId = localStorage.getItem("activeCallId");
@@ -33,26 +35,45 @@ const MyCallUI = () => {
 			const isMeetingOwner =
 				user && user.publicMetadata.userId === call?.state?.createdBy?.id;
 
-			const handleCallEnded = () => {
+			const handleCallEnded = async () => {
 				call.camera.disable();
 				call.microphone.disable();
 				if (!isMeetingOwner) {
 					localStorage.removeItem("activeCallId");
 				}
+
+				setShowCallUI(false); // Hide call UI
 			};
 
-			const handleCallRejected = () => {
+			const handleCallRejected = async () => {
 				toast({
 					title: "Call Rejected",
 					description: "The call was rejected. Redirecting to HomePage...",
 				});
+				await fetch("/api/v1/calls/updateCall", {
+					method: "POST",
+					body: JSON.stringify({
+						callId: call.id,
+						call: { status: "Rejected" },
+					}),
+					headers: { "Content-Type": "application/json" },
+				});
 				router.push("/");
+				setShowCallUI(false); // Hide call UI
 			};
 
 			const handleCallStarted = async () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
+				await fetch("/api/v1/calls/updateCall", {
+					method: "POST",
+					body: JSON.stringify({
+						callId: call.id,
+						call: { status: "Accepted" },
+					}),
+					headers: { "Content-Type": "application/json" },
+				});
 				router.push(`/meeting/${call.id}`);
-				// await call?.join();
+				setShowCallUI(false); // Hide call UI
 			};
 
 			call.on("call.ended", handleCallEnded);
@@ -82,15 +103,22 @@ const MyCallUI = () => {
 			call.state.callingState === CallingState.RINGING
 	);
 
+	// Set showCallUI state if there are any incoming or outgoing calls
+	useEffect(() => {
+		if (incomingCalls.length > 0 || outgoingCalls.length > 0) {
+			setShowCallUI(true);
+		}
+	}, [incomingCalls, outgoingCalls]);
+
 	// Handle incoming call UI
 	const [incomingCall] = incomingCalls;
-	if (incomingCall && !hide) {
+	if (incomingCall && !hide && showCallUI) {
 		return <MyIncomingCallUI call={incomingCall} />;
 	}
 
 	// Handle outgoing call UI
 	const [outgoingCall] = outgoingCalls;
-	if (outgoingCall) {
+	if (outgoingCall && showCallUI) {
 		return <MyOutgoingCallUI call={outgoingCall} />;
 	}
 
