@@ -3,6 +3,7 @@ import { audio, chat, video } from "@/constants/icons";
 import { creatorUser } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
+import Loader from "../shared/Loader";
 import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useUser } from "@clerk/nextjs";
 import { Input } from "../ui/input";
@@ -23,7 +24,6 @@ import {
 import { db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import { createCall, updateCall } from "@/lib/actions/call.actions";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -56,13 +56,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			title: "Call Accepted",
 			description: "The call has been accepted. Redirecting to meeting...",
 		});
-
 		setSheetOpen(false);
 		await call?.leave();
 		router.push(`/meeting/${call.id}`);
 	};
 
-	const handleCallRejected = async () => {
+	const handleCallRejected = () => {
 		toast({
 			title: "Call Rejected",
 			description: "The call was rejected. Please try again later.",
@@ -83,24 +82,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			setMeetingState(undefined);
 
-			const members = [
+			const members: MemberRequest[] = [
 				{
 					user_id: "66743489cc9b328a2c2adb5c",
-					// user_id: "664c90ae43f0af8f1b3d5803",
-					custom: {
-						name: String(creator.username),
-						type: "expert",
-						image: String(creator.photo),
-					},
+					// user_id: "66681d96436f89b49d8b498b",
+					custom: { name: String(creator.username), type: "expert" },
 					role: "call_member",
 				},
 				{
 					user_id: String(user?.publicMetadata?.userId),
-					custom: {
-						name: String(user.username),
-						type: "client",
-						image: String(user.imageUrl),
-					},
+					custom: { name: String(user.username), type: "client" },
 					role: "admin",
 				},
 			];
@@ -147,18 +138,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						},
 					},
 				},
-			});
-
-			fetch("/api/v1/calls/registerCall", {
-				method: "POST",
-				body: JSON.stringify({
-					callId: id as string,
-					type: callType as string,
-					status: "unknown",
-					creator: String(user?.publicMetadata?.userId),
-					members: members,
-				}),
-				headers: { "Content-Type": "application/json" },
 			});
 
 			call.on("call.accepted", () => handleCallAccepted(call));
@@ -378,7 +357,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (data && data.status === "accepted") {
 				unsubscribe();
 				router.push(
-					`/chat/${chatRequest.chatId}}`
+					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}&startedAt=${chatRequest.startedAt}`
 				);
 			}
 		});

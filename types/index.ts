@@ -122,6 +122,16 @@ export type RegisterCallParams = {
 	duration?: string;
 };
 
+export type RegisterChatParams = {
+	chatId: string;
+	creator: string;
+	status: string;
+	members: MemberRequest[];
+	startedAt?: Date;
+	endedAt?: Date;
+	duration?: string;
+};
+
 export type UpdateCallParams = {
 	callId?: string;
 	type?: string;
