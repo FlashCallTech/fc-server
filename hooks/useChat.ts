@@ -80,7 +80,7 @@ const useChat = () => {
 
     useEffect(() => {
         if (chatEnded) {
-            router.replace('/chat-ended');
+            router.replace(`/feedback/${chatId}`);
         }
     }, [chatEnded, router]);
 
