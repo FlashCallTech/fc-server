@@ -1,13 +1,14 @@
-import CallList from "@/components/calls/CallList";
+import CallListMobile from "@/components/calls/CallListMobile";
+// import CallList from "@/components/calls/CallList";
 
 const PreviousPage = () => {
 	return (
-		<section className="flex size-full flex-col gap-2 px-4 py-5 md:py-0">
-			<h1 className="sticky top-16 bg-white z-50 w-full h-full pb-5 text-3xl font-bold">
-				Previous Calls
+		<section className="flex size-full flex-col gap-2 pb-5 md:py-0">
+			<h1 className="sticky top-16 bg-white z-30 w-full px-4 py-4 pt-6 text-3xl font-bold">
+				Order History
 			</h1>
-
-			<CallList type="ended" />
+			<CallListMobile />
+			{/* <CallList type="ended" /> */}
 		</section>
 	);
 };

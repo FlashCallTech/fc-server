@@ -47,7 +47,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 				</button>
 				<button
 					className="bg-red-500 text-white p-4 rounded-full hoverScaleEffect"
-					onClick={() => call.endCall()}
+					onClick={() => call.leave({ reject: true })}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
