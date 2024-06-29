@@ -22,7 +22,7 @@ const ChatDetailsSchema = new Schema({
 
 const ChatSchema = new Schema({
 	chatId: { type: String, required: true, unique: true },
-	chatDetails: [ChatDetailsSchema], // New field to store the details array
+	chatDetails: [ChatDetailsSchema],
 });
 
 const Chat = models.Chat || model("Chat", ChatSchema);
