@@ -10,8 +10,6 @@ import React, { useEffect, useState } from "react";
 const CreatorProfile = () => {
 	const [creator, setCreator] = useState(null);
 	const { userId } = useParams();
-	const {user }  = useUser();
-	console.log(user);
 
 	useEffect(() => {
 		try {

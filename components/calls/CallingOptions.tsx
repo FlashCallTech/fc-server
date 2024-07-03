@@ -24,6 +24,7 @@ import {
 import { db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import useChat from "@/hooks/useChat";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -50,6 +51,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
 	const clientId = user?.publicMetadata?.userId as string;
+	const { createChat } = useChat();
 
 	const handleCallAccepted = async (call: Call) => {
 		toast({
@@ -97,11 +99,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
+			const description = `${callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-			}`;
+				}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -236,8 +237,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						JSON.stringify({
 							clientId: data.clientId,
 							creatorId: data.creatorId,
+							chatId: chatId,
 							requestId: doc.id,
-							fullName: "Aseem Gupta",
+							fullName: "Chirag Goel(Creator)",
 							photo:
 								"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
 						})
@@ -282,6 +284,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					startedAt: Date.now(),
 					endedAt: null,
 					clientId: clientId,
+					creatorId: chatRequest.creatorId,
 					status: "active",
 					messages: [],
 				});
@@ -325,6 +328,19 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				status: "active",
 			});
 
+			localStorage.setItem(
+				"user2",
+				JSON.stringify({
+					clientId: chatRequest.clientId,
+					creatorId: chatRequest.creatorId,
+					chatId: chatRequest.chatId,
+					requestId: chatRequest.id,
+					fullName: "Chirag Goel",
+					photo:
+						"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
+				})
+			);
+
 			setSheetOpen(false);
 		} catch (error) {
 			console.error(error);
@@ -334,12 +350,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	const handleRejectChat = async () => {
 		if (!chatRequest) return;
+		console.log("inside handle reject")
 
 		try {
+			const status = "rejected"
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
-				status: "rejected",
+				status: status,
 			});
 
+			await createChat(chatRequest.chatId, status);
 			setChatRequest(null);
 			setSheetOpen(false);
 		} catch (error) {
