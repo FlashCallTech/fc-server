@@ -35,6 +35,7 @@ export const handleTransaction = async ({
 		// console.log("clientID: ", clientId)
 
 		if (amountToBePaid && clientId) {
+			console.log("1")
 			const [existingTransaction] = await Promise.all([
 				fetch(`/api/v1/calls/transaction/getTransaction?callId=${chatId}`).then(
 					(res) => res.json()
@@ -42,6 +43,7 @@ export const handleTransaction = async ({
 			]);
 
 			if (existingTransaction) {
+				console.log('2')
 				await fetch("/api/v1/calls/transaction/update", {
 					method: "PUT",
 					body: JSON.stringify({
@@ -52,6 +54,7 @@ export const handleTransaction = async ({
 					}),
 				});
 			} else {
+				console.log("3")
 				// Create a new document if no existing document is found
 				await fetch("/api/v1/calls/transaction/create", {
 					method: "POST",

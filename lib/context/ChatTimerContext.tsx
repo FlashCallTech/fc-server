@@ -9,9 +9,10 @@ import React, {
 import { useWalletBalanceContext } from "./WalletBalanceContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-import { creatorUser } from "@/types";
 import { useUser } from "@clerk/nextjs";
 import useChat from "@/hooks/useChat";
+import useEndChat from "@/hooks/useEndChat";
+import { creatorUser } from "@/types";
 
 interface ChatTimerContextProps {
 	timeLeft: string;
@@ -57,19 +58,19 @@ export const ChatTimerProvider = ({
 	creatorId,
 }: ChatTimerProviderProps) => {
 	const { toast } = useToast();
-	const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
+	// const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
 	const { walletBalance } = useWalletBalanceContext();
 	const {user} = useUser();
-
 	const [timeLeft, setTimeLeft] = useState(0);
+	const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
 	const [hasLowBalance, setHasLowBalance] = useState(false);
 	const [isTimerRunning, setIsTimerRunning] = useState(true);
 	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
 	const lowBalanceThreshold = 300; // Threshold in seconds
 	const router = useRouter();
-	const {chatId, user2, handleEnd, startedAt} = useChat();
+	const { chatId, user2, handleEnd, startedAt } = useEndChat();
 
 	const endChat = async () => {
 		toast({
@@ -112,7 +113,7 @@ export const ChatTimerProvider = ({
 				if (newTimeLeft <= 0) {
 					clearInterval(intervalId);
 					if(clientId===user?.publicMetadata?.userId){
-						handleEnd(chatId, user2);
+						handleEnd(chatId as string, user2);
 					}	
 				}
 

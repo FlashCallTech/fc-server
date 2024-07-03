@@ -3,6 +3,7 @@ import { audio, chat, video } from "@/constants/icons";
 import { creatorUser } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
+import Loader from "../shared/Loader";
 import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useUser } from "@clerk/nextjs";
 import { Input } from "../ui/input";
@@ -49,19 +50,19 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const chatRef = collection(db, "chats");
 	const clientId = user?.publicMetadata?.userId as string;
 	const storedCallId = localStorage.getItem("activeCallId");
+	const { createChat } = useChat();
 
 	const handleCallAccepted = async (call: Call) => {
 		toast({
 			title: "Call Accepted",
 			description: "The call has been accepted. Redirecting to meeting...",
 		});
-
 		setSheetOpen(false);
 		await call?.leave();
 		router.push(`/meeting/${call.id}`);
 	};
 
-	const handleCallRejected = async () => {
+	const handleCallRejected = () => {
 		toast({
 			title: "Call Rejected",
 			description: "The call was rejected. Please try again later.",
@@ -82,24 +83,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			setMeetingState(undefined);
 
-			const members = [
+			const members: MemberRequest[] = [
 				{
 					user_id: "66743489cc9b328a2c2adb5c",
-					// user_id: "664c90ae43f0af8f1b3d5803",
-					custom: {
-						name: String(creator.username),
-						type: "expert",
-						image: String(creator.photo),
-					},
+					// user_id: "66681d96436f89b49d8b498b",
+					custom: { name: String(creator.username), type: "expert" },
 					role: "call_member",
 				},
 				{
 					user_id: String(user?.publicMetadata?.userId),
-					custom: {
-						name: String(user.username),
-						type: "client",
-						image: String(user.imageUrl),
-					},
+					custom: { name: String(user.username), type: "client" },
 					role: "admin",
 				},
 			];
@@ -257,8 +250,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						JSON.stringify({
 							clientId: data.clientId,
 							creatorId: data.creatorId,
+							chatId: chatId,
 							requestId: doc.id,
-							fullName: "Aseem Gupta",
+							fullName: "Chirag Goel(Creator)",
 							photo:
 								"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
 						})
@@ -303,6 +297,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					startedAt: Date.now(),
 					endedAt: null,
 					clientId: clientId,
+					creatorId: chatRequest.creatorId,
 					status: "active",
 					messages: [],
 				});
@@ -346,6 +341,19 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				status: "active",
 			});
 
+			localStorage.setItem(
+				"user2",
+				JSON.stringify({
+					clientId: chatRequest.clientId,
+					creatorId: chatRequest.creatorId,
+					chatId: chatRequest.chatId,
+					requestId: chatRequest.id,
+					fullName: "Chirag Goel",
+					photo:
+						"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
+				})
+			);
+
 			setSheetOpen(false);
 		} catch (error) {
 			console.error(error);
@@ -355,12 +363,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	const handleRejectChat = async () => {
 		if (!chatRequest) return;
+		console.log("inside handle reject");
 
 		try {
+			const status = "rejected";
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
-				status: "rejected",
+				status: status,
 			});
 
+			await createChat(chatRequest.chatId, status);
 			setChatRequest(null);
 			setSheetOpen(false);
 		} catch (error) {
