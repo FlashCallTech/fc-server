@@ -127,10 +127,18 @@ export type RegisterChatParams = {
 	creator: string;
 	status: string;
 	members: MemberRequest[];
-	startedAt?: Date;
-	endedAt?: Date;
-	duration?: string;
+	startedAt?: number;
+	endedAt?: number;
+	duration?: number;
 };
+
+export interface UpdateChatParams {
+	chatId: string;
+	status: string;
+	startedAt?: number;
+	endedAt?: number;
+	duration?: number;
+}
 
 export type UpdateCallParams = {
 	callId?: string;
