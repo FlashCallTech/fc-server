@@ -1,14 +1,52 @@
 import { connectToDatabase } from "@/lib/database";
 import { handleError } from "@/lib/utils";
-import { RegisterCallParams, UpdateCallParams } from "@/types";
+import { RegisterCallParams, RegisterChatParams, UpdateCallParams } from "@/types";
 import Call from "../database/models/call.model";
+import Chat from "../database/models/chat.model";
 
-export async function createCall(call: RegisterCallParams) {
+export async function createCall(call: RegisterCallParams | any) {
 	try {
 		await connectToDatabase();
 		const newCall = await Call.create(call);
 		// console.log(newCall);
 		return newCall.toJSON();
+	} catch (error) {
+		handleError(error);
+	}
+}
+
+export async function createChat(chat: any) {
+	try {
+		console.log("inside createChat")
+		await connectToDatabase();
+		const newChat = await Chat.create(chat);
+		return newChat.toJSON();
+	} catch (error) {
+		handleError(error);
+	}
+}
+
+export async function updateChat(chatId: string, update: any) {
+	try {
+		await connectToDatabase();
+		const updatedChat = await Chat.findOneAndUpdate(
+			{ chatId },
+			{ $push: { chatDetails: update }, $set: { updatedAt: new Date() } },
+			{ new: true, upsert: true }
+		).lean();
+		// console.log(updatedTransaction);
+		return updatedChat;
+	} catch (error) {
+		console.error(error);
+		handleError(error);
+	}
+}
+
+export async function getChat(chatId: string) {
+	try {
+		await connectToDatabase();
+		const chats = await Chat.findOne({chatId}).lean();
+		return chats;
 	} catch (error) {
 		handleError(error);
 	}

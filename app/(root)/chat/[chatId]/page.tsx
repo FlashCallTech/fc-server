@@ -7,11 +7,12 @@ import { handleTransaction } from '@/utils/ChatTransaction';
 import { useWalletBalanceContext } from '@/lib/context/WalletBalanceContext';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
-
+import useEndChat from '@/hooks/useEndChat';
 
 const Page = () => {
     const [queryParams, setQueryParams] = useState<{ clientId: string | null, creatorId: string | null }>({ clientId: null, creatorId: null });
-    const {chatEnded, duration, user2, chatId, handleEnd} = useChat();
+    const { duration } = useChat();
+    const { chatEnded, user2, chatId, handleEnd } = useEndChat();
     const {updateWalletBalance} = useWalletBalanceContext();
     const [check, setCheck] = useState(true);
     const clientId = user2?.clientId;
@@ -28,13 +29,13 @@ const Page = () => {
 
     const handleTabClose = () => {
         if (isTabClosing) {
-            handleEnd(chatId, user2);
+            handleEnd(chatId as string, user2);
         }
     };
     
     useEffect(() => {
         if(chatEnded && duration !== undefined && check){
-            handleTransaction({duration: duration? duration?.toString(): '', clientId: clientId, chatId: chatId, updateWalletBalance, router, toast});
+            handleTransaction({duration: duration? duration?.toString(): '', clientId: clientId, chatId: chatId as string, updateWalletBalance, router, toast});
             setCheck(false);
         }
     }, [chatEnded, duration])

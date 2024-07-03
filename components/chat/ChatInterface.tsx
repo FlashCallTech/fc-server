@@ -13,15 +13,15 @@ import { useUser } from "@clerk/nextjs";
 import upload from '../../lib/upload'
 import Messages from "@/components/chat/Messages";
 import ChatInput from "@/components/chat/ChatInput";
-import useChat from "@/hooks/useChat";
 import useUserStatus from "@/hooks/useUserStatus";
 import useMediaRecorder from "@/hooks/useMediaRecorder";
 import ChatTimer from "./ChatTimer";
 import EndCallDecision from "../calls/EndCallDecision";
+import useEndChat from "@/hooks/useEndChat";
 
 
 const ChatInterface: React.FC = () => {
-	const { chat, markMessagesAsSeen, handleEnd } = useChat();
+	const { handleEnd, chat, markMessagesAsSeen } = useEndChat();
 	const { user } = useUser();
 	useUserStatus();
 	const {
@@ -48,7 +48,7 @@ const ChatInterface: React.FC = () => {
 	});
 	const [receiverId, setReceiverId] = useState(null);
 	const audioContext = new AudioContext();
-	const { user2, chatId } = useChat();
+	const { user2, chatId } = useEndChat();
 
 	useEffect(() => {
 		const fetchReceiverId = async () => {
@@ -277,7 +277,7 @@ const ChatInterface: React.FC = () => {
 	};
 
 	const handleDecisionDialog = async () => {
-		await handleEnd(chatId, user2);
+		await handleEnd(chatId as string, user2);
 		setShowDialog(false);
 		// isMeetingOwner && router.push(`/feedback/${call?.id}/${totalTimeUtilized}`);
 		// toast({
