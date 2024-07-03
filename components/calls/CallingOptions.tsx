@@ -23,6 +23,7 @@ import {
 import { db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import useChat from "@/hooks/useChat";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -83,7 +84,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			setMeetingState(undefined);
 
-			const members: MemberRequest[] = [
+			const members = [
 				{
 					user_id: "66743489cc9b328a2c2adb5c",
 					// user_id: "66681d96436f89b49d8b498b",
