@@ -54,8 +54,8 @@
 @media only screen and (max-width: 768px) {
 	.cl-internal-qk5yrq {
 		max-width: 100% !important;
-		border-top-left-radius: 2.5rem;
-		border-top-right-radius: 2.5rem;
+		/* border-top-left-radius: 2.5rem;
+		border-top-right-radius: 2.5rem; */
 	}
 }
 
@@ -154,6 +154,10 @@
 	height: 0.75rem !important;
 }
 
+.str-video__participant-view > .str-video__call-controls__button {
+	display: none;
+}
+
 @media (min-width: 600px) {
 	.str-video__speaker-layout
 		.str-video__speaker-layout__spotlight
@@ -174,6 +178,12 @@
 }
 
 /* Other Styles */
+
+.blurEffect {
+	/* box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); */
+	backdrop-filter: blur(4px) !important;
+	-webkit-backdrop-filter: blur(4px) !important;
+}
 
 @layer base {
 	body {

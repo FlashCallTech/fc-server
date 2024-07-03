@@ -44,7 +44,7 @@ const AudioDeviceList = ({
 
 			{showAudioDeviceList && (
 				<div
-					className="absolute bottom-16 left-0 bg-dark-1 rounded-t-xl w-full z-40 animate-enterFromLeft"
+					className="absolute bottom-16 left-0 bg-dark-1 rounded-t-xl w-full z-40"
 					onChange={() => setShowAudioDeviceList(false)}
 				>
 					<DeviceSelectorAudioOutput title="Audio Out" />

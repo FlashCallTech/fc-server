@@ -10,10 +10,11 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import FeedbackCheck from "../feedbacks/FeedbackCheck";
+import { Button } from "../ui/button";
 
 const CallListMobile = () => {
 	const [calls, setCalls] = useState<RegisterCallParams[]>([]);
-	const [callsCount, setCallsCount] = useState(6);
+	const [callsCount, setCallsCount] = useState(8);
 	const [loading, setLoading] = useState(true);
 	const { user } = useUser();
 	const pathname = usePathname();
@@ -79,7 +80,7 @@ const CallListMobile = () => {
 						return (
 							<div
 								key={index}
-								className={`flex h-full w-full items-start justify-between py-2 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300  ${
+								className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300  ${
 									pathname.includes("/profile") && "mx-auto"
 								}`}
 							>
@@ -106,7 +107,7 @@ const CallListMobile = () => {
 										</div>
 									</Link>
 									{/* call details */}
-									<div className="flex items-center justify-start gap-2">
+									<div className="flex items-center justify-start gap-2 pl-16">
 										<span
 											className={`text-sm ${
 												call.status === "Ended"
@@ -118,19 +119,39 @@ const CallListMobile = () => {
 										</span>
 										<span className="text-[12.5px]">
 											{call.duration
-												? `${(parseInt(call.duration, 10) / 60).toFixed(
-														2
-												  )} Minutes`
-												: "Call Was Rejected"}
+												? (() => {
+														const seconds = parseInt(call.duration, 10);
+														const hours = Math.floor(seconds / 3600);
+														const minutes = Math.floor((seconds % 3600) / 60);
+														const remainingSeconds = seconds % 60;
+														const formattedTime = [
+															hours > 0 ? `${hours}h` : null,
+															minutes > 0 ? `${minutes}m` : null,
+															`${remainingSeconds}s`,
+														]
+															.filter(Boolean)
+															.join(" ");
+														return formattedTime;
+												  })()
+												: call.status === "Accepted" && "Pending Transaction"}
 										</span>
 									</div>
 								</div>
 								{/* StartedAt & Feedbacks */}
-								<div className="w-1/2 flex flex-col items-end justify-center gap-2">
-									<span className="text-sm text-[#A7A8A1] pr-1 whitespace-nowrap">
+								<div className="w-1/2 flex flex-col items-end justify-between h-full gap-2">
+									<span className="text-sm text-[#A7A8A1] pr-1 pt-1 whitespace-nowrap">
 										{formattedDate.dateTime}
 									</span>
-									<FeedbackCheck callId={call?.callId} />
+									{call.status !== "Rejected" ? (
+										<FeedbackCheck callId={call?.callId} />
+									) : (
+										<Link
+											href={`/creator/${call.members[0].user_id}`}
+											className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
+										>
+											Visit Again
+										</Link>
+									)}
 								</div>
 							</div>
 						);

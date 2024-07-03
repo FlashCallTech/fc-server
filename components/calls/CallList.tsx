@@ -87,7 +87,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
 
 	return (
 		<div
-			className={`grid grid-cols-1 ${
+			className={`grid grid-cols-1 px-4 ${
 				calls && calls.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
 			} items-start justify-center gap-5 w-full h-full text-white`}
 		>

@@ -27,8 +27,8 @@ const MobileNav = () => {
 					<Image
 						src={user?.imageUrl || "/images/defaultProfile.png"}
 						alt="Profile"
-						width={24}
-						height={24}
+						width={1000}
+						height={1000}
 						className="rounded-full w-10 h-10 mx-auto cursor-pointer hoverScaleEffect"
 					/>
 				</SheetTrigger>

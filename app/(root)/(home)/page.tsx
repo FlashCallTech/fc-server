@@ -32,7 +32,7 @@ const HomePage = () => {
 	if (!creators || loading) return <PostLoader count={6} />;
 
 	return (
-		<section className="flex size-full flex-col gap-5 ">
+		<section className="flex size-full flex-col gap-5 md:pb-14">
 			{/* <Experiment /> */}
 			<div className="grid grid-cols-1 xl:grid-cols-2 gap-10 items-center 3xl:items-start justify-start h-full pb-6">
 				{creators.map((creator, index) => (
