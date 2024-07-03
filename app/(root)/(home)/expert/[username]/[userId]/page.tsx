@@ -26,7 +26,7 @@ const CreatorProfilePage = () => {
 	if (!creator) return <Loader />;
 
 	return (
-		<div className="flex items-start justify-start h-full overflow-scroll no-scrollbar">
+		<div className="flex items-start justify-start h-full overflow-scroll no-scrollbar md:pb-14">
 			<CreatorCard creator={creator} />
 		</div>
 	);

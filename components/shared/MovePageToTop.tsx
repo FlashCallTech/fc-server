@@ -1,9 +1,13 @@
 // components/MovePageToTop.tsx
+
+"use client";
+
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const MovePageToTop = () => {
 	const [isVisible, setIsVisible] = useState(false);
-
+	const pathname = usePathname();
 	const toggleVisibility = () => {
 		if (window.scrollY > 300) {
 			setIsVisible(true);
@@ -25,7 +29,11 @@ const MovePageToTop = () => {
 	}, []);
 
 	return (
-		<div>
+		<div
+			className={`${
+				pathname.includes("/payment") ? "hidden" : "hidden xl:block"
+			} `}
+		>
 			{isVisible && (
 				<button
 					onClick={scrollToTop}

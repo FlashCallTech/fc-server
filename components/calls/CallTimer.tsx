@@ -1,19 +1,43 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
+import { useToast } from "../ui/use-toast";
 // import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 // import RechargeModal from "./RechargeModal";
 
-const CallTimer = () => {
+const CallTimer = ({
+	handleCallRejected,
+}: {
+	handleCallRejected: () => Promise<void>;
+}) => {
 	const { timeLeft, hasLowBalance } = useCallTimerContext();
+	const [isToastShown, setIsToastShown] = useState(false);
+	const { toast } = useToast();
 	// const { walletBalance, setWalletBalance } = useWalletBalanceContext();
 
 	const timeLeftInSeconds = parseFloat(timeLeft);
-	const isLoading = isNaN(timeLeftInSeconds) || timeLeftInSeconds <= 0;
+	const isLoading = isNaN(timeLeftInSeconds);
 
 	const minutes = Math.floor(timeLeftInSeconds / 60);
 	const seconds = Math.floor(timeLeftInSeconds % 60)
 		.toString()
 		.padStart(2, "0");
+
+	useEffect(() => {
+		if (!isLoading && timeLeftInSeconds <= 0) {
+			!isToastShown &&
+				toast({
+					title: "Call Ended ...",
+					description: "Time Limit Exceeded",
+				});
+			setIsToastShown(true);
+			setTimeout(() => {
+				handleCallRejected();
+			}, 2500);
+			// console.log("User Wallet is Empty", isLoading, timeLeftInSeconds);
+		}
+	}, [timeLeftInSeconds, handleCallRejected, isLoading]);
 
 	return (
 		<div

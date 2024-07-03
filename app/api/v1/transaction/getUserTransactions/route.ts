@@ -12,6 +12,8 @@ export async function GET(request: Request) {
 		const { searchParams } = new URL(request.url);
 		const userId = searchParams.get("userId");
 		const filter = searchParams.get("filter");
+		const page = parseInt(searchParams.get("page") || "1");
+		const limit = parseInt(searchParams.get("limit") || "10");
 
 		if (!userId || !filter) {
 			return new NextResponse("Either UserId or Filter is missing", {
@@ -19,17 +21,29 @@ export async function GET(request: Request) {
 			});
 		}
 
-		let transactions;
+		let result: { transactions: any[]; totalTransactions: number } | undefined;
 
 		if (filter === "all") {
-			transactions = await getTransactionsByUserId(userId);
+			result = await getTransactionsByUserId(userId, page, limit);
 		} else if (filter === "credit" || filter === "debit") {
-			transactions = await getTransactionsByUserIdAndType(userId, filter);
+			result = await getTransactionsByUserIdAndType(
+				userId,
+				filter,
+				page,
+				limit
+			);
 		} else {
 			return new NextResponse("Invalid filter", { status: 400 });
 		}
 
-		return NextResponse.json(transactions);
+		if (!result) {
+			return new NextResponse("No transactions found", { status: 404 });
+		}
+
+		const { transactions, totalTransactions } = result;
+		const totalPages = Math.ceil(totalTransactions / limit);
+
+		return NextResponse.json({ transactions, totalPages });
 	} catch (error) {
 		console.error(error);
 		return new NextResponse("Internal Server Error", { status: 500 });

@@ -7,14 +7,12 @@ import React, {
 } from "react";
 import { useWalletBalanceContext } from "./WalletBalanceContext";
 import { useToast } from "@/components/ui/use-toast";
-import { useRouter } from "next/navigation";
-import { useCall, useCallStateHooks } from "@stream-io/video-react-sdk";
+import { useCallStateHooks } from "@stream-io/video-react-sdk";
 import { creatorUser } from "@/types";
 
 interface CallTimerContextProps {
 	timeLeft: string;
 	hasLowBalance: boolean;
-	endCall: () => void;
 	pauseTimer: () => void;
 	resumeTimer: () => void;
 	anyModalOpen: boolean;
@@ -53,7 +51,6 @@ export const CallTimerProvider = ({
 	children,
 	isVideoCall,
 	isMeetingOwner,
-	expert,
 }: CallTimerProviderProps) => {
 	const { toast } = useToast();
 	const [audioRatePerMinute, setAudioRatePerMinute] = useState(0);
@@ -62,35 +59,15 @@ export const CallTimerProvider = ({
 	// const [currentCreator, setCurrentCreator] = useState<creatorUser | null>(null);
 	const { useCallStartsAt } = useCallStateHooks();
 
-	const [timeLeft, setTimeLeft] = useState(0);
+	const [timeLeft, setTimeLeft] = useState(NaN);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
 	const [hasLowBalance, setHasLowBalance] = useState(false);
 	const [isTimerRunning, setIsTimerRunning] = useState(true);
 	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
 	const { walletBalance } = useWalletBalanceContext();
 	const lowBalanceThreshold = 300;
-	// const router = useRouter();
-	const call = useCall();
+
 	const callStartedAt = useCallStartsAt();
-	const [toastShown, setToastShown] = useState(false);
-
-	if (!call) {
-		throw new Error(
-			"useStreamCall must be used within a StreamCall component."
-		);
-	}
-
-	const endCall = async () => {
-		if (!toastShown) {
-			setToastShown(true);
-			await call?.endCall();
-			toast({
-				title: "Call Has Ended",
-				description: "User Wallet is Empty ...",
-			});
-			// router.push(`/feedback/${call?.id}`);
-		}
-	};
 
 	const pauseTimer = () => setIsTimerRunning(false);
 	const resumeTimer = () => setIsTimerRunning(true);
@@ -164,7 +141,6 @@ export const CallTimerProvider = ({
 		videoRatePerMinute,
 		lowBalanceNotified,
 		lowBalanceThreshold,
-		endCall,
 		toast,
 		callStartedAt,
 		walletBalance,
@@ -175,7 +151,6 @@ export const CallTimerProvider = ({
 			value={{
 				timeLeft: formatTimeLeft(timeLeft),
 				hasLowBalance,
-				endCall,
 				pauseTimer,
 				resumeTimer,
 				anyModalOpen,

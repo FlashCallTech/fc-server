@@ -1,7 +1,7 @@
 "use client";
 
 import CreatorCard from "@/components/creator/CreatorCard";
-import Loader from "@/components/shared/Loader";
+import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { getUserById } from "@/lib/actions/creator.actions";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -23,10 +23,15 @@ const CreatorProfile = () => {
 		}
 	}, [userId]);
 
-	if (!creator) return <Loader />;
+	if (!creator)
+		return (
+			<section className="w-full h-full flex items-center justify-center">
+				<SinglePostLoader />
+			</section>
+		);
 
 	return (
-		<div className="flex items-start justify-start h-full overflow-scroll no-scrollbar">
+		<div className="flex items-start justify-start h-full overflow-scroll no-scrollbar md:pb-14">
 			<CreatorCard creator={creator} />
 		</div>
 	);

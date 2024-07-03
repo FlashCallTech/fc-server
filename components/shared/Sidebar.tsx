@@ -13,7 +13,7 @@ const Sidebar = () => {
 	const pathname = usePathname();
 	const { user } = useUser();
 	return (
-		<section className="sticky left-0 top-0 flex h-screen w-fit flex-col justify-between p-6 pt-28  max-sm:hidden lg:w-[264px]">
+		<section className="sticky left-0 top-0 flex h-screen flex-col justify-between p-6 pt-24  max-sm:hidden lg:w-[264px]">
 			<div className="flex flex-1 flex-col gap-6">
 				{sidebarLinks.map((item) => {
 					const isActive =
@@ -62,8 +62,8 @@ const Sidebar = () => {
 							<Image
 								src={user?.imageUrl || "/images/defaultProfile.png"}
 								alt="Profile"
-								width={24}
-								height={24}
+								width={1000}
+								height={1000}
 								className="rounded-full w-full max-w-[44px]"
 							/>
 							<div className="flex flex-col items-start justify-center max-lg:hidden">

@@ -18,6 +18,7 @@ interface MeetingModalProps {
 	image?: string;
 	buttonClassName?: string;
 	buttonIcon?: string;
+	theme?: string;
 }
 
 const MeetingModal = ({
@@ -32,19 +33,36 @@ const MeetingModal = ({
 	image,
 	buttonClassName,
 	buttonIcon,
+	theme,
 }: MeetingModalProps) => {
+	const boxShadowTheme = `5px 5px 5px 0px ${theme}`;
+
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="flex w-full max-w-[520px] flex-col gap-6 border-none bg-dark-1 px-6 py-9 text-white">
+			<DialogContent
+				className="rounded-xl flex w-full max-w-[92%] md:max-w-[520px] flex-col gap-6 border-none px-6 py-9  text-white"
+				style={{
+					background: theme,
+				}}
+			>
 				<div className="flex flex-col gap-6">
 					{image && (
 						<div className="flex justify-center">
-							<Image src={image} alt="checked" width={72} height={72} />
+							<Image
+								src={image}
+								alt="checked"
+								width={1000}
+								height={1000}
+								className="rounded-full w-32 h-32 object-cover"
+								onError={(e) => {
+									e.currentTarget.src = "/images/defaultProfileImage.png";
+								}}
+							/>
 						</div>
 					)}
 					<h1
 						className={cn(
-							"text-xl sm:text-2xl md:text-3xl font-bold leading-[42px]",
+							"text-xl sm:text-2xl  font-bold leading-[42px]",
 							className
 						)}
 					>
@@ -53,8 +71,12 @@ const MeetingModal = ({
 					{children}
 					<Button
 						className={
-							"bg-green-1 focus-visible:ring-0 focus-visible:ring-offset-0"
+							"bg-white  focus-visible:ring-0 focus-visible:ring-offset-0 font-semibold w-full max-w-[75%] md:max-w-[13rem] mx-auto hoverScaleEffect"
 						}
+						style={{
+							boxShadow: boxShadowTheme,
+							color: theme,
+						}}
 						onClick={handleClick}
 					>
 						{buttonIcon && (

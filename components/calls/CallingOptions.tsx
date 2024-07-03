@@ -7,7 +7,6 @@ import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useUser } from "@clerk/nextjs";
 import { Input } from "../ui/input";
 import MeetingModal from "../meeting/MeetingModal";
-import { MemberRequest } from "@stream-io/video-react-sdk";
 import { Button } from "../ui/button";
 import {
 	arrayUnion,
@@ -23,7 +22,6 @@ import {
 import { db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import { createCall, updateCall } from "@/lib/actions/call.actions";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -50,6 +48,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
 	const clientId = user?.publicMetadata?.userId as string;
+	const storedCallId = localStorage.getItem("activeCallId");
 
 	const handleCallAccepted = async (call: Call) => {
 		toast({
@@ -154,7 +153,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				body: JSON.stringify({
 					callId: id as string,
 					type: callType as string,
-					status: "unknown",
+					status: "Initiated",
 					creator: String(user?.publicMetadata?.userId),
 					members: members,
 				}),
@@ -164,9 +163,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			call.on("call.accepted", () => handleCallAccepted(call));
 			call.on("call.rejected", handleCallRejected);
 
-			toast({
-				title: "Meeting Created",
-			});
+			// toast({
+			// 	title: "Meeting Created",
+			// 	description: "Waiting for Expert to Respond",
+			// });
 		} catch (error) {
 			console.error(error);
 			toast({ title: "Failed to create Meeting" });
@@ -397,9 +397,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		callType: string,
 		modalType: "isJoiningMeeting" | "isInstantMeeting"
 	) => {
-		if (user) {
+		if (user && !storedCallId) {
 			setMeetingState(`${modalType}`);
 			setCallType(`${callType}`);
+		} else if (user && storedCallId) {
+			router.push(`/meeting/${storedCallId}`);
 		} else {
 			router.replace("/sign-in");
 		}
@@ -471,28 +473,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				</span>
 			</div>
 
-			<MeetingModal
-				isOpen={meetingState === "isJoiningMeeting"}
-				onClose={() => setMeetingState(undefined)}
-				title="Type the link here"
-				className="text-center"
-				buttonText="Join Meeting"
-				handleClick={() => router.push(values.link)}
-			>
-				<Input
-					placeholder="Meeting link"
-					onChange={(e: any) => setValues({ ...values, link: e.target.value })}
-					className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-				/>
-			</MeetingModal>
-
+			{/* Call & Chat Modals */}
 			<MeetingModal
 				isOpen={meetingState === "isInstantMeeting"}
 				onClose={() => setMeetingState(undefined)}
-				title="Request will be sent to Expert"
+				title={`Send Request to Expert ${creator.username}`}
 				className="text-center"
 				buttonText="Start Session"
+				image={creator.photo}
 				handleClick={createMeeting}
+				theme={creator.themeSelected}
 			/>
 
 			{chatRequest &&

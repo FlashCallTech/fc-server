@@ -50,7 +50,7 @@ const UserProfilePage = () => {
 	return (
 		<div className="flex justify-start items-center size-full flex-col gap-7 text-black">
 			{/* Profile Info */}
-			<div className="flex items-center justify-start w-full gap-10 xl:max-w-[69%]">
+			<div className="p-4 flex flex-col md:flex-row items-center justify-start w-full gap-10 xl:max-w-[69%]">
 				{/* user profile picture */}
 				<Image
 					src={userData.photo}
@@ -104,7 +104,7 @@ const UserProfilePage = () => {
 
 			{/* Edit profile area */}
 			{editData && (
-				<div className="flex flex-col w-full 2xl:max-w-[60%] items-start justify-center gap-7 mt-4">
+				<div className="px-4 flex flex-col w-full 2xl:max-w-[60%] items-start justify-center gap-7 mt-4">
 					<span className="text-2xl font-semibold">Edit User Details</span>
 					<EditProfile
 						userData={userData}
@@ -116,7 +116,7 @@ const UserProfilePage = () => {
 			)}
 
 			{/* typewriter effect */}
-			<h1 className="text-3xl lg:text-4xl font-semibold mt-7">
+			<h1 className="text-3xl lg:text-4xl font-semibold my-7">
 				<Typewriter
 					words={[
 						`Hi There ${userData.username}`,
