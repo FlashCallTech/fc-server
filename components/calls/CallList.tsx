@@ -1,138 +1,129 @@
 "use client";
 
-import { Call, CallRecording } from "@stream-io/video-react-sdk";
-import Loader from "../shared/Loader";
-import { useGetCalls } from "@/hooks/useGetCalls";
-import { useEffect, useState } from "react";
-import MeetingCard from "../meeting/MeetingCard";
+import { formatDateTime } from "@/lib/utils";
+import { RegisterCallParams, SelectedChat } from "@/types";
+import { useUser } from "@clerk/nextjs";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import ContentLoading from "../shared/ContentLoading";
 import Link from "next/link";
 import Image from "next/image";
-import ContentLoading from "../shared/ContentLoading";
+import SinglePostLoader from "../shared/SinglePostLoader";
+import FeedbackCheck from "../feedbacks/FeedbackCheck";
+import { Button } from "../ui/button";
 
-const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
-	const { endedCalls, upcomingCalls, callRecordings, isLoading } =
-		useGetCalls();
-	const [recordings, setRecordings] = useState<CallRecording[]>([]);
-	const [callsCount, setCallsCount] = useState(6);
+const CallList = () => {
+    const [chats, setChats] = useState<SelectedChat[]>([]);
+    const [chatsCount, setChatsCount] = useState(8);
+    const [loading, setLoading] = useState(true);
+    const { user } = useUser();
+    const pathname = usePathname();
+    const router = useRouter();
 
-	useEffect(() => {
-		const fetchRecordings = async () => {
-			try {
-				const callData = await Promise.all(
-					callRecordings?.map((meeting) => meeting.queryRecordings()) ?? []
-				);
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 2) {
+                setChatsCount((prevCount) => prevCount + 6);
+            }
+        };
 
-				const recordings = callData
-					.filter((call) => call.recordings.length > 0)
-					.flatMap((call) => call.recordings);
+        window.addEventListener("scroll", handleScroll);
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, []);
 
-				setRecordings(recordings);
-			} catch (error) {
-				console.log("Error retrieving Recordings", error);
-			}
-		};
+    useEffect(() => {
+        const getChats = async () => {
+            try {
+                const response = await fetch(
+                    `/api/v1/chats/getUserChats?userId=${String(user?.publicMetadata?.userId)}`
+                );
+                const data = await response.json();
+                setChats(data);
+            } catch (error) {
+                console.warn(error);
+            } finally {
+                setLoading(false); // Set loading to false after data is fetched
+            }
+        };
 
-		if (type === "recordings") {
-			fetchRecordings();
-		}
-	}, [type, callRecordings]);
+        getChats();
+    }, [user]);
 
-	useEffect(() => {
-		const handleScroll = () => {
-			if (
-				window.innerHeight + window.scrollY >=
-				document.body.offsetHeight - 2
-			) {
-				setCallsCount((prevCount) => prevCount + 6);
-			}
-		};
+    const visibleChats = chats.slice(0, chatsCount);
 
-		window.addEventListener("scroll", handleScroll);
-		return () => {
-			window.removeEventListener("scroll", handleScroll);
-		};
-	}, []);
+    const handleChatClick = (chat: SelectedChat) => {
+        const chatData = encodeURIComponent(JSON.stringify(chat));
+        router.push(`/chatDetails?selectedChat=${chatData}`); // Redirect to chat details page
+    };
 
-	const getCalls = () => {
-		switch (type) {
-			case "ended":
-				return endedCalls;
-			case "recordings":
-				return recordings;
-			case "upcoming":
-				return upcomingCalls;
-			default:
-				return [];
-		}
-	};
+    if (loading) {
+        return (
+            <section className="w-full h-full flex items-center justify-center">
+                <ContentLoading />
+            </section>
+        );
+    }
 
-	const getNoCallsMessage = () => {
-		switch (type) {
-			case "ended":
-				return "No Previous Calls Found";
-			case "upcoming":
-				return "No Upcoming Calls Found";
-			case "recordings":
-				return "No Recordings Available";
-			default:
-				return "";
-		}
-	};
-
-	if (isLoading) return <Loader />;
-
-	const calls = getCalls();
-	const noCallsMessage = getNoCallsMessage();
-	const visibleCalls = calls && calls.slice(0, callsCount);
-
-	return (
-		<div
-			className={`grid grid-cols-1 px-4 ${
-				calls && calls.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
-			} items-start justify-center gap-5 w-full h-full text-white`}
-		>
-			{calls && calls.length > 0 ? (
-				visibleCalls &&
-				visibleCalls.map((meeting: Call | CallRecording) => (
-					<MeetingCard
-						key={(meeting as Call).id}
-						icon={
-							type === "ended"
-								? "/icons/previous.svg"
-								: type === "upcoming"
-								? "/icons/upcoming.svg"
-								: "/icons/recordings.svg"
-						}
-						title={
-							(meeting as Call).state?.custom?.description ||
-							(meeting as CallRecording).filename?.substring(0, 20) ||
-							"No Description"
-						}
-						date={
-							(meeting as Call).state?.startsAt?.toLocaleString() ||
-							(meeting as CallRecording).start_time?.toLocaleString()
-						}
-						callId={(meeting as Call).id}
-						members={(meeting as Call).state?.members}
-					/>
-				))
-			) : (
-				<div className="flex flex-col w-full items-center justify-center h-full gap-7">
-					<ContentLoading />
-					<h1 className="text-2xl font-semibold text-black">
-						{noCallsMessage}
-					</h1>
-					<Link
-						href="/"
-						className="flex gap-4 items-center p-4 rounded-lg justify-center bg-green-1 hover:opacity-80 mx-auto w-fit"
-					>
-						<Image src="/icons/Home.svg" alt="Home" width={24} height={24} />
-						<p className="text-lg font-semibold">Return Home</p>
-					</Link>
-				</div>
-			)}
-		</div>
-	);
-};
+    return (
+        <section
+            className={`grid grid-cols-1 ${chats.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
+                } items-center gap-5 xl:gap-10 w-full h-fit text-black px-4`}
+        >
+            {visibleChats.map((chat, index) => {
+                const formattedDate = formatDateTime(chat.startedAt as Date);
+                return (
+                    <div
+                        key={index}
+                        className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300 ${pathname.includes("/profile") && "mx-auto"
+                            }`}
+                    >
+                        <div className="flex flex-col items-start justify-start w-full gap-2" onClick={() => handleChatClick(chat)}>
+                            
+                            {/* Expert's Details */}    
+                            <Link
+                                href={`/creator/${chat.members[0].user_id}`}
+                                className="w-1/2 flex items-center justify-start gap-4 hoverScaleDownEffect"
+                            >
+                                {/* creator image */}
+                                <Image
+                                    src={chat.members[0].custom.image}
+                                    alt="Expert"
+                                    height={1000}
+                                    width={1000}
+                                    className="rounded-full w-12 h-12 object-cover"
+                                />
+                                {/* creator details */}
+                                <div className="flex flex-col">
+                                    <p className="text-base tracking-wide">
+                                        {chat.members[0].custom.name}
+                                    </p>
+                                    <span className="text-sm text-green-1">Astrologer</span>
+                                </div>
+                            </Link>
+                        </div>
+                        {/* StartedAt & Feedbacks */}
+                        <div className="w-1/2 flex flex-col items-end justify-between h-full gap-2">
+                            <span className="text-sm text-[#A7A8A1] pr-1 pt-1 whitespace-nowrap">
+                                {formattedDate.dateTime}
+                            </span>
+                            {chat.status !== "Rejected" ? (
+                                <FeedbackCheck callId={chat?.chatId} />
+                            ) : (
+                                <Link
+                                    href={`/creator/${chat.members[0].user_id}`}
+                                    className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1 hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
+                                >
+                                    Visit Again
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+                );
+            })}
+        </section>
+    )
+}
 
 export default CallList;

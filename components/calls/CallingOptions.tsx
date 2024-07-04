@@ -24,6 +24,7 @@ import { db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import useChat from "@/hooks/useChat";
+import ContentLoading from "../shared/ContentLoading";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -46,6 +47,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const { toast } = useToast();
 	const [chatRequest, setChatRequest] = useState<any>(null);
 	const [isSheetOpen, setSheetOpen] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
@@ -295,6 +297,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleAcceptChat = async () => {
+		setLoading(true);
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
 
@@ -396,9 +399,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const data = doc.data();
 			if (data && data.status === "accepted") {
 				unsubscribe();
-				router.push(
-					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}&startedAt=${chatRequest.startedAt}`
-				);
+				setTimeout(() => {
+                    router.push(
+                        `/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}&startedAt=${chatRequest.startedAt}`
+                    );
+                }, 3000);
 			}
 		});
 
@@ -429,6 +434,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	// if (!client || !user) return <Loader />;
 
 	const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
+
+	if (loading) {
+        return (
+            <section className="w-full h-full flex items-center justify-center">
+                <ContentLoading />
+            </section>
+        );
+    }
 
 	return (
 		<div className="flex flex-col w-full items-center justify-center gap-4">
