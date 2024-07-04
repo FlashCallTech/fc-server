@@ -88,7 +88,7 @@ const useChat = () => {
 
     const members: MemberRequest[] = [
         {
-            user_id: "66743489cc9b328a2c2adb5c",
+            user_id: user2?.creatorId!,
             // user_id: "66681d96436f89b49d8b498b",
             custom: {
                 name: String(creator?.username),
