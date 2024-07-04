@@ -11,9 +11,7 @@ import {
 	useCall,
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
-
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-
 import { Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
 import { useUser } from "@clerk/nextjs";
@@ -26,6 +24,7 @@ import { AudioToggleButton } from "../calls/AudioToggleButton";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import SwitchCameraType from "../calls/SwitchCameraType";
 import AudioDeviceList from "../calls/AudioDeviceList";
+import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -140,13 +139,16 @@ const MeetingRoom = () => {
 	const CallLayout = useMemo(() => {
 		switch (layout) {
 			case "grid":
-				return <PaginatedGridLayout />;
+				return (
+					<PaginatedGridLayout />
+					// ParticipantViewUI={<CustomParticipantViewUI />}
+				);
 			default:
 				return (
 					<SpeakerLayout
 						participantsBarPosition="bottom"
-						ParticipantViewUIBar={null}
-						ParticipantViewUISpotlight={null}
+						ParticipantViewUIBar={<CustomParticipantViewUI />}
+						ParticipantViewUISpotlight={<CustomParticipantViewUI />}
 					/>
 				);
 		}
@@ -181,57 +183,63 @@ const MeetingRoom = () => {
 			)}
 
 			{/* Call Controls */}
-			<div className="fixed bg-dark-1 bottom-0 flex flex-wrap-reverse w-full items-center justify-center gap-4 py-2 px-4 transition-all">
-				{/* Audio Button */}
-				<SpeakingWhileMutedNotification>
-					{isMobile ? <AudioToggleButton /> : <ToggleAudioPublishingButton />}
-				</SpeakingWhileMutedNotification>
+			<div className="fixed bg-dark-1 bottom-0 flex w-full items-center justify-start py-2 px-4 transition-all">
+				<div className="flex overflow-x-scroll no-scrollbar w-fit items-center mx-auto justify-start gap-4">
+					{/* Audio Button */}
+					<SpeakingWhileMutedNotification>
+						{isMobile ? <AudioToggleButton /> : <ToggleAudioPublishingButton />}
+					</SpeakingWhileMutedNotification>
 
-				{/* Audio Device List */}
-				{isMobile && (
-					<AudioDeviceList
-						showAudioDeviceList={showAudioDeviceList}
-						setShowAudioDeviceList={setShowAudioDeviceList}
-					/>
-				)}
+					{/* Audio Device List */}
+					{isMobile && (
+						<AudioDeviceList
+							showAudioDeviceList={showAudioDeviceList}
+							setShowAudioDeviceList={setShowAudioDeviceList}
+						/>
+					)}
 
-				{/* Video Button */}
-				{isVideoCall &&
-					(isMobile ? <VideoToggleButton /> : <ToggleVideoPublishingButton />)}
+					{/* Video Button */}
+					{isVideoCall &&
+						(isMobile ? (
+							<VideoToggleButton />
+						) : (
+							<ToggleVideoPublishingButton />
+						))}
 
-				{/* Switch Camera */}
-				{isVideoCall && isMobile && (
-					<SwitchCameraType toggleCamera={toggleCamera} />
-				)}
+					{/* Switch Camera */}
+					{isVideoCall && isMobile && (
+						<SwitchCameraType toggleCamera={toggleCamera} />
+					)}
 
-				<Tooltip>
-					<TooltipTrigger className="hidden md:block">
-						<button onClick={() => setShowParticipants((prev) => !prev)}>
-							<div className="cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[#4c535b] flex items-center">
-								<Users size={20} className="text-white" />
-							</div>
-						</button>
-					</TooltipTrigger>
-					<TooltipContent className="mb-2 bg-gray-700  border-none">
-						<p className="!text-white">Participants</p>
-					</TooltipContent>
-				</Tooltip>
+					<Tooltip>
+						<TooltipTrigger className="hidden md:block">
+							<button onClick={() => setShowParticipants((prev) => !prev)}>
+								<div className="cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[#4c535b] flex items-center">
+									<Users size={20} className="text-white" />
+								</div>
+							</button>
+						</TooltipTrigger>
+						<TooltipContent className="mb-2 bg-gray-700  border-none">
+							<p className="!text-white">Participants</p>
+						</TooltipContent>
+					</Tooltip>
 
-				{/* End Call Button */}
-				<Tooltip>
-					<TooltipTrigger>
-						<EndCallButton />
-					</TooltipTrigger>
-					<TooltipContent className="hidden md:block mb-2 bg-red-500  border-none">
-						<p className="!text-white">End Call</p>
-					</TooltipContent>
-				</Tooltip>
+					{/* End Call Button */}
+					<Tooltip>
+						<TooltipTrigger>
+							<EndCallButton />
+						</TooltipTrigger>
+						<TooltipContent className="hidden md:block mb-2 bg-red-500  border-none">
+							<p className="!text-white">End Call</p>
+						</TooltipContent>
+					</Tooltip>
 
-				{isVideoCall && (
-					<div className="absolute bottom-3 right-4 z-20 w-fit hidden md:flex items-center gap-2">
-						<DeviceSettings />
-					</div>
-				)}
+					{isVideoCall && (
+						<div className="absolute bottom-3 right-4 z-20 w-fit hidden md:flex items-center gap-2">
+							<DeviceSettings />
+						</div>
+					)}
+				</div>
 			</div>
 		</section>
 	);

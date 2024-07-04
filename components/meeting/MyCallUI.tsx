@@ -13,7 +13,7 @@ const MyCallUI = () => {
 	const pathname = usePathname();
 	const { user } = useUser();
 	const { toast } = useToast();
-	let hide = pathname.includes("/meeting");
+	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
 	const [hasRedirected, setHasRedirected] = useState(false);
 	const [showCallUI, setShowCallUI] = useState(false);
 

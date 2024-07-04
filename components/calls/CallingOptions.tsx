@@ -83,17 +83,24 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (!call) throw new Error("Failed to create meeting");
 
 			setMeetingState(undefined);
-
 			const members = [
 				{
 					user_id: "66743489cc9b328a2c2adb5c",
 					// user_id: "66681d96436f89b49d8b498b",
-					custom: { name: String(creator.username), type: "expert" },
+					custom: {
+						name: String(creator.username),
+						type: "expert",
+						image: creator.photo,
+					},
 					role: "call_member",
 				},
 				{
 					user_id: String(user?.publicMetadata?.userId),
-					custom: { name: String(user.username), type: "client" },
+					custom: {
+						name: String(user.username),
+						type: "client",
+						image: user.imageUrl,
+					},
 					role: "admin",
 				},
 			];

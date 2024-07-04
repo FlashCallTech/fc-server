@@ -54,6 +54,7 @@
 		"react-firebase-hooks": "^5.1.1",
 		"react-hook-form": "^7.51.4",
 		"react-simple-typewriter": "^5.0.1",
+		"react-use-pip": "^1.5.0",
 		"redis": "^4.6.14",
 		"shadcn-ui": "^0.8.0",
 		"socket.io": "^4.7.5",

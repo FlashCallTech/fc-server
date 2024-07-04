@@ -3,12 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 const protectedRoute = createRouteMatcher([
 	"/meeting(.*)",
+	"/feedback(.*)",
 	"/previous",
 	"/upcoming",
 	"/personal-room",
 	"/user-profile",
 	"/profile/(.*)",
-	// "/creator/(.*)",
+	"/payment",
+	"/recharge(.*)",
 ]);
 
 export default clerkMiddleware((auth, req) => {

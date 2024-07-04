@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import CallListMobile from "@/components/calls/CallListMobile";
 import { Button } from "@/components/ui/button";
-import CallList from "@/components/calls/CallList";
+import ChatListMobile from "@/components/chat/ChatListMobile";
 
 const PreviousPage = () => {
 	const [historyType, setHistoryType] = useState<"Calls" | "Chats">("Calls");
@@ -41,11 +41,7 @@ const PreviousPage = () => {
 					</Button>
 				))}
 			</div>
-			{historyType === "Calls" ? (
-				<CallListMobile />
-			) : (
-				<CallList type={"ended"} />
-			)}
+			{historyType === "Calls" ? <CallListMobile /> : <ChatListMobile />}
 		</section>
 	);
 };
