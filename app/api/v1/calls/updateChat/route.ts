@@ -11,7 +11,7 @@ export async function PUT(request: Request) {
             duration,
             status
 		}
-		const updatedChat = await updateChat(chatId, update);
+		const updatedChat = await updateChat(chatId, update, startedAt!, endedAt);
 		return NextResponse.json(updatedChat);
 	} catch (error) {
 		console.error(error);

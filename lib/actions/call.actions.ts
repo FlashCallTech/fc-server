@@ -26,12 +26,18 @@ export async function createChat(chat: any) {
 	}
 }
 
-export async function updateChat(chatId: string, update: any) {
+export async function updateChat(chatId: string, update: any, startedAt: Date, endedAt: Date | undefined) {
 	try {
 		await connectToDatabase();
+		const updateFields = {
+			...update.fieldsToUpdate, // Include any other fields to update
+			updatedAt: new Date(),
+			startedAt: startedAt,
+			endedAt: endedAt
+		  };
 		const updatedChat = await Chat.findOneAndUpdate(
 			{ chatId },
-			{ $push: { chatDetails: update }, $set: { updatedAt: new Date() } },
+			{ $push: { chatDetails: update }, $set: { updatedAt: new Date(), updateFields } },
 			{ new: true, upsert: true }
 		).lean();
 		// console.log(updatedTransaction);
@@ -75,6 +81,21 @@ export async function getUserCalls(userId: string) {
 			throw new Error("No calls found");
 		}
 		return calls.map((call) => call.toJSON());
+	} catch (error) {
+		handleError(error);
+	}
+}
+
+export async function getUserChats(userId: string) {
+	try {
+		await connectToDatabase();
+		const chats = await Chat.find({
+			$or: [{ creator: userId }, { "members.user_id": userId }],
+		}).sort({ startedAt: -1 });
+		if (!chats || chats.length === 0) {
+			throw new Error("No calls found");
+		}
+		return chats.map((chat) => chat.toJSON());
 	} catch (error) {
 		handleError(error);
 	}
