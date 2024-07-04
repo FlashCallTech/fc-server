@@ -42,6 +42,7 @@ const PreviousPage = () => {
 				))}
 			</div>
 			{historyType === "Calls" ? <CallListMobile /> : <ChatList />}
+			{historyType === "Calls" ? <CallListMobile /> : <ChatList />}
 		</section>
 	);
 };
