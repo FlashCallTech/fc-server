@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import SinglePostLoader from "../shared/SinglePostLoader";
 
 const ChatListMobile = () => {
@@ -42,7 +41,7 @@ const ChatListMobile = () => {
 		// 		</Link>
 		// 	))}
 		// </section>
-        <div></div>
+		<div></div>
 	);
 };
 
