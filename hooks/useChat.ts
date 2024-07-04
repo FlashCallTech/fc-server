@@ -56,8 +56,14 @@ const useChat = () => {
     }, [chatId]);
 
     useEffect(() => {
-        if (chatId) {
+        const storedUser = localStorage.getItem("user2");
+        if (storedUser) {
+            setUser2(JSON.parse(storedUser));
+        }
+    }, [chatId]);
 
+    useEffect(() => {
+        if (chatId) {
             const unSub = onSnapshot(doc(db, "chats", chatId as string), (res: any) => {
                 setChat(res.data());
                 setStartedAt(res.data().startedAt as number);
@@ -104,7 +110,6 @@ const useChat = () => {
 
 
     const createChat = async (chatId: string, status: string) => {
-        console.log("inside", flag)
         const [existingChat] = await Promise.all([
             fetch(`/api/v1/calls/getChat?chatId=${chatId}`).then(
                 (res) => res.json()
@@ -117,8 +122,7 @@ const useChat = () => {
                     method: "PUT",
                     body: JSON.stringify({
                         chatId,
-                        endedAt,
-                        startedAt: Date.now(),
+                        startedAt: new Date(),
                         duration,
                         status
                     }),
@@ -129,8 +133,8 @@ const useChat = () => {
                         method: "PUT",
                         body: JSON.stringify({
                             chatId,
-                            endedAt,
-                            startedAt,
+                            endedAt: new Date(endedAt),
+                            startedAt: new Date(startedAt),
                             duration,
                             status
                         }),
@@ -146,8 +150,7 @@ const useChat = () => {
                         creator: user2?.clientId,
                         status: status,
                         members: members,
-                        startedAt: Date.now(),
-                        endedAt: endedAt,
+                        startedAt: new Date(),
                         duration: duration
                     })
                 })
@@ -160,8 +163,8 @@ const useChat = () => {
                             creator: user2?.clientId,
                             status: status,
                             members: members,
-                            startedAt: startedAt,
-                            endedAt: endedAt,
+                            startedAt: new Date(startedAt),
+                            endedAt: new Date(endedAt),
                             duration: duration
                         })
                     })
@@ -170,13 +173,11 @@ const useChat = () => {
         }
     }
 
-    if(duration && endedAt && amount && flag){
+    if(duration && endedAt && amount && flag && user2?.clientId === user?.publicMetadata?.userId){
         console.log("outside",flag)
         setFlag(false);
         createChat(chatId as string, "ended"); 
     }
-
-    console.log("useChat");
 
     return { duration, amount, createChat };
 };

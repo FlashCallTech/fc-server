@@ -11,7 +11,7 @@ interface Chat {
     messages: {
         senderId: string;
         text: string;
-        createdAt: Timestamp;
+        createdAt: number;
         img: string;
         audio: string;
         seen: boolean;

@@ -136,7 +136,7 @@ const ChatInterface: React.FC = () => {
 			await updateDoc(doc(db, "chats", chatId as string), {
 				messages: arrayUnion({
 					senderId: user?.publicMetadata?.userId as string,
-					createdAt: new Date(),
+					createdAt: Date.now(),
 					seen: false,
 					text,
 					img: imgUrl,
@@ -145,13 +145,13 @@ const ChatInterface: React.FC = () => {
 			});
 
 			const userIDs = [
-				user?.publicMetadata?.userId as string,
-				user2?._id as string,
+				user2?.clientId as string,
+				user2?.creatorId as string
 			];
 
 			userIDs.forEach(async (id) => {
 				if (!id) return;
-				const userChatsRef = doc(db, "userchats", id as string);
+				const userChatsRef = doc(db, "userchats", id);
 				const userChatsSnapshot = await getDoc(userChatsRef);
 
 				if (userChatsSnapshot.exists()) {
@@ -200,7 +200,7 @@ const ChatInterface: React.FC = () => {
 			await updateDoc(doc(db, "chats", chatId as string), {
 				messages: arrayUnion({
 					senderId: user?.publicMetadata?.userId as string,
-					createdAt: new Date(),
+					createdAt: Date.now(),
 					seen: false,
 					audio: audioUploadUrl,
 				}),

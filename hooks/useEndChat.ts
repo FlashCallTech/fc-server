@@ -19,7 +19,7 @@ interface Chat {
     messages: {
         senderId: string;
         text: string;
-        createdAt: Timestamp;
+        createdAt: number;
         img: string;
         audio: string;
         seen: boolean;
@@ -113,8 +113,6 @@ const useEndChat = () => {
             console.error("Error ending chat:", error);
         }
     };
-
-    console.log(`chatId: ${chatId}   chatEnded: ${chatEnded}   startedAt: ${startedAt}   endedAt: ${endedAt}`)
     
     return { chatId, chatEnded, handleEnd, user2, startedAt, endedAt, chat, markMessagesAsSeen, chatRatePerMinute};
 }
