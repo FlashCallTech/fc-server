@@ -8,6 +8,7 @@ import { useWalletBalanceContext } from '@/lib/context/WalletBalanceContext';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import useEndChat from '@/hooks/useEndChat';
+import { useUser } from '@clerk/nextjs';
 
 const Page = () => {
     const [queryParams, setQueryParams] = useState<{ clientId: string | null, creatorId: string | null }>({ clientId: null, creatorId: null });
@@ -19,6 +20,7 @@ const Page = () => {
     const router = useRouter();
     const {toast} = useToast()
     let isTabClosing = false;
+    const {user} = useUser()
 
     const handleTabCloseWarning = (event: BeforeUnloadEvent) => {
         // This line is necessary for the warning to appear
@@ -34,7 +36,7 @@ const Page = () => {
     };
     
     useEffect(() => {
-        if(chatEnded && duration !== undefined && check){
+        if(chatEnded && duration !== undefined && check && user2 && chatId && user2.clientId === user?.publicMetadata?.userId){
             handleTransaction({duration: duration? duration?.toString(): '', clientId: clientId, chatId: chatId as string, updateWalletBalance, router, toast});
             setCheck(false);
         }

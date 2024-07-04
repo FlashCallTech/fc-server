@@ -9,7 +9,7 @@ interface Chat {
     messages: {
         senderId: string;
         text: string;
-        createdAt: Timestamp;
+        createdAt: number;
         img: string;
         audio: string;
         seen: boolean;
@@ -43,12 +43,12 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
         endRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [chat]);
 
-    const formatTime = (timestamp: Timestamp) => {
-        const date = timestamp.toDate();
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
-    };
+    // const formatTime = (timestamp: Timestamp) => {
+    //     const date = timestamp.toDate();
+    //     const hours = date.getHours().toString().padStart(2, '0');
+    //     const minutes = date.getMinutes().toString().padStart(2, '0');
+    //     return `${hours}:${minutes}`;
+    // };
 
     return (
         <div className="flex-1 p-4 overflow-y-auto overflow-x-hidden">
@@ -58,7 +58,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
                         className={message.senderId === user?.publicMetadata?.userId as string ?
                             "bg-[rgba(255,255,255,1)] p-3 mb-3 max-w-[60%] min-w-[40%] lg:min-w-[10%] lg:max-w-[40%] w-fit rounded-lg rounded-tr-none ml-auto text-black font-normal leading-5 relative" :
                             "bg-[rgba(80,166,92,1)] p-3 mb-3 max-w-[60%] min-w-[40%] lg:min-w-[10%] lg:max-w-[40%] w-fit rounded-lg rounded-tl-none text-white font-normal leading-5 relative"}
-                        key={message?.createdAt.toMillis()}
+                        key={message?.createdAt}
                         style={{ wordBreak: 'break-word', justifyContent: 'center' }}
                     >
                         {message.img && (
@@ -91,8 +91,8 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
                             'rotate-90 absolute left-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] border-l-[rgba(80,166,92,1)] border-r-0 border-solid border-transparent'}>
                         </div>
                         <div className={message.senderId === user?.publicMetadata?.userId as string ? 'w-full flex justify-end items-center absolute bottom-1 right-1' : 'w-full flex justify-end items-center absolute bottom-1 right-1'}>
-                            <span className="text-xs text-gray-500 mr-2">{formatTime(message.createdAt)}</span>
-                            {message.seen && <Image src={message.senderId === user?.publicMetadata?.userId as string ? '/seen1.svg' : '/seen.svg'} width={13} height={13} alt='seen' />}
+                            {/* <span className="text-xs text-gray-500 mr-2">{formatTime(message.createdAt)}</span> */}
+                            {message.seen && message.senderId === user?.publicMetadata?.userId as string && <Image src={ '/seen1.svg'} width={13} height={13} alt='seen' />}
                         </div>
                     </div>
                 ))}

@@ -44,7 +44,7 @@ const PreviousPage = () => {
 			{historyType === "Calls" ? (
 				<CallListMobile />
 			) : (
-				<CallList type={"ended"} />
+				<CallList />
 			)}
 		</section>
 	);

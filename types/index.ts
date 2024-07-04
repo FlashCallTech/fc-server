@@ -127,16 +127,34 @@ export type RegisterChatParams = {
 	creator: string;
 	status: string;
 	members: MemberRequest[];
-	startedAt?: number;
-	endedAt?: number;
+	startedAt?: Date;
+	endedAt?: Date;
 	duration?: number;
 };
 
 export interface UpdateChatParams {
 	chatId: string;
 	status: string;
-	startedAt?: number;
-	endedAt?: number;
+	startedAt?: Date;
+	endedAt?: Date;
+	duration?: number;
+}
+
+export interface ChatDetails {
+	status: string;
+	startedAt: Date;
+	endedAt?: Date;
+	duration?: number
+}
+
+export interface SelectedChat {
+	chatId: string;
+	creator: string;
+	status: string;
+	members: MemberRequest[];
+	chatDetails: ChatDetails[]
+	startedAt?: Date;
+	endedAt?: Date;
 	duration?: number;
 }
 

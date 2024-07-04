@@ -4,10 +4,11 @@ import { createChat } from "@/lib/actions/call.actions";
 
 export async function POST(request: Request) {
     try {
-        console.log("inside api")
         const { chatId, creator, members, status, startedAt, endedAt, duration }: RegisterChatParams = await request.json();
         const chat = {
             chatId,
+            startedAt,
+            endedAt,
             members,
             creator: creator,
             chatDetails: [{
