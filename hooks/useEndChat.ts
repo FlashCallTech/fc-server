@@ -63,7 +63,7 @@ const useEndChat = () => {
 
     useEffect(() => {
         if (chatEnded) {
-            router.replace(`/chat-ended/${chatId}`);
+            router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
         }
     }, [chatEnded, router]);
 
