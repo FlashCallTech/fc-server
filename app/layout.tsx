@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster";
 import React, { useState, useEffect } from "react";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import MovePageToTop from "@/components/shared/MovePageToTop";
+import { Analytics } from "@vercel/analytics/react";
 
 export default function RootLayout({
 	children,
@@ -94,6 +95,7 @@ export default function RootLayout({
 			>
 				<TooltipProvider>
 					<body className="no-scrollbar">
+						<Analytics />
 						<Toaster />
 						<MovePageToTop />
 						{children}
