@@ -8,6 +8,8 @@ import { Toaster } from "@/components/ui/toaster";
 import React, { useState, useEffect } from "react";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import MovePageToTop from "@/components/shared/MovePageToTop";
+import { Analytics } from "@vercel/analytics/react";
+import Script from "next/script"; // Import the Script component from next/script
 
 export default function RootLayout({
 	children,
@@ -84,6 +86,20 @@ export default function RootLayout({
 
 	return (
 		<html lang="en">
+			<head>
+				<Script
+					async
+					src="https://www.googletagmanager.com/gtag/js?id=G-WPMN8815TK"
+				></Script>
+				<Script id="google-analytics">
+					{`
+						window.dataLayer = window.dataLayer || [];
+						function gtag(){dataLayer.push(arguments);}
+						gtag('js', new Date());
+						gtag('config', 'G-WPMN8815TK');
+					`}
+				</Script>
+			</head>
 			<ClerkProvider
 				appearance={{
 					layout: {
@@ -94,6 +110,7 @@ export default function RootLayout({
 			>
 				<TooltipProvider>
 					<body className="no-scrollbar">
+						<Analytics />
 						<Toaster />
 						<MovePageToTop />
 						{children}
