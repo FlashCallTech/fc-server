@@ -54,8 +54,10 @@
 @media only screen and (max-width: 768px) {
 	.cl-internal-qk5yrq {
 		max-width: 100% !important;
-		/* border-top-left-radius: 2.5rem;
-		border-top-right-radius: 2.5rem; */
+		border-top-left-radius: 25px;
+		border-top-right-radius: 25px;
+		border-bottom-left-radius: 0px;
+		border-bottom-right-radius: 0px;
 	}
 }
 

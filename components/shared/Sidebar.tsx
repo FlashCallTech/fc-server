@@ -1,13 +1,12 @@
 "use client";
 
 import { sidebarLinks } from "@/constants";
-import { SignedOut, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { Button } from "../ui/button";
 
 const Sidebar = () => {
 	const pathname = usePathname();
@@ -50,7 +49,7 @@ const Sidebar = () => {
 					);
 				})}
 			</div>
-			{user ? (
+			{user && (
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<Link
@@ -78,16 +77,6 @@ const Sidebar = () => {
 						<p>Profile</p>
 					</TooltipContent>
 				</Tooltip>
-			) : (
-				<SignedOut>
-					<Button
-						asChild
-						className="text-white hover:opacity-80 bg-green-1"
-						size="lg"
-					>
-						<Link href="/sign-in">Login</Link>
-					</Button>
-				</SignedOut>
 			)}
 		</section>
 	);
