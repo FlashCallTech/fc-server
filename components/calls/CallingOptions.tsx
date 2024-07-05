@@ -8,6 +8,7 @@ import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useUser } from "@clerk/nextjs";
 import { Input } from "../ui/input";
 import MeetingModal from "../meeting/MeetingModal";
+import { logEvent } from "firebase/analytics";
 import { Button } from "../ui/button";
 import {
 	arrayUnion,
@@ -20,7 +21,7 @@ import {
 	where,
 	getDoc,
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { analytics, db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import useChat from "@/hooks/useChat";
@@ -177,6 +178,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
+		logEvent(analytics, 'chat_now_click', {
+			userId: user?.publicMetadata?.userId,
+			creatorId: creator._id,
+		});
+
 		if (!user) router.push("sign-in");
 		let maxCallDuration =
 			(walletBalance / parseInt(creator?.chatRate, 10)) * 60; // in seconds
@@ -424,6 +430,17 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		if (user && !storedCallId) {
 			setMeetingState(`${modalType}`);
 			setCallType(`${callType}`);
+			if(callType === "audio"){
+				logEvent(analytics, 'audio_now_click', {
+					userId: user?.publicMetadata?.userId,
+					creatorId: creator._id,
+				});
+			} else{
+				logEvent(analytics, 'video_now_click', {
+					userId: user?.publicMetadata?.userId,
+					creatorId: creator._id,
+				});
+			}
 		} else if (user && storedCallId) {
 			router.push(`/meeting/${storedCallId}`);
 		} else {
