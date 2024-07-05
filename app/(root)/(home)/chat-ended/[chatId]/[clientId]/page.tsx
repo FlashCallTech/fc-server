@@ -1,13 +1,15 @@
 'use client'
 
 import ChatFeedback from '@/components/feedbacks/ChatFeedback';
+import { useUser } from '@clerk/nextjs';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 const Page = () => {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(true);
   const router = useRouter();
-  const { chatId } = useParams();
+  const { chatId, clientId } = useParams();
+  const { user } = useUser();
 
   const goToHomePage = () => {
     router.replace('/'); // For react-router-dom v6, use 'navigate('/')'
@@ -24,11 +26,14 @@ const Page = () => {
         >
           Go to Homepage
         </button>
-        <ChatFeedback 
-          chatId={chatId as string}
-          isOpen={isFeedbackOpen}
-          onOpenChange={setIsFeedbackOpen}
-        />
+        
+        {clientId === user?.publicMetadata?.userId && (
+          <ChatFeedback
+            chatId={chatId as string}
+            isOpen={isFeedbackOpen}
+            onOpenChange={setIsFeedbackOpen}
+          />
+        )}
       </div>
     </div>
   );
