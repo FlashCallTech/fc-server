@@ -47,9 +47,7 @@ const CallListMobile = () => {
 			} catch (error) {
 				console.warn(error);
 			} finally {
-				setTimeout(() => {
-					setLoading(false);
-				}, 1000);
+				setLoading(false);
 			}
 		};
 

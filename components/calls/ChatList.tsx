@@ -77,7 +77,7 @@ const ChatList = () => {
 				<section
 					className={`grid grid-cols-1 ${
 						chats.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
-					} items-center gap-5 xl:gap-10 w-full h-fit text-black px-4`}
+					} items-center gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-hidden`}
 				>
 					{visibleChats.map((chat, index) => {
 						const formattedDate = formatDateTime(chat.startedAt as Date);

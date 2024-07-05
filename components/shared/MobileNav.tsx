@@ -21,7 +21,7 @@ const MobileNav = () => {
 	const { signOut } = useClerk();
 
 	return (
-		<section className="w-full max-w-[264px] relative">
+		<section className="w-full  relative">
 			<Sheet>
 				<SheetTrigger asChild>
 					<Image
