@@ -88,7 +88,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			setMeetingState(undefined);
 			const members = [
 				{
-					user_id: "66743489cc9b328a2c2adb5c",
+					user_id: "6687f5eeb51cc5626f5db5ea",
 					// user_id: "66681d96436f89b49d8b498b",
 					custom: {
 						name: String(creator.username),
@@ -178,7 +178,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
-		logEvent(analytics, 'chat_now_click', {
+		logEvent(analytics, "chat_now_click", {
 			userId: user?.publicMetadata?.userId,
 			creatorId: creator._id,
 		});
@@ -406,10 +406,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (data && data.status === "accepted") {
 				unsubscribe();
 				setTimeout(() => {
-                    router.push(
-                        `/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}&startedAt=${chatRequest.startedAt}`
-                    );
-                }, 3000);
+					router.push(
+						`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}&startedAt=${chatRequest.startedAt}`
+					);
+				}, 3000);
 			}
 		});
 
@@ -430,13 +430,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		if (user && !storedCallId) {
 			setMeetingState(`${modalType}`);
 			setCallType(`${callType}`);
-			if(callType === "audio"){
-				logEvent(analytics, 'audio_now_click', {
+			if (callType === "audio") {
+				logEvent(analytics, "audio_now_click", {
 					userId: user?.publicMetadata?.userId,
 					creatorId: creator._id,
 				});
-			} else{
-				logEvent(analytics, 'video_now_click', {
+			} else {
+				logEvent(analytics, "video_now_click", {
 					userId: user?.publicMetadata?.userId,
 					creatorId: creator._id,
 				});
@@ -453,12 +453,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
 
 	if (loading) {
-        return (
-            <section className="w-full h-full flex items-center justify-center">
-                <ContentLoading />
-            </section>
-        );
-    }
+		return (
+			<section className="w-full h-full flex items-center justify-center">
+				<ContentLoading />
+			</section>
+		);
+	}
 
 	return (
 		<div className="flex flex-col w-full items-center justify-center gap-4">

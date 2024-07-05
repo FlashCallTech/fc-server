@@ -42,7 +42,6 @@ const About: React.FC = () => {
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>
 	): Promise<void> => {
 		e.preventDefault();
-		setLoading(true); // Set loading state to true
 
 		if (typeof window.Razorpay === "undefined") {
 			console.error("Razorpay SDK is not loaded");
@@ -75,6 +74,8 @@ const About: React.FC = () => {
 					const body: PaymentResponse = { ...response };
 
 					try {
+						setLoading(true); // Set loading state to true
+
 						const paymentId = body.razorpay_order_id;
 
 						await fetch("/api/v1/payment", {
@@ -146,13 +147,18 @@ const About: React.FC = () => {
 		} catch (error) {
 			console.error("Payment request failed:", error);
 			setLoading(false); // Set loading state to false on error
+			router.push("/payment");
+			toast({
+				title: "Payment Failed",
+				description: "Redirecting ...",
+			});
 		}
 	};
 
 	return (
 		<>
 			{loading ? (
-				<section className="absolute top-0 left-0 lg:left-20 flex-center justify-center items-center h-screen w-full z-40">
+				<section className="flex-center justify-center items-center h-full w-full z-40">
 					<SinglePostLoader />
 				</section>
 			) : (
