@@ -3,7 +3,7 @@
 import CreatorCard from "@/components/creator/CreatorCard";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { getUserById } from "@/lib/actions/creator.actions";
-import { useUser } from "@clerk/nextjs";
+
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 

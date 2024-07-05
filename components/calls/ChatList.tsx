@@ -1,16 +1,14 @@
 "use client";
 
 import { formatDateTime } from "@/lib/utils";
-import { RegisterCallParams, SelectedChat } from "@/types";
+import { SelectedChat } from "@/types";
 import { useUser } from "@clerk/nextjs";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import ContentLoading from "../shared/ContentLoading";
 import Link from "next/link";
 import Image from "next/image";
-import SinglePostLoader from "../shared/SinglePostLoader";
 import FeedbackCheck from "../feedbacks/FeedbackCheck";
-import { Button } from "../ui/button";
 
 const ChatList = () => {
 	const [chats, setChats] = useState<SelectedChat[]>([]);
