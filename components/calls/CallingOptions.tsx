@@ -263,6 +263,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			setSheetOpen(true);
 
+			logEvent(analytics, 'call_initiated', {
+				userId: user?.publicMetadata?.userId,
+				creatorId: creator._id,
+			});
+
 			const chatRequestDoc = doc(chatRequestsRef, newChatRequestRef.id);
 			const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
 				const data = doc.data();
@@ -413,7 +418,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (data && data.status === "accepted") {
 				unsubscribe();
 				setTimeout(() => {
-					logEvent(analytics, 'call_initiated', {
+					logEvent(analytics, 'call_connected', {
 						userId: user?.publicMetadata?.userId,
 						creatorId: creator._id,
 					});

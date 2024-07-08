@@ -25,6 +25,8 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import SwitchCameraType from "../calls/SwitchCameraType";
 import AudioDeviceList from "../calls/AudioDeviceList";
 import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
+import { logEvent } from "firebase/analytics";
+import { analytics } from "@/lib/firebase";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -88,6 +90,10 @@ const MeetingRoom = () => {
 				try {
 					await call?.join();
 					setHasJoined(true);
+					logEvent(analytics, 'call_connected', {
+						userId: user?.publicMetadata?.userId,
+						// creatorId: creator._id,
+					});
 				} catch (error: any) {
 					if (error.message !== "Illegal State: Already joined") {
 						// console.warn("Error joining call:", error);
