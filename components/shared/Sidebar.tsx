@@ -8,10 +8,18 @@ import { usePathname } from "next/navigation";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Button } from "../ui/button";
+import { logEvent } from "firebase/analytics";
+import { analytics } from "@/lib/firebase";
 
 const Sidebar = () => {
 	const pathname = usePathname();
 	const { user } = useUser();
+
+	const handleLogEvent = () =>
+		logEvent(analytics, "page_accessed", {
+			userId: user?.publicMetadata?.userId,
+			page: pathname,
+		});
 	return (
 		<section className="sticky left-0 top-0 flex h-screen flex-col justify-between p-6 pt-24  max-sm:hidden lg:w-[264px]">
 			<div className="flex flex-1 flex-col gap-6">
@@ -27,6 +35,7 @@ const Sidebar = () => {
 									key={item.label}
 									className={`flex gap-4 items-center p-4 rounded-lg justify-center lg:justify-start 
 							group hover:bg-green-1  ${isActive && "bg-green-1 text-white"}`}
+									onClick={handleLogEvent}
 								>
 									<Image
 										src={item.imgURL}

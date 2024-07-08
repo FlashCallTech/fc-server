@@ -8,7 +8,6 @@ import React, {
 	useEffect,
 } from "react";
 import { getUserById } from "../actions/client.actions";
-import { clientUser } from "@/types";
 import Loader from "@/components/shared/Loader";
 
 interface WalletBalanceContextProps {
