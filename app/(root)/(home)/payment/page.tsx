@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useUser } from "@clerk/nextjs";
 import axios from "axios";
@@ -22,7 +22,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { enterAmountSchema } from "@/lib/validator";
 import { arrowLeft, arrowRight } from "@/constants/icons";
-import SinglePostLoader from "@/components/shared/SinglePostLoader";
+import { logEvent } from "firebase/analytics";
+import { analytics } from "@/lib/firebase";
 
 interface Transaction {
 	_id: string;
@@ -42,6 +43,22 @@ const Payment: React.FC = () => {
 	const [totalPages, setTotalPages] = useState(1);
 	const router = useRouter();
 
+	const [isSticky, setIsSticky] = useState(false);
+	const stickyRef = useRef<HTMLDivElement>(null);
+
+	const handleScroll = () => {
+		if (stickyRef.current) {
+			setIsSticky(window.scrollY > stickyRef.current.offsetTop);
+		}
+	};
+
+	useEffect(() => {
+		window.addEventListener("scroll", handleScroll);
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
+	}, []);
+
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof enterAmountSchema>>({
 		resolver: zodResolver(enterAmountSchema),
@@ -56,6 +73,10 @@ const Payment: React.FC = () => {
 	// 3. Define a submit handler.
 	function onSubmit(values: z.infer<typeof enterAmountSchema>) {
 		const rechargeAmount = values.rechargeAmount;
+		logEvent(analytics, "payment_initiated", {
+			userId: user?.publicMetadata?.userId,
+			amount: rechargeAmount,
+		});
 		router.push(`/recharge?amount=${rechargeAmount}`);
 	}
 
@@ -75,7 +96,7 @@ const Payment: React.FC = () => {
 		} finally {
 			setTimeout(() => {
 				setLoading(false);
-			}, 1000);
+			}, 500);
 		}
 	};
 
@@ -163,7 +184,12 @@ const Payment: React.FC = () => {
 			</section>
 
 			{/* Transaction History Section */}
-			<section className="sticky top-16 bg-white z-30 w-full h-fit py-5 px-4 ">
+			<section
+				ref={stickyRef}
+				className={`sticky top-16 bg-white z-30 w-full px-4 ${
+					isSticky ? "pb-7" : "pb-4"
+				} pt-4`}
+			>
 				<div className="flex flex-col items-start justify-start gap-4 w-full h-fit">
 					<h2 className=" text-gray-500 text-xl pt-4 font-normal leading-7">
 						Transaction History
@@ -190,7 +216,7 @@ const Payment: React.FC = () => {
 			</section>
 
 			{/* Transaction History List */}
-			<ul className="space-y-4 w-full h-full px-4">
+			<ul className="space-y-4 w-full h-full px-4 pb-7">
 				{!loading ? (
 					transactions.length === 0 ? (
 						<p className="flex flex-col items-center justify-center size-full text-xl text-center flex-1 min-h-44 text-red-500 font-semibold">
@@ -227,12 +253,12 @@ const Payment: React.FC = () => {
 						))
 					)
 				) : (
-					<SinglePostLoader />
+					<ContentLoading />
 				)}
 			</ul>
 
 			{/* Pagination Controls */}
-			{transactions.length > 0 && (
+			{transactions.length > 0 && totalPages > 1 && (
 				<div className="animate-enterFromBottom grid grid-cols-[0fr_3fr_0fr] gap-4 items-center sticky bottom-0 z-30 w-full px-4 py-2 bg-white">
 					<button
 						onClick={() => setPage((prev) => Math.max(prev - 1, 1))}

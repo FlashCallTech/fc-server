@@ -70,3 +70,11 @@ export const formatDateTime = (dateString: Date) => {
 		timeOnly: formattedTime,
 	};
 };
+
+export const analyticEvent = ({ action, category, label, value }: any) => {
+	(window as any).gtag("event", action, {
+		event_category: category,
+		event_label: label,
+		value: value,
+	});
+};
