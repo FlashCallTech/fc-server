@@ -3,6 +3,9 @@
 import CreatorCard from "@/components/creator/CreatorCard";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { getUserById } from "@/lib/actions/creator.actions";
+import { analytics } from "@/lib/firebase";
+import { useUser } from "@clerk/nextjs";
+import { logEvent } from "firebase/analytics";
 
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -10,6 +13,12 @@ import React, { useEffect, useState } from "react";
 const CreatorProfile = () => {
 	const [creator, setCreator] = useState(null);
 	const { userId } = useParams();
+	const { user } = useUser();
+
+	logEvent(analytics, 'chat_now_click', {
+		userId: user?.publicMetadata?.userId,
+		creatorId:userId,
+	});
 
 	useEffect(() => {
 		try {

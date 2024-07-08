@@ -195,6 +195,8 @@ const ChatInterface: React.FC = () => {
 	const handleSendAudio = async (audioBlob: Blob, audioUrl: string) => {
 		setIsAudioUploading(true);
 
+		let imgUrl = null;
+
 		try {
 			const audioUploadUrl = await upload(audioBlob, "audio");
 			await updateDoc(doc(db, "chats", chatId as string), {
@@ -202,13 +204,15 @@ const ChatInterface: React.FC = () => {
 					senderId: user?.publicMetadata?.userId as string,
 					createdAt: Date.now(),
 					seen: false,
+					text,
+					img: imgUrl,
 					audio: audioUploadUrl,
 				}),
 			});
 
 			const userIDs = [
-				user?.publicMetadata?.userId as string,
-				user2?._id as string,
+				user2?.clientId as string,
+				user2?.creatorId as string
 			];
 
 			userIDs.forEach(async (id) => {

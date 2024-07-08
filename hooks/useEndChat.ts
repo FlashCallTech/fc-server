@@ -1,8 +1,9 @@
 import { db } from "@/lib/firebase";
 import { creatorUser } from "@/types";
-import { Timestamp, doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
+import { useUser } from "@clerk/nextjs";
+import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface User2 {
     _id: string;
@@ -28,6 +29,7 @@ interface Chat {
 
 const useEndChat = () => {
     const router  = useRouter();
+    const {user } = useUser();
     const {chatId} = useParams();
     const [user2, setUser2] = useState<User2>();
     const [chat, setChat] = useState<Chat | undefined>();
@@ -35,7 +37,7 @@ const useEndChat = () => {
     const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
     const [endedAt, setEndedAt] = useState<number>();
     const [startedAt, setStartedAt] = useState<number>();
-
+    const hasCHatEnded = useRef(false)
     useEffect(() => {
         const storedCreator = localStorage.getItem("currentCreator");
         if (storedCreator) {
@@ -48,7 +50,6 @@ const useEndChat = () => {
 
     useEffect(() => {
         if (chatId) {
-
             const unSub = onSnapshot(doc(db, "chats", chatId as string), (res: any) => {
                 setChat(res.data());
                 setStartedAt(res.data().startedAt as number);
@@ -62,10 +63,13 @@ const useEndChat = () => {
     }, [chatId]);
 
     useEffect(() => {
+        if(hasCHatEnded.current === true) return ;
+       
         if (chatEnded) {
+            hasCHatEnded.current = true;
             router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
         }
-    }, [chatEnded, router]);
+    }, [chatEnded]);
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user2");
