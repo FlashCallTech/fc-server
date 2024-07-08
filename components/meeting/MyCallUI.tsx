@@ -6,6 +6,8 @@ import MyOutgoingCallUI from "./MyOutgoingCallUI";
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "../ui/use-toast";
 import { updateCall } from "@/lib/actions/call.actions";
+import { logEvent } from "firebase/analytics";
+import { analytics } from "@/lib/firebase";
 
 const MyCallUI = () => {
 	const router = useRouter();
@@ -50,6 +52,11 @@ const MyCallUI = () => {
 					title: "Call Rejected",
 					description: "The call was rejected. Redirecting to HomePage...",
 				});
+
+				logEvent(analytics, "call_rejected", {
+					callId: call.id,
+				});
+
 				await fetch("/api/v1/calls/updateCall", {
 					method: "POST",
 					body: JSON.stringify({
@@ -64,6 +71,9 @@ const MyCallUI = () => {
 
 			const handleCallStarted = async () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
+				logEvent(analytics, "call_accepted", {
+					callId: call.id,
+				});
 				await fetch("/api/v1/calls/updateCall", {
 					method: "POST",
 					body: JSON.stringify({

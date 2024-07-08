@@ -10,10 +10,8 @@ import {
 import {
 	LucidePictureInPicture2,
 	Mic,
-	MicOff,
 	PictureInPicture,
 	Video,
-	VideoOff,
 } from "lucide-react";
 
 const PoorConnectionNotification = () => {
@@ -163,17 +161,9 @@ const CustomParticipantViewUI = () => {
 						: "top-2 left-2"
 				}`}
 			>
-				{!isMute ? (
-					<Mic className="w-4 h-4" />
-				) : (
-					<MicOff className="w-4 h-4 text-red-500" />
-				)}
+				{!isMute && <Mic className="w-4 h-4" />}
 
-				{isEnabled ? (
-					<Video className="w-4 h-4" />
-				) : (
-					<VideoOff className="w-4 h-4 text-red-500" />
-				)}
+				{isEnabled && <Video className="w-4 h-4" />}
 			</div>
 		</>
 	);

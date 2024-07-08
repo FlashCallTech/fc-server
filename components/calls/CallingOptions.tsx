@@ -3,10 +3,8 @@ import { audio, chat, video } from "@/constants/icons";
 import { creatorUser } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
-import Loader from "../shared/Loader";
 import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useUser } from "@clerk/nextjs";
-import { Input } from "../ui/input";
 import MeetingModal from "../meeting/MeetingModal";
 import { logEvent } from "firebase/analytics";
 import { Button } from "../ui/button";
@@ -41,7 +39,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [meetingState, setMeetingState] = useState<
 		"isJoiningMeeting" | "isInstantMeeting" | undefined
 	>(undefined);
-	const [values, setValues] = useState(initialValues);
 	const client = useStreamVideoClient();
 	const [callType, setCallType] = useState("");
 	const { user } = useUser();
@@ -88,7 +85,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			setMeetingState(undefined);
 			const members = [
 				{
-					user_id: "66743489cc9b328a2c2adb5c",
+					user_id: "6687f5eeb51cc5626f5db5ea",
 					// user_id: "66681d96436f89b49d8b498b",
 					custom: {
 						name: String(creator.username),
@@ -150,6 +147,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						},
 					},
 				},
+			});
+
+			logEvent(analytics, "call_initiated", {
+				callId: id,
+				description: description,
 			});
 
 			fetch("/api/v1/calls/registerCall", {
@@ -448,8 +450,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					userId: user?.publicMetadata?.userId,
 					creatorId: creator._id,
 				});
-			} else{
-				logEvent(analytics, 'video_now_click', {
+			} else {
+				logEvent(analytics, "video_now_click", {
 					userId: user?.publicMetadata?.userId,
 					creatorId: creator._id,
 				});
@@ -466,12 +468,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
 
 	if (loading) {
-        return (
-            <section className="w-full h-full flex items-center justify-center">
-                <ContentLoading />
-            </section>
-        );
-    }
+		return (
+			<section className="w-full h-full flex items-center justify-center">
+				<ContentLoading />
+			</section>
+		);
+	}
 
 	return (
 		<div className="flex flex-col w-full items-center justify-center gap-4">

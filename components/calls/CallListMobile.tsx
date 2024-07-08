@@ -136,7 +136,7 @@ const CallListMobile = () => {
 								</div>
 								{/* StartedAt & Feedbacks */}
 								<div className="w-1/2 flex flex-col items-end justify-between h-full gap-2">
-									<span className="text-sm text-[#A7A8A1] pr-1 pt-1 whitespace-nowrap">
+									<span className="text-sm text-[#A7A8A1] pr-2 pt-1 whitespace-nowrap">
 										{formattedDate.dateTime}
 									</span>
 									{call.status !== "Rejected" ? (
