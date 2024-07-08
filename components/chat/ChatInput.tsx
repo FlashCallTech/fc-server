@@ -45,13 +45,13 @@ const ChatInput: React.FC<Props> = ({
                     <AudioVisualizer audioContext={audioContext} audioStream={audioStream} />
                 </div>
             ) : (
-                <div className="flex flex-1 flex-row px-3 py-2 bg-[rgba(255,255,255,0.12)] rounded-full text-white mr-2">
+                <div className="flex flex-1 flex-row px-3 py-2 bg-[rgba(255,255,255,0.12)] rounded-full text-white mr-2 ">
                     <input
                         type="text"
                         placeholder="Message"
                         value={text}
                         onChange={e => setText(e.target.value)}
-                        className="px-2 text-sm leading-5 font-normal flex-auto bg-transparent"
+                        className="px-2 text-sm leading-5 font-normal flex-auto bg-transparent outline-none"
                     />
                     <div className="flex flex-row gap-4 px-2 ml-auto">
                         <label htmlFor="file">

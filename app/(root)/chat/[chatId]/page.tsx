@@ -66,7 +66,7 @@ const Page = () => {
 
     return (
         <div>
-            <ChatTimerProvider
+            <ChatTimerProvider 
                 clientId={queryParams.clientId as string}
                 creatorId={queryParams.creatorId as string}
             >

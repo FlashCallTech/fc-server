@@ -183,6 +183,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			creatorId: creator._id,
 		});
 
+		logEvent(analytics, 'call_click', {
+			userId: user?.publicMetadata?.userId,
+			creatorId: creator._id,
+		});
+
 		if (!user) router.push("sign-in");
 		let maxCallDuration =
 			(walletBalance / parseInt(creator?.chatRate, 10)) * 60; // in seconds
@@ -206,7 +211,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const creatorChatsDocRef = doc(
 				db,
 				"userchats",
-				"6675197dc56dfe13b3ccabd3"
+				"6687f55f290500fb85b7ace0"
 			);
 
 			const userChatsDocSnapshot = await getDoc(userChatsDocRef);
@@ -222,7 +227,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 				const existingChat =
 					userChatsData.chats.find(
-						(chat: any) => chat.receiverId === "6675197dc56dfe13b3ccabd3"
+						(chat: any) => chat.receiverId === "6687f55f290500fb85b7ace0"
 					) ||
 					creatorChatsData.chats.find(
 						(chat: any) => chat.receiverId === clientId
@@ -239,8 +244,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			// Create a new chat request
 			const newChatRequestRef = doc(chatRequestsRef);
 			await setDoc(newChatRequestRef, {
-				creatorId: "6675197dc56dfe13b3ccabd3",
-				clientId: clientId,
+				creatorId: "6687f55f290500fb85b7ace0",
+				clientId: "6687f4c5b629a40f8b1ddc4e",
 				status: "pending",
 				chatId: chatId,
 				createdAt: Date.now(),
@@ -285,7 +290,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const listenForChatRequests = () => {
 		const q = query(
 			chatRequestsRef,
-			where("creatorId", "==", "6675197dc56dfe13b3ccabd3"),
+			where("creatorId", "==", "6687f55f290500fb85b7ace0"),
 			where("status", "==", "pending")
 		);
 
@@ -313,7 +318,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				await setDoc(doc(db, "chats", chatId), {
 					startedAt: Date.now(),
 					endedAt: null,
-					clientId: clientId,
+					clientId: chatRequest.clientId,
 					creatorId: chatRequest.creatorId,
 					status: "active",
 					messages: [],
@@ -406,8 +411,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (data && data.status === "accepted") {
 				unsubscribe();
 				setTimeout(() => {
+					logEvent(analytics, 'call_initiated', {
+						userId: user?.publicMetadata?.userId,
+						creatorId: creator._id,
+					});
                     router.push(
-                        `/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}&startedAt=${chatRequest.startedAt}`
+                        `/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}}`
                     );
                 }, 3000);
 			}
@@ -421,7 +430,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		return () => {
 			unsubscribe();
 		};
-	}, ["6675197dc56dfe13b3ccabd3"]);
+	}, ["6687f55f290500fb85b7ace0"]);
 
 	const handleClickOption = (
 		callType: string,
@@ -430,6 +439,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		if (user && !storedCallId) {
 			setMeetingState(`${modalType}`);
 			setCallType(`${callType}`);
+			logEvent(analytics, 'call_click', {
+				userId: user?.publicMetadata?.userId,
+				creatorId: creator._id,
+			});
 			if(callType === "audio"){
 				logEvent(analytics, 'audio_now_click', {
 					userId: user?.publicMetadata?.userId,
@@ -535,7 +548,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			/>
 
 			{chatRequest &&
-				user?.publicMetadata?.userId === "6675197dc56dfe13b3ccabd3" && (
+				user?.publicMetadata?.userId === "6687f55f290500fb85b7ace0" && (
 					<div className="chatRequestModal">
 						<p>Incoming chat request from {chatRequest.clientId}</p>
 						<Button onClick={handleAcceptChat}>Accept</Button>

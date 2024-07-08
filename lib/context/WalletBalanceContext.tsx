@@ -69,9 +69,9 @@ export const WalletBalanceProvider = ({
 		}
 	};
 
-	if (loading) {
-		return <Loader />;
-	}
+	// if (loading) {
+	// 	return <Loader />;
+	// }
 
 	return (
 		<WalletBalanceContext.Provider
