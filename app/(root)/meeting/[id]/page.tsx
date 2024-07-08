@@ -18,6 +18,8 @@ import { Cursor, Typewriter } from "react-simple-typewriter";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import ContentLoading from "@/components/shared/ContentLoading";
+import { logEvent } from "firebase/analytics";
+import { analytics } from "@/lib/firebase";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -120,6 +122,12 @@ const CallEnded = ({ toast, router, call }: any) => {
 			}
 
 			setLoading(true);
+
+			logEvent(analytics, "call_ended", {
+				callId: call.id,
+				duration: duration,
+				type: call?.type === "default" ? "video" : "audio",
+			});
 
 			await fetch("/api/v1/calls/updateCall", {
 				method: "POST",

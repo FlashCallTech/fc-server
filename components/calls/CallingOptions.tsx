@@ -3,10 +3,8 @@ import { audio, chat, video } from "@/constants/icons";
 import { creatorUser } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
-import Loader from "../shared/Loader";
 import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useUser } from "@clerk/nextjs";
-import { Input } from "../ui/input";
 import MeetingModal from "../meeting/MeetingModal";
 import { logEvent } from "firebase/analytics";
 import { Button } from "../ui/button";
@@ -41,7 +39,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [meetingState, setMeetingState] = useState<
 		"isJoiningMeeting" | "isInstantMeeting" | undefined
 	>(undefined);
-	const [values, setValues] = useState(initialValues);
 	const client = useStreamVideoClient();
 	const [callType, setCallType] = useState("");
 	const { user } = useUser();
@@ -150,6 +147,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						},
 					},
 				},
+			});
+
+			logEvent(analytics, "call_initiated", {
+				callId: id,
+				description: description,
 			});
 
 			fetch("/api/v1/calls/registerCall", {
