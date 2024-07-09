@@ -1,8 +1,4 @@
-import { toast } from "@/components/ui/use-toast";
 import { getUserById } from "@/lib/actions/creator.actions";
-import CallTransactions from "@/lib/database/models/callTransactions.model";
-
-// Import the CallTransaction model
 
 export const handleTransaction = async ({
 	duration,
@@ -35,7 +31,6 @@ export const handleTransaction = async ({
 		// console.log("clientID: ", clientId)
 
 		if (amountToBePaid && clientId) {
-			console.log("1")
 			const [existingTransaction] = await Promise.all([
 				fetch(`/api/v1/calls/transaction/getTransaction?callId=${chatId}`).then(
 					(res) => res.json()
@@ -43,7 +38,6 @@ export const handleTransaction = async ({
 			]);
 
 			if (existingTransaction) {
-				console.log('2')
 				await fetch("/api/v1/calls/transaction/update", {
 					method: "PUT",
 					body: JSON.stringify({

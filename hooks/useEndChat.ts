@@ -1,6 +1,7 @@
-import { db } from "@/lib/firebase";
+import { analytics, db } from "@/lib/firebase";
 import { creatorUser } from "@/types";
 import { useUser } from "@clerk/nextjs";
+import { logEvent } from "firebase/analytics";
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -28,9 +29,9 @@ interface Chat {
 }
 
 const useEndChat = () => {
-    const router  = useRouter();
-    const {user } = useUser();
-    const {chatId} = useParams();
+    const router = useRouter();
+    const { user } = useUser();
+    const { chatId } = useParams();
     const [user2, setUser2] = useState<User2>();
     const [chat, setChat] = useState<Chat | undefined>();
     const [chatEnded, setChatEnded] = useState(false);
@@ -63,8 +64,8 @@ const useEndChat = () => {
     }, [chatId]);
 
     useEffect(() => {
-        if(hasCHatEnded.current === true) return ;
-       
+        if (hasCHatEnded.current === true) return;
+
         if (chatEnded) {
             hasCHatEnded.current = true;
             router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
@@ -113,12 +114,17 @@ const useEndChat = () => {
                 online: false,
             });
 
+            logEvent(analytics, 'call_ended', {
+                userId: user?.publicMetadata?.userId,
+                // creatorId: creator._id,
+            });
+
         } catch (error) {
             console.error("Error ending chat:", error);
         }
     };
-    
-    return { chatId, chatEnded, handleEnd, user2, startedAt, endedAt, chat, markMessagesAsSeen, chatRatePerMinute};
+
+    return { chatId, chatEnded, handleEnd, user2, startedAt, endedAt, chat, markMessagesAsSeen, chatRatePerMinute };
 }
 
 export default useEndChat

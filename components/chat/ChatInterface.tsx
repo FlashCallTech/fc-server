@@ -49,6 +49,7 @@ const ChatInterface: React.FC = () => {
 	const [receiverId, setReceiverId] = useState(null);
 	const audioContext = new AudioContext();
 	const { user2, chatId } = useEndChat();
+	const [messages, setMessages] = useState<{ text: string | null; img: string | null; audio: string | null; }[]>([]);
 
 	useEffect(() => {
 		const fetchReceiverId = async () => {
@@ -73,7 +74,7 @@ const ChatInterface: React.FC = () => {
 		};
 
 		fetchReceiverId();
-	}, [chatId, user?.publicMetadata?.userId, db]);
+	}, [chatId, user?.publicMetadata?.userId, messages, db]);
 
 	useEffect(() => {
 		if (!receiverId) return;
@@ -85,6 +86,7 @@ const ChatInterface: React.FC = () => {
 					const data = docSnapshot.data();
 					if (data.online) {
 						markMessagesAsSeen();
+						setReceiverId(null);
 					}
 				}
 			}
@@ -113,8 +115,8 @@ const ChatInterface: React.FC = () => {
 	const handleSend = async () => {
 		if (text === "" && !img.file && !audio.file) return;
 
-		let imgUrl = null;
-		let audioUrl = null;
+		let imgUrl: string | null = null;
+		let audioUrl: string | null = null;
 
 		try {
 			if (!chatId) {
@@ -143,6 +145,8 @@ const ChatInterface: React.FC = () => {
 					audio: audioUrl,
 				}),
 			});
+
+			setMessages(prevMessages => [...prevMessages, { text: null, img: imgUrl, audio: audioUrl }]);
 
 			const userIDs = [
 				user2?.clientId as string,
@@ -204,7 +208,7 @@ const ChatInterface: React.FC = () => {
 					senderId: user?.publicMetadata?.userId as string,
 					createdAt: Date.now(),
 					seen: false,
-					text,
+					text: null,
 					img: imgUrl,
 					audio: audioUploadUrl,
 				}),
