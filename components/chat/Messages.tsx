@@ -43,12 +43,12 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
         endRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [chat]);
 
-    // const formatTime = (timestamp: Timestamp) => {
-    //     const date = timestamp.toDate();
-    //     const hours = date.getHours().toString().padStart(2, '0');
-    //     const minutes = date.getMinutes().toString().padStart(2, '0');
-    //     return `${hours}:${minutes}`;
-    // };
+    const formatTime = (timestamp: number) => {
+        const date = new Date(timestamp);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+    };
 
     return (
         <div className="flex-1 p-4 overflow-y-auto overflow-x-hidden">
@@ -91,7 +91,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
                             'rotate-90 absolute left-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] border-l-[rgba(80,166,92,1)] border-r-0 border-solid border-transparent'}>
                         </div>
                         <div className={message.senderId === user?.publicMetadata?.userId as string ? 'w-full flex justify-end items-center absolute bottom-1 right-1' : 'w-full flex justify-end items-center absolute bottom-1 right-1'}>
-                            {/* <span className="text-xs text-gray-500 mr-2">{formatTime(message.createdAt)}</span> */}
+                            <span className="text-xs text-gray-500 mr-2">{formatTime(message.createdAt)}</span>
                             {message.seen && message.senderId === user?.publicMetadata?.userId as string && <Image src={ '/seen1.svg'} width={13} height={13} alt='seen' />}
                         </div>
                     </div>

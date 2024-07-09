@@ -180,6 +180,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
+		console.log(user?.publicMetadata?.userId);
+
 		logEvent(analytics, "chat_now_click", {
 			userId: user?.publicMetadata?.userId,
 			creatorId: creator._id,
@@ -385,6 +387,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
 				})
 			);
+
+			setTimeout(() => {
+				router.push(
+					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
+				);
+			}, 3000);
 
 			setSheetOpen(false);
 		} catch (error) {
