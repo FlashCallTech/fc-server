@@ -14,11 +14,15 @@ const CreatorProfile = () => {
 	const [creator, setCreator] = useState(null);
 	const { userId } = useParams();
 	const { user } = useUser();
+	const [ eventLogged, setEventLogged ] = useState(true);
 
-	logEvent(analytics, 'visit', {
-		userId: user?.publicMetadata?.userId,
-		creatorId:userId,
-	});
+	if(eventLogged){
+		logEvent(analytics, 'visit', {
+			userId: user?.publicMetadata?.userId,
+			creatorId:userId,
+		});
+		setEventLogged(false);
+	}
 
 	useEffect(() => {
 		try {

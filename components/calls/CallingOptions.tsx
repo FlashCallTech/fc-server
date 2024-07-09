@@ -106,11 +106,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
-					? `Video Call With Expert ${creator.username}`
-					: `Audio Call With Expert ${creator.username}`
-			}`;
+			const description = `${callType === "video"
+				? `Video Call With Expert ${creator.username}`
+				: `Audio Call With Expert ${creator.username}`
+				}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -180,6 +179,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
+		console.log(user?.publicMetadata?.userId)
+
 		logEvent(analytics, 'chat_now_click', {
 			userId: user?.publicMetadata?.userId,
 			creatorId: creator._id,
@@ -313,6 +314,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		});
 
 		return unsubscribe;
+
 	};
 
 	const handleAcceptChat = async () => {
@@ -340,7 +342,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							lastMessage: "",
 							receiverId: chatRequest.clientId,
 							updatedAt: new Date(),
-							
+
 						}),
 						online: false
 					}
@@ -387,6 +389,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				})
 			);
 
+			setTimeout(() => {
+				router.push(
+					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
+				);
+			}, 3000);
+
 			setSheetOpen(false);
 		} catch (error) {
 			console.error(error);
@@ -419,17 +427,17 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
 		const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
 			const data = doc.data();
-			if (data && data.status === "accepted") {
+			if (data && data.status === "accepted" && user?.publicMetadata?.userId === chatRequest.clientId ) {
 				unsubscribe();
 				setTimeout(() => {
 					logEvent(analytics, 'call_connected', {
 						userId: user?.publicMetadata?.userId,
 						creatorId: creator._id,
 					});
-                    router.push(
-                        `/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}}`
-                    );
-                }, 3000);
+					router.push(
+						`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
+					);
+				}, 3000);
 			}
 		});
 
@@ -454,7 +462,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				userId: user?.publicMetadata?.userId,
 				creatorId: creator._id,
 			});
-			if(callType === "audio"){
+			if (callType === "audio") {
 				logEvent(analytics, 'audio_now_click', {
 					userId: user?.publicMetadata?.userId,
 					creatorId: creator._id,
