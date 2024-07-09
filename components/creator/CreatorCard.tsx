@@ -47,7 +47,7 @@ const CreatorCard = ({ creator }: CreatorCardProps) => {
 				{/* User Reviews */}
 				<UserReviews
 					theme={creator.themeSelected}
-					creatorFeedback={creatorFeedback}
+					creatorFeedback={creatorFeedback[0]?.feedbacks}
 					loading={loading}
 				/>
 			</div>
