@@ -99,6 +99,15 @@ export type CreateFeedbackParams = {
 	createdAt: Date;
 };
 
+export type CreatorFeedbackParams = {
+	creatorId: string;
+	clientId: string;
+	rating: number;
+	feedbackText: string;
+	createdAt: Date;
+	showFeedback: boolean;
+};
+
 // Call Params
 
 export type MemberRequest = {
@@ -144,7 +153,7 @@ export interface ChatDetails {
 	status: string;
 	startedAt: Date;
 	endedAt?: Date;
-	duration?: number
+	duration?: number;
 }
 
 export interface SelectedChat {
@@ -152,7 +161,7 @@ export interface SelectedChat {
 	creator: string;
 	status: string;
 	members: MemberRequest[];
-	chatDetails: ChatDetails[]
+	chatDetails: ChatDetails[];
 	startedAt?: Date;
 	endedAt?: Date;
 	duration?: number;

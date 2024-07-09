@@ -1,4 +1,6 @@
 import { getUserById } from "@/lib/actions/creator.actions";
+import { analytics } from "@/lib/firebase";
+import { logEvent } from "firebase/analytics";
 
 // Define the transaction logic in a utility function
 export const handleTransaction = async ({
@@ -18,20 +20,21 @@ export const handleTransaction = async ({
 	router: any;
 	updateWalletBalance: () => Promise<void>;
 }) => {
-	const creatorId = "664c90ae43f0af8f1b3d5803";
-	const clientId = call?.state?.createdBy?.id;
-
-	if (!clientId) {
-		console.error("Client ID is undefined");
-		return;
-	}
-
 	const expert = call?.state?.members?.find(
 		(member: any) => member.custom.type === "expert"
 	);
 
 	if (!expert?.user_id) {
 		console.error("Creator ID is undefined");
+		return;
+	}
+
+	const creatorId = "664c90ae43f0af8f1b3d5803";
+	// const creatorId = expert?.user_id;
+	const clientId = call?.state?.createdBy?.id;
+
+	if (!clientId) {
+		console.error("Client ID is undefined");
 		return;
 	}
 
@@ -92,6 +95,11 @@ export const handleTransaction = async ({
 
 		// remove the activeCallId after transaction is done otherwise user will be redirected to this page and then transactons will take place
 		localStorage.removeItem("activeCallId");
+		logEvent(analytics, "call_ended", {
+			callId: call.id,
+			duration: duration,
+			type: call?.type === "default" ? "video" : "audio",
+		});
 	} catch (error) {
 		console.error("Error handling wallet changes:", error);
 		toast({

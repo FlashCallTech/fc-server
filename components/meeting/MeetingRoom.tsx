@@ -90,13 +90,11 @@ const MeetingRoom = () => {
 				try {
 					await call?.join();
 					setHasJoined(true);
-					logEvent(analytics, 'call_connected', {
+					logEvent(analytics, "call_connected", {
 						userId: user?.publicMetadata?.userId,
-						// creatorId: creator._id,
 					});
 				} catch (error: any) {
 					if (error.message !== "Illegal State: Already joined") {
-						// console.warn("Error joining call:", error);
 						console.clear();
 					}
 				}
@@ -114,8 +112,9 @@ const MeetingRoom = () => {
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout;
 
-		participantCount === 2 &&
+		if (participantCount === 2) {
 			call?.on("call.session_participant_left", handleCallRejected);
+		}
 
 		if (participantCount < 2 || anyModalOpen) {
 			timeoutId = setTimeout(async () => {
@@ -130,7 +129,33 @@ const MeetingRoom = () => {
 		return () => clearTimeout(timeoutId);
 	}, [participantCount, anyModalOpen, call]);
 
-	// Function to toggle front and back camera
+	useEffect(() => {
+		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+			const data = {
+				callId: call?.id,
+				clientId: user?.publicMetadata?.userId,
+				creatorId: "664c90ae43f0af8f1b3d5803", // Replace with actual creatorId
+				duration: "00:00", // Replace with actual duration
+				isVideoCall,
+			};
+
+			const blob = new Blob([JSON.stringify(data)], {
+				type: "application/json",
+			});
+			navigator.sendBeacon("/api/v1/calls/transaction/initiate", blob);
+
+			// Optionally, add a custom message
+			event.preventDefault();
+			event.returnValue = "";
+		};
+
+		window.addEventListener("beforeunload", handleBeforeUnload);
+
+		return () => {
+			window.removeEventListener("beforeunload", handleBeforeUnload);
+		};
+	}, [call, user, isVideoCall]);
+
 	const toggleCamera = async () => {
 		if (call && call.camera) {
 			try {
@@ -141,14 +166,10 @@ const MeetingRoom = () => {
 		}
 	};
 
-	// Memoized Call Layout
 	const CallLayout = useMemo(() => {
 		switch (layout) {
 			case "grid":
-				return (
-					<PaginatedGridLayout />
-					// ParticipantViewUI={<CustomParticipantViewUI />}
-				);
+				return <PaginatedGridLayout />;
 			default:
 				return (
 					<SpeakerLayout
@@ -163,12 +184,13 @@ const MeetingRoom = () => {
 	const isMeetingOwner =
 		user?.publicMetadata?.userId === call?.state?.createdBy?.id;
 
-	if (callingState !== CallingState.JOINED)
+	if (callingState !== CallingState.JOINED) {
 		return (
 			<section className="w-full h-screen flex items-center justify-center">
 				<SinglePostLoader />
 			</section>
 		);
+	}
 
 	return (
 		<section className="relative h-screen w-full overflow-hidden pt-4 text-white bg-dark-2">

@@ -123,12 +123,6 @@ const CallEnded = ({ toast, router, call }: any) => {
 
 			setLoading(true);
 
-			logEvent(analytics, "call_ended", {
-				callId: call.id,
-				duration: duration,
-				type: call?.type === "default" ? "video" : "audio",
-			});
-
 			await fetch("/api/v1/calls/updateCall", {
 				method: "POST",
 				body: JSON.stringify({
