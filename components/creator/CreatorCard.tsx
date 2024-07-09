@@ -1,14 +1,37 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { creatorUser } from "@/types";
 import CallingOptions from "../calls/CallingOptions";
 import CreatorDetails from "./CreatorDetails";
 import UserReviews from "./UserReviews";
+import axios from "axios";
 
 interface CreatorCardProps {
 	creator: creatorUser;
 }
 
 const CreatorCard = ({ creator }: CreatorCardProps) => {
+	const [creatorFeedback, setCreatorFeedback] = useState<any>([]);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		const getCreatorFeedback = async () => {
+			try {
+				const response = await axios.get(
+					`/api/v1/feedback/creator/selected?creatorId=${creator._id}`
+				);
+				setCreatorFeedback(response.data);
+			} catch (err) {
+				console.error(err);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		getCreatorFeedback();
+	}, [creator._id]);
+
 	return (
 		<section
 			key={creator._id}
@@ -18,11 +41,15 @@ const CreatorCard = ({ creator }: CreatorCardProps) => {
 			<CreatorDetails creator={creator} />
 
 			{/* Calling Options & User Reviews */}
-			<div className="flex flex-col gap-10 items-center ">
+			<div className="flex flex-col gap-10 items-center">
 				{/* Calling Options */}
 				<CallingOptions creator={creator} />
 				{/* User Reviews */}
-				<UserReviews theme={creator.themeSelected} />
+				<UserReviews
+					theme={creator.themeSelected}
+					creatorFeedback={creatorFeedback}
+					loading={loading}
+				/>
 			</div>
 		</section>
 	);
