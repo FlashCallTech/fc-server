@@ -15,7 +15,7 @@ const CreatorProfile = () => {
 	const { userId } = useParams();
 	const { user } = useUser();
 
-	logEvent(analytics, 'chat_now_click', {
+	logEvent(analytics, 'visit', {
 		userId: user?.publicMetadata?.userId,
 		creatorId:userId,
 	});
