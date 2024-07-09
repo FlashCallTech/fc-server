@@ -150,8 +150,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			});
 
 			logEvent(analytics, "call_initiated", {
-				callId: id,
-				description: description,
+				userId: user?.publicMetadata?.usreId,
+				creatorId: creator._id
 			});
 
 			fetch("/api/v1/calls/registerCall", {
@@ -248,6 +248,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			await setDoc(newChatRequestRef, {
 				creatorId: "6687f55f290500fb85b7ace0",
 				clientId: "6687f4c5b629a40f8b1ddc4e",
+				clientName: user?.username,
 				status: "pending",
 				chatId: chatId,
 				createdAt: Date.now(),
@@ -339,7 +340,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							lastMessage: "",
 							receiverId: chatRequest.clientId,
 							updatedAt: new Date(),
+							
 						}),
+						online: false
 					}
 				);
 
@@ -352,6 +355,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							receiverId: chatRequest.creatorId,
 							updatedAt: new Date(),
 						}),
+						online: false
 					}
 				);
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
