@@ -180,12 +180,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
-		logEvent(analytics, 'chat_now_click', {
+		logEvent(analytics, "chat_now_click", {
 			userId: user?.publicMetadata?.userId,
 			creatorId: creator._id,
 		});
 
-		logEvent(analytics, 'call_click', {
+		logEvent(analytics, "call_click", {
 			userId: user?.publicMetadata?.userId,
 			creatorId: creator._id,
 		});
@@ -263,7 +263,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			setSheetOpen(true);
 
-			logEvent(analytics, 'call_initiated', {
+			logEvent(analytics, "call_initiated", {
 				userId: user?.publicMetadata?.userId,
 				creatorId: creator._id,
 			});
@@ -418,14 +418,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (data && data.status === "accepted") {
 				unsubscribe();
 				setTimeout(() => {
-					logEvent(analytics, 'call_connected', {
+					logEvent(analytics, "call_connected", {
 						userId: user?.publicMetadata?.userId,
 						creatorId: creator._id,
 					});
-                    router.push(
-                        `/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}}`
-                    );
-                }, 3000);
+					router.push(
+						`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}}`
+					);
+				}, 3000);
 			}
 		});
 
@@ -446,12 +446,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		if (user && !storedCallId) {
 			setMeetingState(`${modalType}`);
 			setCallType(`${callType}`);
-			logEvent(analytics, 'call_click', {
+			logEvent(analytics, "call_click", {
 				userId: user?.publicMetadata?.userId,
 				creatorId: creator._id,
 			});
-			if(callType === "audio"){
-				logEvent(analytics, 'audio_now_click', {
+			if (callType === "audio") {
+				logEvent(analytics, "audio_now_click", {
 					userId: user?.publicMetadata?.userId,
 					creatorId: creator._id,
 				});
@@ -462,6 +462,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				});
 			}
 		} else if (user && storedCallId) {
+			toast({
+				title: "Ongoing Call or Transaction Pending",
+				description: "Redirecting you back ...",
+			});
 			router.push(`/meeting/${storedCallId}`);
 		} else {
 			router.replace("/sign-in");

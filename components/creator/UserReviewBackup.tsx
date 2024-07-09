@@ -10,7 +10,6 @@ import {
 	arrowLeft,
 	arrowRight,
 } from "@/constants/icons";
-import SinglePostLoader from "../shared/SinglePostLoader";
 
 const customStyles = {
 	itemShapes: [SadFace, NeutralFace, NeutralFace, SmilingFace, HappyFace],
@@ -18,17 +17,9 @@ const customStyles = {
 	inactiveFillColor: "#a8a8a8",
 };
 
-const UserReviews = ({
-	theme,
-	creatorFeedback,
-	loading,
-}: {
-	theme: string;
-	creatorFeedback: any;
-	loading: boolean;
-}) => {
+const UserReviews = ({ theme }: any) => {
 	const [currentIndex, setCurrentIndex] = useState(0);
-	const lastIndex = creatorFeedback?.feedback?.length - 1;
+	const lastIndex = feedbacks.length - 1;
 	const [direction, setDirection] = useState("right");
 
 	// Auto slider (uncomment if needed)
@@ -53,14 +44,6 @@ const UserReviews = ({
 		setDirection("left");
 		setCurrentIndex((prev) => (prev - 1 < 0 ? lastIndex : prev - 1));
 	};
-
-	if (loading) {
-		return (
-			<section className="w-full h-full flex items-center justify-center">
-				<SinglePostLoader />
-			</section>
-		);
-	}
 
 	return (
 		<div
