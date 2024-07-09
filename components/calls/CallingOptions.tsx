@@ -186,7 +186,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			creatorId: creator._id,
 		});
 
-		logEvent(analytics, 'call_click', {
+		logEvent(analytics, "call_click", {
 			userId: user?.publicMetadata?.userId,
 			creatorId: creator._id,
 		});
@@ -265,7 +265,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			setSheetOpen(true);
 
-			logEvent(analytics, 'call_initiated', {
+			logEvent(analytics, "call_initiated", {
 				userId: user?.publicMetadata?.userId,
 				creatorId: creator._id,
 			});
@@ -430,7 +430,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (data && data.status === "accepted" && user?.publicMetadata?.userId === chatRequest.clientId ) {
 				unsubscribe();
 				setTimeout(() => {
-					logEvent(analytics, 'call_connected', {
+					logEvent(analytics, "call_connected", {
 						userId: user?.publicMetadata?.userId,
 						creatorId: creator._id,
 					});
@@ -458,7 +458,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		if (user && !storedCallId) {
 			setMeetingState(`${modalType}`);
 			setCallType(`${callType}`);
-			logEvent(analytics, 'call_click', {
+			logEvent(analytics, "call_click", {
 				userId: user?.publicMetadata?.userId,
 				creatorId: creator._id,
 			});
@@ -474,6 +474,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				});
 			}
 		} else if (user && storedCallId) {
+			toast({
+				title: "Ongoing Call or Transaction Pending",
+				description: "Redirecting you back ...",
+			});
 			router.push(`/meeting/${storedCallId}`);
 		} else {
 			router.replace("/sign-in");
