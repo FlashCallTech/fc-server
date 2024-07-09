@@ -68,6 +68,8 @@ export const WalletBalanceProvider = ({
 		}
 	};
 
+	// console.log(walletBalance)
+
 	// if (loading) {
 	// 	return <Loader />;
 	// }

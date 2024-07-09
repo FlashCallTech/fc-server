@@ -121,6 +121,11 @@ const About: React.FC = () => {
 							headers: { "Content-Type": "application/json" },
 						});
 
+
+						logEvent(analytics, 'wallet_recharge_done', {
+							userId: user?.publicMetadata?.userId,
+							amount: amount,
+						});
 						router.push("/success");
 					} catch (error) {
 						console.error("Validation request failed:", error);
