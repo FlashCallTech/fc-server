@@ -1,14 +1,22 @@
 'use client'
 import { useUser } from '@clerk/nextjs';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ChatFeedback from '../feedbacks/ChatFeedback';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '@/lib/firebase';
 
 const ChatEnded = () => {
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(true);
     const router = useRouter();
     const { chatId, clientId } = useParams();
     const { user } = useUser();
+
+    useEffect(() => {
+        logEvent(analytics, "feedback_shown", {
+            clientId: user?.publicMetadata?.userId,
+        });
+    }, [])
 
     const goToHomePage = () => {
         router.replace('/'); // For react-router-dom v6, use 'navigate('/')'
