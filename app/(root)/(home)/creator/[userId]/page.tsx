@@ -18,7 +18,7 @@ const CreatorProfile = () => {
 
 	if(eventLogged){
 		logEvent(analytics, 'visit', {
-			userId: user?.publicMetadata?.userId,
+			clientId: user?.publicMetadata?.userId,
 			creatorId:userId,
 		});
 		setEventLogged(false);

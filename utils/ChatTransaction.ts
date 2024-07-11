@@ -22,7 +22,6 @@ export const handleTransaction = async ({
 	if (!duration) return;
 
 	const creatorId = "664c90ae43f0af8f1b3d5803";
-	const { user } = useUser();
 
 	try {
 		const creator = await getUserById(creatorId);
@@ -36,7 +35,7 @@ export const handleTransaction = async ({
 
 		if (amountToBePaid && clientId) {
 			logEvent(analytics, 'call_duration', {
-                userId: user?.publicMetadata?.userId,
+                clientId: clientId,
                 duration: duration,
             });
 			
