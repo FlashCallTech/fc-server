@@ -51,6 +51,9 @@ export type creatorUser = {
 	audioRate: string;
 	chatRate: string;
 	kyc_status: string;
+	referralId: string;
+	referredBy: string;
+	referralAmount: number;
 };
 
 export type CreateCreatorParams = {
@@ -66,6 +69,9 @@ export type CreateCreatorParams = {
 	dob?: string;
 	bio?: string;
 	kyc_status: string;
+	referralId: string;
+	referredBy: string;
+	referralAmount: number;
 };
 
 export type UpdateCreatorParams = {
