@@ -8,22 +8,21 @@ import ChatDetails from "@/components/chat/ChatDetails";
 import { SelectedChat } from "@/types";
 
 const ChatDetailsPage = () => {
-    const searchParams = useSearchParams();
-    const [selectedChat, setSelectedChat] = useState<SelectedChat | null>(null);
+    const [creatorId, setCreatorId] = useState<string | null>(null);
 
     useEffect(() => {
-        const chatData = searchParams.get('selectedChat');
-        if (chatData) {
-            setSelectedChat(JSON.parse(decodeURIComponent(chatData)));
-        }
-    }, [searchParams]);
+        const params = new URLSearchParams(window.location.search);
+        const creatorId = params.get('creatorId');
 
-    if (!selectedChat) {
+        setCreatorId( creatorId );
+    }, []);
+
+    if (!creatorId) {
         return <div>Loading...</div>; // Show a loading indicator or message
     }
 
     return (
-        <ChatDetails selectedChat={selectedChat} />
+        < ChatDetails creatorId={creatorId? creatorId: null} />
     );
 }
 

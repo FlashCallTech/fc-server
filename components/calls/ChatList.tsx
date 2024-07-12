@@ -57,8 +57,7 @@ const ChatList = () => {
 	const visibleChats = chats.slice(0, chatsCount);
 
 	const handleChatClick = (chat: SelectedChat) => {
-		const chatData = encodeURIComponent(JSON.stringify(chat));
-		router.push(`/chatDetails?selectedChat=${chatData}`); // Redirect to chat details page
+		router.push(`/chatDetails?creatorId=${chat.creator}`); // Redirect to chat details page
 	};
 
 	if (loading) {
