@@ -61,7 +61,6 @@ const About: React.FC = () => {
 		const currency: string = "INR";
 		const receiptId: string = "kuchbhi";
 
-		console.log(amount)
 
 		try {
 			const response: Response = await fetch("/api/v1/order", {
