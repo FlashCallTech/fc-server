@@ -12,6 +12,8 @@ import { Button } from "../ui/button";
 import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import useGetChatById from "@/hooks/useGetChatById";
+import { logEvent } from "firebase/analytics";
+import { analytics } from "@/lib/firebase";
 
 const ChatFeedback = ({
 	chatId,
@@ -53,12 +55,22 @@ const ChatFeedback = ({
 
 	const handleSliderChange = (value: any) => {
 		setRating(value);
+		if(value){
+			logEvent(analytics, "feedback_slider", {
+				clientId: user?.publicMetadata?.userId,
+			});
+		}
 	};
 
 	const handleFeedbackChange = (
 		event: React.ChangeEvent<HTMLTextAreaElement>
 	) => {
 		setFeedbackMessage(event.target.value);
+		if(event.target.value){
+			logEvent(analytics, "feedback_message", {
+				clientId: user?.publicMetadata?.userId,
+			});
+		}
 	};
 
 	const handleSubmitFeedback = async () => {
@@ -74,6 +86,11 @@ const ChatFeedback = ({
 				callId: chatId,
 				createdAt: new Date(),
 			});
+
+			logEvent(analytics, "feed_submitted", {
+				clientId: user?.publicMetadata?.userId,
+			});
+
 			setFeedbackSubmitted(true);
 			toast({
 				title: "Feedback Submitted Successfully",

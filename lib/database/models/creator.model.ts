@@ -18,6 +18,9 @@ const CreatorSchema = new Schema(
 		bio: { type: String },
 		kyc_status: { type: String },
 		walletBalance: { type: Number, default: 0 },
+		referralId: { type: String, unique: true },
+		referredBy: { type: String, default: null },
+		referralAmount: { type: Number, default: 0 },
 	},
 	{
 		timestamps: true,

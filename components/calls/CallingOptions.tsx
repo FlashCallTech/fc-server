@@ -151,7 +151,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			// },
 
 			logEvent(analytics, "call_initiated", {
-				userId: user?.publicMetadata?.usreId,
+				clientId: user?.publicMetadata?.usreId,
 				creatorId: creator._id,
 			});
 
@@ -181,15 +181,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChat = async () => {
-		console.log(user?.publicMetadata?.userId);
-
 		logEvent(analytics, "chat_now_click", {
-			userId: user?.publicMetadata?.userId,
+			clientId: user?.publicMetadata?.userId,
 			creatorId: creator._id,
 		});
 
 		logEvent(analytics, "call_click", {
-			userId: user?.publicMetadata?.userId,
+			clientId: user?.publicMetadata?.userId,
 			creatorId: creator._id,
 		});
 
@@ -268,7 +266,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			setSheetOpen(true);
 
 			logEvent(analytics, "call_initiated", {
-				userId: user?.publicMetadata?.userId,
+				clientId: user?.publicMetadata?.userId,
 				creatorId: creator._id,
 			});
 
@@ -435,7 +433,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				unsubscribe();
 				setTimeout(() => {
 					logEvent(analytics, "call_connected", {
-						userId: user?.publicMetadata?.userId,
+						clientId: user?.publicMetadata?.userId,
 						creatorId: creator._id,
 					});
 					router.push(
@@ -463,17 +461,17 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			setMeetingState(`${modalType}`);
 			setCallType(`${callType}`);
 			logEvent(analytics, "call_click", {
-				userId: user?.publicMetadata?.userId,
+				clientId: user?.publicMetadata?.userId,
 				creatorId: creator._id,
 			});
 			if (callType === "audio") {
 				logEvent(analytics, "audio_now_click", {
-					userId: user?.publicMetadata?.userId,
+					clientId: user?.publicMetadata?.userId,
 					creatorId: creator._id,
 				});
 			} else {
 				logEvent(analytics, "video_now_click", {
-					userId: user?.publicMetadata?.userId,
+					clientId: user?.publicMetadata?.userId,
 					creatorId: creator._id,
 				});
 			}
