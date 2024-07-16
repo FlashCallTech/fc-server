@@ -1,7 +1,6 @@
 import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
-import { Button } from "../ui/button";
-import RechargeModal from "../calls/RechargeModal";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import RechargeModal from "./RechargeModal";
 
 
 const ChatRecharge: React.FC = () => {
