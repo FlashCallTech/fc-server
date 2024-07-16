@@ -18,6 +18,7 @@ import useMediaRecorder from "@/hooks/useMediaRecorder";
 import ChatTimer from "./ChatTimer";
 import EndCallDecision from "../calls/EndCallDecision";
 import useEndChat from "@/hooks/useEndChat";
+import ChatRecharge from "./RechargeInChat";
 
 
 const ChatInterface: React.FC = () => {
@@ -50,6 +51,13 @@ const ChatInterface: React.FC = () => {
 	const audioContext = new AudioContext();
 	const { user2, chatId } = useEndChat();
 	const [messages, setMessages] = useState<{ text: string | null; img: string | null; audio: string | null; }[]>([]);
+
+	useEffect(() => {
+		updateDoc(doc(db, "chats", chatId as string), {
+			startedAt: Date.now(),
+			endedAt: null,
+		});
+	}, [])
 
 	useEffect(() => {
 		const fetchReceiverId = async () => {
@@ -298,7 +306,7 @@ const ChatInterface: React.FC = () => {
 		setShowDialog(false);
 	};
 
-	
+
 
 	return (
 		<div
@@ -351,10 +359,7 @@ const ChatInterface: React.FC = () => {
 
 				<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
 
-				{/* <div className="flex justify-between items-center p-4 bg-[rgba(255,255,255,0.24)] mb-3">
-                    <div className="leading-5 font-normal text-white">Recharge to continue this <br /> Audio call.</div>
-                    <RechargeModal setWalletBalance={setWalletBalance} />
-                </div> */}
+				<ChatRecharge />
 
 				<ChatInput
 					isRecording={isRecording}
