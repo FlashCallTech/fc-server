@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 import { useToast } from "../ui/use-toast";
-// import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-// import RechargeModal from "./RechargeModal";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import RechargeModal from "./RechargeModal";
 
 const CallTimer = ({
 	handleCallRejected,
@@ -14,7 +14,7 @@ const CallTimer = ({
 	const { timeLeft, hasLowBalance } = useCallTimerContext();
 	const [isToastShown, setIsToastShown] = useState(false);
 	const { toast } = useToast();
-	// const { walletBalance, setWalletBalance } = useWalletBalanceContext();
+	const { walletBalance, setWalletBalance } = useWalletBalanceContext();
 
 	const timeLeftInSeconds = parseFloat(timeLeft);
 	const isLoading = isNaN(timeLeftInSeconds);
@@ -53,12 +53,12 @@ const CallTimer = ({
 				</p>
 			)}
 			{/* <p>Balance: Rs. {walletBalance.toFixed(2)}</p> */}
-			{/* {hasLowBalance && (
+			{hasLowBalance && (
 				<RechargeModal
 					walletBalance={walletBalance}
 					setWalletBalance={setWalletBalance}
 				/>
-			)} */}
+			)}
 		</div>
 	);
 };

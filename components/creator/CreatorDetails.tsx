@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { sparkles } from "@/constants/icons";
 import { creatorUser } from "@/types";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 interface CreatorDetailsProps {
 	creator: creatorUser;
@@ -12,11 +13,30 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 	const isCreatorOrExpressPath =
 		pathname.includes("/creator") || pathname.includes("/expert");
 
+	const [isLoading, setIsLoading] = useState(true);
+
 	useEffect(() => {
 		if (isCreatorOrExpressPath) {
 			localStorage.setItem("currentCreator", JSON.stringify(creator));
 		}
-	}, [creator]);
+	}, [creator, isCreatorOrExpressPath]);
+
+	const handleImageLoad = () => {
+		setIsLoading(false);
+	};
+
+	const handleImageError = (
+		e: React.SyntheticEvent<HTMLImageElement, Event>
+	) => {
+		e.currentTarget.src = "/images/defaultProfileImage.png";
+		setIsLoading(false);
+	};
+
+	useEffect(() => {
+		setTimeout(() => {
+			setIsLoading(false);
+		}, 1500);
+	}, []);
 
 	return (
 		<>
@@ -31,22 +51,28 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 							: "#50A65C",
 					}}
 				>
-					<img
+					{isLoading && (
+						<div
+							className={`bg-gray-300 opacity-60 animate-pulse rounded-xl w-full min-w-[256px] xl:min-w-[320px] min-h-full max-w-64 h-60 xl:max-w-80 xl:h-80 object-cover ${
+								!isCreatorOrExpressPath && "!max-w-full xl:!max-w-full xl:h-80"
+							}`}
+						/>
+					)}
+					<Image
 						src={
 							creator.photo ? creator.photo : "/images/defaultProfileImage.png"
 						}
 						alt="profile picture"
-						width={24}
-						height={24}
+						width={1000}
+						height={1000}
 						className={`rounded-xl w-full min-h-full max-w-64 h-60 xl:max-w-80 xl:h-80 object-cover ${
 							!isCreatorOrExpressPath && "!max-w-full xl:!max-w-full xl:h-80"
-						} `}
-						onError={(e) => {
-							e.currentTarget.src = "/images/defaultProfileImage.png";
-						}}
+						} ${isLoading ? "hidden" : "block"}`}
+						onError={handleImageError}
+						onLoad={handleImageLoad}
 					/>
 					<div className="text-white flex flex-col items-start w-full">
-						{/* Username*/}
+						{/* Username */}
 						<p className="font-semibold text-3xl max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
 							{creator.firstName ? (
 								<span className="capitalize">
