@@ -84,7 +84,7 @@ const Payment: React.FC = () => {
 		try {
 			setLoading(true);
 			const response = await axios.get(
-				`/api/v1/transaction/getUserTransactions?userId=${
+				`/api/v1/transaction/getUserTransactionsPaginated?userId=${
 					user?.publicMetadata?.userId
 				}&filter=${btn.toLowerCase()}&page=${page}&limit=10`
 			);

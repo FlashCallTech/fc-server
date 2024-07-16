@@ -174,3 +174,34 @@ export async function getTransactionsByUserIdAndType(
 		handleError(error);
 	}
 }
+
+export async function getAllTransactionsByUserId(userId: string) {
+	try {
+		await connectToDatabase();
+		const transactions = await Transaction.find({ userId })
+			.sort({ createdAt: -1 })
+			.lean();
+		return { transactions };
+	} catch (error) {
+		console.error(error);
+		handleError(error);
+	}
+}
+
+export async function getUsersTransactionsByType(
+	userId: string,
+	type: "debit" | "credit"
+) {
+	try {
+		await connectToDatabase();
+
+		const transactions = await Transaction.find({ userId, type })
+			.sort({ createdAt: -1 })
+			.lean();
+
+		return { transactions };
+	} catch (error) {
+		console.error(error);
+		handleError(error);
+	}
+}

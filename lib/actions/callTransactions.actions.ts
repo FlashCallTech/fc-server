@@ -1,9 +1,5 @@
 import { connectToDatabase } from "@/lib/database";
 import { handleError } from "@/lib/utils";
-import {
-	RegisterCallTransactionParams,
-	UpdateCallTransactionParams,
-} from "@/types";
 import CallTransactions from "../database/models/callTransactions.model";
 
 export async function createCallTransaction(transaction: any) {
