@@ -100,5 +100,6 @@ export const handleTransaction = async ({
 		router.push("/");
 	} finally {
 		updateWalletBalance();
+		localStorage.removeItem("user2");
 	}
 };
