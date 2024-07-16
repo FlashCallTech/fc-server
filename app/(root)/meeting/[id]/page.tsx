@@ -18,8 +18,6 @@ import { Cursor, Typewriter } from "react-simple-typewriter";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import ContentLoading from "@/components/shared/ContentLoading";
-import { logEvent } from "firebase/analytics";
-import { analytics } from "@/lib/firebase";
 
 const MeetingPage = () => {
 	const { id } = useParams();
