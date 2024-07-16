@@ -9,9 +9,9 @@ const ChatDetailsSchema = new Schema({
 
 const ChatSchema = new Schema({
 	chatId: { type: String, required: true, unique: true },
-	creator:{ type: String, required: true, unique: true },
-	startedAt: { type: Date, requried: true, unique: true },
-	endedAt:{type: Date, unique: true},
+	creator:{ type: String, required: true },
+	startedAt: { type: Date, requried: true },
+	endedAt:{type: Date },
 	members: [
 		{
 			user_id: { type: String, required: true },

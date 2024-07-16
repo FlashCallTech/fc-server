@@ -1,4 +1,7 @@
 import { getUserById } from "@/lib/actions/creator.actions";
+import { analytics } from "@/lib/firebase";
+import { useUser } from "@clerk/nextjs";
+import { logEvent } from "firebase/analytics";
 
 export const handleTransaction = async ({
 	duration,
@@ -31,6 +34,11 @@ export const handleTransaction = async ({
 		// console.log("clientID: ", clientId)
 
 		if (amountToBePaid && clientId) {
+			logEvent(analytics, 'call_duration', {
+                clientId: clientId,
+                duration: duration,
+            });
+			
 			const [existingTransaction] = await Promise.all([
 				fetch(`/api/v1/calls/transaction/getTransaction?callId=${chatId}`).then(
 					(res) => res.json()

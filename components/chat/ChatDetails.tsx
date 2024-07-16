@@ -2,34 +2,25 @@
 
 import { SelectedChat } from "@/types";
 import { useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ContentLoading from "../shared/ContentLoading";
 import { formatDateTime } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
 interface ChatDetailsProps {
-    selectedChat: SelectedChat;
+    creatorId: string | null;
 }
 
-const ChatDetails: React.FC<ChatDetailsProps> = ({ selectedChat }) => {
+const ChatDetails: React.FC<ChatDetailsProps> = ({ creatorId }) => {
     const { user } = useUser();
-    const [chats, setChats] = useState<SelectedChat[]>([]);
+    const [chats, setChats] = useState<SelectedChat[] | undefined>();
     const [loading, setLoading] = useState(true);
-    const [chatsCount, setChatsCount] = useState(8);
+    const endRef = useRef<HTMLDivElement | null>(null);
     const pathname = usePathname();
 
     useEffect(() => {
-        const handleScroll = () => {
-            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 2) {
-                setChatsCount((prevCount) => prevCount + 6);
-            }
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => {
-            window.removeEventListener("scroll", handleScroll);
-        };
-    }, []);
+        endRef.current?.scrollIntoView({ behavior: "instant" });
+    }, [chats]);
 
     useEffect(() => {
         const getChats = async () => {
@@ -38,18 +29,22 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({ selectedChat }) => {
                     `/api/v1/chats/getUserChats?userId=${String(user?.publicMetadata?.userId)}`
                 );
                 const data = await response.json();
-                setChats(data);
+    
+                const filteredChat: SelectedChat | undefined = data.find(function(element: any){
+                    return element.creator === creatorId;
+                });
+                
+                setChats(filteredChat ? [filteredChat] : undefined);
+
             } catch (error) {
                 console.warn(error);
             } finally {
-                setLoading(false); // Set loading to false after data is fetched
+                setLoading(false);
             }
         };
-
+    
         getChats();
-    }, [user]);
-
-    const visibleChats = chats.slice(0, chatsCount);
+    }, [user, creatorId]); 
 
     const formatDuration = (duration: number | undefined) => {
         const minutes = Math.floor(duration! / 60000);
@@ -64,13 +59,13 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({ selectedChat }) => {
             </section>
         );
     }
-
+    
     return (
         <section
-            className={`grid grid-cols-1 ${chats.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
+            className={`grid grid-cols-1 ${chats!.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
                 } items-center gap-5 xl:gap-10 w-full h-fit text-black px-4`}
         >
-            {selectedChat.chatDetails.map((chat, index) => {
+            {chats![0].chatDetails.map((chat, index) => {
                 const formattedDate = formatDateTime(chat.startedAt as Date);
                 const duration = formatDuration(chat.duration)
                 return (
@@ -99,9 +94,10 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({ selectedChat }) => {
                                 </span>
                             </div>
                         )}
-                    </div>
+                    </div> 
                 );
             })}
+            <div ref={endRef}></div>
         </section>
     )
 }
