@@ -20,7 +20,7 @@ import {
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "../ui/use-toast";
 import Script from "next/script";
-import { useCallTimerContext } from "@/lib/context/CallTimerContext";
+import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 
 const RechargeModal = ({
 	setWalletBalance,
@@ -34,7 +34,7 @@ const RechargeModal = ({
 	const [onGoingPayment, setOnGoingPayment] = useState(false);
 	const { toast } = useToast();
 	const { user } = useUser();
-	const { pauseTimer, resumeTimer } = useCallTimerContext();
+	const { pauseTimer, resumeTimer } = useChatTimerContext();
 	
 
 	useEffect(() => {
