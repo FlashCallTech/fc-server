@@ -140,14 +140,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					custom: {
 						description,
 					},
-					settings_override: {
-						limits: {
-							max_duration_seconds: maxCallDuration,
-							max_participants: 2,
-						},
-					},
 				},
 			});
+
+			// settings_override: {
+			// 	limits: {
+			// 		max_duration_seconds: maxCallDuration,
+			// 		max_participants: 2,
+			// 	},
+			// },
 
 			logEvent(analytics, "call_initiated", {
 				clientId: user?.publicMetadata?.usreId,

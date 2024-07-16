@@ -25,7 +25,7 @@ const HomePage = () => {
 		} finally {
 			setTimeout(() => {
 				setLoading(false);
-			}, 2500);
+			}, 1000);
 		}
 	}, []);
 
