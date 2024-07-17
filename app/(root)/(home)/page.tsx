@@ -30,7 +30,7 @@ const HomePage = () => {
 	}, []);
 
 	if (!creators || loading) return <PostLoader count={6} />;
-
+	console.log(creators);
 	return (
 		<section className="flex size-full flex-col gap-5 md:pb-14">
 			{/* <Experiment /> */}

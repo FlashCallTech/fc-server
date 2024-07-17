@@ -207,7 +207,10 @@ const MeetingRoom = () => {
 			</div>
 
 			{!callHasEnded && isMeetingOwner && (
-				<CallTimer handleCallRejected={handleCallRejected} />
+				<CallTimer
+					handleCallRejected={handleCallRejected}
+					isVideoCall={isVideoCall}
+				/>
 			)}
 
 			{/* Call Controls */}

@@ -19,7 +19,7 @@ const Success = ({
 	useEffect(() => {
 		setTimeout(() => {
 			router.push(`/${redirect}`);
-		}, 4000);
+		}, 2500);
 	}, [redirect, router]);
 
 	return (

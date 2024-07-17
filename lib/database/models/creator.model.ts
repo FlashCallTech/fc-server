@@ -27,6 +27,14 @@ const CreatorSchema = new Schema(
 	}
 );
 
+// Pre-save hook to round walletBalance to the nearest two decimals
+CreatorSchema.pre("save", function (next) {
+	if (this.isModified("walletBalance")) {
+		this.walletBalance = Math.round(this.walletBalance * 100) / 100;
+	}
+	next();
+});
+
 const Creator = models.Creator || model("Creator", CreatorSchema);
 
 export default Creator;
