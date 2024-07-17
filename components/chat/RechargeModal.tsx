@@ -185,7 +185,7 @@ const RechargeModal = ({
 			<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
 				<SheetTrigger asChild>
 					<Button
-						className="bg-red-500 mt-2 w-full hoverScaleEffect"
+						className="bg-[rgba(35,35,5,1)] text-white mt-2 w-full hoverScaleEffect"
 						onClick={() => setIsSheetOpen(true)}
 					>
 						Recharge
