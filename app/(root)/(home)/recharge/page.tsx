@@ -56,9 +56,11 @@ const About: React.FC = () => {
 			return;
 		}
 
-		const amount: number = totalPayable! * 100;
+		const totalPayableInPaise: number = totalPayable! * 100;
+		const amount: number = parseInt(totalPayableInPaise.toFixed(2));
 		const currency: string = "INR";
 		const receiptId: string = "kuchbhi";
+
 
 		try {
 			const response: Response = await fetch("/api/v1/order", {

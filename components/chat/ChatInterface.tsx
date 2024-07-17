@@ -18,10 +18,13 @@ import useMediaRecorder from "@/hooks/useMediaRecorder";
 import ChatTimer from "./ChatTimer";
 import EndCallDecision from "../calls/EndCallDecision";
 import useEndChat from "@/hooks/useEndChat";
+import ChatRecharge from "./RechargeInChat";
+import ContentLoading from "../shared/ContentLoading";
+import ChatTip from "./ChatTip";
 
 
 const ChatInterface: React.FC = () => {
-	const { handleEnd, chat, markMessagesAsSeen } = useEndChat();
+	const { handleEnd, chat, markMessagesAsSeen, loading } = useEndChat();
 	const { user } = useUser();
 	useUserStatus();
 	const {
@@ -50,6 +53,13 @@ const ChatInterface: React.FC = () => {
 	const audioContext = new AudioContext();
 	const { user2, chatId } = useEndChat();
 	const [messages, setMessages] = useState<{ text: string | null; img: string | null; audio: string | null; }[]>([]);
+
+	useEffect(() => {
+		updateDoc(doc(db, "chats", chatId as string), {
+			startedAt: Date.now(),
+			endedAt: null,
+		});
+	}, [])
 
 	useEffect(() => {
 		const fetchReceiverId = async () => {
@@ -286,6 +296,11 @@ const ChatInterface: React.FC = () => {
 
 	const handleDecisionDialog = async () => {
 		await handleEnd(chatId as string, user2);
+		if (loading) {
+			return (
+				<ContentLoading />
+			);
+		}
 		setShowDialog(false);
 		// isMeetingOwner && router.push(`/feedback/${call?.id}/${totalTimeUtilized}`);
 		// toast({
@@ -298,79 +313,80 @@ const ChatInterface: React.FC = () => {
 		setShowDialog(false);
 	};
 
-	
-
 	return (
-		<div
-			className="relative flex flex-col h-screen z-50"
-			style={{ backgroundBlendMode: "luminosity" }}
-		>
-			<div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center filter brightness-[0.25] blur-sx z-0" />
-			<div className="absolute inset-0 bg-gradient-to-b from-[#232323] via-[#464646] to-[#383c39] opacity-90 z-0" />
+		<>
+			{loading ? (
+				<ContentLoading />
+			) : (<div
+				className="relative flex flex-col h-screen z-50"
+				style={{ backgroundBlendMode: "luminosity" }}
+			>
+				<div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center filter brightness-[0.25] blur-sx z-0" />
+				<div className="absolute inset-0 bg-gradient-to-b from-[#232323] via-[#464646] to-[#383c39] opacity-90 z-0" />
 
-			<div className="relative flex flex-col h-full z-10">
-				<div className="sticky top-0 left-0 flex justify-between items-center px-5 py-4 bg-[#2c2c2c]">
-					<div className="flex items-center gap-2">
-						<Image
-							src={user2?.photo || "/avatar.svg"}
-							alt="profile"
-							width={40}
-							height={40}
-							className="rounded-full"
-						/>
-						<div className="flex flex-col">
-							<p
-								className="text-sm leading-4"
-								style={{ color: "rgba(112, 112, 112, 1)" }}
-							>
-								Ongoing chat with
-							</p>
-							<div className="text-white font-bold leading-6 text-xl">
-								{user2?.fullName || "Username"}
+				<div className="relative flex flex-col h-full z-10">
+					<div className="sticky top-0 left-0 flex justify-between items-center px-5 py-4 bg-[#2c2c2c]">
+						<div className="flex items-center gap-2">
+							<Image
+								src={user2?.photo || "/avatar.svg"}
+								alt="profile"
+								width={40}
+								height={40}
+								className="rounded-full"
+							/>
+							<div className="flex flex-col">
+								<p
+									className="text-sm leading-4"
+									style={{ color: "rgba(112, 112, 112, 1)" }}
+								>
+									Ongoing chat with
+								</p>
+								<div className="text-white font-bold leading-6 text-xl">
+									{user2?.fullName || "Username"}
+								</div>
 							</div>
 						</div>
+						<button
+							onClick={endCall}
+							className="bg-[rgba(255,81,81,1)] text-white px-4 py-3 rounded-lg"
+						>
+							End Chat
+						</button>
+
 					</div>
-					<button
-						onClick={endCall}
-						className="bg-[rgba(255,81,81,1)] text-white px-4 py-3 rounded-lg"
-					>
-						End Chat
-					</button>
+					{showDialog && (
+						<EndCallDecision
+							handleDecisionDialog={handleDecisionDialog}
+							setShowDialog={handleCloseDialog}
+						/>
+					)}
+					<ChatTimer endCall={endCall} />
+					<div className="w-1/4 mx-auto text-center bg-[rgba(255,255,255,0.24)] py-1 text-white text-xs leading-6 font-bold rounded-lg mt-2 mb-4">
+						07 Dec 2024
+					</div>
 
-				</div>
-				{showDialog && (
-					<EndCallDecision
-						handleDecisionDialog={handleDecisionDialog}
-						setShowDialog={handleCloseDialog}
+					<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
+
+					<ChatTip />
+
+					<ChatRecharge />
+
+					<ChatInput
+						isRecording={isRecording}
+						discardAudio={discardAudio}
+						text={text}
+						setText={setText}
+						handleImg={handleImg}
+						handleSend={handleSend}
+						toggleRecording={toggleRecording}
+						img={img}
+						audio={audio}
+						audioStream={audioStream!}
+						audioContext={audioContext}
 					/>
-				)}
-				<ChatTimer endCall={endCall} />
-				<div className="w-1/4 mx-auto text-center bg-[rgba(255,255,255,0.24)] py-1 text-white text-xs leading-6 font-bold rounded-lg mt-2 mb-4">
-					07 Dec 2024
 				</div>
-
-				<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
-
-				{/* <div className="flex justify-between items-center p-4 bg-[rgba(255,255,255,0.24)] mb-3">
-                    <div className="leading-5 font-normal text-white">Recharge to continue this <br /> Audio call.</div>
-                    <RechargeModal setWalletBalance={setWalletBalance} />
-                </div> */}
-
-				<ChatInput
-					isRecording={isRecording}
-					discardAudio={discardAudio}
-					text={text}
-					setText={setText}
-					handleImg={handleImg}
-					handleSend={handleSend}
-					toggleRecording={toggleRecording}
-					img={img}
-					audio={audio}
-					audioStream={audioStream!}
-					audioContext={audioContext}
-				/>
-			</div>
-		</div>
+			</div>)}
+		</>
 	);
 };
 

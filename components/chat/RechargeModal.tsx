@@ -20,19 +20,21 @@ import {
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "../ui/use-toast";
 import Script from "next/script";
-import { useCallTimerContext } from "@/lib/context/CallTimerContext";
+import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 
 const RechargeModal = ({
 	setWalletBalance,
+	walletBalance,
 }: {
 	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
+	walletBalance: number;
 }) => {
 	const [rechargeAmount, setRechargeAmount] = useState("");
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
 	const [onGoingPayment, setOnGoingPayment] = useState(false);
 	const { toast } = useToast();
 	const { user } = useUser();
-	const { pauseTimer, resumeTimer } = useCallTimerContext();
+	const { pauseTimer, resumeTimer } = useChatTimerContext();
 	
 
 	useEffect(() => {
@@ -183,7 +185,7 @@ const RechargeModal = ({
 			<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
 				<SheetTrigger asChild>
 					<Button
-						className="bg-red-500 mt-2 w-full hoverScaleEffect"
+						className="bg-[rgba(35,35,5,1)] text-white mt-2 w-full hoverScaleEffect"
 						onClick={() => setIsSheetOpen(true)}
 					>
 						Recharge

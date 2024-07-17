@@ -325,8 +325,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
 			if (!existingChatDoc.exists()) {
 				await setDoc(doc(db, "chats", chatId), {
-					startedAt: Date.now(),
-					endedAt: null,
+					// startedAt: Date.now(),
+					// endedAt: null,
 					clientId: chatRequest.clientId,
 					creatorId: chatRequest.creatorId,
 					status: "active",
@@ -359,12 +359,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}
 				);
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
-			} else {
-				await updateDoc(doc(db, "chats", chatId), {
-					startedAt: Date.now(),
-					endedAt: null,
-				});
-			}
+			} 
+			// else {
+			// 	await updateDoc(doc(db, "chats", chatId), {
+			// 		startedAt: Date.now(),
+			// 		endedAt: null,
+			// 	});
+			// }
 
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
 				status: "accepted",
@@ -439,7 +440,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					router.push(
 						`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
 					);
-				}, 3000);
+				}, 1000);
 			}
 		});
 
