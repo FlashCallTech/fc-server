@@ -20,6 +20,7 @@ import EndCallDecision from "../calls/EndCallDecision";
 import useEndChat from "@/hooks/useEndChat";
 import ChatRecharge from "./RechargeInChat";
 import ContentLoading from "../shared/ContentLoading";
+import ChatTip from "./ChatTip";
 
 
 const ChatInterface: React.FC = () => {
@@ -365,6 +366,8 @@ const ChatInterface: React.FC = () => {
 					</div>
 
 					<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
+
+					<ChatTip />
 
 					<ChatRecharge />
 
