@@ -24,10 +24,8 @@ import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 
 const RechargeModal = ({
 	setWalletBalance,
-	walletBalance,
 }: {
 	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
-	walletBalance: number;
 }) => {
 	const [rechargeAmount, setRechargeAmount] = useState("");
 	const [isSheetOpen, setIsSheetOpen] = useState(false);

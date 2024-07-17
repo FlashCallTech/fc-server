@@ -5,16 +5,20 @@ import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 import { useToast } from "../ui/use-toast";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import RechargeModal from "./RechargeModal";
+import TipModal from "./TipModal";
 
 const CallTimer = ({
+	isVideoCall,
 	handleCallRejected,
 }: {
 	handleCallRejected: () => Promise<void>;
+	isVideoCall: boolean;
 }) => {
 	const { timeLeft, hasLowBalance } = useCallTimerContext();
 	const [isToastShown, setIsToastShown] = useState(false);
 	const { toast } = useToast();
-	const { walletBalance, setWalletBalance } = useWalletBalanceContext();
+	const { walletBalance, setWalletBalance, updateWalletBalance } =
+		useWalletBalanceContext();
 
 	const timeLeftInSeconds = parseFloat(timeLeft);
 	const isLoading = isNaN(timeLeftInSeconds);
@@ -52,11 +56,14 @@ const CallTimer = ({
 					Time Left: {minutes}:{seconds}
 				</p>
 			)}
-			{/* <p>Balance: Rs. {walletBalance.toFixed(2)}</p> */}
-			{hasLowBalance && (
-				<RechargeModal
+			{hasLowBalance ? (
+				<RechargeModal setWalletBalance={setWalletBalance} />
+			) : (
+				<TipModal
 					walletBalance={walletBalance}
 					setWalletBalance={setWalletBalance}
+					updateWalletBalance={updateWalletBalance}
+					isVideoCall={isVideoCall}
 				/>
 			)}
 		</div>

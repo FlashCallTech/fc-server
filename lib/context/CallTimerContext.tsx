@@ -107,7 +107,6 @@ export const CallTimerProvider = ({
 
 				setTimeLeft(newTimeLeft > 0 ? newTimeLeft : 0);
 				setTotalTimeUtilized(timeUtilized);
-
 				if (newTimeLeft <= 0) {
 					clearInterval(intervalId);
 					// endCall();

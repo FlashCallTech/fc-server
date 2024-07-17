@@ -186,7 +186,7 @@ const EditProfile = ({
 					name="bio"
 					render={({ field }) => (
 						<FormItem className="w-full">
-							<FormLabel className="text-2xl font-semibold">
+							<FormLabel>
 								{userData?.bio?.length === 0 ? "Add" : "Edit"} Description
 							</FormLabel>
 							<FormControl>
