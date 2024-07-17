@@ -38,6 +38,7 @@ const useEndChat = () => {
     const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
     const [endedAt, setEndedAt] = useState<number>();
     const [startedAt, setStartedAt] = useState<number>();
+    const [loading, setLoading] = useState(false);
     const hasCHatEnded = useRef(false)
     useEffect(() => {
         const storedCreator = localStorage.getItem("currentCreator");
@@ -99,6 +100,7 @@ const useEndChat = () => {
 
     const handleEnd = async (chatId: string | string[], user2: User2 | undefined) => {
         try {
+            setLoading(true)
             const now = Date.now();
 
             await updateDoc(doc(db, "chats", chatId as string), {
@@ -124,7 +126,7 @@ const useEndChat = () => {
         }
     };
 
-    return { chatId, chatEnded, handleEnd, user2, startedAt, endedAt, chat, markMessagesAsSeen, chatRatePerMinute };
+    return { chatId, chatEnded, handleEnd, user2, startedAt, endedAt, chat, markMessagesAsSeen, chatRatePerMinute, loading };
 }
 
 export default useEndChat

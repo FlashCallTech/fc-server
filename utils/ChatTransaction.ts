@@ -24,12 +24,15 @@ export const handleTransaction = async ({
 	const creatorId = "664c90ae43f0af8f1b3d5803";
 
 	try {
+		const roundToNearestThousand = (num: number) => {
+			return Math.round(num / 1000) * 1000;
+		}
 		const creator = await getUserById(creatorId);
 		const rate = creator.chatRate;
 		const amountToBePaid = (
-			(parseInt(duration, 10) / (1000 * 60)) *
+			(roundToNearestThousand(parseInt(duration, 10)) / (1000 * 60)) *
 			rate
-		).toFixed(2);
+		).toFixed(1);
 		// console.log("amount paid", amountToBePaid);
 		// console.log("clientID: ", clientId)
 
@@ -56,7 +59,6 @@ export const handleTransaction = async ({
 					}),
 				});
 			} else {
-				console.log("3")
 				// Create a new document if no existing document is found
 				await fetch("/api/v1/calls/transaction/create", {
 					method: "POST",
@@ -72,7 +74,7 @@ export const handleTransaction = async ({
 
 			await Promise.all([
 				fetch("/api/v1/wallet/payout", {
-					method: "POST",
+					method: "POST",	
 					body: JSON.stringify({
 						userId: clientId,
 						userType: "Client",
@@ -100,5 +102,6 @@ export const handleTransaction = async ({
 		router.push("/");
 	} finally {
 		updateWalletBalance();
+		localStorage.removeItem("user2");
 	}
 };
