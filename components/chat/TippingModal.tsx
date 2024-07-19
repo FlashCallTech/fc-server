@@ -12,14 +12,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-    PaymentFailedResponse,
-    PaymentResponse,
-    RazorpayOptions,
-} from "@/types";
-import { useUser } from "@clerk/nextjs";
 import { useToast } from "../ui/use-toast";
-import Script from "next/script";
 import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 import useEndChat from "@/hooks/useEndChat";
 
@@ -37,10 +30,9 @@ const TippingModal = ({
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [onGoingPayment, setOnGoingPayment] = useState(false);
     const { toast } = useToast();
-    const { user } = useUser();
     const { pauseTimer, resumeTimer } = useChatTimerContext();
     const { user2 } = useEndChat();
-    const { totalTimeUtilized, chatRatePerMinute, timeLeft } = useChatTimerContext();
+    const { totalTimeUtilized, chatRatePerMinute} = useChatTimerContext();
 
 
     useEffect(() => {
@@ -51,20 +43,12 @@ const TippingModal = ({
         }
     }, [isSheetOpen, onGoingPayment, pauseTimer, resumeTimer]);
 
-    const subtotal: number | null =
-        tipAmount !== null ? parseInt(tipAmount) : null;
-
-
     const TipHandler = async (
         e: React.MouseEvent<HTMLButtonElement, MouseEvent>
     ): Promise<void> => {
         e.preventDefault();
 
-        setIsSheetOpen(false); // Close the sheet
-
-        console.log(walletBalance)
-        console.log(parseInt(tipAmount, 10))
-        console.log(((totalTimeUtilized / 60) * chatRatePerMinute).toFixed(2))
+        setIsSheetOpen(false);
 
         try {
             setOnGoingPayment(true);

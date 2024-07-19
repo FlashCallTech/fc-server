@@ -12,20 +12,18 @@ import { useUser } from '@clerk/nextjs';
 
 const Page = () => {
     const [queryParams, setQueryParams] = useState<{ clientId: string | null, creatorId: string | null }>({ clientId: null, creatorId: null });
+    const [check, setCheck] = useState(true);
     const { duration } = useChat();
     const { chatEnded, user2, chatId, handleEnd } = useEndChat();
     const {updateWalletBalance} = useWalletBalanceContext();
-    const [check, setCheck] = useState(true);
+    const {toast} = useToast()
+    const {user} = useUser()
     const clientId = user2?.clientId;
     const router = useRouter();
-    const {toast} = useToast()
     let isTabClosing = false;
-    const {user} = useUser()
 
     const handleTabCloseWarning = (event: BeforeUnloadEvent) => {
-        // This line is necessary for the warning to appear
         event.preventDefault();
-        event.returnValue = '';
         isTabClosing = true;
     };
 
@@ -44,10 +42,8 @@ const Page = () => {
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-
         const clientId = params.get('clientId');
         const creatorId = params.get('creatorId');
-
         setQueryParams({ clientId, creatorId });
     }, []);
 
