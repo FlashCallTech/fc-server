@@ -39,6 +39,7 @@ const TipModal = ({
 	const [predefinedOptions, setPredefinedOptions] = useState<string[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [tipPaid, setTipPaid] = useState(false);
+	const [errorMessage, setErrorMessage] = useState("");
 
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
 	const { toast } = useToast();
@@ -134,6 +135,20 @@ const TipModal = ({
 		setRechargeAmount("");
 		setLoading(false);
 		setTipPaid(false);
+		setErrorMessage("");
+	};
+
+	const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const amount = e.target.value;
+		setRechargeAmount(amount);
+
+		if (parseInt(amount) > adjustedWalletBalance) {
+			setErrorMessage(
+				"Insufficient wallet balance. Please enter a lower amount."
+			);
+		} else {
+			setErrorMessage("");
+		}
 	};
 
 	return (
@@ -187,8 +202,11 @@ const TipModal = ({
 									type="number"
 									placeholder="Enter recharge amount"
 									value={rechargeAmount}
-									onChange={(e) => setRechargeAmount(e.target.value)}
+									onChange={handleAmountChange}
 								/>
+								{errorMessage && (
+									<p className="text-red-500 text-sm">{errorMessage}</p>
+								)}
 							</div>
 							<div className="flex flex-col items-start justify-center">
 								<span className="text-sm">Predefined Options</span>
@@ -211,6 +229,7 @@ const TipModal = ({
 								<Button
 									className="bg-green-1 text-white"
 									onClick={handleTransaction}
+									disabled={parseInt(rechargeAmount) > adjustedWalletBalance}
 								>
 									Proceed
 								</Button>
