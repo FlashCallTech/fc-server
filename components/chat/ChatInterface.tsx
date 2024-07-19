@@ -37,6 +37,7 @@ const ChatInterface: React.FC = () => {
 		mediaRecorderRef,
 		setIsRecording,
 	} = useMediaRecorder();
+	const { user2, chatId } = useEndChat();
 	const [text, setText] = useState("");
 	const [isImgUploading, setIsImgUploading] = useState(false);
 	const [isAudioUploading, setIsAudioUploading] = useState(false);
@@ -51,7 +52,6 @@ const ChatInterface: React.FC = () => {
 	});
 	const [receiverId, setReceiverId] = useState(null);
 	const audioContext = new AudioContext();
-	const { user2, chatId } = useEndChat();
 	const [messages, setMessages] = useState<{ text: string | null; img: string | null; audio: string | null; }[]>([]);
 
 	useEffect(() => {
@@ -82,13 +82,11 @@ const ChatInterface: React.FC = () => {
 				console.error("Error fetching receiver ID:", error);
 			}
 		};
-
 		fetchReceiverId();
 	}, [chatId, user?.publicMetadata?.userId, messages, db]);
 
 	useEffect(() => {
 		if (!receiverId) return;
-
 		const unsubscribe = onSnapshot(
 			doc(db, "userchats", receiverId),
 			(docSnapshot) => {
@@ -101,7 +99,6 @@ const ChatInterface: React.FC = () => {
 				}
 			}
 		);
-
 		return () => unsubscribe();
 	}, [receiverId, db]);
 
@@ -124,16 +121,13 @@ const ChatInterface: React.FC = () => {
 
 	const handleSend = async () => {
 		if (text === "" && !img.file && !audio.file) return;
-
 		let imgUrl: string | null = null;
 		let audioUrl: string | null = null;
-
 		try {
 			if (!chatId) {
 				console.log("invalid chatId");
 				return;
 			}
-
 			if (img.file) {
 				setIsImgUploading(true);
 				imgUrl = await upload(img.file, "image");
@@ -144,7 +138,6 @@ const ChatInterface: React.FC = () => {
 				audioUrl = await handleAudio();
 				setIsAudioUploading(false);
 			}
-
 			await updateDoc(doc(db, "chats", chatId as string), {
 				messages: arrayUnion({
 					senderId: user?.publicMetadata?.userId as string,
@@ -155,19 +148,15 @@ const ChatInterface: React.FC = () => {
 					audio: audioUrl,
 				}),
 			});
-
 			setMessages(prevMessages => [...prevMessages, { text: null, img: imgUrl, audio: audioUrl }]);
-
 			const userIDs = [
 				user2?.clientId as string,
 				user2?.creatorId as string
 			];
-
 			userIDs.forEach(async (id) => {
 				if (!id) return;
 				const userChatsRef = doc(db, "userchats", id);
 				const userChatsSnapshot = await getDoc(userChatsRef);
-
 				if (userChatsSnapshot.exists()) {
 					const userChatsData = userChatsSnapshot.data();
 					const chatIndex = userChatsData.chats.findIndex(
