@@ -11,6 +11,11 @@ export const sidebarLinks = [
 	},
 
 	{
+		imgURL: "/images/favorites.png",
+		route: "/favorites",
+		label: "Favorites",
+	},
+	{
 		imgURL: "/secure.svg",
 		route: "/support",
 		label: "Support",
