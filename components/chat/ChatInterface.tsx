@@ -18,9 +18,9 @@ import useMediaRecorder from "@/hooks/useMediaRecorder";
 import ChatTimer from "./ChatTimer";
 import EndCallDecision from "../calls/EndCallDecision";
 import useEndChat from "@/hooks/useEndChat";
-import ChatRecharge from "./RechargeInChat";
 import ContentLoading from "../shared/ContentLoading";
-import ChatTip from "./ChatTip";
+;
+import RechargeAndTip from "./RechargeAndTip";
 
 
 const ChatInterface: React.FC = () => {
@@ -356,9 +356,7 @@ const ChatInterface: React.FC = () => {
 
 					<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
 
-					<ChatTip />
-
-					<ChatRecharge />
+					<RechargeAndTip />
 
 					<ChatInput
 						isRecording={isRecording}
