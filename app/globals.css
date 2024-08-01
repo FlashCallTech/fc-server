@@ -247,4 +247,17 @@
 	.text-balance {
 		text-wrap: balance;
 	}
+
+	/* File uploader */
+	.file_uploader-img {
+		@apply h-44 w-44 rounded-full object-cover;
+	}
+
+	.file_uploader-label {
+		@apply text-[#5C5C7B] text-center text-[14px] font-normal leading-[140%] w-full p-4;
+	}
+
+	.file_uploader-box {
+		@apply flex flex-col items-center justify-center bg-gray-50 p-7 h-80 lg:h-[350px] w-full;
+	}
 }

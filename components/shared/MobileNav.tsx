@@ -12,52 +12,61 @@ import {
 } from "@/components/ui/sheet";
 import { sidebarLinks } from "@/constants";
 import { cn } from "@/lib/utils";
-import { useClerk, useUser } from "@clerk/nextjs";
+import { useClerk } from "@clerk/nextjs";
 import { Button } from "../ui/button";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const MobileNav = () => {
 	const pathname = usePathname();
-	const { user } = useUser();
+	const { currentUser, setCurrentUser } = useCurrentUsersContext();
 	const { signOut } = useClerk();
-
+	const handleSignout = () => {
+		localStorage.removeItem("userType");
+		setCurrentUser(null);
+		signOut({ redirectUrl: "/" });
+	};
 	return (
 		<section className="w-full  relative">
 			<Sheet>
 				<SheetTrigger asChild>
 					<Image
-						src={user?.imageUrl || "/images/defaultProfile.png"}
+						src={currentUser?.photo || "/images/defaultProfile.png"}
 						alt="Profile"
 						width={1000}
 						height={1000}
-						className="rounded-full w-10 h-10 mx-auto cursor-pointer hoverScaleEffect"
+						className="rounded-full w-11 h-11 object-cover mx-auto cursor-pointer hoverScaleDownEffect"
 					/>
 				</SheetTrigger>
 				<SheetContent
 					side="right"
 					className="border-none bg-dark-1 rounded-l-xl h-full"
 				>
-					<div
-						className={`flex gap-4 items-center rounded-lg   lg:px-2 justify-start  `}
-					>
-						<Image
-							src={user?.imageUrl || "/images/defaultProfile.png"}
-							alt="Profile"
-							width={24}
-							height={24}
-							className="rounded-full w-full max-w-[56px]"
-						/>
-						<div className="flex flex-col items-start justify-center text-white">
-							<span className="text-lg capitalize">
-								{user?.fullName || user?.username}
-							</span>
-							<span className="text-sm text-green-1">
-								{user?.primaryPhoneNumber?.phoneNumber ||
-									`@${user?.username} || "Authenticate"`}
-							</span>
-						</div>
-					</div>
 					<div className="flex h-[calc(100vh-72px)]  flex-col justify-between overflow-y-auto">
-						<div className="w-full border border-gray-500 my-10" />
+						<SheetClose asChild>
+							<Link
+								href={`/profile/${currentUser?._id}`}
+								className={`flex gap-4 items-center rounded-lg hoverScaleDownEffect lg:px-2 justify-start`}
+							>
+								<Image
+									src={currentUser?.photo || "/images/defaultProfile.png"}
+									alt="Profile"
+									width={1000}
+									height={1000}
+									className="rounded-full w-full max-w-[56px]"
+								/>
+								<div className="flex flex-col items-start justify-center text-white">
+									<span className="text-lg capitalize">
+										{currentUser?.firstName + " " + currentUser?.lastName ||
+											currentUser?.username}
+									</span>
+									<span className="text-sm text-green-1">
+										{currentUser?.phone ||
+											`@${currentUser?.username} || "Authenticate"`}
+									</span>
+								</div>
+							</Link>
+						</SheetClose>
+						<div className="w-full border border-gray-500 my-7" />
 						<SheetClose asChild>
 							<section className="flex h-full items-start flex-col gap-6 text-white">
 								{sidebarLinks.map((item) => {
@@ -92,7 +101,7 @@ const MobileNav = () => {
 									className={cn(
 										"absolute bottom-4 md:bottom-6 flex gap-4 items-center p-6 rounded-lg w-[85%] bg-green-1 outline-none focus:ring-0 hoverScaleDownEffect"
 									)}
-									onClick={() => signOut({ redirectUrl: "/" })}
+									onClick={() => handleSignout()}
 								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"

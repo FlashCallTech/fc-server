@@ -1,4 +1,4 @@
-import { getUserById } from "@/lib/actions/creator.actions";
+import { getCreatorById } from "@/lib/actions/creator.actions";
 import { analytics } from "@/lib/firebase";
 import { useUser } from "@clerk/nextjs";
 import { logEvent } from "firebase/analytics";
@@ -26,8 +26,8 @@ export const handleTransaction = async ({
 	try {
 		const roundToNearestThousand = (num: number) => {
 			return Math.round(num / 1000) * 1000;
-		}
-		const creator = await getUserById(creatorId);
+		};
+		const creator = await getCreatorById(creatorId);
 		const rate = creator.chatRate;
 		const amountToBePaid = (
 			(roundToNearestThousand(parseInt(duration, 10)) / (1000 * 60)) *
@@ -37,11 +37,11 @@ export const handleTransaction = async ({
 		// console.log("clientID: ", clientId)
 
 		if (amountToBePaid && clientId) {
-			logEvent(analytics, 'call_duration', {
-                clientId: clientId,
-                duration: duration,
-            });
-			
+			logEvent(analytics, "call_duration", {
+				clientId: clientId,
+				duration: duration,
+			});
+
 			const [existingTransaction] = await Promise.all([
 				fetch(`/api/v1/calls/transaction/getTransaction?callId=${chatId}`).then(
 					(res) => res.json()
@@ -74,7 +74,7 @@ export const handleTransaction = async ({
 
 			await Promise.all([
 				fetch("/api/v1/wallet/payout", {
-					method: "POST",	
+					method: "POST",
 					body: JSON.stringify({
 						userId: clientId,
 						userType: "Client",

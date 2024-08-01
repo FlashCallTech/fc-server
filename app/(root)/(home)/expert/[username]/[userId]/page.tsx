@@ -2,7 +2,7 @@
 
 import CreatorCard from "@/components/creator/CreatorCard";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
-import { getUserById } from "@/lib/actions/creator.actions";
+import { getCreatorById } from "@/lib/actions/creator.actions";
 import { analytics } from "@/lib/firebase";
 import { useUser } from "@clerk/nextjs";
 import { logEvent } from "firebase/analytics";
@@ -29,7 +29,7 @@ const CreatorProfile = () => {
 	useEffect(() => {
 		const getCreator = async () => {
 			try {
-				const response = await getUserById(String(userId));
+				const response = await getCreatorById(String(userId));
 				setCreator(response);
 			} catch (error) {
 				console.log(error);

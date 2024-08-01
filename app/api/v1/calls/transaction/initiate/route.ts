@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserById } from "@/lib/actions/creator.actions";
+import { getCreatorById } from "@/lib/actions/creator.actions";
 
 export async function POST(req: Request) {
 	try {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 			fetch(
 				`${baseUrl}/api/v1/calls/transaction/getTransaction?callId=${callId}`
 			).then((res) => res.json()),
-			getUserById(creatorId),
+			getCreatorById(creatorId),
 		]);
 
 		if (transactionResponse) {

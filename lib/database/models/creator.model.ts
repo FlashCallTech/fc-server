@@ -2,6 +2,7 @@ import { Schema, model, models } from "mongoose";
 
 const CreatorSchema = new Schema(
 	{
+		clerkId: { type: String, unique: true },
 		username: { type: String, required: true, unique: true },
 		phone: { type: String, required: true, unique: true },
 		fullName: { type: String },
@@ -21,6 +22,7 @@ const CreatorSchema = new Schema(
 		referralId: { type: String, unique: true },
 		referredBy: { type: String, default: null },
 		referralAmount: { type: Number, default: 0 },
+		creatorId: { type: String, unique: true },
 	},
 	{
 		timestamps: true,

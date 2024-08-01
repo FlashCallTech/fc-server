@@ -13,7 +13,7 @@ import FeedbackCheck from "../feedbacks/FeedbackCheck";
 
 const CallListMobile = () => {
 	const [calls, setCalls] = useState<RegisterCallParams[]>([]);
-	const [callsCount, setCallsCount] = useState(8);
+	const [callsCount, setCallsCount] = useState(10);
 	const [loading, setLoading] = useState(true);
 	const { user } = useUser();
 	const pathname = usePathname();

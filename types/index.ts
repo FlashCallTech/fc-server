@@ -13,6 +13,7 @@ export type CreateUserParams = {
 
 export type UpdateUserParams = {
 	id?: string;
+	clerkId?: string;
 	fullName?: string;
 	firstName: string;
 	lastName: string;
@@ -21,6 +22,9 @@ export type UpdateUserParams = {
 	photo: string;
 	bio?: string;
 	role?: string;
+	gender?: string;
+	dob?: string;
+	creatorId?: string;
 };
 
 export type clientUser = {
@@ -31,6 +35,10 @@ export type clientUser = {
 	photo: string;
 	phone: string;
 	walletBalance: number;
+	bio: string;
+	gender?: string;
+	dob?: string;
+	creatorId?: string;
 };
 
 // Creator Params
@@ -51,27 +59,36 @@ export type creatorUser = {
 	audioRate: string;
 	chatRate: string;
 	kyc_status: string;
+	walletBalance: number;
 	referralId: string;
 	referredBy: string;
 	referralAmount: number;
+	creatorId?: string;
 };
 
 export type CreateCreatorParams = {
 	_id?: string;
+	clerkId?: string;
+	fullName?: string;
 	firstName?: string;
 	lastName?: string;
 	username: string;
 	photo: string;
 	phone: any;
-	profession: string;
-	themeSelected: string;
+	profession?: string;
+	themeSelected?: string;
+	videoRate?: string;
+	audioRate?: string;
+	chatRate?: string;
 	gender?: string;
 	dob?: string;
 	bio?: string;
-	kyc_status: string;
-	referralId: string;
-	referredBy: string;
-	referralAmount: number;
+	kyc_status?: string;
+	walletBalance: number;
+	referralId?: string;
+	referredBy?: string;
+	referralAmount?: number;
+	creatorId?: string;
 };
 
 export type UpdateCreatorParams = {
@@ -91,7 +108,9 @@ export type UpdateCreatorParams = {
 	gender?: string;
 	dob?: string;
 	bio?: string;
-	kyc_status: string;
+	kyc_status?: string;
+	walletBalance?: number;
+	creatorId?: string;
 };
 
 // Feedback Params
