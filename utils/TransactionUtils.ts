@@ -1,4 +1,4 @@
-import { getUserById } from "@/lib/actions/creator.actions";
+import { getCreatorById } from "@/lib/actions/creator.actions";
 import { analytics } from "@/lib/firebase";
 import { logEvent } from "firebase/analytics";
 
@@ -43,7 +43,7 @@ export const handleTransaction = async ({
 			fetch(`/api/v1/calls/transaction/getTransaction?callId=${callId}`).then(
 				(res) => res.json()
 			),
-			getUserById(creatorId),
+			getCreatorById(creatorId),
 		]);
 
 		if (transactionResponse) {
@@ -51,6 +51,12 @@ export const handleTransaction = async ({
 				title: "Transaction Done",
 				description: "Redirecting ...",
 			});
+
+			const activeCallId = localStorage.getItem("activeCallId");
+
+			// remove the activeCallId after transaction is done otherwise user will be redirected to this page and then transactons will take place
+			activeCallId && localStorage.removeItem("activeCallId");
+
 			return;
 		}
 
@@ -63,16 +69,6 @@ export const handleTransaction = async ({
 		const amountToBePaid = ((parseInt(duration, 10) / 60) * rate).toFixed(2);
 
 		await Promise.all([
-			fetch("/api/v1/calls/transaction/create", {
-				method: "POST",
-				body: JSON.stringify({
-					callId,
-					amountPaid: amountToBePaid,
-					isDone: true,
-					callDuration: parseInt(duration, 10),
-				}),
-				headers: { "Content-Type": "application/json" },
-			}),
 			fetch("/api/v1/wallet/payout", {
 				method: "POST",
 				body: JSON.stringify({
@@ -91,9 +87,19 @@ export const handleTransaction = async ({
 				}),
 				headers: { "Content-Type": "application/json" },
 			}),
+			fetch("/api/v1/calls/transaction/create", {
+				method: "POST",
+				body: JSON.stringify({
+					callId,
+					amountPaid: amountToBePaid,
+					isDone: true,
+					callDuration: parseInt(duration, 10),
+				}),
+				headers: { "Content-Type": "application/json" },
+			}),
 		]);
 
-		// remove the activeCallId after transaction is done otherwise user will be redirected to this page and then transactons will take place
+		// remove the activeCallId after transaction is done otherwise user will be redirected to meeting's page and then transactons will take place
 		localStorage.removeItem("activeCallId");
 		logEvent(analytics, "call_ended", {
 			callId: call.id,

@@ -84,22 +84,23 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			setMeetingState(undefined);
 			const members = [
+				// creator
 				{
-					user_id: "6687f5eeb51cc5626f5db5ea",
-					// user_id: "66681d96436f89b49d8b498b",
+					user_id: creator?._id,
 					custom: {
 						name: String(creator.username),
 						type: "expert",
-						image: creator.photo,
+						image: creator.photo || "/images/defaultProfile.png",
 					},
 					role: "call_member",
 				},
+				// client
 				{
 					user_id: String(user?.publicMetadata?.userId),
 					custom: {
 						name: String(user.username),
 						type: "client",
-						image: user.imageUrl,
+						image: (user?.unsafeMetadata?.photo as string) || user.imageUrl,
 					},
 					role: "admin",
 				},
@@ -359,7 +360,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}
 				);
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
-			} 
+			}
 			// else {
 			// 	await updateDoc(doc(db, "chats", chatId), {
 			// 		startedAt: Date.now(),

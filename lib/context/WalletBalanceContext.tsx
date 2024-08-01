@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import { getUserById } from "../actions/client.actions";
 import Loader from "@/components/shared/Loader";
+import { getCreatorById } from "../actions/creator.actions";
 
 interface WalletBalanceContextProps {
 	walletBalance: number;
@@ -40,12 +41,20 @@ export const WalletBalanceProvider = ({
 
 	const { user, isLoaded } = useUser();
 
+	const storedUserType = localStorage.getItem("userType");
+	const userType = storedUserType ? storedUserType : null;
+
+	let isCreator =
+		userType === "creator" ||
+		(user?.publicMetadata?.role as string) === "creator";
+	let userId = user?.publicMetadata?.userId as string;
+
 	const fetchCurrentUser = async () => {
 		try {
 			setLoading(true);
-			const response = await getUserById(
-				user?.publicMetadata?.userId as string
-			);
+			const response = isCreator
+				? await getCreatorById(userId)
+				: await getUserById(userId);
 			setWalletBalance(response.walletBalance || 0);
 		} catch (error) {
 			console.error("Error fetching current user:", error);

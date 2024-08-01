@@ -21,7 +21,7 @@ export const tokenProvider = async () => {
 	const userData = {
 		id: userId,
 		name: user.username || userId,
-		image: user.imageUrl,
+		image: (user?.unsafeMetadata?.photo as string) || user.imageUrl,
 		role: "admin",
 	};
 
