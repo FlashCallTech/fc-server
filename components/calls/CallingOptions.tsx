@@ -24,6 +24,7 @@ import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import useChat from "@/hooks/useChat";
 import ContentLoading from "../shared/ContentLoading";
+import { getUserById } from "@/lib/actions/client.actions";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -46,12 +47,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [chatRequest, setChatRequest] = useState<any>(null);
 	const [isSheetOpen, setSheetOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
 	const clientId = user?.publicMetadata?.userId as string;
 	const storedCallId = localStorage.getItem("activeCallId");
 	const { createChat } = useChat();
+
 
 	const handleCallAccepted = async (call: Call) => {
 		toast({
@@ -106,11 +107,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
-					? `Video Call With Expert ${creator.username}`
-					: `Audio Call With Expert ${creator.username}`
-			}`;
+			const description = `${callType === "video"
+				? `Video Call With Expert ${creator.username}`
+				: `Audio Call With Expert ${creator.username}`
+				}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -192,10 +192,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		});
 
 		if (!user) router.push("sign-in");
-		let maxCallDuration =
-			(walletBalance / parseInt(creator?.chatRate, 10)) * 60; // in seconds
-		maxCallDuration =
-			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+		let maxCallDuration = (walletBalance / parseInt(creator?.chatRate, 10)) * 60; // in seconds
+		maxCallDuration = maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
 		// Check if maxCallDuration is less than 5 minutes (300 seconds)
 		if (maxCallDuration < 60) {
@@ -206,7 +204,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			router.push("/payment");
 			return;
 		}
-		// console.log(chatRef);
 		const chatRequestsRef = collection(db, "chatRequests");
 
 		try {
@@ -225,8 +222,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
 				const userChatsData = userChatsDocSnapshot.data();
 				const creatorChatsData = creatorChatsDocSnapshot.data();
-
-				// console.log(userChatsData)
 
 				const existingChat =
 					userChatsData.chats.find(
@@ -320,9 +315,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		setLoading(true);
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
+		console.log(chatRequest.clientId)
+		const response = await getUserById(
+			chatRequest.clientId as string
+		);
+		let maxChatDuration = (response.walletBalance / parseInt(creator?.chatRate, 10)) * 60; // in seconds
+		maxChatDuration = maxChatDuration > 3600 ? 3600 : Math.floor(maxChatDuration);
 
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
+			console.log(maxChatDuration)
 			if (!existingChatDoc.exists()) {
 				await setDoc(doc(db, "chats", chatId), {
 					// startedAt: Date.now(),
@@ -331,6 +333,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					creatorId: chatRequest.creatorId,
 					status: "active",
 					messages: [],
+					maxChatDuration
 				});
 
 				const creatorChatUpdate = updateDoc(
@@ -359,7 +362,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}
 				);
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
-			} 
+			}
 			// else {
 			// 	await updateDoc(doc(db, "chats", chatId), {
 			// 		startedAt: Date.now(),
@@ -392,7 +395,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				router.push(
 					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
 				);
-			}, 3000);
+			}, 1500);
 
 			setSheetOpen(false);
 		} catch (error) {
@@ -424,8 +427,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		if (!chatRequest) return;
 
 		const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
-		const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
-			const data = doc.data();
+		const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
+			const data = docSnapshot.data();
 			if (
 				data &&
 				data.status === "accepted" &&
@@ -440,12 +443,17 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					router.push(
 						`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
 					);
-				}, 1000);
+					updateDoc(doc(db, "chats", chatRequest.chatId), {
+						startedAt: Date.now(),
+						endedAt: null,
+					});
+				}, 1500);
 			}
 		});
 
 		return () => unsubscribe();
 	}, [chatRequest, router]);
+
 
 	useEffect(() => {
 		const unsubscribe = listenForChatRequests();

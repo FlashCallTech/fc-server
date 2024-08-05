@@ -180,7 +180,6 @@ const useChat = () => {
 		flag &&
 		user2?.clientId === user?.publicMetadata?.userId
 	) {
-		console.log("outside", flag);
 		setFlag(false);
 		createChat(chatId as string, "ended");
 	}

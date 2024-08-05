@@ -55,13 +55,6 @@ const ChatInterface: React.FC = () => {
 	const [messages, setMessages] = useState<{ text: string | null; img: string | null; audio: string | null; }[]>([]);
 
 	useEffect(() => {
-		updateDoc(doc(db, "chats", chatId as string), {
-			startedAt: Date.now(),
-			endedAt: null,
-		});
-	}, [])
-
-	useEffect(() => {
 		const fetchReceiverId = async () => {
 			try {
 				const currentUserChatsRef = doc(

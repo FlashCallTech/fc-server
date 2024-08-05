@@ -2,7 +2,7 @@ import Payment from '@/components/client/payment'
 import Withdraw from '@/components/creator/Withdraw'
 
 const page = () => {
-	let role = 'creator'
+	let role = 'c'
 	return (
 		<>
 		{role !== 'creator'? (<Payment />):(<Withdraw />) }
