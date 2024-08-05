@@ -315,7 +315,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		setLoading(true);
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
-		console.log(chatRequest.clientId)
 		const response = await getUserById(
 			chatRequest.clientId as string
 		);
@@ -324,7 +323,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
-			console.log(maxChatDuration)
 			if (!existingChatDoc.exists()) {
 				await setDoc(doc(db, "chats", chatId), {
 					// startedAt: Date.now(),
@@ -333,7 +331,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					creatorId: chatRequest.creatorId,
 					status: "active",
 					messages: [],
-					maxChatDuration
+					maxChatDuration,
+					walletBalance: response.walletBalance
 				});
 
 				const creatorChatUpdate = updateDoc(
@@ -363,12 +362,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				);
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
 			}
-			// else {
-			// 	await updateDoc(doc(db, "chats", chatId), {
-			// 		startedAt: Date.now(),
-			// 		endedAt: null,
-			// 	});
-			// }
+			else {
+				await updateDoc(doc(db, "chats", chatId), {
+					maxChatDuration,
+					clientBalance: response.walletBalance
+				});
+			}
 
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
 				status: "accepted",
@@ -429,11 +428,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
 		const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
 			const data = docSnapshot.data();
-			if (
-				data &&
-				data.status === "accepted" &&
-				user?.publicMetadata?.userId === chatRequest.clientId
-			) {
+			if (data && data.status === "accepted" && user?.publicMetadata?.userId === chatRequest.clientId) {
 				unsubscribe();
 				setTimeout(() => {
 					logEvent(analytics, "call_connected", {
