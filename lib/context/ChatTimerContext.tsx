@@ -149,6 +149,7 @@ export const ChatTimerProvider = ({
 		walletBalance,
 	]);
 
+
 	return (
 		<ChatTimerContext.Provider
 			value={{

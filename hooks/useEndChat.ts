@@ -63,7 +63,7 @@ const useEndChat = () => {
             return () => unSub();
         }
     }, [chatId]);
-
+    
     useEffect(() => {
         if (hasCHatEnded.current === true) return;
 

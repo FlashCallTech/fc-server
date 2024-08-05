@@ -307,7 +307,7 @@ const Home = () => {
                     <Button onClick={() => handleButtonClick('Wallet')}>
                       <Image src='/collection.svg' width={0} height={0} alt='Wallet' className='w-auto h-auto' />
                     </Button>
-                  // </Link>
+                  // </Link> 
                 )}
                 {activeButton === 'Profile' ? (
                   <div className='flex flex-row gap-2 bg-green-600 rounded-full px-5 py-2'>
