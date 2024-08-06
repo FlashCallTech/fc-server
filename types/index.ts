@@ -13,6 +13,7 @@ export type CreateUserParams = {
 
 export type UpdateUserParams = {
 	id?: string;
+	clerkId?: string;
 	fullName?: string;
 	firstName: string;
 	lastName: string;
@@ -21,6 +22,9 @@ export type UpdateUserParams = {
 	photo: string;
 	bio?: string;
 	role?: string;
+	gender?: string;
+	dob?: string;
+	creatorId?: string;
 };
 
 export type clientUser = {
@@ -31,6 +35,10 @@ export type clientUser = {
 	photo: string;
 	phone: string;
 	walletBalance: number;
+	bio: string;
+	gender?: string;
+	dob?: string;
+	creatorId?: string;
 };
 
 // Creator Params
@@ -50,28 +58,40 @@ export type creatorUser = {
 	videoRate: string;
 	audioRate: string;
 	chatRate: string;
+	videoAllowed: boolean;
+	audioAllowed: boolean;
+	chatAllowed: boolean;
 	kyc_status: string;
+	walletBalance: number;
 	referralId: string;
 	referredBy: string;
 	referralAmount: number;
+	creatorId?: string;
 };
 
 export type CreateCreatorParams = {
 	_id?: string;
+	clerkId?: string;
+	fullName?: string;
 	firstName?: string;
 	lastName?: string;
 	username: string;
 	photo: string;
 	phone: any;
-	profession: string;
-	themeSelected: string;
+	profession?: string;
+	themeSelected?: string;
+	videoRate?: string;
+	audioRate?: string;
+	chatRate?: string;
 	gender?: string;
 	dob?: string;
 	bio?: string;
-	kyc_status: string;
-	referralId: string;
-	referredBy: string;
-	referralAmount: number;
+	kyc_status?: string;
+	walletBalance: number;
+	referralId?: string;
+	referredBy?: string;
+	referralAmount?: number;
+	creatorId?: string;
 };
 
 export type UpdateCreatorParams = {
@@ -81,17 +101,22 @@ export type UpdateCreatorParams = {
 	lastName?: string;
 	username?: string;
 	phone?: string;
-	photo: string;
+	photo?: string;
 	role?: string;
 	profession?: string;
 	themeSelected?: string;
 	videoRate?: string;
 	audioRate?: string;
 	chatRate?: string;
+	videoAllowed?: boolean;
+	audioAllowed?: boolean;
+	chatAllowed?: boolean;
 	gender?: string;
 	dob?: string;
 	bio?: string;
-	kyc_status: string;
+	kyc_status?: string;
+	walletBalance?: number;
+	creatorId?: string;
 };
 
 // Feedback Params
@@ -151,6 +176,7 @@ export type RegisterCallParams = {
 	startedAt?: Date;
 	endedAt?: Date;
 	duration?: string;
+	feedbacks?: CreatorFeedback[];
 };
 
 export type RegisterChatParams = {

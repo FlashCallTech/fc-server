@@ -9,9 +9,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
-import FeedbackCheck from "../feedbacks/FeedbackCheck";
+import { getCallFeedbacks } from "@/lib/actions/feedback.actions";
+import CreatorFeedbackCheck from "../feedbacks/CreatorFeedbackCheck";
 
-const CallListMobile = () => {
+const CreatorCallsFeedbacks = () => {
 	const [calls, setCalls] = useState<RegisterCallParams[]>([]);
 	const [callsCount, setCallsCount] = useState(10);
 	const [loading, setLoading] = useState(true);
@@ -43,7 +44,21 @@ const CallListMobile = () => {
 					)}`
 				);
 				const data = await response.json();
-				setCalls(data);
+
+				// Fetch feedbacks for each call and filter calls with non-empty feedbacks
+				const callsWithFeedbacks = await Promise.all(
+					data.map(async (call: RegisterCallParams) => {
+						const feedbacks = await getCallFeedbacks(call.callId);
+						if (feedbacks.length > 0) {
+							return { ...call, feedbacks };
+						}
+						return null;
+					})
+				);
+
+				// Filter out null values from the result
+				const filteredCalls = callsWithFeedbacks.filter(Boolean);
+				setCalls(filteredCalls);
 			} catch (error) {
 				console.warn(error);
 			} finally {
@@ -83,13 +98,10 @@ const CallListMobile = () => {
 							>
 								<div className="flex flex-col items-start justify-start w-full gap-2">
 									{/* Expert's Details */}
-									<Link
-										href={`/creator/${call.members[0].user_id}`}
-										className="w-1/2 flex items-center justify-start gap-4 hoverScaleDownEffect"
-									>
+									<div className="w-1/2 flex items-center justify-start gap-4">
 										{/* creator image */}
 										<Image
-											src={call.members[0].custom.image}
+											src={call.members[1].custom.image}
 											alt="Expert"
 											height={1000}
 											width={1000}
@@ -98,40 +110,10 @@ const CallListMobile = () => {
 										{/* creator details */}
 										<div className="flex flex-col">
 											<p className="text-base tracking-wide">
-												{call.members[0].custom.name}
+												{call.members[1].custom.name}
 											</p>
-											<span className="text-sm text-green-1">Astrologer</span>
+											<span className="text-sm text-green-1">Client</span>
 										</div>
-									</Link>
-									{/* call details */}
-									<div className="flex items-center justify-start gap-2 pl-16">
-										<span
-											className={`text-sm ${
-												call.status === "Ended"
-													? "text-green-1"
-													: "text-red-500"
-											}`}
-										>
-											{call.status}
-										</span>
-										<span className="text-[12.5px]">
-											{call.duration
-												? (() => {
-														const seconds = parseInt(call.duration, 10);
-														const hours = Math.floor(seconds / 3600);
-														const minutes = Math.floor((seconds % 3600) / 60);
-														const remainingSeconds = seconds % 60;
-														const formattedTime = [
-															hours > 0 ? `${hours}h` : null,
-															minutes > 0 ? `${minutes}m` : null,
-															`${remainingSeconds}s`,
-														]
-															.filter(Boolean)
-															.join(" ");
-														return formattedTime;
-												  })()
-												: call.status === "Accepted" && "Pending Transaction"}
-										</span>
 									</div>
 								</div>
 								{/* StartedAt & Feedbacks */}
@@ -139,16 +121,7 @@ const CallListMobile = () => {
 									<span className="text-sm text-[#A7A8A1] pr-2 pt-1 whitespace-nowrap">
 										{formattedDate.dateTime}
 									</span>
-									{call.status !== "Rejected" ? (
-										<FeedbackCheck callId={call?.callId} />
-									) : (
-										<Link
-											href={`/creator/${call.members[0].user_id}`}
-											className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
-										>
-											Visit Again
-										</Link>
-									)}
+									<CreatorFeedbackCheck feedbacks={call.feedbacks} />
 								</div>
 							</div>
 						);
@@ -177,4 +150,4 @@ const CallListMobile = () => {
 	);
 };
 
-export default CallListMobile;
+export default CreatorCallsFeedbacks;

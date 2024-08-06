@@ -8,6 +8,17 @@ import {
 } from "@/lib/actions/client.actions";
 import { NextResponse } from "next/server";
 import { addMoney } from "@/lib/actions/wallet.actions";
+import {
+	createCreatorUser,
+	deleteCreatorUserUsingClerk,
+	updateCreatorUserUsingClerk,
+} from "@/lib/actions/creator.actions";
+import {
+	CreateCreatorParams,
+	CreateUserParams,
+	UpdateCreatorParams,
+	UpdateUserParams,
+} from "@/types";
 
 export async function POST(req: Request) {
 	// You can find this in the Clerk Dashboard -> Webhooks -> choose the endpoint
@@ -68,31 +79,70 @@ export async function POST(req: Request) {
 	console.log(`Received event with ID: ${evt.data.id} and type: ${evt.type}`);
 	console.log("Webhook body:", body);
 
+	let userType: string;
+	try {
+		const user = await clerkClient.users.getUser(evt.data.id as string);
+		userType = String(
+			user.unsafeMetadata.userType || user.publicMetadata.role || "client"
+		);
+	} catch (err) {
+		console.error("Error fetching user metadata:", err);
+		userType = "client";
+	}
+
+	console.log(userType);
+
 	// Handle the event
 	try {
 		if (evt.type === "user.created") {
 			const { id, image_url, first_name, last_name, username, phone_numbers } =
 				evt.data;
 
-			const user = {
-				clerkId: id,
-				username: username!,
-				firstName: first_name!,
-				lastName: last_name!,
-				photo: image_url,
-				phone: phone_numbers[0]?.phone_number || "",
-				role: "client",
-				bio: "",
-				walletBalance: 0,
-			};
+			let user: CreateCreatorParams | CreateUserParams;
+			if (userType === "creator") {
+				user = {
+					clerkId: id,
+					firstName: first_name ?? undefined,
+					lastName: last_name ?? undefined,
+					fullName:
+						(first_name && last_name && first_name + " " + last_name) ||
+						undefined,
+					username: username ?? "",
+					photo: image_url ?? "",
+					phone: phone_numbers[0]?.phone_number ?? "",
+					profession: "Astrologer",
+					themeSelected: "#50A65C",
+					videoRate: "0",
+					audioRate: "0",
+					chatRate: "0",
+					walletBalance: 0,
+				};
+			} else {
+				user = {
+					clerkId: id,
+					firstName: first_name ?? undefined,
+					lastName: last_name ?? undefined,
+					username: username ?? "",
+					photo: image_url ?? "",
+					phone: phone_numbers[0]?.phone_number ?? "",
+					role: "client",
+					bio: "",
+					walletBalance: 0,
+				};
+			}
 
-			const newUser = await createUser(user);
+			let newUser;
+			if (userType === "creator") {
+				newUser = await createCreatorUser(user as CreateCreatorParams);
+			} else {
+				newUser = await createUser(user as CreateUserParams);
+			}
 
 			if (newUser) {
 				await clerkClient.users.updateUserMetadata(id, {
 					publicMetadata: {
 						userId: newUser._id,
-						role: "client",
+						role: userType === "creator" ? "creator" : "client",
 					},
 					unsafeMetadata: {
 						bio: "",
@@ -103,32 +153,48 @@ export async function POST(req: Request) {
 			// Initialize the user's wallet with a starting balance
 			await addMoney({
 				userId: newUser._id,
-				userType: "Client",
+				userType: userType,
 				amount: 0, // Set the initial balance here
 			});
 
 			return NextResponse.json({ message: "OK", user: newUser });
 		}
 
-		if (evt.type === "user.updated") {
-			const { id, image_url, first_name, last_name, username } = evt.data;
+		// if (evt.type === "user.updated") {
+		// 	const { id, image_url, first_name, last_name, username } = evt.data;
 
-			const user = {
-				firstName: first_name!,
-				lastName: last_name!,
-				username: username!,
-				photo: image_url!,
-			};
+		// 	let user: UpdateCreatorParams | UpdateUserParams;
+		// 	if (userType === "creator") {
+		// 		user = {
+		// 			firstName: first_name ?? undefined,
+		// 			lastName: last_name ?? undefined,
+		// 			username: username ?? "",
+		// 			photo:  image_url,
+		// 		};
+		// 	} else {
+		// 		user = {
+		// 			firstName: first_name!,
+		// 			lastName: last_name!,
+		// 			username: username!,
+		// 			photo:  image_url!,
+		// 		};
+		// 	}
 
-			const updatedUser = await updateUser(id, user);
+		// 	const updatedUser =
+		// 		userType === "creator"
+		// 			? await updateCreatorUserUsingClerk(id, user as UpdateCreatorParams)
+		// 			: await updateUser(id, user as UpdateUserParams);
 
-			return NextResponse.json({ message: "OK", user: updatedUser });
-		}
+		// 	return NextResponse.json({ message: "OK", user: updatedUser });
+		// }
 
 		if (evt.type === "user.deleted") {
 			const { id } = evt.data;
 
-			const deletedUser = await deleteUser(id!);
+			const deletedUser =
+				userType === "creator"
+					? await deleteCreatorUserUsingClerk(id!)
+					: await deleteUser(id!);
 
 			return NextResponse.json({ message: "OK", user: deletedUser });
 		}

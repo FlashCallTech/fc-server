@@ -27,6 +27,7 @@ import AudioDeviceList from "../calls/AudioDeviceList";
 import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
+import CreatorCallTimer from "../creator/CreatorCallTimer";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -129,33 +130,6 @@ const MeetingRoom = () => {
 		return () => clearTimeout(timeoutId);
 	}, [participantCount, anyModalOpen, call]);
 
-	useEffect(() => {
-		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-			const data = {
-				callId: call?.id,
-				clientId: user?.publicMetadata?.userId,
-				creatorId: "664c90ae43f0af8f1b3d5803", // Replace with actual creatorId
-				duration: "00:00", // Replace with actual duration
-				isVideoCall,
-			};
-
-			const blob = new Blob([JSON.stringify(data)], {
-				type: "application/json",
-			});
-			navigator.sendBeacon("/api/v1/calls/transaction/initiate", blob);
-
-			// Optionally, add a custom message
-			event.preventDefault();
-			event.returnValue = "";
-		};
-
-		window.addEventListener("beforeunload", handleBeforeUnload);
-
-		return () => {
-			window.removeEventListener("beforeunload", handleBeforeUnload);
-		};
-	}, [call, user, isVideoCall]);
-
 	const toggleCamera = async () => {
 		if (call && call.camera) {
 			try {
@@ -206,11 +180,13 @@ const MeetingRoom = () => {
 				)}
 			</div>
 
-			{!callHasEnded && isMeetingOwner && (
+			{!callHasEnded && isMeetingOwner ? (
 				<CallTimer
 					handleCallRejected={handleCallRejected}
 					isVideoCall={isVideoCall}
 				/>
+			) : (
+				call && <CreatorCallTimer callId={call.id} />
 			)}
 
 			{/* Call Controls */}
