@@ -8,7 +8,6 @@ import React, {
 	useEffect,
 } from "react";
 import { getUserById } from "../actions/client.actions";
-import Loader from "@/components/shared/Loader";
 import { getCreatorById } from "../actions/creator.actions";
 
 interface WalletBalanceContextProps {
@@ -56,6 +55,8 @@ export const WalletBalanceProvider = ({
 				? await getCreatorById(userId)
 				: await getUserById(userId);
 			setWalletBalance(response.walletBalance || 0);
+
+			// console.log(response);
 		} catch (error) {
 			console.error("Error fetching current user:", error);
 		} finally {

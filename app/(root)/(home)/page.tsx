@@ -49,7 +49,7 @@ const HomePage = () => {
 		userType === "creator" || user?.publicMetadata?.role === "creator";
 
 	return (
-		<main className="flex size-full flex-col gap-5 md:pb-14">
+		<main className="flex size-full flex-col gap-5">
 			{!shouldShowCreators ? (
 				<Suspense fallback={<PostLoader count={6} />}>
 					{loading ? (
@@ -83,9 +83,7 @@ const HomePage = () => {
 					)}
 				</Suspense>
 			) : (
-				<section className="size-full flex flex-col items-center justify-center">
-					<CreatorHome />
-				</section>
+				<CreatorHome />
 			)}
 		</main>
 	);

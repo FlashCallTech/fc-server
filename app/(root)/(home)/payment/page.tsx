@@ -1,13 +1,16 @@
-import Payment from '@/components/client/payment'
-import Withdraw from '@/components/creator/Withdraw'
+"use client";
+
+import Payment from "@/components/client/payment";
+import Withdraw from "@/components/creator/Withdraw";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const page = () => {
-	let role = 'creator'
+	const { userType } = useCurrentUsersContext();
 	return (
-		<>
-		{role !== 'creator'? (<Payment />):(<Withdraw />) }
-		</>
-	)
-}
+		<section className="size-full">
+			{userType !== "creator" ? <Payment /> : <Withdraw />}
+		</section>
+	);
+};
 
-export default page
+export default page;

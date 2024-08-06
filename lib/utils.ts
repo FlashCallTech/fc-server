@@ -71,6 +71,17 @@ export const formatDateTime = (dateString: Date) => {
 	};
 };
 
+export const calculateTotalEarnings = (transactions: any) => {
+	return transactions.reduce((total: number, transaction: any) => {
+		if (transaction.type === "credit") {
+			return total + transaction.amount;
+		} else if (transaction.type === "debit") {
+			return total - transaction.amount;
+		}
+		return total.toFixed(2); // Default case if type is invalid
+	}, 0);
+};
+
 export const analyticEvent = ({ action, category, label, value }: any) => {
 	(window as any).gtag("event", action, {
 		event_category: category,

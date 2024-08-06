@@ -260,4 +260,24 @@
 	.file_uploader-box {
 		@apply flex flex-col items-center justify-center bg-gray-50 p-7 h-80 lg:h-[350px] w-full;
 	}
+
+	/* Creator Home */
+
+	.servicesCheckbox {
+		position: relative;
+		display: flex;
+		align-items: center;
+	}
+
+	.servicesCheckboxContent {
+		content: "";
+		position: absolute;
+		top: 0.15rem;
+		left: 0.1rem;
+		width: 1.2rem;
+		height: 1.2rem;
+		background-color: white;
+		border-radius: 50%;
+		transition: transform 0.3s;
+	}
 }

@@ -78,7 +78,7 @@ const EditProfile = ({
 			watchedValues.bio !== initialState.bio ||
 			watchedValues.gender !== initialState.gender ||
 			watchedValues.dob !== initialState.dob ||
-			watchedValues.creatorId !== initialState.id;
+			watchedValues.creatorId !== initialState.creatorId;
 
 		setIsChanged(hasChanged);
 	}, [watchedValues, initialState]);

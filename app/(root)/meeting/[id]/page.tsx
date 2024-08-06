@@ -21,7 +21,6 @@ import ContentLoading from "@/components/shared/ContentLoading";
 
 const MeetingPage = () => {
 	const { id } = useParams();
-	// const searchParams = useSearchParams();
 	const router = useRouter();
 	const { toast } = useToast();
 	const { call, isCallLoading } = useGetCallById(id);
@@ -64,6 +63,7 @@ const MeetingPage = () => {
 						isVideoCall={isVideoCall}
 						isMeetingOwner={isMeetingOwner}
 						expert={expert}
+						call={call}
 					>
 						<MeetingRoomWrapper toast={toast} router={router} call={call} />
 					</CallTimerProvider>
@@ -146,34 +146,20 @@ const CallEnded = ({ toast, router, call }: any) => {
 			});
 		};
 
-		if (!callEndedAt || !callStartsAt) {
-			if (!toastShown) {
-				toast({
-					title: "Call Has Ended",
-					description: "Call data is missing. Redirecting...",
-				});
-				setToastShown(true);
-			}
-			setTimeout(() => {
-				router.push("/");
-			}, 3000);
-			return;
-		}
-
 		if (isMeetingOwner && !transactionHandled.current) {
 			handleCallEnd();
-		} else {
-			router.push(`/feedback/${call?.id}`);
+		} else if (!isMeetingOwner) {
+			router.push(`/`);
 		}
 	}, [
+		isMeetingOwner,
 		callEndedAt,
 		callStartsAt,
-		isMeetingOwner,
 		call?.id,
-		router,
 		toast,
-		toastShown,
+		router,
 		updateWalletBalance,
+		toastShown,
 	]);
 
 	if (loading) {

@@ -58,6 +58,9 @@ export type creatorUser = {
 	videoRate: string;
 	audioRate: string;
 	chatRate: string;
+	videoAllowed: boolean;
+	audioAllowed: boolean;
+	chatAllowed: boolean;
 	kyc_status: string;
 	walletBalance: number;
 	referralId: string;
@@ -98,13 +101,16 @@ export type UpdateCreatorParams = {
 	lastName?: string;
 	username?: string;
 	phone?: string;
-	photo: string;
+	photo?: string;
 	role?: string;
 	profession?: string;
 	themeSelected?: string;
 	videoRate?: string;
 	audioRate?: string;
 	chatRate?: string;
+	videoAllowed?: boolean;
+	audioAllowed?: boolean;
+	chatAllowed?: boolean;
 	gender?: string;
 	dob?: string;
 	bio?: string;
@@ -170,6 +176,7 @@ export type RegisterCallParams = {
 	startedAt?: Date;
 	endedAt?: Date;
 	duration?: string;
+	feedbacks?: CreatorFeedback[];
 };
 
 export type RegisterChatParams = {

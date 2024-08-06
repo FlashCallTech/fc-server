@@ -9,12 +9,14 @@ import {
 import { getCreatorById } from "../actions/creator.actions";
 import { getUserById } from "../actions/client.actions";
 import { clientUser, creatorUser } from "@/types";
-import PostLoader from "@/components/shared/PostLoader";
 
 // Define the shape of the context value
 interface CurrentUsersContextValue {
-	currentUser: clientUser | creatorUser | null; // Use the appropriate types instead of 'any'
-	setCurrentUser: (user: clientUser | creatorUser | null) => void; // Use the appropriate types instead of 'any'
+	clientUser: clientUser | null;
+	creatorUser: creatorUser | null;
+	currentUser: clientUser | creatorUser | null;
+	setClientUser: (user: clientUser | null) => void;
+	setCreatorUser: (user: creatorUser | null) => void;
 	userType: string | null;
 	refreshCurrentUser: () => Promise<void>;
 }
@@ -35,30 +37,40 @@ export const useCurrentUsersContext = () => {
 	return context;
 };
 
+export const isCreatorUser = (
+	user: clientUser | creatorUser
+): user is creatorUser => {
+	return (user as creatorUser).profession !== undefined;
+};
+
 // Provider component to hold the state and provide it to its children
 export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const { user, isLoaded } = useUser();
 	const storedUserType = localStorage.getItem("userType");
 	const userType = storedUserType ? storedUserType : null;
-	const [currentUser, setCurrentUser] = useState<
-		clientUser | creatorUser | null
-	>(null);
+	const [clientUser, setClientUser] = useState<clientUser | null>(null);
+	const [creatorUser, setCreatorUser] = useState<creatorUser | null>(null);
 
 	const fetchCurrentUser = async () => {
 		try {
-			const response = isCreator
-				? await getCreatorById(userId)
-				: await getUserById(userId);
-			setCurrentUser(response);
+			const userId = user?.publicMetadata?.userId as string;
+			const isCreator =
+				userType === "creator" ||
+				(user?.publicMetadata?.role as string) === "creator";
+
+			if (isCreator) {
+				const response = await getCreatorById(userId);
+				setCreatorUser(response);
+				setClientUser(null); // Ensure clientUser is null
+			} else {
+				const response = await getUserById(userId);
+				setClientUser(response);
+				setCreatorUser(null); // Ensure creatorUser is null
+			}
 		} catch (error) {
 			console.error("Error fetching current user:", error);
 		}
 	};
-
-	const isCreator =
-		userType === "creator" ||
-		(user?.publicMetadata?.role as string) === "creator";
-	const userId = user?.publicMetadata?.userId as string;
 
 	useEffect(() => {
 		if (isLoaded && user) {
@@ -72,10 +84,21 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		}
 	};
 
+	// Define the unified currentUser state
+	const currentUser = creatorUser || clientUser;
+
+	const values: CurrentUsersContextValue = {
+		clientUser,
+		creatorUser,
+		currentUser,
+		setClientUser,
+		setCreatorUser,
+		userType,
+		refreshCurrentUser,
+	};
+
 	return (
-		<CurrentUsersContext.Provider
-			value={{ currentUser, setCurrentUser, userType, refreshCurrentUser }}
-		>
+		<CurrentUsersContext.Provider value={values}>
 			{children}
 		</CurrentUsersContext.Provider>
 	);

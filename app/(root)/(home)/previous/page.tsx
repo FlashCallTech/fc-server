@@ -5,13 +5,15 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import CallListMobile from "@/components/calls/CallListMobile";
 import ChatList from "@/components/calls/ChatList";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import CreatorCallsFeedbacks from "@/components/creator/CreatorCallsFeedbacks";
 
 const PreviousPage = () => {
 	const [historyType, setHistoryType] = useState<"Calls" | "Chats">("Calls");
 	const [isSticky, setIsSticky] = useState(false);
 	const options: ("Calls" | "Chats")[] = ["Calls", "Chats"];
 	const stickyRef = useRef<HTMLDivElement>(null);
-
+	const { userType } = useCurrentUsersContext();
 	const handleScroll = () => {
 		if (stickyRef.current) {
 			setIsSticky(window.scrollY > stickyRef.current.offsetTop);
@@ -61,7 +63,15 @@ const PreviousPage = () => {
 					</Button>
 				))}
 			</div>
-			{historyType === "Calls" ? <CallListMobile /> : <ChatList />}
+			{userType !== "creator" ? (
+				historyType === "Calls" ? (
+					<CallListMobile />
+				) : (
+					<ChatList />
+				)
+			) : (
+				<CreatorCallsFeedbacks />
+			)}
 		</section>
 	);
 };

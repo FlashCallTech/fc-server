@@ -19,7 +19,7 @@ const Favorites = ({
 	addingFavorite,
 	creator,
 	user,
-	isCreatorOrExpressPath,
+	isCreatorOrExpertPath,
 }: {
 	setMarkedFavorite: React.Dispatch<React.SetStateAction<boolean>>;
 	markedFavorite: boolean;
@@ -27,7 +27,7 @@ const Favorites = ({
 	addingFavorite: boolean;
 	creator: creatorUser;
 	user: any;
-	isCreatorOrExpressPath: boolean;
+	isCreatorOrExpertPath: boolean;
 }) => {
 	useEffect(() => {
 		const fetchFavorites = async () => {
@@ -59,7 +59,7 @@ const Favorites = ({
 			}
 		};
 
-		if (user?.publicMetadata?.userId && isCreatorOrExpressPath) {
+		if (user?.publicMetadata?.userId && isCreatorOrExpertPath) {
 			fetchFavorites();
 		}
 	}, [user, creator._id]);
