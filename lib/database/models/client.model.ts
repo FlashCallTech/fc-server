@@ -13,6 +13,8 @@ const ClientSchema = new Schema(
 		role: { type: String, required: true },
 		bio: { type: String },
 		walletBalance: { type: Number, default: 0 },
+		gender: { type: String },
+		dob: { type: String },
 	},
 	{
 		timestamps: true,

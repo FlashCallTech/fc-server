@@ -10,18 +10,19 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Button } from "../ui/button";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const Sidebar = () => {
 	const pathname = usePathname();
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 
 	const handleLogEvent = () =>
 		logEvent(analytics, "page_accessed", {
-			userId: user?.publicMetadata?.userId,
+			userId: currentUser?._id,
 			page: pathname,
 		});
 	return (
-		<section className="sticky left-0 top-0 flex h-screen flex-col justify-between p-6 pt-24  max-sm:hidden lg:w-[264px]">
+		<section className="sticky left-0 top-0 flex h-screen flex-col justify-between p-6 pt-24  max-md:hidden lg:w-[264px]">
 			<div className="flex flex-1 flex-col gap-6">
 				{sidebarLinks.map((item) => {
 					const isActive =
@@ -59,27 +60,30 @@ const Sidebar = () => {
 					);
 				})}
 			</div>
-			{user ? (
+			{currentUser ? (
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<Link
-							href={`/profile/${user?.id}`}
+							href={`/profile/${currentUser?._id}`}
 							className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start hoverScaleDownEffect  ${
 								pathname.includes("/profile/") && "opacity-80"
 							}`}
 						>
 							<Image
-								src={user?.imageUrl || "/images/defaultProfile.png"}
+								src={currentUser?.photo || "/images/defaultProfile.png"}
 								alt="Profile"
 								width={1000}
 								height={1000}
-								className="rounded-full w-full max-w-[44px]"
+								className="rounded-full w-11 h-11 object-cover"
 							/>
 							<div className="flex flex-col items-start justify-center max-lg:hidden">
-								<span className="text-lg capitalize">
-									{user?.fullName || "Hey User"}
+								<span className="text-lg capitalize font-medium">
+									{currentUser?.firstName + " " + currentUser?.lastName ||
+										"Hey User"}
 								</span>
-								<span className="text-xs text-green-1">@{user?.username}</span>
+								<span className="text-xs text-green-1 font-medium">
+									@{currentUser?.username || "guest"}
+								</span>
 							</div>
 						</Link>
 					</TooltipTrigger>

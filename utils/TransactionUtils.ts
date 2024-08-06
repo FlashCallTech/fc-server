@@ -1,8 +1,8 @@
-import { getUserById } from "@/lib/actions/creator.actions";
-import { analytics } from "@/lib/firebase";
+import { getCreatorById } from "@/lib/actions/creator.actions";
+import { analytics, db } from "@/lib/firebase";
 import { logEvent } from "firebase/analytics";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
-// Define the transaction logic in a utility function
 export const handleTransaction = async ({
 	call,
 	callId,
@@ -29,8 +29,35 @@ export const handleTransaction = async ({
 		return;
 	}
 
-	const creatorId = "664c90ae43f0af8f1b3d5803";
-	// const creatorId = expert?.user_id;
+	const updateFirestoreTransactionStatus = async (callId: string) => {
+		try {
+			const transactionDocRef = doc(db, "transactions", expert?.user_id);
+			const transactionDoc = await getDoc(transactionDocRef);
+			if (transactionDoc.exists()) {
+				await updateDoc(transactionDocRef, {
+					previousCall: { id: callId, status: "success" },
+				});
+			} else {
+				await setDoc(transactionDocRef, {
+					previousCall: { id: callId, status: "success" },
+				});
+			}
+		} catch (error) {
+			console.error("Error updating Firestore timer: ", error);
+		}
+	};
+
+	const removeActiveCallId = () => {
+		const activeCallId = localStorage.getItem("activeCallId");
+		if (activeCallId) {
+			localStorage.removeItem("activeCallId");
+			console.log("activeCallId removed successfully");
+		} else {
+			console.warn("activeCallId was not found in localStorage");
+		}
+	};
+
+	const creatorId = expert?.user_id;
 	const clientId = call?.state?.createdBy?.id;
 
 	if (!clientId) {
@@ -43,7 +70,7 @@ export const handleTransaction = async ({
 			fetch(`/api/v1/calls/transaction/getTransaction?callId=${callId}`).then(
 				(res) => res.json()
 			),
-			getUserById(creatorId),
+			getCreatorById(creatorId),
 		]);
 
 		if (transactionResponse) {
@@ -51,6 +78,9 @@ export const handleTransaction = async ({
 				title: "Transaction Done",
 				description: "Redirecting ...",
 			});
+
+			removeActiveCallId();
+
 			return;
 		}
 
@@ -63,16 +93,6 @@ export const handleTransaction = async ({
 		const amountToBePaid = ((parseInt(duration, 10) / 60) * rate).toFixed(2);
 
 		await Promise.all([
-			fetch("/api/v1/calls/transaction/create", {
-				method: "POST",
-				body: JSON.stringify({
-					callId,
-					amountPaid: amountToBePaid,
-					isDone: true,
-					callDuration: parseInt(duration, 10),
-				}),
-				headers: { "Content-Type": "application/json" },
-			}),
 			fetch("/api/v1/wallet/payout", {
 				method: "POST",
 				body: JSON.stringify({
@@ -91,10 +111,21 @@ export const handleTransaction = async ({
 				}),
 				headers: { "Content-Type": "application/json" },
 			}),
+			fetch("/api/v1/calls/transaction/create", {
+				method: "POST",
+				body: JSON.stringify({
+					callId,
+					amountPaid: amountToBePaid,
+					isDone: true,
+					callDuration: parseInt(duration, 10),
+				}),
+				headers: { "Content-Type": "application/json" },
+			}),
 		]);
 
-		// remove the activeCallId after transaction is done otherwise user will be redirected to this page and then transactons will take place
-		localStorage.removeItem("activeCallId");
+		removeActiveCallId();
+		updateFirestoreTransactionStatus(call?.id);
+
 		logEvent(analytics, "call_ended", {
 			callId: call.id,
 			duration: duration,
