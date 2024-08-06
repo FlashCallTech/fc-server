@@ -70,6 +70,8 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 		);
 	}
 
+	// console.log(userFeedbacks);
+
 	return feedbackExists && userFeedbacks && userFeedbacks.length > 0 ? (
 		<div className="animate-enterFromRight lg:animate-enterFromBottom w-fit flex items-center justify-start md:justify-end">
 			<Dialog>
@@ -112,8 +114,11 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 									<div className="flex items-center justify-start w-full gap-2">
 										<div className="flex items-center justify-start gap-2">
 											<Image
-												src={feedback.clientId.photo}
-												alt={feedback.clientId.username}
+												src={
+													feedback?.clientId?.photo ||
+													"/images/defaultProfileImage.png"
+												}
+												alt={feedback?.clientId?.username}
 												width={44}
 												height={44}
 												className="w-5 h-5 rounded-full"
@@ -124,12 +129,12 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 											/>
 
 											<span className="text-xs">
-												{feedback.clientId.username}
+												{feedback?.clientId?.username}
 											</span>
 										</div>
 										<span className="text-xs">|</span>
 										<span className="text-xs">
-											{formatDateTime(feedback.createdAt).dateTime}
+											{formatDateTime(feedback?.createdAt).dateTime}
 										</span>
 									</div>
 								</div>

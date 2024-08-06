@@ -29,10 +29,6 @@ interface CallingOptions {
 	creator: creatorUser;
 }
 
-const initialValues = {
-	link: "",
-};
-
 const CallingOptions = ({ creator }: CallingOptions) => {
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
@@ -53,6 +49,99 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const storedCallId = localStorage.getItem("activeCallId");
 	const { createChat } = useChat();
 
+	const [updatedCreator, setUpdatedCreator] = useState<creatorUser>({
+		...creator,
+		videoRate: creator.videoRate,
+		audioRate: creator.audioRate,
+		chatRate: creator.chatRate,
+		videoAllowed: creator.videoAllowed,
+		audioAllowed: creator.audioAllowed,
+		chatAllowed: creator.chatAllowed,
+	});
+
+	// logic to show the updated creator services in realtime
+	useEffect(() => {
+		const creatorRef = doc(db, "services", creator._id);
+		const unsubscribe = onSnapshot(creatorRef, (doc) => {
+			const data = doc.data();
+			console.log(data);
+
+			if (data) {
+				let prices = data.prices;
+				let services = data.services;
+				setUpdatedCreator((prev) => ({
+					...prev,
+					videoRate: prices.videoCall,
+					audioRate: prices.audioCall,
+					chatRate: prices.chat,
+					videoAllowed: services.videoCall,
+					audioAllowed: services.audioCall,
+					chatAllowed: services.chat,
+				}));
+			}
+		});
+
+		return () => unsubscribe();
+	}, [creator._id]);
+
+	// logic to get the info about the chat
+	useEffect(() => {
+		if (!chatRequest) return;
+
+		const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
+		const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
+			const data = doc.data();
+			if (
+				data &&
+				data.status === "accepted" &&
+				user?.publicMetadata?.userId === chatRequest.clientId
+			) {
+				unsubscribe();
+				setTimeout(() => {
+					logEvent(analytics, "call_connected", {
+						clientId: user?.publicMetadata?.userId,
+						creatorId: creator._id,
+					});
+					router.push(
+						`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
+					);
+				}, 1000);
+			}
+		});
+
+		return () => unsubscribe();
+	}, [chatRequest, router]);
+
+	// listening for chat requests
+	const listenForChatRequests = () => {
+		const q = query(
+			chatRequestsRef,
+			where("creatorId", "==", "6687f55f290500fb85b7ace0"),
+			where("status", "==", "pending")
+		);
+
+		const unsubscribe = onSnapshot(q, (snapshot) => {
+			const chatRequests = snapshot.docs.map((doc) => ({
+				id: doc.id,
+				...doc.data(),
+			}));
+			if (chatRequests.length > 0) {
+				setChatRequest(chatRequests[0]);
+			}
+		});
+
+		return unsubscribe;
+	};
+
+	useEffect(() => {
+		const unsubscribe = listenForChatRequests();
+		return () => {
+			unsubscribe();
+		};
+	}, ["6687f55f290500fb85b7ace0"]);
+
+	// defining the actions for call accept and call reject
+
 	const handleCallAccepted = async (call: Call) => {
 		toast({
 			title: "Call Accepted",
@@ -70,6 +159,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		});
 		setSheetOpen(false);
 	};
+
+	// create new meeting
 
 	const createMeeting = async () => {
 		if (!client || !user) return;
@@ -131,8 +222,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				return;
 			}
 
-			// console.log(maxCallDuration, ratePerMinute);
-
 			await call.getOrCreate({
 				ring: true,
 				data: {
@@ -143,13 +232,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					},
 				},
 			});
-
-			// settings_override: {
-			// 	limits: {
-			// 		max_duration_seconds: maxCallDuration,
-			// 		max_participants: 2,
-			// 	},
-			// },
 
 			logEvent(analytics, "call_initiated", {
 				clientId: user?.publicMetadata?.usreId,
@@ -170,17 +252,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			call.on("call.accepted", () => handleCallAccepted(call));
 			call.on("call.rejected", handleCallRejected);
-
-			// toast({
-			// 	title: "Meeting Created",
-			// 	description: "Waiting for Expert to Respond",
-			// });
 		} catch (error) {
 			console.error(error);
 			toast({ title: "Failed to create Meeting" });
 		}
 	};
 
+	// handle chat
 	const handleChat = async () => {
 		logEvent(analytics, "chat_now_click", {
 			clientId: user?.publicMetadata?.userId,
@@ -297,26 +375,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	const listenForChatRequests = () => {
-		const q = query(
-			chatRequestsRef,
-			where("creatorId", "==", "6687f55f290500fb85b7ace0"),
-			where("status", "==", "pending")
-		);
-
-		const unsubscribe = onSnapshot(q, (snapshot) => {
-			const chatRequests = snapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			}));
-			if (chatRequests.length > 0) {
-				setChatRequest(chatRequests[0]);
-			}
-		});
-
-		return unsubscribe;
-	};
-
+	// actions if chat request is accepted
 	const handleAcceptChat = async () => {
 		setLoading(true);
 		const userChatsRef = collection(db, "userchats");
@@ -361,12 +420,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				);
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
 			}
-			// else {
-			// 	await updateDoc(doc(db, "chats", chatId), {
-			// 		startedAt: Date.now(),
-			// 		endedAt: null,
-			// 	});
-			// }
 
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
 				status: "accepted",
@@ -402,6 +455,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
+	// actions if chat request is rejected
 	const handleRejectChat = async () => {
 		if (!chatRequest) return;
 		console.log("inside handle reject");
@@ -421,40 +475,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	useEffect(() => {
-		if (!chatRequest) return;
-
-		const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
-		const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
-			const data = doc.data();
-			if (
-				data &&
-				data.status === "accepted" &&
-				user?.publicMetadata?.userId === chatRequest.clientId
-			) {
-				unsubscribe();
-				setTimeout(() => {
-					logEvent(analytics, "call_connected", {
-						clientId: user?.publicMetadata?.userId,
-						creatorId: creator._id,
-					});
-					router.push(
-						`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
-					);
-				}, 1000);
-			}
-		});
-
-		return () => unsubscribe();
-	}, [chatRequest, router]);
-
-	useEffect(() => {
-		const unsubscribe = listenForChatRequests();
-		return () => {
-			unsubscribe();
-		};
-	}, ["6687f55f290500fb85b7ace0"]);
-
+	// if any of the calling option is selected open the respective modal
 	const handleClickOption = (
 		callType: string,
 		modalType: "isJoiningMeeting" | "isInstantMeeting"
@@ -488,8 +509,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	// if (!client || !user) return <Loader />;
-
 	const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
 
 	if (loading) {
@@ -502,65 +521,79 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	return (
 		<div className="flex flex-col w-full items-center justify-center gap-4">
+			{!updatedCreator.videoAllowed &&
+				!updatedCreator.audioAllowed &&
+				!updatedCreator.chatAllowed && (
+					<span className="text-red-500 font-medium text-lg">
+						None of the Services are Available Right Now
+					</span>
+				)}
+
 			{/* Book Video Call */}
-			<div
-				className="callOptionContainer"
-				style={{
-					boxShadow: theme,
-				}}
-				onClick={() => handleClickOption("video", "isInstantMeeting")}
-			>
+			{updatedCreator.videoAllowed && (
 				<div
-					className={`flex gap-4 items-center font-semibold`}
-					style={{ color: creator.themeSelected }}
+					className="callOptionContainer"
+					style={{
+						boxShadow: theme,
+					}}
+					onClick={() => handleClickOption("video", "isInstantMeeting")}
 				>
-					{video}
-					Book Video Call
+					<div
+						className={`flex gap-4 items-center font-semibold`}
+						style={{ color: updatedCreator.themeSelected }}
+					>
+						{video}
+						Book Video Call
+					</div>
+					<span className="text-xs tracking-widest">
+						Rs. {updatedCreator.videoRate}/Min
+					</span>
 				</div>
-				<span className="text-xs tracking-widest">
-					Rs. {creator.videoRate}/Min
-				</span>
-			</div>
+			)}
 
 			{/* Book Audio Call */}
-			<div
-				className="callOptionContainer"
-				style={{
-					boxShadow: theme,
-				}}
-				onClick={() => handleClickOption("audio", "isInstantMeeting")}
-			>
+			{updatedCreator.audioAllowed && (
 				<div
-					className={`flex gap-4 items-center font-semibold`}
-					style={{ color: creator.themeSelected }}
+					className="callOptionContainer"
+					style={{
+						boxShadow: theme,
+					}}
+					onClick={() => handleClickOption("audio", "isInstantMeeting")}
 				>
-					{audio}
-					Book Audio Call
+					<div
+						className={`flex gap-4 items-center font-semibold`}
+						style={{ color: updatedCreator.themeSelected }}
+					>
+						{audio}
+						Book Audio Call
+					</div>
+					<span className="text-xs tracking-widest">
+						Rs. {updatedCreator.audioRate}/Min
+					</span>
 				</div>
-				<span className="text-xs tracking-widest">
-					Rs. {creator.audioRate}/Min
-				</span>
-			</div>
+			)}
 
 			{/* Book Chat */}
-			<div
-				className="callOptionContainer"
-				style={{
-					boxShadow: theme,
-				}}
-				onClick={handleChat}
-			>
-				<button
-					className={`flex gap-4 items-center font-semibold`}
-					style={{ color: creator.themeSelected }}
+			{updatedCreator.chatAllowed && (
+				<div
+					className="callOptionContainer"
+					style={{
+						boxShadow: theme,
+					}}
+					onClick={handleChat}
 				>
-					{chat}
-					Chat Now
-				</button>
-				<span className="text-xs tracking-widest">
-					Rs. {creator.chatRate}/Min
-				</span>
-			</div>
+					<button
+						className={`flex gap-4 items-center font-semibold`}
+						style={{ color: updatedCreator.themeSelected }}
+					>
+						{chat}
+						Chat Now
+					</button>
+					<span className="text-xs tracking-widest">
+						Rs. {updatedCreator.chatRate}/Min
+					</span>
+				</div>
+			)}
 
 			{/* Call & Chat Modals */}
 			<MeetingModal
@@ -574,6 +607,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				theme={creator.themeSelected}
 			/>
 
+			{/* Chat Request Pending  */}
 			{chatRequest &&
 				user?.publicMetadata?.userId === "6687f55f290500fb85b7ace0" && (
 					<div className="chatRequestModal">
@@ -582,7 +616,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						<Button onClick={handleRejectChat}>Reject</Button>
 					</div>
 				)}
-
 			<Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
 				<SheetTrigger asChild>
 					<div className="hidden"></div>

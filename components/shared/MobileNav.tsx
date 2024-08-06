@@ -18,11 +18,13 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const MobileNav = () => {
 	const pathname = usePathname();
-	const { currentUser, setCurrentUser } = useCurrentUsersContext();
+	const { currentUser, setClientUser, setCreatorUser } =
+		useCurrentUsersContext();
 	const { signOut } = useClerk();
 	const handleSignout = () => {
 		localStorage.removeItem("userType");
-		setCurrentUser(null);
+		setClientUser(null);
+		setCreatorUser(null);
 		signOut({ redirectUrl: "/" });
 	};
 	return (
@@ -52,7 +54,7 @@ const MobileNav = () => {
 									alt="Profile"
 									width={1000}
 									height={1000}
-									className="rounded-full w-full max-w-[56px]"
+									className="rounded-full w-12 h-12 max-w-[56px]"
 								/>
 								<div className="flex flex-col items-start justify-center text-white">
 									<span className="text-lg capitalize">
@@ -101,7 +103,7 @@ const MobileNav = () => {
 									className={cn(
 										"absolute bottom-4 md:bottom-6 flex gap-4 items-center p-6 rounded-lg w-[85%] bg-green-1 outline-none focus:ring-0 hoverScaleDownEffect"
 									)}
-									onClick={() => handleSignout()}
+									onClick={handleSignout}
 								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"

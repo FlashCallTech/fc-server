@@ -84,6 +84,8 @@ export async function updateCreatorUser(
 		// 	return { error: "User with the same username already exists" };
 		// }
 
+		console.log("Trying to update user");
+
 		const updatedUser = await Creator.findByIdAndUpdate(userId, user, {
 			new: true,
 		});

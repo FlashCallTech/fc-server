@@ -153,7 +153,7 @@ export async function POST(req: Request) {
 			// Initialize the user's wallet with a starting balance
 			await addMoney({
 				userId: newUser._id,
-				userType: "Client",
+				userType: userType,
 				amount: 0, // Set the initial balance here
 			});
 
