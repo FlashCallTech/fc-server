@@ -10,7 +10,7 @@ export async function POST(request: Request) {
             startedAt,
             endedAt,
             members,
-            creator: creator,
+            creator,
             chatDetails: [{
                 startedAt,
                 status,

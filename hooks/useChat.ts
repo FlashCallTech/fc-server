@@ -178,7 +178,6 @@ const useChat = () => {
 		flag &&
 		user2?.clientId === currentUser?._id
 	) {
-		console.log("outside", flag);
 		setFlag(false);
 		createChat(chatId as string, "ended");
 	}
