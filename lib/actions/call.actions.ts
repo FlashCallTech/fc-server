@@ -17,6 +17,7 @@ export async function createCall(call: RegisterCallParams | any) {
 
 export async function createChat(chat: any) {
 	try {
+		console.log("inside createChat")
 		await connectToDatabase();
 		const newChat = await Chat.create(chat);
 		return newChat.toJSON();

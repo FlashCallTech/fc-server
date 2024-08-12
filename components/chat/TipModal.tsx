@@ -38,7 +38,6 @@ const TipModal = ({
 	const [loading, setLoading] = useState(false);
 	const [tipPaid, setTipPaid] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
-	const { chatId } = useEndChat();
 
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
 	const { toast } = useToast();
@@ -76,17 +75,6 @@ const TipModal = ({
 		setTipAmount(amount);
 	};
 
-	useEffect(() => {
-		if (tipPaid && user?.publicMetadata?.userId === clientId) {
-			const chatUpdate = updateDoc(doc(db, "chats", chatId as string), {
-				clientBalance: walletBalance,
-			});
-		}
-	}, [tipPaid, walletBalance]);
-
-	// console.log('walletBalance', walletBalance);
-	// console.log('istippaid', tipPaid)
-
 	const handleTransaction = async () => {
 		if (parseInt(tipAmount) > adjustedWalletBalance) {
 			toast({
@@ -116,10 +104,8 @@ const TipModal = ({
 						headers: { "Content-Type": "application/json" },
 					}),
 				]);
+				setWalletBalance((prev) => prev + parseInt(tipAmount));
 				setTipPaid(true);
-				if (user?.publicMetadata?.userId === creatorId)
-					setWalletBalance((prev) => prev + parseInt(tipAmount));
-				// resetStates();
 			} catch (error) {
 				console.error("Error handling wallet changes:", error);
 				toast({
