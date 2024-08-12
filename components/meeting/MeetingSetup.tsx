@@ -10,10 +10,10 @@ import { Alert } from "../ui/alert";
 import { Button } from "../ui/button";
 import { ParticipantsPreview } from "./ParticipantsPreview";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import Loader from "../shared/Loader";
 import Image from "next/image";
 import { Cursor, Typewriter } from "react-simple-typewriter";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const MeetingSetup = ({
 	setIsSetupComplete,
@@ -31,7 +31,7 @@ const MeetingSetup = ({
 	const callHasEnded = !!callEndedAt;
 	const router = useRouter();
 	const call = useCall();
-	const { user, isLoaded } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 
 	if (!call) {
 		throw new Error(
@@ -71,10 +71,10 @@ const MeetingSetup = ({
 	if (callHasEnded)
 		return <Alert title="The call has been ended by the host" />;
 
-	if (!isLoaded && !call) return <Loader />;
+	if (!call) return <Loader />;
 
 	const isMeetingOwner =
-		user && user.publicMetadata.userId === call?.state?.createdBy?.id;
+		currentUser && currentUser?._id === call?.state?.createdBy?.id;
 
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"

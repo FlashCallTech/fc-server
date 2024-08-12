@@ -3,11 +3,11 @@ import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { useUser } from "@clerk/nextjs";
 import { createFeedback } from "@/lib/actions/feedback.actions";
 import { useToast } from "../ui/use-toast";
 import { success } from "@/constants/icons";
 import { useGetCallById } from "@/hooks/useGetCallById";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 interface FeedbackProps {
 	callId: string;
@@ -42,7 +42,7 @@ const UserFeedback = ({
 	const { call, isCallLoading } = useGetCallById(String(callId));
 
 	const ratingItems = ["😒", "😞", "😑", "🙂", "😄"];
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 	const marks: { [key: number]: JSX.Element } = {
 		1: (
 			<div className="relative text-3xl flex flex-col items-center justify-start h-20 w-14">
@@ -75,9 +75,9 @@ const UserFeedback = ({
 	);
 
 	const handleSubmitFeedback = async () => {
-		if (!user || !call) return;
+		if (!currentUser || !call) return;
 		try {
-			const userId = user.publicMetadata?.userId as string;
+			const userId = currentUser?._id as string;
 
 			await createFeedback({
 				creatorId: expert?.user_id as string,
@@ -99,7 +99,7 @@ const UserFeedback = ({
 		}
 	};
 
-	if (!user)
+	if (!currentUser)
 		return (
 			<div className="flex items-center space-x-4 w-full animate-pulse">
 				<div className="flex-1 space-y-4 py-1">

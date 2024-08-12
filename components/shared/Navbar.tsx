@@ -1,39 +1,23 @@
 "use client";
 
-import { SignedIn, SignedOut } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import MobileNav from "./MobileNav";
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-	SheetTrigger,
-} from "@/components/ui/sheet";
 
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useRouter } from "next/navigation";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const Navbar = () => {
-	const [isMounted, setIsMounted] = useState(false);
+	const { currentUser } = useCurrentUsersContext();
 	const router = useRouter();
 
-	useEffect(() => {
-		setIsMounted(true);
-	}, []);
+	const handleRouting = () => {
+		localStorage.setItem("userType", "client");
 
-	const handleRouting = (userType: string) => {
-		localStorage.setItem("userType", userType);
-
-		if (userType === "client") {
-			router.replace("/sign-in");
-		} else if (userType === "creator") {
-			router.replace("/sign-in?usertype=creator");
-		}
+		router.replace("/authenticate");
 	};
 	const theme = `5px 5px 0px 0px #000000`;
 	const { walletBalance } = useWalletBalanceContext();
@@ -50,73 +34,46 @@ const Navbar = () => {
 				/>
 			</Link>
 
-			{isMounted && (
-				<>
-					<SignedIn>
-						<div className=" w-fit h-full flex-between gap-2 text-white">
-							<Link
-								href="/payment"
-								className="w-full flex items-center justify-center gap-2 text-black px-5 py-3 border border-black rounded-lg  hover:bg-green-1 group"
-								style={{
-									boxShadow: theme,
-								}}
-							>
-								<Image
-									src="/wallet.svg"
-									width={100}
-									height={100}
-									alt="wallet"
-									className="w-4 h-4 group-hover:text-white group-hover:invert"
-								/>
-								<span className="w-full text-xs whitespace-nowrap font-semibold group-hover:text-white">
-									Rs. {walletBalance.toFixed(2)}
-								</span>
-							</Link>
-							{/* <UserButton afterSignOutUrl="/sign-in" /> */}
-							<MobileNav />
+			{currentUser ? (
+				walletBalance >= 0 ? (
+					<div className=" w-fit h-full flex-between gap-2 text-white animate-enterFromRight">
+						<Link
+							href="/payment"
+							className="w-full flex items-center justify-center gap-2 text-black px-5 py-3 border border-black rounded-lg  hover:bg-green-1 group"
+							style={{
+								boxShadow: theme,
+							}}
+						>
+							<Image
+								src="/wallet.svg"
+								width={100}
+								height={100}
+								alt="wallet"
+								className="w-4 h-4 group-hover:text-white group-hover:invert"
+							/>
+							<span className="w-full text-xs whitespace-nowrap font-semibold group-hover:text-white">
+								{`Rs. ${walletBalance.toFixed(2)}`}
+							</span>
+						</Link>
+						<MobileNav />
+					</div>
+				) : (
+					<div className="w-full max-w-[10rem] space-y-3">
+						<div className="grid grid-cols-3 gap-4">
+							<div className="h-2 bg-gray-300 rounded col-span-2"></div>
+							<div className="h-2 bg-gray-300 rounded col-span-1"></div>
 						</div>
-					</SignedIn>
-
-					<SignedOut>
-						<Sheet>
-							<SheetTrigger asChild>
-								<Button
-									className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1 transition-all duration-300 hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md"
-									size="lg"
-								>
-									Login
-								</Button>
-							</SheetTrigger>
-							<SheetContent
-								side="bottom"
-								className="flex flex-col items-start justify-center border-none rounded-t-xl px-10 pt-7 bg-white max-h-fit w-full sm:max-w-[444px] mx-auto"
-							>
-								<SheetHeader>
-									<SheetTitle>Please Select User Type?</SheetTitle>
-									<SheetDescription>
-										You'll be redirected to specific authentication page.
-									</SheetDescription>
-								</SheetHeader>
-								<div className="flex items-center justify-start w-full gap-2 pt-4">
-									<Button
-										className="text-white hoverScaleEffect bg-green-1"
-										size="lg"
-										onClick={() => handleRouting("client")}
-									>
-										Client
-									</Button>
-									<Button
-										className="text-white hoverScaleEffect bg-green-1"
-										size="lg"
-										onClick={() => handleRouting("creator")}
-									>
-										Creator
-									</Button>
-								</div>
-							</SheetContent>
-						</Sheet>
-					</SignedOut>
-				</>
+						<div className="h-2 bg-gray-300 rounded"></div>
+					</div>
+				)
+			) : (
+				<Button
+					className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1 transition-all duration-300 hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md"
+					size="lg"
+					onClick={handleRouting}
+				>
+					Login
+				</Button>
 			)}
 		</nav>
 	);

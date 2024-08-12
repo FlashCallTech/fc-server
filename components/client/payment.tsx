@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import Loader from "@/components/shared/Loader";
 import ContentLoading from "@/components/shared/ContentLoading";
@@ -24,6 +23,7 @@ import { enterAmountSchema } from "@/lib/validator";
 import { arrowLeft, arrowRight } from "@/constants/icons";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 interface Transaction {
 	_id: string;
@@ -35,7 +35,7 @@ interface Transaction {
 const Payment: React.FC = () => {
 	const [btn, setBtn] = useState<"All" | "Credit" | "Debit">("All");
 	const { walletBalance } = useWalletBalanceContext();
-	const { user, isLoaded } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 	const [loading, setLoading] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -74,7 +74,7 @@ const Payment: React.FC = () => {
 	function onSubmit(values: z.infer<typeof enterAmountSchema>) {
 		const rechargeAmount = values.rechargeAmount;
 		logEvent(analytics, "payment_initiated", {
-			userId: user?.publicMetadata?.userId,
+			userId: currentUser?._id,
 			amount: rechargeAmount,
 		});
 		router.push(`/recharge?amount=${rechargeAmount}`);
@@ -85,7 +85,7 @@ const Payment: React.FC = () => {
 			setLoading(true);
 			const response = await axios.get(
 				`/api/v1/transaction/getUserTransactionsPaginated?userId=${
-					user?.publicMetadata?.userId
+					currentUser?._id
 				}&filter=${btn.toLowerCase()}&page=${page}&limit=10`
 			);
 			setTransactions(response.data.transactions);
@@ -101,10 +101,10 @@ const Payment: React.FC = () => {
 	};
 
 	useEffect(() => {
-		if (user) {
+		if (currentUser) {
 			fetchTransactions(page);
 		}
-	}, [btn, user, page]);
+	}, [btn, currentUser?._id, page]);
 
 	useEffect(() => {
 		const amountPattern = /^\d*$/;
@@ -119,8 +119,6 @@ const Payment: React.FC = () => {
 	}, [rechargeAmount, form]);
 
 	const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
-
-	if (!isLoaded) return <Loader />;
 
 	return (
 		<div className="flex flex-col pt-4 bg-white text-gray-800 w-full h-full">

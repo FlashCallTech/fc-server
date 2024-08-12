@@ -21,7 +21,7 @@ const CreatorCard = ({ creator }: CreatorCardProps) => {
 				const response = await axios.get(
 					`/api/v1/feedback/creator/selected?creatorId=${creator._id}`
 				);
-				setCreatorFeedback(response.data);
+				setCreatorFeedback(response.data.feedbacks);
 			} catch (err) {
 				console.error(err);
 			} finally {

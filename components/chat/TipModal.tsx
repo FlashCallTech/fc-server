@@ -14,12 +14,12 @@ import {
 } from "@/components/ui/sheet";
 
 import { useToast } from "../ui/use-toast";
-import { useCallTimerContext } from "@/lib/context/CallTimerContext";
-import { useUser } from "@clerk/nextjs";
+
 import { creatorUser } from "@/types";
 import { success } from "@/constants/icons";
 import ContentLoading from "../shared/ContentLoading";
 import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const TipModal = ({
 	walletBalance,
@@ -41,7 +41,7 @@ const TipModal = ({
 
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
 	const { toast } = useToast();
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 	const { totalTimeUtilized, hasLowBalance } = useChatTimerContext();
 
 	useEffect(() => {
@@ -55,7 +55,7 @@ const TipModal = ({
 		}
 	}, []);
 
-	const clientId = user?.publicMetadata?.userId as string;
+	const clientId = currentUser?._id as string;
 	const creatorId = creator?._id;
 
 	useEffect(() => {
@@ -69,11 +69,7 @@ const TipModal = ({
 			.map((amount) => amount.toString());
 
 		setPredefinedOptions(options);
-	}, [
-		walletBalance,
-		totalTimeUtilized,
-		chatRatePerMinute
-	]);
+	}, [walletBalance, totalTimeUtilized, chatRatePerMinute]);
 
 	const handlePredefinedAmountClick = (amount: string) => {
 		setTipAmount(amount);

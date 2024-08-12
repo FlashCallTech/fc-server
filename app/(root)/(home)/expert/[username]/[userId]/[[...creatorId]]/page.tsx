@@ -3,8 +3,8 @@
 import CreatorCard from "@/components/creator/CreatorCard";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { getCreatorById } from "@/lib/actions/creator.actions";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { analytics } from "@/lib/firebase";
-import { useUser } from "@clerk/nextjs";
 import { logEvent } from "firebase/analytics";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -13,18 +13,17 @@ const CreatorProfile = () => {
 	const [creator, setCreator] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const { userId } = useParams();
-	const { user } = useUser();
 	const [eventLogged, setEventLogged] = useState(false);
-
+	const { currentUser } = useCurrentUsersContext();
 	useEffect(() => {
-		if (!eventLogged && user) {
+		if (!eventLogged && currentUser) {
 			logEvent(analytics, "visit", {
-				clientId: user?.publicMetadata?.userId,
+				clientId: currentUser?._id,
 				creatorId: userId,
 			});
 			setEventLogged(true);
 		}
-	}, [eventLogged, user, userId]);
+	}, [eventLogged, currentUser, userId]);
 
 	useEffect(() => {
 		const getCreator = async () => {

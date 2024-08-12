@@ -1,7 +1,6 @@
 // User Params
 
 export type CreateUserParams = {
-	clerkId: string;
 	firstName: string;
 	lastName: string;
 	username: string;
@@ -13,7 +12,6 @@ export type CreateUserParams = {
 
 export type UpdateUserParams = {
 	id?: string;
-	clerkId?: string;
 	fullName?: string;
 	firstName: string;
 	lastName: string;
@@ -71,7 +69,6 @@ export type creatorUser = {
 
 export type CreateCreatorParams = {
 	_id?: string;
-	clerkId?: string;
 	fullName?: string;
 	firstName?: string;
 	lastName?: string;
@@ -143,7 +140,7 @@ export type Client = {
 	_id: string;
 	username: string;
 	phone: string;
-	photo?: string; // Optional field if you have profile images
+	photo?: string;
 	role?: string;
 };
 
@@ -153,6 +150,16 @@ export type CreatorFeedback = {
 	feedback: string;
 	showFeedback: boolean;
 	createdAt: Date;
+	position?: number;
+};
+
+export type UserFeedback = {
+	clientId: Client;
+	rating: number;
+	feedback: string;
+	createdAt: Date;
+	showFeedback?: boolean;
+	position?: number;
 };
 
 // Call Params
@@ -163,6 +170,7 @@ export type MemberRequest = {
 		name: string;
 		type: string;
 		image: string;
+		phone?: string;
 	};
 	role: string;
 };

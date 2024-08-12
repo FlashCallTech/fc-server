@@ -9,10 +9,9 @@ import React, {
 import { useWalletBalanceContext } from "./WalletBalanceContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
-import useChat from "@/hooks/useChat";
 import useEndChat from "@/hooks/useEndChat";
 import { creatorUser } from "@/types";
+import { useCurrentUsersContext } from "./CurrentUsersContext";
 
 interface ChatTimerContextProps {
 	timeLeft: string;
@@ -61,8 +60,9 @@ export const ChatTimerProvider = ({
 	// const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
 	const { walletBalance } = useWalletBalanceContext();
-	const {user} = useUser();
 	const [timeLeft, setTimeLeft] = useState(0);
+	const { currentUser } = useCurrentUsersContext();
+
 	const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
 	const [hasLowBalance, setHasLowBalance] = useState(false);
@@ -112,13 +112,13 @@ export const ChatTimerProvider = ({
 
 				if (newTimeLeft <= 0) {
 					clearInterval(intervalId);
-					if(clientId===user?.publicMetadata?.userId){
+					if (clientId === currentUser?._id) {
 						handleEnd(chatId as string, user2);
-					}	
+					}
 				}
 
 				if (
-					clientId===user?.publicMetadata?.userId &&
+					clientId === currentUser?._id &&
 					newTimeLeft <= lowBalanceThreshold &&
 					newTimeLeft > 0
 				) {

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
 	Sheet,
-	SheetClose,
 	SheetContent,
 	SheetDescription,
 	SheetFooter,
@@ -15,10 +13,10 @@ import {
 
 import { useToast } from "../ui/use-toast";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
-import { useUser } from "@clerk/nextjs";
 import { creatorUser } from "@/types";
 import { success } from "@/constants/icons";
 import ContentLoading from "../shared/ContentLoading";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const TipModal = ({
 	walletBalance,
@@ -43,7 +41,7 @@ const TipModal = ({
 
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
 	const { toast } = useToast();
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 	const { totalTimeUtilized, hasLowBalance } = useCallTimerContext();
 
 	useEffect(() => {
@@ -60,7 +58,7 @@ const TipModal = ({
 		}
 	}, []);
 
-	const clientId = user?.publicMetadata?.userId as string;
+	const clientId = currentUser?._id as string;
 	const creatorId = creator?._id;
 
 	useEffect(() => {

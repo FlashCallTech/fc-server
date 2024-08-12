@@ -15,7 +15,7 @@ export async function GET(request: Request) {
 		}
 
 		const feedbacks = await getCallFeedbacks(callId, creatorId);
-		return NextResponse.json(feedbacks);
+		return NextResponse.json({ feedbacks });
 	} catch (error) {
 		console.error(error);
 		return new NextResponse("Internal Server Error", { status: 500 });

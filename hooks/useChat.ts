@@ -4,7 +4,7 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { Timestamp } from "firebase/firestore";
 import { MemberRequest, creatorUser } from "@/types";
-import { useUser } from "@clerk/nextjs";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 interface Chat {
 	startedAt: number;
@@ -40,9 +40,7 @@ const useChat = () => {
 	const [user2, setUser2] = useState<User2 | undefined>();
 	const [flag, setFlag] = useState(true);
 	const { chatId } = useParams();
-	const router = useRouter();
-	const { user } = useUser();
-	const pathname = usePathname();
+	const { currentUser } = useCurrentUsersContext();
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -101,11 +99,11 @@ const useChat = () => {
 			role: "call_member",
 		},
 		{
-			user_id: String(user?.publicMetadata?.userId),
+			user_id: String(currentUser?._id),
 			custom: {
-				name: String(user?.username),
+				name: String(currentUser?.username),
 				type: "client",
-				image: String(user?.imageUrl),
+				image: String(currentUser?.photo),
 			},
 			role: "admin",
 		},
@@ -178,7 +176,7 @@ const useChat = () => {
 		endedAt &&
 		amount &&
 		flag &&
-		user2?.clientId === user?.publicMetadata?.userId
+		user2?.clientId === currentUser?._id
 	) {
 		console.log("outside", flag);
 		setFlag(false);

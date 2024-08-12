@@ -2,8 +2,8 @@
 
 import CreatorDetails from "@/components/creator/CreatorDetails";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
-import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
@@ -12,11 +12,10 @@ type FavoriteItem = {
 };
 
 const Favorites = () => {
-	const { user } = useUser();
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(false);
 	const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
-
+	const { currentUser } = useCurrentUsersContext();
 	useEffect(() => {
 		const fetchFavorites = async () => {
 			try {
@@ -26,7 +25,7 @@ const Favorites = () => {
 						"Content-Type": "application/json",
 					},
 					body: JSON.stringify({
-						clientId: user?.publicMetadata?.userId,
+						clientId: currentUser?._id,
 					}),
 				});
 
@@ -49,10 +48,10 @@ const Favorites = () => {
 			}
 		};
 
-		if (user?.publicMetadata?.userId) {
+		if (currentUser?._id) {
 			fetchFavorites();
 		}
-	}, [user]);
+	}, [currentUser]);
 
 	return (
 		<section className="flex size-full flex-col gap-5 md:pb-14">

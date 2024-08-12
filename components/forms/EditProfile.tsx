@@ -17,11 +17,9 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { UpdateCreatorParams, UpdateUserParams } from "@/types";
-import { useUser } from "@clerk/nextjs";
 import React, { useEffect, useState } from "react";
 import { UpdateProfileFormSchema } from "@/lib/validator";
 import { Textarea } from "../ui/textarea";
-import axios from "axios";
 import { useToast } from "../ui/use-toast";
 import FileUploader from "../shared/FileUploader";
 import { updateCreatorUser } from "@/lib/actions/creator.actions";
@@ -43,8 +41,6 @@ const EditProfile = ({
 	setEditData,
 	userType,
 }: EditProfileProps) => {
-	const { user } = useUser();
-	const userId = user?.id;
 	const { toast } = useToast();
 	const [isChanged, setIsChanged] = useState(false); // State to track if any changes are made
 	const [selectedFile, setSelectedFile] = useState<File | null>(null); // State to store the selected file
@@ -131,13 +127,8 @@ const EditProfile = ({
 				formData.append("fileSelected", selectedFile);
 			}
 
-			await axios.post("/api/update-user", formData, {
-				headers: {
-					"Content-Type": "multipart/form-data",
-				},
-			});
-
 			let response;
+			console.log("Common Values ... ", commonValues);
 			if (userType === "creator") {
 				response = await updateCreatorUser(userData.id!, {
 					...commonValues,
@@ -145,7 +136,7 @@ const EditProfile = ({
 				} as UpdateCreatorParams);
 			} else {
 				response = await updateUser(
-					String(userId),
+					userData.id!,
 					commonValues as UpdateUserParams
 				);
 			}
@@ -199,10 +190,10 @@ const EditProfile = ({
 			</section>
 		);
 
-	console.log(userData);
-
 	return (
 		<Form {...form}>
+			<span className="text-2xl font-semibold">Edit User Details</span>
+
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
 				className="space-y-8 w-full flex flex-col items-center"
@@ -237,7 +228,7 @@ const EditProfile = ({
 											? userData?.bio?.length === 0
 												? "Add"
 												: "Edit"
-											: "Edit"}{" "}
+											: ""}{" "}
 										{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
 									</FormLabel>
 									<FormControl>
@@ -249,7 +240,7 @@ const EditProfile = ({
 											/>
 										) : (
 											<Input
-												placeholder={`Edit ${
+												placeholder={`Enter ${
 													field.name.charAt(0).toUpperCase() +
 													field.name.slice(1)
 												}`}
@@ -336,9 +327,7 @@ const EditProfile = ({
 								<FormControl>
 									<Input
 										type="date"
-										placeholder={`Edit ${
-											field.name.charAt(0).toUpperCase() + field.name.slice(1)
-										}`}
+										placeholder={`Enter DOB`}
 										{...field}
 										className="input-field"
 									/>

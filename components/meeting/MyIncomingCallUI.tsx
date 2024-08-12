@@ -1,8 +1,27 @@
 import React from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import Image from "next/image";
+import { useToast } from "../ui/use-toast";
 
 const MyIncomingCallUI = ({ call }: { call: Call }) => {
+	const { toast } = useToast();
+	const handleCallState = (action: string) => {
+		if (action === "declined") {
+			call.leave({ reject: true });
+		} else {
+			call.accept();
+		}
+
+		toast({
+			title: `${action === "declined" ? "Call Declined" : "Call Accepted"}`,
+			description: `${
+				action === "declined"
+					? "Redirection Back ..."
+					: "Redirection To Meeting"
+			}`,
+		});
+	};
+
 	return (
 		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:w-[35%] 3xl:[25%] flex flex-col items-center justify-between  py-10 sm:rounded-xl bottom-0 right-0 sm:top-4 sm:right-4 gap-5">
 			<h1 className="font-bold text-xl mb-2">Incoming Call ...</h1>
@@ -10,8 +29,8 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 				<Image
 					src={call?.state?.createdBy?.image!}
 					alt=""
-					width={100}
-					height={100}
+					width={1000}
+					height={1000}
 					className="rounded-full w-28 h-28 object-cover"
 					onError={(e) => {
 						e.currentTarget.src = "/images/defaultProfileImage.png";
@@ -27,7 +46,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 				<button
 					className="bg-green-500 text-white p-4 rounded-full hoverScaleEffect"
 					onClick={() => {
-						call.accept();
+						handleCallState("accepted");
 					}}
 				>
 					<svg
@@ -47,7 +66,9 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 				</button>
 				<button
 					className="bg-red-500 text-white p-4 rounded-full hoverScaleEffect"
-					onClick={() => call.leave({ reject: true })}
+					onClick={() => {
+						handleCallState("declined");
+					}}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

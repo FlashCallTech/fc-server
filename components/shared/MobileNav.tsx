@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
 	Sheet,
@@ -12,20 +12,21 @@ import {
 } from "@/components/ui/sheet";
 import { sidebarLinks } from "@/constants";
 import { cn } from "@/lib/utils";
-import { useClerk } from "@clerk/nextjs";
 import { Button } from "../ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const MobileNav = () => {
 	const pathname = usePathname();
+	const router = useRouter();
 	const { currentUser, setClientUser, setCreatorUser } =
 		useCurrentUsersContext();
-	const { signOut } = useClerk();
 	const handleSignout = () => {
 		localStorage.removeItem("userType");
+		localStorage.removeItem("userID");
+		localStorage.removeItem("authToken");
 		setClientUser(null);
 		setCreatorUser(null);
-		signOut({ redirectUrl: "/" });
+		// router.push("/authenticate");
 	};
 	return (
 		<section className="w-full  relative">

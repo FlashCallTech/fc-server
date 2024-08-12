@@ -14,7 +14,6 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
-import { useUser } from "@clerk/nextjs";
 import CallTimer from "../calls/CallTimer";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 import { useToast } from "../ui/use-toast";
@@ -28,6 +27,7 @@ import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import CreatorCallTimer from "../creator/CreatorCallTimer";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -54,7 +54,7 @@ const MeetingRoom = () => {
 		useCallStateHooks();
 	const [hasJoined, setHasJoined] = useState(false);
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 	const call = useCall();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
@@ -92,7 +92,7 @@ const MeetingRoom = () => {
 					await call?.join();
 					setHasJoined(true);
 					logEvent(analytics, "call_connected", {
-						userId: user?.publicMetadata?.userId,
+						userId: currentUser?._id,
 					});
 				} catch (error: any) {
 					if (error.message !== "Illegal State: Already joined") {
@@ -155,8 +155,7 @@ const MeetingRoom = () => {
 		}
 	}, [layout]);
 
-	const isMeetingOwner =
-		user?.publicMetadata?.userId === call?.state?.createdBy?.id;
+	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 
 	if (callingState !== CallingState.JOINED) {
 		return (

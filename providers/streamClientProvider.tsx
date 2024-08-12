@@ -1,27 +1,24 @@
 "use client";
 
-import { tokenProvider } from "@/lib/actions/stream.actions";
-import Loader from "@/components/shared/Loader";
-import { useUser } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 import { StreamVideo, StreamVideoClient } from "@stream-io/video-react-sdk";
-import { ReactNode, useEffect, useState } from "react";
 import MyCallUI from "@/components/meeting/MyCallUI";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { tokenProvider } from "@/lib/actions/stream.actions";
 
 const API_KEY = process.env.NEXT_PUBLIC_STREAM_API_KEY;
 
-const StreamVideoProvider = ({ children }: { children: ReactNode }) => {
+const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 	const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(
 		null
 	);
 	const [loading, setLoading] = useState(true);
-	const { user, isLoaded } = useUser();
-	const userId = user?.publicMetadata?.userId as string | undefined;
+	const { currentUser } = useCurrentUsersContext();
+	const userId = currentUser?._id as string | undefined;
 
 	useEffect(() => {
 		const initializeVideoClient = async () => {
-			if (!isLoaded) return;
-
-			if (!user || !userId) {
+			if (!currentUser || !userId) {
 				setLoading(false);
 				return;
 			}
@@ -29,14 +26,20 @@ const StreamVideoProvider = ({ children }: { children: ReactNode }) => {
 			if (!API_KEY) throw new Error("Stream API key is missing");
 
 			try {
+				const token = await tokenProvider(
+					userId,
+					currentUser.username,
+					currentUser.photo
+				);
+
 				const client = new StreamVideoClient({
 					apiKey: API_KEY,
 					user: {
 						id: userId,
-						name: user?.username || userId,
-						image: (user?.unsafeMetadata?.photo as string) || user?.imageUrl,
+						name: currentUser?.username || userId,
+						image: currentUser?.photo as string,
 					},
-					tokenProvider: tokenProvider,
+					tokenProvider: async () => token,
 				});
 				setVideoClient(client);
 			} catch (error) {
@@ -47,15 +50,7 @@ const StreamVideoProvider = ({ children }: { children: ReactNode }) => {
 		};
 
 		initializeVideoClient();
-	}, [isLoaded, user, userId]);
-
-	if (loading) {
-		return (
-			<div className="flex items-center justify-center w-full h-screen">
-				<Loader />
-			</div>
-		);
-	}
+	}, [currentUser?._id, userId]);
 
 	return videoClient ? (
 		<StreamVideo client={videoClient}>
