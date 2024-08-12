@@ -25,9 +25,11 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 const RechargeModal = ({
 	setWalletBalance,
 	walletBalance,
+	updateWalletBalance,
 }: {
 	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
 	walletBalance: number;
+	updateWalletBalance: () => Promise<void>;
 }) => {
 	const [rechargeAmount, setRechargeAmount] = useState("");
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -43,6 +45,12 @@ const RechargeModal = ({
 			resumeTimer();
 		}
 	}, [isSheetOpen, onGoingPayment, pauseTimer, resumeTimer]);
+
+	useEffect(() => {
+		updateDoc(doc(db, "chats", chatId as string), {
+			clientBalance: walletBalance,
+		});
+	}, [walletBalance]);
 
 	const subtotal: number | null =
 		rechargeAmount !== null ? parseInt(rechargeAmount) : null;
@@ -168,6 +176,7 @@ const RechargeModal = ({
 		} catch (error) {
 			console.error("Payment request failed:", error);
 		} finally {
+			updateWalletBalance();
 			setOnGoingPayment(false);
 			resumeTimer();
 		}
@@ -176,6 +185,8 @@ const RechargeModal = ({
 	const handlePredefinedAmountClick = (amount: string) => {
 		setRechargeAmount(amount);
 	};
+
+	console.log("walletbalance", walletBalance);
 
 	return (
 		<section>

@@ -43,7 +43,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [chatRequest, setChatRequest] = useState<any>(null);
 	const [isSheetOpen, setSheetOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
 	const clientId = clientUser?._id as string;
@@ -293,7 +292,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			router.push("/payment");
 			return;
 		}
-		// console.log(chatRef);
 		const chatRequestsRef = collection(db, "chatRequests");
 
 		try {
@@ -312,8 +310,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
 				const userChatsData = userChatsDocSnapshot.data();
 				const creatorChatsData = creatorChatsDocSnapshot.data();
-
-				// console.log(userChatsData)
 
 				const existingChat =
 					userChatsData.chats.find(
@@ -387,6 +383,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		setLoading(true);
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
+		const response = await getUserById(chatRequest.clientId as string);
+		let maxChatDuration =
+			(response.walletBalance / parseInt(creator?.chatRate, 10)) * 60; // in seconds
+		maxChatDuration =
+			maxChatDuration > 3600 ? 3600 : Math.floor(maxChatDuration);
 
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
@@ -398,6 +399,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					creatorId: chatRequest.creatorId,
 					status: "active",
 					messages: [],
+					maxChatDuration,
+					walletBalance: response.walletBalance,
 				});
 
 				const creatorChatUpdate = updateDoc(
@@ -426,6 +429,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}
 				);
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
+			} else {
+				await updateDoc(doc(db, "chats", chatId), {
+					maxChatDuration,
+					clientBalance: response.walletBalance,
+				});
 			}
 
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
@@ -453,7 +461,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				router.push(
 					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
 				);
-			}, 3000);
+			}, 1500);
 
 			setSheetOpen(false);
 		} catch (error) {
