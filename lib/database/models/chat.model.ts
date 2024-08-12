@@ -2,16 +2,16 @@ import { Schema, model, models } from "mongoose";
 
 const ChatDetailsSchema = new Schema({
 	startedAt: { type: Date },
-	status: { type: String },
+	status: {type: String},
 	endedAt: { type: Date },
-	duration: { type: String }
+    duration: {type: String}
 }, { _id: false });
 
 const ChatSchema = new Schema({
 	chatId: { type: String, required: true, unique: true },
-	creator: { type: String, required: true },
+	creator:{ type: String, required: true },
 	startedAt: { type: Date, requried: true },
-	endedAt: { type: Date },
+	endedAt:{type: Date },
 	members: [
 		{
 			user_id: { type: String, required: true },
