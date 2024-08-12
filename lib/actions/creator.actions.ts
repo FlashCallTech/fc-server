@@ -15,7 +15,7 @@ export async function createCreatorUser(user: CreateCreatorParams) {
 
 		// Check for existing user with the same email or username
 		const existingUser = await Creator.findOne({
-			$or: [{ username: user.username }],
+			$or: [{ username: user.username, phone: user.phone }],
 		});
 		if (existingUser) {
 			return { error: "User with the same username already exists" };
@@ -101,66 +101,12 @@ export async function updateCreatorUser(
 	}
 }
 
-export async function updateCreatorUserUsingClerk(
-	clerkId: string,
-	user: UpdateCreatorParams
-) {
-	try {
-		await connectToDatabase();
-
-		let updatedUser = await Creator.findByIdAndUpdate(clerkId, user, {
-			new: true,
-		});
-
-		if (!updatedUser && user.username) {
-			// Attempt to find and update the user by username if clerkId update failed
-			const existingUser = await Creator.findOneAndUpdate(
-				{ username: user.username },
-				user,
-				{ new: true }
-			);
-
-			updatedUser = existingUser;
-		}
-
-		if (!updatedUser) {
-			throw new Error("User not found"); // Throw error if user is not found
-		}
-
-		return JSON.parse(JSON.stringify(updatedUser));
-	} catch (error) {
-		console.error("Error updating user:", error); // Log the error
-		throw new Error("User update failed"); // Throw the error to be caught by the caller
-	}
-}
-
 export async function deleteCreatorUser(userId: string) {
 	try {
 		await connectToDatabase();
 
 		// Find user to delete
 		const userToDelete = await Creator.findOne({ userId });
-
-		if (!userToDelete) {
-			throw new Error("User not found");
-		}
-
-		// Delete user
-		const deletedUser = await Creator.findByIdAndDelete(userToDelete._id);
-		revalidatePath("/");
-
-		return deletedUser ? JSON.parse(JSON.stringify(deletedUser)) : null;
-	} catch (error) {
-		handleError(error);
-	}
-}
-
-export async function deleteCreatorUserUsingClerk(clerkId: string) {
-	try {
-		await connectToDatabase();
-
-		// Find user to delete
-		const userToDelete = await Creator.findOne({ clerkId });
 
 		if (!userToDelete) {
 			throw new Error("User not found");

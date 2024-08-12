@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import UserFeedback from "./UserFeedback";
 import { getCallFeedbacks } from "@/lib/actions/feedback.actions";
-import { useUser } from "@clerk/nextjs";
 import { Rating } from "@smastrom/react-rating";
 import {
 	Dialog,
@@ -13,10 +12,11 @@ import {
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import { formatDateTime } from "@/lib/utils";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const FeedbackCheck = ({ callId }: { callId: string }) => {
 	const [feedbackExists, setFeedbackExists] = useState<boolean | null>(null);
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 
 	const [userFeedbacks, setUserFeedbacks] = useState<any[] | null>(null);
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -36,7 +36,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 
 			setFeedbackExists(hasFeedback);
 
-			if (user && hasFeedback) {
+			if (currentUser && hasFeedback) {
 				const filteredFeedbacks = response
 					.map((feedback: any) => feedback.feedbacks)
 					.flat();
@@ -49,10 +49,10 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 	};
 
 	useEffect(() => {
-		if (user) {
+		if (currentUser?._id) {
 			checkFeedback();
 		}
-	}, [callId, user]);
+	}, [callId, currentUser?._id]);
 
 	if (feedbackExists === null) {
 		return (

@@ -17,10 +17,10 @@ import {
 	PaymentResponse,
 	RazorpayOptions,
 } from "@/types";
-import { useUser } from "@clerk/nextjs";
 import { useToast } from "../ui/use-toast";
 import Script from "next/script";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const RechargeModal = ({
 	setWalletBalance,
@@ -31,9 +31,8 @@ const RechargeModal = ({
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
 	const [onGoingPayment, setOnGoingPayment] = useState(false);
 	const { toast } = useToast();
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 	const { pauseTimer, resumeTimer } = useCallTimerContext();
-	
 
 	useEffect(() => {
 		if (isSheetOpen || onGoingPayment) {
@@ -113,7 +112,7 @@ const RechargeModal = ({
 						const jsonRes: any = await validateRes.json();
 
 						// Add money to user wallet upon successful validation
-						const userId = user?.publicMetadata?.userId as string; // Replace with actual user ID
+						const userId = currentUser?._id as string; // Replace with actual user ID
 						const userType = "Client"; // Replace with actual user type
 						setWalletBalance((prev) => prev + parseInt(rechargeAmount));
 

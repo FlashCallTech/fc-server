@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useUser } from "@clerk/nextjs";
 import { StreamCall, StreamTheme } from "@stream-io/video-react-sdk";
 import { useParams } from "next/navigation";
 
@@ -10,14 +9,15 @@ import MeetingSetup from "@/components/meeting/MeetingSetup";
 import MeetingRoom from "@/components/meeting/MeetingRoom";
 import Loader from "@/components/shared/Loader";
 import { CallTimerProvider } from "@/lib/context/CallTimerContext";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const CretorMeetingPage = () => {
 	const { id } = useParams();
-	const { isLoaded, user } = useUser();
 	const { call, isCallLoading } = useGetCallById(id);
 	const [isSetupComplete, setIsSetupComplete] = useState(false);
+	const { currentUser } = useCurrentUsersContext();
 
-	if (!isLoaded || isCallLoading) return <Loader />;
+	if (isCallLoading) return <Loader />;
 
 	if (!call)
 		return (
@@ -30,8 +30,7 @@ const CretorMeetingPage = () => {
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"
 	);
-	const isMeetingOwner =
-		user?.publicMetadata?.userId === call?.state?.createdBy?.id;
+	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 
 	return (
 		<main className="h-full w-full">

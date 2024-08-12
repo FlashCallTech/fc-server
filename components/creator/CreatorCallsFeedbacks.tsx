@@ -1,22 +1,30 @@
 "use client";
 
-import { formatDateTime } from "@/lib/utils";
-import { RegisterCallParams } from "@/types";
-import { useUser } from "@clerk/nextjs";
+import { UserFeedback } from "@/types";
 import React, { useEffect, useState } from "react";
 import ContentLoading from "../shared/ContentLoading";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
-import { getCallFeedbacks } from "@/lib/actions/feedback.actions";
 import CreatorFeedbackCheck from "../feedbacks/CreatorFeedbackCheck";
+import { Switch } from "../ui/switch";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+
+type FeedbackParams = {
+	callId?: string;
+	feedbacks: [UserFeedback];
+};
+
+type ExtendedUserFeedback = UserFeedback & {
+	callId: string;
+};
 
 const CreatorCallsFeedbacks = () => {
-	const [calls, setCalls] = useState<RegisterCallParams[]>([]);
+	const [feedbacks, setFeedbacks] = useState<ExtendedUserFeedback[]>([]);
 	const [callsCount, setCallsCount] = useState(10);
 	const [loading, setLoading] = useState(true);
-	const { user } = useUser();
+	const { creatorUser } = useCurrentUsersContext();
 	const pathname = usePathname();
 
 	useEffect(() => {
@@ -39,26 +47,20 @@ const CreatorCallsFeedbacks = () => {
 		const getCalls = async () => {
 			try {
 				const response = await fetch(
-					`/api/v1/calls/getUserCalls?userId=${String(
-						user?.publicMetadata?.userId
+					`/api/v1/feedback/call/getFeedbacks?creatorId=${String(
+						creatorUser?._id
 					)}`
 				);
-				const data = await response.json();
+				let data = await response.json();
 
-				// Fetch feedbacks for each call and filter calls with non-empty feedbacks
-				const callsWithFeedbacks = await Promise.all(
-					data.map(async (call: RegisterCallParams) => {
-						const feedbacks = await getCallFeedbacks(call.callId);
-						if (feedbacks.length > 0) {
-							return { ...call, feedbacks };
-						}
-						return null;
+				// Extracting feedbacks and including callId
+				const feedbacksWithCallId = data.feedbacks.map(
+					(item: FeedbackParams) => ({
+						...item.feedbacks[0],
+						callId: item.callId,
 					})
 				);
-
-				// Filter out null values from the result
-				const filteredCalls = callsWithFeedbacks.filter(Boolean);
-				setCalls(filteredCalls);
+				setFeedbacks(feedbacksWithCallId);
 			} catch (error) {
 				console.warn(error);
 			} finally {
@@ -67,9 +69,62 @@ const CreatorCallsFeedbacks = () => {
 		};
 
 		getCalls();
-	}, [user]);
+	}, [creatorUser?._id]);
 
-	const visibleCalls = calls.slice(0, callsCount);
+	const handleSwitchToggle = async (
+		feedback: UserFeedback & { callId: string },
+		showFeedback: boolean,
+		index: number
+	) => {
+		try {
+			const response = await fetch("/api/v1/feedback/creator/setFeedback", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					creatorId: creatorUser?._id,
+					clientId: feedback.clientId._id,
+					rating: feedback.rating,
+					feedbackText: feedback.feedback,
+					showFeedback: showFeedback,
+					createdAt: feedback.createdAt,
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to update feedback visibility");
+			}
+
+			// update the showFeedback in original callFeedbacks as well
+			await fetch("/api/v1/feedback/call/create", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					creatorId: creatorUser?._id,
+					callId: feedback.callId,
+					clientId: feedback.clientId._id,
+					rating: feedback.rating,
+					feedbackText: feedback.feedback,
+					showFeedback: showFeedback,
+					createdAt: feedback.createdAt,
+				}),
+			});
+
+			// Update the feedbacks state
+			setFeedbacks((prevFeedbacks) =>
+				prevFeedbacks.map((fb, i) =>
+					i === index ? { ...fb, showFeedback: showFeedback } : fb
+				)
+			);
+		} catch (error) {
+			console.error("Error updating feedback visibility:", error);
+		}
+	};
+
+	const visibleFeedbacks = feedbacks.slice(0, callsCount);
 
 	if (loading) {
 		return (
@@ -79,50 +134,78 @@ const CreatorCallsFeedbacks = () => {
 		);
 	}
 
+	// console.log(visibleFeedbacks);
 	return (
 		<>
-			{calls && calls.length > 0 ? (
+			{feedbacks && feedbacks.length > 0 ? (
 				<section
 					className={`grid grid-cols-1 ${
-						calls.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
-					} items-center gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-x-hidden no-scrollbar`}
+						feedbacks.length > 0 && "sm:grid-cols-2 2xl:grid-cols-3"
+					} items-start gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-x-hidden no-scrollbar`}
 				>
-					{visibleCalls.map((call, index) => {
-						const formattedDate = formatDateTime(call.startedAt as Date);
+					{visibleFeedbacks.map((feedback, index) => {
 						return (
 							<div
 								key={index}
-								className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300  ${
+								className={`flex flex-col items-start justify-center gap-4 xl:max-w-[568px]  border  rounded-xl p-4 shadow-lg  border-gray-300  ${
 									pathname.includes("/profile") && "mx-auto"
 								}`}
 							>
-								<div className="flex flex-col items-start justify-start w-full gap-2">
-									{/* Expert's Details */}
-									<div className="w-1/2 flex items-center justify-start gap-4">
-										{/* creator image */}
-										<Image
-											src={call.members[1].custom.image}
-											alt="Expert"
-											height={1000}
-											width={1000}
-											className="rounded-full w-12 h-12 object-cover"
-										/>
-										{/* creator details */}
-										<div className="flex flex-col">
-											<p className="text-base tracking-wide">
-												{call.members[1].custom.name}
-											</p>
-											<span className="text-sm text-green-1">Client</span>
+								<div
+									key={index}
+									className={`flex h-full w-full items-start justify-between `}
+								>
+									<div className="flex flex-col items-start justify-start w-full gap-2">
+										{/* Expert's Details */}
+										<div className="w-1/2 flex items-center justify-start gap-4">
+											{/* creator image */}
+											{feedback?.clientId?.photo && (
+												<Image
+													src={
+														feedback?.clientId?.photo ||
+														"/images/defaultProfileImage.png"
+													}
+													alt={feedback?.clientId?.username}
+													height={1000}
+													width={1000}
+													className="rounded-full w-12 h-12 object-cover"
+													onError={(e) => {
+														e.currentTarget.src =
+															"/images/defaultProfileImage.png";
+													}}
+												/>
+											)}
+											{/* creator details */}
+											<div className="flex flex-col">
+												<span className="text-base text-green-1">
+													{feedback.clientId.phone || feedback.clientId._id}
+												</span>
+												<p className="text-sm tracking-wide">
+													{feedback.clientId.username}
+												</p>
+											</div>
 										</div>
 									</div>
+									{/* StartedAt & Feedbacks */}
+									<div className="w-1/2 flex flex-col items-end justify-between h-full gap-2">
+										<Switch
+											checked={feedback.showFeedback}
+											onCheckedChange={() =>
+												handleSwitchToggle(
+													feedback,
+													!feedback.showFeedback,
+													index
+												)
+											}
+										/>
+										<span className="text-xs text-[#A7A8A1] ">
+											{!feedback.showFeedback && "Add to Website"}
+										</span>
+									</div>
 								</div>
-								{/* StartedAt & Feedbacks */}
-								<div className="w-1/2 flex flex-col items-end justify-between h-full gap-2">
-									<span className="text-sm text-[#A7A8A1] pr-2 pt-1 whitespace-nowrap">
-										{formattedDate.dateTime}
-									</span>
-									<CreatorFeedbackCheck feedbacks={call.feedbacks} />
-								</div>
+
+								{/* feedbacks */}
+								<CreatorFeedbackCheck feedback={feedback} />
 							</div>
 						);
 					})}

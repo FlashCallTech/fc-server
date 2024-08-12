@@ -39,23 +39,47 @@ export async function createFeedback({
 			}).exec();
 
 			if (existingCallFeedback) {
-				// Always push the new feedback entry
-				existingCallFeedback.feedbacks.push(feedbackEntry);
+				const existingFeedbackIndex = existingCallFeedback.feedbacks.findIndex(
+					(feedback: any) =>
+						feedback.clientId.toString() === clientId &&
+						new Date(feedback.createdAt).toISOString() ===
+							new Date(createdAt).toISOString() &&
+						feedback.feedback === feedbackText
+				);
+
+				console.log(existingFeedbackIndex);
+
+				if (existingFeedbackIndex > -1) {
+					if (!showFeedback) {
+						// Remove the existing feedback entry if showFeedback is false
+						existingCallFeedback.feedbacks.splice(existingFeedbackIndex, 1);
+					} else {
+						// Update the existing feedback entry
+						existingCallFeedback.feedbacks[existingFeedbackIndex] =
+							feedbackEntry;
+					}
+				} else {
+					// Push the new feedback entry
+					existingCallFeedback.feedbacks.push(feedbackEntry);
+				}
+
 				await existingCallFeedback.save();
 			} else {
-				const newCallFeedback = new CreatorFeedback({
-					creatorId,
-					feedbacks: [feedbackEntry],
-				});
+				if (showFeedback) {
+					const newCallFeedback = new CreatorFeedback({
+						creatorId,
+						feedbacks: [feedbackEntry],
+					});
 
-				await newCallFeedback.save();
+					await newCallFeedback.save();
+				}
 			}
 		}
 
-		return { success: "Feedback Added successfully" };
+		return { success: "Feedback Added/Updated successfully" };
 	} catch (error: any) {
 		handleError(error);
-		console.log("Error Adding Feedback ... ", error);
+		console.log("Error Adding/Updating Feedback ... ", error);
 		return { success: false, error: error.message };
 	}
 }

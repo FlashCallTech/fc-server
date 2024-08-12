@@ -2,7 +2,6 @@
 
 import { formatDateTime } from "@/lib/utils";
 import { RegisterCallParams } from "@/types";
-import { useUser } from "@clerk/nextjs";
 import React, { useEffect, useState } from "react";
 import ContentLoading from "../shared/ContentLoading";
 import Link from "next/link";
@@ -10,12 +9,13 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import FeedbackCheck from "../feedbacks/FeedbackCheck";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const CallListMobile = () => {
 	const [calls, setCalls] = useState<RegisterCallParams[]>([]);
 	const [callsCount, setCallsCount] = useState(10);
 	const [loading, setLoading] = useState(true);
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 	const pathname = usePathname();
 
 	useEffect(() => {
@@ -38,9 +38,7 @@ const CallListMobile = () => {
 		const getCalls = async () => {
 			try {
 				const response = await fetch(
-					`/api/v1/calls/getUserCalls?userId=${String(
-						user?.publicMetadata?.userId
-					)}`
+					`/api/v1/calls/getUserCalls?userId=${String(currentUser?._id)}`
 				);
 				const data = await response.json();
 				setCalls(data);
@@ -52,7 +50,7 @@ const CallListMobile = () => {
 		};
 
 		getCalls();
-	}, [user]);
+	}, [currentUser]);
 
 	const visibleCalls = calls.slice(0, callsCount);
 

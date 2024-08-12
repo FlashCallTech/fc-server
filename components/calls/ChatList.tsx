@@ -2,19 +2,19 @@
 
 import { formatDateTime } from "@/lib/utils";
 import { SelectedChat } from "@/types";
-import { useUser } from "@clerk/nextjs";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import ContentLoading from "../shared/ContentLoading";
 import Link from "next/link";
 import Image from "next/image";
 import FeedbackCheck from "../feedbacks/FeedbackCheck";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const ChatList = () => {
 	const [chats, setChats] = useState<SelectedChat[]>([]);
 	const [chatsCount, setChatsCount] = useState(8);
 	const [loading, setLoading] = useState(true);
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 	const pathname = usePathname();
 	const router = useRouter();
 
@@ -38,9 +38,7 @@ const ChatList = () => {
 		const getChats = async () => {
 			try {
 				const response = await fetch(
-					`/api/v1/chats/getUserChats?userId=${String(
-						user?.publicMetadata?.userId
-					)}`
+					`/api/v1/chats/getUserChats?userId=${String(currentUser?._id)}`
 				);
 				const data = await response.json();
 				setChats(data);
@@ -52,7 +50,7 @@ const ChatList = () => {
 		};
 
 		getChats();
-	}, [user]);
+	}, [currentUser]);
 
 	const visibleChats = chats.slice(0, chatsCount);
 

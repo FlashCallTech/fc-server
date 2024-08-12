@@ -4,7 +4,7 @@ import axios from "axios";
 
 export async function POST(req: NextRequest) {
 	const { userId } = getAuth(req);
-	if (!userId) return NextResponse.redirect("/sign-in");
+	if (!userId) return NextResponse.redirect("/authenticate");
 
 	const formData = await req.formData();
 	const firstName = formData.get("firstName") as string;

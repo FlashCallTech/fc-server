@@ -64,7 +64,7 @@ const FileUploader = ({
 	return (
 		<div
 			{...getRootProps()}
-			className="flex items-center justify-center w-fit mx-auto flex-col rounded-xl cursor-pointer"
+			className="flex items-center justify-center w-full mx-auto flex-col rounded-xl cursor-pointer"
 		>
 			<input {...getInputProps()} className="cursor-pointer" />
 

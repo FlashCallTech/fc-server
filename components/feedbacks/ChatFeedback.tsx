@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { Sheet, SheetContent } from "../ui/sheet";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { useUser } from "@clerk/nextjs";
 import { createFeedback } from "@/lib/actions/feedback.actions";
 import { useToast } from "../ui/use-toast";
 import { success } from "@/constants/icons";
@@ -14,6 +13,7 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import useGetChatById from "@/hooks/useGetChatById";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const ChatFeedback = ({
 	chatId,
@@ -32,7 +32,7 @@ const ChatFeedback = ({
 	const { chat, isChatLoading } = useGetChatById(chatId as string);
 
 	const ratingItems = ["😒", "😞", "😑", "🙂", "😄"];
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 	const marks: { [key: number]: JSX.Element } = {
 		1: (
 			<div className="relative text-3xl flex flex-col items-center justify-start h-20 w-14">
@@ -55,9 +55,9 @@ const ChatFeedback = ({
 
 	const handleSliderChange = (value: any) => {
 		setRating(value);
-		if(value){
+		if (value) {
 			logEvent(analytics, "feedback_slider", {
-				clientId: user?.publicMetadata?.userId,
+				clientId: currentUser?._id,
 			});
 		}
 	};
@@ -66,17 +66,17 @@ const ChatFeedback = ({
 		event: React.ChangeEvent<HTMLTextAreaElement>
 	) => {
 		setFeedbackMessage(event.target.value);
-		if(event.target.value){
+		if (event.target.value) {
 			logEvent(analytics, "feedback_message", {
-				clientId: user?.publicMetadata?.userId,
+				clientId: currentUser?._id,
 			});
 		}
 	};
 
 	const handleSubmitFeedback = async () => {
-		if (!user || !chat) return;
+		if (!currentUser || !chat) return;
 		try {
-			const userId = user.publicMetadata?.userId as string;
+			const userId = currentUser?._id as string;
 
 			await createFeedback({
 				creatorId: chat.creatorId as string,
@@ -88,7 +88,7 @@ const ChatFeedback = ({
 			});
 
 			logEvent(analytics, "feed_submitted", {
-				clientId: user?.publicMetadata?.userId,
+				clientId: currentUser?._id,
 			});
 
 			setFeedbackSubmitted(true);
@@ -106,7 +106,7 @@ const ChatFeedback = ({
 		}
 	};
 
-	if (!user || isChatLoading)
+	if (!currentUser?._id || isChatLoading)
 		return (
 			<>
 				{pathname.includes("meeting") ? (

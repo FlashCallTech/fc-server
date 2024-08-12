@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { Sheet, SheetContent } from "../ui/sheet";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { useUser } from "@clerk/nextjs";
 import { createFeedback } from "@/lib/actions/feedback.actions";
 import { useToast } from "../ui/use-toast";
 import { success } from "@/constants/icons";
@@ -12,6 +11,7 @@ import { useGetCallById } from "@/hooks/useGetCallById";
 import { Button } from "../ui/button";
 import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const CallFeedback = ({
 	callId,
@@ -30,7 +30,8 @@ const CallFeedback = ({
 	const { call, isCallLoading } = useGetCallById(String(callId));
 
 	const ratingItems = ["😒", "😞", "😑", "🙂", "😄"];
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
+
 	const marks: { [key: number]: JSX.Element } = {
 		1: (
 			<div className="relative text-3xl flex flex-col items-center justify-start h-20 w-14">
@@ -66,9 +67,9 @@ const CallFeedback = ({
 	);
 
 	const handleSubmitFeedback = async () => {
-		if (!user || !call) return;
+		if (!currentUser || !call) return;
 		try {
-			const userId = user.publicMetadata?.userId as string;
+			const userId = currentUser?._id as string;
 
 			await createFeedback({
 				creatorId: expert?.user_id as string,
@@ -93,7 +94,7 @@ const CallFeedback = ({
 		}
 	};
 
-	if (!user || isCallLoading)
+	if (!currentUser?._id || isCallLoading)
 		return (
 			<>
 				{pathname.includes("meeting") ? (

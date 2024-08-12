@@ -12,6 +12,7 @@ const FeedbackEntrySchema = new Schema(
 		feedback: { type: String, required: true },
 		showFeedback: { type: Boolean, default: false },
 		createdAt: { type: Date, default: Date.now },
+		position: { type: Number, default: -1 },
 	},
 	{ _id: false }
 );

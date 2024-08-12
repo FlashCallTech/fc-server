@@ -3,17 +3,17 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCalls, CallingState } from "@stream-io/video-react-sdk";
 import MyIncomingCallUI from "./MyIncomingCallUI";
 import MyOutgoingCallUI from "./MyOutgoingCallUI";
-import { useUser } from "@clerk/nextjs";
 import { useToast } from "../ui/use-toast";
-import { updateCall } from "@/lib/actions/call.actions";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const MyCallUI = () => {
 	const router = useRouter();
 	const calls = useCalls();
 	const pathname = usePathname();
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
+
 	const { toast } = useToast();
 	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
 	const [hasRedirected, setHasRedirected] = useState(false);
@@ -35,7 +35,7 @@ const MyCallUI = () => {
 	useEffect(() => {
 		calls.forEach((call) => {
 			const isMeetingOwner =
-				user && user.publicMetadata.userId === call?.state?.createdBy?.id;
+				currentUser && currentUser?._id === call?.state?.createdBy?.id;
 
 			const handleCallEnded = async () => {
 				call.camera.disable();
@@ -53,6 +53,8 @@ const MyCallUI = () => {
 					description: "The call was rejected. Redirecting to HomePage...",
 				});
 
+				setShowCallUI(false); // Hide call UI
+
 				logEvent(analytics, "call_rejected", {
 					callId: call.id,
 				});
@@ -65,15 +67,16 @@ const MyCallUI = () => {
 					}),
 					headers: { "Content-Type": "application/json" },
 				});
+
 				router.push("/");
-				setShowCallUI(false); // Hide call UI
 			};
 
 			const handleCallStarted = async () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
-				logEvent(analytics, "call_accepted", {
-					callId: call.id,
-				});
+				setShowCallUI(false); // Hide call UI
+
+				router.push(`/meeting/${call.id}`);
+
 				await fetch("/api/v1/calls/updateCall", {
 					method: "POST",
 					body: JSON.stringify({
@@ -81,9 +84,12 @@ const MyCallUI = () => {
 						call: { status: "Accepted" },
 					}),
 					headers: { "Content-Type": "application/json" },
+					keepalive: true,
 				});
-				router.push(`/meeting/${call.id}`);
-				setShowCallUI(false); // Hide call UI
+
+				logEvent(analytics, "call_accepted", {
+					callId: call.id,
+				});
 			};
 
 			call.on("call.ended", handleCallEnded);
@@ -97,7 +103,7 @@ const MyCallUI = () => {
 				call.off("call.accepted", handleCallStarted);
 			};
 		});
-	}, [calls, router, user, toast]);
+	}, [calls, router, currentUser?._id, toast]);
 
 	// Filter incoming ringing calls
 	const incomingCalls = calls.filter(

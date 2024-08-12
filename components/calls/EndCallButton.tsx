@@ -8,14 +8,14 @@ import { useToast } from "../ui/use-toast";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 
 import EndCallDecision from "./EndCallDecision";
-import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const EndCallButton = () => {
 	const call = useCall();
 	const [showDialog, setShowDialog] = useState(false);
-	const { setAnyModalOpen, totalTimeUtilized } = useCallTimerContext();
-	const { user } = useUser();
+	const { setAnyModalOpen } = useCallTimerContext();
+	const { currentUser } = useCurrentUsersContext();
 
 	if (!call) {
 		throw new Error(
@@ -23,22 +23,16 @@ const EndCallButton = () => {
 		);
 	}
 
-	const isMeetingOwner =
-		user?.publicMetadata?.userId === call?.state?.createdBy?.id;
+	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 
 	const endCall = async () => {
-		setShowDialog(true); // Show the confirmation dialog
+		setShowDialog(true);
 		setAnyModalOpen(true);
 	};
 
 	const handleDecisionDialog = async () => {
 		await call.endCall();
 		setShowDialog(false);
-		// isMeetingOwner && router.push(`/feedback/${call?.id}/${totalTimeUtilized}`);
-		// toast({
-		// 	title: "Call Ended",
-		// 	description: "The call Ended. Redirecting ...",
-		// });
 	};
 
 	const handleCloseDialog = () => {

@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { UpdateUserParams } from "@/types";
-import { useUser } from "@clerk/nextjs";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import Image from "next/image";
 import EditProfile from "@/components/forms/EditProfile";
@@ -11,7 +10,6 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 
 const UserProfilePage = () => {
-	const { user, isLoaded } = useUser();
 	const { currentUser, userType, refreshCurrentUser } =
 		useCurrentUsersContext();
 	const getInitialState = (): UpdateUserParams => ({
@@ -38,12 +36,12 @@ const UserProfilePage = () => {
 	const [editData, setEditData] = useState(false);
 
 	useEffect(() => {
-		if (isLoaded && user && currentUser) {
+		if (currentUser) {
 			const updatedInitialState = getInitialState();
 			setUserData(updatedInitialState);
 			setInitialState(updatedInitialState);
 		}
-	}, [isLoaded, user, userType, currentUser]);
+	}, [userType, currentUser]);
 
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		setUserData(newUserData);
@@ -118,7 +116,6 @@ const UserProfilePage = () => {
 					{/* Edit profile area */}
 					{editData && (
 						<div className="px-4 flex flex-col w-full 2xl:max-w-[69%] items-start justify-center gap-7 mt-4">
-							<span className="text-2xl font-semibold">Edit User Details</span>
 							<EditProfile
 								userData={userData}
 								setUserData={handleUpdate}

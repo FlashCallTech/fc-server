@@ -1,7 +1,6 @@
 "use client";
 
 import { sidebarLinks } from "@/constants";
-import { SignedOut, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -92,15 +91,13 @@ const Sidebar = () => {
 					</TooltipContent>
 				</Tooltip>
 			) : (
-				<SignedOut>
-					<Button
-						asChild
-						className="text-white hover:opacity-80 bg-green-1"
-						size="lg"
-					>
-						<Link href="/sign-in">Login</Link>
-					</Button>
-				</SignedOut>
+				<Button
+					asChild
+					className="text-white hover:opacity-80 bg-green-1"
+					size="lg"
+				>
+					<Link href="/authenticate">Login</Link>
+				</Button>
 			)}
 		</section>
 	);

@@ -71,12 +71,22 @@
 }
 
 @media only screen and (max-width: 768px) {
+	.cl-internal-phfxlr {
+		width: 85vw;
+	}
 	.cl-internal-qk5yrq {
+		width: 100%;
 		max-width: 100% !important;
 		border-top-left-radius: 25px;
 		border-top-right-radius: 25px;
 		border-bottom-left-radius: 0px;
 		border-bottom-right-radius: 0px;
+	}
+}
+
+@media only screen and (max-width: 580px) {
+	.cl-internal-phfxlr {
+		width: 100vw !important;
 	}
 }
 

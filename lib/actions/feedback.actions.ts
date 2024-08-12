@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { connectToDatabase } from "@/lib/database";
 import { handleError } from "@/lib/utils";
 import CallFeedbacks from "../database/models/callFeedbacks.model";
@@ -14,6 +13,7 @@ export async function createFeedback({
 	feedbackText,
 	callId,
 	createdAt,
+	showFeedback,
 }: {
 	creatorId: string;
 	clientId: string;
@@ -21,6 +21,7 @@ export async function createFeedback({
 	feedbackText: string;
 	callId: string;
 	createdAt: Date;
+	showFeedback?: boolean;
 }) {
 	try {
 		await connectToDatabase();
@@ -30,7 +31,8 @@ export async function createFeedback({
 				clientId,
 				rating,
 				feedback: feedbackText,
-				createdAt: createdAt, // Manually setting the createdAt field
+				createdAt: createdAt,
+				showFeedback: showFeedback,
 			};
 
 			const existingCallFeedback = await CallFeedbacks.findOne({
@@ -95,7 +97,10 @@ export async function getCallFeedbacks(callId?: string, creatorId?: string) {
 			query.creatorId = creatorId;
 		}
 
-		const feedbacks = await CallFeedbacks.find(query, { feedbacks: 1 })
+		const feedbacks = await CallFeedbacks.find(query, {
+			callId: 1,
+			feedbacks: 1,
+		})
 			.populate("creatorId")
 			.populate("feedbacks.clientId")
 			.lean();

@@ -8,13 +8,13 @@ import {
 	PaymentResponse,
 	RazorpayOptions,
 } from "@/types";
-import { useUser } from "@clerk/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import Link from "next/link";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useToast } from "@/components/ui/use-toast";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const About: React.FC = () => {
 	const searchParams = useSearchParams();
@@ -23,7 +23,7 @@ const About: React.FC = () => {
 
 	const [method, setMethod] = useState("");
 	const [loading, setLoading] = useState(false);
-	const { user } = useUser();
+	const { currentUser } = useCurrentUsersContext();
 	const router = useRouter();
 	const { toast } = useToast();
 	const amountInt: number | null = amount ? parseFloat(amount) : null;
@@ -45,8 +45,8 @@ const About: React.FC = () => {
 	): Promise<void> => {
 		e.preventDefault();
 
-		logEvent(analytics, 'wallet_recharge', {
-			userId: user?.publicMetadata?.userId,
+		logEvent(analytics, "wallet_recharge", {
+			userId: currentUser?._id,
 			// creatorId: creator._id,
 		});
 
@@ -60,7 +60,6 @@ const About: React.FC = () => {
 		const amount: number = parseInt(totalPayableInPaise.toFixed(2));
 		const currency: string = "INR";
 		const receiptId: string = "kuchbhi";
-
 
 		try {
 			const response: Response = await fetch("/api/v1/order", {
@@ -110,7 +109,7 @@ const About: React.FC = () => {
 						const jsonRes: any = await validateRes.json();
 
 						// Add money to user wallet upon successful validation
-						const userId = user?.publicMetadata?.userId as string; // Replace with actual user ID
+						const userId = currentUser?._id as string; // Replace with actual user ID
 						const userType = "Client"; // Replace with actual user type
 
 						await fetch("/api/v1/wallet/addMoney", {
@@ -123,9 +122,8 @@ const About: React.FC = () => {
 							headers: { "Content-Type": "application/json" },
 						});
 
-
-						logEvent(analytics, 'wallet_recharge_done', {
-							userId: user?.publicMetadata?.userId,
+						logEvent(analytics, "wallet_recharge_done", {
+							userId: currentUser?._id,
 							amount: amount,
 						});
 						router.push("/success");

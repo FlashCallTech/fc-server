@@ -4,7 +4,7 @@ import Payment from "@/components/client/payment";
 import Withdraw from "@/components/creator/Withdraw";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
-const page = () => {
+const PaymentsPage = () => {
 	const { userType } = useCurrentUsersContext();
 	return (
 		<section className="size-full">
@@ -13,4 +13,4 @@ const page = () => {
 	);
 };
 
-export default page;
+export default PaymentsPage;

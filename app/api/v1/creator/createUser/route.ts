@@ -7,8 +7,8 @@ export async function POST(request: Request) {
 		const user: CreateCreatorParams = await request.json();
 		const newUser = await createCreatorUser(user);
 		return NextResponse.json(newUser);
-	} catch (error) {
+	} catch (error: any) {
 		console.error(error);
-		return new NextResponse("Internal Server Error", { status: 500 });
+		return new NextResponse(error);
 	}
 }

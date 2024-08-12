@@ -2,13 +2,12 @@ import { Schema, model, models } from "mongoose";
 
 const CreatorSchema = new Schema(
 	{
-		clerkId: { type: String, unique: true },
-		username: { type: String, required: true, unique: true },
+		username: { type: String, unique: true },
 		phone: { type: String, required: true, unique: true },
 		fullName: { type: String },
 		firstName: { type: String },
 		lastName: { type: String },
-		photo: { type: String, required: true },
+		photo: { type: String },
 		profession: { type: String, required: true },
 		themeSelected: { type: String },
 		videoRate: { type: String, required: true },

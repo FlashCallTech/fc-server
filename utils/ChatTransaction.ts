@@ -1,6 +1,5 @@
 import { getCreatorById } from "@/lib/actions/creator.actions";
 import { analytics } from "@/lib/firebase";
-import { useUser } from "@clerk/nextjs";
 import { logEvent } from "firebase/analytics";
 
 export const handleTransaction = async ({

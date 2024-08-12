@@ -7,18 +7,18 @@ import PriceEditModal from "./Price";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import axios from "axios";
 import { useToast } from "../ui/use-toast";
-import { calculateTotalEarnings } from "@/lib/utils";
-import SinglePostLoader from "../shared/SinglePostLoader";
+import { calculateTotalEarnings, isValidUrl } from "@/lib/utils";
 import ServicesCheckbox from "../shared/ServicesCheckbox";
 import CopyToClipboard from "../shared/CopyToClipboard";
 import { UpdateCreatorParams } from "@/types";
 import { doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import ContentLoading from "../shared/ContentLoading";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
-	const { updateWalletBalance } = useWalletBalanceContext();
+	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const { toast } = useToast();
 	// State for toggle switches
 	const [services, setServices] = useState({
@@ -216,18 +216,37 @@ const CreatorHome = () => {
 		}
 	}, [services]);
 
-	if (!creatorUser?._id)
+	if (!creatorUser || walletBalance < 0)
 		return (
 			<section className="w-full h-full flex flex-col items-center justify-center">
-				<SinglePostLoader />
+				<ContentLoading />
 
 				{!creatorUser && (
 					<span className="text-red-500 font-semibold text-lg">
 						User Authentication Required
 					</span>
 				)}
+
+				{creatorUser && walletBalance < 0 && (
+					<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
+						Fetching Wallet Balance{" "}
+						<Image
+							src="/icons/loading-circle.svg"
+							alt="Loading..."
+							width={24}
+							height={24}
+							className="invert"
+							priority
+						/>
+					</p>
+				)}
 			</section>
 		);
+
+	const imageSrc =
+		creatorUser.photo && isValidUrl(creatorUser.photo)
+			? creatorUser.photo
+			: "/images/defaultProfileImage.png";
 
 	return (
 		<>
@@ -245,11 +264,7 @@ const CreatorHome = () => {
 				</div>
 				<div className="flex flex-col items-center justify-center p-4">
 					<Image
-						src={
-							creatorUser?.photo
-								? creatorUser?.photo
-								: "/images/defaultProfileImage.png"
-						}
+						src={imageSrc}
 						width={1000}
 						height={1000}
 						alt="avatar"
@@ -262,8 +277,9 @@ const CreatorHome = () => {
 						<p className="text-white text-sm">{creatorUser?.creatorId}</p>
 					</section>
 				</div>
-				<div className="flex-grow flex flex-col gap-4 bg-gray-50 rounded-t-3xl  p-4">
+				<div className="flex-grow flex flex-col gap-4 bg-gray-50 rounded-t-3xl animate-enterFromBottom p-4">
 					<CopyToClipboard link={creatorLink} />
+
 					<section className="flex flex-row justify-between border rounded-lg bg-white p-2 shadow-sm">
 						<div className="flex flex-row pl-2 gap-3">
 							<Image

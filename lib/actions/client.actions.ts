@@ -54,7 +54,7 @@ export async function getUsers() {
 	}
 }
 
-export async function updateUser(clerkId: string, user: UpdateUserParams) {
+export async function updateUser(userId: string, user: UpdateUserParams) {
 	try {
 		await connectToDatabase();
 
@@ -68,16 +68,18 @@ export async function updateUser(clerkId: string, user: UpdateUserParams) {
 		// 	return { error: "User with the same username already exists" };
 		// }
 
-		// First attempt to find and update by clerkId
-		let updatedUser = await Client.findOneAndUpdate({ clerkId }, user, {
+		// First attempt to find and update by userId
+		let updatedUser = await Client.findByIdAndUpdate(userId, user, {
 			new: true,
 			runValidators: true, // Ensure schema validation
 		});
 
-		// If no user is found with clerkId, try finding by username
-		if (!updatedUser && user.username) {
+		// If no user is found with userId, try finding by username
+		if (!updatedUser && user.phone) {
 			updatedUser = await Client.findOneAndUpdate(
-				{ username: user.username },
+				{
+					$or: [{ phone: user.phone }],
+				},
 				user,
 				{
 					new: true,
@@ -85,8 +87,8 @@ export async function updateUser(clerkId: string, user: UpdateUserParams) {
 				}
 			);
 		}
-
-		if (!updatedUser) throw new Error("User update failed");
+		console.log(user, updatedUser);
+		// if (!updatedUser) throw new Error("User update failed");
 		return JSON.parse(JSON.stringify({ updatedUser }));
 	} catch (error) {
 		console.error("Error updating user:", error);
@@ -94,12 +96,12 @@ export async function updateUser(clerkId: string, user: UpdateUserParams) {
 	}
 }
 
-export async function deleteUser(clerkId: string) {
+export async function deleteUser(userId: string) {
 	try {
 		await connectToDatabase();
 
 		// Find user to delete
-		const userToDelete = await Client.findOne({ clerkId });
+		const userToDelete = await Client.findOne({ userId });
 
 		if (!userToDelete) {
 			throw new Error("User not found");

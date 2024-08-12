@@ -1,5 +1,4 @@
 // WalletBalanceContext.tsx
-import { useUser } from "@clerk/nextjs";
 import React, {
 	createContext,
 	useContext,
@@ -9,6 +8,7 @@ import React, {
 } from "react";
 import { getUserById } from "../actions/client.actions";
 import { getCreatorById } from "../actions/creator.actions";
+import { useCurrentUsersContext } from "./CurrentUsersContext";
 
 interface WalletBalanceContextProps {
 	walletBalance: number;
@@ -35,22 +35,17 @@ export const WalletBalanceProvider = ({
 }: {
 	children: ReactNode;
 }) => {
-	const [walletBalance, setWalletBalance] = useState<number>(0);
-	const [loading, setLoading] = useState<boolean>(true);
-
-	const { user, isLoaded } = useUser();
+	const [walletBalance, setWalletBalance] = useState<number>(-1);
+	const { currentUser } = useCurrentUsersContext();
 
 	const storedUserType = localStorage.getItem("userType");
 	const userType = storedUserType ? storedUserType : null;
 
-	let isCreator =
-		userType === "creator" ||
-		(user?.publicMetadata?.role as string) === "creator";
-	let userId = user?.publicMetadata?.userId as string;
+	let isCreator = userType === "creator";
+	let userId = currentUser?._id as string;
 
 	const fetchCurrentUser = async () => {
 		try {
-			setLoading(true);
 			const response = isCreator
 				? await getCreatorById(userId)
 				: await getUserById(userId);
@@ -59,30 +54,20 @@ export const WalletBalanceProvider = ({
 			// console.log(response);
 		} catch (error) {
 			console.error("Error fetching current user:", error);
-		} finally {
-			setLoading(false);
 		}
 	};
 
 	useEffect(() => {
-		if (isLoaded && user) {
+		if (currentUser) {
 			fetchCurrentUser();
-		} else {
-			setLoading(false);
 		}
-	}, [isLoaded, user]);
+	}, []);
 
 	const updateWalletBalance = async () => {
-		if (user) {
+		if (currentUser) {
 			await fetchCurrentUser();
 		}
 	};
-
-	// console.log(walletBalance)
-
-	// if (loading) {
-	// 	return <Loader />;
-	// }
 
 	return (
 		<WalletBalanceContext.Provider
