@@ -7,21 +7,46 @@ import {
 	setAnalyticsCollectionEnabled,
 	isSupported,
 } from "firebase/analytics";
+import {
+	getMessaging, getToken
+} from "firebase/messaging";
 
 const firebaseConfig = {
 	apiKey: process.env.NEXT_PUBLIC_FIREBASE_KEY,
-	authDomain: "flashcall-testing.firebaseapp.com",
-	projectId: "flashcall-testing",
-	storageBucket: "flashcall-testing.appspot.com",
-	messagingSenderId: "677611685735",
-	appId: "1:677611685735:web:504d39aa56807a54ef91c2",
-	measurementId: "G-WPMN8815TK",
+	authDomain: "flashcallchat.firebaseapp.com",
+  projectId: "flashcallchat",
+  storageBucket: "flashcallchat.appspot.com",
+  messagingSenderId: "789413051138",
+  appId: "1:789413051138:web:6f9c2dbc4b48a5f1d4e01b",
+  measurementId: "G-KE1QPLVC2Z"
 };
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+const messaging = async () => {
+  const supported = await isSupported();
+  return supported ? getMessaging(app) : null;
+};
+
+export const fetchToken = async () => {
+  try {
+    const fcmMessaging = await messaging();
+    if (fcmMessaging) {
+      const token = await getToken(fcmMessaging, {
+        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY,
+      });
+      console.log(token)
+      return token;
+    }
+    return null;
+  } catch (err) {
+    console.error("An error occurred while fetching the token:", err);
+    return null;
+  }
+};
 
 let analytics: any;
 isSupported()
@@ -35,4 +60,4 @@ isSupported()
 	})
 	.catch(console.error);
 
-export { analytics };
+export { analytics, messaging };

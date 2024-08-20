@@ -12,9 +12,10 @@ import ServicesCheckbox from "../shared/ServicesCheckbox";
 import CopyToClipboard from "../shared/CopyToClipboard";
 import { UpdateCreatorParams } from "@/types";
 import { doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, fetchToken } from "@/lib/firebase";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
+
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
@@ -24,8 +25,8 @@ const CreatorHome = () => {
 	const [services, setServices] = useState({
 		myServices:
 			creatorUser?.videoAllowed ||
-			creatorUser?.audioAllowed ||
-			creatorUser?.chatAllowed
+				creatorUser?.audioAllowed ||
+				creatorUser?.chatAllowed
 				? true
 				: false,
 		videoCall: creatorUser?.videoAllowed || false,
@@ -43,6 +44,66 @@ const CreatorHome = () => {
 	});
 
 	useEffect(() => {
+		const getNotificationPermissionAndToken = async () => {
+			// Step 1: Check if Notifications are supported in the browser.
+			if (!("Notification" in window)) {
+				console.info("This browser does not support desktop notification");
+				return null;
+			}
+
+			// Step 3: If permission is not denied, request permission from the user.
+			if (Notification.permission !== "denied") {
+				await Notification.requestPermission();
+			}
+
+			console.log("Notification permission not granted.");
+			return null;
+		}
+
+		getNotificationPermissionAndToken()
+	}, [])
+
+	async function addFcmToken(token: string | null) {
+		try {
+			if (token) {
+				// Reference to the document with a custom ID
+				const docRef = doc(db, "fcmTokenWeb", creatorUser?._id as string);
+
+				// Check if the document already exists
+				const docSnap = await getDoc(docRef);
+
+				if (!docSnap.exists()) {
+					// Set the document with the provided token if it doesn't exist
+					await setDoc(docRef, {
+						token: token
+					});
+					console.log("Document successfully written!");
+				} else {
+					await updateDoc(docRef, {
+						token: token,
+					})
+					console.log("updated doc");
+				}
+			} else {
+				console.log('no user ID');
+			}
+		} catch (e) {
+			console.error("Error adding document: ", e);
+		}
+	}
+
+	useEffect(() => {
+		if (creatorUser) {
+			const token = async () => {
+				const token = await fetchToken();
+				addFcmToken(token);
+			}
+
+			token();
+		}
+	}, [creatorUser]);
+
+	useEffect(() => {
 		if (creatorUser) {
 			setPrices({
 				videoCall: creatorUser?.videoRate,
@@ -52,8 +113,8 @@ const CreatorHome = () => {
 			setServices({
 				myServices:
 					creatorUser?.videoAllowed ||
-					creatorUser?.audioAllowed ||
-					creatorUser?.chatAllowed
+						creatorUser?.audioAllowed ||
+						creatorUser?.chatAllowed
 						? true
 						: false,
 				videoCall: creatorUser?.videoAllowed,
@@ -313,9 +374,8 @@ const CreatorHome = () => {
 									onChange={() => handleToggle("myServices")}
 								/>
 								<p
-									className={`toggle-label block overflow-hidden h-6 rounded-full ${
-										services.myServices ? "bg-green-600" : "bg-gray-500"
-									}  servicesCheckbox cursor-pointer`}
+									className={`toggle-label block overflow-hidden h-6 rounded-full ${services.myServices ? "bg-green-600" : "bg-gray-500"
+										}  servicesCheckbox cursor-pointer`}
 									style={{
 										justifyContent: services.myServices
 											? "flex-end"
