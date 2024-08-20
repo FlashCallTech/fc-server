@@ -12,7 +12,7 @@ const ChatRequest = ({ chatRequest }: { chatRequest: any }) => {
         Accept
       </button>
       <button 
-        onClick={() => handleRejectChat} 
+        onClick={() => handleRejectChat(chatRequest)} 
         className='bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600'>
         Reject
       </button>
