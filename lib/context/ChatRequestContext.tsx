@@ -70,8 +70,7 @@ export const ChatRequestProvider = ({ children }: { children: React.ReactNode })
 
     return (
         <ChatRequestContext.Provider value={{ chatRequest, setChatRequest }}>
-            {/* {currentCreatorId === creatorUser?._id && chatRequest ? <ChatRequest chatRequest={chatRequest} /> : children} */}
-            { children}
+            {currentCreatorId === creatorUser?._id && chatRequest ? <ChatRequest chatRequest={chatRequest} /> : children}
         </ChatRequestContext.Provider>
     );
 };
