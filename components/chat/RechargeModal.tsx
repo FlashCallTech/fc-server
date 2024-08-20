@@ -21,6 +21,9 @@ import { useToast } from "../ui/use-toast";
 import Script from "next/script";
 import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import useEndChat from "@/hooks/useEndChat";
 
 const RechargeModal = ({
 	setWalletBalance,
@@ -35,6 +38,7 @@ const RechargeModal = ({
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
 	const { pauseTimer, resumeTimer } = useChatTimerContext();
+	const { chatId } = useEndChat();
 
 	useEffect(() => {
 		if (isSheetOpen || onGoingPayment) {
@@ -43,6 +47,15 @@ const RechargeModal = ({
 			resumeTimer();
 		}
 	}, [isSheetOpen, onGoingPayment, pauseTimer, resumeTimer]);
+
+	useEffect(() => {
+		updateDoc(
+			doc(db, 'chats', chatId as string),
+			{
+				clientBalance: walletBalance
+			}
+		);
+	}, [walletBalance])
 
 	const subtotal: number | null =
 		rechargeAmount !== null ? parseInt(rechargeAmount) : null;

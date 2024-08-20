@@ -15,6 +15,7 @@ interface CreatorDetailsProps {
 }
 
 const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
+	// console.log(creator)
 	const pathname = usePathname();
 	const isCreatorOrExpertPath =
 		pathname.includes("/creator") || pathname.includes("/expert");
