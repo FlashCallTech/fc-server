@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 
-interface AddLinkProps {
+interface EditLinkProps {
+  link: { title: string; url: string };
 	onClose: () => void;
-	onSave: (linkData: { title: string; link: string }) => void;
+	onSave: (linkData: { title: string; url: string }) => void;
 }
 
-const AddLink: React.FC<AddLinkProps> = ({ onClose, onSave }) => {
-	const [linkData, setLinkData] = useState({ title: "", link: "" });
+const EditLink: React.FC<EditLinkProps> = ({link, onClose, onSave }) => {
+	const [linkData, setLinkData] = useState(link);
 
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.target;
@@ -40,7 +41,7 @@ const AddLink: React.FC<AddLinkProps> = ({ onClose, onSave }) => {
 						<input
 							type="url"
 							name="link"
-							value={linkData.link}
+							value={linkData.url}
 							onChange={handleChange}
 							className="border-b p-2 focus:outline-none"
 							placeholder="Paste URL link here"
@@ -68,4 +69,4 @@ const AddLink: React.FC<AddLinkProps> = ({ onClose, onSave }) => {
 	);
 };
 
-export default AddLink;
+export default EditLink;
