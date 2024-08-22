@@ -10,11 +10,14 @@ import { useToast } from "../ui/use-toast";
 import { calculateTotalEarnings, isValidUrl } from "@/lib/utils";
 import ServicesCheckbox from "../shared/ServicesCheckbox";
 import CopyToClipboard from "../shared/CopyToClipboard";
-import { UpdateCreatorParams } from "@/types";
+import { LinkType, UpdateCreatorParams } from "@/types";
 import { doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { db, fetchToken } from "@/lib/firebase";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
+import AddLink from "./AddLink";
+import LinkActions from "./LinkActions";
+import DeleteLink from "./DeleteLink";
 
 
 const CreatorHome = () => {
@@ -34,6 +37,8 @@ const CreatorHome = () => {
 		chat: creatorUser?.chatAllowed || false,
 	});
 
+	const [editLinkOpen, setEditLinkOpen] = useState(false);
+
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
 	const [todaysEarning, setTodaysEarning] = useState(0);
 	const [isPriceEditOpen, setIsPriceEditOpen] = useState(false);
@@ -43,65 +48,127 @@ const CreatorHome = () => {
 		chat: creatorUser?.chatRate || "0",
 	});
 
-	useEffect(() => {
-		const getNotificationPermissionAndToken = async () => {
-			// Step 1: Check if Notifications are supported in the browser.
-			if (!("Notification" in window)) {
-				console.info("This browser does not support desktop notification");
-				return null;
-			}
+	const [selectedLinkIndex, setSelectedLinkIndex] = useState<number | null>(null);
+	const [isLinkActionsOpen, setIsLinkActionsOpen] = useState(false);
+	const [ isDeleteLink, setIsDeleteLink ] = useState(false);
 
-			// Step 3: If permission is not denied, request permission from the user.
-			if (Notification.permission !== "denied") {
-				await Notification.requestPermission();
-			}
 
-			console.log("Notification permission not granted.");
-			return null;
+	const handleMoreClick = (index: number) => {
+		setSelectedLinkIndex(index);
+		setIsLinkActionsOpen(true);
+	};
+
+	const handleEdit = () => {
+		// Use selectedLinkIndex to edit the specific link
+		if (selectedLinkIndex !== null) {
+			// Perform edit operation here
 		}
+		setIsLinkActionsOpen(false);
+	};
 
-		getNotificationPermissionAndToken()
-	}, [])
+	const handleDelete = async () => {
+		setIsDeleteLink(true)
+		
+	};
 
-	async function addFcmToken(token: string | null) {
-		try {
-			if (token) {
-				// Reference to the document with a custom ID
-				const docRef = doc(db, "fcmTokenWeb", creatorUser?._id as string);
+	const handleDeleteLink = async() =>{
+		if (selectedLinkIndex !== null && creatorUser) {
+			try {
+				// Get the link to be deleted
+				if (creatorUser.links) {
+					const linkToDelete = creatorUser.links[selectedLinkIndex];
 
-				// Check if the document already exists
-				const docSnap = await getDoc(docRef);
-
-				if (!docSnap.exists()) {
-					// Set the document with the provided token if it doesn't exist
-					await setDoc(docRef, {
-						token: token
+					// Send a request to delete the link from the database
+					const response = await fetch('/api/v1/creator/deleteLink', {
+						method: 'DELETE',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({
+							userId: creatorUser._id,
+							link: linkToDelete, // Send the entire link object to identify the link
+						}),
 					});
-					console.log("Document successfully written!");
+
+					if (response.ok) {
+						// Update the local state by removing the deleted link
+					}
+					const updatedLinks = creatorUser.links.filter(
+						(_, index) => index !== selectedLinkIndex
+					);
+					refreshCurrentUser(); // Refresh the current user data to reflect changes
 				} else {
-					await updateDoc(docRef, {
-						token: token,
-					})
-					console.log("updated doc");
+					console.error('Failed to delete the link');
 				}
-			} else {
-				console.log('no user ID');
+			} catch (error) {
+				console.error('An error occurred while deleting the link:', error);
+			} finally {
+				setIsLinkActionsOpen(false);
+				setSelectedLinkIndex(null);
 			}
-		} catch (e) {
-			console.error("Error adding document: ", e);
 		}
 	}
 
-	useEffect(() => {
-		if (creatorUser) {
-			const token = async () => {
-				const token = await fetchToken();
-				addFcmToken(token);
-			}
 
-			token();
-		}
-	}, [creatorUser]);
+	// useEffect(() => {
+	// 	const getNotificationPermissionAndToken = async () => {
+	// 		// Step 1: Check if Notifications are supported in the browser.
+	// 		if (!("Notification" in window)) {
+	// 			console.info("This browser does not support desktop notification");
+	// 			return null;
+	// 		}
+
+	// 		// Step 3: If permission is not denied, request permission from the user.
+	// 		if (Notification.permission !== "denied") {
+	// 			await Notification.requestPermission();
+	// 		}
+
+	// 		console.log("Notification permission not granted.");
+	// 		return null;
+	// 	}
+
+	// 	getNotificationPermissionAndToken()
+	// }, [])
+
+	// async function addFcmToken(token: string | null) {
+	// 	try {
+	// 		if (token) {
+	// 			// Reference to the document with a custom ID
+	// 			const docRef = doc(db, "fcmTokenWeb", creatorUser?._id as string);
+
+	// 			// Check if the document already exists
+	// 			const docSnap = await getDoc(docRef);
+
+	// 			if (!docSnap.exists()) {
+	// 				// Set the document with the provided token if it doesn't exist
+	// 				await setDoc(docRef, {
+	// 					token: token
+	// 				});
+	// 				console.log("Document successfully written!");
+	// 			} else {
+	// 				await updateDoc(docRef, {
+	// 					token: token,
+	// 				})
+	// 				console.log("updated doc");
+	// 			}
+	// 		} else {
+	// 			console.log('no user ID');
+	// 		}
+	// 	} catch (e) {
+	// 		console.error("Error adding document: ", e);
+	// 	}
+	// }
+
+	// useEffect(() => {
+	// 	if (creatorUser) {
+	// 		const token = async () => {
+	// 			const token = await fetchToken();
+	// 			addFcmToken(token);
+	// 		}
+
+	// 		token();
+	// 	}
+	// }, [creatorUser]);
 
 	useEffect(() => {
 		if (creatorUser) {
@@ -162,6 +229,36 @@ const CreatorHome = () => {
 
 	const theme = creatorUser?.themeSelected;
 
+	const handleLinkToggle = (index: number) => {
+		const updatedLinks = creatorUser?.links?.map((link, i) =>
+			i === index ? { ...link, isActive: !link.isActive } : link
+		);
+
+		// Save the updated links to the server
+		saveUpdatedLinks(updatedLinks!);
+	};
+
+	const saveUpdatedLinks = async (updatedLinks: LinkType[]) => {
+		try {
+			const response = await fetch("/api/v1/creator/updateUser", {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ userId: creatorUser?._id, user: { links: updatedLinks } }),
+			});
+
+			if (response.ok) {
+				refreshCurrentUser(); // Refresh the current user data to reflect changes
+			} else {
+				console.error("Failed to update the user links");
+			}
+		} catch (error) {
+			console.error("An error occurred while updating the user links:", error);
+		}
+	};
+
+
 	const updateFirestoreCallServices = async (
 		services: {
 			myServices: boolean;
@@ -189,6 +286,49 @@ const CreatorHome = () => {
 			} catch (error) {
 				console.error("Error updating Firestore call services: ", error);
 			}
+		}
+	};
+
+	const handleAddLink = async (linkData: { title: string; link: string }) => {
+		try {
+			// Assuming you have the userId available
+			const userId = creatorUser?._id; // Replace this with the actual userId
+
+			// Create a new Link object
+			const newLink: LinkType = {
+				title: linkData.title,
+				url: linkData.link,
+				isActive: true,
+			};
+
+			// Update the user's data with the new link
+			const updateParams: UpdateCreatorParams = {
+				link: newLink,
+			};
+
+			if (!newLink.title || !newLink.url) {
+				return;
+			}
+
+			// Make the API request to update the user
+			const response = await fetch("/api/v1/creator/updateUser", {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ userId, user: updateParams }),
+			});
+
+			if (response.ok) {
+				const updatedUser = await response.json();
+				console.log("User updated successfully:", updatedUser);
+				location.reload();
+				// Handle the updated user data (e.g., update the state, notify the user)
+			} else {
+				console.error("Failed to update the user");
+			}
+		} catch (error) {
+			console.error("An error occurred while updating the user:", error);
 		}
 	};
 
@@ -406,6 +546,73 @@ const CreatorHome = () => {
 							prices={prices}
 						/>
 					</section>
+
+					{creatorUser?.links && creatorUser.links.length > 0 && (
+						<section className="flex flex-col gap-4">
+							{creatorUser.links.map((link, index) => (
+								<div key={index} className="flex flex-row justify-between items-center border p-4 rounded-lg bg-white shadow-sm">
+									<a
+										href={link.url}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="text-blue-600 hover:underline"
+									>
+										{link.title}
+									</a>
+									<div className="flex flex-row gap-2">
+										<label className="relative inline-block w-14 h-6">
+											<input
+												type="checkbox"
+												className="toggle-checkbox absolute w-0 h-0"
+												checked={!!link.isActive} // Convert `undefined` to `false`
+												onChange={() => handleLinkToggle(index)}
+											/>
+											<p
+												className={`toggle-label block overflow-hidden h-6 rounded-full ${link.isActive ? "bg-green-600" : "bg-gray-500"
+													} servicesCheckbox cursor-pointer`}
+
+											>
+												<span
+													className="servicesCheckboxContent"
+													style={{
+														transform: link.isActive ? "translateX(2.1rem)" : "translateX(0)",
+													}}
+												/>
+											</p>
+										</label>
+										<Image
+											src={"/more.svg"}
+											width={0}
+											height={0}
+											alt="more"
+											className="w-auto h-auto hover:cursor-pointer"
+											onClick={() => handleMoreClick(index)}
+										/>
+
+										{selectedLinkIndex === index && (
+											<LinkActions
+												onEdit={handleEdit}
+												onDelete={handleDelete}
+												onClose={() => setSelectedLinkIndex(null)}
+											/>
+										)}
+									</div>
+								</div>
+							))}
+						</section>
+					)}
+
+					{editLinkOpen && (
+						<AddLink
+							onClose={() => setEditLinkOpen(false)}
+							onSave={handleAddLink}
+						/>
+					)}
+					<section className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer" onClick={() => setEditLinkOpen(true)}>
+						<div>
+							Add your links
+						</div>
+					</section>
 					<section className="flex items-center justify-center pt-4">
 						<div className="text-center text-[13px] text-gray-400">
 							If you are interested in learning how to create an account on{" "}
@@ -423,6 +630,11 @@ const CreatorHome = () => {
 						onSave={handleSavePrices}
 						currentPrices={prices}
 					/>
+				)}
+				{isDeleteLink && (
+					<DeleteLink 
+					onClose={()=> setIsDeleteLink(false)}
+					onSave={handleDeleteLink} />
 				)}
 			</div>
 		</>
