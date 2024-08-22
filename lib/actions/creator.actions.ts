@@ -75,20 +75,15 @@ export async function updateCreatorUser(
 	try {
 		await connectToDatabase();
 
-		// Check for existing user with the same email or username
-		// const existingUser = await Creator.findOne({
-		// 	$or: [{ username: user.username }],
-		// });
-
-		// if (existingUser) {
-		// 	return { error: "User with the same username already exists" };
-		// }
-
-		console.log("Trying to update user");
-
-		const updatedUser = await Creator.findByIdAndUpdate(userId, user, {
-			new: true,
-		});
+		// Add a new link to the links array
+		const updatedUser = await Creator.findByIdAndUpdate(
+			userId,
+			{
+				$push: { links: user.link },
+				...user,
+			},
+			{ new: true }
+		);
 
 		if (!updatedUser) {
 			throw new Error("User not found"); // Throw error if user is not found
@@ -100,6 +95,7 @@ export async function updateCreatorUser(
 		throw new Error("User update failed"); // Throw the error to be caught by the caller
 	}
 }
+
 
 export async function deleteCreatorUser(userId: string) {
 	try {
@@ -119,5 +115,21 @@ export async function deleteCreatorUser(userId: string) {
 		return deletedUser ? JSON.parse(JSON.stringify(deletedUser)) : null;
 	} catch (error) {
 		handleError(error);
+	}
+}
+
+export async function deleteCreatorLink(userId: string, link: { title: string, url: string }) {
+	try {
+		// Use the `$pull` operator to remove the link from the user's links array
+		const updatedUser = await Creator.findOneAndUpdate(
+			{ _id: userId },
+			{ $pull: { links: { title: link.title, url: link.url } } },
+			{ new: true } // This returns the updated document
+		);
+
+		return updatedUser;
+	} catch (error) {
+		console.error("Error in deleteCreatorLink:", error);
+		throw new Error("Failed to delete link");
 	}
 }
