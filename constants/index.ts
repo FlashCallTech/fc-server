@@ -16,6 +16,11 @@ export const sidebarLinks = [
 		label: "Favorites",
 	},
 	{
+		imgURL: "/icons/refer-and-earn.svg",
+		route: "/refer",
+		label: "Refer and Earn",
+	},
+	{
 		imgURL: "/secure.svg",
 		route: "/support",
 		label: "Support",
