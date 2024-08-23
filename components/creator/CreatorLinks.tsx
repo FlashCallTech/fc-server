@@ -20,9 +20,9 @@ const CreatorLinks = () => {
   const [isDeleteLink, setIsDeleteLink] = useState(false);
   const [addLinkOpen, setAddLinkOpen] = useState(false);
 
-  useEffect(()=>{
+  useEffect(() => {
     setLinks(creatorUser?.links);
-  },[creatorUser])
+  }, [creatorUser])
 
   const handleMoreClick = (index: number) => {
     setSelectedLinkIndex(index);
@@ -255,7 +255,7 @@ const CreatorLinks = () => {
           Add your links
         </div>
       </section>
-      
+
       {isDeleteLink && (
         <DeleteLink
           onClose={() => setIsDeleteLink(false)}

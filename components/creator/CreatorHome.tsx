@@ -45,6 +45,12 @@ const CreatorHome = () => {
 		chat: creatorUser?.chatRate || "0",
 	});
 
+	useEffect(()=>{
+		setTimeout(() => {
+			setLoading(false)
+		}, 1000);
+	},[])
+
 	useEffect(() => {
 		if (creatorUser) {
 			setPrices({
