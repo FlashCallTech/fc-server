@@ -94,7 +94,6 @@ export type CreateCreatorParams = {
 	referredBy?: string;
 	referralAmount?: number;
 	creatorId?: string;
-	links?: LinkType[];
 };
 
 export type UpdateCreatorParams = {
@@ -331,6 +330,12 @@ export type RegisterUserKycParams = {
 		poa_frontImagePath: string;
 		digilocker_dob: string | null;
 	};
+};
+
+export type LinkType = {
+	title: string;
+	url: string;
+	isActive: Boolean;
 };
 
 export type UpdateUserKycParams = {
