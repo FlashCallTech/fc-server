@@ -92,15 +92,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				clientUser?._id === chatRequest.clientId
 			) {
 				unsubscribe();
-				setTimeout(() => {
-					logEvent(analytics, "call_connected", {
-						clientId: clientUser?._id,
-						creatorId: creator._id,
-					});
-					router.push(
-						`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
-					);
-				}, 1000);
+				logEvent(analytics, "call_connected", {
+					clientId: clientUser?._id,
+					creatorId: creator._id,
+				});
+				router.push(
+					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
+				);
 			}
 		});
 
@@ -110,7 +108,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	// Example of calling the sendNotification API route
 	const sendPushNotification = async () => {
 		const token = await fetchCreatorToken(creator);
-		
+
 		try {
 			const response = await fetch("/api/send-notification", {
 				method: "POST",
@@ -124,7 +122,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					link: "/",
 				}),
 			});
-	
+
 			const data = await response.json();
 			console.log(data);
 		} catch (error) {

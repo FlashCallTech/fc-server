@@ -209,11 +209,10 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				})
 			);
 
-			setTimeout(() => {
-				router.push(
-					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
-				);
-			}, 1500);
+			router.push(
+				`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
+			);
+			;
 
 		} catch (error) {
 			console.error(error);
