@@ -6,7 +6,7 @@ const ReferralLink: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const { currentUser } = useCurrentUsersContext();
 
-  const referralLink = 'http://localhost:3000/expert/chiragbaba/66c5d3811033a59cd0175a7d/chiragbaba@creator';
+  const referralLink = 'https://app.flashcall.me/chiragbaba/chiragbaba@creator';
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink).then(() => {
