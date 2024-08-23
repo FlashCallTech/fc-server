@@ -6,49 +6,17 @@ import { getUsers } from "@/lib/actions/creator.actions";
 import { creatorUser } from "@/types";
 import CreatorHome from "@/components/creator/CreatorHome";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { usePathname } from "next/navigation";
+import PostLoader from "@/components/shared/PostLoader";
 
-const CreatorDetails = lazy(
-	() => import("@/components/creator/CreatorDetails")
-);
-const PostLoader = lazy(() => import("@/components/shared/PostLoader"));
+const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
 const HomePage = () => {
 	const [creators, setCreators] = useState<creatorUser[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(false);
-	const { userType, currentUser, handleSignout } = useCurrentUsersContext();
-	const authToken = localStorage.getItem("authToken");
-
-	// Managing single session authentication
-	useEffect(() => {
-		if (!currentUser || !authToken) {
-			return;
-		}
-
-		const callDocRef = doc(db, "authToken", currentUser.phone);
-
-		const unsubscribe = onSnapshot(
-			callDocRef,
-			(doc) => {
-				if (doc.exists()) {
-					const data = doc.data();
-					if (data.token !== authToken) {
-						handleSignout();
-					}
-				} else {
-					console.log("No such document!");
-				}
-			},
-			(error) => {
-				console.error("Error fetching document: ", error);
-			}
-		);
-
-		// Cleanup listener on component unmount
-		return () => unsubscribe();
-	}, [currentUser, authToken]);
+	const { userType, setCurrentTheme } = useCurrentUsersContext();
+	const pathname = usePathname();
 
 	useEffect(() => {
 		const getCreators = async () => {
@@ -67,7 +35,12 @@ const HomePage = () => {
 		if (userType !== "creator") {
 			getCreators();
 		}
-	}, []);
+	}, [pathname]);
+
+	const handleCreatorCardClick = (username: string, theme: string) => {
+		localStorage.setItem("creatorURL", `/${username}`);
+		setCurrentTheme(theme);
+	};
 
 	return (
 		<main className="flex size-full flex-col gap-5">
@@ -80,12 +53,15 @@ const HomePage = () => {
 							Failed to fetch creators <br />
 							Please try again later.
 						</div>
-					) : creators && creators.length === 0 ? (
+					) : creators && creators.length === 0 && !loading ? (
 						<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
 							No creators found.
 						</div>
 					) : (
-						<section className="animate-in grid grid-cols-1 xl:grid-cols-2 gap-10 items-center 3xl:items-start justify-start h-fit pb-6">
+						<section
+							className={`grid grid-cols-2 gap-2.5 px-2.5 lg:gap-5 lg:px-0
+							 items-center pb-6`}
+						>
 							{creators &&
 								creators.map(
 									(creator, index) =>
@@ -93,11 +69,20 @@ const HomePage = () => {
 										parseInt(creator.videoRate, 10) !== 0 &&
 										parseInt(creator.chatRate, 10) !== 0 && (
 											<Link
-												href={`/expert/${creator.username}/${creator._id}`}
-												className="min-w-full transition-all duration-500 hover:scale-95"
+												href={`/${creator.username}`}
 												key={creator._id || index}
 											>
-												<CreatorDetails creator={creator} />
+												<section
+													className="min-w-full transition-all duration-500 hover:scale-95"
+													onClick={() =>
+														handleCreatorCardClick(
+															creator.username,
+															creator.themeSelected
+														)
+													}
+												>
+													<CreatorsGrid creator={creator} />
+												</section>
 											</Link>
 										)
 								)}

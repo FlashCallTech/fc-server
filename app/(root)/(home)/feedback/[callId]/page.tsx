@@ -12,6 +12,7 @@ const CallFeedbackPage = () => {
 	const { toast } = useToast();
 	const [loadingFeedback, setLoadingFeedback] = useState(true);
 	const [showFeedback, setShowFeedback] = useState(false);
+	const creatorURL = localStorage.getItem("creatorURL");
 
 	useEffect(() => {
 		const fetchFeedbacks = async () => {
@@ -26,7 +27,7 @@ const CallFeedbackPage = () => {
 						title: "Feedback Already Exists",
 						description: "Returning to HomePage ...",
 					});
-					router.push("/");
+					router.push(`${creatorURL ? creatorURL : "/"}`);
 				} else {
 					setShowFeedback(true);
 				}
@@ -50,7 +51,7 @@ const CallFeedbackPage = () => {
 			title: "Thanks For The Feedback",
 			description: "Hope to See You Again ...",
 		});
-		router.push("/");
+		router.push(`${creatorURL ? creatorURL : "/"}`);
 	};
 
 	if (loadingFeedback) {

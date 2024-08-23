@@ -8,6 +8,7 @@ import Image from "next/image";
 import EditProfile from "@/components/forms/EditProfile";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
+import { usePathname } from "next/navigation";
 
 const UserProfilePage = () => {
 	const { currentUser, userType, refreshCurrentUser } =
@@ -15,12 +16,12 @@ const UserProfilePage = () => {
 	const getInitialState = (): UpdateUserParams => ({
 		id: currentUser?._id || "",
 		fullName:
-			(currentUser?.firstName || "") +
-			" " +
-			(currentUser?.lastName || "Guest User"),
-		firstName: currentUser?.firstName || "Guest",
+			(currentUser?.firstName || "") + " " + (currentUser?.lastName || ""),
+		firstName: currentUser?.firstName || "",
 		lastName: currentUser?.lastName || "",
-		username: currentUser?.username || "guest",
+		username: currentUser?.username || "",
+		profession: currentUser?.profession || "",
+		themeSelected: currentUser?.themeSelected || "#50A65C",
 		phone: currentUser?.phone || "",
 		photo: currentUser?.photo || "/images/defaultProfile.png",
 		bio: currentUser?.bio || "",
@@ -30,6 +31,7 @@ const UserProfilePage = () => {
 		creatorId: currentUser?.creatorId || "",
 	});
 
+	const pathname = usePathname();
 	const [userData, setUserData] = useState<UpdateUserParams>(getInitialState);
 	const [initialState, setInitialState] =
 		useState<UpdateUserParams>(getInitialState);
@@ -41,7 +43,7 @@ const UserProfilePage = () => {
 			setUserData(updatedInitialState);
 			setInitialState(updatedInitialState);
 		}
-	}, [userType, currentUser]);
+	}, [userType, pathname]);
 
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		setUserData(newUserData);
@@ -83,12 +85,18 @@ const UserProfilePage = () => {
 							<div className="grid grid-cols-[2fr_1fr] items-center w-full">
 								<div className="flex flex-col items-start justify-center">
 									<span className="text-lg font-semibold capitalize">
-										{userData?.fullName?.length === 0
-											? userData.username
-											: userData.fullName}
+										{userData.fullName
+											? userData?.fullName?.length > 1
+												? userData.fullName
+												: userData.username
+											: "guest"}
 									</span>
 									<span className="text-sm text-green-1 font-semibold">
-										@ {userData?.username}
+										{userData.phone
+											? userData.phone
+											: userData.username
+											? `@${userData.username}`
+											: "@guest"}
 									</span>
 								</div>
 

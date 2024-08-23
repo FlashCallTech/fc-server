@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 		const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
 		await client.messages.create({
-			body: `${otp} is your one time password(OTP) to log in to FLASHCALL. Please enter the OTP to proceed.`,
+			body: `${otp} is your one time password(OTP) to log in to FLASHCALL. Please enter the OTP to proceed. (valid for next 3 minutes.)`,
 			from: process.env.TWILIO_PHONE_NUMBER!,
 			to: fullPhoneNumber,
 		});

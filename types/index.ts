@@ -16,6 +16,8 @@ export type UpdateUserParams = {
 	firstName: string;
 	lastName: string;
 	username: string;
+	profession?: string;
+	themeSelected?: string;
 	phone?: string;
 	photo: string;
 	bio?: string;
@@ -37,6 +39,8 @@ export type clientUser = {
 	gender?: string;
 	dob?: string;
 	creatorId?: string;
+	profession?: string;
+	themeSelected?: string;
 };
 
 // Creator Params
@@ -65,7 +69,6 @@ export type creatorUser = {
 	referredBy: string;
 	referralAmount: number;
 	creatorId?: string;
-	links?: LinkType[];
 };
 
 export type CreateCreatorParams = {
@@ -90,7 +93,6 @@ export type CreateCreatorParams = {
 	referredBy?: string;
 	referralAmount?: number;
 	creatorId?: string;
-	links?: LinkType[];
 };
 
 export type UpdateCreatorParams = {
@@ -116,11 +118,9 @@ export type UpdateCreatorParams = {
 	kyc_status?: string;
 	walletBalance?: number;
 	creatorId?: string;
-	link?: LinkType;
 };
 
 // Feedback Params
-
 export type CreateFeedbackParams = {
 	creatorId: string;
 	clientId: string;
@@ -128,6 +128,7 @@ export type CreateFeedbackParams = {
 	feedbackText: string;
 	callId: string;
 	createdAt: Date;
+	position?: number;
 };
 
 export type CreatorFeedbackParams = {
@@ -137,6 +138,7 @@ export type CreatorFeedbackParams = {
 	feedbackText: string;
 	createdAt: Date;
 	showFeedback: boolean;
+	position?: number;
 };
 
 export type Client = {
@@ -176,12 +178,6 @@ export type MemberRequest = {
 		phone?: string;
 	};
 	role: string;
-};
-
-export type LinkType = {
-	title: string;
-	url: string;
-	isActive: Boolean;
 };
 
 export type RegisterCallParams = {

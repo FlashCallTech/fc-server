@@ -1,15 +1,100 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Call } from "@stream-io/video-react-sdk";
-import Image from "next/image";
 import { useToast } from "../ui/use-toast";
 
 const MyIncomingCallUI = ({ call }: { call: Call }) => {
 	const { toast } = useToast();
-	const handleCallState = (action: string) => {
+	const [callState, setCallState] = useState("incoming");
+	const [shownNotification, setShownNotification] = useState(false);
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+
+	useEffect(() => {
+		const registerServiceWorker = async () => {
+			if ("serviceWorker" in navigator) {
+				try {
+					await navigator.serviceWorker.register("/sw.js");
+					console.log("Service Worker registered.");
+				} catch (error) {
+					console.error("Service Worker registration failed:", error);
+				}
+			}
+		};
+
+		registerServiceWorker();
+	}, []);
+
+	const showNotification = () => {
+		if ("Notification" in window && Notification.permission === "granted") {
+			navigator.serviceWorker.ready.then((registration) => {
+				registration.showNotification("Incoming Call", {
+					body: `Call from ${call.state.createdBy?.name}`,
+					icon:
+						call?.state?.createdBy?.image || "/images/defaultProfileImage.png",
+					tag: "incoming-call",
+					data: { url: `https://www.flashcall.me/meeting/${call.id}` },
+				});
+			});
+		} else if ("Notification" in window) {
+			Notification.requestPermission().then((result) => {
+				if (result === "granted") {
+					navigator.serviceWorker.ready.then((registration) => {
+						registration.showNotification("Incoming Call", {
+							body: `Call from ${call.state.createdBy?.name}`,
+							icon:
+								call?.state?.createdBy?.image ||
+								"/images/defaultProfileImage.png",
+							tag: "incoming-call",
+							data: { url: `https://www.flashcall.me/meeting/${call.id}` },
+						});
+					});
+				}
+			});
+		}
+	};
+
+	useEffect(() => {
+		let audio: HTMLAudioElement | null = null;
+
+		if (callState === "incoming") {
+			audio = new Audio("/sounds/notification.mp3");
+			audio.loop = true;
+
+			const playPromise = audio.play();
+			if (playPromise !== undefined) {
+				playPromise
+					.then(() => {
+						console.log("Audio autoplay started!");
+					})
+					.catch((error) => {
+						console.error("Audio autoplay was prevented:", error);
+						// Show a UI element or prompt user to play the sound manually if needed
+					});
+			}
+
+			if (!shownNotification) {
+				showNotification();
+				setShownNotification(true);
+			}
+		}
+
+		// Clean up when callState changes or on component unmount
+		return () => {
+			if (audio) {
+				audio.pause();
+				audio.currentTime = 0;
+			}
+		};
+	}, [callState, shownNotification]);
+
+	const handleCallState = async (action: string) => {
 		if (action === "declined") {
-			call.leave({ reject: true });
-		} else {
-			call.accept();
+			await call.leave({ reject: true });
+			setCallState("declined");
+		} else if (action === "accepted") {
+			await call.accept();
+			setCallState("accepted");
+		} else if (action === "ended") {
+			setCallState("ended");
 		}
 
 		toast({
@@ -23,14 +108,14 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 	};
 
 	return (
-		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:w-[35%] 3xl:[25%] flex flex-col items-center justify-between  py-10 sm:rounded-xl bottom-0 right-0 sm:top-4 sm:right-4 gap-5">
+		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:w-[35%] 3xl:[25%] flex flex-col items-center justify-between py-10 sm:rounded-xl bottom-0 right-0 sm:top-4 sm:right-4 gap-5">
 			<h1 className="font-bold text-xl mb-2">Incoming Call ...</h1>
 			<div className="flex flex-col items-center justify-center gap-10">
-				<Image
-					src={call?.state?.createdBy?.image!}
+				<img
+					src={
+						call?.state?.createdBy?.image || "/images/defaultProfileImage.png"
+					}
 					alt=""
-					width={1000}
-					height={1000}
 					className="rounded-full w-28 h-28 object-cover"
 					onError={(e) => {
 						e.currentTarget.src = "/images/defaultProfileImage.png";

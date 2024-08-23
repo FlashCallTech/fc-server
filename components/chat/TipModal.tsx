@@ -20,9 +20,6 @@ import { success } from "@/constants/icons";
 import ContentLoading from "../shared/ContentLoading";
 import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import useEndChat from "@/hooks/useEndChat";
 
 const TipModal = ({
 	walletBalance,
@@ -41,7 +38,7 @@ const TipModal = ({
 	const [loading, setLoading] = useState(false);
 	const [tipPaid, setTipPaid] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
-	const { chatId } = useEndChat();
+
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
@@ -63,11 +60,8 @@ const TipModal = ({
 
 	useEffect(() => {
 		const ratePerMinute = chatRatePerMinute;
-		console.log(ratePerMinute)
 		const costOfTimeUtilized = (totalTimeUtilized / 60) * ratePerMinute;
-		console.log(costOfTimeUtilized)
 		const adjustedWalletBalance = walletBalance - costOfTimeUtilized;
-		console.log(adjustedWalletBalance)
 		setAdjustedWalletBalance(adjustedWalletBalance);
 
 		const options = [10, 49, 99, 149, 199, 249, 299, 499, 999, 2999]
@@ -80,17 +74,6 @@ const TipModal = ({
 	const handlePredefinedAmountClick = (amount: string) => {
 		setTipAmount(amount);
 	};
-
-	useEffect(() => {
-		if(tipPaid && currentUser?._id === clientId){
-			const chatUpdate = updateDoc(
-				doc(db, 'chats', chatId as string),
-				{
-					clientBalance: walletBalance
-				}
-			);
-		}
-	}, [tipPaid, walletBalance])
 
 	const handleTransaction = async () => {
 		if (parseInt(tipAmount) > adjustedWalletBalance) {
@@ -156,8 +139,6 @@ const TipModal = ({
 			setErrorMessage("");
 		}
 	};
-
-	console.log(adjustedWalletBalance)
 
 	return (
 		<section>

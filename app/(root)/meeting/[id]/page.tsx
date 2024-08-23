@@ -25,16 +25,17 @@ const MeetingPage = () => {
 	const { toast } = useToast();
 	const { call, isCallLoading } = useGetCallById(id);
 	const { currentUser } = useCurrentUsersContext();
+	const creatorURL = localStorage.getItem("creatorURL");
 
 	useEffect(() => {
 		if (!isCallLoading && !call) {
 			toast({
 				title: "Call Not Found",
-				description: "Redirecting to HomePage...",
+				description: "Redirecting Back...",
 			});
 			setTimeout(() => {
-				router.push("/");
-			}, 1500);
+				router.push(`${creatorURL ? creatorURL : "/"}`);
+			}, 1000);
 		}
 	}, [isCallLoading, call, router, toast]);
 
@@ -164,7 +165,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 		return (
 			<section className="w-full h-screen flex flex-col items-center justify-center gap-4">
 				<ContentLoading />
-				<h1 className="text-xl md:text-2xl font-semibold mt-7">
+				<h1 className="text-xl md:text-2xl font-semibold">
 					<Typewriter
 						words={["Checking Pending Transactions", "Please Wait ..."]}
 						loop={true}

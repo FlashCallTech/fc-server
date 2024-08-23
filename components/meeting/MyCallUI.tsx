@@ -59,6 +59,8 @@ const MyCallUI = () => {
 					callId: call.id,
 				});
 
+				const creatorURL = localStorage.getItem("creatorURL");
+
 				await fetch("/api/v1/calls/updateCall", {
 					method: "POST",
 					body: JSON.stringify({
@@ -68,7 +70,7 @@ const MyCallUI = () => {
 					headers: { "Content-Type": "application/json" },
 				});
 
-				router.push("/");
+				router.push(`${creatorURL ? creatorURL : "/"}`);
 			};
 
 			const handleCallStarted = async () => {

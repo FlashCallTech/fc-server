@@ -14,6 +14,7 @@ export async function createFeedback({
 	callId,
 	createdAt,
 	showFeedback,
+	position,
 }: {
 	creatorId: string;
 	clientId: string;
@@ -22,6 +23,7 @@ export async function createFeedback({
 	callId: string;
 	createdAt: Date;
 	showFeedback?: boolean;
+	position?: number;
 }) {
 	try {
 		await connectToDatabase();
@@ -33,6 +35,7 @@ export async function createFeedback({
 				feedback: feedbackText,
 				createdAt: createdAt,
 				showFeedback: showFeedback,
+				position: position || -1,
 			};
 
 			const existingCallFeedback = await CallFeedbacks.findOne({
@@ -105,12 +108,28 @@ export async function getCallFeedbacks(callId?: string, creatorId?: string) {
 			.populate("feedbacks.clientId")
 			.lean();
 
-		// Sort feedbacks by createdAt in descending order
+		console.log(feedbacks);
+
 		feedbacks.forEach((feedback: any) => {
-			feedback.feedbacks.sort(
-				(a: any, b: any) =>
-					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-			);
+			feedback.feedbacks.sort((a: any, b: any) => {
+				// First, sort by position if neither are -1
+				if (a.position !== -1 && b.position !== -1) {
+					return a.position - b.position;
+				}
+
+				// If one of the positions is -1, sort that one after the other
+				if (a.position === -1 && b.position !== -1) {
+					return 1; // 'a' should be after 'b'
+				}
+				if (b.position === -1 && a.position !== -1) {
+					return -1; // 'b' should be after 'a'
+				}
+
+				// If both have position -1, sort by createdAt
+				return (
+					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+				);
+			});
 		});
 
 		// Return the feedbacks as JSON

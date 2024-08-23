@@ -22,13 +22,14 @@ export async function POST(req: NextRequest) {
 		}
 
 		const otp = Math.floor(100000 + Math.random() * 900000).toString();
-		const token = generateToken(fullPhoneNumber, otp); // Token expires in 3 minutes
 
 		await client.messages.create({
-			body: `${otp} is your one time password(OTP) to log in to FLASHCALL. Please enter the OTP to proceed.`,
+			body: `${otp} is your one time password(OTP) to log in to FLASHCALL. Please enter the OTP to proceed. (valid for next 3 minutes.)`,
 			from: process.env.TWILIO_PHONE_NUMBER!,
 			to: fullPhoneNumber,
 		});
+
+		const token = generateToken(fullPhoneNumber, otp); // Token expires in 3 minutes
 
 		return NextResponse.json({ message: "OTP resent successfully", token });
 	} catch (error) {

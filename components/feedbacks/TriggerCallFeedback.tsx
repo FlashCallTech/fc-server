@@ -11,6 +11,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 	const { toast } = useToast();
 	const [loadingFeedback, setLoadingFeedback] = useState(true);
 	const [showFeedback, setShowFeedback] = useState(false);
+	const creatorURL = localStorage.getItem("creatorURL");
 
 	useEffect(() => {
 		const fetchFeedbacks = async () => {
@@ -23,9 +24,9 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 				if (feedbacks.length > 0) {
 					toast({
 						title: "Feedback Already Exists",
-						description: "Returning to HomePage ...",
+						description: "Returning back ...",
 					});
-					router.push("/");
+					router.push(`${creatorURL ? creatorURL : "/"}`);
 				} else {
 					setShowFeedback(true);
 				}
@@ -49,7 +50,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 			title: "Thanks For The Feedback",
 			description: "Hope to See You Again ...",
 		});
-		router.push("/");
+		router.push(`${creatorURL ? creatorURL : "/"}`);
 	};
 
 	if (loadingFeedback) {
