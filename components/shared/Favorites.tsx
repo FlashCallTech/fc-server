@@ -8,10 +8,6 @@ interface FavoriteItem {
 	creatorId: creatorUser;
 }
 
-interface CreatorDetailsProps {
-	creator: creatorUser;
-}
-
 const Favorites = ({
 	setMarkedFavorite,
 	markedFavorite,
@@ -68,8 +64,8 @@ const Favorites = ({
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<Button
-					className={` px-3 py-6 rounded-full transition-all duration-300  hover:scale-105 group ${
-						markedFavorite ? "bg-green-1" : "bg-black/50"
+					className={` px-3 py-6 rounded-xl transition-all duration-300  hover:scale-105 group ${
+						markedFavorite ? "bg-green-1" : "bg-[#232323]/35"
 					} hover:bg-green-1 flex gap-2 items-center`}
 					onClick={handleToggleFavorite}
 					// onMouseEnter={() => setShowText(true)}

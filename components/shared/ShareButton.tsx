@@ -26,7 +26,7 @@ const ShareButton = () => {
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<Button
-					className={` px-3 py-6 rounded-full transition-all duration-300  hover:scale-105 group bg-black/50 hover:bg-green-1 flex gap-2 items-center`}
+					className={` px-3 py-6 rounded-xl transition-all duration-300  hover:scale-105 group bg-[#232323]/35 hover:bg-green-1 flex gap-2 items-center`}
 					onClick={handleShareClick}
 				>
 					<svg

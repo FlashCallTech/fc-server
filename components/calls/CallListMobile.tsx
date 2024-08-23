@@ -49,8 +49,10 @@ const CallListMobile = () => {
 			}
 		};
 
-		getCalls();
-	}, [currentUser]);
+		if (currentUser) {
+			getCalls();
+		}
+	}, [pathname]);
 
 	const visibleCalls = calls.slice(0, callsCount);
 

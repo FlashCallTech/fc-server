@@ -16,6 +16,8 @@ export type UpdateUserParams = {
 	firstName: string;
 	lastName: string;
 	username: string;
+	profession?: string;
+	themeSelected?: string;
 	phone?: string;
 	photo: string;
 	bio?: string;
@@ -37,6 +39,8 @@ export type clientUser = {
 	gender?: string;
 	dob?: string;
 	creatorId?: string;
+	profession?: string;
+	themeSelected?: string;
 };
 
 // Creator Params
@@ -117,7 +121,6 @@ export type UpdateCreatorParams = {
 };
 
 // Feedback Params
-
 export type CreateFeedbackParams = {
 	creatorId: string;
 	clientId: string;
@@ -125,6 +128,7 @@ export type CreateFeedbackParams = {
 	feedbackText: string;
 	callId: string;
 	createdAt: Date;
+	position?: number;
 };
 
 export type CreatorFeedbackParams = {
@@ -134,6 +138,7 @@ export type CreatorFeedbackParams = {
 	feedbackText: string;
 	createdAt: Date;
 	showFeedback: boolean;
+	position?: number;
 };
 
 export type Client = {

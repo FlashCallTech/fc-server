@@ -15,7 +15,7 @@ export default function AuthenticationPage() {
 	}, [router, searchParams, userType]);
 
 	return (
-		<main className="relative flex flex-col gap-5 h-screen w-full items-center justify-end md:justify-center bg-black/20 no-scrollbar overflow-hidden">
+		<main className="relative flex flex-col gap-5 h-screen w-full items-center justify-end md:justify-center bg-green-1 no-scrollbar overflow-hidden">
 			<Head>
 				<title>Register</title>
 				<meta name="description" content="Registeration Form" />

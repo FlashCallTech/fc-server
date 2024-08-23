@@ -9,37 +9,101 @@ import MobileNav from "./MobileNav";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useRouter } from "next/navigation";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { creatorUser } from "@/types";
 
 const Navbar = () => {
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 	const router = useRouter();
+	const [userTheme, setUserTheme] = useState("#000000");
 
 	const handleRouting = () => {
 		localStorage.setItem("userType", "client");
 
-		router.replace("/authenticate");
+		router.push("/authenticate");
 	};
 	const theme = `5px 5px 0px 0px #000000`;
 	const { walletBalance } = useWalletBalanceContext();
 
+	useEffect(() => {
+		const storedCreator = localStorage.getItem("currentCreator");
+		let selectedTheme;
+		if (storedCreator) {
+			const parsedCreator: creatorUser = JSON.parse(storedCreator);
+			selectedTheme = parsedCreator.themeSelected;
+		}
+		let newTheme = selectedTheme
+			? selectedTheme === "#50A65C"
+				? "#000000"
+				: selectedTheme
+			: "#000000";
+		setUserTheme(newTheme);
+	}, [router]);
+
+	const handleAppRedirect = () => {
+		const isAndroid = /Android/i.test(navigator.userAgent);
+		const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+		let url = "";
+
+		if (isAndroid) {
+			url = "https://play.google.com/store/apps?hl=en_US";
+		} else if (isIOS) {
+			url = "https://flashcall.me";
+		} else {
+			// For other devices (like laptops, Windows machines), redirect to a fallback URL
+			url = "https://flashcall.me";
+		}
+
+		window.open(url, "_blank");
+	};
+
+	const AppLink = () => (
+		<Button
+			className="flex items-center gap-2 bg-green-1 py-2 px-4 text-white rounded-[4px] hoverScaleDownEffect"
+			style={{
+				boxShadow: `5px 5px 0px 0px ${userTheme}`,
+			}}
+			onClick={handleAppRedirect}
+		>
+			<Image
+				src="/icons/logoDarkCircle.png"
+				width={100}
+				height={100}
+				alt="flashcall logo"
+				className="w-6 h-6 rounded-full"
+			/>
+
+			<span className="w-full whitespace-nowrap text-sm font-semibold">
+				Get Your Link
+			</span>
+		</Button>
+	);
+
 	return (
-		<nav className="flex-between items-center fixed top-0 left-0 z-40 w-full px-2 sm:px-6 py-4 lg:px-7 bg-white shadow-sm">
-			<Link href="/" className="flex items-center gap-4 ">
-				<Image
-					src="/icons/logoDesktop.png"
-					width={100}
-					height={100}
-					alt="flashcall logo"
-					className="w-full h-full rounded-xl hoverScaleEffect"
-				/>
-			</Link>
+		<nav className="flex-between items-center fixed top-0 left-0 z-40 w-full px-2 sm:px-4 py-4 bg-white shadow-sm">
+			{currentUser ? (
+				userType === "creator" ? (
+					<Link href="/" className="flex items-center gap-4">
+						<Image
+							src="/icons/logoDesktop.png"
+							width={100}
+							height={100}
+							alt="flashcall logo"
+							className="w-full h-full rounded-xl hoverScaleEffect"
+						/>
+					</Link>
+				) : (
+					<AppLink />
+				)
+			) : (
+				<AppLink />
+			)}
 
 			{currentUser ? (
 				walletBalance >= 0 ? (
 					<div className=" w-fit h-full flex-between gap-2 text-white animate-enterFromRight">
 						<Link
 							href="/payment"
-							className="w-full flex items-center justify-center gap-2 text-black px-5 py-3 border border-black rounded-lg  hover:bg-green-1 group"
+							className="w-full flex items-center justify-center gap-2 text-black px-5 py-3 border border-black rounded-[4px] hover:bg-green-1 group"
 							style={{
 								boxShadow: theme,
 							}}
@@ -68,9 +132,14 @@ const Navbar = () => {
 				)
 			) : (
 				<Button
-					className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1 transition-all duration-300 hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md"
+					className="hover:!bg-green-1 hover:!text-white transition-all duration-300 hover:bg-green-700font-semibold w-fit mr-1 rounded-md"
 					size="lg"
 					onClick={handleRouting}
+					style={{
+						boxShadow: `5px 5px 0px 0px ${userTheme}`,
+						color: userTheme,
+						border: `2px solid ${userTheme}`,
+					}}
 				>
 					Login
 				</Button>

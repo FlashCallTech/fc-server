@@ -47,10 +47,10 @@ const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
 	const [isSendingOTP, setIsSendingOTP] = useState(false);
 	const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
 	const [verificationSuccess, setVerificationSuccess] = useState(false);
+	const [error, setError] = useState({});
 
 	const pathname = usePathname();
 	const isAuthenticationPath = pathname.includes("/authenticate");
-
 	useEffect(() => {
 		localStorage.setItem("userType", (userType as string) ?? "client");
 	}, [router, searchParams, userType]);
@@ -124,7 +124,7 @@ const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
 
 			// Save the auth token (with 7 days expiry) in localStorage
 			localStorage.setItem("authToken", authToken);
-			console.log("OTP verified and token saved:", authToken);
+			console.log("OTP verified and token saved:");
 
 			updateFirestoreAuthToken(authToken);
 
@@ -184,6 +184,7 @@ const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
 							"/api/v1/creator/createUser",
 							user as CreateCreatorParams
 						);
+						refreshCurrentUser();
 						router.push("/updateDetails");
 					} catch (error: any) {
 						toast({
@@ -199,6 +200,7 @@ const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
 							"/api/v1/client/createUser",
 							user as CreateCreatorParams
 						);
+						refreshCurrentUser();
 						router.push("/updateDetails");
 					} catch (error: any) {
 						toast({
@@ -217,6 +219,9 @@ const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
 				title: "Error Verifying OTP",
 				description: `${error.response.data.error}`,
 			});
+			let newErrors = { ...error };
+			newErrors.otpVerificationError = error.response.data.error;
+			setError(newErrors);
 			otpForm.reset(); // Reset OTP form
 			setIsVerifyingOTP(false);
 		} finally {
@@ -343,6 +348,9 @@ const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
 					onOTPChange={handleOTPChange}
 					onSubmit={otpForm.handleSubmit(handleOTPSubmit)}
 					isVerifyingOTP={isVerifyingOTP}
+					errors={error}
+					changeError={setError}
+					setToken={setToken}
 				/>
 			)}
 

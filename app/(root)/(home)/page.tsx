@@ -6,49 +6,23 @@ import { getUsers } from "@/lib/actions/creator.actions";
 import { creatorUser } from "@/types";
 import CreatorHome from "@/components/creator/CreatorHome";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { usePathname } from "next/navigation";
+import PostLoader from "@/components/shared/PostLoader";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 const CreatorDetails = lazy(
 	() => import("@/components/creator/CreatorDetails")
 );
-const PostLoader = lazy(() => import("@/components/shared/PostLoader"));
+
+const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
 const HomePage = () => {
 	const [creators, setCreators] = useState<creatorUser[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(false);
-	const { userType, currentUser, handleSignout } = useCurrentUsersContext();
-	const authToken = localStorage.getItem("authToken");
-
-	// Managing single session authentication
-	useEffect(() => {
-		if (!currentUser || !authToken) {
-			return;
-		}
-
-		const callDocRef = doc(db, "authToken", currentUser.phone);
-
-		const unsubscribe = onSnapshot(
-			callDocRef,
-			(doc) => {
-				if (doc.exists()) {
-					const data = doc.data();
-					if (data.token !== authToken) {
-						handleSignout();
-					}
-				} else {
-					console.log("No such document!");
-				}
-			},
-			(error) => {
-				console.error("Error fetching document: ", error);
-			}
-		);
-
-		// Cleanup listener on component unmount
-		return () => unsubscribe();
-	}, [currentUser, authToken]);
+	const { userType } = useCurrentUsersContext();
+	const { walletBalance } = useWalletBalanceContext();
+	const pathname = usePathname();
 
 	useEffect(() => {
 		const getCreators = async () => {
@@ -67,7 +41,26 @@ const HomePage = () => {
 		if (userType !== "creator") {
 			getCreators();
 		}
-	}, []);
+	}, [pathname]);
+
+	// Custom hook to track screen size
+	const useScreenSize = () => {
+		const [isMobile, setIsMobile] = useState(false);
+
+		const handleResize = () => {
+			setIsMobile(window.innerWidth < 1440);
+		};
+
+		useEffect(() => {
+			handleResize(); // Set initial value
+			window.addEventListener("resize", handleResize);
+			return () => window.removeEventListener("resize", handleResize);
+		}, []);
+
+		return isMobile;
+	};
+
+	const isMobile = useScreenSize();
 
 	return (
 		<main className="flex size-full flex-col gap-5">
@@ -85,7 +78,13 @@ const HomePage = () => {
 							No creators found.
 						</div>
 					) : (
-						<section className="animate-in grid grid-cols-1 xl:grid-cols-2 gap-10 items-center 3xl:items-start justify-start h-fit pb-6">
+						<section
+							className={`grid ${
+								isMobile
+									? "grid-cols-1 m:grid-cols-2 gap-4 m:gap-2.5 px-4 m:px-2.5"
+									: "grid-cols-1 gap-10"
+							} xl:grid-cols-2 items-center 3xl:items-start justify-start h-fit pb-6`}
+						>
 							{creators &&
 								creators.map(
 									(creator, index) =>
@@ -97,7 +96,11 @@ const HomePage = () => {
 												className="min-w-full transition-all duration-500 hover:scale-95"
 												key={creator._id || index}
 											>
-												<CreatorDetails creator={creator} />
+												{isMobile ? (
+													<CreatorsGrid creator={creator} />
+												) : (
+													<CreatorDetails creator={creator} />
+												)}
 											</Link>
 										)
 								)}

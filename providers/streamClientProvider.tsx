@@ -12,14 +12,12 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 	const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(
 		null
 	);
-	const [loading, setLoading] = useState(true);
 	const { currentUser } = useCurrentUsersContext();
 	const userId = currentUser?._id as string | undefined;
 
 	useEffect(() => {
 		const initializeVideoClient = async () => {
 			if (!currentUser || !userId) {
-				setLoading(false);
 				return;
 			}
 
@@ -44,8 +42,6 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 				setVideoClient(client);
 			} catch (error) {
 				console.error("Failed to initialize StreamVideoClient:", error);
-			} finally {
-				setLoading(false);
 			}
 		};
 

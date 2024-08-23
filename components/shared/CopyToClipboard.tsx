@@ -21,8 +21,8 @@ const CopyToClipboard = ({ link }: { link: string }) => {
 		if (navigator.share) {
 			navigator
 				.share({
-					title: "Check out this link!",
-					text: "Here's an awesome link you should check out:",
+					title: "Check out this link",
+					text: "Here's a link to my Creator's Page:",
 					url: link,
 				})
 				.catch((err) => {

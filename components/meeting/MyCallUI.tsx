@@ -48,6 +48,7 @@ const MyCallUI = () => {
 			};
 
 			const handleCallRejected = async () => {
+				const creatorURL = localStorage.getItem("creatorURL");
 				toast({
 					title: "Call Rejected",
 					description: "The call was rejected. Redirecting to HomePage...",
@@ -68,7 +69,7 @@ const MyCallUI = () => {
 					headers: { "Content-Type": "application/json" },
 				});
 
-				router.push("/");
+				router.push(`${creatorURL ? creatorURL : "/"}`);
 			};
 
 			const handleCallStarted = async () => {

@@ -1,6 +1,5 @@
 "use client";
-import { feedbacks } from "@/constants";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Rating } from "@smastrom/react-rating";
 import {
 	HappyFace,
@@ -31,30 +30,53 @@ const UserReviews = ({
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const lastIndex = creatorFeedback?.length - 1;
 	const [direction, setDirection] = useState("right");
+	const [isHovering, setIsHovering] = useState(false);
+	const sliderIntervalRef = useRef<any>(null);
 
 	// Auto slider
 	useEffect(() => {
-		if (creatorFeedback?.length > 1) {
-			let sliderInterval = setInterval(() => {
-				setCurrentIndex((prev) => (prev + 1 > lastIndex ? 0 : prev + 1));
-			}, 10000);
-			return () => clearInterval(sliderInterval);
-		}
-	}, [currentIndex]);
+		startAutoSlide();
 
-	const getSliderState = (feedbackIndex: number) => {
-		if (feedbackIndex === currentIndex) return "active";
-		else return "hidden";
+		return () => {
+			stopAutoSlide();
+		};
+	}, [currentIndex, isHovering]);
+
+	const startAutoSlide = () => {
+		if (sliderIntervalRef.current) {
+			clearInterval(sliderIntervalRef.current);
+		}
+
+		if (creatorFeedback?.length > 1 && !isHovering) {
+			sliderIntervalRef.current = setInterval(() => {
+				setCurrentIndex((prev) => (prev + 1 > lastIndex ? 0 : prev + 1));
+			}, 5000);
+		}
+	};
+
+	const stopAutoSlide = () => {
+		if (sliderIntervalRef.current) {
+			clearInterval(sliderIntervalRef.current);
+		}
 	};
 
 	const nextSlide = () => {
 		setDirection("right");
+		stopAutoSlide();
+
 		setCurrentIndex((prev) => (prev + 1 > lastIndex ? 0 : prev + 1));
 	};
 
 	const previousSlide = () => {
 		setDirection("left");
+		stopAutoSlide();
+
 		setCurrentIndex((prev) => (prev - 1 < 0 ? lastIndex : prev - 1));
+	};
+
+	const getSliderState = (feedbackIndex: number) => {
+		if (feedbackIndex === currentIndex) return "active";
+		else return "hidden";
 	};
 
 	if (loading)
@@ -68,6 +90,8 @@ const UserReviews = ({
 		<div
 			className="flex overflow-x-scroll no-scrollbar items-center text-white w-full rounded-t-xl md:rounded-xl xl:w-[60%]"
 			style={{ backgroundColor: theme }}
+			onMouseEnter={() => setIsHovering(true)}
+			onMouseLeave={() => setIsHovering(false)}
 		>
 			{creatorFeedback?.map((feedback, index) => {
 				const adjustedIndex =
@@ -100,7 +124,7 @@ const UserReviews = ({
 							<div className="flex w-fit mx-auto rounded-full items-center justify-center gap-2 bg-black px-4 py-2 z-10">
 								<img
 									src={feedback.clientId.photo}
-									alt={`${feedback.clientId.username}'s profile`}
+									alt={`${feedback.clientId.username} profile`}
 									width={24}
 									height={24}
 									className="w-7 h-7 rounded-full object-cover"
@@ -111,9 +135,12 @@ const UserReviews = ({
 								{/* Rating */}
 								<div className="flex gap-1 items-center">
 									<Rating
-										style={{ maxWidth: 180, fill: "white" }}
+										style={{
+											maxWidth: 180,
+											fill: "white",
+											marginLeft: "-10px",
+										}}
 										value={Math.floor(feedback.rating)}
-										itemStyles={customStyles}
 										items={5}
 										spaceBetween="medium"
 										transition="zoom"
@@ -147,7 +174,7 @@ const UserReviews = ({
 								>
 									{arrowLeft}
 								</button>
-								<div className="flex gap-2 items-center max-w-[50%] md:max-w-[75%] py-2 overflow-x-scroll no-scrollbar">
+								<div className="flex gap-2 items-center max-w-[60%] md:max-w-[80%] py-2 overflow-x-scroll no-scrollbar">
 									{creatorFeedback?.map((_, index) => (
 										<button
 											key={index}
