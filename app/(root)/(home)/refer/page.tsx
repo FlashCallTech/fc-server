@@ -1,10 +1,12 @@
 'use client'
+import { useCurrentUsersContext } from '@/lib/context/CurrentUsersContext';
 import React, { useState } from 'react';
 
 const ReferralLink: React.FC = () => {
   const [copied, setCopied] = useState(false);
+  const { currentUser } = useCurrentUsersContext();
 
-  const referralLink = 'https://yourapp.com/referral?code=123ABC';
+  const referralLink = 'http://localhost:3000/expert/chiragbaba/66c5d3811033a59cd0175a7d/chiragbaba@creator';
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink).then(() => {
@@ -16,8 +18,8 @@ const ReferralLink: React.FC = () => {
   };
 
   return (
-    <div className="p-5 border rounded-md border-gray-300 max-w-md mx-auto text-center">
-      <h3 className="text-lg font-semibold">Share Your Referral Link</h3>
+    <div className="flex flex-col items-center">
+      <h3 className="text-lg font-semibold">Refer Friends</h3>
       <div className="flex items-center mt-3">
         <input
           type="text"
