@@ -77,7 +77,7 @@ const RechargeModal = ({
 			const order = await response.json();
 
 			const options: RazorpayOptions = {
-				key: "rzp_test_d8fM9sk9S2Cb2m",
+				key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string,
 				amount,
 				currency,
 				name: "FlashCall.me",
