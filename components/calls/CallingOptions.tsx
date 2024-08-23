@@ -5,22 +5,14 @@ import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
 import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { logEvent } from "firebase/analytics";
-import { Button } from "../ui/button";
 import {
-	arrayUnion,
-	collection,
 	doc,
-	setDoc,
 	updateDoc,
 	onSnapshot,
-	query,
-	where,
-	getDoc,
 } from "firebase/firestore";
 import { analytics, db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import useChat from "@/hooks/useChat";
 import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
