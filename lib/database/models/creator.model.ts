@@ -1,5 +1,13 @@
 import { Schema, model, models } from "mongoose";
 
+// Define the LinkSchema
+const LinkSchema = new Schema({
+	title: { type: String, required: true },
+	url: { type: String, required: true },
+	isActive: { type: Boolean, required: true }
+}, { _id: false });
+
+// Define the CreatorSchema
 const CreatorSchema = new Schema(
 	{
 		username: { type: String, unique: true },
@@ -25,6 +33,7 @@ const CreatorSchema = new Schema(
 		referredBy: { type: String, default: null },
 		referralAmount: { type: Number, default: 0 },
 		creatorId: { type: String, unique: true },
+		links: { type: [LinkSchema], default: [] }, // Add links field
 	},
 	{
 		timestamps: true,

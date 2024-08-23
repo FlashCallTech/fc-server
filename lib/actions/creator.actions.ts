@@ -6,7 +6,7 @@ import { connectToDatabase } from "@/lib/database";
 
 import { handleError } from "@/lib/utils";
 
-import { CreateCreatorParams, UpdateCreatorParams } from "@/types";
+import { CreateCreatorParams, LinkType, UpdateCreatorParams } from "@/types";
 import Creator from "../database/models/creator.model";
 
 export async function createCreatorUser(user: CreateCreatorParams) {
@@ -83,25 +83,27 @@ export async function getUserByUsername(username: string) {
 
 export async function updateCreatorUser(
 	userId: string,
-	user: UpdateCreatorParams
+	updates: UpdateCreatorParams
 ) {
 	try {
 		await connectToDatabase();
 
-		// Check for existing user with the same email or username
-		// const existingUser = await Creator.findOne({
-		// 	$or: [{ username: user.username }],
-		// });
+		// Construct the update object
+		const updateObject: any = { ...updates };
 
-		// if (existingUser) {
-		// 	return { error: "User with the same username already exists" };
-		// }
+		// If the updates object contains a link to add, use $push to add it to the links array
+		if (updates.link) {
+			updateObject.$push = { links: updates.link };
+			delete updateObject.links; // Remove the links field from direct updates to avoid overwriting the array
+		}
 
 		console.log("Trying to update user");
 
-		const updatedUser = await Creator.findByIdAndUpdate(userId, user, {
-			new: true,
-		});
+		const updatedUser = await Creator.findByIdAndUpdate(
+			userId,
+			updateObject,
+			{ new: true }
+		);
 
 		if (!updatedUser) {
 			throw new Error("User not found"); // Throw error if user is not found
@@ -112,6 +114,28 @@ export async function updateCreatorUser(
 		console.error("Error updating user:", error); // Log the error
 		throw new Error("User update failed"); // Throw the error to be caught by the caller
 	}
+}
+
+export async function deleteCreatorLink(userId: string, link: LinkType) {
+  try {
+    const { title, url } = link;
+
+    // Update the creator document by pulling (removing) the matching link
+    const updatedCreator = await Creator.findByIdAndUpdate(
+      userId,
+      {
+        $pull: {
+          links: { title, url },
+        },
+      },
+      { new: true } // Return the updated document
+    );
+
+    return updatedCreator;
+  } catch (error) {
+    console.error("Error deleting link:", error);
+    throw new Error("Failed to delete the link.");
+  }
 }
 
 export async function deleteCreatorUser(userId: string) {
