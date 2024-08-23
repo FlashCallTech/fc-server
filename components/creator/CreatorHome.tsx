@@ -16,6 +16,8 @@ import { db } from "@/lib/firebase";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
 
+import CreatorLinks from "./CreatorLinks";
+
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
@@ -217,12 +219,6 @@ const CreatorHome = () => {
 		}
 	}, [services]);
 
-	useEffect(() => {
-		setTimeout(() => {
-			setLoading(false);
-		}, 1000);
-	}, []);
-
 	if (!creatorUser || loading || walletBalance < 0)
 		return (
 			<section className="w-full h-full flex flex-col items-center justify-center">
@@ -353,6 +349,9 @@ const CreatorHome = () => {
 							prices={prices}
 						/>
 					</section>
+
+					<CreatorLinks />
+
 					<section className="flex items-center justify-center pt-4">
 						<div className="text-center text-[13px] text-gray-400">
 							If you are interested in learning how to create an account on{" "}
