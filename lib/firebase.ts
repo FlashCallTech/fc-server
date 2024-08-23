@@ -9,7 +9,7 @@ import {
 } from "firebase/analytics";
 
 const firebaseConfig = {
-	apiKey: "AIzaSyCf3hnF_XK4kUMnT49NaSBJiIurLQd1Hx8",
+	apiKey: process.env.NEXT_PUBLIC_FIREBASE_KEY,
 	authDomain: "flashcallchat.firebaseapp.com",
 	projectId: "flashcallchat",
 	storageBucket: "flashcallchat.appspot.com",
