@@ -101,8 +101,8 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 			title: `${action === "declined" ? "Call Declined" : "Call Accepted"}`,
 			description: `${
 				action === "declined"
-					? "Redirection Back ..."
-					: "Redirection To Meeting"
+					? "Redirecting Back ..."
+					: "Redirecting To Meeting"
 			}`,
 		});
 	};

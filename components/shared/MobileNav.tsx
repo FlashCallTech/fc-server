@@ -28,7 +28,7 @@ const MobileNav = () => {
 	};
 
 	return (
-		<section className="w-full  relative">
+		<section className="flex items-center justify-center w-full relative">
 			<Sheet>
 				<SheetTrigger asChild>
 					<Image
@@ -36,7 +36,7 @@ const MobileNav = () => {
 						alt="Profile"
 						width={1000}
 						height={1000}
-						className="rounded-full w-11 h-11 object-cover mx-auto cursor-pointer hoverScaleDownEffect"
+						className="rounded-full w-11 h-11 object-cover cursor-pointer hoverScaleDownEffect"
 					/>
 				</SheetTrigger>
 				<SheetContent
