@@ -109,7 +109,7 @@ const Navbar = () => {
 			)}
 
 			{currentUser ? (
-				<div className=" w-fit h-full flex-between gap-2 text-white">
+				<div className=" grid grid-cols-[2fr_1fr] items-center h-full gap-2 text-white">
 					{walletBalance >= 0 ? (
 						<Link
 							href="/payment"
