@@ -26,6 +26,7 @@ const About: React.FC = () => {
 	const { currentUser } = useCurrentUsersContext();
 	const router = useRouter();
 	const { toast } = useToast();
+	const contact = currentUser?.phone as string;
 	const amountInt: number | null = amount ? parseFloat(amount) : null;
 
 	const subtotal: number | null =
@@ -74,9 +75,9 @@ const About: React.FC = () => {
 				key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string,
 				amount,
 				currency,
-				name: "FlashCall.me",
-				description: "Test Transaction",
-				image: "https://example.com/your_logo",
+				name: "FlashCall",
+				description: "Consultation",
+				image: "/flash.svg",
 				order_id: order.id,
 				handler: async (response: PaymentResponse): Promise<void> => {
 					const body: PaymentResponse = { ...response };
@@ -137,14 +138,14 @@ const About: React.FC = () => {
 				prefill: {
 					name: currentUser?.firstName + " " + currentUser?.lastName,
 					email: "",
-					contact: currentUser?.phone as string,
+					contact: contact,
 					method: method,
 				},
 				notes: {
 					address: "Razorpay Corporate Office",
 				},
 				theme: {
-					color: "#F37254",
+					color: "#50A65C",
 				},
 			};
 
