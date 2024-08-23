@@ -17,7 +17,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { UpdateCreatorParams, UpdateUserParams } from "@/types";
 import React, { useEffect, useState } from "react";
-import { UpdateProfileFormSchema } from "@/lib/validator";
+import {
+	UpdateProfileFormSchema,
+	UpdateProfileFormSchemaClient,
+} from "@/lib/validator";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
 import FileUploader from "../shared/FileUploader";
@@ -25,6 +28,8 @@ import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
+import axios from "axios";
+import { debounce } from "@/lib/utils";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -58,6 +63,7 @@ const EditProfile = ({
 	const [isChanged, setIsChanged] = useState(false); // State to track if any changes are made
 	const [selectedFile, setSelectedFile] = useState<File | null>(null); // State to store the selected file
 	const [loading, setLoading] = useState(false);
+	const [usernameError, setUsernameError] = useState<string | null>(null);
 	const [formError, setFormError] = useState<string | null>(null); // State to store form error
 	const [selectedColor, setSelectedColor] = useState(
 		userData.themeSelected ?? "#50A65C"
@@ -68,9 +74,15 @@ const EditProfile = ({
 		setSelectedColor(color);
 	};
 
+	// Conditionally select the schema based on user role
+	const schema =
+		userData.role === "creator"
+			? UpdateProfileFormSchema
+			: UpdateProfileFormSchemaClient;
+
 	// 1. Define your form.
-	const form = useForm<z.infer<typeof UpdateProfileFormSchema>>({
-		resolver: zodResolver(UpdateProfileFormSchema),
+	const form = useForm<z.infer<typeof schema>>({
+		resolver: zodResolver(schema),
 		defaultValues: {
 			firstName: userData.firstName,
 			lastName: userData.lastName,
@@ -104,6 +116,34 @@ const EditProfile = ({
 		setIsChanged(hasChanged);
 	}, [watchedValues, initialState]);
 
+	const checkUsernameAvailability = async (username: string) => {
+		try {
+			const response = await axios.get(
+				`/api/v1/user/getAllUsernames?username=${username}`
+			);
+
+			// Check the response status directly
+			if (response.status === 200) {
+				setUsernameError(null); // Username is available
+			} else if (response.status === 409) {
+				setUsernameError("Username is already taken");
+			}
+		} catch (error: any) {
+			// Handle cases where the error is not 409 (e.g., network issues, server errors)
+			if (error.response && error.response.status === 409) {
+				setUsernameError("Username is already taken");
+			} else {
+				console.error("Error checking username availability", error);
+				setUsernameError("Error checking username availability");
+			}
+		}
+	};
+
+	const debouncedCheckUsernameAvailability = debounce(
+		checkUsernameAvailability,
+		500
+	);
+
 	// Utility function to get updated value or fallback to existing value
 	const getUpdatedValue = (
 		newValue: string,
@@ -116,7 +156,7 @@ const EditProfile = ({
 		newBio.length !== 0 ? newBio : existingBio;
 
 	// 2. Define a submit handler.
-	async function onSubmit(values: z.infer<typeof UpdateProfileFormSchema>) {
+	async function onSubmit(values: z.infer<typeof schema>) {
 		setLoading(true);
 		setFormError(null); // Clear any previous errors
 
@@ -146,7 +186,7 @@ const EditProfile = ({
 
 			const creatorProfileDetails = {
 				profession: getUpdatedValue(
-					values.profession,
+					values.profession as string,
 					initialState.profession as string,
 					userData.profession as string
 				),
@@ -258,46 +298,74 @@ const EditProfile = ({
 					)}
 				/>
 
-				{(["firstName", "lastName", "username", "bio"] as const).map(
-					(field, index) => (
-						<FormField
-							key={index}
-							control={form.control}
-							name={field}
-							render={({ field }) => (
-								<FormItem className="w-full">
-									<FormLabel className="font-medium text-sm text-gray-400 ml-1">
-										{field.name === "bio"
-											? userData?.bio?.length === 0
-												? "Add"
-												: "Edit"
-											: ""}{" "}
-										{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
-									</FormLabel>
-									<FormControl>
-										{field.name === "bio" ? (
-											<Textarea
-												className="textarea max-h-32"
-												placeholder="Tell us a little bit about yourself"
-												{...field}
-											/>
-										) : (
-											<Input
-												placeholder={`Enter ${
-													field.name.charAt(0).toUpperCase() +
-													field.name.slice(1)
-												}`}
-												{...field}
-												className="input-field"
-											/>
-										)}
-									</FormControl>
-									<FormMessage />
-								</FormItem>
+				{/* username */}
+
+				<FormField
+					control={form.control}
+					name="username"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormLabel className="text-sm text-gray-400 ml-1">
+								Username
+							</FormLabel>
+							<FormControl>
+								<Input
+									type="text"
+									placeholder="Enter your username"
+									{...field}
+									className="input-field"
+									onChange={(e) => {
+										field.onChange(e);
+										debouncedCheckUsernameAvailability(e.target.value);
+									}}
+								/>
+							</FormControl>
+							{usernameError && (
+								<p className="text-sm text-red-500 ml-1">{usernameError}</p>
 							)}
-						/>
-					)
-				)}
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{(["firstName", "lastName", "bio"] as const).map((field, index) => (
+					<FormField
+						key={index}
+						control={form.control}
+						name={field}
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+									{field.name === "bio"
+										? userData?.bio?.length === 0
+											? "Add"
+											: "Edit"
+										: ""}{" "}
+									{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
+								</FormLabel>
+								<FormControl>
+									{field.name === "bio" ? (
+										<Textarea
+											className="textarea max-h-32"
+											placeholder="Tell us a little bit about yourself"
+											{...field}
+										/>
+									) : (
+										<Input
+											placeholder={`Enter ${
+												field.name.charAt(0).toUpperCase() + field.name.slice(1)
+											}`}
+											{...field}
+											className="input-field"
+										/>
+									)}
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				))}
+
 				{/* profession */}
 				{userData.role === "creator" && (
 					<FormField
@@ -496,7 +564,7 @@ const EditProfile = ({
 				{formError && (
 					<div className="text-red-500 text-lg text-center">{formError}</div>
 				)}
-				{isChanged && (
+				{isChanged && !formError && !usernameError && (
 					<Button
 						className="bg-green-1 hover:opacity-80 w-3/4 mx-auto text-white"
 						type="submit"

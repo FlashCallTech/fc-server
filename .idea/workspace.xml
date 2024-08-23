@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="e75413d3-ae87-4409-ae47-677566a413ac" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/app/(root)/(home)/creator/[userId]/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(root)/(home)/expert/[username]/[userId]/[[...creatorId]]/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(root)/(home)/feedback/[callId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(root)/(home)/feedback/[callId]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(root)/(home)/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(root)/(home)/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/calls/CallingOptions.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/calls/CallingOptions.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/calls/EndCallButton.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/calls/EndCallButton.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/creator/CreatorCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/creator/CreatorCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/creator/CreatorDetails.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/creator/CreatorDetails.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/creator/CreatorHome.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/creator/CreatorHome.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/forms/AuthenticateViaOTP.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/forms/AuthenticateViaOTP.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/forms/EditProfile.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/forms/EditProfile.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/meeting/MyCallUI.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/meeting/MyCallUI.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/shared/Navbar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/shared/Navbar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/shared/Success.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/shared/Success.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/actions/creator.actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/lib/actions/creator.actions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/actions/user.actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/lib/actions/user.actions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/TransactionUtils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/utils/TransactionUtils.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 1
+}]]></component>
+  <component name="ProjectId" id="2l1alZRe8WZ1GEjsnZNjqnwxztA" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-410509235cf1-JavaScript-WS-242.20224.342" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e75413d3-ae87-4409-ae47-677566a413ac" name="Changes" comment="" />
+      <created>1724350189856</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1724350189856</updated>
+      <workItem from="1724350191338" duration="5000" />
+    </task>
+    <servers />
+  </component>
+</project>

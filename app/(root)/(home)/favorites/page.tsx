@@ -1,6 +1,6 @@
 "use client";
 
-import CreatorDetails from "@/components/creator/CreatorDetails";
+import CreatorsGrid from "@/components/creator/CreatorsGrid";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
@@ -69,16 +69,20 @@ const Favorites = () => {
 					No creators found.
 				</div>
 			) : (
-				<div className="animate-in grid grid-cols-1 xl:grid-cols-2 gap-10 items-center 3xl:items-start justify-start h-fit pb-6">
+				<div
+					className={`animate-in grid ${
+						favorites.length > 1 ? "grid-cols-2" : "grid-cols-1"
+					}  gap-2.5 px-2.5 lg:gap-5 lg:px-0 items-center pb-6`}
+				>
 					{favorites.map((favorite, index) => {
 						const creator = favorite.creatorId;
 						return (
 							<Link
-								href={`/creator/${creator?._id}`}
+								href={`/${creator?.username}`}
 								className="min-w-full transition-all duration-500 hover:scale-95"
 								key={creator?._id || index}
 							>
-								<CreatorDetails creator={creator} />
+								<CreatorsGrid creator={creator} />
 							</Link>
 						);
 					})}

@@ -89,11 +89,14 @@ const Sidebar = () => {
 							/>
 							<div className="flex flex-col items-start justify-center max-lg:hidden">
 								<span className="text-lg capitalize font-medium">
-									{currentUser?.firstName + " " + currentUser?.lastName ||
-										"Hey User"}
+									{currentUser?.username || "Hello User"}
 								</span>
 								<span className="text-xs text-green-1 font-medium">
-									@{currentUser?.username || "guest"}
+									{currentUser.phone
+										? currentUser.phone
+										: currentUser.username
+										? `@${currentUser.username}`
+										: "@guest"}
 								</span>
 							</div>
 						</Link>

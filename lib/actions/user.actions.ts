@@ -33,3 +33,30 @@ export async function getUserByPhone(phone: string) {
 		handleError(error);
 	}
 }
+
+export async function getAllUsernames() {
+	try {
+		await connectToDatabase();
+
+		// Retrieve all clients
+		const clients = await Client.find({}, { username: 1, _id: 0 });
+		const clientUsernames = clients.map((client) => ({
+			username: client.username,
+			userType: "client",
+		}));
+
+		// Retrieve all creators
+		const creators = await Creator.find({}, { username: 1, _id: 0 });
+		const creatorUsernames = creators.map((creator) => ({
+			username: creator.username,
+			userType: "creator",
+		}));
+
+		// Combine client and creator usernames
+		const allUsernames = [...clientUsernames, ...creatorUsernames];
+
+		return allUsernames;
+	} catch (error) {
+		handleError(error);
+	}
+}

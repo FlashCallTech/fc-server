@@ -6,6 +6,7 @@ import { useToast } from "../ui/use-toast";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import RechargeModal from "./RechargeModal";
 import TipModal from "./TipModal";
+import Image from "next/image";
 
 const CallTimer = ({
 	isVideoCall,
@@ -38,8 +39,7 @@ const CallTimer = ({
 			setIsToastShown(true);
 			setTimeout(() => {
 				handleCallRejected();
-			}, 2500);
-			// console.log("User Wallet is Empty", isLoading, timeLeftInSeconds);
+			}, 1000);
 		}
 	}, [timeLeftInSeconds, handleCallRejected, isLoading]);
 
@@ -50,7 +50,17 @@ const CallTimer = ({
 			} p-4 rounded-lg`}
 		>
 			{isLoading ? (
-				<p>Loading...</p>
+				<div className="flex w-full items-center gap-2">
+					<span>Time Left: </span>
+					<Image
+						src="/icons/loading-circle.svg"
+						alt="Loading..."
+						width={24}
+						height={24}
+						className=""
+						priority
+					/>
+				</div>
 			) : (
 				<p className={`${hasLowBalance && "!text-red-500"}`}>
 					Time Left: {minutes}:{seconds}

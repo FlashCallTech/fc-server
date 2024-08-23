@@ -103,8 +103,8 @@ const MeetingRoom = () => {
 		};
 
 		if (!hasJoined && call) {
-			call.camera.disable();
-			call.microphone.disable();
+			call.camera.enable();
+			call.microphone.enable();
 
 			joinCall();
 		}

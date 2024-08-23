@@ -23,8 +23,6 @@ const EndCallButton = () => {
 		);
 	}
 
-	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
-
 	const endCall = async () => {
 		setShowDialog(true);
 		setAnyModalOpen(true);

@@ -123,11 +123,17 @@ const UserReviews = ({
 							{/* Profile Image */}
 							<div className="flex w-fit mx-auto rounded-full items-center justify-center gap-2 bg-black px-4 py-2 z-10">
 								<img
-									src={feedback.clientId.photo}
-									alt={`${feedback.clientId.username} profile`}
+									src={
+										feedback?.clientId?.photo ||
+										"/images/defaultProfileImage.png"
+									}
+									alt={`${feedback?.clientId?.username} profile`}
 									width={24}
 									height={24}
 									className="w-7 h-7 rounded-full object-cover"
+									onError={(e) => {
+										e.currentTarget.src = "/images/defaultProfileImage.png";
+									}}
 								/>
 								<span className="text-3xl">😍</span>
 							</div>
@@ -156,7 +162,7 @@ const UserReviews = ({
 								{/* User Details */}
 								<div className="flex flex-col items-start justify-center gap-1">
 									<p className="text-lg font-semibold">
-										{feedback.clientId.username}
+										{feedback?.clientId?.username}
 									</p>
 									{/* <p className="text-sm font-semibold">
 										{feedback.clientId.phone}

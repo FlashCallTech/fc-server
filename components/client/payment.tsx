@@ -214,7 +214,7 @@ const Payment: React.FC = () => {
 			</section>
 
 			{/* Transaction History List */}
-			<ul className="space-y-4 w-full h-full px-4 pb-7">
+			<ul className="space-y-4 w-full h-full px-4 pt-2 pb-7">
 				{!loading ? (
 					transactions.length === 0 ? (
 						<p className="flex flex-col items-center justify-center size-full text-xl text-center flex-1 min-h-44 text-red-500 font-semibold">
