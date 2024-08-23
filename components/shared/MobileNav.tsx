@@ -10,24 +10,23 @@ import {
 	SheetContent,
 	SheetTrigger,
 } from "@/components/ui/sheet";
-import { sidebarLinks } from "@/constants";
+import { sidebarLinks, sidebarLinksCreator } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const MobileNav = () => {
 	const pathname = usePathname();
+	const { currentUser, userType, handleSignout } = useCurrentUsersContext();
 	const router = useRouter();
-	const { currentUser, setClientUser, setCreatorUser } =
-		useCurrentUsersContext();
-	const handleSignout = () => {
-		localStorage.removeItem("userType");
-		localStorage.removeItem("userID");
-		localStorage.removeItem("authToken");
-		setClientUser(null);
-		setCreatorUser(null);
-		// router.push("/authenticate");
+	const sidebarItems =
+		userType === "creator" ? sidebarLinksCreator : sidebarLinks;
+
+	const handleAuthentication = () => {
+		router.push("/");
+		handleSignout();
 	};
+
 	return (
 		<section className="w-full  relative">
 			<Sheet>
@@ -48,7 +47,7 @@ const MobileNav = () => {
 						<SheetClose asChild>
 							<Link
 								href={`/profile/${currentUser?._id}`}
-								className={`flex gap-4 items-center rounded-lg hoverScaleDownEffect lg:px-2 justify-start`}
+								className={`w-fit flex gap-4 items-center rounded-lg hoverScaleEffect lg:px-2 justify-start`}
 							>
 								<Image
 									src={currentUser?.photo || "/images/defaultProfile.png"}
@@ -72,7 +71,7 @@ const MobileNav = () => {
 						<div className="w-full border border-gray-500 my-7" />
 						<SheetClose asChild>
 							<section className="flex h-full items-start flex-col gap-6 text-white">
-								{sidebarLinks.map((item) => {
+								{sidebarItems.map((item) => {
 									const isActive = pathname === item.route;
 
 									return (
@@ -92,7 +91,7 @@ const MobileNav = () => {
 													alt={item.label}
 													width={20}
 													height={20}
-													className="invert-0 brightness-200"
+													className="invert-0 brightness-200 w-6 h-6 object-cover "
 												/>
 												<p className="font-semibold">{item.label}</p>
 											</Link>
@@ -104,7 +103,7 @@ const MobileNav = () => {
 									className={cn(
 										"absolute bottom-4 md:bottom-6 flex gap-4 items-center p-6 rounded-lg w-[85%] bg-green-1 outline-none focus:ring-0 hoverScaleDownEffect"
 									)}
-									onClick={handleSignout}
+									onClick={handleAuthentication}
 								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"

@@ -34,6 +34,7 @@ const CreatorHome = () => {
 	});
 
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const [todaysEarning, setTodaysEarning] = useState(0);
 	const [isPriceEditOpen, setIsPriceEditOpen] = useState(false);
 	const [prices, setPrices] = useState({
@@ -97,7 +98,7 @@ const CreatorHome = () => {
 		}
 	}, [creatorUser?._id]);
 
-	const creatorLink = `http://localhost:3000/expert/${creatorUser?.username}/${creatorUser?._id}/${creatorUser?.creatorId}`;
+	const creatorLink = `https://flashcall.vercel.app/expert/${creatorUser?.username}/${creatorUser?._id}/${creatorUser?.creatorId}`;
 
 	const theme = creatorUser?.themeSelected;
 
@@ -216,20 +217,26 @@ const CreatorHome = () => {
 		}
 	}, [services]);
 
-	if (!creatorUser || walletBalance < 0)
+	useEffect(() => {
+		setTimeout(() => {
+			setLoading(false);
+		}, 1000);
+	}, []);
+
+	if (!creatorUser || loading || walletBalance < 0)
 		return (
 			<section className="w-full h-full flex flex-col items-center justify-center">
 				<ContentLoading />
 
-				{!creatorUser && (
+				{!creatorUser && !loading && (
 					<span className="text-red-500 font-semibold text-lg">
 						User Authentication Required
 					</span>
 				)}
 
-				{creatorUser && walletBalance < 0 && (
+				{creatorUser && loading && (
 					<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
-						Fetching Wallet Balance{" "}
+						Fetching Creator&apos;s Details{" "}
 						<Image
 							src="/icons/loading-circle.svg"
 							alt="Loading..."
@@ -268,7 +275,7 @@ const CreatorHome = () => {
 						width={1000}
 						height={1000}
 						alt="avatar"
-						className="w-32 h-32 bg-white rounded-full p-2"
+						className="w-32 h-32 bg-white rounded-full p-2 object-cover"
 					/>
 					<section className="flex flex-col items-center p-2">
 						<p className="text-white text-sm">

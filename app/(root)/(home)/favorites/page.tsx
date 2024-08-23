@@ -51,7 +51,7 @@ const Favorites = () => {
 		if (currentUser?._id) {
 			fetchFavorites();
 		}
-	}, [currentUser]);
+	}, [currentUser?._id]);
 
 	return (
 		<section className="flex size-full flex-col gap-5 md:pb-14">

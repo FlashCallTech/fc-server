@@ -6,7 +6,13 @@ export async function POST(request: Request) {
 	try {
 		const feedback: CreatorFeedbackParams = await request.json();
 
-		const result = await createFeedback(feedback);
+		// Set position to -1 if it's undefined
+		const feedbackWithPosition = {
+			...feedback,
+			position: feedback.position ?? -1,
+		};
+
+		const result = await createFeedback(feedbackWithPosition);
 		return NextResponse.json(result);
 	} catch (error: any) {
 		console.error(error);

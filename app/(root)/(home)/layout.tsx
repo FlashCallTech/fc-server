@@ -5,10 +5,33 @@ import React, { ReactNode } from "react";
 
 export const metadata: Metadata = {
 	title: "FlashCall",
-	description: "Application Connectin People",
+	description: "Application Connecting People",
 	icons: {
 		icon: "/icons/logoDarkCircle.png",
 	},
+
+	openGraph: {
+		type: "article",
+		url: "https://flashcall.vercel.app",
+		title: "FlashCall",
+		description: "Application Connecting People",
+		images: "/icons/logoDarkCircle.png",
+		siteName: "Flashcall.me",
+		locale: "en_US",
+	},
+
+	twitter: {
+		card: "summary_large_image",
+		site: "https://flashcall.vercel.app",
+		title: "FlashCall",
+		description: "Application Connecting People",
+		images: "/icons/logoDarkCircle.png",
+		creator: "@johndoe",
+	},
+	metadataBase:
+		process.env.NODE_ENV === "production"
+			? new URL("https://flashcall.vercel.app")
+			: new URL("http://localhost:3000"),
 };
 
 const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { sidebarLinks } from "@/constants";
+import { sidebarLinks, sidebarLinksCreator } from "@/constants";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -13,41 +13,53 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const Sidebar = () => {
 	const pathname = usePathname();
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 
 	const handleLogEvent = () =>
 		logEvent(analytics, "page_accessed", {
 			userId: currentUser?._id,
 			page: pathname,
 		});
+
+	const sidebarItems =
+		userType === "creator" ? sidebarLinksCreator : sidebarLinks;
+
 	return (
-		<section className="sticky left-0 top-0 flex h-screen flex-col justify-between p-6 pt-24  max-md:hidden lg:w-[264px]">
+		<section className="sticky left-0 top-0 flex h-screen flex-col justify-between p-6 pt-24  max-md:hidden lg:w-[264px] shadow-md">
 			<div className="flex flex-1 flex-col gap-6">
-				{sidebarLinks.map((item) => {
+				{sidebarItems.map((item, index) => {
 					const isActive =
 						pathname === item.route || pathname.startsWith(`${item.route}/`);
 
 					return (
-						<Tooltip key={item.label}>
+						<Tooltip key={item.label + index}>
 							<TooltipTrigger asChild>
 								<Link
-									href={item.route}
+									href={
+										item.label === "Home"
+											? "/"
+											: currentUser
+											? item.route
+											: userType === "creator"
+											? "/authenticate?usertype=creator"
+											: "/authenticate"
+									}
 									key={item.label}
-									className={`flex gap-4 items-center p-4 rounded-lg justify-center lg:justify-start 
-							group hover:bg-green-1  ${isActive && "bg-green-1 text-white"}`}
+									className={`flex w-full gap-4 items-center p-4 rounded-lg justify-center lg:justify-start 
+								group hover:bg-green-1  ${isActive && "bg-green-1 text-white"}`}
 									onClick={handleLogEvent}
 								>
 									<Image
 										src={item.imgURL}
 										alt={item.label}
-										width={24}
-										height={24}
-										className={`invert group-hover:invert-0 group-hover:brightness-200 ${
+										width={100}
+										height={100}
+										className={`w-6 h-6 object-cover invert group-hover:invert-0 group-hover:brightness-200 ${
 											isActive && "invert-0 brightness-200"
 										}`}
 									/>
 
-									<p className="text-lg max-lg:hidden group-hover:text-white">
+									<p className="text-base max-lg:hidden group-hover:text-white">
 										{item.label}
 									</p>
 								</Link>

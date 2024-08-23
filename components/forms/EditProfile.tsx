@@ -15,7 +15,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 import { UpdateCreatorParams, UpdateUserParams } from "@/types";
 import React, { useEffect, useState } from "react";
 import { UpdateProfileFormSchema } from "@/lib/validator";
@@ -25,6 +24,7 @@ import FileUploader from "../shared/FileUploader";
 import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
 import SinglePostLoader from "../shared/SinglePostLoader";
+import { usePathname } from "next/navigation";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -33,6 +33,19 @@ export type EditProfileProps = {
 	setEditData?: React.Dispatch<React.SetStateAction<boolean>>;
 	userType: string | null;
 };
+
+const predefinedColors = [
+	"#50A65C", // Default
+	"#000000", // Black
+	"#A5A5A5", // Gray
+	"#00BCD4", // Cyan
+	"#E91E63", // Pink
+	"#FF5252", // Red
+	"#4CAF50", // Green
+	"#FF9800", // Orange
+	"#FFEB3B", // Yellow
+	"#9C27B0", // Purple
+];
 
 const EditProfile = ({
 	userData,
@@ -46,6 +59,14 @@ const EditProfile = ({
 	const [selectedFile, setSelectedFile] = useState<File | null>(null); // State to store the selected file
 	const [loading, setLoading] = useState(false);
 	const [formError, setFormError] = useState<string | null>(null); // State to store form error
+	const [selectedColor, setSelectedColor] = useState(
+		userData.themeSelected ?? "#50A65C"
+	);
+	const pathname = usePathname();
+
+	const handleColorSelect = (color: string) => {
+		setSelectedColor(color);
+	};
 
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof UpdateProfileFormSchema>>({
@@ -54,11 +75,13 @@ const EditProfile = ({
 			firstName: userData.firstName,
 			lastName: userData.lastName,
 			username: userData.username,
+			profession: userData.profession,
+			themeSelected: userData.themeSelected,
 			photo: userData.photo,
 			bio: userData.bio,
 			gender: userData.gender,
 			dob: userData.dob,
-			creatorId: userData.creatorId || userData.id,
+			creatorId: userData.creatorId || `${userData.phone}@${userData.id}`,
 		},
 	});
 
@@ -70,6 +93,8 @@ const EditProfile = ({
 			watchedValues.firstName !== initialState.firstName ||
 			watchedValues.lastName !== initialState.lastName ||
 			watchedValues.username !== initialState.username ||
+			watchedValues.profession !== initialState.profession ||
+			watchedValues.themeSelected !== initialState.themeSelected ||
 			watchedValues.photo !== initialState.photo ||
 			watchedValues.bio !== initialState.bio ||
 			watchedValues.gender !== initialState.gender ||
@@ -119,6 +144,19 @@ const EditProfile = ({
 				dob: values.dob || userData.dob,
 			};
 
+			const creatorProfileDetails = {
+				profession: getUpdatedValue(
+					values.profession,
+					initialState.profession as string,
+					userData.profession as string
+				),
+				themeSelected: getUpdatedValue(
+					values.themeSelected as string,
+					initialState.themeSelected as string,
+					userData.themeSelected as string
+				),
+			};
+
 			for (const [key, value] of Object.entries(commonValues)) {
 				formData.append(key, value);
 			}
@@ -128,10 +166,10 @@ const EditProfile = ({
 			}
 
 			let response;
-			console.log("Common Values ... ", commonValues);
 			if (userType === "creator") {
 				response = await updateCreatorUser(userData.id!, {
 					...commonValues,
+					...creatorProfileDetails,
 					creatorId: values.creatorId || userData.id,
 				} as UpdateCreatorParams);
 			} else {
@@ -156,6 +194,7 @@ const EditProfile = ({
 					firstName: updatedUser.firstName,
 					lastName: updatedUser.lastName,
 					username: updatedUser.username,
+					profession: updatedUser.profession,
 					photo: updatedUser.photo,
 					bio: updatedUser.bio,
 					gender: updatedUser.gender,
@@ -185,7 +224,11 @@ const EditProfile = ({
 
 	if (loading)
 		return (
-			<section className="w-full h-full flex items-center justify-center">
+			<section
+				className={`w-full ${pathname.includes(
+					"/updateDetails" ? "w-screen" : "w-full"
+				)} flex items-center justify-center`}
+			>
 				<SinglePostLoader />
 			</section>
 		);
@@ -254,6 +297,30 @@ const EditProfile = ({
 							)}
 						/>
 					)
+				)}
+				{/* profession */}
+				{userData.role === "creator" && (
+					<FormField
+						control={form.control}
+						name="profession"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormLabel className="text-sm text-gray-400 ml-1">
+									Profession
+								</FormLabel>
+								<FormControl>
+									<Input
+										type="text"
+										placeholder={`Enter your profession`}
+										{...field}
+										className="input-field"
+									/>
+								</FormControl>
+
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 				)}
 
 				<div
@@ -367,6 +434,64 @@ const EditProfile = ({
 						/>
 					)}
 				</div>
+
+				{/* profile theme */}
+				{userData.role === "creator" && (
+					<FormField
+						control={form.control}
+						name="themeSelected"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormLabel className="text-sm text-gray-400 ml-1">
+									Profile Theme
+								</FormLabel>
+								<FormControl>
+									{/* Predefined Colors */}
+									<div className="flex flex-wrap mt-2">
+										{predefinedColors.map((color, index) => (
+											<div
+												key={index}
+												className={`w-8 h-8 m-1 rounded-full cursor-pointer ${
+													selectedColor === color
+														? "ring-2 ring-offset-2 ring-blue-500"
+														: ""
+												}`}
+												style={{ backgroundColor: color }}
+												onClick={() => {
+													handleColorSelect(color);
+													field.onChange(color);
+												}}
+											>
+												{selectedColor === color && (
+													<div className="w-full h-full flex items-center justify-center">
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															className="h-4 w-4 text-white"
+															fill="none"
+															viewBox="0 0 24 24"
+															stroke="currentColor"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																strokeWidth={2}
+																d="M5 13l4 4L19 7"
+															/>
+														</svg>
+													</div>
+												)}
+											</div>
+										))}
+									</div>
+								</FormControl>
+								<FormDescription className="text-xs text-gray-400 ml-1">
+									Select your theme color
+								</FormDescription>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				)}
 
 				{formError && (
 					<div className="text-red-500 text-lg text-center">{formError}</div>

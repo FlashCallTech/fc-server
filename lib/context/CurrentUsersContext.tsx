@@ -13,6 +13,9 @@ import { clientUser, creatorUser } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import jwt from "jsonwebtoken";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase";
+import { useRouter } from "next/navigation";
 
 // Define the shape of the context value
 interface CurrentUsersContextValue {
@@ -66,15 +69,24 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const [creatorUser, setCreatorUser] = useState<creatorUser | null>(null);
 	const [userType, setUserType] = useState<string | null>(null);
 	const { toast } = useToast();
+	const router = useRouter();
 
 	// Function to handle user signout
 	const handleSignout = () => {
-		localStorage.removeItem("userType");
+		// localStorage.removeItem("userType");
+		// localStorage.setItem("userType", "client");
 		localStorage.removeItem("userID");
 		localStorage.removeItem("authToken");
 		setClientUser(null);
 		setCreatorUser(null);
-		// router.push("/authenticate");
+
+		// toast({
+		// 	variant: "destructive",
+		// 	title: "User Not Found",
+		// 	description: "Try Authenticating Again ...",
+		// });
+
+		// !pathname.includes("/authenticate") && router.push("/");
 	};
 
 	// Function to fetch the current user
@@ -124,20 +136,15 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					setCreatorUser(null);
 				}
 			} else {
-				toast({
-					variant: "destructive",
-					title: "User Not Found",
-					description: "Try Authenticating Again ...",
-				});
 				handleSignout();
 			}
 		} catch (error) {
 			console.error("Error fetching current user:", error);
-			toast({
-				variant: "destructive",
-				title: "User Not Found",
-				description: "Try Authenticating Again ...",
-			});
+			// toast({
+			// 	variant: "destructive",
+			// 	title: "User Not Found",
+			// 	description: "Try Authenticating Again ...",
+			// });
 			handleSignout();
 		}
 	};
@@ -151,7 +158,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		} else {
 			fetchCurrentUser();
 		}
-	}, []);
+	}, [userType]);
 
 	// Function to refresh the current user data
 	const refreshCurrentUser = async () => {
@@ -160,6 +167,59 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 	// Define the unified currentUser state
 	const currentUser = creatorUser || clientUser;
+
+	// Redirect to /updateDetails if username is missing
+	useEffect(() => {
+		if (currentUser && !currentUser.username) {
+			router.replace("/updateDetails");
+			setTimeout(() => {
+				toast({
+					title: "Greetings Friend",
+					description: "Complete Your Profile Details...",
+				});
+			}, 2000);
+		}
+	}, [router]);
+
+	// Managing single session authentication
+	useEffect(() => {
+		const authToken = localStorage.getItem("authToken");
+		if (!currentUser || !authToken) {
+			return;
+		}
+		const callDocRef = doc(db, "authToken", currentUser.phone);
+
+		const unsubscribe = onSnapshot(
+			callDocRef,
+			(doc) => {
+				try {
+					if (doc.exists()) {
+						const data = doc.data();
+						if (data?.token && data.token !== authToken) {
+							handleSignout();
+							toast({
+								title: "Another Session Detected",
+								description: "Logging Out...",
+							});
+						}
+					} else {
+						console.log("No such document!");
+					}
+				} catch (error) {
+					console.error(
+						"An error occurred while processing the document: ",
+						error
+					);
+				}
+			},
+			(error) => {
+				console.error("Error fetching document: ", error);
+			}
+		);
+
+		// Cleanup listener on component unmount
+		return () => unsubscribe();
+	}, [userType, currentUser?._id]);
 
 	const values: CurrentUsersContextValue = {
 		clientUser,

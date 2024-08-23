@@ -2,19 +2,23 @@
 
 import CreatorCard from "@/components/creator/CreatorCard";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
+import { useToast } from "@/components/ui/use-toast";
 import { getCreatorById } from "@/lib/actions/creator.actions";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { analytics } from "@/lib/firebase";
 import { logEvent } from "firebase/analytics";
-import { useParams } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const CreatorProfile = () => {
 	const [creator, setCreator] = useState(null);
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const { userId } = useParams();
+	const { toast } = useToast();
+	const pathname = usePathname();
+	const router = useRouter();
 	const [eventLogged, setEventLogged] = useState(false);
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 
 	useEffect(() => {
 		if (!eventLogged && currentUser) {
@@ -27,8 +31,19 @@ const CreatorProfile = () => {
 	}, [eventLogged, currentUser, userId]);
 
 	useEffect(() => {
+		if (userType === "creator") {
+			toast({
+				variant: "destructive",
+				title: "You are a Creator",
+				description: "Redirecting to HomePage ...",
+			});
+			router.push("/"); // Redirect to homepage if userType is creator
+
+			return;
+		}
 		const getCreator = async () => {
 			try {
+				setLoading(true);
 				const response = await getCreatorById(String(userId));
 				setCreator(response);
 			} catch (error) {
@@ -38,9 +53,8 @@ const CreatorProfile = () => {
 			}
 		};
 
-		setLoading(true);
 		getCreator();
-	}, [userId]);
+	}, [pathname, userId]);
 
 	if (loading) {
 		return (
@@ -53,7 +67,9 @@ const CreatorProfile = () => {
 	return (
 		<div className="flex items-start justify-start h-full overflow-scroll no-scrollbar md:pb-14">
 			{!creator ? (
-				<div className="text-center text-gray-500">No Creator found.</div>
+				<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
+					No creators found.
+				</div>
 			) : (
 				<CreatorCard creator={creator} />
 			)}
