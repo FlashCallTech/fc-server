@@ -16,10 +16,12 @@ const Success = ({
 	event = "Amount Added",
 }: SuccessProps) => {
 	const router = useRouter();
+	const creatorURL = localStorage.getItem("creatorURL");
+	const redirectURL = `/${redirect}`;
 	useEffect(() => {
 		setTimeout(() => {
-			router.push(`/${redirect}`);
-		}, 2500);
+			router.push(`${creatorURL ? creatorURL : redirectURL}`);
+		}, 1000);
 	}, [redirect, router]);
 
 	return (

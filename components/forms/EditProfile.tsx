@@ -15,16 +15,21 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 import { UpdateCreatorParams, UpdateUserParams } from "@/types";
 import React, { useEffect, useState } from "react";
-import { UpdateProfileFormSchema } from "@/lib/validator";
+import {
+	UpdateProfileFormSchema,
+	UpdateProfileFormSchemaClient,
+} from "@/lib/validator";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
 import FileUploader from "../shared/FileUploader";
 import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
 import SinglePostLoader from "../shared/SinglePostLoader";
+import { usePathname } from "next/navigation";
+import axios from "axios";
+import { debounce } from "@/lib/utils";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -33,6 +38,19 @@ export type EditProfileProps = {
 	setEditData?: React.Dispatch<React.SetStateAction<boolean>>;
 	userType: string | null;
 };
+
+const predefinedColors = [
+	"#50A65C", // Default
+	"#000000", // Black
+	"#A5A5A5", // Gray
+	"#00BCD4", // Cyan
+	"#E91E63", // Pink
+	"#FF5252", // Red
+	"#4CAF50", // Green
+	"#FF9800", // Orange
+	"#FFEB3B", // Yellow
+	"#9C27B0", // Purple
+];
 
 const EditProfile = ({
 	userData,
@@ -45,20 +63,37 @@ const EditProfile = ({
 	const [isChanged, setIsChanged] = useState(false); // State to track if any changes are made
 	const [selectedFile, setSelectedFile] = useState<File | null>(null); // State to store the selected file
 	const [loading, setLoading] = useState(false);
+	const [usernameError, setUsernameError] = useState<string | null>(null);
 	const [formError, setFormError] = useState<string | null>(null); // State to store form error
+	const [selectedColor, setSelectedColor] = useState(
+		userData.themeSelected ?? "#50A65C"
+	);
+	const pathname = usePathname();
+
+	const handleColorSelect = (color: string) => {
+		setSelectedColor(color);
+	};
+
+	// Conditionally select the schema based on user role
+	const schema =
+		userData.role === "creator"
+			? UpdateProfileFormSchema
+			: UpdateProfileFormSchemaClient;
 
 	// 1. Define your form.
-	const form = useForm<z.infer<typeof UpdateProfileFormSchema>>({
-		resolver: zodResolver(UpdateProfileFormSchema),
+	const form = useForm<z.infer<typeof schema>>({
+		resolver: zodResolver(schema),
 		defaultValues: {
 			firstName: userData.firstName,
 			lastName: userData.lastName,
 			username: userData.username,
+			profession: userData.profession,
+			themeSelected: userData.themeSelected,
 			photo: userData.photo,
 			bio: userData.bio,
 			gender: userData.gender,
 			dob: userData.dob,
-			creatorId: userData.creatorId || userData.id,
+			creatorId: userData.creatorId || `${userData.phone}@${userData.id}`,
 		},
 	});
 
@@ -70,6 +105,8 @@ const EditProfile = ({
 			watchedValues.firstName !== initialState.firstName ||
 			watchedValues.lastName !== initialState.lastName ||
 			watchedValues.username !== initialState.username ||
+			watchedValues.profession !== initialState.profession ||
+			watchedValues.themeSelected !== initialState.themeSelected ||
 			watchedValues.photo !== initialState.photo ||
 			watchedValues.bio !== initialState.bio ||
 			watchedValues.gender !== initialState.gender ||
@@ -78,6 +115,34 @@ const EditProfile = ({
 
 		setIsChanged(hasChanged);
 	}, [watchedValues, initialState]);
+
+	const checkUsernameAvailability = async (username: string) => {
+		try {
+			const response = await axios.get(
+				`/api/v1/user/getAllUsernames?username=${username}`
+			);
+
+			// Check the response status directly
+			if (response.status === 200) {
+				setUsernameError(null); // Username is available
+			} else if (response.status === 409) {
+				setUsernameError("Username is already taken");
+			}
+		} catch (error: any) {
+			// Handle cases where the error is not 409 (e.g., network issues, server errors)
+			if (error.response && error.response.status === 409) {
+				setUsernameError("Username is already taken");
+			} else {
+				console.error("Error checking username availability", error);
+				setUsernameError("Error checking username availability");
+			}
+		}
+	};
+
+	const debouncedCheckUsernameAvailability = debounce(
+		checkUsernameAvailability,
+		500
+	);
 
 	// Utility function to get updated value or fallback to existing value
 	const getUpdatedValue = (
@@ -91,7 +156,7 @@ const EditProfile = ({
 		newBio.length !== 0 ? newBio : existingBio;
 
 	// 2. Define a submit handler.
-	async function onSubmit(values: z.infer<typeof UpdateProfileFormSchema>) {
+	async function onSubmit(values: z.infer<typeof schema>) {
 		setLoading(true);
 		setFormError(null); // Clear any previous errors
 
@@ -119,6 +184,19 @@ const EditProfile = ({
 				dob: values.dob || userData.dob,
 			};
 
+			const creatorProfileDetails = {
+				profession: getUpdatedValue(
+					values.profession as string,
+					initialState.profession as string,
+					userData.profession as string
+				),
+				themeSelected: getUpdatedValue(
+					values.themeSelected as string,
+					initialState.themeSelected as string,
+					userData.themeSelected as string
+				),
+			};
+
 			for (const [key, value] of Object.entries(commonValues)) {
 				formData.append(key, value);
 			}
@@ -128,10 +206,10 @@ const EditProfile = ({
 			}
 
 			let response;
-			console.log("Common Values ... ", commonValues);
 			if (userType === "creator") {
 				response = await updateCreatorUser(userData.id!, {
 					...commonValues,
+					...creatorProfileDetails,
 					creatorId: values.creatorId || userData.id,
 				} as UpdateCreatorParams);
 			} else {
@@ -156,6 +234,7 @@ const EditProfile = ({
 					firstName: updatedUser.firstName,
 					lastName: updatedUser.lastName,
 					username: updatedUser.username,
+					profession: updatedUser.profession,
 					photo: updatedUser.photo,
 					bio: updatedUser.bio,
 					gender: updatedUser.gender,
@@ -185,7 +264,11 @@ const EditProfile = ({
 
 	if (loading)
 		return (
-			<section className="w-full h-full flex items-center justify-center">
+			<section
+				className={`w-full ${pathname.includes(
+					"/updateDetails" ? "w-screen" : "w-full"
+				)} flex items-center justify-center`}
+			>
 				<SinglePostLoader />
 			</section>
 		);
@@ -215,45 +298,97 @@ const EditProfile = ({
 					)}
 				/>
 
-				{(["firstName", "lastName", "username", "bio"] as const).map(
-					(field, index) => (
-						<FormField
-							key={index}
-							control={form.control}
-							name={field}
-							render={({ field }) => (
-								<FormItem className="w-full">
-									<FormLabel className="font-medium text-sm text-gray-400 ml-1">
-										{field.name === "bio"
-											? userData?.bio?.length === 0
-												? "Add"
-												: "Edit"
-											: ""}{" "}
-										{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
-									</FormLabel>
-									<FormControl>
-										{field.name === "bio" ? (
-											<Textarea
-												className="textarea max-h-32"
-												placeholder="Tell us a little bit about yourself"
-												{...field}
-											/>
-										) : (
-											<Input
-												placeholder={`Enter ${
-													field.name.charAt(0).toUpperCase() +
-													field.name.slice(1)
-												}`}
-												{...field}
-												className="input-field"
-											/>
-										)}
-									</FormControl>
-									<FormMessage />
-								</FormItem>
+				{/* username */}
+
+				<FormField
+					control={form.control}
+					name="username"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormLabel className="text-sm text-gray-400 ml-1">
+								Username
+							</FormLabel>
+							<FormControl>
+								<Input
+									type="text"
+									placeholder="Enter your username"
+									{...field}
+									className="input-field"
+									onChange={(e) => {
+										field.onChange(e);
+										debouncedCheckUsernameAvailability(e.target.value);
+									}}
+								/>
+							</FormControl>
+							{usernameError && (
+								<p className="text-sm text-red-500 ml-1">{usernameError}</p>
 							)}
-						/>
-					)
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{(["firstName", "lastName", "bio"] as const).map((field, index) => (
+					<FormField
+						key={index}
+						control={form.control}
+						name={field}
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+									{field.name === "bio"
+										? userData?.bio?.length === 0
+											? "Add"
+											: "Edit"
+										: ""}{" "}
+									{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
+								</FormLabel>
+								<FormControl>
+									{field.name === "bio" ? (
+										<Textarea
+											className="textarea max-h-32"
+											placeholder="Tell us a little bit about yourself"
+											{...field}
+										/>
+									) : (
+										<Input
+											placeholder={`Enter ${
+												field.name.charAt(0).toUpperCase() + field.name.slice(1)
+											}`}
+											{...field}
+											className="input-field"
+										/>
+									)}
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				))}
+
+				{/* profession */}
+				{userData.role === "creator" && (
+					<FormField
+						control={form.control}
+						name="profession"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormLabel className="text-sm text-gray-400 ml-1">
+									Profession
+								</FormLabel>
+								<FormControl>
+									<Input
+										type="text"
+										placeholder={`Enter your profession`}
+										{...field}
+										className="input-field"
+									/>
+								</FormControl>
+
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 				)}
 
 				<div
@@ -368,10 +503,68 @@ const EditProfile = ({
 					)}
 				</div>
 
+				{/* profile theme */}
+				{userData.role === "creator" && (
+					<FormField
+						control={form.control}
+						name="themeSelected"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormLabel className="text-sm text-gray-400 ml-1">
+									Profile Theme
+								</FormLabel>
+								<FormControl>
+									{/* Predefined Colors */}
+									<div className="flex flex-wrap mt-2">
+										{predefinedColors.map((color, index) => (
+											<div
+												key={index}
+												className={`w-8 h-8 m-1 rounded-full cursor-pointer ${
+													selectedColor === color
+														? "ring-2 ring-offset-2 ring-blue-500"
+														: ""
+												}`}
+												style={{ backgroundColor: color }}
+												onClick={() => {
+													handleColorSelect(color);
+													field.onChange(color);
+												}}
+											>
+												{selectedColor === color && (
+													<div className="w-full h-full flex items-center justify-center">
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															className="h-4 w-4 text-white"
+															fill="none"
+															viewBox="0 0 24 24"
+															stroke="currentColor"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																strokeWidth={2}
+																d="M5 13l4 4L19 7"
+															/>
+														</svg>
+													</div>
+												)}
+											</div>
+										))}
+									</div>
+								</FormControl>
+								<FormDescription className="text-xs text-gray-400 ml-1">
+									Select your theme color
+								</FormDescription>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				)}
+
 				{formError && (
 					<div className="text-red-500 text-lg text-center">{formError}</div>
 				)}
-				{isChanged && (
+				{isChanged && !formError && !usernameError && (
 					<Button
 						className="bg-green-1 hover:opacity-80 w-3/4 mx-auto text-white"
 						type="submit"

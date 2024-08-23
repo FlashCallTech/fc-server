@@ -1,19 +1,12 @@
 "use client";
 
-import React, { ReactNode, useEffect, useState } from "react";
-import StreamVideoProvider from "@/providers/streamClientProvider";
 import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
-import { ChatRequestProvider } from "@/lib/context/ChatRequestContext";
+import React, { ReactNode } from "react";
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	return (
-		<StreamVideoProvider>
-			<WalletBalanceProvider>
-				<ChatRequestProvider>
-					<div className="relative min-h-screen w-full">{children}</div>
-
-				</ChatRequestProvider> 
-			 </WalletBalanceProvider>
-		</StreamVideoProvider>
+		<WalletBalanceProvider>
+			<div className="relative min-h-screen w-full">{children}</div>
+		</WalletBalanceProvider>
 	);
 };
 

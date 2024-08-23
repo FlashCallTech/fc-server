@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 			decodedToken.otp !== otp
 		) {
 			return NextResponse.json(
-				{ error: "Invalid token or OTP" },
+				{ error: "This code is invalid. Please check the code & try again." },
 				{ status: 400 }
 			);
 		}

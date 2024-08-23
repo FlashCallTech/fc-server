@@ -18,7 +18,6 @@ import ContentLoading from "../shared/ContentLoading";
 
 import CreatorLinks from "./CreatorLinks";
 
-
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
@@ -27,8 +26,8 @@ const CreatorHome = () => {
 	const [services, setServices] = useState({
 		myServices:
 			creatorUser?.videoAllowed ||
-				creatorUser?.audioAllowed ||
-				creatorUser?.chatAllowed
+			creatorUser?.audioAllowed ||
+			creatorUser?.chatAllowed
 				? true
 				: false,
 		videoCall: creatorUser?.videoAllowed || false,
@@ -37,6 +36,7 @@ const CreatorHome = () => {
 	});
 
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const [todaysEarning, setTodaysEarning] = useState(0);
 	const [isPriceEditOpen, setIsPriceEditOpen] = useState(false);
 	const [prices, setPrices] = useState({
@@ -55,8 +55,8 @@ const CreatorHome = () => {
 			setServices({
 				myServices:
 					creatorUser?.videoAllowed ||
-						creatorUser?.audioAllowed ||
-						creatorUser?.chatAllowed
+					creatorUser?.audioAllowed ||
+					creatorUser?.chatAllowed
 						? true
 						: false,
 				videoCall: creatorUser?.videoAllowed,
@@ -100,7 +100,7 @@ const CreatorHome = () => {
 		}
 	}, [creatorUser?._id]);
 
-	const creatorLink = `http://localhost:3000/expert/${creatorUser?.username}/${creatorUser?._id}/${creatorUser?.creatorId}`;
+	const creatorLink = `https://app.flashcall.me/${creatorUser?.username}/${creatorUser?.creatorId}`;
 
 	const theme = creatorUser?.themeSelected;
 
@@ -219,20 +219,20 @@ const CreatorHome = () => {
 		}
 	}, [services]);
 
-	if (!creatorUser || walletBalance < 0)
+	if (!creatorUser || loading || walletBalance < 0)
 		return (
 			<section className="w-full h-full flex flex-col items-center justify-center">
 				<ContentLoading />
 
-				{!creatorUser && (
+				{!creatorUser && !loading && (
 					<span className="text-red-500 font-semibold text-lg">
 						User Authentication Required
 					</span>
 				)}
 
-				{creatorUser && walletBalance < 0 && (
+				{creatorUser && loading && (
 					<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
-						Fetching Wallet Balance{" "}
+						Fetching Creator&apos;s Details{" "}
 						<Image
 							src="/icons/loading-circle.svg"
 							alt="Loading..."
@@ -271,7 +271,7 @@ const CreatorHome = () => {
 						width={1000}
 						height={1000}
 						alt="avatar"
-						className="w-32 h-32 bg-white rounded-full p-2"
+						className="w-32 h-32 bg-white rounded-full p-2 object-cover"
 					/>
 					<section className="flex flex-col items-center p-2">
 						<p className="text-white text-sm">
@@ -316,8 +316,9 @@ const CreatorHome = () => {
 									onChange={() => handleToggle("myServices")}
 								/>
 								<p
-									className={`toggle-label block overflow-hidden h-6 rounded-full ${services.myServices ? "bg-green-600" : "bg-gray-500"
-										}  servicesCheckbox cursor-pointer`}
+									className={`toggle-label block overflow-hidden h-6 rounded-full ${
+										services.myServices ? "bg-green-600" : "bg-gray-500"
+									}  servicesCheckbox cursor-pointer`}
 									style={{
 										justifyContent: services.myServices
 											? "flex-end"
@@ -350,7 +351,7 @@ const CreatorHome = () => {
 					</section>
 
 					<CreatorLinks />
-					
+
 					<section className="flex items-center justify-center pt-4">
 						<div className="text-center text-[13px] text-gray-400">
 							If you are interested in learning how to create an account on{" "}

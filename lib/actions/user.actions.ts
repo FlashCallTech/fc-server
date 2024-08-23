@@ -6,7 +6,7 @@ import { handleError } from "../utils";
 export async function getUserByPhone(phone: string) {
 	try {
 		await connectToDatabase();
-
+		// console.log(phone);
 		// Search in Client model
 		let user = await Client.findOne({ phone });
 		if (user) {
@@ -29,6 +29,33 @@ export async function getUserByPhone(phone: string) {
 
 		// If no user is found in both models
 		return JSON.stringify("No User Found");
+	} catch (error) {
+		handleError(error);
+	}
+}
+
+export async function getAllUsernames() {
+	try {
+		await connectToDatabase();
+
+		// Retrieve all clients
+		const clients = await Client.find({}, { username: 1, _id: 0 });
+		const clientUsernames = clients.map((client) => ({
+			username: client.username,
+			userType: "client",
+		}));
+
+		// Retrieve all creators
+		const creators = await Creator.find({}, { username: 1, _id: 0 });
+		const creatorUsernames = creators.map((creator) => ({
+			username: creator.username,
+			userType: "creator",
+		}));
+
+		// Combine client and creator usernames
+		const allUsernames = [...clientUsernames, ...creatorUsernames];
+
+		return allUsernames;
 	} catch (error) {
 		handleError(error);
 	}

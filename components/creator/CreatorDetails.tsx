@@ -15,15 +15,12 @@ interface CreatorDetailsProps {
 }
 
 const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
-	// console.log(creator)
 	const pathname = usePathname();
-	const isCreatorOrExpertPath =
-		pathname.includes("/creator") || pathname.includes("/expert");
-
+	const isCreatorOrExpertPath = pathname.includes(`/${creator.username}`);
 	const [isLoading, setIsLoading] = useState(true);
 	const [addingFavorite, setAddingFavorite] = useState(false);
 	const [markedFavorite, setMarkedFavorite] = useState(false);
-	const { clientUser } = useCurrentUsersContext();
+	const { clientUser, authenticationSheetOpen } = useCurrentUsersContext();
 	const { toast } = useToast();
 	// const [showText, setShowText] = useState(false);
 
@@ -33,16 +30,18 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 		}
 	}, [creator, isCreatorOrExpertPath]);
 
-	const handleImageLoad = () => {
-		setIsLoading(false);
-	};
+	useEffect(() => {
+		if (authenticationSheetOpen) {
+			document.body.style.overflow = "hidden";
+		} else {
+			document.body.style.overflow = "";
+		}
 
-	const handleImageError = (
-		e: React.SyntheticEvent<HTMLImageElement, Event>
-	) => {
-		e.currentTarget.src = "/images/defaultProfileImage.png";
-		setIsLoading(false);
-	};
+		// Cleanup the effect when the component unmounts
+		return () => {
+			document.body.style.overflow = "";
+		};
+	}, [authenticationSheetOpen]);
 
 	const handleToggleFavorite = async () => {
 		const clientId = clientUser?._id;
@@ -72,21 +71,19 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 	useEffect(() => {
 		setTimeout(() => {
 			setIsLoading(false);
-		}, 1500);
+		}, 1000);
 	}, []);
 
 	const imageSrc =
-		creator.photo && isValidUrl(creator.photo)
-			? creator.photo
+		creator?.photo && isValidUrl(creator?.photo)
+			? creator?.photo
 			: "/images/defaultProfileImage.png";
 
 	return (
 		<>
-			<div className="flex flex-col items-center px-4 sm:px-7 justify-center">
+			<div className="flex flex-col items-center px-5 sm:px-7 justify-center">
 				<div
-					className={`relative flex flex-col items-center w-fit mx-auto gap-4 p-4 sm:p-7 rounded-xl z-10 ${
-						!isCreatorOrExpertPath && "!w-[85%]"
-					}`}
+					className={`relative flex flex-col items-center w-full max-w-[75%] md:max-w-[60%] xl:max-w-[35%] mx-auto gap-4 p-4 rounded-[24px] z-10`}
 					style={{
 						backgroundColor: creator.themeSelected
 							? creator.themeSelected
@@ -95,9 +92,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 				>
 					{isLoading ? (
 						<div
-							className={`bg-gray-300 opacity-60 animate-pulse rounded-xl w-full min-w-[256px] xl:min-w-[320px] min-h-full max-w-64 h-60 xl:max-w-80 xl:h-80 object-cover ${
-								!isCreatorOrExpertPath && "!max-w-full xl:!max-w-full xl:h-80"
-							}`}
+							className={`bg-gray-300 opacity-60 animate-pulse rounded-[24px] w-full min-w-[256px] max-w-full h-72 xl:h-80 object-cover`}
 						/>
 					) : (
 						<>
@@ -106,36 +101,31 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 								alt="profile picture"
 								width={1000}
 								height={1000}
-								className={`relative rounded-xl w-full min-h-full max-w-64 h-60 xl:max-w-80 xl:h-80  ${
-									creator.photo.includes("clerk")
+								className={`relative rounded-xl min-w-full min-h-full max-w-64 h-72 xl:max-w-72 xl:h-80 bg-center ${
+									creator?.photo?.includes("clerk")
 										? "object-scale-down"
 										: "object-cover"
-								} ${
-									!isCreatorOrExpertPath && "!max-w-full xl:!max-w-full xl:h-80"
 								} ${isLoading ? "hidden" : "block"}`}
 								onError={(e) => {
 									e.currentTarget.src = "/images/defaultProfileImage.png";
 								}}
-								onLoad={handleImageLoad}
 							/>
 
 							<div className="flex flex-col-reverse items-center justify-center gap-2 absolute top-6 right-6 sm:top-9 sm:right-9">
-								{isCreatorOrExpertPath && (
-									<>
-										<ShareButton />
-										{clientUser && (
-											<Favorites
-												setMarkedFavorite={setMarkedFavorite}
-												markedFavorite={markedFavorite}
-												handleToggleFavorite={handleToggleFavorite}
-												addingFavorite={addingFavorite}
-												creator={creator}
-												user={clientUser}
-												isCreatorOrExpertPath={isCreatorOrExpertPath}
-											/>
-										)}
-									</>
-								)}
+								<>
+									<ShareButton />
+									{clientUser && (
+										<Favorites
+											setMarkedFavorite={setMarkedFavorite}
+											markedFavorite={markedFavorite}
+											handleToggleFavorite={handleToggleFavorite}
+											addingFavorite={addingFavorite}
+											creator={creator}
+											user={clientUser}
+											isCreatorOrExpertPath={isCreatorOrExpertPath}
+										/>
+									)}
+								</>
 							</div>
 						</>
 					)}
@@ -156,14 +146,14 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 							<span className="text-md h-full">
 								{creator.profession ? creator.profession : "Expert"}
 							</span>
-							<span className="bg-green-500 text-xs rounded-xl px-4 py-2">
+							<span className="bg-green-500 text-[10px] rounded-[4px] py-1 px-2 font-semibold">
 								Available
 							</span>
 						</div>
 					</div>
 
 					<span
-						className="absolute top-1/2 -right-8"
+						className="absolute top-1/3 -right-7"
 						style={{
 							color: creator.themeSelected ? creator.themeSelected : "#50A65C",
 						}}
@@ -171,25 +161,18 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 						{sparkles}
 					</span>
 				</div>
-				{/* User Description */}
 
+				{/* User Description */}
 				<div
-					className={`border-2 border-gray-200 p-4 -mt-7 pt-10 text-center rounded-3xl rounded-tr-none  h-full w-full relative  ${
-						isCreatorOrExpertPath
-							? "text-base lg:max-w-[85%] xl:max-w-[55%]"
-							: "text-base lg:text-lg"
-					}`}
+					className={`border-2 border-gray-200 p-4 -mt-[5.5rem] pt-24 text-center rounded-[24px] rounded-tr-none  h-full w-full relative bg-white 
+						text-base lg:max-w-[85%] xl:max-w-[50%]
+							
+					`}
 				>
-					{creator.bio ? (
-						<>{creator.bio}</>
-					) : isCreatorOrExpertPath ? (
-						"Select the Call Type Below ..."
-					) : (
-						"Tap the Card to Visit Creator's Profile"
-					)}
+					{creator.bio ? <>{creator.bio}</> : "Select the Call Type Below ..."}
 
 					<span
-						className="absolute max-xl:-top-2 xl:-bottom-2 -left-4"
+						className="absolute max-xl:top-7 xl:-bottom-2 -left-4"
 						style={{ color: creator.themeSelected }}
 					>
 						{sparkles}

@@ -35,23 +35,16 @@ export const WalletBalanceProvider = ({
 }: {
 	children: ReactNode;
 }) => {
-	const [walletBalance, setWalletBalance] = useState<number>(-1);
-	const { currentUser } = useCurrentUsersContext();
+	const [walletBalance, setWalletBalance] = useState<number>(0);
+	const { currentUser, userType } = useCurrentUsersContext();
+	const isCreator = userType === "creator";
 
-	const storedUserType = localStorage.getItem("userType");
-	const userType = storedUserType ? storedUserType : null;
-
-	let isCreator = userType === "creator";
-	let userId = currentUser?._id as string;
-
-	const fetchCurrentUser = async () => {
+	const fetchCurrentUserWalletBalance = async () => {
 		try {
 			const response = isCreator
-				? await getCreatorById(userId)
-				: await getUserById(userId);
+				? await getCreatorById(currentUser?._id as string)
+				: await getUserById(currentUser?._id as string);
 			setWalletBalance(response.walletBalance || 0);
-
-			// console.log(response);
 		} catch (error) {
 			console.error("Error fetching current user:", error);
 		}
@@ -59,13 +52,13 @@ export const WalletBalanceProvider = ({
 
 	useEffect(() => {
 		if (currentUser) {
-			fetchCurrentUser();
+			fetchCurrentUserWalletBalance();
 		}
 	}, []);
 
 	const updateWalletBalance = async () => {
 		if (currentUser) {
-			await fetchCurrentUser();
+			await fetchCurrentUserWalletBalance();
 		}
 	};
 
