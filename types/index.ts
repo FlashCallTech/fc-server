@@ -332,12 +332,6 @@ export type RegisterUserKycParams = {
 	};
 };
 
-export type LinkType = {
-	title: string;
-	url: string;
-	isActive: Boolean;
-};
-
 export type UpdateUserKycParams = {
 	status?: "auto_approved" | "auto_declined" | "needs_review";
 	data?: {
