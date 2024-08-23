@@ -70,7 +70,6 @@ export type creatorUser = {
 	referralAmount: number;
 	creatorId?: string;
 	links?: LinkType[];
-
 };
 
 export type CreateCreatorParams = {
@@ -95,7 +94,6 @@ export type CreateCreatorParams = {
 	referredBy?: string;
 	referralAmount?: number;
 	creatorId?: string;
-	
 };
 
 export type UpdateCreatorParams = {
@@ -182,6 +180,12 @@ export type MemberRequest = {
 		phone?: string;
 	};
 	role: string;
+};
+
+export type LinkType = {
+	title: string;
+	url: string;
+	isActive: Boolean;
 };
 
 export type RegisterCallParams = {
@@ -333,7 +337,6 @@ export type LinkType = {
 	url: string;
 	isActive: Boolean;
 };
-
 
 export type UpdateUserKycParams = {
 	status?: "auto_approved" | "auto_declined" | "needs_review";

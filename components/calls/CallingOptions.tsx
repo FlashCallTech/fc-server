@@ -10,6 +10,12 @@ import {
 	doc,
 	updateDoc,
 	onSnapshot,
+	collection,
+	query,
+	where,
+	getDoc,
+	setDoc,
+	arrayUnion,
 } from "firebase/firestore";
 import { analytics, db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
@@ -42,7 +48,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const { handleChat, chatRequestsRef } = useChatRequest();
 	const { chatRequest, setChatRequest } = useChatRequestContext();
 	const { fetchCreatorToken } = useFcmToken();
-
 
 	const [updatedCreator, setUpdatedCreator] = useState<creatorUser>({
 		...creator,
@@ -126,10 +131,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const data = await response.json();
 			console.log(data);
 		} catch (error) {
-			console.error('Failed to send notification:', error);
+			console.error("Failed to send notification:", error);
 		}
 	};
-
 
 	// defining the actions for call accept and call reject
 
@@ -193,10 +197,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${callType === "video"
-				? `Video Call With Expert ${creator.username}`
-				: `Audio Call With Expert ${creator.username}`
-				}`;
+			const description = `${
+				callType === "video"
+					? `Video Call With Expert ${creator.username}`
+					: `Audio Call With Expert ${creator.username}`
+			}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -369,8 +374,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						}}
 						onClick={() => {
 							handleChat(creator, clientUser);
-							setSheetOpen(true)
-							sendPushNotification()
+							setSheetOpen(true);
+							sendPushNotification();
 						}}
 					>
 						<button
@@ -398,17 +403,20 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					theme={creator.themeSelected}
 				/>
 
-				<Sheet open={isSheetOpen} onOpenChange={async () => {
-					setSheetOpen(false);
-					try {
-						await updateDoc(doc(chatRequestsRef, chatRequest.id), {
-							status: "ended",
-						});
-					} catch (error) {
-						console.error(error)
-					}
-					setChatRequest(null)
-				}}>
+				<Sheet
+					open={isSheetOpen}
+					onOpenChange={async () => {
+						setSheetOpen(false);
+						try {
+							await updateDoc(doc(chatRequestsRef, chatRequest.id), {
+								status: "ended",
+							});
+						} catch (error) {
+							console.error(error);
+						}
+						setChatRequest(null);
+					}}
+				>
 					<SheetTrigger asChild>
 						<div className="hidden"></div>
 					</SheetTrigger>
