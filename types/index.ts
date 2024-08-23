@@ -69,6 +69,7 @@ export type creatorUser = {
 	referredBy: string;
 	referralAmount: number;
 	creatorId?: string;
+	links?: LinkType[];
 };
 
 export type CreateCreatorParams = {
@@ -93,6 +94,7 @@ export type CreateCreatorParams = {
 	referredBy?: string;
 	referralAmount?: number;
 	creatorId?: string;
+	links?: LinkType[];
 };
 
 export type UpdateCreatorParams = {
@@ -118,6 +120,7 @@ export type UpdateCreatorParams = {
 	kyc_status?: string;
 	walletBalance?: number;
 	creatorId?: string;
+	link?: LinkType;
 };
 
 // Feedback Params
@@ -178,6 +181,12 @@ export type MemberRequest = {
 		phone?: string;
 	};
 	role: string;
+};
+
+export type LinkType = {
+	title: string;
+	url: string;
+	isActive: Boolean;
 };
 
 export type RegisterCallParams = {

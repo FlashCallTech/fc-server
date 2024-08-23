@@ -25,6 +25,9 @@ import useChat from "@/hooks/useChat";
 import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
+import useChatRequest from "@/hooks/useChatRequest";
+import { useChatRequestContext } from "@/lib/context/ChatRequestContext";
+import useFcmToken from "@/hooks/useFcmToken";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -40,17 +43,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [callType, setCallType] = useState("");
 	const { clientUser } = useCurrentUsersContext();
 	const { toast } = useToast();
-	const [chatRequest, setChatRequest] = useState<any>(null);
 	const [isSheetOpen, setSheetOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
-
-	const chatRequestsRef = collection(db, "chatRequests");
-	const chatRef = collection(db, "chats");
-	const clientId = clientUser?._id as string;
 	const storedCallId = localStorage.getItem("activeCallId");
-	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
-
-	const { createChat } = useChat();
+	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
+	const { handleChat, chatRequestsRef } = useChatRequest();
+	const { chatRequest, setChatRequest } = useChatRequestContext();
+	const { fetchCreatorToken } = useFcmToken();
 
 	const [updatedCreator, setUpdatedCreator] = useState<creatorUser>({
 		...creator,
@@ -115,33 +114,30 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		return () => unsubscribe();
 	}, [chatRequest, router]);
 
-	// listening for chat requests
-	const listenForChatRequests = () => {
-		const q = query(
-			chatRequestsRef,
-			where("creatorId", "==", "6687f55f290500fb85b7ace0"),
-			where("status", "==", "pending")
-		);
+	// Example of calling the sendNotification API route
+	const sendPushNotification = async () => {
+		const token = await fetchCreatorToken(creator);
 
-		const unsubscribe = onSnapshot(q, (snapshot) => {
-			const chatRequests = snapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			}));
-			if (chatRequests.length > 0) {
-				setChatRequest(chatRequests[0]);
-			}
-		});
+		try {
+			const response = await fetch("/api/send-notification", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					token: token,
+					title: "Test Notification",
+					message: "This is a test notification",
+					link: "/",
+				}),
+			});
 
-		return unsubscribe;
+			const data = await response.json();
+			console.log(data);
+		} catch (error) {
+			console.error("Failed to send notification:", error);
+		}
 	};
-
-	useEffect(() => {
-		const unsubscribe = listenForChatRequests();
-		return () => {
-			unsubscribe();
-		};
-	}, ["6687f55f290500fb85b7ace0"]);
 
 	// defining the actions for call accept and call reject
 
@@ -266,222 +262,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	// handle chat
-	const handleChat = async () => {
-		logEvent(analytics, "chat_now_click", {
-			clientId: clientUser?._id,
-			creatorId: creator._id,
-		});
-
-		logEvent(analytics, "call_click", {
-			clientId: clientUser?._id,
-			creatorId: creator._id,
-		});
-
-		if (!clientUser) router.push("/authenticate");
-		let maxCallDuration =
-			(walletBalance / parseInt(creator?.chatRate, 10)) * 60; // in seconds
-		maxCallDuration =
-			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
-
-		// Check if maxCallDuration is less than 5 minutes (300 seconds)
-		if (maxCallDuration < 60) {
-			toast({
-				title: "Insufficient Balance",
-				description: "Your balance is below the minimum amount.",
-			});
-			router.push("/payment");
-			return;
-		}
-		// console.log(chatRef);
-		const chatRequestsRef = collection(db, "chatRequests");
-
-		try {
-			const userChatsDocRef = doc(db, "userchats", clientId);
-			const creatorChatsDocRef = doc(
-				db,
-				"userchats",
-				"6687f55f290500fb85b7ace0"
-			);
-
-			const userChatsDocSnapshot = await getDoc(userChatsDocRef);
-			const creatorChatsDocSnapshot = await getDoc(creatorChatsDocRef);
-
-			let existingChatId = null;
-
-			if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
-				const userChatsData = userChatsDocSnapshot.data();
-				const creatorChatsData = creatorChatsDocSnapshot.data();
-
-				// console.log(userChatsData)
-
-				const existingChat =
-					userChatsData.chats.find(
-						(chat: any) => chat.receiverId === "6687f55f290500fb85b7ace0"
-					) ||
-					creatorChatsData.chats.find(
-						(chat: any) => chat.receiverId === clientId
-					);
-
-				if (existingChat) {
-					existingChatId = existingChat.chatId;
-				}
-			}
-
-			// Use existing chatId if found, otherwise create a new one
-			const chatId = existingChatId || doc(chatRef).id;
-
-			// Create a new chat request
-			const newChatRequestRef = doc(chatRequestsRef);
-			await setDoc(newChatRequestRef, {
-				creatorId: "6687f55f290500fb85b7ace0",
-				clientId: "6687f4c5b629a40f8b1ddc4e",
-				clientName: clientUser?.username,
-				status: "pending",
-				chatId: chatId,
-				createdAt: Date.now(),
-			});
-
-			if (!userChatsDocSnapshot.exists()) {
-				await setDoc(userChatsDocRef, { chats: [] });
-			}
-
-			if (!creatorChatsDocSnapshot.exists()) {
-				await setDoc(creatorChatsDocRef, { chats: [] });
-			}
-
-			setSheetOpen(true);
-
-			logEvent(analytics, "call_initiated", {
-				clientId: clientUser?._id,
-				creatorId: creator._id,
-			});
-
-			const chatRequestDoc = doc(chatRequestsRef, newChatRequestRef.id);
-			const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
-				const data = doc.data();
-				if (data && data.status === "accepted") {
-					unsubscribe();
-					localStorage.setItem(
-						"user2",
-						JSON.stringify({
-							clientId: data.clientId,
-							creatorId: data.creatorId,
-							chatId: chatId,
-							requestId: doc.id,
-							fullName: "Chirag Goel(Creator)",
-							photo:
-								"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
-						})
-					);
-				}
-			});
-		} catch (error) {
-			console.error(error);
-			toast({ title: "Failed to send chat request" });
-		}
-	};
-
-	// actions if chat request is accepted
-	const handleAcceptChat = async () => {
-		setLoading(true);
-		const userChatsRef = collection(db, "userchats");
-		const chatId = chatRequest.chatId;
-
-		try {
-			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
-			if (!existingChatDoc.exists()) {
-				await setDoc(doc(db, "chats", chatId), {
-					// startedAt: Date.now(),
-					// endedAt: null,
-					clientId: chatRequest.clientId,
-					creatorId: chatRequest.creatorId,
-					status: "active",
-					messages: [],
-				});
-
-				const creatorChatUpdate = updateDoc(
-					doc(userChatsRef, chatRequest.creatorId),
-					{
-						chats: arrayUnion({
-							chatId: chatId,
-							lastMessage: "",
-							receiverId: chatRequest.clientId,
-							updatedAt: new Date(),
-						}),
-						online: false,
-					}
-				);
-
-				const clientChatUpdate = updateDoc(
-					doc(userChatsRef, chatRequest.clientId),
-					{
-						chats: arrayUnion({
-							chatId: chatId,
-							lastMessage: "",
-							receiverId: chatRequest.creatorId,
-							updatedAt: new Date(),
-						}),
-						online: false,
-					}
-				);
-				await Promise.all([creatorChatUpdate, clientChatUpdate]);
-			}
-
-			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
-				status: "accepted",
-			});
-
-			await updateDoc(doc(chatRef, chatId), {
-				status: "active",
-			});
-
-			localStorage.setItem(
-				"user2",
-				JSON.stringify({
-					clientId: chatRequest.clientId,
-					creatorId: chatRequest.creatorId,
-					chatId: chatRequest.chatId,
-					requestId: chatRequest.id,
-					fullName: "Chirag Goel",
-					photo:
-						"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3Y5REx5RkFsSVhIZTZUNUNFQ3FIZlozdVQiLCJyaWQiOiJ1c2VyXzJoUHZmcm1BZHlicUVmdjdyM09xa0w0WnVRRyIsImluaXRpYWxzIjoiQ0cifQ",
-				})
-			);
-
-			setTimeout(() => {
-				router.push(
-					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
-				);
-			}, 3000);
-
-			setSheetOpen(false);
-		} catch (error) {
-			console.error(error);
-			toast({ title: "Failed to accept chat request" });
-		}
-	};
-
-	// actions if chat request is rejected
-	const handleRejectChat = async () => {
-		if (!chatRequest) return;
-		console.log("inside handle reject");
-
-		try {
-			const status = "rejected";
-			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
-				status: status,
-			});
-
-			await createChat(chatRequest.chatId, status);
-			setChatRequest(null);
-			setSheetOpen(false);
-		} catch (error) {
-			console.error(error);
-			toast({ title: "Failed to reject chat request" });
-		}
-	};
-
 	// if any of the calling option is selected open the respective modal
 	const handleClickOption = (
 		callType: string,
@@ -597,7 +377,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						style={{
 							boxShadow: theme,
 						}}
-						onClick={handleChat}
+						onClick={() => {
+							handleChat(creator, clientUser);
+							setSheetOpen(true);
+							sendPushNotification();
+						}}
 					>
 						<button
 							className={`flex gap-4 items-center font-semibold`}
@@ -624,15 +408,20 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					theme={creator.themeSelected}
 				/>
 
-				{/* Chat Request Pending  */}
-				{chatRequest && clientUser?._id === "6687f55f290500fb85b7ace0" && (
-					<div className="chatRequestModal">
-						<p>Incoming chat request from {chatRequest.clientId}</p>
-						<Button onClick={handleAcceptChat}>Accept</Button>
-						<Button onClick={handleRejectChat}>Reject</Button>
-					</div>
-				)}
-				<Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+				<Sheet
+					open={isSheetOpen}
+					onOpenChange={async () => {
+						setSheetOpen(false);
+						try {
+							await updateDoc(doc(chatRequestsRef, chatRequest.id), {
+								status: "ended",
+							});
+						} catch (error) {
+							console.error(error);
+						}
+						setChatRequest(null);
+					}}
+				>
 					<SheetTrigger asChild>
 						<div className="hidden"></div>
 					</SheetTrigger>

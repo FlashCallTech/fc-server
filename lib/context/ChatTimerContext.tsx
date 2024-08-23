@@ -6,17 +6,17 @@ import React, {
 	useEffect,
 	ReactNode,
 } from "react";
-import { useWalletBalanceContext } from "./WalletBalanceContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import useEndChat from "@/hooks/useEndChat";
 import { creatorUser } from "@/types";
 import { useCurrentUsersContext } from "./CurrentUsersContext";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 interface ChatTimerContextProps {
 	timeLeft: string;
 	hasLowBalance: boolean;
-	endChat: () => void;
 	pauseTimer: () => void;
 	resumeTimer: () => void;
 	anyModalOpen: boolean;
@@ -59,26 +59,17 @@ export const ChatTimerProvider = ({
 	const { toast } = useToast();
 	// const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
-	const { walletBalance } = useWalletBalanceContext();
 	const [timeLeft, setTimeLeft] = useState(0);
 	const { currentUser } = useCurrentUsersContext();
-
+	const [clientWalletBalance, setClientWalletBalance] = useState<number | undefined>(undefined);
 	const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
 	const [hasLowBalance, setHasLowBalance] = useState(false);
+	const [maxChatDuration, setMaxChatDuration] = useState(0);
 	const [isTimerRunning, setIsTimerRunning] = useState(true);
 	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
 	const lowBalanceThreshold = 300; // Threshold in seconds
-	const router = useRouter();
 	const { chatId, user2, handleEnd, startedAt } = useEndChat();
-
-	const endChat = async () => {
-		toast({
-			title: "Chat Ended",
-			description: "Wallet is Empty. Redirecting ...",
-		});
-		router.push("/");
-	};
 
 	const pauseTimer = () => setIsTimerRunning(false);
 	const resumeTimer = () => setIsTimerRunning(true);
@@ -94,11 +85,44 @@ export const ChatTimerProvider = ({
 	}, []);
 
 	useEffect(() => {
-		const ratePerMinute = chatRatePerMinute;
-		let maxChatDuration = (walletBalance / ratePerMinute) * 60; // in seconds
-		maxChatDuration = maxChatDuration > 3600 ? 3600 : maxChatDuration; // Limit to 60 minutes (3600 seconds)
+		if (!chatId) return;
 
-		const chatStartedTime = new Date(startedAt!);
+		const chatDoc = doc(db, "chats", chatId as string);
+		const unsubscribe = onSnapshot(chatDoc, (docSnapshot) => {
+			const data = docSnapshot.data();
+			if (data) {
+				setMaxChatDuration(data.maxChatDuration);
+				setClientWalletBalance(data.clientBalance);
+			}
+		}, (error) => {
+			console.error("Error fetching chat document:", error);
+		});
+
+		// Cleanup listener on component unmount
+		return () => unsubscribe();
+	}, [chatId]);
+
+	useEffect(() => {
+		if (clientWalletBalance) {
+			const updateMaxChatDuration = async() => {
+				let duration = (clientWalletBalance / chatRatePerMinute) * 60; // in seconds
+				duration = duration > 3600 ? 3600 : Math.floor(duration);
+				setMaxChatDuration(duration);
+			}
+			updateDoc(
+				doc(db, 'chats', chatId as string),
+				{
+					maxChatDuration: maxChatDuration
+				}
+			);
+			updateMaxChatDuration()
+		}
+	}, [clientWalletBalance])
+
+	useEffect(() => {
+		if (!startedAt || !maxChatDuration) return;
+
+		const chatStartedTime = new Date(startedAt);
 
 		const intervalId = setInterval(() => {
 			if (isTimerRunning) {
@@ -144,26 +168,25 @@ export const ChatTimerProvider = ({
 		chatRatePerMinute,
 		lowBalanceNotified,
 		lowBalanceThreshold,
-		endChat,
 		toast,
-		walletBalance,
+		clientWalletBalance,
+		maxChatDuration,
+		startedAt,
 	]);
-
-	return (
-		<ChatTimerContext.Provider
-			value={{
-				timeLeft: formatTimeLeft(timeLeft),
-				hasLowBalance,
-				endChat,
-				pauseTimer,
-				resumeTimer,
-				anyModalOpen,
-				setAnyModalOpen,
-				totalTimeUtilized,
-				chatRatePerMinute,
-			}}
-		>
-			{children}
-		</ChatTimerContext.Provider>
-	);
+return (
+	<ChatTimerContext.Provider
+		value={{
+			timeLeft: formatTimeLeft(timeLeft),
+			hasLowBalance,
+			pauseTimer,
+			resumeTimer,
+			anyModalOpen,
+			setAnyModalOpen,
+			totalTimeUtilized,
+			chatRatePerMinute,
+		}}
+	>
+		{children}
+	</ChatTimerContext.Provider>
+);
 };
