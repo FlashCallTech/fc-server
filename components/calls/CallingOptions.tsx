@@ -4,19 +4,8 @@ import { creatorUser } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
 import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
-import MeetingModal from "../meeting/MeetingModal";
 import { logEvent } from "firebase/analytics";
-import {
-	doc,
-	updateDoc,
-	onSnapshot,
-	collection,
-	query,
-	where,
-	getDoc,
-	setDoc,
-	arrayUnion,
-} from "firebase/firestore";
+import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { analytics, db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
@@ -158,8 +147,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	// create new meeting
-
-	const createMeeting = async () => {
+	const createMeeting = async (callType: string) => {
 		if (!client || !clientUser) return;
 		try {
 			const id = crypto.randomUUID();
@@ -170,7 +158,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			if (!call) throw new Error("Failed to create meeting");
 
-			setMeetingState(undefined);
 			const members = [
 				// creator
 				{
@@ -187,7 +174,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{
 					user_id: String(clientUser?._id),
 					custom: {
-						name: String(clientUser?.username),
+						name: String(
+							clientUser?.username ? clientUser.username : clientUser.phone
+						),
 						type: "client",
 						image: clientUser?.photo,
 						phone: clientUser?.phone,
@@ -259,13 +248,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	// if any of the calling option is selected open the respective modal
-	const handleClickOption = (
-		callType: string,
-		modalType: "isJoiningMeeting" | "isInstantMeeting"
-	) => {
+	const handleClickOption = (callType: string) => {
 		if (clientUser && !storedCallId) {
-			setMeetingState(`${modalType}`);
-			setCallType(`${callType}`);
+			createMeeting(callType);
 			logEvent(analytics, "call_click", {
 				clientId: clientUser?._id,
 				creatorId: creator._id,
@@ -328,7 +313,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						style={{
 							boxShadow: theme,
 						}}
-						onClick={() => handleClickOption("video", "isInstantMeeting")}
+						onClick={() => handleClickOption("video")}
 					>
 						<div
 							className={`flex gap-4 items-center font-semibold`}
@@ -350,7 +335,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						style={{
 							boxShadow: theme,
 						}}
-						onClick={() => handleClickOption("audio", "isInstantMeeting")}
+						onClick={() => handleClickOption("audio")}
 					>
 						<div
 							className={`flex gap-4 items-center font-semibold`}
@@ -390,18 +375,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						</span>
 					</div>
 				)}
-
-				{/* Call & Chat Modals */}
-				<MeetingModal
-					isOpen={meetingState === "isInstantMeeting"}
-					onClose={() => setMeetingState(undefined)}
-					title={`Send Request to Expert ${creator.username}`}
-					className="text-center"
-					buttonText="Start Session"
-					image={creator.photo}
-					handleClick={createMeeting}
-					theme={creator.themeSelected}
-				/>
 
 				<Sheet
 					open={isSheetOpen}

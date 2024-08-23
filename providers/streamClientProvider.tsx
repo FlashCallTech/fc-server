@@ -38,6 +38,10 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 						image: currentUser?.photo as string,
 					},
 					tokenProvider: async () => token,
+					options: {
+						timeout: 10000,
+						timeoutErrorMessage: "Connection Timed Out",
+					},
 				});
 				setVideoClient(client);
 			} catch (error) {
