@@ -69,6 +69,8 @@ export type creatorUser = {
 	referredBy: string;
 	referralAmount: number;
 	creatorId?: string;
+	links?: LinkType[];
+
 };
 
 export type CreateCreatorParams = {
@@ -93,6 +95,7 @@ export type CreateCreatorParams = {
 	referredBy?: string;
 	referralAmount?: number;
 	creatorId?: string;
+	
 };
 
 export type UpdateCreatorParams = {
@@ -118,6 +121,7 @@ export type UpdateCreatorParams = {
 	kyc_status?: string;
 	walletBalance?: number;
 	creatorId?: string;
+	link?: LinkType;
 };
 
 // Feedback Params
@@ -323,6 +327,13 @@ export type RegisterUserKycParams = {
 		digilocker_dob: string | null;
 	};
 };
+
+export type LinkType = {
+	title: string;
+	url: string;
+	isActive: Boolean;
+};
+
 
 export type UpdateUserKycParams = {
 	status?: "auto_approved" | "auto_declined" | "needs_review";
