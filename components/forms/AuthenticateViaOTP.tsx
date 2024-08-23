@@ -37,7 +37,7 @@ const FormSchemaOTP = z.object({
 	}),
 });
 
-const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
+const AuthenticateViaOTP = ({ userType, refId }: { userType: string, refId?: string }) => {
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const { refreshCurrentUser } = useCurrentUsersContext();
@@ -164,6 +164,8 @@ const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
 						audioRate: "0",
 						chatRate: "0",
 						walletBalance: 0,
+						referredBy: refId? refId: undefined,
+						referralAmount: refId? 5000:undefined,
 					};
 				} else {
 					user = {
@@ -259,9 +261,11 @@ const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
 		if (routeType === "client") {
 			router.push("/authenticate");
 		} else if (routeType === "creator") {
-			router.push("/authenticate?usertype=creator");
+			router.push(`/authenticate?usertype=creator&refId=${refId}`);
 		}
 	};
+
+	console.log(refId, userType)
 
 	return (
 		<section className="bg-[#F8F8F8] rounded-t-3xl md:rounded-xl flex flex-col items-center justify-center gap-4 px-8 pt-8 pb-2 shadow-lg w-screen md:w-full md:min-w-[24rem] md:max-w-sm mx-auto animate-enterFromBottom">
