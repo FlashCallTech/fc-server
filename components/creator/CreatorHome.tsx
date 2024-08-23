@@ -219,6 +219,12 @@ const CreatorHome = () => {
 		}
 	}, [services]);
 
+	useEffect(() => {
+		setTimeout(() => {
+			setLoading(false);
+		}, 1000);
+	}, []);
+
 	if (!creatorUser || loading || walletBalance < 0)
 		return (
 			<section className="w-full h-full flex flex-col items-center justify-center">

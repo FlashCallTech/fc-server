@@ -9,6 +9,12 @@ import {
 	doc,
 	updateDoc,
 	onSnapshot,
+	collection,
+	query,
+	where,
+	getDoc,
+	setDoc,
+	arrayUnion,
 } from "firebase/firestore";
 import { analytics, db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
@@ -16,6 +22,8 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
+import useChat from "@/hooks/useChat";
+import { Button } from "../ui/button";
 
 interface CallingOptions {
 	creator: creatorUser;
