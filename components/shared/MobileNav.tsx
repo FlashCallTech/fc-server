@@ -47,7 +47,7 @@ const MobileNav = () => {
 						<SheetClose asChild>
 							<Link
 								href={`/profile/${currentUser?._id}`}
-								className={`w-fit flex gap-4 items-center rounded-lg hoverScaleEffect lg:px-2 justify-start`}
+								className={`w-fit flex gap-4 items-center rounded-lg hoverScaleDownEffect lg:px-2 justify-start`}
 							>
 								<Image
 									src={currentUser?.photo || "/images/defaultProfile.png"}
@@ -58,8 +58,7 @@ const MobileNav = () => {
 								/>
 								<div className="flex flex-col items-start justify-center text-white">
 									<span className="text-lg capitalize">
-										{currentUser?.firstName + " " + currentUser?.lastName ||
-											currentUser?.username}
+										{currentUser?.username || "Hello User"}
 									</span>
 									<span className="text-sm text-green-1">
 										{currentUser?.phone ||

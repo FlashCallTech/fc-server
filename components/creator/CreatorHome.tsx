@@ -10,22 +10,11 @@ import { useToast } from "../ui/use-toast";
 import { calculateTotalEarnings, isValidUrl } from "@/lib/utils";
 import ServicesCheckbox from "../shared/ServicesCheckbox";
 import CopyToClipboard from "../shared/CopyToClipboard";
-import { LinkType, UpdateCreatorParams } from "@/types";
-import {
-	collection,
-	doc,
-	getDoc,
-	onSnapshot,
-	setDoc,
-	updateDoc,
-} from "firebase/firestore";
-import { db, fetchToken } from "@/lib/firebase";
+import { UpdateCreatorParams } from "@/types";
+import { doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
-import AddLink from "./AddLink";
-import LinkActions from "./LinkActions";
-import DeleteLink from "./DeleteLink";
-import EditLink from "./EditLink";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
@@ -44,8 +33,6 @@ const CreatorHome = () => {
 		chat: creatorUser?.chatAllowed || false,
 	});
 
-	const [addLinkOpen, setAddLinkOpen] = useState(false);
-
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [todaysEarning, setTodaysEarning] = useState(0);
@@ -55,112 +42,6 @@ const CreatorHome = () => {
 		audioCall: creatorUser?.audioRate || "0",
 		chat: creatorUser?.chatRate || "0",
 	});
-
-	const [selectedLinkIndex, setSelectedLinkIndex] = useState<number | null>(
-		null
-	);
-	const [isLinkActionsOpen, setIsLinkActionsOpen] = useState(false);
-	const [isDeleteLink, setIsDeleteLink] = useState(false);
-	const [editLinkOpen, setEditLinkOpen] = useState(false);
-	const [linkToEdit, setLinkToEdit] = useState<{
-		title: string;
-		url: string;
-	} | null>(null);
-	const [links, setLinks] = useState(creatorUser?.links);
-	const [isLoading, setIsLoading] = useState(false);
-
-	const handleMoreClick = (index: number) => {
-		setSelectedLinkIndex(index);
-		setIsLinkActionsOpen(true);
-	};
-
-	// useEffect(()=>{
-	// 	const linkFirestore=async()=>{
-	// 		const linksRef = collection(db, "links");
-	// 		const creatorDocRef = doc(linksRef, creatorUser?._id)
-	// 		await setDoc(creatorDocRef,{
-	// 			links
-	// 		})
-	// 	}
-	// 	linkFirestore();
-	// },[])
-
-	const handleEdit = () => {
-		if (selectedLinkIndex !== null && creatorUser?.links) {
-			const link = creatorUser.links[selectedLinkIndex];
-			setIsLinkActionsOpen(false);
-			setLinkToEdit(link);
-			setEditLinkOpen(true);
-		}
-	};
-
-	const handleSaveEditLink = async (LinkData: {
-		title: string;
-		url: string;
-	}) => {
-		if (selectedLinkIndex !== null && creatorUser) {
-			try {
-				if (creatorUser.links) {
-					const updatedLinks = creatorUser.links.map((link, index) =>
-						index === selectedLinkIndex ? { ...link, ...LinkData } : link
-					);
-
-					// Save the updated links to the server
-					await saveUpdatedLinks(updatedLinks);
-				}
-				// Refresh the user data to reflect the changes
-				refreshCurrentUser();
-				setEditLinkOpen(false);
-				setSelectedLinkIndex(null);
-			} catch (error) {
-				console.error("Failed to update the link:", error);
-			}
-		}
-	};
-
-	const handleDelete = async () => {
-		setIsLinkActionsOpen(false);
-		setIsDeleteLink(true);
-	};
-
-	const handleDeleteLink = async () => {
-		console.log(selectedLinkIndex);
-		if (selectedLinkIndex !== null && creatorUser) {
-			try {
-				// Get the link to be deleted
-				if (creatorUser.links) {
-					const linkToDelete = creatorUser.links[selectedLinkIndex];
-
-					// Send a request to delete the link from the database
-					const response = await fetch("/api/v1/creator/deleteLink", {
-						method: "DELETE",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({
-							userId: creatorUser._id,
-							link: linkToDelete, // Send the entire link object to identify the link
-						}),
-					});
-
-					if (response.ok) {
-						// Update the local state by removing the deleted link
-					}
-					const updatedLinks = creatorUser.links.filter(
-						(_, index) => index !== selectedLinkIndex
-					);
-					refreshCurrentUser(); // Refresh the current user data to reflect changes
-				} else {
-					console.error("Failed to delete the link");
-				}
-			} catch (error) {
-				console.error("An error occurred while deleting the link:", error);
-			} finally {
-				setIsLinkActionsOpen(false);
-				setSelectedLinkIndex(null);
-			}
-		}
-	};
 
 	useEffect(() => {
 		if (creatorUser) {
@@ -217,56 +98,9 @@ const CreatorHome = () => {
 		}
 	}, [creatorUser?._id]);
 
-	const creatorLink = `https://flashcall.vercel.app/expert/${creatorUser?.username}/${creatorUser?._id}/${creatorUser?.creatorId}`;
+	const creatorLink = `https://app.flashcall.me/${creatorUser?.username}/${creatorUser?.creatorId}`;
 
 	const theme = creatorUser?.themeSelected;
-
-	const handleLinkToggle = async (index: number) => {
-		const updatedLinks = creatorUser?.links?.map((link, i) =>
-			i === index ? { ...link, isActive: !link.isActive } : link
-		);
-
-		// try {
-		// 	const creatorDocRef = doc(db, 'links', creatorUser?._id as string)
-		// 	await updateDoc(creatorDocRef, {
-		// 		links,
-		// 	})
-		// } catch (error) {
-		// 	console.error(error)
-		// }
-
-		// console.log(updatedLinks)
-
-		setLinks(updatedLinks);
-		// Save the updated links to the server
-		saveUpdatedLinks(updatedLinks!);
-	};
-
-	const saveUpdatedLinks = async (updatedLinks: LinkType[]) => {
-		setIsLoading(true);
-		try {
-			const response = await fetch("/api/v1/creator/updateUser", {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					userId: creatorUser?._id,
-					user: { links: updatedLinks },
-				}),
-			});
-
-			if (response.ok) {
-				await refreshCurrentUser(); // Refresh the current user data to reflect changes
-			} else {
-				console.error("Failed to update the user links");
-			}
-		} catch (error) {
-			console.error("An error occurred while updating the user links:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	};
 
 	const updateFirestoreCallServices = async (
 		services: {
@@ -295,49 +129,6 @@ const CreatorHome = () => {
 			} catch (error) {
 				console.error("Error updating Firestore call services: ", error);
 			}
-		}
-	};
-
-	const handleAddLink = async (linkData: { title: string; link: string }) => {
-		try {
-			// Assuming you have the userId available
-			const userId = creatorUser?._id; // Replace this with the actual userId
-
-			// Create a new Link object
-			const newLink: LinkType = {
-				title: linkData.title,
-				url: linkData.link,
-				isActive: true,
-			};
-
-			// Update the user's data with the new link
-			const updateParams: UpdateCreatorParams = {
-				link: newLink,
-			};
-
-			if (!newLink.title || !newLink.url) {
-				return;
-			}
-
-			// Make the API request to update the user
-			const response = await fetch("/api/v1/creator/updateUser", {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ userId, user: updateParams }),
-			});
-
-			if (response.ok) {
-				const updatedUser = await response.json();
-				console.log("User updated successfully:", updatedUser);
-				refreshCurrentUser();
-				// Handle the updated user data (e.g., update the state, notify the user)
-			} else {
-				console.error("Failed to update the user");
-			}
-		} catch (error) {
-			console.error("An error occurred while updating the user:", error);
 		}
 	};
 
@@ -562,91 +353,6 @@ const CreatorHome = () => {
 							prices={prices}
 						/>
 					</section>
-
-					{creatorUser?.links && creatorUser.links.length > 0 && (
-						<section className="flex flex-col gap-4">
-							{links &&
-								links.map((link, index) => (
-									<div
-										key={index}
-										className="flex flex-row justify-between items-center border p-4 rounded-lg bg-white shadow-sm"
-									>
-										<a
-											href={link.url}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-black font-bold hover:underline"
-										>
-											{link.title}
-										</a>
-										<div className="flex flex-row gap-2">
-											<label className="relative inline-block w-14 h-6">
-												<input
-													type="checkbox"
-													className="toggle-checkbox absolute w-0 h-0"
-													checked={!!link.isActive} // Convert `undefined` to `false`
-													onChange={() => handleLinkToggle(index)}
-													disabled={isLoading}
-												/>
-												<p
-													className={`toggle-label block overflow-hidden h-6 rounded-full ${
-														link.isActive ? "bg-green-600" : "bg-gray-500"
-													} servicesCheckbox ${
-														isLoading ? "cursor-not-allowed" : "cursor-pointer"
-													}`}
-												>
-													<span
-														className="servicesCheckboxContent"
-														style={{
-															transform: link.isActive
-																? "translateX(2.1rem)"
-																: "translateX(0)",
-														}}
-													/>
-												</p>
-											</label>
-											<Image
-												src={"/more.svg"}
-												width={0}
-												height={0}
-												alt="more"
-												className="w-auto h-auto hover:cursor-pointer"
-												onClick={() => handleMoreClick(index)}
-											/>
-
-											{isLinkActionsOpen && selectedLinkIndex === index && (
-												<LinkActions
-													onEdit={handleEdit}
-													onDelete={handleDelete}
-													onClose={() => setIsLinkActionsOpen(false)}
-												/>
-											)}
-										</div>
-									</div>
-								))}
-						</section>
-					)}
-
-					{editLinkOpen && linkToEdit && (
-						<EditLink
-							link={linkToEdit}
-							onSave={handleSaveEditLink}
-							onClose={() => setEditLinkOpen(false)}
-						/>
-					)}
-
-					{addLinkOpen && (
-						<AddLink
-							onClose={() => setAddLinkOpen(false)}
-							onSave={handleAddLink}
-						/>
-					)}
-					<section
-						className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer"
-						onClick={() => setAddLinkOpen(true)}
-					>
-						<div>Add your links</div>
-					</section>
 					<section className="flex items-center justify-center pt-4">
 						<div className="text-center text-[13px] text-gray-400">
 							If you are interested in learning how to create an account on{" "}
@@ -663,12 +369,6 @@ const CreatorHome = () => {
 						onClose={() => setIsPriceEditOpen(false)}
 						onSave={handleSavePrices}
 						currentPrices={prices}
-					/>
-				)}
-				{isDeleteLink && (
-					<DeleteLink
-						onClose={() => setIsDeleteLink(false)}
-						onSave={handleDeleteLink}
 					/>
 				)}
 			</div>

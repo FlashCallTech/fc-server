@@ -84,7 +84,7 @@ const CallListMobile = () => {
 								<div className="flex flex-col items-start justify-start w-full gap-2">
 									{/* Expert's Details */}
 									<Link
-										href={`/creator/${call.members[0].user_id}`}
+										href={`/${call.members[0].custom.name}`}
 										className="w-1/2 flex items-center justify-start gap-4 hoverScaleDownEffect"
 									>
 										{/* creator image */}
@@ -143,7 +143,7 @@ const CallListMobile = () => {
 										<FeedbackCheck callId={call?.callId} />
 									) : (
 										<Link
-											href={`/creator/${call.members[0].user_id}`}
+											href={`/${call.members[0].custom.name}`}
 											className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
 										>
 											Visit Again

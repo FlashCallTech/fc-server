@@ -48,7 +48,6 @@ const MyCallUI = () => {
 			};
 
 			const handleCallRejected = async () => {
-				const creatorURL = localStorage.getItem("creatorURL");
 				toast({
 					title: "Call Rejected",
 					description: "The call was rejected. Redirecting to HomePage...",
@@ -59,6 +58,8 @@ const MyCallUI = () => {
 				logEvent(analytics, "call_rejected", {
 					callId: call.id,
 				});
+
+				const creatorURL = localStorage.getItem("creatorURL");
 
 				await fetch("/api/v1/calls/updateCall", {
 					method: "POST",

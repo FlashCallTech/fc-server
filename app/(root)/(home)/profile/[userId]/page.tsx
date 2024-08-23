@@ -85,12 +85,18 @@ const UserProfilePage = () => {
 							<div className="grid grid-cols-[2fr_1fr] items-center w-full">
 								<div className="flex flex-col items-start justify-center">
 									<span className="text-lg font-semibold capitalize">
-										{userData?.fullName?.length === 0
-											? userData.username
-											: userData.fullName}
+										{userData.fullName
+											? userData?.fullName?.length > 1
+												? userData.fullName
+												: userData.username
+											: "guest"}
 									</span>
 									<span className="text-sm text-green-1 font-semibold">
-										@ {userData?.username}
+										{userData.phone
+											? userData.phone
+											: userData.username
+											? `@${userData.username}`
+											: "@guest"}
 									</span>
 								</div>
 

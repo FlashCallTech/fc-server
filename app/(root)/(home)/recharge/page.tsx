@@ -10,11 +10,12 @@ import {
 } from "@/types";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import Link from "next/link";
-import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useToast } from "@/components/ui/use-toast";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { Cursor, Typewriter } from "react-simple-typewriter";
+import ContentLoading from "@/components/shared/ContentLoading";
 
 const About: React.FC = () => {
 	const searchParams = useSearchParams();
@@ -26,7 +27,6 @@ const About: React.FC = () => {
 	const { currentUser } = useCurrentUsersContext();
 	const router = useRouter();
 	const { toast } = useToast();
-	const contact = currentUser?.phone as string;
 	const amountInt: number | null = amount ? parseFloat(amount) : null;
 
 	const subtotal: number | null =
@@ -72,12 +72,12 @@ const About: React.FC = () => {
 			const order = await response.json();
 
 			const options: RazorpayOptions = {
-				key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string,
+				key: "rzp_test_d8fM9sk9S2Cb2m",
 				amount,
 				currency,
-				name: "FlashCall",
-				description: "Consultation",
-				image: "/flash.svg",
+				name: "FlashCall.me",
+				description: "Test Transaction",
+				image: "https://example.com/your_logo",
 				order_id: order.id,
 				handler: async (response: PaymentResponse): Promise<void> => {
 					const body: PaymentResponse = { ...response };
@@ -136,16 +136,16 @@ const About: React.FC = () => {
 					}
 				},
 				prefill: {
-					name: currentUser?.firstName + " " + currentUser?.lastName,
+					name: "",
 					email: "",
-					contact: contact,
+					contact: "",
 					method: method,
 				},
 				notes: {
 					address: "Razorpay Corporate Office",
 				},
 				theme: {
-					color: "#50A65C",
+					color: "#F37254",
 				},
 			};
 
@@ -171,8 +171,20 @@ const About: React.FC = () => {
 	return (
 		<>
 			{loading ? (
-				<section className="flex-center justify-center items-center h-full w-full z-40">
-					<SinglePostLoader />
+				<section className="w-full h-full flex flex-col items-center justify-center gap-4">
+					<ContentLoading />
+					<h1 className="text-xl md:text-2xl font-semibold">
+						<Typewriter
+							words={["Processing Current Transaction", "Please Wait ..."]}
+							loop={true}
+							cursor
+							cursorStyle="_"
+							typeSpeed={50}
+							deleteSpeed={50}
+							delaySpeed={2000}
+						/>
+						<Cursor cursorColor="#50A65C" />
+					</h1>
 				</section>
 			) : (
 				<div className="overflow-y-scroll no-scrollbar p-4 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center justify-center w-full">

@@ -21,9 +21,6 @@ import { useToast } from "../ui/use-toast";
 import Script from "next/script";
 import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import useEndChat from "@/hooks/useEndChat";
 
 const RechargeModal = ({
 	setWalletBalance,
@@ -38,7 +35,6 @@ const RechargeModal = ({
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
 	const { pauseTimer, resumeTimer } = useChatTimerContext();
-	const { chatId } = useEndChat();
 
 	useEffect(() => {
 		if (isSheetOpen || onGoingPayment) {
@@ -47,15 +43,6 @@ const RechargeModal = ({
 			resumeTimer();
 		}
 	}, [isSheetOpen, onGoingPayment, pauseTimer, resumeTimer]);
-
-	useEffect(() => {
-		updateDoc(
-			doc(db, 'chats', chatId as string),
-			{
-				clientBalance: walletBalance
-			}
-		);
-	}, [walletBalance])
 
 	const subtotal: number | null =
 		rechargeAmount !== null ? parseInt(rechargeAmount) : null;
@@ -92,7 +79,7 @@ const RechargeModal = ({
 			const order = await response.json();
 
 			const options: RazorpayOptions = {
-				key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string,
+				key: "rzp_test_d8fM9sk9S2Cb2m",
 				amount,
 				currency,
 				name: "FlashCall.me",
@@ -158,9 +145,9 @@ const RechargeModal = ({
 					}
 				},
 				prefill: {
-					name: currentUser?.firstName + " " + currentUser?.lastName,
+					name: "",
 					email: "",
-					contact: currentUser?.phone as string,
+					contact: "",
 					method: "",
 				},
 				notes: {

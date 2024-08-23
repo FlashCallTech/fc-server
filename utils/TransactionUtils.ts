@@ -132,12 +132,14 @@ export const handleTransaction = async ({
 			type: call?.type === "default" ? "video" : "audio",
 		});
 	} catch (error) {
+		const creatorURL = localStorage.getItem("creatorURL");
+
 		console.error("Error handling wallet changes:", error);
 		toast({
 			title: "Error",
 			description: "An error occurred while processing the Transactions",
 		});
-		router.push("/");
+		router.push(`${creatorURL ? creatorURL : "/"}`);
 	} finally {
 		// Update wallet balance after transaction
 		router.push(`/feedback/${callId}`);

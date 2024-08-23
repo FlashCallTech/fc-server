@@ -8,7 +8,7 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 	useEffect(() => {
 		setTimeout(() => {
 			setIsLoading(false);
-		}, 1000);
+		}, 500);
 	}, []);
 
 	const imageSrc =
@@ -27,11 +27,11 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 		<>
 			{isLoading ? (
 				<div
-					className={`bg-gray-300 animate-pulse rounded-xl w-full mx-auto h-96 object-cover`}
+					className={`bg-gray-300 animate-pulse rounded-xl w-full mx-auto h-72 lg:h-96 object-cover`}
 				/>
 			) : (
 				<div
-					className="relative flex flex-col items-center justify-center rounded-xl w-full h-96 object-cover"
+					className="relative flex flex-col items-center justify-center rounded-xl w-full h-72 lg:h-96 object-cover"
 					style={backgroundImageStyle}
 				>
 					<div className="text-white flex flex-col items-start w-full creatorsGirdHighlight">

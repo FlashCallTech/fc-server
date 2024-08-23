@@ -34,7 +34,7 @@ const Favorites = ({
 						"Content-Type": "application/json",
 					},
 					body: JSON.stringify({
-						clientId: user?.publicMetadata?.userId,
+						clientId: user?._id,
 					}),
 				});
 
@@ -55,7 +55,7 @@ const Favorites = ({
 			}
 		};
 
-		if (user?.publicMetadata?.userId && isCreatorOrExpertPath) {
+		if (user?._id && isCreatorOrExpertPath) {
 			fetchFavorites();
 		}
 	}, [user, creator._id]);

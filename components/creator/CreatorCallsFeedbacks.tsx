@@ -338,16 +338,16 @@ const CreatorCallsFeedbacks = () => {
 														)}
 														<div className="flex flex-col">
 															<span className="text-base text-green-1">
-																{feedback.clientId.phone ||
-																	feedback.clientId._id}
+																{feedback?.clientId?.phone ||
+																	feedback?.clientId?._id}
 															</span>
 															<p className="text-sm tracking-wide">
-																{feedback.clientId.username}
+																{feedback?.clientId?.username}
 															</p>
 														</div>
 													</div>
 													<div className="w-1/2 flex flex-col items-end justify-between h-full gap-2">
-														{loadingFeedbackId === feedback.callId ? (
+														{loadingFeedbackId === feedback?.callId ? (
 															<Image
 																src="/icons/loading-circle.svg"
 																alt="Loading..."
@@ -358,7 +358,7 @@ const CreatorCallsFeedbacks = () => {
 															/>
 														) : (
 															<Switch
-																checked={feedback.showFeedback}
+																checked={feedback?.showFeedback}
 																onCheckedChange={() =>
 																	handleSwitchToggle(
 																		feedback,

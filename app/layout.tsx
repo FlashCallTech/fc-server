@@ -13,8 +13,6 @@ import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import StreamVideoProvider from "@/providers/streamClientProvider";
 import { CurrentUsersProvider } from "@/lib/context/CurrentUsersContext";
 import Image from "next/image";
-import { ChatRequestProvider } from "@/lib/context/ChatRequestContext";
-import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
 
 export default function RootLayout({
 	children,

@@ -27,6 +27,10 @@ interface CurrentUsersContextValue {
 	userType: string | null;
 	refreshCurrentUser: () => Promise<void>;
 	handleSignout: () => void;
+	currentTheme: string;
+	setCurrentTheme: any;
+	authenticationSheetOpen: boolean;
+	setAuthenticationSheetOpen: any;
 }
 
 // Create the context with a default value of null
@@ -67,16 +71,17 @@ const isTokenValid = (token: string): boolean => {
 export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const [clientUser, setClientUser] = useState<clientUser | null>(null);
 	const [creatorUser, setCreatorUser] = useState<creatorUser | null>(null);
+	const [currentTheme, setCurrentTheme] = useState("");
+	const [authenticationSheetOpen, setAuthenticationSheetOpen] = useState(false);
 	const [userType, setUserType] = useState<string | null>(null);
 	const { toast } = useToast();
 	const router = useRouter();
 
 	// Function to handle user signout
 	const handleSignout = () => {
-		// localStorage.removeItem("userType");
-		// localStorage.setItem("userType", "client");
 		localStorage.removeItem("userID");
 		localStorage.removeItem("authToken");
+		localStorage.removeItem("creatorURL");
 		setClientUser(null);
 		setCreatorUser(null);
 
@@ -85,8 +90,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		// 	title: "User Not Found",
 		// 	description: "Try Authenticating Again ...",
 		// });
-
-		// !pathname.includes("/authenticate") && router.push("/");
 	};
 
 	// Function to fetch the current user
@@ -170,7 +173,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 	// Redirect to /updateDetails if username is missing
 	useEffect(() => {
-		if (currentUser && !currentUser.username) {
+		if (currentUser && userType === "creator" && !currentUser.username) {
 			router.replace("/updateDetails");
 			setTimeout(() => {
 				toast({
@@ -230,6 +233,10 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		userType,
 		refreshCurrentUser,
 		handleSignout,
+		currentTheme,
+		setCurrentTheme,
+		authenticationSheetOpen,
+		setAuthenticationSheetOpen,
 	};
 
 	return (
