@@ -5,6 +5,7 @@ import { logEvent } from "firebase/analytics";
 export const handleTransaction = async ({
 	duration,
 	clientId,
+	creatorId,
 	chatId,
 	router,
 	toast,
@@ -12,21 +13,19 @@ export const handleTransaction = async ({
 }: {
 	duration: string | undefined;
 	clientId: string | undefined;
+	creatorId: string | undefined;
 	chatId: string | string[];
 	router: any;
 	toast: any;
 	updateWalletBalance: () => Promise<void>;
 }) => {
-	// console.log("duration in handleTransaction", duration);
 	if (!duration) return;
-
-	const creatorId = "664c90ae43f0af8f1b3d5803";
 
 	try {
 		const roundToNearestThousand = (num: number) => {
 			return Math.round(num / 1000) * 1000;
 		};
-		const creator = await getCreatorById(creatorId);
+		const creator = await getCreatorById(creatorId!);
 		const rate = creator.chatRate;
 		const amountToBePaid = (
 			(roundToNearestThousand(parseInt(duration, 10)) / (1000 * 60)) *
