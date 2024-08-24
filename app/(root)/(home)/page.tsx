@@ -44,7 +44,7 @@ const HomePage = () => {
 				window.innerHeight + window.scrollY >=
 				document.body.offsetHeight - 2
 			) {
-				setCreatorCount((prevCount) => prevCount + 4);
+				setCreatorCount((prevCount) => prevCount + 2);
 			}
 		};
 
@@ -59,7 +59,7 @@ const HomePage = () => {
 		setCurrentTheme(theme);
 	};
 
-	const visibleCreators = creators?.slice(0, creatorCount + 1) ?? [];
+	const visibleCreators = creators?.slice(0, creatorCount + 1);
 
 	return (
 		<main className="flex size-full flex-col gap-5">
@@ -81,7 +81,7 @@ const HomePage = () => {
 							className={`grid grid-cols-2 gap-2.5 px-2.5 lg:gap-5 lg:px-0
 							 items-center pb-6`}
 						>
-							{visibleCreators &&
+							{creators &&
 								visibleCreators.map(
 									(creator, index) =>
 										parseInt(creator.audioRate, 10) !== 0 &&
