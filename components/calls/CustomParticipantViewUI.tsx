@@ -17,25 +17,6 @@ import {
 const PoorConnectionNotification = () => {
 	const { participant } = useParticipantViewContext();
 	const { connectionQuality, isLocalParticipant } = participant;
-	// const { toast } = useToast();
-	// const [isShown, setIsShown] = useState(false);
-
-	// useEffect(() => {
-	// 	if (
-	// 		isLocalParticipant &&
-	// 		connectionQuality !== SfuModels.ConnectionQuality.POOR
-	// 	) {
-	// 		if (!isShown) {
-	// 			toast({
-	// 				title: "Unstable Connection Quality",
-	// 				description: "Please check your connection quality",
-	// 			});
-	// 			setIsShown(true);
-	// 		}
-	// 	} else {
-	// 		setIsShown(false);
-	// 	}
-	// }, [isLocalParticipant, connectionQuality, isShown, toast]);
 
 	if (
 		isLocalParticipant &&
@@ -59,10 +40,11 @@ const CustomParticipantViewUI = () => {
 	const call = useCall();
 	const [isScaled, setIsScaled] = useState(false);
 
-	const { useLocalParticipant, useMicrophoneState, useCameraState } =
-		useCallStateHooks();
+	const { useMicrophoneState, useCameraState } = useCallStateHooks();
 	const { isMute } = useMicrophoneState();
 	const { isEnabled } = useCameraState();
+
+	const { isLocalParticipant } = participant;
 
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"
@@ -143,10 +125,10 @@ const CustomParticipantViewUI = () => {
 				)}
 
 			<span
-				className={`absolute bottom-1 left-2 w-full text-sm text-ellipsis overflow-hidden ${
+				className={`absolute bottom-1.5 left-2.5 w-full text-sm text-ellipsis overflow-hidden ${
 					expert?.user_id !== participant.userId
 						? "max-w-[85%]"
-						: "max-w-[50%] sm:max-w-[65%]"
+						: "max-w-[55%] sm:max-w-[65%]"
 				} overflow-scroll no-scrollbar`}
 			>
 				{participant.name}
@@ -154,17 +136,19 @@ const CustomParticipantViewUI = () => {
 
 			<PoorConnectionNotification />
 
-			<div
-				className={`flex items-center justify-center gap-2 absolute  ${
-					expert?.user_id !== participant.userId
-						? "top-2 right-2"
-						: "top-2 left-2"
-				}`}
-			>
-				{!isMute && <Mic className="w-4 h-4" />}
+			{isLocalParticipant && (
+				<div
+					className={`flex items-center justify-center gap-2 absolute  ${
+						expert?.user_id !== participant.userId
+							? "top-2 right-2"
+							: "top-2 left-2"
+					}`}
+				>
+					{!isMute && <Mic className="w-4 h-4" />}
 
-				{isEnabled && <Video className="w-4 h-4" />}
-			</div>
+					{isEnabled && <Video className="w-4 h-4" />}
+				</div>
+			)}
 		</>
 	);
 };

@@ -1,10 +1,40 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Call } from "@stream-io/video-react-sdk";
 
 const MyOutgoingCallUI = ({ call }: { call: Call }) => {
+	const [callState, setCallState] = useState("outgoing");
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"
 	);
+
+	useEffect(() => {
+		let audio: HTMLAudioElement | null = null;
+
+		if (callState === "outgoing") {
+			audio = new Audio("/sounds/outgoing.mp3");
+			audio.loop = true;
+
+			const playPromise = audio.play();
+			if (playPromise !== undefined) {
+				playPromise
+					.then(() => {
+						console.log("Audio autoplay started!");
+					})
+					.catch((error) => {
+						console.error("Audio autoplay was prevented:", error);
+					});
+			}
+		}
+
+		// Clean up when callState changes or on component unmount
+		return () => {
+			if (audio) {
+				audio.pause();
+				audio.currentTime = 0;
+			}
+		};
+	}, [callState]);
+
 	return (
 		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:w-[30%] 3xl:[25%] flex flex-col items-center justify-between py-10 sm:rounded-xl bottom-0 right-0 sm:top-2 sm:right-2 gap-5">
 			<h1 className="font-bold text-xl mb-2">Outgoing Call ...</h1>

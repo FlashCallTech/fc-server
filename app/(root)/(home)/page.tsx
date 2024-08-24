@@ -14,6 +14,7 @@ const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 const HomePage = () => {
 	const [creators, setCreators] = useState<creatorUser[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [creatorCount, setCreatorCount] = useState(6);
 	const [error, setError] = useState(false);
 	const { userType, setCurrentTheme } = useCurrentUsersContext();
 	const pathname = usePathname();
@@ -37,17 +38,35 @@ const HomePage = () => {
 		}
 	}, [pathname]);
 
+	useEffect(() => {
+		const handleScroll = () => {
+			if (
+				window.innerHeight + window.scrollY >=
+				document.body.offsetHeight - 2
+			) {
+				setCreatorCount((prevCount) => prevCount + 2);
+			}
+		};
+
+		window.addEventListener("scroll", handleScroll);
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
+	}, []);
+
 	const handleCreatorCardClick = (username: string, theme: string) => {
 		localStorage.setItem("creatorURL", `/${username}`);
 		setCurrentTheme(theme);
 	};
 
+	const visibleCreators = creators?.slice(0, creatorCount + 1);
+
 	return (
 		<main className="flex size-full flex-col gap-5">
 			{userType !== "creator" ? (
-				<Suspense fallback={<PostLoader count={6} />}>
+				<Suspense fallback={<PostLoader count={4} />}>
 					{loading ? (
-						<PostLoader count={6} />
+						<PostLoader count={4} />
 					) : error ? (
 						<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
 							Failed to fetch creators <br />
@@ -63,7 +82,7 @@ const HomePage = () => {
 							 items-center pb-6`}
 						>
 							{creators &&
-								creators.map(
+								visibleCreators.map(
 									(creator, index) =>
 										parseInt(creator.audioRate, 10) !== 0 &&
 										parseInt(creator.videoRate, 10) !== 0 &&

@@ -10,7 +10,6 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
-	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
 	const router = useRouter();
@@ -18,21 +17,21 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	const { walletBalance } = useWalletBalanceContext();
 
 	const handleChat = async (creator: any, clientUser: any) => {
-		
 		logEvent(analytics, "chat_now_click", {
 			clientId: clientUser?._id,
 			creatorId: creator._id,
 		});
-	
+
 		logEvent(analytics, "call_click", {
 			clientId: clientUser?._id,
 			creatorId: creator._id,
 		});
-	
+
 		if (!clientUser) router.push("sign-in");
 		let maxCallDuration = (walletBalance / parseInt(creator.chatRate, 10)) * 60;
 		maxCallDuration = maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
-	
+
+		// Check if maxCallDuration is less than 5 minutes (300 seconds)
 		if (maxCallDuration < 60) {
 			toast({
 				title: "Insufficient Balance",
@@ -41,31 +40,46 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			router.push("/payment");
 			return;
 		}
-	
+
 		try {
-			const userChatsDocRef = doc(db, "userchats", clientUser?._id);
-			const creatorChatsDocRef = doc(db, "userchats", creator?._id);
-	
+			const userChatsDocRef = doc(
+				db,
+				"userchats",
+				clientUser?._id
+			);
+
+			const creatorChatsDocRef = doc(
+				db,
+				"userchats",
+				creator?._id
+			);
+
 			const userChatsDocSnapshot = await getDoc(userChatsDocRef);
 			const creatorChatsDocSnapshot = await getDoc(creatorChatsDocRef);
-	
+
 			let existingChatId = null;
-	
+
 			if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
 				const userChatsData = userChatsDocSnapshot.data();
 				const creatorChatsData = creatorChatsDocSnapshot.data();
-	
+
 				const existingChat =
-					userChatsData.chats.find((chat: any) => chat.receiverId === creator?._id) &&
-					creatorChatsData.chats.find((chat: any) => chat.receiverId === clientUser?._id);
-	
+					userChatsData.chats.find(
+						(chat: any) => chat.receiverId === creator?._id
+					) &&
+					creatorChatsData.chats.find(
+						(chat: any) => chat.receiverId === clientUser?._id
+					);
+
 				if (existingChat) {
 					existingChatId = existingChat.chatId;
 				}
 			}
-	
+
+			// Use existing chatId if found, otherwise create a new one
 			const chatId = existingChatId || doc(chatRef).id;
-	
+
+			// Create a new chat request
 			const newChatRequestRef = doc(chatRequestsRef);
 			await setDoc(newChatRequestRef, {
 				creatorId: creator?._id,
@@ -76,23 +90,20 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				chatRate: creator.chatRate,
 				createdAt: Date.now(),
 			});
-	
-			// Save chatRequest document ID in local storage
-			localStorage.setItem('chatRequestId', newChatRequestRef.id);
-	
+
 			if (!userChatsDocSnapshot.exists()) {
 				await setDoc(userChatsDocRef, { chats: [] });
 			}
-	
+
 			if (!creatorChatsDocSnapshot.exists()) {
 				await setDoc(creatorChatsDocRef, { chats: [] });
 			}
-	
+
 			logEvent(analytics, "call_initiated", {
 				clientId: clientUser?._id,
 				creatorId: creator._id,
 			});
-	
+
 			const chatRequestDoc = doc(chatRequestsRef, newChatRequestRef.id);
 			const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
 				const data = doc.data();
@@ -115,7 +126,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			console.error(error);
 			toast({ title: "Failed to send chat request" });
 		}
-	};	
+	};
+
 
 	const handleAcceptChat = async (chatRequest: any) => {
 		setLoading(true);
@@ -125,7 +137,9 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			chatRequest.clientId as string
 		);
 		let maxChatDuration = (response.walletBalance / parseInt(chatRequest.chatRate, 10)) * 60; // in seconds
+		console.log(maxChatDuration)
 		maxChatDuration = maxChatDuration > 3600 ? 3600 : Math.floor(maxChatDuration);
+		console.log(maxChatDuration)
 
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
@@ -134,7 +148,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					// startedAt: Date.now(),
 					// endedAt: null,
 					clientId: chatRequest.clientId,
-					clientName: chatRequest.clientName,
 					creatorId: chatRequest.creatorId,
 					status: "active",
 					messages: [],
@@ -171,7 +184,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			}
 			else {
 				await updateDoc(doc(db, "chats", chatId), {
-					clientName: chatRequest.clientName,
 					maxChatDuration,
 					clientBalance: response.walletBalance
 				});

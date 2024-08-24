@@ -28,7 +28,7 @@ const MobileNav = () => {
 	};
 
 	return (
-		<section className="flex items-center justify-center w-full relative">
+		<section className="flex items-center justify-center w-fit relative">
 			<Sheet>
 				<SheetTrigger asChild>
 					<Image

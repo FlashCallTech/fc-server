@@ -6,7 +6,6 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 	const { toast } = useToast();
 	const [callState, setCallState] = useState("incoming");
 	const [shownNotification, setShownNotification] = useState(false);
-	const audioRef = useRef<HTMLAudioElement | null>(null);
 
 	useEffect(() => {
 		const registerServiceWorker = async () => {
