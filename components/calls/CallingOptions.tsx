@@ -275,6 +275,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
+	const handleChatClick = () => {
+		if (clientUser) {
+			handleChat(creator, clientUser);
+			setSheetOpen(true);
+			sendPushNotification();
+		} else {
+			setIsAuthSheetOpen(true);
+		}
+	};
+
 	const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
 
 	if (isAuthSheetOpen && !clientUser)
@@ -346,11 +356,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						style={{
 							boxShadow: theme,
 						}}
-						onClick={() => {
-							handleChat(creator, clientUser);
-							setSheetOpen(true);
-							sendPushNotification();
-						}}
+						onClick={handleChatClick}
 					>
 						<button
 							className={`flex gap-4 items-center font-semibold`}
