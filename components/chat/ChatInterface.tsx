@@ -20,10 +20,11 @@ import useEndChat from "@/hooks/useEndChat";
 import ContentLoading from "../shared/ContentLoading";
 import RechargeAndTip from "./RechargeAndTip";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import CreatorChatTimer from "../creator/CreatorChatTimer";
 
 const ChatInterface: React.FC = () => {
 	const { handleEnd, chat, markMessagesAsSeen, loading } = useEndChat();
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 
 	useUserStatus();
 	const {
@@ -345,7 +346,10 @@ const ChatInterface: React.FC = () => {
 								setShowDialog={handleCloseDialog}
 							/>
 						)}
-						<ChatTimer endCall={endCall} />
+						
+						{userType === "client" && <ChatTimer />}
+						{userType === "creator" && <CreatorChatTimer chatId={chatId as string} />}
+
 						<div className="w-1/4 mx-auto text-center bg-[rgba(255,255,255,0.24)] py-1 text-white text-xs leading-6 font-bold rounded-lg mt-2 mb-4">
 							07 Dec 2024
 						</div>
