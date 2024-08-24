@@ -192,11 +192,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
+			const description = `${callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-			}`;
+				}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -384,13 +383,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					onOpenChange={async () => {
 						setSheetOpen(false);
 						try {
-							await updateDoc(doc(chatRequestsRef, chatRequest.id), {
+							const chatRequestId = localStorage.getItem('chatRequestId')
+							await updateDoc(doc(chatRequestsRef, chatRequestId as string), {
 								status: "ended",
 							});
 						} catch (error) {
 							console.error(error);
 						}
-						setChatRequest(null);
 					}}
 				>
 					<SheetTrigger asChild>
