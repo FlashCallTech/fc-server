@@ -28,6 +28,15 @@ export const ChatRequestProvider = ({
 	const [currentCreatorId, setCurrentCreatorId] = useState<string>();
 	const { creatorUser, currentUser } = useCurrentUsersContext();
 
+	// Load the current creator from localStorage
+	useEffect(() => {
+		const storedCreator = localStorage.getItem("currentCreator");
+		if (storedCreator) {
+			const parsedCreator: creatorUser = JSON.parse(storedCreator);
+			setCurrentCreator(parsedCreator);
+		}
+	}, []);
+
 	useEffect(() => {
 		const currentUser = localStorage.getItem("currentUserID");
 		if (currentUser) {
@@ -37,11 +46,11 @@ export const ChatRequestProvider = ({
 
 	// Listen for chat requests
 	useEffect(() => {
-		if (!creatorUser) return; // Only subscribe if currentCreator is available
+		if (!currentCreator && !creatorUser) return; // Only subscribe if currentCreator is available
 
 		const q = query(
 			chatRequestsRef,
-			where("creatorId", "==", creatorUser?._id),
+			where("creatorId", "==", currentCreator?._id || creatorUser?._id),
 			where("status", "==", "pending")
 		);
 
@@ -70,7 +79,7 @@ export const ChatRequestProvider = ({
 	return (
 		<ChatRequestContext.Provider value={{ chatRequest, setChatRequest }}>
 			{currentCreatorId === creatorUser?._id && chatRequest ? (
-				<ChatRequest chatRequest={chatRequest} />	
+				<ChatRequest chatRequest={chatRequest} />
 			) : (
 				children
 			)}

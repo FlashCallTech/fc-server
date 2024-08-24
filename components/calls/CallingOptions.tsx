@@ -9,7 +9,6 @@ import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { analytics, db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
@@ -23,18 +22,14 @@ interface CallingOptions {
 const CallingOptions = ({ creator }: CallingOptions) => {
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
-	const [meetingState, setMeetingState] = useState<
-		"isJoiningMeeting" | "isInstantMeeting" | undefined
-	>(undefined);
 	const client = useStreamVideoClient();
-	const [callType, setCallType] = useState("");
-	const { clientUser } = useCurrentUsersContext();
+	const { clientUser, setAuthenticationSheetOpen } = useCurrentUsersContext();
 	const { toast } = useToast();
 	const [isSheetOpen, setSheetOpen] = useState(false);
-	const [loading, setLoading] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
 	const { handleChat, chatRequestsRef } = useChatRequest();
+	const { chatRequest, setChatRequest } = useChatRequestContext();
 	const { fetchCreatorToken } = useFcmToken();
 
 	const [updatedCreator, setUpdatedCreator] = useState<creatorUser>({
@@ -46,6 +41,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		audioAllowed: creator.audioAllowed,
 		chatAllowed: creator.chatAllowed,
 	});
+
+	useEffect(() => {
+		setAuthenticationSheetOpen(isAuthSheetOpen);
+	}, [isAuthSheetOpen]);
 
 	// logic to show the updated creator services in realtime
 	useEffect(() => {
@@ -74,33 +73,29 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	// logic to get the info about the chat
 	useEffect(() => {
-		const intervalId = setInterval(() => {
-			const chatRequestId = localStorage.getItem('chatRequestId');
+		if (!chatRequest) return;
 
-			if (chatRequestId) {
-				clearInterval(intervalId);  // Clear the interval once the ID is found
-
-				const chatRequestDoc = doc(db, "chatRequests", chatRequestId);
-
-				const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
-					const data = docSnapshot.data();
-					if (data) {
-						if (data.status === "accepted" && clientUser?._id === data.clientId) {
-							unsubscribe();  // Clean up the listener
-							logEvent(analytics, "call_connected", {
-								clientId: clientUser?._id,
-								creatorId: data.creatorId,
-							});
-							router.push(`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`);
-						}
-					}
+		const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
+		const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
+			const data = doc.data();
+			if (
+				data &&
+				data.status === "accepted" &&
+				clientUser?._id === chatRequest.clientId
+			) {
+				unsubscribe();
+				logEvent(analytics, "call_connected", {
+					clientId: clientUser?._id,
+					creatorId: creator._id,
 				});
+				router.push(
+					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
+				);
 			}
-		}, 1000);  // Check every second
+		});
 
-		return () => clearInterval(intervalId);  // Clean up the interval when the component unmounts
-	}, [clientUser, router]);
-
+		return () => unsubscribe();
+	}, [chatRequest, router]);
 
 	// Example of calling the sendNotification API route
 	const sendPushNotification = async () => {
@@ -189,10 +184,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${callType === "video"
-				? `Video Call With Expert ${creator.username}`
-				: `Audio Call With Expert ${creator.username}`
-				}`;
+			const description = `${
+				callType === "video"
+					? `Video Call With Expert ${creator.username}`
+					: `Audio Call With Expert ${creator.username}`
+			}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -275,21 +271,21 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			});
 			router.push(`/meeting/${storedCallId}`);
 		} else {
-			// router.replace("/authenticate");
 			setIsAuthSheetOpen(true);
 		}
 	};
 
+	const handleChatClick = () => {
+		if (clientUser) {
+			handleChat(creator, clientUser);
+			setSheetOpen(true);
+			sendPushNotification();
+		} else {
+			setIsAuthSheetOpen(true);
+		}
+	};
 
 	const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
-
-	if (loading) {
-		return (
-			<section className="w-full h-full flex items-center justify-center">
-				<ContentLoading />
-			</section>
-		);
-	}
 
 	if (isAuthSheetOpen && !clientUser)
 		return (
@@ -360,11 +356,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						style={{
 							boxShadow: theme,
 						}}
-						onClick={() => {
-							handleChat(creator, clientUser);
-							setSheetOpen(true);
-							sendPushNotification();
-						}}
+						onClick={handleChatClick}
 					>
 						<button
 							className={`flex gap-4 items-center font-semibold`}
@@ -384,13 +376,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					onOpenChange={async () => {
 						setSheetOpen(false);
 						try {
-							const chatRequestId = localStorage.getItem('chatRequestId')
-							await updateDoc(doc(chatRequestsRef, chatRequestId as string), {
+							await updateDoc(doc(chatRequestsRef, chatRequest.id), {
 								status: "ended",
 							});
 						} catch (error) {
 							console.error(error);
 						}
+						setChatRequest(null);
 					}}
 				>
 					<SheetTrigger asChild>

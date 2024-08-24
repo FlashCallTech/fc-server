@@ -12,6 +12,7 @@ const config = {
 	theme: {
 		extend: {
 			screens: {
+				xs: "320px",
 				m: "460px",
 				sm: "584px",
 				md: "768px",

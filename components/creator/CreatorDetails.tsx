@@ -83,7 +83,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 		<>
 			<div className="flex flex-col items-center px-5 sm:px-7 justify-center">
 				<div
-					className={`relative flex flex-col items-center w-full max-w-[75%] md:max-w-[60%] xl:max-w-[35%] mx-auto gap-4 p-4 rounded-[24px] z-10`}
+					className={`relative flex flex-col items-center w-full max-w-[85%] md:max-w-[60%] xl:max-w-[35%] mx-auto gap-4 p-4 rounded-[24px] z-10 `}
 					style={{
 						backgroundColor: creator.themeSelected
 							? creator.themeSelected
@@ -92,7 +92,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 				>
 					{isLoading ? (
 						<div
-							className={`bg-gray-300 opacity-60 animate-pulse rounded-[24px] w-full min-w-[256px] max-w-full h-72 xl:h-80 object-cover`}
+							className={`bg-gray-300 opacity-60 animate-pulse rounded-[24px]  w-full h-72 xl:h-80 object-cover`}
 						/>
 					) : (
 						<>
@@ -101,7 +101,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 								alt="profile picture"
 								width={1000}
 								height={1000}
-								className={`relative rounded-xl min-w-full min-h-full max-w-64 h-72 xl:max-w-72 xl:h-80 bg-center ${
+								className={`relative rounded-xl w-full h-72 xl:h-80 bg-center ${
 									creator?.photo?.includes("clerk")
 										? "object-scale-down"
 										: "object-cover"

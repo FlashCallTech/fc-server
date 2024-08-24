@@ -14,11 +14,28 @@ export default function AuthenticationPage() {
 		localStorage.setItem("userType", (userType as string) ?? "client");
 	}, [router, searchParams, userType]);
 
+	useEffect(() => {
+		const handleResize = () => {
+			const height = window.innerHeight;
+			document.documentElement.style.setProperty("--vh", `${height * 0.01}px`);
+		};
+
+		window.addEventListener("resize", handleResize);
+		handleResize();
+
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
+
 	return (
-		<main className="relative flex flex-col gap-5 h-screen w-full items-center justify-end md:justify-center bg-green-1 no-scrollbar overflow-hidden">
+		<main
+			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
+			className="relative flex flex-col gap-5 w-full items-center justify-end md:justify-center bg-green-1 no-scrollbar overflow-hidden"
+		>
 			<Head>
-				<title>Register</title>
-				<meta name="description" content="Registeration Form" />
+				<title>Authentication</title>
+				<meta name="description" content="Authentication Form" />
 				<link rel="icon" href="/icons/logoDarkCircle.png" />
 			</Head>
 			<div className="animate-enterFromBottom">

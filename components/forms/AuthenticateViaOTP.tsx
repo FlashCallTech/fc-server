@@ -259,14 +259,6 @@ const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
 		otpForm.reset(); // Reset OTP form
 	};
 
-	const handleRouting = (routeType: string) => {
-		if (routeType === "client") {
-			router.push("/authenticate");
-		} else if (routeType === "creator") {
-			router.push("/authenticate?usertype=creator");
-		}
-	};
-
 	return (
 		<section className="bg-[#F8F8F8] rounded-t-3xl md:rounded-xl flex flex-col items-center justify-center gap-4 px-8 pt-8 pb-2 shadow-lg w-screen md:w-full md:min-w-[24rem] md:max-w-sm mx-auto animate-enterFromBottom">
 			{!showOTP ? (
@@ -339,7 +331,7 @@ const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
 					</Form>
 				</>
 			) : verificationSuccess ? (
-				<div className="flex flex-col items-center justify-center w-full md:min-w-[24rem] md:max-w-[24rem] h-full gap-4 pt-7 pb-14">
+				<div className="flex flex-col items-center justify-center w-full md:min-w-[24rem] md:max-w-[24rem]  gap-4 pt-7 pb-14">
 					{success}
 					<span className="font-semibold text-lg">Login Successfully</span>
 				</div>
@@ -359,13 +351,21 @@ const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
 			)}
 
 			{!verificationSuccess && (
-				<p className="text-xs text-gray-400 text-center mt-7 w-3/4 leading-loose">
+				<p className="text-xs text-gray-400 text-center mt-7 pb-2 w-3/4 leading-loose">
 					By signing up you agree to our <br />
-					<Link href="#" className="underline hover:text-green-1 text-black">
+					<Link
+						href="https://www.flashcall.me/terms-of-services"
+						target="_blank"
+						className="underline hover:text-green-1 text-black"
+					>
 						Terms of Services
 					</Link>{" "}
 					and{" "}
-					<Link href="#" className="underline hover:text-green-1 text-black">
+					<Link
+						href="https://www.flashcall.me/privacy-policy"
+						target="_blank"
+						className="underline hover:text-green-1 text-black"
+					>
 						Privacy Policy
 					</Link>
 				</p>

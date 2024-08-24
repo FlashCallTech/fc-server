@@ -122,8 +122,6 @@ const useEndChat = () => {
 				online: false,
 			});
 
-			localStorage.removeItem('chatRequestId')
-
 			logEvent(analytics, "call_ended", {
 				userId: currentUser?._id,
 				// creatorId: creator._id,

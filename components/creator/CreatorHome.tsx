@@ -45,11 +45,11 @@ const CreatorHome = () => {
 		chat: creatorUser?.chatRate || "0",
 	});
 
-	useEffect(()=>{
+	useEffect(() => {
 		setTimeout(() => {
-			setLoading(false)
+			setLoading(false);
 		}, 1000);
-	},[])
+	}, []);
 
 	useEffect(() => {
 		if (creatorUser) {
@@ -106,7 +106,9 @@ const CreatorHome = () => {
 		}
 	}, [creatorUser?._id]);
 
-	const creatorLink = `https://app.flashcall.me/${creatorUser?.username}/${creatorUser?.creatorId}`;
+	const creatorLink = `https://app.flashcall.me/${creatorUser?.username}${
+		creatorUser?.creatorId ? `/${creatorUser?.creatorId}` : ""
+	}`;
 
 	const theme = creatorUser?.themeSelected;
 
@@ -233,7 +235,7 @@ const CreatorHome = () => {
 
 	if (!creatorUser || loading || walletBalance < 0)
 		return (
-			<section className="w-full h-full flex flex-col items-center justify-center">
+			<section className="w-full h-full -mt-10 flex flex-col items-center justify-center">
 				<ContentLoading />
 
 				{!creatorUser && !loading && (
