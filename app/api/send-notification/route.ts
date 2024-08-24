@@ -2,21 +2,33 @@ import admin from "firebase-admin";
 import { Message } from "firebase-admin/messaging";
 import { NextRequest, NextResponse } from "next/server";
 
-// Initialize Firebase Admin SDK
+// Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
-	const serviceAccount = {
-		project_id: process.env.FIREBASE_PROJECT_ID || "",
-		private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID || "",
-		private_key: (process.env.FIREBASE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
-		client_email: process.env.FIREBASE_CLIENT_EMAIL || "",
-		client_id: process.env.FIREBASE_CLIENT_ID || "",
-		client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL || "",
-	} as admin.ServiceAccount;
+	const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 || "";
+	let serviceAccount;
 
-	admin.initializeApp({
-		credential: admin.credential.cert(serviceAccount),
-	});
+	try {
+		// Decode the base64-encoded string to get the JSON string
+		const serviceAccountJson = Buffer.from(serviceAccountBase64, 'base64').toString('utf8');
+		// Parse the JSON string to an object
+		serviceAccount = JSON.parse(serviceAccountJson);
+	} catch (error) {
+		console.error('Error decoding or parsing the service account:', error);
+	}
+
+	try {
+		if (serviceAccount) {
+			admin.initializeApp({
+				credential: admin.credential.cert(serviceAccount),
+			});
+		} else {
+			throw new Error('Service account is not valid.');
+		}
+	} catch (error) {
+		console.error('Error initializing Firebase Admin SDK:', error);
+	}
 }
+
 
 export async function POST(request: NextRequest) {
 	const { token, title, message, link } = await request.json();
