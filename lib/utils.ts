@@ -1,7 +1,10 @@
+"use client";
+
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import Razorpay from "razorpay";
+import { useEffect } from "react";
 
 const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 const key_secret = process.env.NEXT_PUBLIC_RAZORPAY_SECRET;
@@ -110,3 +113,39 @@ export function debounce<T extends (...args: any[]) => any>(
 		timeout = setTimeout(() => func.apply(this, args), wait);
 	};
 }
+
+export const useCallAudioNotification = (
+	callState: any,
+	audioFile: any,
+	showNotification: any
+) => {
+	useEffect(() => {
+		let audio: HTMLAudioElement | null = null;
+
+		if (callState === "incoming" || callState === "outgoing") {
+			audio = new Audio(audioFile);
+			audio.loop = true;
+
+			const playPromise = audio.play();
+			if (playPromise !== undefined) {
+				playPromise
+					.then(() => {
+						console.log("Audio autoplay started!");
+					})
+					.catch((error) => {
+						console.error("Audio autoplay was prevented:", error);
+					});
+			}
+
+			showNotification();
+		}
+
+		// Clean up
+		return () => {
+			if (audio) {
+				audio.pause();
+				audio.currentTime = 0;
+			}
+		};
+	}, [callState, audioFile, showNotification]);
+};
