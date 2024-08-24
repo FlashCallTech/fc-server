@@ -27,6 +27,9 @@ const CreatorProfile = () => {
 			router.push("/"); // Redirect to homepage if userType is creator
 			return;
 		}
+
+		localStorage.setItem("creatorURL", `/${username}`);
+
 		const getCreator = async () => {
 			try {
 				const response = await getUserByUsername(String(username));

@@ -9,7 +9,6 @@ import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { analytics, db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
@@ -23,15 +22,10 @@ interface CallingOptions {
 const CallingOptions = ({ creator }: CallingOptions) => {
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
-	const [meetingState, setMeetingState] = useState<
-		"isJoiningMeeting" | "isInstantMeeting" | undefined
-	>(undefined);
 	const client = useStreamVideoClient();
-	const [callType, setCallType] = useState("");
-	const { clientUser } = useCurrentUsersContext();
+	const { clientUser, setAuthenticationSheetOpen } = useCurrentUsersContext();
 	const { toast } = useToast();
 	const [isSheetOpen, setSheetOpen] = useState(false);
-	const [loading, setLoading] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
 	const { handleChat, chatRequestsRef } = useChatRequest();
@@ -47,6 +41,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		audioAllowed: creator.audioAllowed,
 		chatAllowed: creator.chatAllowed,
 	});
+
+	useEffect(() => {
+		setAuthenticationSheetOpen(isAuthSheetOpen);
+	}, [isAuthSheetOpen]);
 
 	// logic to show the updated creator services in realtime
 	useEffect(() => {
@@ -273,20 +271,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			});
 			router.push(`/meeting/${storedCallId}`);
 		} else {
-			// router.replace("/authenticate");
 			setIsAuthSheetOpen(true);
 		}
 	};
 
 	const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
-
-	if (loading) {
-		return (
-			<section className="w-full h-full flex items-center justify-center">
-				<ContentLoading />
-			</section>
-		);
-	}
 
 	if (isAuthSheetOpen && !clientUser)
 		return (

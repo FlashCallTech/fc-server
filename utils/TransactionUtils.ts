@@ -90,7 +90,12 @@ export const handleTransaction = async ({
 		}
 
 		const rate = isVideoCall ? creator.videoRate : creator.audioRate;
-		const amountToBePaid = ((parseInt(duration, 10) / 60) * rate).toFixed(2);
+		const amountToBePaid = ((parseFloat(duration) / 60) * rate).toFixed(2);
+		const percentage = 0.2;
+		const amountDeducted = (parseFloat(amountToBePaid) * percentage).toFixed(2);
+		const netAmountForCreator = (
+			parseFloat(amountToBePaid) - parseFloat(amountDeducted)
+		).toFixed(2);
 
 		await Promise.all([
 			fetch("/api/v1/wallet/payout", {
@@ -107,7 +112,7 @@ export const handleTransaction = async ({
 				body: JSON.stringify({
 					userId: creatorId,
 					userType: "Creator",
-					amount: amountToBePaid,
+					amount: netAmountForCreator,
 				}),
 				headers: { "Content-Type": "application/json" },
 			}),

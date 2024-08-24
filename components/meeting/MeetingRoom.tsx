@@ -111,6 +111,20 @@ const MeetingRoom = () => {
 	}, [callingState, call, hasJoined, callHasEnded]);
 
 	useEffect(() => {
+		const handleResize = () => {
+			const height = window.innerHeight;
+			document.documentElement.style.setProperty("--vh", `${height * 0.01}px`);
+		};
+
+		window.addEventListener("resize", handleResize);
+		handleResize();
+
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
+
+	useEffect(() => {
 		let timeoutId: NodeJS.Timeout;
 
 		if (participantCount === 2) {
@@ -159,14 +173,20 @@ const MeetingRoom = () => {
 
 	if (callingState !== CallingState.JOINED) {
 		return (
-			<section className="w-full h-screen flex items-center justify-center">
+			<section
+				className="w-full flex items-center justify-center"
+				style={{ height: "calc(var(--vh, 1vh) * 100)" }}
+			>
 				<SinglePostLoader />
 			</section>
 		);
 	}
 
 	return (
-		<section className="relative h-screen w-full overflow-hidden pt-4 text-white bg-dark-2">
+		<section
+			className="relative w-full overflow-hidden pt-4 text-white bg-dark-2"
+			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
+		>
 			<div className="relative flex size-full items-center justify-center transition-all">
 				<div className="flex size-full max-w-[95%] md:max-w-[1000px] items-center transition-all">
 					{CallLayout}
