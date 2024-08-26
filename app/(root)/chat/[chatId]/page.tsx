@@ -47,7 +47,8 @@ const Page = () => {
 		) {
 			handleTransaction({
 				duration: duration ? duration?.toString() : "",
-				clientId: clientId,
+				clientId: queryParams.clientId as string,
+				creatorId: queryParams.creatorId as string,
 				chatId: chatId as string,
 				updateWalletBalance,
 				router,

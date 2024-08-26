@@ -71,7 +71,7 @@ const UserProfilePage = () => {
 						{!editData && (
 							<div className="flex items-center justify-center md:w-1/3 pt-2 ">
 								<Image
-									src={userData.photo}
+									src={userData?.photo || "/images/defaultProfile.png"}
 									alt="profile picture"
 									width={1000}
 									height={1000}
@@ -93,7 +93,10 @@ const UserProfilePage = () => {
 									</span>
 									<span className="text-sm text-green-1 font-semibold">
 										{userData.phone
-											? userData.phone
+											? userData.phone.replace(
+													/(\+91)(\d+)/,
+													(match, p1, p2) => `${p1} ${p2}`
+											  )
 											: userData.username
 											? `@${userData.username}`
 											: "@guest"}

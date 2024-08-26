@@ -45,6 +45,20 @@ const CallFeedbackPage = () => {
 		fetchFeedbacks();
 	}, [callId, router, toast]);
 
+	useEffect(() => {
+		const handleResize = () => {
+			const height = window.innerHeight;
+			document.documentElement.style.setProperty("--vh", `${height * 0.01}px`);
+		};
+
+		window.addEventListener("resize", handleResize);
+		handleResize();
+
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
+
 	const handleFeedbackClose = async () => {
 		setShowFeedback(false);
 		toast({
@@ -63,7 +77,10 @@ const CallFeedbackPage = () => {
 	}
 
 	return (
-		<section className="w-full h-full flex items-center justify-center">
+		<section
+			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
+			className="w-full flex items-center justify-center"
+		>
 			<CallFeedback
 				callId={callId as string}
 				isOpen={showFeedback}

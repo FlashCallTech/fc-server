@@ -190,6 +190,11 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		if (!currentUser || !authToken) {
 			return;
 		}
+
+		if (!currentUser.phone) {
+			return;
+		}
+
 		const callDocRef = doc(db, "authToken", currentUser.phone);
 
 		const unsubscribe = onSnapshot(

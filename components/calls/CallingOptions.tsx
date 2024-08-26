@@ -73,29 +73,37 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	// logic to get the info about the chat
 	useEffect(() => {
-		if (!chatRequest) return;
+		const intervalId = setInterval(() => {
+			const chatRequestId = localStorage.getItem("chatRequestId");
 
-		const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
-		const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
-			const data = doc.data();
-			if (
-				data &&
-				data.status === "accepted" &&
-				clientUser?._id === chatRequest.clientId
-			) {
-				unsubscribe();
-				logEvent(analytics, "call_connected", {
-					clientId: clientUser?._id,
-					creatorId: creator._id,
+			if (chatRequestId) {
+				clearInterval(intervalId); // Clear the interval once the ID is found
+
+				const chatRequestDoc = doc(db, "chatRequests", chatRequestId);
+
+				const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
+					const data = docSnapshot.data();
+					if (data) {
+						if (
+							data.status === "accepted" &&
+							clientUser?._id === data.clientId
+						) {
+							unsubscribe(); // Clean up the listener
+							logEvent(analytics, "call_connected", {
+								clientId: clientUser?._id,
+								creatorId: data.creatorId,
+							});
+							router.push(
+								`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`
+							);
+						}
+					}
 				});
-				router.push(
-					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
-				);
 			}
-		});
+		}, 1000); // Check every second
 
-		return () => unsubscribe();
-	}, [chatRequest, router]);
+		return () => clearInterval(intervalId); // Clean up the interval when the component unmounts
+	}, [clientUser, router]);
 
 	// Example of calling the sendNotification API route
 	const sendPushNotification = async () => {
@@ -184,11 +192,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
+			const description = `${callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-			}`;
+				}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -376,13 +383,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					onOpenChange={async () => {
 						setSheetOpen(false);
 						try {
-							await updateDoc(doc(chatRequestsRef, chatRequest.id), {
+							const chatRequestId = localStorage.getItem('chatRequestId')
+							await updateDoc(doc(chatRequestsRef, chatRequestId as string), {
 								status: "ended",
 							});
 						} catch (error) {
 							console.error(error);
 						}
-						setChatRequest(null);
 					}}
 				>
 					<SheetTrigger asChild>

@@ -93,7 +93,10 @@ const Sidebar = () => {
 								</span>
 								<span className="text-xs text-green-1 font-medium">
 									{currentUser.phone
-										? currentUser.phone
+										? currentUser.phone.replace(
+												/(\+91)(\d+)/,
+												(match, p1, p2) => `${p1} ${p2}`
+										  )
 										: currentUser.username
 										? `@${currentUser.username}`
 										: "@guest"}

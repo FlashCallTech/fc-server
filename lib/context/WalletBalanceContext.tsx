@@ -54,7 +54,7 @@ export const WalletBalanceProvider = ({
 		if (currentUser) {
 			fetchCurrentUserWalletBalance();
 		}
-	}, []);
+	}, [userType]);
 
 	const updateWalletBalance = async () => {
 		if (currentUser) {
