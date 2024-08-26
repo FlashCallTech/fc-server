@@ -93,7 +93,7 @@ const EditProfile = ({
 			bio: userData.bio,
 			gender: userData.gender,
 			dob: userData.dob,
-			creatorId: userData.creatorId || `${userData.phone}@${userData.id}`,
+			creatorId: userData.creatorId || `${userData.phone}@creator`,
 		},
 	});
 

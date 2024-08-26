@@ -28,19 +28,10 @@ export const UpdateProfileFormSchemaClient = z.object({
 	username: z.string().min(4, "Last name must be at least 4 characters"),
 	profession: z.string().optional(),
 	themeSelected: z.string().optional(),
-	photo: z
-		.string()
-		.optional()
-		.refine((value) => !value || /^https?:\/\/.+\..+/i.test(value), {
-			message: "Photo must be a valid URL",
-		}),
-	bio: z
-		.string()
-		.min(3, "Description must be at least 3 characters")
-		.max(400, "Description must be less than 400 characters")
-		.optional(),
-	gender: z.string().min(3, "This field is Required"),
-	dob: z.string().min(6, "This field is Required"),
+	photo: z.string().optional(),
+	bio: z.string().optional(),
+	gender: z.string().optional(),
+	dob: z.string().optional(),
 	creatorId: z.string().optional(),
 });
 
