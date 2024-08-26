@@ -291,7 +291,7 @@ const CreatorCallsFeedbacks = () => {
 						{(provided) => (
 							<section
 								className={`grid grid-cols-1 ${
-									feedbacks.length > 0 && "sm:grid-cols-2 2xl:grid-cols-3"
+									feedbacks.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
 								} items-start gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-x-hidden no-scrollbar`}
 								ref={provided.innerRef}
 								{...provided.droppableProps}

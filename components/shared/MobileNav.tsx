@@ -61,8 +61,10 @@ const MobileNav = () => {
 										{currentUser?.username || "Hello User"}
 									</span>
 									<span className="text-sm text-green-1">
-										{currentUser?.phone ||
-											`@${currentUser?.username} || "Authenticate"`}
+										{currentUser?.phone?.replace(
+											/(\+91)(\d+)/,
+											(match, p1, p2) => `${p1} ${p2}`
+										) || `@${currentUser?.username} || "Authenticate"`}
 									</span>
 								</div>
 							</Link>

@@ -19,7 +19,7 @@ export type UpdateUserParams = {
 	profession?: string;
 	themeSelected?: string;
 	phone?: string;
-	photo: string;
+	photo?: string;
 	bio?: string;
 	role?: string;
 	gender?: string;
