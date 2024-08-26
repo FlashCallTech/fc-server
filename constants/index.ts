@@ -38,6 +38,11 @@ export const sidebarLinksCreator = [
 		label: "KYC",
 	},
 	{
+		imgURL: "/icons/refer-and-earn.svg",
+		route: "/refer",
+		label: "Refer and Earn",
+	},
+	{
 		imgURL: "/icons/support.png",
 		route: "/support",
 		label: "Support",
