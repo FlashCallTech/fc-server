@@ -84,6 +84,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
 					const data = docSnapshot.data();
 					if (data) {
+						if(
+							data.status === 'ended'
+						){
+							localStorage.removeItem('chatRequestId')
+							unsubscribe();
+						}
 						if (
 							data.status === "accepted" &&
 							clientUser?._id === data.clientId

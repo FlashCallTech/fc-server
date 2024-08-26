@@ -13,7 +13,7 @@ import {
 	where,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useChat from "./useChat";
 import { logEvent } from "firebase/analytics";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
@@ -150,6 +150,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					clientId: chatRequest.clientId,
 					clientName: chatRequest.clientName,
 					creatorId: chatRequest.creatorId,
+					requestId: chatRequest.id,
 					status: "active",
 					messages: [],
 					maxChatDuration,
@@ -184,6 +185,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
 			} else {
 				await updateDoc(doc(db, "chats", chatId), {
+					request: chatRequest.id,
 					clientName: chatRequest.clientName,
 					maxChatDuration,
 					clientBalance: response.walletBalance,
