@@ -92,7 +92,6 @@ export const ChatTimerProvider = ({
 		}
 		const ratePerMinute = chatRatePerMinute;
 		let maxChatDuration = (walletBalance / ratePerMinute) * 60; // in seconds
-		console.log('details', walletBalance, chatRatePerMinute, maxChatDuration)
 		maxChatDuration = maxChatDuration > 3600 ? 3600 : maxChatDuration; // Limit to 60 minutes (3600 seconds)
 		if (!startedAt) {
 			setTimeLeft(maxChatDuration);
