@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { query, where, onSnapshot, QuerySnapshot } from "firebase/firestore";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+import { doc, query, where, onSnapshot, QuerySnapshot } from "firebase/firestore";
 import useChatRequest from "@/hooks/useChatRequest";
 import { useCurrentUsersContext } from "./CurrentUsersContext";
 import { creatorUser } from "@/types";
@@ -27,6 +27,8 @@ export const ChatRequestProvider = ({
 	const [currentCreator, setCurrentCreator] = useState<creatorUser>();
 	const [currentCreatorId, setCurrentCreatorId] = useState<string>();
 	const { creatorUser, currentUser } = useCurrentUsersContext();
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+
 
 	// Load the current creator from localStorage
 	useEffect(() => {
@@ -75,6 +77,30 @@ export const ChatRequestProvider = ({
 
 		return () => unsubscribe(); // Cleanup subscription on component unmount or when dependencies change
 	}, []); // Dependencies
+
+	// Listen for changes in the specific chat request's status
+	// useEffect(() => {
+	// 	if (!chatRequest) return;
+
+	// 	const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
+
+	// 	const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
+	// 		const updatedChatRequest: any = { id: docSnapshot.id, ...docSnapshot.data() };
+
+	// 		// Handle audio playback when chatRequest.status changes
+	// 		if (updatedChatRequest.status === "pending") {
+	// 			audioRef.current = new Audio('/sounds/outgoing.mp3'); // Path to your sound file
+	// 			audioRef.current.play().catch((error) => {
+	// 				console.error("Error playing sound:", error);
+	// 			});
+	// 		} else if (audioRef.current) {
+	// 			audioRef.current.pause();
+	// 			audioRef.current = null; // Reset the audioRef to avoid memory leaks
+	// 		}
+	// 	});
+
+	// 	return () => unsubscribe(); // Cleanup subscription when chatRequest changes or is nullified
+	// }, [chatRequest]);
 
 	return (
 		<ChatRequestContext.Provider value={{ chatRequest, setChatRequest }}>
