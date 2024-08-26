@@ -37,7 +37,7 @@ const FormSchemaOTP = z.object({
 	}),
 });
 
-const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
+const AuthenticateViaOTP = ({ userType, refId }: { userType: string, refId: string }) => {
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const { refreshCurrentUser, setAuthenticationSheetOpen } =
@@ -167,6 +167,8 @@ const AuthenticateViaOTP = ({ userType }: { userType: string }) => {
 						audioRate: "0",
 						chatRate: "0",
 						walletBalance: 0,
+						referredBy: refId? refId: null,
+						referralAmount: refId? 5000: null
 					};
 				} else {
 					user = {

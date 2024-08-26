@@ -91,8 +91,8 @@ export type CreateCreatorParams = {
 	kyc_status?: string;
 	walletBalance: number;
 	referralId?: string;
-	referredBy?: string;
-	referralAmount?: number;
+	referredBy?: string | null;
+	referralAmount?: number | null;
 	creatorId?: string;
 };
 

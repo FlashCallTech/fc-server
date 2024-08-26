@@ -9,7 +9,12 @@ import AuthenticateViaOTP from "@/components/forms/AuthenticateViaOTP";
 export default function AuthenticationPage() {
 	const searchParams = useSearchParams();
 	const userType = searchParams.get("usertype");
+	const refId = searchParams.get('refId')
 	const router = useRouter();
+	useEffect(() => {
+		localStorage.setItem("refId", (refId as string) ?? undefined);
+	}, [router, searchParams, refId]);
+
 	useEffect(() => {
 		localStorage.setItem("userType", (userType as string) ?? "client");
 	}, [router, searchParams, userType]);
@@ -39,7 +44,7 @@ export default function AuthenticationPage() {
 				<link rel="icon" href="/icons/logoDarkCircle.png" />
 			</Head>
 			<div className="animate-enterFromBottom">
-				<AuthenticateViaOTP userType={userType as string} />
+				<AuthenticateViaOTP userType={userType as string} refId = {refId as string} />
 			</div>
 		</main>
 	);

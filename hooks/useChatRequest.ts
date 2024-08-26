@@ -212,9 +212,12 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				})
 			);
 
-			router.push(
-				`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
-			);
+			setTimeout(() => {
+				router.push(
+					`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
+				);
+			}, 1000);
+				
 		} catch (error) {
 			console.error(error);
 			toast({ title: "Failed to accept chat request" });
