@@ -13,7 +13,7 @@ export async function createCreatorUser(user: CreateCreatorParams) {
 	try {
 		await connectToDatabase();
 
-		// Check for existing user with the same email or username
+		// Check for existing user with the same username or phone number
 		const existingUser = await Creator.findOne({
 			$or: [{ username: user.username, phone: user.phone }],
 		});
@@ -25,7 +25,7 @@ export async function createCreatorUser(user: CreateCreatorParams) {
 		// console.log(newUser);
 		return JSON.parse(JSON.stringify(newUser));
 	} catch (error) {
-		handleError(error);
+		console.log(error);
 	}
 }
 
@@ -51,7 +51,7 @@ export async function getCreatorById(userId: string) {
 		if (!user) throw new Error("User not found");
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
-		handleError(error);
+		console.log(error);
 	}
 }
 
@@ -64,7 +64,7 @@ export async function getUserByPhone(phone: string) {
 		if (!user) throw new Error("User not found");
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
-		handleError(error);
+		console.log(error);
 	}
 }
 
@@ -77,7 +77,7 @@ export async function getUserByUsername(username: string) {
 		if (!user) throw new Error("User not found");
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
-		handleError(error);
+		console.log(error);
 	}
 }
 
@@ -99,11 +99,9 @@ export async function updateCreatorUser(
 
 		console.log("Trying to update user");
 
-		const updatedUser = await Creator.findByIdAndUpdate(
-			userId,
-			updateObject,
-			{ new: true }
-		);
+		const updatedUser = await Creator.findByIdAndUpdate(userId, updateObject, {
+			new: true,
+		});
 
 		if (!updatedUser) {
 			throw new Error("User not found"); // Throw error if user is not found
@@ -117,25 +115,25 @@ export async function updateCreatorUser(
 }
 
 export async function deleteCreatorLink(userId: string, link: LinkType) {
-  try {
-    const { title, url } = link;
+	try {
+		const { title, url } = link;
 
-    // Update the creator document by pulling (removing) the matching link
-    const updatedCreator = await Creator.findByIdAndUpdate(
-      userId,
-      {
-        $pull: {
-          links: { title, url },
-        },
-      },
-      { new: true } // Return the updated document
-    );
+		// Update the creator document by pulling (removing) the matching link
+		const updatedCreator = await Creator.findByIdAndUpdate(
+			userId,
+			{
+				$pull: {
+					links: { title, url },
+				},
+			},
+			{ new: true } // Return the updated document
+		);
 
-    return updatedCreator;
-  } catch (error) {
-    console.error("Error deleting link:", error);
-    throw new Error("Failed to delete the link.");
-  }
+		return updatedCreator;
+	} catch (error) {
+		console.error("Error deleting link:", error);
+		throw new Error("Failed to delete the link.");
+	}
 }
 
 export async function deleteCreatorUser(userId: string) {
@@ -155,6 +153,6 @@ export async function deleteCreatorUser(userId: string) {
 
 		return deletedUser ? JSON.parse(JSON.stringify(deletedUser)) : null;
 	} catch (error) {
-		handleError(error);
+		console.log(error);
 	}
 }

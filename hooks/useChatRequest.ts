@@ -1,7 +1,17 @@
 import { toast } from "@/components/ui/use-toast";
 import { getUserById } from "@/lib/actions/client.actions";
 import { analytics, db } from "@/lib/firebase";
-import { arrayUnion, collection, doc, getDoc, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore";
+import {
+	arrayUnion,
+	collection,
+	doc,
+	getDoc,
+	onSnapshot,
+	query,
+	setDoc,
+	updateDoc,
+	where,
+} from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import useChat from "./useChat";
@@ -10,6 +20,7 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
+	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
 	const router = useRouter();
@@ -29,9 +40,9 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 		if (!clientUser) router.push("sign-in");
 		let maxCallDuration = (walletBalance / parseInt(creator.chatRate, 10)) * 60;
-		maxCallDuration = maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+		maxCallDuration =
+			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
-		// Check if maxCallDuration is less than 5 minutes (300 seconds)
 		if (maxCallDuration < 60) {
 			toast({
 				title: "Insufficient Balance",
@@ -42,17 +53,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 
 		try {
-			const userChatsDocRef = doc(
-				db,
-				"userchats",
-				clientUser?._id
-			);
-
-			const creatorChatsDocRef = doc(
-				db,
-				"userchats",
-				creator?._id
-			);
+			const userChatsDocRef = doc(db, "userchats", clientUser?._id);
+			const creatorChatsDocRef = doc(db, "userchats", creator?._id);
 
 			const userChatsDocSnapshot = await getDoc(userChatsDocRef);
 			const creatorChatsDocSnapshot = await getDoc(creatorChatsDocRef);
@@ -76,10 +78,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				}
 			}
 
-			// Use existing chatId if found, otherwise create a new one
 			const chatId = existingChatId || doc(chatRef).id;
 
-			// Create a new chat request
 			const newChatRequestRef = doc(chatRequestsRef);
 			await setDoc(newChatRequestRef, {
 				creatorId: creator?._id,
@@ -90,6 +90,9 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				chatRate: creator.chatRate,
 				createdAt: Date.now(),
 			});
+
+			// Save chatRequest document ID in local storage
+			localStorage.setItem("chatRequestId", newChatRequestRef.id);
 
 			if (!userChatsDocSnapshot.exists()) {
 				await setDoc(userChatsDocRef, { chats: [] });
@@ -128,18 +131,15 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	};
 
-
 	const handleAcceptChat = async (chatRequest: any) => {
 		setLoading(true);
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
-		const response = await getUserById(
-			chatRequest.clientId as string
-		);
-		let maxChatDuration = (response.walletBalance / parseInt(chatRequest.chatRate, 10)) * 60; // in seconds
-		console.log(maxChatDuration)
-		maxChatDuration = maxChatDuration > 3600 ? 3600 : Math.floor(maxChatDuration);
-		console.log(maxChatDuration)
+		const response = await getUserById(chatRequest.clientId as string);
+		let maxChatDuration =
+			(response.walletBalance / parseInt(chatRequest.chatRate, 10)) * 60; // in seconds
+		maxChatDuration =
+			maxChatDuration > 3600 ? 3600 : Math.floor(maxChatDuration);
 
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
@@ -148,11 +148,12 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					// startedAt: Date.now(),
 					// endedAt: null,
 					clientId: chatRequest.clientId,
+					clientName: chatRequest.clientName,
 					creatorId: chatRequest.creatorId,
 					status: "active",
 					messages: [],
 					maxChatDuration,
-					walletBalance: response.walletBalance
+					walletBalance: response.walletBalance,
 				});
 
 				const creatorChatUpdate = updateDoc(
@@ -181,11 +182,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					}
 				);
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
-			}
-			else {
+			} else {
 				await updateDoc(doc(db, "chats", chatId), {
+					clientName: chatRequest.clientName,
 					maxChatDuration,
-					clientBalance: response.walletBalance
+					clientBalance: response.walletBalance,
 				});
 			}
 
@@ -212,8 +213,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			router.push(
 				`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
 			);
-			;
-
 		} catch (error) {
 			console.error(error);
 			toast({ title: "Failed to accept chat request" });
@@ -242,6 +241,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	};
 
 	return { handleAcceptChat, handleRejectChat, handleChat, chatRequestsRef };
-}
+};
 
-export default useChatRequest
+export default useChatRequest;
