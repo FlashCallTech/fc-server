@@ -6,7 +6,7 @@ const ReferralLink: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const { currentUser } = useCurrentUsersContext();
 
-  const referralLink = `http://localhost:3000/authenticate/?refId=${currentUser?._id}`;
+  const referralLink = `http://localhost:3000/authenticate/?userType=${'creator'}&refId=${currentUser?._id}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink).then(() => {
