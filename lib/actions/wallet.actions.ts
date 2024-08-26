@@ -63,7 +63,7 @@ export async function addMoney({ userId, userType, amount }: WalletParams) {
 
 				referralBonus > 0 &&
 					(await Transaction.create({
-						userId: user.refferedBy,
+						userId: referrer._id,
 						userType,
 						amount: referralBonus,
 						type: "credit",

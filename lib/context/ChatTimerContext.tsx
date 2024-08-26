@@ -40,6 +40,7 @@ export const useChatTimerContext = () => {
 	}
 	return context;
 };
+
 const formatTimeLeft = (timeLeft: number): string => {
 	const minutes = Math.floor(timeLeft);
 	const seconds = Math.floor((timeLeft - minutes) * 60);
@@ -47,6 +48,7 @@ const formatTimeLeft = (timeLeft: number): string => {
 	const paddedSeconds = seconds.toString().padStart(2, "0");
 	return `${paddedMinutes}:${paddedSeconds}`;
 };
+
 export const ChatTimerProvider = ({
 	children,
 	clientId,
@@ -55,7 +57,6 @@ export const ChatTimerProvider = ({
 	const { toast } = useToast();
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
 	const [timeLeft, setTimeLeft] = useState(0);
-	const [maxChatDuration, setMaxChatDuration] = useState(0);
 	const { walletBalance } = useWalletBalanceContext();
 	const { clientUser } = useCurrentUsersContext();
 	const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
@@ -80,7 +81,7 @@ export const ChatTimerProvider = ({
 		if (storedCreator) {
 			const parsedCreator: creatorUser = JSON.parse(storedCreator);
 			if (parsedCreator.chatRate) {
-				setChatRatePerMinute(parseInt(parsedCreator.audioRate, 10));
+				setChatRatePerMinute(parseInt(parsedCreator.chatRate, 10));
 			}
 		}
 	}, []);
@@ -91,6 +92,7 @@ export const ChatTimerProvider = ({
 		}
 		const ratePerMinute = chatRatePerMinute;
 		let maxChatDuration = (walletBalance / ratePerMinute) * 60; // in seconds
+		console.log('details', walletBalance, chatRatePerMinute, maxChatDuration)
 		maxChatDuration = maxChatDuration > 3600 ? 3600 : maxChatDuration; // Limit to 60 minutes (3600 seconds)
 		if (!startedAt) {
 			setTimeLeft(maxChatDuration);
@@ -126,8 +128,8 @@ export const ChatTimerProvider = ({
 			if (isTimerRunning) {
 				const now = new Date();
 				const timeUtilized = (now.getTime() - chatStartedTime.getTime()) / 1000; // Time in seconds
-
 				const newTimeLeft = maxChatDuration - timeUtilized;
+				console.log(maxChatDuration, newTimeLeft)
 				const clampedTimeLeft = newTimeLeft > 0 ? newTimeLeft : 0;
 
 				setTimeLeft(clampedTimeLeft);
@@ -170,8 +172,6 @@ export const ChatTimerProvider = ({
 		lowBalanceThreshold,
 		endChat,
 		toast,
-		// clientWalletBalance,
-		maxChatDuration,
 		startedAt,
 	]);
 
