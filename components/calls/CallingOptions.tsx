@@ -298,6 +298,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
+	console.log(isSheetOpen)
+
 	const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
 
 	if (isAuthSheetOpen && !clientUser)

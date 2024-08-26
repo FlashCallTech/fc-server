@@ -1,9 +1,104 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import useChatRequest from '@/hooks/useChatRequest';
 import Image from 'next/image';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 const ChatRequest = ({ chatRequest }: { chatRequest: any }) => {
+  const { chatRequestsRef } = useChatRequest();
+  const [chatState, setChatState] = useState("pending");
+  const [shownNotification, setShownNotification] = useState(false);
   const { handleAcceptChat, handleRejectChat } = useChatRequest();
+
+  useEffect(() => {
+    const registerServiceWorker = async () => {
+      if ("serviceWorker" in navigator) {
+        try {
+          await navigator.serviceWorker.register("/sw.js");
+          console.log("Service Worker registered.");
+        } catch (error) {
+          console.error("Service Worker registration failed:", error);
+        }
+      }
+    };
+
+    registerServiceWorker();
+  }, []);
+
+  const showNotification = () => {
+    if ("Notification" in window && Notification.permission === "granted") {
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.showNotification("Incoming Call", {
+          body: `Call from ${chatRequest.clientName}`,
+          // icon:
+          // 	call?.state?.createdBy?.image || "/images/defaultProfileImage.png",
+          tag: "incoming-chat",
+          data: { url: `https://www.flashcall.me` },
+        });
+      });
+    } else if ("Notification" in window) {
+      Notification.requestPermission().then((result) => {
+        if (result === "granted") {
+          navigator.serviceWorker.ready.then((registration) => {
+            registration.showNotification("Incoming Call", {
+              body: `Call from ${chatRequest.clientName}`,
+              // icon:
+              // 	call?.state?.createdBy?.image ||
+              // 	"/images/defaultProfileImage.png",
+              tag: "incoming-chat",
+              data: { url: `https://www.flashcall.me` },
+            });
+          });
+        }
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!chatRequest) return;
+
+    const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
+
+    const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
+      const updatedChatRequest: any = { id: docSnapshot.id, ...docSnapshot.data() };
+      setChatState(updatedChatRequest.status);
+    });
+
+    return () => unsubscribe(); // Cleanup subscription when chatRequest changes or is nullified
+  }, [chatRequest]);
+
+  useEffect(() => {
+    let audio: HTMLAudioElement | null = null;
+
+    if (chatState === "pending") {
+      audio = new Audio("/sounds/notification.mp3");
+      audio.loop = true;
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log("Audio autoplay started!");
+          })
+          .catch((error) => {
+            console.error("Audio autoplay was prevented:", error);
+            // Show a UI element or prompt user to play the sound manually if needed
+          });
+      }
+
+      if (!shownNotification) {
+        showNotification();
+        setShownNotification(true);
+      }
+    }
+
+    // Clean up when callState changes or on component unmount
+    return () => {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    };
+  }, [shownNotification, chatState]);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
