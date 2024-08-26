@@ -2,7 +2,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { analytics, db } from "@/lib/firebase";
 import { creatorUser } from "@/types";
 import { logEvent } from "firebase/analytics";
-import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -39,7 +39,7 @@ const useEndChat = () => {
 	const [endedAt, setEndedAt] = useState<number>();
 	const [startedAt, setStartedAt] = useState<number>();
 	const [loading, setLoading] = useState(false);
-	const hasCHatEnded = useRef(false);
+	const hasChatEnded = useRef(false);
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
@@ -68,10 +68,10 @@ const useEndChat = () => {
 	}, [chatId]);
 
 	useEffect(() => {
-		if (hasCHatEnded.current === true) return;
+		if (hasChatEnded.current === true) return;
 
 		if (chatEnded) {
-			hasCHatEnded.current = true;
+			hasChatEnded.current = true;
 			router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
 		}
 	}, [chatEnded]);
@@ -121,6 +121,22 @@ const useEndChat = () => {
 			await updateDoc(doc(db, "userchats", user2?.creatorId as string), {
 				online: false,
 			});
+
+			const ChatsDocRef = doc(db, "chats", chatId as string);
+
+			const chatDocSnapshot = await getDoc(ChatsDocRef)
+			if(chatDocSnapshot){
+				const requestId = chatDocSnapshot.data()?.request;
+				if(requestId){
+					const requestDocRef = doc(db, 'chatRequests', requestId);
+					const requestDocSnapshot = await getDoc(requestDocRef);
+					if(requestDocSnapshot){
+						await updateDoc(doc(db, 'chatRequests', requestId), {
+							status: "ended"
+						})
+					}
+				}
+			}
 
 			localStorage.removeItem("chatRequestId");
 

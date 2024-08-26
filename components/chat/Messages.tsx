@@ -28,7 +28,7 @@ interface Props {
 const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 	const { currentUser } = useCurrentUsersContext();
 	const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
-	const endRef = useRef<HTMLDivElement | null>(null);
+	// const endRef = useRef<HTMLDivElement | null>(null);
 	const handleImageClick = (imageUrl: string) => {
 		setFullImageUrl(imageUrl);
 	};
@@ -37,9 +37,9 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 		setFullImageUrl(null);
 	};
 
-	useEffect(() => {
-		endRef.current?.scrollIntoView({ behavior: "smooth" });
-	}, [chat]);
+	// useEffect(() => {
+	// 	endRef.current?.scrollIntoView({ behavior: "smooth" });
+	// }, [chat]);
 
 	const formatTime = (timestamp: number) => {
 		const date = new Date(timestamp);
@@ -137,7 +137,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 						</div>
 					</div>
 				)}
-				<div ref={endRef}></div>
+				{/* <div ref={endRef}></div> */}
 			</div>
 		</div>
 	);
