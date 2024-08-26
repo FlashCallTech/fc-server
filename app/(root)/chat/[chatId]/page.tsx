@@ -21,7 +21,6 @@ const Page = () => {
 	const { updateWalletBalance } = useWalletBalanceContext();
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
-	const clientId = user2?.clientId;
 	const router = useRouter();
 	let isTabClosing = false;
 

@@ -136,10 +136,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
 		const response = await getUserById(chatRequest.clientId as string);
-		let maxChatDuration =
-			(response.walletBalance / parseInt(chatRequest.chatRate, 10)) * 60; // in seconds
-		maxChatDuration =
-			maxChatDuration > 3600 ? 3600 : Math.floor(maxChatDuration);
 
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
@@ -153,8 +149,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					requestId: chatRequest.id,
 					status: "active",
 					messages: [],
-					maxChatDuration,
-					walletBalance: response.walletBalance,
 				});
 
 				const creatorChatUpdate = updateDoc(
@@ -185,10 +179,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
 			} else {
 				await updateDoc(doc(db, "chats", chatId), {
-					request: chatRequest.id,
+					requestId: chatRequest.id,
 					clientName: chatRequest.clientName,
-					maxChatDuration,
-					clientBalance: response.walletBalance,
 				});
 			}
 
