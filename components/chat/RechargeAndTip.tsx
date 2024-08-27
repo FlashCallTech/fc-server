@@ -5,9 +5,9 @@ import RechargeModal from "./RechargeModal";
 import { useEffect, useState } from "react";
 
 const RechargeAndTip: React.FC = () => {
+    const [userType, setUserType] = useState<string>();
     const { walletBalance, setWalletBalance, updateWalletBalance } = useWalletBalanceContext();
     const { hasLowBalance } = useChatTimerContext();
-    const [userType, setUserType] = useState<string>();
 
     useEffect(() => {
         const userType = localStorage.getItem("userType");

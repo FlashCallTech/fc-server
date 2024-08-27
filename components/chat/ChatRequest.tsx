@@ -4,9 +4,9 @@ import Image from 'next/image';
 import { doc, onSnapshot } from 'firebase/firestore';
 
 const ChatRequest = ({ chatRequest }: { chatRequest: any }) => {
-  const { chatRequestsRef } = useChatRequest();
   const [chatState, setChatState] = useState("pending");
   const [shownNotification, setShownNotification] = useState(false);
+  const { chatRequestsRef } = useChatRequest();
   const { handleAcceptChat, handleRejectChat } = useChatRequest();
 
   useEffect(() => {
