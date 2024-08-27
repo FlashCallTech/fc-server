@@ -79,28 +79,28 @@ export const ChatRequestProvider = ({
 	}, []); // Dependencies
 
 	// Listen for changes in the specific chat request's status
-	// useEffect(() => {
-	// 	if (!chatRequest) return;
+	useEffect(() => {
+		if (!chatRequest) return;
 
-	// 	const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
+		const chatRequestDoc = doc(chatRequestsRef, chatRequest.id);
 
-	// 	const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
-	// 		const updatedChatRequest: any = { id: docSnapshot.id, ...docSnapshot.data() };
+		const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
+			const updatedChatRequest: any = { id: docSnapshot.id, ...docSnapshot.data() };
 
-	// 		// Handle audio playback when chatRequest.status changes
-	// 		if (updatedChatRequest.status === "pending") {
-	// 			audioRef.current = new Audio('/sounds/outgoing.mp3'); // Path to your sound file
-	// 			audioRef.current.play().catch((error) => {
-	// 				console.error("Error playing sound:", error);
-	// 			});
-	// 		} else if (audioRef.current) {
-	// 			audioRef.current.pause();
-	// 			audioRef.current = null; // Reset the audioRef to avoid memory leaks
-	// 		}
-	// 	});
+			// Handle audio playback when chatRequest.status changes
+			if (updatedChatRequest.status === "pending") {
+				audioRef.current = new Audio('/sounds/outgoing.mp3'); // Path to your sound file
+				audioRef.current.play().catch((error) => {
+					console.error("Error playing sound:", error);
+				});
+			} else if (audioRef.current) {
+				audioRef.current.pause();
+				audioRef.current = null; // Reset the audioRef to avoid memory leaks
+			}
+		});
 
-	// 	return () => unsubscribe(); // Cleanup subscription when chatRequest changes or is nullified
-	// }, [chatRequest]);
+		return () => unsubscribe(); // Cleanup subscription when chatRequest changes or is nullified
+	}, [chatRequest]);
 
 	return (
 		<ChatRequestContext.Provider value={{ chatRequest, setChatRequest }}>

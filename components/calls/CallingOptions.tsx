@@ -29,8 +29,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
 	const { handleChat, chatRequestsRef } = useChatRequest();
-	const { chatRequest, setChatRequest } = useChatRequestContext();
+	const [chatState, setChatState] = useState();
 	const { fetchCreatorToken } = useFcmToken();
+	const [ chatReqSent, setChatReqSent] = useState(false);
 
 	const [updatedCreator, setUpdatedCreator] = useState<creatorUser>({
 		...creator,
@@ -73,6 +74,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	// logic to get the info about the chat
 	useEffect(() => {
+		if(!chatReqSent) return;
+
 		const intervalId = setInterval(() => {
 			const chatRequestId = localStorage.getItem("chatRequestId");
 
@@ -85,23 +88,30 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					const data = docSnapshot.data();
 					if (data) {
 						if(
-							data.status === 'ended'
+							data.status === 'ended' || data.status === 'rejected'
 						){
+							setSheetOpen(false)
+							setChatReqSent(false)
+							setChatState(data.status)
 							localStorage.removeItem('chatRequestId')
 							unsubscribe();
 						}
-						if (
+						else if (
 							data.status === "accepted" &&
 							clientUser?._id === data.clientId
 						) {
+							setChatState(data.status)
 							unsubscribe(); // Clean up the listener
 							logEvent(analytics, "call_connected", {
 								clientId: clientUser?._id,
 								creatorId: data.creatorId,
 							});
+							setChatReqSent(false);
 							router.push(
 								`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`
 							);
+						} else {
+							setChatState(data.status)
 						}
 					}
 				});
@@ -109,7 +119,36 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}, 1000); // Check every second
 
 		return () => clearInterval(intervalId); // Clean up the interval when the component unmounts
-	}, [clientUser, router]);
+	}, [clientUser, router, chatReqSent]);
+
+	useEffect(() => {
+    let audio: HTMLAudioElement | null = null;
+
+    if (chatState === "pending") {
+      audio = new Audio("/sounds/outgoing.mp3");
+      audio.loop = true;
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log("Audio autoplay started!");
+          })
+          .catch((error) => {
+            console.error("Audio autoplay was prevented:", error);
+            // Show a UI element or prompt user to play the sound manually if needed
+          });
+      }
+    }
+
+    // Clean up when callState changes or on component unmount
+    return () => {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    };
+  }, [chatState]);
 
 	// Example of calling the sendNotification API route
 	const sendPushNotification = async () => {
@@ -290,6 +329,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	const handleChatClick = () => {
 		if (clientUser) {
+			setChatReqSent(true)
 			handleChat(creator, clientUser);
 			setSheetOpen(true);
 			sendPushNotification();
@@ -298,7 +338,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	console.log(isSheetOpen)
+	console.log(chatState, chatReqSent, isSheetOpen);
 
 	const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
 
