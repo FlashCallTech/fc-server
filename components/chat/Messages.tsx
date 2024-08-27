@@ -26,8 +26,8 @@ interface Props {
 }
 
 const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
-	const { currentUser } = useCurrentUsersContext();
 	const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
+	const { currentUser } = useCurrentUsersContext();
 	// const endRef = useRef<HTMLDivElement | null>(null);
 	const handleImageClick = (imageUrl: string) => {
 		setFullImageUrl(imageUrl);

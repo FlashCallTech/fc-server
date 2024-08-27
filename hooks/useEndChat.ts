@@ -29,9 +29,6 @@ interface Chat {
 }
 
 const useEndChat = () => {
-	const router = useRouter();
-	const { currentUser } = useCurrentUsersContext();
-	const { chatId } = useParams();
 	const [user2, setUser2] = useState<User2>();
 	const [chat, setChat] = useState<Chat | undefined>();
 	const [chatEnded, setChatEnded] = useState(false);
@@ -39,7 +36,13 @@ const useEndChat = () => {
 	const [endedAt, setEndedAt] = useState<number>();
 	const [startedAt, setStartedAt] = useState<number>();
 	const [loading, setLoading] = useState(false);
+
+	const { currentUser } = useCurrentUsersContext();
+	const { chatId } = useParams();
+
+	const router = useRouter();
 	const hasChatEnded = useRef(false);
+	
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {

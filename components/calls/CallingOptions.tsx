@@ -12,7 +12,6 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
-import { useChatRequestContext } from "@/lib/context/ChatRequestContext";
 import useFcmToken from "@/hooks/useFcmToken";
 
 interface CallingOptions {

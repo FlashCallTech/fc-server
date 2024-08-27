@@ -54,19 +54,20 @@ export const ChatTimerProvider = ({
 	clientId,
 	creatorId,
 }: ChatTimerProviderProps) => {
-	const { toast } = useToast();
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
 	const [timeLeft, setTimeLeft] = useState(0);
-	const { walletBalance } = useWalletBalanceContext();
-	const { clientUser } = useCurrentUsersContext();
 	const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
 	const [hasLowBalance, setHasLowBalance] = useState(false);
 	const [isTimerRunning, setIsTimerRunning] = useState(true);
 	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
-	const lowBalanceThreshold = 300; // Threshold in seconds
-	const router = useRouter();
 	const { chatId, user2, handleEnd, startedAt } = useEndChat();
+	const { walletBalance } = useWalletBalanceContext();
+	const { clientUser } = useCurrentUsersContext();
+	const { toast } = useToast();
+	const router = useRouter();
+	const lowBalanceThreshold = 300; // Threshold in seconds
+
 	const endChat = async () => {
 		toast({
 			title: "Chat Ended",
@@ -128,7 +129,6 @@ export const ChatTimerProvider = ({
 				const now = new Date();
 				const timeUtilized = (now.getTime() - chatStartedTime.getTime()) / 1000; // Time in seconds
 				const newTimeLeft = maxChatDuration - timeUtilized;
-				console.log(maxChatDuration, newTimeLeft)
 				const clampedTimeLeft = newTimeLeft > 0 ? newTimeLeft : 0;
 
 				setTimeLeft(clampedTimeLeft);

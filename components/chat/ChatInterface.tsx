@@ -23,10 +23,29 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import CreatorChatTimer from "../creator/CreatorChatTimer";
 
 const ChatInterface: React.FC = () => {
-	const { handleEnd, chat, markMessagesAsSeen, loading } = useEndChat();
-	const { currentUser, userType } = useCurrentUsersContext();
+
+	const [text, setText] = useState("");
+	const [isImgUploading, setIsImgUploading] = useState(false);
+	const [isAudioUploading, setIsAudioUploading] = useState(false);
+	const [showDialog, setShowDialog] = useState(false);
+	const [receiverId, setReceiverId] = useState(null);
+	const [img, setImg] = useState({
+		file: null,
+		url: "",
+	});
+	const [audio, setAudio] = useState<{ file: Blob | null; url: string }>({
+		file: null,
+		url: "",
+	});
+	const [messages, setMessages] = useState<{ text: string | null; img: string | null; audio: string | null }[]>(
+		[],
+	);
 
 	useUserStatus();
+
+	const { handleEnd, chat, markMessagesAsSeen, loading } = useEndChat();
+	const { currentUser, userType } = useCurrentUsersContext();
+	const { user2, chatId } = useEndChat();
 	const {
 		audioStream,
 		isRecording,
@@ -37,24 +56,8 @@ const ChatInterface: React.FC = () => {
 		mediaRecorderRef,
 		setIsRecording,
 	} = useMediaRecorder();
-	const { user2, chatId } = useEndChat();
-	const [text, setText] = useState("");
-	const [isImgUploading, setIsImgUploading] = useState(false);
-	const [isAudioUploading, setIsAudioUploading] = useState(false);
-	const [img, setImg] = useState({
-		file: null,
-		url: "",
-	});
-	const [showDialog, setShowDialog] = useState(false);
-	const [audio, setAudio] = useState<{ file: Blob | null; url: string }>({
-		file: null,
-		url: "",
-	});
-	const [receiverId, setReceiverId] = useState(null);
+
 	const audioContext = new AudioContext();
-	const [messages, setMessages] = useState<
-		{ text: string | null; img: string | null; audio: string | null }[]
-	>([]);
 
 	useEffect(() => {
 		updateDoc(doc(db, "chats", chatId as string), {
@@ -278,8 +281,7 @@ const ChatInterface: React.FC = () => {
 	};
 
 	const endCall = async () => {
-		setShowDialog(true); // Show the confirmation dialog
-		// setAnyModalOpen(true);
+		setShowDialog(true);
 	};
 
 	const handleDecisionDialog = async () => {
@@ -288,11 +290,7 @@ const ChatInterface: React.FC = () => {
 			return <ContentLoading />;
 		}
 		setShowDialog(false);
-		// isMeetingOwner && router.push(`/feedback/${call?.id}/${totalTimeUtilized}`);
-		// toast({
-		// 	title: "Call Ended",
-		// 	description: "The call Ended. Redirecting ...",
-		// });
+
 	};
 
 	const handleCloseDialog = () => {

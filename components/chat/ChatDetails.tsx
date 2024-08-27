@@ -12,9 +12,9 @@ interface ChatDetailsProps {
 }
 
 const ChatDetails: React.FC<ChatDetailsProps> = ({ creatorId }) => {
-	const { currentUser } = useCurrentUsersContext();
 	const [chats, setChats] = useState<SelectedChat[] | undefined>();
 	const [loading, setLoading] = useState(true);
+	const { currentUser } = useCurrentUsersContext();
 	const endRef = useRef<HTMLDivElement | null>(null);
 	const pathname = usePathname();
 
