@@ -20,18 +20,11 @@ interface CallingOptions {
 
 const CallingOptions = ({ creator }: CallingOptions) => {
 	const router = useRouter();
-	const { walletBalance } = useWalletBalanceContext();
 	const client = useStreamVideoClient();
-	const { clientUser, setAuthenticationSheetOpen } = useCurrentUsersContext();
-	const { toast } = useToast();
 	const [isSheetOpen, setSheetOpen] = useState(false);
-	const storedCallId = localStorage.getItem("activeCallId");
-	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
-	const { handleChat, chatRequestsRef } = useChatRequest();
+	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [chatState, setChatState] = useState();
-	const { fetchCreatorToken } = useFcmToken();
 	const [ chatReqSent, setChatReqSent] = useState(false);
-
 	const [updatedCreator, setUpdatedCreator] = useState<creatorUser>({
 		...creator,
 		videoRate: creator.videoRate,
@@ -41,7 +34,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		audioAllowed: creator.audioAllowed,
 		chatAllowed: creator.chatAllowed,
 	});
-
+	const { fetchCreatorToken } = useFcmToken();
+	const { walletBalance } = useWalletBalanceContext();
+	const { handleChat, chatRequestsRef } = useChatRequest();
+	const { clientUser, setAuthenticationSheetOpen } = useCurrentUsersContext();
+	const { toast } = useToast();
+	const storedCallId = localStorage.getItem("activeCallId");
+	
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
 	}, [isAuthSheetOpen]);
@@ -71,7 +70,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		return () => unsubscribe();
 	}, [creator._id]);
 
-	// logic to get the info about the chat
 	useEffect(() => {
 		if(!chatReqSent) return;
 
@@ -100,7 +98,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							clientUser?._id === data.clientId
 						) {
 							setChatState(data.status)
-							unsubscribe(); // Clean up the listener
+							unsubscribe(); 
 							logEvent(analytics, "call_connected", {
 								clientId: clientUser?._id,
 								creatorId: data.creatorId,
@@ -115,9 +113,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}
 				});
 			}
-		}, 1000); // Check every second
+		}, 1000);
 
-		return () => clearInterval(intervalId); // Clean up the interval when the component unmounts
+		return () => clearInterval(intervalId);
 	}, [clientUser, router, chatReqSent]);
 
 	useEffect(() => {
@@ -135,12 +133,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
           })
           .catch((error) => {
             console.error("Audio autoplay was prevented:", error);
-            // Show a UI element or prompt user to play the sound manually if needed
           });
       }
     }
-
-    // Clean up when callState changes or on component unmount
     return () => {
       if (audio) {
         audio.pause();
@@ -149,7 +144,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
     };
   }, [chatState]);
 
-	// Example of calling the sendNotification API route
 	const sendPushNotification = async () => {
 		const token = await fetchCreatorToken(creator);
 
@@ -174,8 +168,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	// defining the actions for call accept and call reject
-
 	const handleCallAccepted = async (call: Call) => {
 		toast({
 			variant: "destructive",
@@ -196,7 +188,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		setSheetOpen(false);
 	};
 
-	// create new meeting
 	const createMeeting = async (callType: string) => {
 		if (!client || !clientUser) return;
 		try {
