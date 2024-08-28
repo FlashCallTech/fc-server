@@ -65,7 +65,7 @@ const CreatorLinks = () => {
       });
 
       if (response.ok) {
-        await refreshCurrentUser(); // Refresh the current user data to reflect changes
+        await refreshCurrentUser();
       } else {
         console.error("Failed to update the user links");
       }

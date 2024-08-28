@@ -49,7 +49,7 @@ export const sidebarLinksCreator = [
 	},
 	{
 		imgURL: "/icons/paymentSettings.png",
-		route: "/payment",
+		route: "/payment-settings",
 		label: "Payment Settings",
 	},
 	{

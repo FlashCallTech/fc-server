@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, models, Document } from 'mongoose';
 
 interface BankDetails {
   ifsc: string;
@@ -14,10 +14,10 @@ interface Payment extends Document {
 }
 
 const BankDetailsSchema = new Schema<BankDetails>({
-  ifsc: { type: String, required: true },
-  accountNumber: { type: String, required: true },
-  accountType: { type: String, required: true }
-});
+  ifsc: { type: String },
+  accountNumber: { type: String},
+  accountType: { type: String }
+}, { _id: false });
 
 const PaymentSchema = new Schema<Payment>({
   userId: { type: String, required: true, unique: true },
@@ -28,18 +28,15 @@ const PaymentSchema = new Schema<Payment>({
   },
   upiId: {
     type: String,
-    required: function (this: Payment) {
-      return this.paymentMode === 'UPI';
-    }
+    required: false  // No conditional requirement here
   },
   bankDetails: {
     type: BankDetailsSchema,
-    required: function (this: Payment) {
-      return this.paymentMode === 'BANK_TRANSFER';
-    }
+    required: false  // No conditional requirement here
   }
 });
 
-const PaymentModel = model<Payment>('Payment', PaymentSchema);
+// Ensure the model is only compiled once
+const PaymentModel = models.Payment || model<Payment>('Payment', PaymentSchema);
 
 export default PaymentModel;
