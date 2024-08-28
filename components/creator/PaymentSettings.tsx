@@ -1,7 +1,6 @@
 'use client';
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import React, { useEffect, useState, useCallback } from "react";
-import Loading from "../shared/Loading";
 import Loader from "../shared/Loader";
 import { useRouter } from "next/navigation";
 
