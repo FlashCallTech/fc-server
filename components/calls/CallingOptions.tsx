@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { audio, chat, video } from "@/constants/icons";
 import { creatorUser } from "@/types";
 import { useRouter } from "next/navigation";
@@ -12,8 +13,6 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
-import { useChatRequestContext } from "@/lib/context/ChatRequestContext";
-import useFcmToken from "@/hooks/useFcmToken";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -27,10 +26,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const { toast } = useToast();
 	const [isSheetOpen, setSheetOpen] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
-	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
+	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const { handleChat, chatRequestsRef } = useChatRequest();
-	const { chatRequest, setChatRequest } = useChatRequestContext();
-	const { fetchCreatorToken } = useFcmToken();
+	const [chatState, setChatState] = useState();
+	const [chatReqSent, setChatReqSent] = useState(false);
+	const [isProcessing, setIsProcessing] = useState(false);
 
 	const [updatedCreator, setUpdatedCreator] = useState<creatorUser>({
 		...creator,
@@ -71,8 +71,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		return () => unsubscribe();
 	}, [creator._id]);
 
-	// logic to get the info about the chat
 	useEffect(() => {
+		if (!chatReqSent) return;
+
 		const intervalId = setInterval(() => {
 			const chatRequestId = localStorage.getItem("chatRequestId");
 
@@ -84,55 +85,67 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
 					const data = docSnapshot.data();
 					if (data) {
-						if (
+						if (data.status === "ended" || data.status === "rejected") {
+							setSheetOpen(false);
+							setChatReqSent(false);
+							setChatState(data.status);
+							localStorage.removeItem("chatRequestId");
+							unsubscribe();
+						} else if (
 							data.status === "accepted" &&
 							clientUser?._id === data.clientId
 						) {
-							unsubscribe(); // Clean up the listener
+							setChatState(data.status);
+							unsubscribe();
 							logEvent(analytics, "call_connected", {
 								clientId: clientUser?._id,
 								creatorId: data.creatorId,
 							});
+							setChatReqSent(false);
 							router.push(
 								`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`
 							);
+						} else {
+							setChatState(data.status);
 						}
 					}
 				});
 			}
-		}, 1000); // Check every second
+		}, 1000);
 
-		return () => clearInterval(intervalId); // Clean up the interval when the component unmounts
-	}, [clientUser, router]);
+		return () => clearInterval(intervalId);
+	}, [clientUser, router, chatReqSent]);
 
-	// Example of calling the sendNotification API route
-	const sendPushNotification = async () => {
-		const token = await fetchCreatorToken(creator);
+	useEffect(() => {
+		let audio: HTMLAudioElement | null = null;
 
-		try {
-			const response = await fetch("/api/send-notification", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					token: token,
-					title: "Test Notification",
-					message: "This is a test notification",
-					link: "/",
-				}),
-			});
+		if (chatState === "pending") {
+			audio = new Audio("/sounds/outgoing.mp3");
+			audio.loop = true;
 
-			const data = await response.json();
-			console.log(data);
-		} catch (error) {
-			console.error("Failed to send notification:", error);
+			const playPromise = audio.play();
+			if (playPromise !== undefined) {
+				playPromise
+					.then(() => {
+						console.log("Audio autoplay started!");
+					})
+					.catch((error) => {
+						console.error("Audio autoplay was prevented:", error);
+					});
+			}
 		}
-	};
+		return () => {
+			if (audio) {
+				audio.pause();
+				audio.currentTime = 0;
+			}
+		};
+	}, [chatState]);
 
 	// defining the actions for call accept and call reject
 
 	const handleCallAccepted = async (call: Call) => {
+		setIsProcessing(false); // Reset processing state
 		toast({
 			variant: "destructive",
 			title: "Call Accepted",
@@ -144,6 +157,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleCallRejected = () => {
+		setIsProcessing(false); // Reset processing state
 		toast({
 			variant: "destructive",
 			title: "Call Rejected",
@@ -192,10 +206,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${callType === "video"
+			const description = `${
+				callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-				}`;
+			}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -254,45 +269,67 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	// if any of the calling option is selected open the respective modal
 	const handleClickOption = (callType: string) => {
-		if (clientUser && !storedCallId) {
-			createMeeting(callType);
-			logEvent(analytics, "call_click", {
-				clientId: clientUser?._id,
-				creatorId: creator._id,
-			});
-			if (callType === "audio") {
-				logEvent(analytics, "audio_now_click", {
+		if (isProcessing) return; // Prevent double-click
+		setIsProcessing(true); // Set processing state
+
+		try {
+			if (clientUser && !storedCallId) {
+				createMeeting(callType);
+				logEvent(analytics, "call_click", {
 					clientId: clientUser?._id,
 					creatorId: creator._id,
 				});
+				if (callType === "audio") {
+					logEvent(analytics, "audio_now_click", {
+						clientId: clientUser?._id,
+						creatorId: creator._id,
+					});
+				} else {
+					logEvent(analytics, "video_now_click", {
+						clientId: clientUser?._id,
+						creatorId: creator._id,
+					});
+				}
+			} else if (clientUser && storedCallId) {
+				toast({
+					title: "Ongoing Call or Transaction Pending",
+					description: "Redirecting you back ...",
+				});
+				router.push(`/meeting/${storedCallId}`);
 			} else {
-				logEvent(analytics, "video_now_click", {
-					clientId: clientUser?._id,
-					creatorId: creator._id,
-				});
+				setIsAuthSheetOpen(true);
 			}
-		} else if (clientUser && storedCallId) {
-			toast({
-				title: "Ongoing Call or Transaction Pending",
-				description: "Redirecting you back ...",
+
+			// Optionally log a success message to Sentry
+			Sentry.captureMessage("handleClickOption executed successfully", {
+				level: "info",
+				extra: {
+					callType,
+					clientUserId: clientUser?._id,
+					creatorId: creator._id,
+				},
 			});
-			router.push(`/meeting/${storedCallId}`);
-		} else {
-			setIsAuthSheetOpen(true);
+		} catch (error) {
+			// Capture the exception and log it to Sentry
+			Sentry.captureException(error);
+			console.error("Error in handleClickOption:", error);
+		} finally {
+			setIsProcessing(false); // Reset processing state after completion
 		}
 	};
 
 	const handleChatClick = () => {
 		if (clientUser) {
+			setChatReqSent(true);
 			handleChat(creator, clientUser);
 			setSheetOpen(true);
-			sendPushNotification();
+			// sendPushNotification();
 		} else {
 			setIsAuthSheetOpen(true);
 		}
 	};
 
-	const theme = `5px 5px 5px 0px ${creator.themeSelected}`;
+	const theme = `5px 5px 0px 0px ${creator.themeSelected}`;
 
 	if (isAuthSheetOpen && !clientUser)
 		return (
@@ -315,7 +352,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{/* Book Video Call */}
 				{updatedCreator.videoAllowed && (
 					<div
-						className="callOptionContainer"
+						className={`callOptionContainer ${
+							isProcessing ? "opacity-50 cursor-not-allowed" : ""
+						}`}
 						style={{
 							boxShadow: theme,
 						}}
@@ -328,7 +367,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							{video}
 							Book Video Call
 						</div>
-						<span className="text-xs tracking-widest">
+						<span className="text-sm tracking-widest">
 							Rs. {updatedCreator.videoRate}/Min
 						</span>
 					</div>
@@ -337,7 +376,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{/* Book Audio Call */}
 				{updatedCreator.audioAllowed && (
 					<div
-						className="callOptionContainer"
+						className={`callOptionContainer ${
+							isProcessing ? "opacity-50 cursor-not-allowed" : ""
+						}`}
 						style={{
 							boxShadow: theme,
 						}}
@@ -350,7 +391,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							{audio}
 							Book Audio Call
 						</div>
-						<span className="text-xs tracking-widest">
+						<span className="text-sm tracking-widest">
 							Rs. {updatedCreator.audioRate}/Min
 						</span>
 					</div>
@@ -372,7 +413,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							{chat}
 							Chat Now
 						</button>
-						<span className="text-xs tracking-widest">
+						<span className="text-sm tracking-widest">
 							Rs. {updatedCreator.chatRate}/Min
 						</span>
 					</div>
@@ -383,7 +424,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					onOpenChange={async () => {
 						setSheetOpen(false);
 						try {
-							const chatRequestId = localStorage.getItem('chatRequestId')
+							const chatRequestId = localStorage.getItem("chatRequestId");
 							await updateDoc(doc(chatRequestsRef, chatRequestId as string), {
 								status: "ended",
 							});

@@ -96,7 +96,7 @@ const config = {
 				exitToLeft: "exitToLeft 1s ease-in-out forwards",
 				enterFromLeft: "enterFromLeft 1s ease-in-out forwards",
 				exitToRight: "exitToRight 1s ease-in-out forwards",
-				enterFromBottom: "enterFromBottom 1s ease-in-out forwards",
+				enterFromBottom: "enterFromBottom 0.5s ease-in-out forwards",
 				enterFromTop: "enterFromTop 1s ease-in-out forwards",
 			},
 			backgroundImage: {

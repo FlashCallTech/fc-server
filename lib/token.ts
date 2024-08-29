@@ -1,10 +1,14 @@
 import jwt from "jsonwebtoken";
 
-export const generateToken = (phone: string, otp: string): string => {
+export const generateToken = (
+	phone: string,
+	otp: string,
+	sessionId?: string
+): string => {
 	try {
 		const secret = process.env.JWT_KEY || "DEFAULT"; // Fallback value
 
-		const token = jwt.sign({ phone, otp }, secret, {
+		const token = jwt.sign({ phone, otp, sessionId }, secret, {
 			expiresIn: "10m",
 		});
 		return token;

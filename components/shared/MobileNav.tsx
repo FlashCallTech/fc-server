@@ -17,13 +17,14 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const MobileNav = () => {
 	const pathname = usePathname();
-	const { currentUser, userType, handleSignout } = useCurrentUsersContext();
-	const router = useRouter();
+	const { currentUser, userType, handleSignout, setAuthenticationSheetOpen } =
+		useCurrentUsersContext();
+	// const router = useRouter();
 	const sidebarItems =
 		userType === "creator" ? sidebarLinksCreator : sidebarLinks;
 
 	const handleAuthentication = () => {
-		router.push("/");
+		setAuthenticationSheetOpen(false);
 		handleSignout();
 	};
 
@@ -54,7 +55,7 @@ const MobileNav = () => {
 									alt="Profile"
 									width={1000}
 									height={1000}
-									className="rounded-full w-12 h-12 max-w-[56px]"
+									className="rounded-full w-12 h-12 max-w-[56px] object-cover"
 								/>
 								<div className="flex flex-col items-start justify-center text-white">
 									<span className="text-lg capitalize">

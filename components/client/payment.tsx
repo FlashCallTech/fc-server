@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import axios from "axios";
-import Loader from "@/components/shared/Loader";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";

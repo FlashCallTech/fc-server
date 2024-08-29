@@ -12,8 +12,6 @@ import { Switch } from "../ui/switch";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 // Function to reorder the array based on the drag result
 const reorder = (
@@ -291,7 +289,7 @@ const CreatorCallsFeedbacks = () => {
 						{(provided) => (
 							<section
 								className={`grid grid-cols-1 ${
-									feedbacks.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
+									feedbacks.length > 0 && "xl:grid-cols-2"
 								} items-start gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-x-hidden no-scrollbar`}
 								ref={provided.innerRef}
 								{...provided.droppableProps}
@@ -319,7 +317,7 @@ const CreatorCallsFeedbacks = () => {
 													className="w-7 h-7 absolute top-7 left-2"
 												/>
 												<div className="flex h-full w-full items-start justify-between">
-													<div className="w-1/2 flex items-center justify-start gap-4">
+													<div className="w-full flex items-center justify-start gap-4">
 														{feedback?.clientId?.photo && (
 															<Image
 																src={
@@ -346,7 +344,7 @@ const CreatorCallsFeedbacks = () => {
 															</p>
 														</div>
 													</div>
-													<div className="w-1/2 flex flex-col items-end justify-between h-full gap-2">
+													<div className="w-fit flex flex-col items-end justify-between h-full gap-2">
 														{loadingFeedbackId === feedback?.callId ? (
 															<Image
 																src="/icons/loading-circle.svg"
@@ -368,7 +366,7 @@ const CreatorCallsFeedbacks = () => {
 																}
 															/>
 														)}
-														<span className="text-xs text-[#A7A8A1] ">
+														<span className="text-xs text-[#A7A8A1] whitespace-nowrap">
 															{!feedback.showFeedback && "Add to Website"}
 														</span>
 													</div>

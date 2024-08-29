@@ -62,15 +62,15 @@ export const handleTransaction = async ({
 				return;
 			}
 
+			// Remove the activeCallId after a successful transaction
+			localStorage.removeItem("activeCallId");
+
 			// Log the event
 			logEvent(analytics, "call_ended", {
 				callId: call.id,
 				duration: duration,
 				type: call?.type === "default" ? "video" : "audio",
 			});
-
-			// Remove the activeCallId after a successful transaction
-			localStorage.removeItem("activeCallId");
 		} catch (error) {
 			console.error("Error handling transaction:", error);
 			toast({
