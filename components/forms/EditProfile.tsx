@@ -289,7 +289,7 @@ const EditProfile = ({
 							<FormControl>
 								<FileUploader
 									fieldChange={field.onChange}
-									mediaUrl={userData?.photo}
+									mediaUrl={userData?.photo as string}
 									onFileSelect={setSelectedFile}
 								/>
 							</FormControl>

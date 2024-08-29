@@ -1,0 +1,30 @@
+import * as Sentry from "@sentry/nextjs";
+
+
+Sentry.captureMessage("handleClickOption executed successfully", {
+				level: "info",
+				extra: {
+					callType,
+					clientUserId: clientUser?._id,
+					creatorId: creator._id,
+				},
+			});
+
+Sentry.captureException(error, {
+      tags: {
+    // You can add custom tags here
+    component: "HomePage",
+    action: "call_click",
+  },
+  user: {
+    // You can include user information
+    id: clientUser?._id,
+    username: clientUser?.username,
+  },
+  extra: {
+    // Additional data to provide more context
+    callType: callType,
+    creatorId: creator._id,
+    clientIp: "192.168.1.1", // Example IP address
+  },
+}); 

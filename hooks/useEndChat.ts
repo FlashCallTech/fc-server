@@ -2,7 +2,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { analytics, db } from "@/lib/firebase";
 import { creatorUser } from "@/types";
 import { logEvent } from "firebase/analytics";
-import { collection, doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -29,6 +29,9 @@ interface Chat {
 }
 
 const useEndChat = () => {
+	const router = useRouter();
+	const { currentUser } = useCurrentUsersContext();
+	const { chatId } = useParams();
 	const [user2, setUser2] = useState<User2>();
 	const [chat, setChat] = useState<Chat | undefined>();
 	const [chatEnded, setChatEnded] = useState(false);
@@ -36,13 +39,7 @@ const useEndChat = () => {
 	const [endedAt, setEndedAt] = useState<number>();
 	const [startedAt, setStartedAt] = useState<number>();
 	const [loading, setLoading] = useState(false);
-
-	const { currentUser } = useCurrentUsersContext();
-	const { chatId } = useParams();
-
-	const router = useRouter();
-	const hasChatEnded = useRef(false);
-	
+	const hasCHatEnded = useRef(false);
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
@@ -71,10 +68,10 @@ const useEndChat = () => {
 	}, [chatId]);
 
 	useEffect(() => {
-		if (hasChatEnded.current === true) return;
+		if (hasCHatEnded.current === true) return;
 
 		if (chatEnded) {
-			hasChatEnded.current = true;
+			hasCHatEnded.current = true;
 			router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
 		}
 	}, [chatEnded]);
@@ -124,22 +121,6 @@ const useEndChat = () => {
 			await updateDoc(doc(db, "userchats", user2?.creatorId as string), {
 				online: false,
 			});
-
-			const ChatsDocRef = doc(db, "chats", chatId as string);
-
-			const chatDocSnapshot = await getDoc(ChatsDocRef)
-			if(chatDocSnapshot){
-				const requestId = chatDocSnapshot.data()?.request;
-				if(requestId){
-					const requestDocRef = doc(db, 'chatRequests', requestId);
-					const requestDocSnapshot = await getDoc(requestDocRef);
-					if(requestDocSnapshot){
-						await updateDoc(doc(db, 'chatRequests', requestId), {
-							status: "ended"
-						})
-					}
-				}
-			}
 
 			localStorage.removeItem("chatRequestId");
 

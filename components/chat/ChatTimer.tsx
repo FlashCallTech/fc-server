@@ -1,8 +1,10 @@
 import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 
+interface Props{
+    endCall: () => void
+}
 
-
-const ChatTimer: React.FC = () => {
+const ChatTimer: React.FC<Props> = (endCall) => {
     const { timeLeft } = useChatTimerContext();
     const timeLeftInSeconds = parseFloat(timeLeft);
 	const isLoading = isNaN(timeLeftInSeconds) || timeLeftInSeconds <= 0;

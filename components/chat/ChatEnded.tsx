@@ -8,9 +8,9 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const ChatEnded = () => {
 	const [isFeedbackOpen, setIsFeedbackOpen] = useState(true);
+	const router = useRouter();
 	const { chatId, clientId } = useParams();
 	const { currentUser } = useCurrentUsersContext();
-	const router = useRouter();
 
 	useEffect(() => {
 		logEvent(analytics, "feedback_shown", {

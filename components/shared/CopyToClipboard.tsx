@@ -2,7 +2,21 @@ import Image from "next/image";
 import React from "react";
 import { useToast } from "../ui/use-toast";
 
-const CopyToClipboard = ({ link }: { link: string }) => {
+const CopyToClipboard = ({
+	link,
+	username,
+	profession,
+	gender,
+	firstName,
+	lastName,
+}: {
+	link: string;
+	username: string;
+	profession: string;
+	gender: string;
+	firstName: string;
+	lastName: string;
+}) => {
 	const { toast } = useToast();
 	const copyToClipboard = (text: string) => {
 		navigator.clipboard
@@ -17,17 +31,34 @@ const CopyToClipboard = ({ link }: { link: string }) => {
 			});
 	};
 
-	const shareLink = () => {
+	const fullName = `${firstName || ""} ${lastName || ""}`.trim() || username;
+
+	const shareLink = async () => {
+		const pronounPart = gender
+			? `I had a wonderful session with ${
+					gender === "other" ? "them" : gender === "male" ? "him" : "her"
+			  }.`
+			: `I had a wonderful session with ${fullName}.`;
+		const message = `Hi 👋,\n\n${fullName} is an amazing ${profession}. ${pronounPart}\n\nYou should consult with ${
+			gender
+				? `${gender === "other" ? "them" : gender === "male" ? "him" : "her"}`
+				: "them"
+		} too.\n\nClick here to talk to ${fullName}.👇\n`;
+
 		if (navigator.share) {
-			navigator
-				.share({
-					title: "Check out this link",
-					text: "Here's a link to my Creator's Page:",
+			try {
+				await navigator.share({
+					title: `Consult with ${fullName}`,
+					text: message,
 					url: link,
-				})
-				.catch((err) => {
-					console.error("Failed to share: ", err);
 				});
+			} catch (err) {
+				console.error("Failed to share: ", err);
+				toast({
+					title: "Failed to share",
+					description: `There was an error sharing the content. Please try again.`,
+				});
+			}
 		} else {
 			toast({
 				title: "Sharing not supported",

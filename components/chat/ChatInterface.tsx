@@ -20,32 +20,12 @@ import useEndChat from "@/hooks/useEndChat";
 import ContentLoading from "../shared/ContentLoading";
 import RechargeAndTip from "./RechargeAndTip";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import CreatorChatTimer from "../creator/CreatorChatTimer";
 
 const ChatInterface: React.FC = () => {
-
-	const [text, setText] = useState("");
-	const [isImgUploading, setIsImgUploading] = useState(false);
-	const [isAudioUploading, setIsAudioUploading] = useState(false);
-	const [showDialog, setShowDialog] = useState(false);
-	const [receiverId, setReceiverId] = useState(null);
-	const [img, setImg] = useState({
-		file: null,
-		url: "",
-	});
-	const [audio, setAudio] = useState<{ file: Blob | null; url: string }>({
-		file: null,
-		url: "",
-	});
-	const [messages, setMessages] = useState<{ text: string | null; img: string | null; audio: string | null }[]>(
-		[],
-	);
+	const { handleEnd, chat, markMessagesAsSeen, loading } = useEndChat();
+	const { currentUser } = useCurrentUsersContext();
 
 	useUserStatus();
-
-	const { handleEnd, chat, markMessagesAsSeen, loading } = useEndChat();
-	const { currentUser, userType } = useCurrentUsersContext();
-	const { user2, chatId } = useEndChat();
 	const {
 		audioStream,
 		isRecording,
@@ -56,8 +36,24 @@ const ChatInterface: React.FC = () => {
 		mediaRecorderRef,
 		setIsRecording,
 	} = useMediaRecorder();
-
+	const { user2, chatId } = useEndChat();
+	const [text, setText] = useState("");
+	const [isImgUploading, setIsImgUploading] = useState(false);
+	const [isAudioUploading, setIsAudioUploading] = useState(false);
+	const [img, setImg] = useState({
+		file: null,
+		url: "",
+	});
+	const [showDialog, setShowDialog] = useState(false);
+	const [audio, setAudio] = useState<{ file: Blob | null; url: string }>({
+		file: null,
+		url: "",
+	});
+	const [receiverId, setReceiverId] = useState(null);
 	const audioContext = new AudioContext();
+	const [messages, setMessages] = useState<
+		{ text: string | null; img: string | null; audio: string | null }[]
+	>([]);
 
 	useEffect(() => {
 		updateDoc(doc(db, "chats", chatId as string), {
@@ -281,7 +277,8 @@ const ChatInterface: React.FC = () => {
 	};
 
 	const endCall = async () => {
-		setShowDialog(true);
+		setShowDialog(true); // Show the confirmation dialog
+		// setAnyModalOpen(true);
 	};
 
 	const handleDecisionDialog = async () => {
@@ -290,7 +287,11 @@ const ChatInterface: React.FC = () => {
 			return <ContentLoading />;
 		}
 		setShowDialog(false);
-
+		// isMeetingOwner && router.push(`/feedback/${call?.id}/${totalTimeUtilized}`);
+		// toast({
+		// 	title: "Call Ended",
+		// 	description: "The call Ended. Redirecting ...",
+		// });
 	};
 
 	const handleCloseDialog = () => {
@@ -344,9 +345,7 @@ const ChatInterface: React.FC = () => {
 								setShowDialog={handleCloseDialog}
 							/>
 						)}
-						{userType === "client" && <ChatTimer />}
-						{userType === "creator" && <CreatorChatTimer chatId={chatId as string} />}
-
+						<ChatTimer endCall={endCall} />
 						<div className="w-1/4 mx-auto text-center bg-[rgba(255,255,255,0.24)] py-1 text-white text-xs leading-6 font-bold rounded-lg mt-2 mb-4">
 							07 Dec 2024
 						</div>

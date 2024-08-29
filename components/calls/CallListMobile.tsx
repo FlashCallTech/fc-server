@@ -10,59 +10,55 @@ import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import FeedbackCheck from "../feedbacks/FeedbackCheck";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { useInView } from "react-intersection-observer";
 
 const CallListMobile = () => {
 	const [calls, setCalls] = useState<RegisterCallParams[]>([]);
-	const [callsCount, setCallsCount] = useState(10);
+	const [page, setPage] = useState(1); // Track current page
 	const [loading, setLoading] = useState(true);
+	const [hasMore, setHasMore] = useState(true); // Track if there are more calls to load
 	const { currentUser } = useCurrentUsersContext();
 	const pathname = usePathname();
+	const { ref, inView } = useInView();
 
 	useEffect(() => {
-		const handleScroll = () => {
-			if (
-				window.innerHeight + window.scrollY >=
-				document.body.offsetHeight - 2
-			) {
-				setCallsCount((prevCount) => prevCount + 6);
-			}
-		};
+		const loadMoreCalls = async () => {
+			if (!hasMore || !currentUser) return;
 
-		window.addEventListener("scroll", handleScroll);
-		return () => {
-			window.removeEventListener("scroll", handleScroll);
-		};
-	}, []);
-
-	useEffect(() => {
-		const getCalls = async () => {
 			try {
 				const response = await fetch(
-					`/api/v1/calls/getUserCalls?userId=${String(currentUser?._id)}`
+					`/api/v1/calls/getUserCalls?userId=${String(
+						currentUser?._id
+					)}&page=${page}&limit=10`
 				);
 				const data = await response.json();
-				setCalls(data);
+				console.log(data);
+				// If no more data, stop further API calls
+				if (data.length === 0) {
+					setHasMore(false);
+				} else {
+					setCalls((prevCalls) => [...prevCalls, ...data]);
+					setPage((prevPage) => prevPage + 1); // Increment page number
+				}
 			} catch (error) {
-				console.warn(error);
+				console.log(error);
 			} finally {
 				setLoading(false);
 			}
 		};
 
-		if (currentUser) {
-			getCalls();
-		}
-	}, [pathname]);
+		loadMoreCalls();
+	}, [inView, currentUser]); // Fetch more calls when user scrolls into view
 
-	const visibleCalls = calls.slice(0, callsCount);
-
-	if (loading) {
+	if (loading && calls.length === 0) {
 		return (
 			<section className="w-full h-full flex items-center justify-center">
 				<SinglePostLoader />
 			</section>
 		);
 	}
+
+	console.log(hasMore);
 
 	return (
 		<>
@@ -72,7 +68,7 @@ const CallListMobile = () => {
 						calls.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
 					} items-center gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-x-hidden no-scrollbar`}
 				>
-					{visibleCalls.map((call, index) => {
+					{calls.map((call, index) => {
 						const formattedDate = formatDateTime(call.startedAt as Date);
 						return (
 							<div
@@ -153,6 +149,29 @@ const CallListMobile = () => {
 							</div>
 						);
 					})}
+					{/* Ref for infinite scroll trigger */}
+					{hasMore && (
+						<div
+							ref={ref}
+							className="w-full h-16 flex items-center justify-center"
+						>
+							{loading && (
+								<Image
+									src="/icons/loading-circle.svg"
+									alt="Loading..."
+									width={50}
+									height={50}
+									className="mx-auto invert my-4"
+								/>
+							)}
+						</div>
+					)}
+
+					{!hasMore && (
+						<div className="text-center text-gray-500 py-4">
+							You have reached the end of the list.
+						</div>
+					)}
 				</section>
 			) : (
 				<div className="flex flex-col w-full items-center justify-center h-full gap-7">

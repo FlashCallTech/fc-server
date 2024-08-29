@@ -21,6 +21,7 @@ const Page = () => {
 	const { updateWalletBalance } = useWalletBalanceContext();
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
+	const clientId = user2?.clientId;
 	const router = useRouter();
 	let isTabClosing = false;
 
@@ -46,8 +47,7 @@ const Page = () => {
 		) {
 			handleTransaction({
 				duration: duration ? duration?.toString() : "",
-				clientId: queryParams.clientId as string,
-				creatorId: queryParams.creatorId as string,
+				clientId: clientId,
 				chatId: chatId as string,
 				updateWalletBalance,
 				router,

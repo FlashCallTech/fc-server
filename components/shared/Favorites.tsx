@@ -68,17 +68,7 @@ const Favorites = ({
 						markedFavorite ? "bg-green-1" : "bg-[#232323]/35"
 					} hover:bg-green-1 flex gap-2 items-center`}
 					onClick={handleToggleFavorite}
-					// onMouseEnter={() => setShowText(true)}
-					// onMouseLeave={() => setShowText(false)}
 				>
-					{/* {showText && (
-						<p className="text-white font-semibold">{`${
-							markedFavorite
-								? "Remove as Favorite"
-								: "Add to Favorites"
-						} `}</p>
-					)} */}
-
 					{!addingFavorite ? (
 						!markedFavorite ? (
 							<svg

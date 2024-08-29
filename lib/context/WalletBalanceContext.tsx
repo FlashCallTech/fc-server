@@ -36,30 +36,38 @@ export const WalletBalanceProvider = ({
 	children: ReactNode;
 }) => {
 	const [walletBalance, setWalletBalance] = useState<number>(-1);
-	const { currentUser, userType } = useCurrentUsersContext();
+	const { currentUser, userType, authenticationSheetOpen } =
+		useCurrentUsersContext();
 	const isCreator = userType === "creator";
 
-	const fetchCurrentUserWalletBalance = async () => {
-		try {
-			const response = isCreator
-				? await getCreatorById(currentUser?._id as string)
-				: await getUserById(currentUser?._id as string);
-			setWalletBalance(response.walletBalance || 0);
-		} catch (error) {
-			console.error("Error fetching current user:", error);
+	const fetchAndSetWalletBalance = async () => {
+		if (currentUser?._id) {
+			try {
+				const response = isCreator
+					? await getCreatorById(currentUser._id)
+					: await getUserById(currentUser._id);
+				setWalletBalance(response.walletBalance ?? 0);
+			} catch (error) {
+				console.error("Error fetching current user:", error);
+				setWalletBalance(0);
+			}
 		}
 	};
 
 	useEffect(() => {
-		if (currentUser) {
-			fetchCurrentUserWalletBalance();
-		}
-	}, [userType]);
+		const handler = setTimeout(() => {
+			if (currentUser?._id) {
+				fetchAndSetWalletBalance();
+			}
+		}, 300);
+
+		return () => {
+			clearTimeout(handler);
+		};
+	}, [userType, authenticationSheetOpen, currentUser?._id]);
 
 	const updateWalletBalance = async () => {
-		if (currentUser) {
-			await fetchCurrentUserWalletBalance();
-		}
+		await fetchAndSetWalletBalance();
 	};
 
 	return (

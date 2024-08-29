@@ -84,23 +84,16 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		localStorage.removeItem("creatorURL");
 		setClientUser(null);
 		setCreatorUser(null);
-
-		// toast({
-		// 	variant: "destructive",
-		// 	title: "User Not Found",
-		// 	description: "Try Authenticating Again ...",
-		// });
 	};
 
 	// Function to fetch the current user
 	const fetchCurrentUser = async () => {
-		
 		try {
-			// const storedUserType = localStorage.getItem("userType");
+			const storedUserType = localStorage.getItem("userType");
 			const authToken = localStorage.getItem("authToken");
 			const userId = localStorage.getItem("currentUserID");
 
-			// setUserType(storedUserType);
+			setUserType(storedUserType);
 
 			if (authToken && isTokenValid(authToken)) {
 				const decodedToken: any = jwt.decode(authToken);
@@ -111,9 +104,9 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					phone: phoneNumber,
 				});
 				const user = response.data;
-				console.log(user)
+
 				if (user) {
-					if (userType === "creator") {
+					if (storedUserType === "creator") {
 						setCreatorUser(user);
 						setClientUser(null);
 					} else {
@@ -128,7 +121,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					console.error("User not found with phone number:", phoneNumber);
 				}
 			} else if (authToken && userId) {
-				const isCreator = userType === "creator";
+				const isCreator = storedUserType === "creator";
 
 				if (isCreator) {
 					const response = await getCreatorById(userId);
@@ -144,11 +137,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			}
 		} catch (error) {
 			console.error("Error fetching current user:", error);
-			// toast({
-			// 	variant: "destructive",
-			// 	title: "User Not Found",
-			// 	description: "Try Authenticating Again ...",
-			// });
 			handleSignout();
 		}
 	};
@@ -156,13 +144,11 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	// Call fetchCurrentUser when the component mounts
 	useEffect(() => {
 		const authToken = localStorage.getItem("authToken");
-		const storedUserType = localStorage.getItem("userType");
-		setUserType(storedUserType);
 
 		if (authToken && !isTokenValid(authToken)) {
 			handleSignout();
 		} else {
-			if(userType) fetchCurrentUser();
+			fetchCurrentUser();
 		}
 	}, [userType]);
 
@@ -183,7 +169,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					title: "Greetings Friend",
 					description: "Complete Your Profile Details...",
 				});
-			}, 2000);
+			}, 1000);
 		}
 	}, [router]);
 
@@ -207,6 +193,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					if (doc.exists()) {
 						const data = doc.data();
 						if (data?.token && data.token !== authToken) {
+							console.log(data.token, authToken);
 							handleSignout();
 							toast({
 								title: "Another Session Detected",

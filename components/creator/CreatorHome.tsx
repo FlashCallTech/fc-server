@@ -48,7 +48,7 @@ const CreatorHome = () => {
 	useEffect(() => {
 		setTimeout(() => {
 			setLoading(false);
-		}, 500);
+		}, 300);
 	}, []);
 
 	useEffect(() => {
@@ -70,7 +70,7 @@ const CreatorHome = () => {
 				chat: creatorUser?.chatAllowed,
 			});
 		}
-	}, []);
+	}, [creatorUser?._id]);
 
 	const fetchTransactions = async () => {
 		try {
@@ -104,11 +104,9 @@ const CreatorHome = () => {
 
 			return () => unsubscribe();
 		}
-	}, []);
+	}, [creatorUser?._id]);
 
-	const creatorLink = `https://app.flashcall.me/${creatorUser?.username}${
-		creatorUser?.creatorId ? `/${creatorUser?.creatorId}` : ""
-	}`;
+	const creatorLink = `https://app.flashcall.me/${creatorUser?.username}`;
 
 	const theme = creatorUser?.themeSelected;
 
@@ -289,7 +287,16 @@ const CreatorHome = () => {
 					</section>
 				</div>
 				<div className="flex-grow flex flex-col gap-4 bg-gray-50 rounded-t-3xl animate-enterFromBottom p-4">
-					<CopyToClipboard link={creatorLink} />
+					<CopyToClipboard
+						link={creatorLink}
+						username={
+							creatorUser.username ? creatorUser.username : creatorUser.phone
+						}
+						profession={creatorUser.profession ?? "Astrologer"}
+						gender={creatorUser.gender ?? ""}
+						firstName={creatorUser.firstName}
+						lastName={creatorUser.lastName}
+					/>
 
 					<section className="flex flex-row justify-between border rounded-lg bg-white p-2 shadow-sm">
 						<div className="flex flex-row pl-2 gap-3">

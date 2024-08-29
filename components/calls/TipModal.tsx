@@ -108,7 +108,7 @@ const TipModal = ({
 						body: JSON.stringify({
 							userId: creatorId,
 							userType: "Creator",
-							amount: rechargeAmount,
+							amount: (parseInt(rechargeAmount) * 0.8).toFixed(2),
 						}),
 						headers: { "Content-Type": "application/json" },
 					}),
