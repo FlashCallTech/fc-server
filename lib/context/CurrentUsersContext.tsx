@@ -84,12 +84,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		localStorage.removeItem("creatorURL");
 		setClientUser(null);
 		setCreatorUser(null);
-
-		// toast({
-		// 	variant: "destructive",
-		// 	title: "User Not Found",
-		// 	description: "Try Authenticating Again ...",
-		// });
 	};
 
 	// Function to fetch the current user
@@ -143,11 +137,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			}
 		} catch (error) {
 			console.error("Error fetching current user:", error);
-			// toast({
-			// 	variant: "destructive",
-			// 	title: "User Not Found",
-			// 	description: "Try Authenticating Again ...",
-			// });
 			handleSignout();
 		}
 	};
@@ -180,7 +169,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					title: "Greetings Friend",
 					description: "Complete Your Profile Details...",
 				});
-			}, 2000);
+			}, 1000);
 		}
 	}, [router]);
 
@@ -204,6 +193,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					if (doc.exists()) {
 						const data = doc.data();
 						if (data?.token && data.token !== authToken) {
+							console.log(data.token, authToken);
 							handleSignout();
 							toast({
 								title: "Another Session Detected",

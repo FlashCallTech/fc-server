@@ -76,7 +76,7 @@ const OTPVerification = ({
 
 	return (
 		<>
-			<div className="animate-enterFromTop flex flex-col items-center justify-enter gap-2">
+			<div className="flex flex-col items-center justify-enter gap-2">
 				<h2 className="text-lg font-semibold">Enter verification code</h2>
 				<p className="text-xs text-gray-500 mb-4">
 					We sent a 6-digit code to +91 {phoneNumber}.{" "}

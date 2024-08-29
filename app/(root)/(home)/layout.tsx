@@ -4,30 +4,29 @@ import { Metadata } from "next";
 import React, { ReactNode } from "react";
 
 export const metadata: Metadata = {
-	title: "FlashCall",
-	description: "Application Connecting People",
+	title: "Flashcall.me",
+	description: "Book your first consultation",
 	icons: {
 		icon: "/icons/logoDarkCircle.png",
 	},
 
 	openGraph: {
-		type: "article",
+		type: "website",
 		url: "https://app.flashcall.me",
 		title: "FlashCall",
-		description: "Application Connecting People",
-		images: "/icons/logoDarkCircle.png",
+		description: "Book your first consultation",
+		images: [
+			{
+				url: "/icons/metadataBg.png",
+				width: 800,
+				height: 600,
+				alt: "FlashCall Logo",
+			},
+		],
 		siteName: "Flashcall.me",
 		locale: "en_US",
 	},
 
-	twitter: {
-		card: "summary_large_image",
-		site: "https://app.flashcall.me",
-		title: "FlashCall",
-		description: "Application Connecting People",
-		images: "/icons/logoDarkCircle.png",
-		creator: "@johndoe",
-	},
 	metadataBase:
 		process.env.NODE_ENV === "production"
 			? new URL("https://app.flashcall.me")

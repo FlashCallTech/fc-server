@@ -1,3 +1,4 @@
+// ChatTimerContext.tsx
 import React, {
 	createContext,
 	useContext,
@@ -5,14 +6,12 @@ import React, {
 	useEffect,
 	ReactNode,
 } from "react";
+import { useWalletBalanceContext } from "./WalletBalanceContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { db } from "../firebase";
 import useEndChat from "@/hooks/useEndChat";
 import { creatorUser } from "@/types";
 import { useCurrentUsersContext } from "./CurrentUsersContext";
-import { useWalletBalanceContext } from "./WalletBalanceContext";
 
 interface ChatTimerContextProps {
 	timeLeft: string;
@@ -25,12 +24,15 @@ interface ChatTimerContextProps {
 	totalTimeUtilized: number;
 	chatRatePerMinute: number;
 }
+
 interface ChatTimerProviderProps {
 	children: ReactNode;
 	clientId: string;
 	creatorId: string;
 }
+
 const ChatTimerContext = createContext<ChatTimerContextProps | null>(null);
+
 export const useChatTimerContext = () => {
 	const context = useContext(ChatTimerContext);
 	if (!context) {
@@ -40,6 +42,7 @@ export const useChatTimerContext = () => {
 	}
 	return context;
 };
+
 const formatTimeLeft = (timeLeft: number): string => {
 	const minutes = Math.floor(timeLeft);
 	const seconds = Math.floor((timeLeft - minutes) * 60);
@@ -47,17 +50,19 @@ const formatTimeLeft = (timeLeft: number): string => {
 	const paddedSeconds = seconds.toString().padStart(2, "0");
 	return `${paddedMinutes}:${paddedSeconds}`;
 };
+
 export const ChatTimerProvider = ({
 	children,
 	clientId,
 	creatorId,
 }: ChatTimerProviderProps) => {
 	const { toast } = useToast();
+	// const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
-	const [timeLeft, setTimeLeft] = useState(0);
-	const [maxChatDuration, setMaxChatDuration] = useState(0);
 	const { walletBalance } = useWalletBalanceContext();
-	const { clientUser } = useCurrentUsersContext();
+	const [timeLeft, setTimeLeft] = useState(0);
+	const { currentUser } = useCurrentUsersContext();
+
 	const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
 	const [hasLowBalance, setHasLowBalance] = useState(false);
@@ -66,6 +71,7 @@ export const ChatTimerProvider = ({
 	const lowBalanceThreshold = 300; // Threshold in seconds
 	const router = useRouter();
 	const { chatId, user2, handleEnd, startedAt } = useEndChat();
+
 	const endChat = async () => {
 		toast({
 			title: "Chat Ended",
@@ -73,54 +79,26 @@ export const ChatTimerProvider = ({
 		});
 		router.push("/");
 	};
+
 	const pauseTimer = () => setIsTimerRunning(false);
 	const resumeTimer = () => setIsTimerRunning(true);
+
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
 			const parsedCreator: creatorUser = JSON.parse(storedCreator);
 			if (parsedCreator.chatRate) {
-				setChatRatePerMinute(parseInt(parsedCreator.audioRate, 10));
+				setChatRatePerMinute(parseInt(parsedCreator.chatRate, 10));
 			}
 		}
 	}, []);
 
 	useEffect(() => {
-		if (!chatId) {
-			return; // Exit early if not the meeting owner or callId is undefined
-		}
 		const ratePerMinute = chatRatePerMinute;
 		let maxChatDuration = (walletBalance / ratePerMinute) * 60; // in seconds
 		maxChatDuration = maxChatDuration > 3600 ? 3600 : maxChatDuration; // Limit to 60 minutes (3600 seconds)
-		if (!startedAt) {
-			setTimeLeft(maxChatDuration);
-			return;
-		}
 
-		const chatStartedTime = new Date(startedAt);
-
-		const updateFirestoreTimer = async (
-			timeLeft: number,
-			timeUtilized: number
-		) => {
-			try {
-				const chatDocRef = doc(db, "chats", chatId as string);
-				const callDoc = await getDoc(chatDocRef);
-				if (callDoc.exists()) {
-					await updateDoc(chatDocRef, {
-						timeLeft,
-						timeUtilized,
-					});
-				} else {
-					await setDoc(chatDocRef, {
-						timeLeft,
-						timeUtilized,
-					});
-				}
-			} catch (error) {
-				console.error("Error updating Firestore timer: ", error);
-			}
-		};
+		const chatStartedTime = new Date(startedAt!);
 
 		const intervalId = setInterval(() => {
 			if (isTimerRunning) {
@@ -128,22 +106,19 @@ export const ChatTimerProvider = ({
 				const timeUtilized = (now.getTime() - chatStartedTime.getTime()) / 1000; // Time in seconds
 
 				const newTimeLeft = maxChatDuration - timeUtilized;
-				const clampedTimeLeft = newTimeLeft > 0 ? newTimeLeft : 0;
 
-				setTimeLeft(clampedTimeLeft);
+				setTimeLeft(newTimeLeft > 0 ? newTimeLeft : 0);
 				setTotalTimeUtilized(timeUtilized);
-				updateFirestoreTimer(clampedTimeLeft, timeUtilized);
 
-
-				if (clampedTimeLeft <= 0) {
+				if (newTimeLeft <= 0) {
 					clearInterval(intervalId);
-					if (clientId === clientUser?._id) {
+					if (clientId === currentUser?._id) {
 						handleEnd(chatId as string, user2);
 					}
 				}
 
 				if (
-					clientId === clientUser?._id &&
+					clientId === currentUser?._id &&
 					newTimeLeft <= lowBalanceThreshold &&
 					newTimeLeft > 0
 				) {
@@ -155,12 +130,13 @@ export const ChatTimerProvider = ({
 							description: "Client's wallet balance is low.",
 						});
 					}
-				} else if (clampedTimeLeft > lowBalanceThreshold) {
+				} else if (newTimeLeft > lowBalanceThreshold) {
 					setHasLowBalance(false);
 					setLowBalanceNotified(false);
 				}
 			}
 		}, 1000);
+
 		return () => clearInterval(intervalId);
 	}, [
 		isTimerRunning,
@@ -170,9 +146,7 @@ export const ChatTimerProvider = ({
 		lowBalanceThreshold,
 		endChat,
 		toast,
-		// clientWalletBalance,
-		maxChatDuration,
-		startedAt,
+		walletBalance,
 	]);
 
 	return (

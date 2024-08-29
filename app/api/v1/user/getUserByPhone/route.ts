@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
 	try {
 		const { phone } = await request.json();
-		const formattedPhone = `+91${phone}`;
+		const formattedPhone = phone.startsWith("+91") ? phone : `+91${phone}`;
 		const user = await getUserByPhone(formattedPhone);
 		if (user) {
 			return NextResponse.json(user);

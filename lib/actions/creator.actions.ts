@@ -4,8 +4,6 @@ import { revalidatePath } from "next/cache";
 
 import { connectToDatabase } from "@/lib/database";
 
-import { handleError } from "@/lib/utils";
-
 import { CreateCreatorParams, LinkType, UpdateCreatorParams } from "@/types";
 import Creator from "../database/models/creator.model";
 
@@ -42,6 +40,21 @@ export async function getUsers() {
 	}
 }
 
+export async function getUsersPaginated(offset = 0, limit = 2) {
+	try {
+		await connectToDatabase(); // Ensure this properly connects to the database
+
+		// Fetch users with pagination using skip and limit
+		const users = await Creator.find().skip(offset).limit(limit).lean(); // Use lean() to get plain JavaScript objects
+
+		// Return the fetched users or an empty array if none are found
+		return users.length > 0 ? JSON.parse(JSON.stringify(users)) : [];
+	} catch (error) {
+		console.error("Failed to fetch users:", error);
+		throw new Error("Failed to fetch users");
+	}
+}
+
 export async function getCreatorById(userId: string) {
 	try {
 		await connectToDatabase();
@@ -75,6 +88,7 @@ export async function getUserByUsername(username: string) {
 		const user = await Creator.find({ username });
 
 		if (!user) throw new Error("User not found");
+
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
 		console.log(error);

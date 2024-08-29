@@ -247,7 +247,15 @@
 	}
 
 	.active {
-		@apply min-w-full h-full grid grid-cols-1 gap-5 items-center text-center justify-center px-7 py-14;
+		@apply h-full min-w-[95%] flex translate-x-0 items-center text-center justify-center px-7 py-5 z-20;
+	}
+
+	.next {
+		@apply -translate-x-[10%] w-full;
+	}
+
+	.previous {
+		@apply translate-x-[10%] w-full;
 	}
 
 	.callOptionContainer {
@@ -295,4 +303,36 @@
 	.creatorsGirdHighlight {
 		@apply absolute bottom-0 w-full bg-gradient-to-t from-black to-black/20 p-4 rounded-xl;
 	}
+}
+
+/* Keyframes */
+
+@keyframes slide-in {
+	from {
+		transform: translateX(100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+@keyframes slide-out {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-100%);
+	}
+}
+
+.transition-slide-active {
+	animation: slide-in 0.5s ease-in-out forwards;
+}
+
+.transition-slide-next {
+	animation: slide-in 0.5s ease-in-out backwards;
+}
+
+.transition-slide-previous {
+	animation: slide-out 0.5s ease-in-out backwards;
 }

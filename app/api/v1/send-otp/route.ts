@@ -1,12 +1,5 @@
 // sendOTP.ts
 import { NextRequest, NextResponse } from "next/server";
-import { Twilio } from "twilio";
-import { generateToken } from "@/lib/token";
-
-const client = new Twilio(
-	process.env.TWILIO_ACCOUNT_SID!,
-	process.env.TWILIO_AUTH_TOKEN!
-);
 
 export async function POST(req: NextRequest) {
 	try {
@@ -20,17 +13,29 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
-		const otp = Math.floor(100000 + Math.random() * 900000).toString();
+		const apiKey = process.env.TWOFACTOR_API_KEY!;
+		if (!apiKey) {
+			return NextResponse.json(
+				{ error: "2Factor API Key missing" },
+				{ status: 400 }
+			);
+		}
+		const otpTemplateName = "OTP1";
 
-		await client.messages.create({
-			body: `${otp} is your one time password(OTP) to log in to FLASHCALL. Please enter the OTP to proceed. (valid for next 3 minutes.)`,
-			from: process.env.TWILIO_PHONE_NUMBER!,
-			to: fullPhoneNumber,
-		});
+		const response = await fetch(
+			`https://2factor.in/API/V1/${apiKey}/SMS/${fullPhoneNumber}/AUTOGEN2/${otpTemplateName}`
+		);
 
-		const token = generateToken(fullPhoneNumber, otp);
+		const data = await response.json();
 
-		return NextResponse.json({ message: "OTP sent successfully", token });
+		if (response.ok && data.Status === "Success") {
+			// Return a success response with the OTP
+			return NextResponse.json({
+				message: "OTP sent successfully",
+			});
+		} else {
+			return NextResponse.json({ error: data.Details }, { status: 500 });
+		}
 	} catch (error) {
 		return NextResponse.json({ error }, { status: 500 });
 	}
