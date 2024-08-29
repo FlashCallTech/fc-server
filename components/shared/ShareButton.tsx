@@ -2,32 +2,65 @@ import React from "react";
 import { Button } from "../ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useToast } from "../ui/use-toast";
-const ShareButton = () => {
+
+const ShareButton = ({
+	username,
+	profession,
+	gender,
+	firstName,
+	lastName,
+}: {
+	username: string;
+	profession: string;
+	gender: string;
+	firstName: string;
+	lastName: string;
+}) => {
 	const { toast } = useToast();
-	const handleShareClick = () => {
-		const url = window.location.href;
-		navigator.clipboard
-			.writeText(url)
-			.then(() => {
-				toast({
-					title: "Copied to Clipboard",
-					description: `Creator's Profile Link Copied`,
+	const fullName = `${firstName || ""} ${lastName || ""}`.trim() || username;
+
+	const shareLink = async () => {
+		const link = window.location.href;
+		const pronounPart = gender
+			? `I had a wonderful session with ${
+					gender === "other" ? "them" : gender === "male" ? "him" : "her"
+			  }.`
+			: `I had a wonderful session with ${fullName}.`;
+		const message = `Hi 👋,\n\n${fullName} is an amazing ${profession}. ${pronounPart}\n\nYou should consult with ${
+			gender
+				? `${gender === "other" ? "them" : gender === "male" ? "him" : "her"}`
+				: "them"
+		} too.\n\nClick here to talk to ${fullName}.👇\n`;
+
+		if (navigator.share) {
+			try {
+				await navigator.share({
+					title: `Consult with ${fullName}`,
+					text: message,
+					url: link,
 				});
-			})
-			.catch((err) => {
-				console.error("Failed to copy URL: ", err);
+			} catch (err) {
+				console.error("Failed to share: ", err);
 				toast({
-					title: "Failed to Copy Link",
-					description: `Please Try Again`,
+					title: "Failed to share",
+					description: `There was an error sharing the content. Please try again.`,
 				});
+			}
+		} else {
+			toast({
+				title: "Sharing not supported",
+				description:
+					"Your device or browser does not support the share feature.",
 			});
+		}
 	};
+
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<Button
-					className={` px-3 py-6 rounded-xl transition-all duration-300  hover:scale-105 group bg-[#232323]/35 hover:bg-green-1 flex gap-2 items-center`}
-					onClick={handleShareClick}
+					className={`px-3 py-6 rounded-xl transition-all duration-300 hover:scale-105 group bg-[#232323]/35 hover:bg-green-1 flex gap-2 items-center`}
+					onClick={shareLink}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import { useToast } from "../ui/use-toast";
 

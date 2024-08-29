@@ -3,32 +3,40 @@ import { creatorUser } from "@/types";
 import { useEffect, useState } from "react";
 
 const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
-	const [isLoading, setIsLoading] = useState(true);
-
-	useEffect(() => {
-		setTimeout(() => {
-			setIsLoading(false);
-		}, 500);
-	}, []);
+	const [isImageLoaded, setIsImageLoaded] = useState(false);
 
 	const imageSrc =
 		creator.photo && isValidUrl(creator.photo)
 			? creator.photo
 			: "/images/defaultProfileImage.png";
 
+	useEffect(() => {
+		const img = new Image();
+		img.src = imageSrc;
+
+		img.onload = () => {
+			setIsImageLoaded(true);
+		};
+
+		img.onerror = () => {
+			setIsImageLoaded(true);
+		};
+	}, [creator.photo]);
+
 	const backgroundImageStyle = {
 		backgroundImage: `url(${imageSrc})`,
 		backgroundSize: "cover",
 		backgroundPosition: "center",
 		backgroundRepeat: "no-repeat",
+		opacity: isImageLoaded ? 1 : 0,
+		transform: isImageLoaded ? "scale(1)" : "scale(0.95)",
+		transition: "opacity 0.5s ease-in-out, transform 0.5s ease-in-out",
 	};
 
 	return (
 		<>
-			{isLoading ? (
-				<div
-					className={`bg-gray-300 animate-pulse rounded-xl w-full mx-auto h-72 lg:h-96 object-cover`}
-				/>
+			{!isImageLoaded ? (
+				<div className="bg-gray-300 animate-pulse rounded-xl w-full mx-auto h-72 lg:h-96 object-cover" />
 			) : (
 				<div
 					className="relative flex flex-col items-center justify-center rounded-xl w-full h-72 lg:h-96 object-cover"

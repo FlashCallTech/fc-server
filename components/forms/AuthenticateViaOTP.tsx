@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import OTPVerification from "./OTPVerification";
 import { z } from "zod";
@@ -37,7 +37,13 @@ const FormSchemaOTP = z.object({
 	}),
 });
 
-const AuthenticateViaOTP = ({ userType, refId }: { userType: string, refId: string }) => {
+const AuthenticateViaOTP = ({
+	userType,
+	onOpenChange,
+}: {
+	userType: string;
+	onOpenChange?: (isOpen: boolean) => void;
+}) => {
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const { refreshCurrentUser, setAuthenticationSheetOpen } =
@@ -123,15 +129,15 @@ const AuthenticateViaOTP = ({ userType, refId }: { userType: string, refId: stri
 
 			let authToken = response.data.sessionToken;
 
+			updateFirestoreAuthToken(authToken);
+
 			const creatorURL = localStorage.getItem("creatorURL");
 
 			// Save the auth token (with 7 days expiry) in localStorage
 			localStorage.setItem("authToken", authToken);
 			console.log("OTP verified and token saved:");
 
-			updateFirestoreAuthToken(authToken);
-
-			setVerificationSuccess(true); // Set success state
+			setVerificationSuccess(true);
 
 			const existingUser = await axios.post("/api/v1/user/getUserByPhone", {
 				phone: phoneNumber,
@@ -147,6 +153,7 @@ const AuthenticateViaOTP = ({ userType, refId }: { userType: string, refId: stri
 
 				console.log("Existing user found. Proceeding as an existing user.");
 				refreshCurrentUser();
+				setAuthenticationSheetOpen(false);
 				isAuthenticationPath && router.push(`${creatorURL ? creatorURL : "/"}`);
 			} else {
 				console.log("No user found. Proceeding as a new user.");
@@ -167,8 +174,6 @@ const AuthenticateViaOTP = ({ userType, refId }: { userType: string, refId: stri
 						audioRate: "0",
 						chatRate: "0",
 						walletBalance: 0,
-						referredBy: refId? refId: null,
-						referralAmount: refId? 5000: null
 					};
 				} else {
 					user = {
@@ -190,6 +195,7 @@ const AuthenticateViaOTP = ({ userType, refId }: { userType: string, refId: stri
 							user as CreateCreatorParams
 						);
 						refreshCurrentUser();
+						setAuthenticationSheetOpen(false);
 						router.push("/updateDetails");
 					} catch (error: any) {
 						toast({
@@ -206,6 +212,7 @@ const AuthenticateViaOTP = ({ userType, refId }: { userType: string, refId: stri
 							user as CreateCreatorParams
 						);
 						refreshCurrentUser();
+						setAuthenticationSheetOpen(false);
 						router.push(`${creatorURL ? creatorURL : "/"}`);
 					} catch (error: any) {
 						toast({
@@ -219,11 +226,6 @@ const AuthenticateViaOTP = ({ userType, refId }: { userType: string, refId: stri
 			}
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);
-			toast({
-				variant: "destructive",
-				title: "Error Verifying OTP",
-				description: `${error.response.data.error}`,
-			});
 			let newErrors = { ...error };
 			newErrors.otpVerificationError = error.response.data.error;
 			setError(newErrors);
@@ -231,7 +233,6 @@ const AuthenticateViaOTP = ({ userType, refId }: { userType: string, refId: stri
 			setIsVerifyingOTP(false);
 		} finally {
 			setIsVerifyingOTP(false);
-			setAuthenticationSheetOpen(false);
 		}
 	};
 
@@ -261,18 +262,59 @@ const AuthenticateViaOTP = ({ userType, refId }: { userType: string, refId: stri
 		otpForm.reset(); // Reset OTP form
 	};
 
+	const sectionRef = useRef<HTMLElement>(null);
+
+	const handleClickOutside = (event: any) => {
+		if (sectionRef.current && !sectionRef.current.contains(event.target)) {
+			// Trigger your function here
+			console.log("Clicked outside the section");
+			onOpenChange && onOpenChange(false);
+		}
+	};
+
+	useEffect(() => {
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
+
 	return (
-		<section className="bg-[#F8F8F8] rounded-t-3xl md:rounded-xl flex flex-col items-center justify-center gap-4 px-8 pt-8 pb-2 shadow-lg w-screen md:w-full md:min-w-[24rem] md:max-w-sm mx-auto animate-enterFromBottom">
+		<section
+			ref={sectionRef}
+			className="relative bg-[#F8F8F8] rounded-t-3xl md:rounded-xl flex flex-col items-center justify-center gap-4 px-8 pt-8 pb-2 shadow-lg w-screen md:w-full md:min-w-[24rem] md:max-w-sm mx-auto animate-enterFromBottom z-50"
+		>
+			{onOpenChange && (
+				<Button
+					className="absolute top-2 right-2 z-10"
+					onClick={() => onOpenChange(false)}
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						strokeWidth={1.5}
+						stroke="currentColor"
+						className="size-7 text-green-1 hover:text-black"
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+						/>
+					</svg>
+				</Button>
+			)}
 			{!showOTP ? (
 				// SignUp form
 				<>
 					<div className="flex flex-col items-center justify-enter gap-2">
 						<Image
-							src="/icons/logoDesktop.png"
+							src="/icons/logoMobile.png"
 							width={1000}
 							height={1000}
 							alt="flashcall logo"
-							className="w-28 h-full mb-4 rounded-xl hoverScaleEffect"
+							className="w-14 h-full mb-4 rounded-xl hoverScaleEffect"
 						/>
 						<h2 className="text-lg font-semibold">Login or Signup</h2>
 						<p className="text-sm text-gray-500 mb-4">

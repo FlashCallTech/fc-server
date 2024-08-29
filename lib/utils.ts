@@ -102,6 +102,23 @@ export const isValidUrl = (url: string) => {
 	}
 };
 
+export const imageSrc = (creator: any) => {
+	const isValidUrl = (url: string) => {
+		try {
+			new URL(url);
+			return true;
+		} catch {
+			return false;
+		}
+	};
+
+	if (creator.photo && isValidUrl(creator.photo)) {
+		return creator.photo;
+	} else {
+		return "/images/defaultProfileImage.png";
+	}
+};
+
 export function debounce<T extends (...args: any[]) => any>(
 	func: T,
 	wait: number

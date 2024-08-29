@@ -5,6 +5,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "@/lib/firebase";
 import { useToast } from "../ui/use-toast";
 import Image from "next/image";
+import imageCompression from "browser-image-compression";
 
 type FileUploaderProps = {
 	fieldChange: (url: string) => void;
@@ -23,14 +24,27 @@ const FileUploader = ({
 	const { toast } = useToast();
 
 	const onDrop = useCallback(
-		(acceptedFiles: FileWithPath[]) => {
+		async (acceptedFiles: FileWithPath[]) => {
 			setLoading(true); // Set loading state to true
-			try {
-				const file = acceptedFiles[0];
-				const fileRef = ref(storage, `uploads/${file.name}`);
-				const uploadTask = uploadBytesResumable(fileRef, file);
 
-				onFileSelect(file); // Pass the file blob to the parent component
+			try {
+				let file = acceptedFiles[0];
+
+				// Convert the image to WebP format
+				const options = {
+					maxSizeMB: 1, // Specify the max size in MB (e.g., 1MB)
+					maxWidthOrHeight: 1920, // Specify the max width or height
+					useWebWorker: true, // Use web worker for better performance
+					fileType: "image/webp", // Convert to WebP format
+				};
+
+				// Compress the image
+				const compressedFile = await imageCompression(file, options);
+
+				const fileRef = ref(storage, `uploads/${compressedFile.name}`);
+				const uploadTask = uploadBytesResumable(fileRef, compressedFile);
+
+				onFileSelect(compressedFile); // Pass the file blob to the parent component
 
 				uploadTask.on(
 					"state_changed",
