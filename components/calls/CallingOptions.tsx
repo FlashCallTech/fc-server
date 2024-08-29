@@ -143,7 +143,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	}, [chatState]);
 
 	// defining the actions for call accept and call reject
-
 	const handleCallAccepted = async (call: Call) => {
 		setIsProcessing(false); // Reset processing state
 		toast({
