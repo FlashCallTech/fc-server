@@ -48,7 +48,7 @@ const CreatorHome = () => {
 	useEffect(() => {
 		setTimeout(() => {
 			setLoading(false);
-		}, 1000);
+		}, 500);
 	}, []);
 
 	useEffect(() => {
@@ -70,7 +70,7 @@ const CreatorHome = () => {
 				chat: creatorUser?.chatAllowed,
 			});
 		}
-	}, [creatorUser?._id]);
+	}, []);
 
 	const fetchTransactions = async () => {
 		try {
@@ -104,7 +104,7 @@ const CreatorHome = () => {
 
 			return () => unsubscribe();
 		}
-	}, [creatorUser?._id]);
+	}, []);
 
 	const creatorLink = `https://app.flashcall.me/${creatorUser?.username}${
 		creatorUser?.creatorId ? `/${creatorUser?.creatorId}` : ""
@@ -226,12 +226,6 @@ const CreatorHome = () => {
 			updateServices();
 		}
 	}, [services]);
-
-	useEffect(() => {
-		setTimeout(() => {
-			setLoading(false);
-		}, 1000);
-	}, []);
 
 	if (!creatorUser || loading || walletBalance < 0)
 		return (

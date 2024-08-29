@@ -12,6 +12,13 @@ const PaymentSettings = () => {
     ifscCode: "",
     accountNumber: ""
   });
+  const [initialPaymentMethod, setInitialPaymentMethod] = useState<"UPI" | "BankTransfer" | "">("");
+  const [initialBankDetails, setInitialBankDetails] = useState({
+    accountType: "",
+    upiId: "",
+    ifscCode: "",
+    accountNumber: ""
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [errors, setErrors] = useState({
     upiId: "",
@@ -33,13 +40,17 @@ const PaymentSettings = () => {
         });
         if (response.ok) {
           const data = await response.json();
-          setPaymentMethod(data.paymentMode === 'BANK_TRANSFER' ? 'BankTransfer' : 'UPI');
-          setBankDetails({
+          const method = data.paymentMode === 'BANK_TRANSFER' ? 'BankTransfer' : 'UPI';
+          const details = {
             upiId: data.upiId || "",
             ifscCode: data.bankDetails?.ifsc || "",
             accountNumber: data.bankDetails?.accountNumber || "",
             accountType: data.bankDetails?.accountType || "",
-          });
+          };
+          setPaymentMethod(method);
+          setBankDetails(details);
+          setInitialPaymentMethod(method);
+          setInitialBankDetails(details);
         } else {
           console.error('Failed to fetch payment details.');
         }
@@ -125,6 +136,9 @@ const PaymentSettings = () => {
 
         if (response.ok) {
           alert("Payment details saved successfully!");
+          // Update initial states to reflect the new saved state
+          setInitialPaymentMethod(paymentMethod);
+          setInitialBankDetails(bankDetails);
         } else {
           alert("Failed to save payment details.");
         }
@@ -135,12 +149,19 @@ const PaymentSettings = () => {
     }
   };
 
+  const hasChanges = () => {
+    return (
+      paymentMethod !== initialPaymentMethod ||
+      JSON.stringify(bankDetails) !== JSON.stringify(initialBankDetails)
+    );
+  };
+
   if (isLoading) {
     return <Loader />;
   }
 
   return (
-    <div className="flex flex-col gap-4 bg-gray-100 h-screen mx-auto p-4">
+    <div className="flex flex-col gap-4 bg-gray-100 h-full mx-auto p-4">
       <div className="flex items-start">
         <button
           onClick={() => router.back()}
@@ -149,7 +170,7 @@ const PaymentSettings = () => {
           &lt;
         </button>
       </div>
-      <div className="flex flex-col justify-between bg-gray-100 h-screen">
+      <div className="flex flex-col justify-between bg-gray-100 h-full">
         <div>
           <h2 className="text-xl font-semibold mb-4">Payment Settings</h2>
           <div className="mb-4">
@@ -178,17 +199,17 @@ const PaymentSettings = () => {
           </div>
 
           {paymentMethod === "UPI" && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-1" htmlFor="upiId">UPI ID</label>
+            <div className=" flex flex-col mb-4">
+              <label className="block text-sm font-semibold mb-1" htmlFor="upiId">UPI ID</label>
               <input
                 id="upiId"
                 type="text"
                 placeholder="Enter UPI ID"
                 value={bankDetails.upiId}
                 onChange={(e) => setBankDetails({ ...bankDetails, upiId: e.target.value })}
-                className="w-full border p-2 rounded-lg"
+                className="w-full border p-2 text-sm rounded-lg"
               />
-              {errors.upiId && <p className="text-red-500 text-sm">{errors.upiId}</p>}
+              {errors.upiId && <p className="text-red-500 text-sm mt-1">{errors.upiId}</p>}
             </div>
           )}
 
@@ -204,7 +225,7 @@ const PaymentSettings = () => {
                   onChange={(e) => setBankDetails({ ...bankDetails, ifscCode: e.target.value.toUpperCase() })}
                   className="w-full border p-2 rounded-lg text-sm"
                 />
-                {errors.ifscCode && <p className="text-red-500 text-sm">{errors.ifscCode}</p>}
+                {errors.ifscCode && <p className="text-red-500 text-sm mt-1">{errors.ifscCode}</p>}
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-semibold mb-1" htmlFor="accountNumber">Account Number</label>
@@ -216,7 +237,7 @@ const PaymentSettings = () => {
                   onChange={(e) => setBankDetails({ ...bankDetails, accountNumber: e.target.value })}
                   className="w-full border p-2 rounded-lg text-sm"
                 />
-                {errors.accountNumber && <p className="text-red-500 text-sm">{errors.accountNumber}</p>}
+                {errors.accountNumber && <p className="text-red-500 text-sm mt-1">{errors.accountNumber}</p>}
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-semibold mb-1" htmlFor="accountType">Account Type</label>
@@ -226,18 +247,19 @@ const PaymentSettings = () => {
                   onChange={(e) => setBankDetails({ ...bankDetails, accountType: e.target.value })}
                   className="w-full border p-2 rounded-lg text-sm"
                 >
-                  <option value="" disabled>Select Account Type</option>
+                  <option value="">Select Account Type</option>
                   <option value="Savings">Savings</option>
                   <option value="Current">Current</option>
                 </select>
-                {errors.accountType && <p className="text-red-500 text-sm">{errors.accountType}</p>}
+                {errors.accountType && <p className="text-red-500 text-sm mt-1">{errors.accountType}</p>}
               </div>
             </>
           )}
         </div>
         <button
+          disabled={!hasChanges()}
           onClick={handleSave}
-          className="bg-black text-white font-semibold p-2 rounded-lg mt-4 hover:bg-gray-900"
+          className={`w-full py-2 px-4 rounded-lg text-white ${hasChanges() ? "bg-black hover:bg-gray-900" : "bg-gray-400 cursor-not-allowed"}`}
         >
           Save
         </button>

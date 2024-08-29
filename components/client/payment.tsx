@@ -104,7 +104,7 @@ const Payment: React.FC = () => {
 		if (currentUser) {
 			fetchTransactions(page);
 		}
-	}, [btn, currentUser?._id, page]);
+	}, [btn, page]);
 
 	useEffect(() => {
 		const amountPattern = /^\d*$/;
