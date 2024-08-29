@@ -89,11 +89,8 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	// Function to fetch the current user
 	const fetchCurrentUser = async () => {
 		try {
-			const storedUserType = localStorage.getItem("userType");
 			const authToken = localStorage.getItem("authToken");
 			const userId = localStorage.getItem("currentUserID");
-
-			setUserType(storedUserType);
 
 			if (authToken && isTokenValid(authToken)) {
 				const decodedToken: any = jwt.decode(authToken);
@@ -106,7 +103,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				const user = response.data;
 
 				if (user) {
-					if (storedUserType === "creator") {
+					if (userType === "creator") {
 						setCreatorUser(user);
 						setClientUser(null);
 					} else {
@@ -121,7 +118,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					console.error("User not found with phone number:", phoneNumber);
 				}
 			} else if (authToken && userId) {
-				const isCreator = storedUserType === "creator";
+				const isCreator = userType === "creator";
 
 				if (isCreator) {
 					const response = await getCreatorById(userId);
@@ -143,12 +140,15 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 	// Call fetchCurrentUser when the component mounts
 	useEffect(() => {
+		const storedUserType = localStorage.getItem("userType");
 		const authToken = localStorage.getItem("authToken");
+
+		setUserType(storedUserType);
 
 		if (authToken && !isTokenValid(authToken)) {
 			handleSignout();
 		} else {
-			fetchCurrentUser();
+			if(userType) fetchCurrentUser();
 		}
 	}, [userType]);
 
@@ -175,6 +175,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 	// Managing single session authentication
 	useEffect(() => {
+
 		const authToken = localStorage.getItem("authToken");
 		if (!currentUser || !authToken) {
 			return;
