@@ -14,6 +14,8 @@ import { sidebarLinks, sidebarLinksCreator } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const MobileNav = () => {
 	const pathname = usePathname();
@@ -25,6 +27,16 @@ const MobileNav = () => {
 
 	const handleAuthentication = () => {
 		setAuthenticationSheetOpen(false);
+		if (currentUser) {
+			const statusDocRef = doc(db, "userStatus", currentUser.phone);
+			setDoc(statusDocRef, { status: "Offline" }, { merge: true })
+				.then(() => {
+					console.log("User status set to Offline");
+				})
+				.catch((error: any) => {
+					console.error("Error updating user status: ", error);
+				});
+		}
 		handleSignout();
 	};
 

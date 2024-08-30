@@ -35,7 +35,7 @@ export const WalletBalanceProvider = ({
 }: {
 	children: ReactNode;
 }) => {
-	const [walletBalance, setWalletBalance] = useState<number>(-1);
+	const [walletBalance, setWalletBalance] = useState<number>(0);
 	const { currentUser, userType, authenticationSheetOpen } =
 		useCurrentUsersContext();
 	const isCreator = userType === "creator";
