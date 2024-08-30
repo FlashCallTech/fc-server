@@ -18,15 +18,16 @@ import { Cursor, Typewriter } from "react-simple-typewriter";
 import ContentLoading from "@/components/shared/ContentLoading";
 
 const About: React.FC = () => {
+	const { updateWalletBalance } = useWalletBalanceContext();
+	const { currentUser } = useCurrentUsersContext();
+	const { toast } = useToast();
+
 	const searchParams = useSearchParams();
 	const amount = searchParams.get("amount");
-	const { updateWalletBalance } = useWalletBalanceContext();
 
 	const [method, setMethod] = useState("");
 	const [loading, setLoading] = useState(false);
-	const { currentUser } = useCurrentUsersContext();
 	const router = useRouter();
-	const { toast } = useToast();
 	const amountInt: number | null = amount ? parseFloat(amount) : null;
 
 	const subtotal: number | null =
@@ -187,7 +188,7 @@ const About: React.FC = () => {
 					</h1>
 				</section>
 			) : (
-				<div className="overflow-y-scroll no-scrollbar p-4 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center justify-center w-full">
+				<div className="overflow-y-scroll p-4 pt-0 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center justify-center w-full">
 					<Script src="https://checkout.razorpay.com/v1/checkout.js" />
 
 					{/* Payment Information */}
@@ -219,7 +220,7 @@ const About: React.FC = () => {
 					</section>
 
 					{/* UPI Payment Options */}
-					<section className="w-full grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4 mb-8">
+					<section className="w-full grid grid-cols-1  gap-4 mb-5">
 						<div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow flex flex-col items-start justify-center gap-4 w-full ">
 							<h3 className="text-sm text-gray-500">
 								Pay directly with your favourite UPI apps
@@ -247,12 +248,12 @@ const About: React.FC = () => {
 									</button>
 								))}
 							</div>
-							<button className="text-black">
+							{/* <button className="text-black">
 								Pay with other UPI apps &rarr;
-							</button>
+							</button> */}
 						</div>
 
-						{/* Other Payment Methods */}
+						{/* Other Payment Methods
 
 						<div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
 							<h3 className="text-sm text-gray-500 font-medium mb-4">
@@ -270,10 +271,10 @@ const About: React.FC = () => {
 									</label>
 								))}
 							</div>
-						</div>
+						</div> */}
 					</section>
 
-					<div className="w-full flex flex-row items-center justify-center opacity-[75%] mb-8">
+					<div className="w-full flex flex-row items-center justify-center opacity-[75%] mb-14">
 						<Image
 							src="/secure.svg"
 							width={20}
@@ -288,13 +289,14 @@ const About: React.FC = () => {
 
 					{/* Payment Button */}
 					<button
-						className="w-full md:w-1/3 mx-auto py-3 text-black bg-white rounded-lg border-2 border-black hover:bg-green-1 hover:text-white font-semibold"
+						className="w-4/5 md:w-1/3 mx-auto py-3 text-black bg-white rounded-lg border-2 border-black hover:bg-green-1 hover:text-white font-semibold fixed bottom-3"
 						style={{ boxShadow: "3px 3px black" }}
 						onClick={PaymentHandler}
 						disabled={loading} // Disable the button when loading
 					>
 						Proceed to Payment
 					</button>
+
 				</div>
 			)}
 		</>

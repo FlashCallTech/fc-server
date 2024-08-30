@@ -42,10 +42,17 @@ export async function getUsers() {
 
 export async function getUsersPaginated(offset = 0, limit = 2) {
 	try {
-		await connectToDatabase(); // Ensure this properly connects to the database
+		await connectToDatabase(); 
 
-		// Fetch users with pagination using skip and limit
-		const users = await Creator.find().skip(offset).limit(limit).lean(); // Use lean() to get plain JavaScript objects
+		// MongoDB query to filter users with non-zero rates for audio, video, and chat
+		const query = {
+			audioRate: { $ne: "0" },  // Ensure audioRate is not "0"
+			videoRate: { $ne: "0" },  // Ensure videoRate is not "0"
+			chatRate: { $ne: "0" }    // Ensure chatRate is not "0"
+		};
+
+		// Fetch users with pagination using skip, limit, and query filters
+		const users = await Creator.find(query).skip(offset).limit(limit).lean(); // Use lean() to get plain JavaScript objects
 
 		// Return the fetched users or an empty array if none are found
 		return users.length > 0 ? JSON.parse(JSON.stringify(users)) : [];
@@ -54,6 +61,7 @@ export async function getUsersPaginated(offset = 0, limit = 2) {
 		throw new Error("Failed to fetch users");
 	}
 }
+
 
 export async function getCreatorById(userId: string) {
 	try {

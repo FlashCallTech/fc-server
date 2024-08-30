@@ -25,16 +25,15 @@ const FileUploader = ({
 
 	const onDrop = useCallback(
 		async (acceptedFiles: FileWithPath[]) => {
-			setLoading(true); // Set loading state to true
-
+			setLoading(true);
 			try {
 				let file = acceptedFiles[0];
 
 				// Convert the image to WebP format
 				const options = {
-					maxSizeMB: 1, // Specify the max size in MB (e.g., 1MB)
-					maxWidthOrHeight: 1920, // Specify the max width or height
-					useWebWorker: true, // Use web worker for better performance
+					maxSizeMB: 0.5, // Specify the max size in MB
+					maxWidthOrHeight: 1920,
+					useWebWorker: true,
 					fileType: "image/webp", // Convert to WebP format
 				};
 
@@ -44,7 +43,7 @@ const FileUploader = ({
 				const fileRef = ref(storage, `uploads/${compressedFile.name}`);
 				const uploadTask = uploadBytesResumable(fileRef, compressedFile);
 
-				onFileSelect(compressedFile); // Pass the file blob to the parent component
+				onFileSelect(compressedFile);
 
 				uploadTask.on(
 					"state_changed",
