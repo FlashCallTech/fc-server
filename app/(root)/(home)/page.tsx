@@ -49,7 +49,7 @@ const HomePage = () => {
 	useEffect(() => {
 		// Initial fetch for creators
 		if (userType !== "creator") {
-			fetchCreators(0, 7);
+			fetchCreators(0, 6);
 		}
 	}, [pathname, fetchCreators]);
 
@@ -84,29 +84,24 @@ const HomePage = () => {
 							className={`grid grid-cols-2 gap-2.5 px-2.5 lg:gap-5 lg:px-0 items-center`}
 						>
 							{creators &&
-								creators.map(
-									(creator, index) =>
-										parseInt(creator.audioRate, 10) !== 0 &&
-										parseInt(creator.videoRate, 10) !== 0 &&
-										parseInt(creator.chatRate, 10) !== 0 && (
-											<Link
-												href={`/${creator.username}`}
-												key={creator._id || index}
-											>
-												<section
-													className="min-w-full transition-all duration-500 hover:scale-95"
-													onClick={() =>
-														handleCreatorCardClick(
-															creator.username,
-															creator.themeSelected
-														)
-													}
-												>
-													<CreatorsGrid creator={creator} />
-												</section>
-											</Link>
-										)
-								)}
+								creators.map((creator, index) => (
+									<Link
+										href={`/${creator.username}`}
+										key={creator._id || index}
+									>
+										<section
+											className="min-w-full transition-all duration-500 hover:scale-95"
+											onClick={() =>
+												handleCreatorCardClick(
+													creator.username,
+													creator.themeSelected
+												)
+											}
+										>
+											<CreatorsGrid creator={creator} />
+										</section>
+									</Link>
+								))}
 						</section>
 					)}
 					{/* Loader for Intersection Observer */}

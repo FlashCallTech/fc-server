@@ -286,7 +286,7 @@ const CreatorHome = () => {
 						<p className="text-white text-sm">{creatorUser?.creatorId}</p>
 					</section>
 				</div>
-				<div className="flex-grow flex flex-col gap-4 bg-gray-50 rounded-t-3xl animate-enterFromBottom p-4">
+				<div className="flex-grow flex flex-col gap-4 bg-gray-50 rounded-t-3xl p-4">
 					<CopyToClipboard
 						link={creatorLink}
 						username={

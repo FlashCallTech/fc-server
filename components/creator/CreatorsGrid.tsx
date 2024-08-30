@@ -1,9 +1,12 @@
+import { db } from "@/lib/firebase";
 import { isValidUrl } from "@/lib/utils";
 import { creatorUser } from "@/types";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 	const [isImageLoaded, setIsImageLoaded] = useState(false);
+	const [status, setStatus] = useState<string>("Offline"); // Default status to "Offline"
 
 	const imageSrc =
 		creator.photo && isValidUrl(creator.photo)
@@ -22,6 +25,28 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 			setIsImageLoaded(true);
 		};
 	}, [creator.photo]);
+
+	useEffect(() => {
+		const docRef = doc(db, "userStatus", creator.phone);
+		const unsubscribe = onSnapshot(
+			docRef,
+			(docSnap) => {
+				if (docSnap.exists()) {
+					const data = docSnap.data();
+					setStatus(data.status || "Offline");
+				} else {
+					setStatus("Offline"); // If document doesn't exist, mark the creator as offline
+				}
+			},
+			(error) => {
+				console.error("Error fetching status:", error);
+				setStatus("Offline");
+			}
+		);
+
+		// Clean up the listener on component unmount
+		return () => unsubscribe();
+	}, [creator.phone]);
 
 	const backgroundImageStyle = {
 		backgroundImage: `url(${imageSrc})`,
@@ -58,8 +83,14 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 							<span className="text-sm sm:text-lg h-full max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
 								{creator.profession ? creator.profession : "Expert"}
 							</span>
-							<div className="bg-green-500 text-xs rounded-full sm:rounded-xl px-1.5 py-1.5 sm:px-4 sm:py-2">
-								<span className="hidden sm:flex">Available</span>
+							<div
+								className={`${
+									status === "Online" ? "bg-green-500" : "bg-red-500"
+								} text-xs rounded-full sm:rounded-xl px-1.5 py-1.5 sm:px-4 sm:py-2`}
+							>
+								<span className="hidden sm:flex">
+									{status === "Online" ? "Online" : "Offline"}
+								</span>
 							</div>
 						</div>
 					</div>

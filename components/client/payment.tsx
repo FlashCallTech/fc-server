@@ -90,7 +90,7 @@ const Payment: React.FC = () => {
 			console.error("Error fetching transactions:", error);
 			setErrorMessage("Unable to fetch transactions");
 		} finally {
-				setLoading(false);
+			setLoading(false);
 		}
 	};
 
@@ -111,9 +111,6 @@ const Payment: React.FC = () => {
 			form.clearErrors("rechargeAmount");
 		}
 	}, [rechargeAmount, form]);
-
-	console.log(transactions)
-
 
 	return (
 		<div className="flex flex-col pt-4 bg-white text-gray-800 w-full h-full">

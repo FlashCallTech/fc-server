@@ -13,7 +13,7 @@ import { clientUser, creatorUser } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import jwt from "jsonwebtoken";
-import { doc, onSnapshot } from "firebase/firestore";
+import { deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useRouter } from "next/navigation";
 
@@ -31,6 +31,7 @@ interface CurrentUsersContextValue {
 	setCurrentTheme: any;
 	authenticationSheetOpen: boolean;
 	setAuthenticationSheetOpen: any;
+	userStatus: string;
 }
 
 // Create the context with a default value of null
@@ -72,6 +73,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const [clientUser, setClientUser] = useState<clientUser | null>(null);
 	const [creatorUser, setCreatorUser] = useState<creatorUser | null>(null);
 	const [currentTheme, setCurrentTheme] = useState("");
+	const [userStatus, setUserStatus] = useState("");
 	const [authenticationSheetOpen, setAuthenticationSheetOpen] = useState(false);
 	const [userType, setUserType] = useState<string | null>(null);
 	const { toast } = useToast();
@@ -79,6 +81,19 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 	// Function to handle user signout
 	const handleSignout = () => {
+		if (currentUser) {
+			const userAuthRef = doc(db, "authToken", currentUser.phone);
+
+			// Functions to handle single session
+			deleteDoc(userAuthRef)
+				.then(() => {
+					console.log("Document successfully deleted!");
+				})
+				.catch((error: any) => {
+					console.error("Error removing document: ", error);
+				});
+		}
+
 		localStorage.removeItem("userID");
 		localStorage.removeItem("authToken");
 		localStorage.removeItem("creatorURL");
@@ -148,7 +163,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		if (authToken && !isTokenValid(authToken)) {
 			handleSignout();
 		} else {
-			if(userType) fetchCurrentUser();
+			if (userType) fetchCurrentUser();
 		}
 	}, [userType]);
 
@@ -173,22 +188,17 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		}
 	}, [router]);
 
-	// Managing single session authentication
 	useEffect(() => {
-
 		const authToken = localStorage.getItem("authToken");
-		if (!currentUser || !authToken) {
+
+		if (!currentUser || !currentUser.phone) {
 			return;
 		}
 
-		if (!currentUser.phone) {
-			return;
-		}
-
-		const callDocRef = doc(db, "authToken", currentUser.phone);
+		const userAuthRef = doc(db, "authToken", currentUser.phone);
 
 		const unsubscribe = onSnapshot(
-			callDocRef,
+			userAuthRef,
 			(doc) => {
 				try {
 					if (doc.exists()) {
@@ -216,8 +226,60 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			}
 		);
 
+		const statusDocRef = doc(db, "userStatus", currentUser.phone);
+
+		// Function to update status to Offline
+		const setStatusOffline = () => {
+			setDoc(statusDocRef, { status: "Offline" }, { merge: true })
+				.then(() => {
+					console.log("User status set to Offline");
+				})
+				.catch((error: any) => {
+					console.error("Error updating user status: ", error);
+				});
+		};
+
+		// Update user status to "Online" when the component mounts
+		setDoc(statusDocRef, { status: "Online" }, { merge: true })
+			.then(() => {
+				console.log("User status set to Online");
+			})
+			.catch((error) => {
+				console.error("Error updating user status: ", error);
+			});
+
+		// Handle beforeunload event
+		const handleBeforeUnload = () => {
+			setStatusOffline();
+		};
+
+		// Handle visibility change event
+		const handleVisibilityChange = () => {
+			if (document.visibilityState === "hidden") {
+				setStatusOffline();
+			} else {
+				// Optionally, set the status back to "Online" when the user returns
+				setDoc(statusDocRef, { status: "Online" }, { merge: true })
+					.then(() => {
+						console.log("User status set to Online");
+					})
+					.catch((error) => {
+						console.error("Error updating user status: ", error);
+					});
+			}
+		};
+
+		// Add event listeners
+		window.addEventListener("beforeunload", handleBeforeUnload);
+		document.addEventListener("visibilitychange", handleVisibilityChange);
+
 		// Cleanup listener on component unmount
-		return () => unsubscribe();
+		return () => {
+			unsubscribe();
+			setStatusOffline(); // Set offline on unmount
+			window.removeEventListener("beforeunload", handleBeforeUnload);
+			document.removeEventListener("visibilitychange", handleVisibilityChange);
+		};
 	}, [userType, currentUser?._id]);
 
 	const values: CurrentUsersContextValue = {
@@ -233,6 +295,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		setCurrentTheme,
 		authenticationSheetOpen,
 		setAuthenticationSheetOpen,
+		userStatus,
 	};
 
 	return (
