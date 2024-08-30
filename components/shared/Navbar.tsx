@@ -73,8 +73,6 @@ const Navbar = () => {
 		window.open(url, "_blank");
 	};
 
-	console.log(currentTheme);
-
 	const AppLink = () => (
 		<Button
 			className="flex items-center gap-2 bg-green-1 py-2 px-4 lg:ml-2 text-white rounded-[4px] hoverScaleDownEffect"
@@ -137,9 +135,11 @@ const Navbar = () => {
 					{walletBalance >= 0 ? (
 						<Link
 							href="/payment"
-							className="w-fit flex items-center justify-center gap-2 text-black px-2 py-3 border border-black rounded-[4px] hover:bg-green-1 group"
+							className={`w-fit flex items-center justify-center gap-2 text-black px-2 py-3 border border-black rounded-[4px] hover:bg-green-1 ${
+								pathname.includes("/payment") && "bg-green-1 text-white"
+							} group`}
 							style={{
-								boxShadow: theme,
+								boxShadow: `5px 5px 0px 0px ${userTheme}`,
 							}}
 						>
 							<Image
@@ -147,7 +147,9 @@ const Navbar = () => {
 								width={100}
 								height={100}
 								alt="wallet"
-								className="w-4 h-4 group-hover:text-white group-hover:invert"
+								className={`w-4 h-4 group-hover:text-white group-hover:invert ${
+									pathname.includes("/payment") && "invert"
+								}`}
 							/>
 							<span className="w-full text-xs whitespace-nowrap font-semibold group-hover:text-white">
 								{`Rs. ${walletBalance.toFixed(2)}`}

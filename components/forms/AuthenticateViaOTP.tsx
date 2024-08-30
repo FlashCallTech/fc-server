@@ -112,8 +112,20 @@ const AuthenticateViaOTP = ({
 					token,
 				});
 			}
+
+			const userStatusDocRef = doc(db, "userStatus", updatedPhoneNumber);
+			const userStatusDoc = await getDoc(userStatusDocRef);
+			if (userStatusDoc.exists()) {
+				await updateDoc(userStatusDocRef, {
+					status: "Online",
+				});
+			} else {
+				await setDoc(userStatusDocRef, {
+					status: "Online",
+				});
+			}
 		} catch (error) {
-			console.error("Error updating Firestore token: ", error);
+			console.error("Error updating Firestore Data: ", error);
 		}
 	};
 
@@ -336,13 +348,13 @@ const AuthenticateViaOTP = ({
 												<div className="w-full flex justify-between items-center">
 													<div className="flex w-full items-center jusitfy-center">
 														<span className="text-gray-400">+91</span>
-														<span className="px-2 text-lg text-gray-300 text-center self-center flex items-center">
+														<span className="px-2 pr-0 text-lg text-gray-300 text-center self-center flex items-center">
 															│
 														</span>
 														<Input
 															placeholder="Enter a Valid Number"
 															{...field}
-															className="w-full font-semibold bg-transparent border-none focus-visible:ring-offset-0 placeholder:text-gray-400 placeholder:font-normal rounded-xl !pl-0 pr-4 py-3 focus-visible:ring-transparent !important"
+															className="w-full font-semibold bg-transparent border-none focus-visible:ring-offset-0 placeholder:text-gray-400 placeholder:font-normal rounded-xl pr-4 pl-2 mx-1 py-3 focus-visible:ring-transparent !important"
 														/>
 													</div>
 
