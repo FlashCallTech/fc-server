@@ -128,22 +128,24 @@ export async function processPayout({
 
 export async function getTransactionsByUserId(
 	userId: string,
-	page = 1,
-	limit = 10
+	// page = 1,
+	// limit = 10
 ) {
 	try {
 		await connectToDatabase();
-		const skip = (page - 1) * limit;
+		// const skip = (page - 1) * limit;
 
 		const transactions = await Transaction.find({ userId })
 			.sort({ createdAt: -1 })
-			.skip(skip)
-			.limit(limit)
+			// .skip(skip)
+			// .limit(limit)
 			.lean();
 
-		const totalTransactions = await Transaction.countDocuments({ userId });
+		// const totalTransactions = await Transaction.countDocuments({ userId });
 
-		return { transactions, totalTransactions };
+		// return { transactions, totalTransactions };
+		return { transactions };
+
 	} catch (error) {
 		console.error(error);
 		handleError(error);
@@ -190,31 +192,30 @@ export async function getTransactionsByType(type: "debit" | "credit") {
 export async function getTransactionsByUserIdAndType(
 	userId: string,
 	type: "debit" | "credit",
-	page = 1,
-	limit = 10
+	// page = 1,
+	// limit = 10
 ) {
 	try {
 		await connectToDatabase();
-		const skip = (page - 1) * limit;
+		// const skip = (page - 1) * limit;
 
 		const transactions = await Transaction.find({ userId, type })
 			.sort({ createdAt: -1 })
-			.skip(skip)
-			.limit(limit)
+			// .skip(skip)
+			// .limit(limit)
 			.lean();
 
-		const totalTransactions = await Transaction.countDocuments({
-			userId,
-			type,
-		});
+		// const totalTransactions = await Transaction.countDocuments({
+		// 	userId,
+		// 	type,
+		// });
 
-		return { transactions, totalTransactions };
+		return { transactions };
 	} catch (error) {
 		console.error(error);
 		handleError(error);
 	}
 }
-
 export async function getCreatorTransactionsByUserIdAndType(
 	userId: string,
 	type: "debit" | "credit",
