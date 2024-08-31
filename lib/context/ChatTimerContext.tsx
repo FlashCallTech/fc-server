@@ -74,6 +74,7 @@ export const ChatTimerProvider = ({
 
 	const endChat = async () => {
 		toast({
+			variant: "destructive",
 			title: "Chat Ended",
 			description: "Wallet is Empty. Redirecting ...",
 		});
@@ -126,6 +127,7 @@ export const ChatTimerProvider = ({
 					if (!lowBalanceNotified) {
 						setLowBalanceNotified(true);
 						toast({
+							variant: "destructive",
 							title: "Chat Will End Soon",
 							description: "Client's wallet balance is low.",
 						});

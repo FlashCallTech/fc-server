@@ -33,6 +33,7 @@ const CallTimer = ({
 		if (!isLoading && timeLeftInSeconds <= 0) {
 			!isToastShown &&
 				toast({
+					variant: "destructive",
 					title: "Call Ended ...",
 					description: "Time Limit Exceeded",
 				});

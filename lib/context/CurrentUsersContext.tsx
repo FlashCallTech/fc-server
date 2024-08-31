@@ -188,6 +188,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			router.replace("/updateDetails");
 			setTimeout(() => {
 				toast({
+					variant: "destructive",
 					title: "Greetings Friend",
 					description: "Complete Your Profile Details...",
 				});
@@ -214,6 +215,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 							console.log(data.token, authToken);
 							handleSignout();
 							toast({
+								variant: "destructive",
 								title: "Another Session Detected",
 								description: "Logging Out...",
 							});

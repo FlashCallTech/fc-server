@@ -264,7 +264,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
-			toast({ title: "Failed to create Meeting" });
+			toast({ variant: "destructive", title: "Failed to create Meeting" });
 		}
 	};
 
@@ -293,6 +293,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				}
 			} else if (clientUser && storedCallId) {
 				toast({
+					variant: "destructive",
 					title: "Ongoing Call or Transaction Pending",
 					description: "Redirecting you back ...",
 				});
