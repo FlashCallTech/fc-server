@@ -14,6 +14,7 @@ const PaymentsPage = () => {
 	useEffect(() => {
 		if (!currentUser) router.push("/");
 		toast({
+			variant: "destructive",
 			title: "Authentication Required",
 			description: "Redirecting Back...",
 		});

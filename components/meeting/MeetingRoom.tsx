@@ -135,6 +135,7 @@ const MeetingRoom = () => {
 		if (participantCount < 2 || anyModalOpen) {
 			timeoutId = setTimeout(async () => {
 				toast({
+					variant: "destructive",
 					title: "Call Ended ...",
 					description: "Less than 2 Participants or Due to Inactivity",
 				});

@@ -48,9 +48,15 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 			(docSnap) => {
 				if (docSnap.exists()) {
 					const data = docSnap.data();
+					if (data.status === "Online" && status !== "Online") {
+						const notificationSound = new Audio("/sounds/statusChange.mp3");
+						notificationSound.play().catch((error) => {
+							console.error("Failed to play sound:", error);
+						});
+					}
 					setStatus(data.status || "Offline");
 				} else {
-					setStatus("Offline"); // If document doesn't exist, mark the creator as offline
+					setStatus("Offline");
 				}
 			},
 			(error) => {
@@ -61,7 +67,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 
 		// Clean up the listener on component unmount
 		return () => unsubscribe();
-	}, []);
+	}, [status]);
 
 	const handleToggleFavorite = async () => {
 		if (!clientUser) {
@@ -79,6 +85,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 			if (response.success) {
 				setMarkedFavorite((prev) => !prev);
 				toast({
+					variant: "destructive",
 					title: "List Updated",
 					description: `${
 						markedFavorite ? "Removed From Favorites" : "Added to Favorites"
