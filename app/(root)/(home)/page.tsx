@@ -15,49 +15,97 @@ import Image from "next/image";
 const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
 const HomePage = () => {
-	const [creators, setCreators] = useState<creatorUser[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [creatorCount, setCreatorCount] = useState(0); // Offset for fetching more users
-	const [isFetching, setIsFetching] = useState(false); // To handle API call in progress
+	const CACHE_EXPIRY_TIME = 5 * 60 * 1000; // 1 minute
+	const [creators, setCreators] = useState<creatorUser[]>(() => {
+		const cachedCreators = localStorage.getItem("creators");
+		return cachedCreators ? JSON.parse(cachedCreators) : [];
+	});
+	const [loading, setLoading] = useState(creators.length === 0);
+	const [creatorCount, setCreatorCount] = useState(creators.length);
+	const [isFetching, setIsFetching] = useState(false);
 	const [error, setError] = useState(false);
 	const [hasMore, setHasMore] = useState(true);
 	const { userType, setCurrentTheme } = useCurrentUsersContext();
 	const pathname = usePathname();
 	const { ref, inView } = useInView();
 
-	const fetchCreators = useCallback(async (offset: number, limit: number) => {
-		try {
-			setIsFetching(true);
-			const response = await getUsersPaginated(offset, limit);
+	const fetchCreators = useCallback(
+		async (offset: number, limit: number) => {
+			try {
+				setIsFetching(true);
+				const response = await getUsersPaginated(offset, limit);
 
-			setCreators((prevCreators) => [...prevCreators, ...response]);
-			if (response.length > 0) {
-				setCreatorCount((prevCount) => prevCount + limit);
-			} else {
-				setHasMore(false);
+				if (offset === 0) {
+					// Initial fetch or cache expired: Replace the creators list
+					setCreators(response);
+					localStorage.setItem("creators", JSON.stringify(response));
+					localStorage.setItem("creatorsLastFetched", Date.now().toString());
+					setCreatorCount(response.length);
+					setHasMore(response.length === limit);
+				} else {
+					// Pagination: Append new unique creators
+					const filteredNewCreators = response.filter(
+						(newCreator: any) =>
+							!creators.some((creator) => creator._id === newCreator._id)
+					);
+
+					const newCreators = [...creators, ...filteredNewCreators];
+
+					setCreators(newCreators);
+					localStorage.setItem("creators", JSON.stringify(newCreators));
+					localStorage.setItem("creatorsLastFetched", Date.now().toString());
+
+					if (filteredNewCreators.length > 0) {
+						setCreatorCount(newCreators.length);
+						setHasMore(filteredNewCreators.length === limit);
+					} else {
+						setHasMore(false);
+					}
+				}
+			} catch (error) {
+				console.error(error);
+				Sentry.captureException(error);
+				setError(true);
+			} finally {
+				setLoading(false);
+				setIsFetching(false);
+			}
+		},
+		[creators]
+	);
+
+	const checkForNewCreator = useCallback(async () => {
+		try {
+			const response = await getUsersPaginated(0, 1); // Fetch only the latest user
+			if (response.length > 0 && response[0]._id !== creators[0]?._id) {
+				const newCreators = [response[0], ...creators]; // Prepend the new creator
+				setCreators(newCreators);
+				localStorage.setItem("creators", JSON.stringify(newCreators));
+				localStorage.setItem("creatorsLastFetched", Date.now().toString());
+				setCreatorCount(newCreators.length);
+				setHasMore(true); // Assume more creators are available
 			}
 		} catch (error) {
-			console.error(error);
-			Sentry.captureException(error);
-			setError(true);
-		} finally {
-			setLoading(false);
-			setIsFetching(false);
+			console.error("Error checking for new creators:", error);
 		}
-	}, []);
+	}, [creators]);
 
 	useEffect(() => {
-		// Initial fetch for creators
-		if (userType !== "creator") {
+		const lastFetched = localStorage.getItem("creatorsLastFetched");
+		const now = Date.now();
+		// Check if the cache is expired or if there are no cached creators
+		if (!lastFetched || now - parseInt(lastFetched) > CACHE_EXPIRY_TIME) {
 			fetchCreators(0, 6);
+		} else {
+			checkForNewCreator();
 		}
-	}, [pathname, fetchCreators]);
+	}, [pathname, fetchCreators, checkForNewCreator]);
 
 	useEffect(() => {
-		if (inView && !isFetching) {
+		if (inView && !isFetching && hasMore) {
 			fetchCreators(creatorCount, 2);
 		}
-	}, [inView]);
+	}, [inView, isFetching, hasMore, creatorCount, fetchCreators]);
 
 	const handleCreatorCardClick = (username: string, theme: string) => {
 		localStorage.setItem("creatorURL", `/${username}`);
@@ -104,7 +152,6 @@ const HomePage = () => {
 								))}
 						</section>
 					)}
-					{/* Loader for Intersection Observer */}
 					{hasMore && isFetching && (
 						<Image
 							src="/icons/loading-circle.svg"
@@ -114,14 +161,12 @@ const HomePage = () => {
 							className="mx-auto invert my-4 z-20"
 						/>
 					)}
-					{/* Show a message when there's no more data to fetch */}
-					{!hasMore && (
+					{hasMore && <div ref={ref} className=" mt-10 w-full" />}
+					{!hasMore && !isFetching && (
 						<div className="text-center text-gray-500 py-4">
 							You have reached the end of the list.
 						</div>
 					)}
-					{/* Empty div to trigger scroll action */}
-					{hasMore && <div ref={ref} className=" mt-10 w-full" />}
 				</Suspense>
 			) : (
 				<CreatorHome />

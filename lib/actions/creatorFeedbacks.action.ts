@@ -87,15 +87,19 @@ export async function createFeedback({
 	}
 }
 
-export async function getCreatorFeedback(creatorId?: string) {
+export async function getCreatorFeedback(
+	creatorId?: string,
+	page: number = 1,
+	limit: number = 10
+) {
 	try {
 		await connectToDatabase();
+
 		// Manually register the models if necessary
 		if (!mongoose.models.Client) {
 			mongoose.model("Client", Client.schema);
 		}
 
-		// Manually register the models if necessary
 		if (!mongoose.models.Creator) {
 			mongoose.model("Creator", Creator.schema);
 		}
@@ -106,27 +110,26 @@ export async function getCreatorFeedback(creatorId?: string) {
 			query.creatorId = creatorId;
 		}
 
+		const skip = (page - 1) * limit;
+
 		const creatorFeedbacks = await CreatorFeedback.find(query, { feedbacks: 1 })
 			.populate("creatorId")
 			.populate("feedbacks.clientId")
-			.lean();
+			.lean()
+			.skip(skip) // Skip the first (page-1) * limit records
+			.limit(limit); // Limit to the number of records defined by limit
 
 		creatorFeedbacks.forEach((creatorFeedback: any) => {
 			creatorFeedback.feedbacks.sort((a: any, b: any) => {
-				// First, sort by position if neither are -1
 				if (a.position !== -1 && b.position !== -1) {
 					return a.position - b.position;
 				}
-
-				// If one of the positions is -1, sort that one after the other
 				if (a.position === -1 && b.position !== -1) {
-					return 1; // 'a' should be after 'b'
+					return 1;
 				}
 				if (b.position === -1 && a.position !== -1) {
-					return -1; // 'b' should be after 'a'
+					return -1;
 				}
-
-				// If both have position -1, sort by createdAt
 				return (
 					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
 				);

@@ -24,7 +24,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 	const [addingFavorite, setAddingFavorite] = useState(false);
 	const [markedFavorite, setMarkedFavorite] = useState(false);
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
-	const [status, setStatus] = useState<string>("Offline"); // Default status to "Offline"
+	const [status, setStatus] = useState<string>("Online"); // Default status to "Offline"
 
 	const { clientUser, setAuthenticationSheetOpen, setCurrentTheme } =
 		useCurrentUsersContext();
@@ -52,6 +52,11 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 						const notificationSound = new Audio("/sounds/statusChange.mp3");
 						notificationSound.play().catch((error) => {
 							console.error("Failed to play sound:", error);
+						});
+
+						toast({
+							variant: "destructive",
+							title: `${creator?.firstName ?? creator?.username} is Online`,
 						});
 					}
 					setStatus(data.status || "Offline");
