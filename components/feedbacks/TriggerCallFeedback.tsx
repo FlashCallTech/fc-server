@@ -3,8 +3,9 @@
 import CallFeedback from "@/components/feedbacks/CallFeedback";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useToast } from "@/components/ui/use-toast";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 	const router = useRouter();
@@ -31,6 +32,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 					setShowFeedback(true);
 				}
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error fetching feedbacks:", error);
 				toast({
 					title: "Error",

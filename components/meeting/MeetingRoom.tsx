@@ -28,6 +28,7 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import * as Sentry from "@sentry/nextjs";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -149,6 +150,7 @@ const MeetingRoom = () => {
 			try {
 				await call.camera.flip();
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error toggling camera:", error);
 			}
 		}

@@ -8,6 +8,7 @@ import {
 	PaymentResponse,
 	RazorpayOptions,
 } from "@/types";
+import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
@@ -94,6 +95,8 @@ const About: React.FC = () => {
 							headers: { "Content-Type": "text/plain" },
 						});
 					} catch (error) {
+						Sentry.captureException(error);
+
 						console.log(error);
 						setLoading(false); // Set loading state to false on error
 					}
@@ -130,6 +133,8 @@ const About: React.FC = () => {
 						});
 						router.push("/success");
 					} catch (error) {
+						Sentry.captureException(error);
+
 						console.error("Validation request failed:", error);
 						setLoading(false);
 					} finally {
@@ -159,6 +164,8 @@ const About: React.FC = () => {
 
 			rzp1.open();
 		} catch (error) {
+			Sentry.captureException(error);
+
 			console.error("Payment request failed:", error);
 			setLoading(false); // Set loading state to false on error
 			router.push("/payment");
@@ -296,7 +303,6 @@ const About: React.FC = () => {
 					>
 						Proceed to Payment
 					</button>
-
 				</div>
 			)}
 		</>

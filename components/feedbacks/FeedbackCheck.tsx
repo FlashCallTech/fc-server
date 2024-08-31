@@ -13,6 +13,7 @@ import {
 import Image from "next/image";
 import { formatDateTime } from "@/lib/utils";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import * as Sentry from "@sentry/nextjs";
 
 const FeedbackCheck = ({ callId }: { callId: string }) => {
 	const [feedbackExists, setFeedbackExists] = useState<boolean | null>(null);
@@ -43,6 +44,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 				setUserFeedbacks(filteredFeedbacks);
 			}
 		} catch (error) {
+			Sentry.captureException(error);
 			console.log("Error checking feedback:", error);
 			setFeedbackExists(false);
 		}

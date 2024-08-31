@@ -11,13 +11,17 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import FeedbackCheck from "../feedbacks/FeedbackCheck";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useInView } from "react-intersection-observer";
+import * as Sentry from "@sentry/nextjs";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 const CallListMobile = () => {
 	const [calls, setCalls] = useState<RegisterCallParams[]>([]);
 	const [page, setPage] = useState(1); // Track current page
 	const [loading, setLoading] = useState(true);
+	const [isFetching, setIsFetching] = useState(false); // To handle API call in progress
 	const [hasMore, setHasMore] = useState(true); // Track if there are more calls to load
 	const { currentUser } = useCurrentUsersContext();
+	const { walletBalance } = useWalletBalanceContext();
 	const pathname = usePathname();
 	const { ref, inView } = useInView();
 
@@ -26,6 +30,7 @@ const CallListMobile = () => {
 			if (!hasMore || !currentUser) return;
 
 			try {
+				setIsFetching(true); // Set fetching state
 				const response = await fetch(
 					`/api/v1/calls/getUserCalls?userId=${String(
 						currentUser?._id
@@ -41,16 +46,18 @@ const CallListMobile = () => {
 					setPage((prevPage) => prevPage + 1); // Increment page number
 				}
 			} catch (error) {
+				Sentry.captureException(error);
 				console.log(error);
 			} finally {
 				setLoading(false);
+				setIsFetching(false);
 			}
 		};
 
 		loadMoreCalls();
 	}, [inView, currentUser]); // Fetch more calls when user scrolls into view
 
-	if (loading && calls.length === 0) {
+	if ((loading && calls.length === 0) || (currentUser && walletBalance < 0)) {
 		return (
 			<section className="w-full h-full flex items-center justify-center">
 				<SinglePostLoader />
@@ -150,21 +157,14 @@ const CallListMobile = () => {
 						);
 					})}
 					{/* Ref for infinite scroll trigger */}
-					{hasMore && (
-						<div
-							ref={ref}
-							className="w-full h-16 flex items-center justify-center"
-						>
-							{loading && (
-								<Image
-									src="/icons/loading-circle.svg"
-									alt="Loading..."
-									width={50}
-									height={50}
-									className="mx-auto invert my-4"
-								/>
-							)}
-						</div>
+					{hasMore && isFetching && (
+						<Image
+							src="/icons/loading-circle.svg"
+							alt="Loading..."
+							width={50}
+							height={50}
+							className="mx-auto invert my-4 z-20"
+						/>
 					)}
 
 					{!hasMore && (
@@ -172,6 +172,8 @@ const CallListMobile = () => {
 							You have reached the end of the list.
 						</div>
 					)}
+
+					{hasMore && <div ref={ref} className=" mt-10 w-full" />}
 				</section>
 			) : (
 				<div className="flex flex-col w-full items-center justify-center h-full gap-7">

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCreatorById } from "@/lib/actions/creator.actions";
+import * as Sentry from "@sentry/nextjs";
 
 export async function POST(req: Request) {
 	try {
@@ -66,6 +67,7 @@ export async function POST(req: Request) {
 
 		return NextResponse.json({ message: "Transaction done" }, { status: 200 });
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Error handling transaction:", error);
 		return NextResponse.json(
 			{ message: "An error occurred while processing the transaction" },

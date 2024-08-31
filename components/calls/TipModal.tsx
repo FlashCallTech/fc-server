@@ -10,7 +10,7 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "@/components/ui/sheet";
-
+import * as Sentry from "@sentry/nextjs";
 import { useToast } from "../ui/use-toast";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 import { creatorUser } from "@/types";
@@ -116,6 +116,7 @@ const TipModal = ({
 				setWalletBalance((prev) => prev + parseInt(rechargeAmount));
 				setTipPaid(true);
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error handling wallet changes:", error);
 				toast({
 					title: "Error",

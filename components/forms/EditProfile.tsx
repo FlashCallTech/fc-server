@@ -30,6 +30,7 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
 import axios from "axios";
 import { debounce } from "@/lib/utils";
+import * as Sentry from "@sentry/nextjs";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -251,6 +252,7 @@ const EditProfile = ({
 				setEditData && setEditData((prev) => !prev);
 			}
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error updating user details:", error);
 			toast({
 				variant: "destructive",
