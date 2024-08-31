@@ -1,6 +1,7 @@
 import Image from "next/image";
 import React from "react";
 import { useToast } from "../ui/use-toast";
+import * as Sentry from "@sentry/nextjs";
 
 const CopyToClipboard = ({
 	link,
@@ -27,6 +28,7 @@ const CopyToClipboard = ({
 				});
 			})
 			.catch((err) => {
+				Sentry.captureException(err);
 				console.error("Failed to copy text: ", err);
 			});
 	};
@@ -53,6 +55,7 @@ const CopyToClipboard = ({
 					url: link,
 				});
 			} catch (err) {
+				Sentry.captureException(err);
 				console.error("Failed to share: ", err);
 				toast({
 					title: "Failed to share",

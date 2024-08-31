@@ -12,6 +12,7 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "@/components/ui/sheet";
+import * as Sentry from "@sentry/nextjs";
 import {
 	PaymentFailedResponse,
 	PaymentResponse,
@@ -98,6 +99,7 @@ const RechargeModal = ({
 							headers: { "Content-Type": "text/plain" },
 						});
 					} catch (error) {
+						Sentry.captureException(error);
 						console.log(error);
 					}
 
@@ -137,6 +139,7 @@ const RechargeModal = ({
 						});
 						setRechargeAmount("");
 					} catch (error) {
+						Sentry.captureException(error);
 						console.error("Validation request failed:", error);
 						toast({
 							title: "Something Went Wrong",
@@ -166,6 +169,7 @@ const RechargeModal = ({
 
 			rzp1.open();
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Payment request failed:", error);
 		} finally {
 			setOnGoingPayment(false);

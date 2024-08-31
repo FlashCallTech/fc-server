@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/input-otp";
 import axios from "axios";
 import Image from "next/image";
+import * as Sentry from "@sentry/nextjs";
 
 const OTPVerification = ({
 	phoneNumber,
@@ -52,6 +53,7 @@ const OTPVerification = ({
 				setToken(response.data.token);
 				console.log("OTP resent:", response.data.message);
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error resending OTP:", error);
 				// Handle error (show message to user, etc.)
 			} finally {

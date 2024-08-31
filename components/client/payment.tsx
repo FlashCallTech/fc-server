@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import axios from "axios";
-import Loader from "@/components/shared/Loader";
+import * as Sentry from "@sentry/nextjs";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -87,6 +87,7 @@ const Payment: React.FC = () => {
 			);
 			setTransactions(response.data.transactions);
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error fetching transactions:", error);
 			setErrorMessage("Unable to fetch transactions");
 		} finally {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { UpdateCreatorParams } from "@/types";
 import { updateCreatorUser } from "@/lib/actions/creator.actions";
+import * as Sentry from "@sentry/nextjs";
 
 export async function PUT(request: Request) {
 	try {
@@ -20,6 +21,7 @@ export async function PUT(request: Request) {
 
 		return NextResponse.json(updatedUser);
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		return new NextResponse("Internal Server Error", { status: 500 });
 	}

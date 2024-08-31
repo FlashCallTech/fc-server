@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import useChat from "./useChat";
 import { logEvent } from "firebase/analytics";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import * as Sentry from "@sentry/nextjs";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
@@ -126,6 +127,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				}
 			});
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error(error);
 			toast({ title: "Failed to send chat request" });
 		}
@@ -214,6 +216,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
 			);
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error(error);
 			toast({ title: "Failed to accept chat request" });
 		}
@@ -235,6 +238,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				onChatRequestUpdate(null);
 			}
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error(error);
 			toast({ title: "Failed to reject chat request" });
 		}

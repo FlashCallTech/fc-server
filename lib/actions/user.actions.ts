@@ -2,6 +2,7 @@ import { connectToDatabase } from "../database";
 import Client from "../database/models/client.model";
 import Creator from "../database/models/creator.model";
 import { handleError } from "../utils";
+import * as Sentry from "@sentry/nextjs";
 
 export async function getUserByPhone(phone: string) {
 	try {
@@ -30,6 +31,7 @@ export async function getUserByPhone(phone: string) {
 		// If no user is found in both models
 		return JSON.stringify("No User Found");
 	} catch (error) {
+		Sentry.captureException(error);
 		handleError(error);
 	}
 }
@@ -57,6 +59,7 @@ export async function getAllUsernames() {
 
 		return allUsernames;
 	} catch (error) {
+		Sentry.captureException(error);
 		handleError(error);
 	}
 }

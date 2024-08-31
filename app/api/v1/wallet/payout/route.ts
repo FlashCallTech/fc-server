@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { processPayout } from "@/lib/actions/wallet.actions";
+import * as Sentry from "@sentry/nextjs";
 
 export async function POST(request: Request) {
 	try {
@@ -7,6 +8,7 @@ export async function POST(request: Request) {
 		const updatedWallet = await processPayout({ userId, userType, amount });
 		return NextResponse.json(updatedWallet);
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		return new NextResponse("Internal Server Error", { status: 500 });
 	}

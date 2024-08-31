@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stream from "getstream";
+import * as Sentry from "@sentry/nextjs";
 
 const API_KEY = process.env.NEXT_PUBLIC_STREAM_API_KEY;
 const API_SECRET = process.env.STREAM_SECRET_KEY;
@@ -36,6 +37,7 @@ export async function POST(req: Request) {
 
 		return NextResponse.json(user);
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Failed to create user:", error);
 		return NextResponse.json(
 			{ error: "Failed to create user" },

@@ -1,11 +1,10 @@
 import {
-  getCreatorTransactionsByUserId,
+	getCreatorTransactionsByUserId,
 	getCreatorTransactionsByUserIdAndType,
-	getTransactionsByUserId,
-	getTransactionsByUserIdAndType,
 } from "@/lib/actions/wallet.actions";
 import { connectToDatabase } from "@/lib/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 export async function GET(request: Request) {
 	try {
@@ -14,7 +13,6 @@ export async function GET(request: Request) {
 		const { searchParams } = new URL(request.url);
 		const userId = searchParams.get("userId");
 		const filter = searchParams.get("filter");
-
 
 		if (!userId || !filter) {
 			return new NextResponse("Either UserId or Filter is missing", {
@@ -27,10 +25,7 @@ export async function GET(request: Request) {
 		if (filter === "all") {
 			result = await getCreatorTransactionsByUserId(userId);
 		} else if (filter === "credit" || filter === "debit") {
-			result = await getCreatorTransactionsByUserIdAndType(
-				userId,
-				filter,
-			);
+			result = await getCreatorTransactionsByUserIdAndType(userId, filter);
 		} else {
 			return new NextResponse("Invalid filter", { status: 400 });
 		}
@@ -40,8 +35,9 @@ export async function GET(request: Request) {
 		}
 
 		const { transactions, totalTransactions } = result;
-		return NextResponse.json({ transactions});
+		return NextResponse.json({ transactions });
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		return new NextResponse("Internal Server Error", { status: 500 });
 	}

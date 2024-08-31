@@ -1,5 +1,6 @@
 // sendOTP.ts
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 export async function POST(req: NextRequest) {
 	try {
@@ -37,6 +38,8 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: data.Details }, { status: 500 });
 		}
 	} catch (error) {
+		Sentry.captureException(error);
+
 		return NextResponse.json({ error }, { status: 500 });
 	}
 }

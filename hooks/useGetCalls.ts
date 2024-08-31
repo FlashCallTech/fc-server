@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import * as Sentry from "@sentry/nextjs";
 
 export const useGetCalls = () => {
 	const client = useStreamVideoClient();
@@ -30,6 +31,7 @@ export const useGetCalls = () => {
 				// console.log("Calls ... ", calls);
 				setCalls(calls);
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error(error);
 			} finally {
 				setIsLoading(false);

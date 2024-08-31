@@ -1,5 +1,6 @@
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
+import * as Sentry from "@sentry/nextjs";
 
 export const handleTransaction = async ({
 	call,
@@ -72,6 +73,7 @@ export const handleTransaction = async ({
 				type: call?.type === "default" ? "video" : "audio",
 			});
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error handling transaction:", error);
 			toast({
 				title: "Error",

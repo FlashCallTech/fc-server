@@ -27,7 +27,7 @@ const HomePage = () => {
 
 	const fetchCreators = useCallback(async (offset: number, limit: number) => {
 		try {
-			setIsFetching(true); // Set fetching state
+			setIsFetching(true);
 			const response = await getUsersPaginated(offset, limit);
 
 			setCreators((prevCreators) => [...prevCreators, ...response]);

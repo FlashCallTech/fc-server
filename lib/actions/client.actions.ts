@@ -8,6 +8,7 @@ import { handleError } from "@/lib/utils";
 
 import { CreateUserParams, UpdateUserParams } from "@/types";
 import Client from "../database/models/client.model";
+import * as Sentry from "@sentry/nextjs";
 
 export async function createUser(user: CreateUserParams) {
 	try {
@@ -23,6 +24,7 @@ export async function createUser(user: CreateUserParams) {
 		// console.log(newUser);
 		return JSON.parse(JSON.stringify(newUser));
 	} catch (error) {
+		Sentry.captureException(error);
 		console.log(error);
 		handleError(error);
 	}
@@ -37,6 +39,7 @@ export async function getUserById(userId: string) {
 		if (!user) throw new Error("User not found");
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
+		Sentry.captureException(error);
 		handleError(error);
 	}
 }
@@ -50,6 +53,7 @@ export async function getUsers() {
 		}
 		return JSON.parse(JSON.stringify(users));
 	} catch (error) {
+		Sentry.captureException(error);
 		console.log(error);
 	}
 }
@@ -91,6 +95,7 @@ export async function updateUser(userId: string, user: UpdateUserParams) {
 		// if (!updatedUser) throw new Error("User update failed");
 		return JSON.parse(JSON.stringify({ updatedUser }));
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Error updating user:", error);
 		throw error; // Propagate error for further handling
 	}
@@ -113,6 +118,7 @@ export async function deleteUser(userId: string) {
 
 		return deletedUser ? JSON.parse(JSON.stringify(deletedUser)) : null;
 	} catch (error) {
+		Sentry.captureException(error);
 		handleError(error);
 	}
 }

@@ -20,6 +20,7 @@ import useEndChat from "@/hooks/useEndChat";
 import ContentLoading from "../shared/ContentLoading";
 import RechargeAndTip from "./RechargeAndTip";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import * as Sentry from "@sentry/nextjs";
 
 const ChatInterface: React.FC = () => {
 	const { handleEnd, chat, markMessagesAsSeen, loading } = useEndChat();
@@ -80,6 +81,7 @@ const ChatInterface: React.FC = () => {
 					setReceiverId(chat ? chat.receiverId : null);
 				}
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error fetching receiver ID:", error);
 			}
 		};
@@ -170,6 +172,7 @@ const ChatInterface: React.FC = () => {
 				}
 			});
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error(error);
 		} finally {
 			setImg({
@@ -232,6 +235,7 @@ const ChatInterface: React.FC = () => {
 				}
 			});
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error(error);
 		} finally {
 			setIsAudioUploading(false);
