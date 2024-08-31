@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { RegisterUserKycParams } from "@/types";
 import { createUserKyc } from "@/lib/actions/userkyc.actions";
 import jwt from "jsonwebtoken";
+import * as Sentry from "@sentry/nextjs";
 
 const HYPERVERGE_API_URL = "https://ind.idv.hyperverge.co/v1/output";
 const HYPERVERGE_APP_ID = process.env.NEXT_PUBLIC_HYPERVERGE_APP_ID;
@@ -42,6 +43,7 @@ export async function POST(request: Request) {
 		try {
 			decodedToken = jwt.verify(token, JWT_SECRET);
 		} catch (error) {
+			Sentry.captureException(error);
 			return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 		}
 
@@ -76,6 +78,7 @@ export async function POST(request: Request) {
 			return new NextResponse("Verification failed", { status: 400 });
 		}
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		return new NextResponse("Internal Server Error", { status: 500 });
 	}

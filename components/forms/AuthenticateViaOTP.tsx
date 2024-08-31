@@ -22,6 +22,7 @@ import { CreateCreatorParams, CreateUserParams } from "@/types";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import * as Sentry from "@sentry/nextjs";
 
 const formSchema = z.object({
 	phone: z
@@ -90,6 +91,7 @@ const AuthenticateViaOTP = ({
 			setToken(response.data.token); // Store the token received from the API
 			setShowOTP(true);
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error sending OTP:", error);
 			// Handle error (show message to user, etc.)
 		} finally {
@@ -125,6 +127,7 @@ const AuthenticateViaOTP = ({
 				});
 			}
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error updating Firestore Data: ", error);
 		}
 	};

@@ -10,7 +10,9 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import { useToast } from "@/components/ui/use-toast";
 import { getUserByUsername } from "@/lib/actions/creator.actions";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 const CreatorCard: React.FC = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
@@ -19,10 +21,9 @@ const CreatorCard: React.FC = () => {
 	const [feedbacksLoading, setFeedbacksLoading] = useState(true);
 	const { username } = useParams();
 	const { toast } = useToast();
-	const pathname = usePathname();
 	const router = useRouter();
-	const { userType, setCurrentTheme } = useCurrentUsersContext();
-
+	const { currentUser, userType, setCurrentTheme } = useCurrentUsersContext();
+	const { walletBalance } = useWalletBalanceContext();
 	useEffect(() => {
 		creator?.themeSelected && setCurrentTheme(creator?.themeSelected);
 		if (userType === "creator") {
@@ -40,14 +41,17 @@ const CreatorCard: React.FC = () => {
 				const response = await getUserByUsername(String(username));
 				setCreator(response[0] || null);
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error fetching creator:", error);
 			} finally {
 				setLoading(false);
 			}
 		};
 
-		fetchCreator();
-	}, [pathname, username, userType, toast, router]);
+		if (username) {
+			fetchCreator();
+		}
+	}, [username]);
 
 	useEffect(() => {
 		const fetchFeedback = async () => {
@@ -68,7 +72,7 @@ const CreatorCard: React.FC = () => {
 		fetchFeedback();
 	}, [creator?._id]);
 
-	if (loading) {
+	if (loading || (currentUser && walletBalance < 0)) {
 		return (
 			<section className="w-full h-full flex flex-col items-center justify-center">
 				<SinglePostLoader />
@@ -78,8 +82,8 @@ const CreatorCard: React.FC = () => {
 
 	if (!creator) {
 		return (
-			<div className="w-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
-				No creators found
+			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
+				No creators found.
 			</div>
 		);
 	}
@@ -107,16 +111,11 @@ const CreatorCard: React.FC = () => {
 				<CallingOptions creator={creator} />
 
 				{/* User Reviews */}
-				{feedbacksLoading ? (
-					<section className="w-full h-full flex items-center justify-center">
-						<SinglePostLoader />
-					</section>
-				) : (
-					<UserReviews
-						theme={creator.themeSelected}
-						creatorFeedback={creatorFeedback[0]?.feedbacks || []}
-					/>
-				)}
+				<UserReviews
+					theme={creator.themeSelected}
+					creatorFeedback={creatorFeedback[0]?.feedbacks || []}
+					feedbacksLoading={feedbacksLoading}
+				/>
 			</div>
 		</section>
 	);

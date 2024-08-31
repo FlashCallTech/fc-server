@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Image from "next/image";
 import { creatorUser } from "@/types";
+import * as Sentry from "@sentry/nextjs";
 
 interface FavoriteItem {
 	creatorId: creatorUser;
@@ -51,6 +52,7 @@ const Favorites = ({
 					console.error("Failed to fetch favorites");
 				}
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error fetching favorites:", error);
 			}
 		};

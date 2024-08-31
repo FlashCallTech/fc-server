@@ -9,6 +9,7 @@ import React, {
 import { getUserById } from "../actions/client.actions";
 import { getCreatorById } from "../actions/creator.actions";
 import { useCurrentUsersContext } from "./CurrentUsersContext";
+import * as Sentry from "@sentry/nextjs";
 
 interface WalletBalanceContextProps {
 	walletBalance: number;
@@ -35,12 +36,12 @@ export const WalletBalanceProvider = ({
 }: {
 	children: ReactNode;
 }) => {
-	const [walletBalance, setWalletBalance] = useState<number>(0);
 	const { currentUser, userType, authenticationSheetOpen } =
 		useCurrentUsersContext();
+	const [walletBalance, setWalletBalance] = useState<number>(-1);
 	const isCreator = userType === "creator";
 
-	const fetchAndSetWalletBalance = async () => {
+	const updateAndSetWalletBalance = async () => {
 		if (currentUser?._id) {
 			try {
 				const response = isCreator
@@ -48,26 +49,29 @@ export const WalletBalanceProvider = ({
 					: await getUserById(currentUser._id);
 				setWalletBalance(response.walletBalance ?? 0);
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error fetching current user:", error);
 				setWalletBalance(0);
 			}
 		}
 	};
 
-	useEffect(() => {
-		const handler = setTimeout(() => {
-			if (currentUser?._id) {
-				fetchAndSetWalletBalance();
-			}
-		}, 300);
+	const fetchAndSetWalletBalance = async () => {
+		try {
+			currentUser && setWalletBalance(currentUser?.walletBalance ?? 0);
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error fetching current user:", error);
+			setWalletBalance(0);
+		}
+	};
 
-		return () => {
-			clearTimeout(handler);
-		};
-	}, [userType, authenticationSheetOpen, currentUser?._id]);
+	useEffect(() => {
+		fetchAndSetWalletBalance();
+	}, [userType, authenticationSheetOpen, isCreator]);
 
 	const updateWalletBalance = async () => {
-		await fetchAndSetWalletBalance();
+		await updateAndSetWalletBalance();
 	};
 
 	return (

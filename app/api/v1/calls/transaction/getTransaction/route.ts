@@ -1,5 +1,6 @@
 import { getCallTransaction } from "@/lib/actions/callTransactions.actions";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 export async function GET(request: Request) {
 	try {
@@ -13,6 +14,7 @@ export async function GET(request: Request) {
 		const transaction = await getCallTransaction(callId);
 		return NextResponse.json(transaction);
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		return new NextResponse("Internal Server Error", { status: 500 });
 	}
