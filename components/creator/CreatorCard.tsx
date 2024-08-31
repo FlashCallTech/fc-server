@@ -5,7 +5,6 @@ import { creatorUser } from "@/types";
 import CallingOptions from "../calls/CallingOptions";
 import CreatorDetails from "./CreatorDetails";
 import UserReviews from "./UserReviews";
-import axios from "axios";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { useToast } from "@/components/ui/use-toast";
 import { getUserByUsername } from "@/lib/actions/creator.actions";
@@ -16,14 +15,13 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 const CreatorCard: React.FC = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
-	const [creatorFeedback, setCreatorFeedback] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [feedbacksLoading, setFeedbacksLoading] = useState(true);
 	const { username } = useParams();
 	const { toast } = useToast();
 	const router = useRouter();
 	const { currentUser, userType, setCurrentTheme } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
+
 	useEffect(() => {
 		creator?.themeSelected && setCurrentTheme(creator?.themeSelected);
 		if (userType === "creator") {
@@ -52,25 +50,6 @@ const CreatorCard: React.FC = () => {
 			fetchCreator();
 		}
 	}, [username]);
-
-	useEffect(() => {
-		const fetchFeedback = async () => {
-			if (creator?._id) {
-				try {
-					const response = await axios.get(
-						`/api/v1/feedback/creator/selected?creatorId=${creator._id}`
-					);
-					setCreatorFeedback(response.data.feedbacks || []);
-				} catch (err) {
-					console.error("Error fetching feedback:", err);
-				} finally {
-					setFeedbacksLoading(false);
-				}
-			}
-		};
-
-		fetchFeedback();
-	}, [creator?._id]);
 
 	if (loading || (currentUser && walletBalance < 0)) {
 		return (
@@ -111,11 +90,7 @@ const CreatorCard: React.FC = () => {
 				<CallingOptions creator={creator} />
 
 				{/* User Reviews */}
-				<UserReviews
-					theme={creator.themeSelected}
-					creatorFeedback={creatorFeedback[0]?.feedbacks || []}
-					feedbacksLoading={feedbacksLoading}
-				/>
+				<UserReviews theme={creator.themeSelected} creatorId={creator?._id} />
 			</div>
 		</section>
 	);
