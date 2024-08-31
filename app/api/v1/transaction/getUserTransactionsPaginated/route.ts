@@ -4,6 +4,7 @@ import {
 } from "@/lib/actions/wallet.actions";
 import { connectToDatabase } from "@/lib/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 export async function GET(request: Request) {
 	try {
@@ -24,7 +25,6 @@ export async function GET(request: Request) {
 		// let result: { transactions: any[]; totalTransactions: number } | undefined;
 		let result: any;
 
-
 		// if (filter === "all") {
 		// 	result = await getTransactionsByUserId(userId, page, limit);
 		// } else if (filter === "credit" || filter === "debit") {
@@ -40,10 +40,7 @@ export async function GET(request: Request) {
 		if (filter === "all") {
 			result = await getTransactionsByUserId(userId);
 		} else if (filter === "credit" || filter === "debit") {
-			result = await getTransactionsByUserIdAndType(
-				userId,
-				filter,
-			);
+			result = await getTransactionsByUserIdAndType(userId, filter);
 		} else {
 			return new NextResponse("Invalid filter", { status: 400 });
 		}
@@ -55,8 +52,9 @@ export async function GET(request: Request) {
 		// const { transactions, totalTransactions } = result;
 		// const totalPages = Math.ceil(totalTransactions / limit);
 
-		return NextResponse.json( result );
+		return NextResponse.json(result);
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		return new NextResponse("Internal Server Error", { status: 500 });
 	}

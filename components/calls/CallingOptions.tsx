@@ -69,7 +69,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		isAuthSheetOpen && setIsAuthSheetOpen(false);
 		return () => unsubscribe();
-	}, [creator._id]);
+	}, []);
 
 	useEffect(() => {
 		if (!chatReqSent) return;
@@ -114,7 +114,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}, 1000);
 
 		return () => clearInterval(intervalId);
-	}, [clientUser, router, chatReqSent]);
+	}, [clientUser?._id, router, chatReqSent]);
 
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
@@ -130,6 +130,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						console.log("Audio autoplay started!");
 					})
 					.catch((error) => {
+						Sentry.captureException(error);
 						console.error("Audio autoplay was prevented:", error);
 					});
 			}
@@ -261,6 +262,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			call.on("call.accepted", () => handleCallAccepted(call));
 			call.on("call.rejected", handleCallRejected);
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error(error);
 			toast({ title: "Failed to create Meeting" });
 		}
@@ -428,6 +430,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 								status: "ended",
 							});
 						} catch (error) {
+							Sentry.captureException(error);
 							console.error(error);
 						}
 					}}

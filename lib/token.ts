@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import * as Sentry from "@sentry/nextjs";
 
 export const generateToken = (
 	phone: string,
@@ -13,6 +14,7 @@ export const generateToken = (
 		});
 		return token;
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Error generating token:", error);
 		throw error; // Rethrow the error for further investigation
 	}
@@ -28,6 +30,7 @@ export const verifyToken = (
 		};
 		return decoded;
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Error verifying token:", error);
 		return null;
 	}

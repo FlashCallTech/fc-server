@@ -6,6 +6,7 @@ import { storage } from "@/lib/firebase";
 import { useToast } from "../ui/use-toast";
 import Image from "next/image";
 import imageCompression from "browser-image-compression";
+import * as Sentry from "@sentry/nextjs";
 
 type FileUploaderProps = {
 	fieldChange: (url: string) => void;
@@ -71,6 +72,7 @@ const FileUploader = ({
 					}
 				);
 			} catch (error) {
+				Sentry.captureException(error);
 				toast({
 					title: "Unable to Upload Image",
 					description: "Please Try Again...",

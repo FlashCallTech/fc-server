@@ -1,6 +1,7 @@
 import { getCreatorById } from "@/lib/actions/creator.actions";
 import { analytics } from "@/lib/firebase";
 import { logEvent } from "firebase/analytics";
+import * as Sentry from "@sentry/nextjs";
 
 export const handleTransaction = async ({
 	duration,
@@ -93,6 +94,7 @@ export const handleTransaction = async ({
 			]);
 		}
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Error handling wallet changes:", error);
 		toast({
 			title: "Error",

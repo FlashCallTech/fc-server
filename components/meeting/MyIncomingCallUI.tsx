@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import { useToast } from "../ui/use-toast";
+import * as Sentry from "@sentry/nextjs";
 
 const MyIncomingCallUI = ({ call }: { call: Call }) => {
 	const { toast } = useToast();
@@ -14,6 +15,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 					await navigator.serviceWorker.register("/sw.js");
 					console.log("Service Worker registered.");
 				} catch (error) {
+					Sentry.captureException(error);
 					console.error("Service Worker registration failed:", error);
 				}
 			}
@@ -65,8 +67,8 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 						console.log("Audio autoplay started!");
 					})
 					.catch((error) => {
+						Sentry.captureException(error);
 						console.error("Audio autoplay was prevented:", error);
-						// Show a UI element or prompt user to play the sound manually if needed
 					});
 			}
 

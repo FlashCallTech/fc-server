@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import * as Sentry from "@sentry/nextjs";
 
 interface Transaction {
 	_id: string;
@@ -68,6 +69,7 @@ const Withdraw: React.FC = () => {
 			);
 			setTransactions(transactionsByDate);
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error fetching transactions:", error);
 			setErrorMessage("Unable to fetch transactions");
 		} finally {

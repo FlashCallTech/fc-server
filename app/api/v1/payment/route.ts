@@ -3,6 +3,7 @@ import OrderPayments from "@/lib/database/models/OrderPayments";
 import Order from "@/lib/database/models/Order";
 import { razorpay } from "@/lib/utils";
 import { NextResponse, NextRequest } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 export async function POST(req: NextRequest) {
 	await connectToDatabase();
@@ -66,6 +67,7 @@ export async function POST(req: NextRequest) {
 
 		return NextResponse.json({ success: "payment successfully created" });
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		return NextResponse.json(
 			{ error: "Error creating payment" },

@@ -9,6 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 import FeedbackCheck from "../feedbacks/FeedbackCheck";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import * as Sentry from "@sentry/nextjs";
 
 const ChatList = () => {
 	const [chats, setChats] = useState<SelectedChat[]>([]);
@@ -43,6 +44,7 @@ const ChatList = () => {
 				const data = await response.json();
 				setChats(data);
 			} catch (error) {
+				Sentry.captureException(error);
 				console.warn(error);
 			} finally {
 				setLoading(false); // Set loading to false after data is fetched

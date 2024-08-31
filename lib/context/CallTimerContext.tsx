@@ -11,6 +11,7 @@ import { Call, useCallStateHooks } from "@stream-io/video-react-sdk";
 import { creatorUser } from "@/types";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import * as Sentry from "@sentry/nextjs";
 
 interface CallTimerContextProps {
 	timeLeft: string;
@@ -122,6 +123,7 @@ export const CallTimerProvider = ({
 					});
 				}
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error updating Firestore timer: ", error);
 			}
 		};

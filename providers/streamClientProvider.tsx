@@ -5,6 +5,7 @@ import { StreamVideo, StreamVideoClient } from "@stream-io/video-react-sdk";
 import MyCallUI from "@/components/meeting/MyCallUI";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { tokenProvider } from "@/lib/actions/stream.actions";
+import * as Sentry from "@sentry/nextjs";
 
 const API_KEY = process.env.NEXT_PUBLIC_STREAM_API_KEY;
 
@@ -45,6 +46,7 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 				});
 				setVideoClient(client);
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Failed to initialize StreamVideoClient:", error);
 			}
 		};

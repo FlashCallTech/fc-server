@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 
 import {
 	Sheet,
@@ -34,6 +35,7 @@ const MobileNav = () => {
 					console.log("User status set to Offline");
 				})
 				.catch((error: any) => {
+					Sentry.captureException(error);
 					console.error("Error updating user status: ", error);
 				});
 		}

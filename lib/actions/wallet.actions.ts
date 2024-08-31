@@ -5,6 +5,7 @@ import Creator from "../database/models/creator.model";
 import Transaction from "../database/models/transaction.model";
 import Wallet from "../database/models/wallet.models";
 import { handleError } from "../utils";
+import * as Sentry from "@sentry/nextjs";
 
 export async function addMoney({ userId, userType, amount }: WalletParams) {
 	try {
@@ -65,6 +66,7 @@ export async function addMoney({ userId, userType, amount }: WalletParams) {
 
 		return JSON.parse(JSON.stringify(wallet));
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Error in addMoney:", error);
 		throw new Error("Error adding money");
 	}
@@ -121,13 +123,14 @@ export async function processPayout({
 
 		return JSON.parse(JSON.stringify(wallet));
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Error in processPayout:", error);
 		throw new Error("Error processing payout");
 	}
 }
 
 export async function getTransactionsByUserId(
-	userId: string,
+	userId: string
 	// page = 1,
 	// limit = 10
 ) {
@@ -145,8 +148,8 @@ export async function getTransactionsByUserId(
 
 		// return { transactions, totalTransactions };
 		return { transactions };
-
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		handleError(error);
 	}
@@ -171,6 +174,7 @@ export async function getCreatorTransactionsByUserId(
 
 		return { transactions, totalTransactions };
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		handleError(error);
 	}
@@ -184,6 +188,7 @@ export async function getTransactionsByType(type: "debit" | "credit") {
 			.lean();
 		return transactions;
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		handleError(error);
 	}
@@ -191,7 +196,7 @@ export async function getTransactionsByType(type: "debit" | "credit") {
 
 export async function getTransactionsByUserIdAndType(
 	userId: string,
-	type: "debit" | "credit",
+	type: "debit" | "credit"
 	// page = 1,
 	// limit = 10
 ) {
@@ -212,6 +217,7 @@ export async function getTransactionsByUserIdAndType(
 
 		return { transactions };
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		handleError(error);
 	}
@@ -239,6 +245,7 @@ export async function getCreatorTransactionsByUserIdAndType(
 
 		return { transactions, totalTransactions };
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		handleError(error);
 	}
@@ -252,6 +259,7 @@ export async function getAllTransactionsByUserId(userId: string) {
 			.lean();
 		return { transactions };
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		handleError(error);
 	}
@@ -270,6 +278,7 @@ export async function getUsersTransactionsByType(
 
 		return { transactions };
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		handleError(error);
 	}
@@ -299,6 +308,7 @@ export async function getTransactionsByUserIdAndDate(
 
 		return { transactions };
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		handleError(error);
 	}

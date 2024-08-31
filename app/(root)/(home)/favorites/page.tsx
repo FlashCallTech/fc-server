@@ -6,6 +6,8 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 type FavoriteItem = {
 	creatorId: creatorUser;
@@ -16,6 +18,7 @@ const Favorites = () => {
 	const [error, setError] = useState(false);
 	const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
 	const { currentUser } = useCurrentUsersContext();
+	const { walletBalance } = useWalletBalanceContext();
 	useEffect(() => {
 		const fetchFavorites = async () => {
 			try {
@@ -41,6 +44,7 @@ const Favorites = () => {
 					setError(true);
 				}
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error fetching favorites:", error);
 				setError(true);
 			} finally {
@@ -55,7 +59,7 @@ const Favorites = () => {
 
 	return (
 		<section className="flex size-full flex-col gap-5 md:pb-14">
-			{loading ? (
+			{loading || (currentUser && walletBalance < 0) ? (
 				<section className="w-full h-full flex items-center justify-center">
 					<SinglePostLoader />
 				</section>

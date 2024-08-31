@@ -2,13 +2,16 @@
 import React, { useEffect, useState } from "react";
 import { CreatorFeedback } from "@/types";
 import ReviewSlider from "./ReviewSlider";
+import SinglePostLoader from "../shared/SinglePostLoader";
 
 const UserReviews = ({
 	theme,
 	creatorFeedback,
+	feedbacksLoading,
 }: {
 	theme: string;
 	creatorFeedback: Array<CreatorFeedback>;
+	feedbacksLoading: boolean;
 }) => {
 	const [isExpanded, setIsExpanded] = useState(false);
 
@@ -54,15 +57,20 @@ const UserReviews = ({
 					<h2 className="text-2xl font-semibold">Happy Client&apos;s</h2>
 
 					{/* main section */}
-					{creatorFeedback && (
-						<ReviewSlider
-							creatorFeedback={creatorFeedback}
-							getClampedText={getClampedText}
-							isExpanded={isExpanded}
-							setIsExpanded={setIsExpanded}
-							toggleReadMore={toggleReadMore}
-						/>
-					)}
+					{creatorFeedback &&
+						(feedbacksLoading ? (
+							<section className="w-full h-full flex items-center justify-center">
+								<SinglePostLoader />
+							</section>
+						) : (
+							<ReviewSlider
+								creatorFeedback={creatorFeedback}
+								getClampedText={getClampedText}
+								isExpanded={isExpanded}
+								setIsExpanded={setIsExpanded}
+								toggleReadMore={toggleReadMore}
+							/>
+						))}
 				</div>
 			) : (
 				<div />

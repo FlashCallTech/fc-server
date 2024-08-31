@@ -9,8 +9,9 @@ import ShareButton from "../shared/ShareButton";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { isValidUrl } from "@/lib/utils";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import * as Sentry from "@sentry/nextjs";
 
 interface CreatorDetailsProps {
 	creator: creatorUser;
@@ -34,7 +35,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 			localStorage.setItem("currentCreator", JSON.stringify(creator));
 			setCurrentTheme(creator?.themeSelected);
 		}
-	}, [creator, isCreatorOrExpertPath]);
+	}, [creator?._id, isCreatorOrExpertPath]);
 
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
@@ -60,7 +61,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 
 		// Clean up the listener on component unmount
 		return () => unsubscribe();
-	}, [creator.phone]);
+	}, []);
 
 	const handleToggleFavorite = async () => {
 		if (!clientUser) {
@@ -85,6 +86,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 				});
 			}
 		} catch (error) {
+			Sentry.captureException(error);
 			console.log(error);
 		} finally {
 			setAddingFavorite(false);
@@ -107,7 +109,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 		img.onerror = () => {
 			setIsImageLoaded(true);
 		};
-	}, [creator.photo]);
+	}, [imageSrc]);
 
 	const backgroundImageStyle = {
 		backgroundImage: `url(${imageSrc})`,

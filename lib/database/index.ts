@@ -9,14 +9,22 @@ export const connectToDatabase = async () => {
 
 	if (!MONGODB_URI) throw new Error("MONGODB_URI is missing");
 
-	cached.promise =
-		cached.promise ||
-		mongoose.connect(MONGODB_URI, {
+	if (!cached.promise) {
+		cached.promise = mongoose.connect(MONGODB_URI, {
 			dbName: "flash",
 			bufferCommands: false,
+			connectTimeoutMS: 10000, // Optional: Increase the timeout
+			socketTimeoutMS: 45000, // Optional: Increase the timeout
 		});
+	}
 
 	cached.conn = await cached.promise;
+
+	// Ensure the connection is ready before proceeding
+	if (mongoose.connection.readyState !== 1) {
+		throw new Error("Database connection not ready");
+	}
+
 	console.log("Connected to DataBase");
 
 	return cached.conn;

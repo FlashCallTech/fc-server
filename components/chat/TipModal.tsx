@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
 	Sheet,
-	SheetClose,
 	SheetContent,
 	SheetDescription,
 	SheetFooter,
@@ -14,7 +12,7 @@ import {
 } from "@/components/ui/sheet";
 
 import { useToast } from "../ui/use-toast";
-
+import * as Sentry from "@sentry/nextjs";
 import { creatorUser } from "@/types";
 import { success } from "@/constants/icons";
 import ContentLoading from "../shared/ContentLoading";
@@ -107,6 +105,7 @@ const TipModal = ({
 				setWalletBalance((prev) => prev + parseInt(tipAmount));
 				setTipPaid(true);
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error handling wallet changes:", error);
 				toast({
 					title: "Error",
