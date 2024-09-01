@@ -42,8 +42,8 @@ export async function getUsers() {
 }
 
 export async function getUsersPaginated(offset = 0, limit = 2) {
-	await connectToDatabase();
 	try {
+		await connectToDatabase();
 		// MongoDB query to filter users with non-zero rates for audio, video, and chat
 		const query = {
 			$or: [

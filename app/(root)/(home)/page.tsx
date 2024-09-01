@@ -8,14 +8,14 @@ import { getUsersPaginated } from "@/lib/actions/creator.actions";
 import { creatorUser } from "@/types";
 import CreatorHome from "@/components/creator/CreatorHome";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import PostLoader from "@/components/shared/PostLoader";
 import Image from "next/image";
 
 const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
 const HomePage = () => {
-	const CACHE_EXPIRY_TIME = 5 * 60 * 1000; // 1 minute
+	const CACHE_EXPIRY_TIME = 5 * 60 * 1000; // 5 minutes
 	const [creators, setCreators] = useState<creatorUser[]>(() => {
 		const cachedCreators = localStorage.getItem("creators");
 		return cachedCreators ? JSON.parse(cachedCreators) : [];
@@ -27,6 +27,7 @@ const HomePage = () => {
 	const [hasMore, setHasMore] = useState(true);
 	const { userType, setCurrentTheme } = useCurrentUsersContext();
 	const pathname = usePathname();
+	const router = useRouter();
 	const { ref, inView } = useInView();
 
 	const fetchCreators = useCallback(
@@ -93,10 +94,12 @@ const HomePage = () => {
 	useEffect(() => {
 		const lastFetched = localStorage.getItem("creatorsLastFetched");
 		const now = Date.now();
-		// Check if the cache is expired or if there are no cached creators
+
+		// Only fetch new data if the cache has expired
 		if (!lastFetched || now - parseInt(lastFetched) > CACHE_EXPIRY_TIME) {
 			fetchCreators(0, 6);
 		} else {
+			// Check if there's a new creator if cache is still valid
 			checkForNewCreator();
 		}
 	}, [pathname, fetchCreators, checkForNewCreator]);
@@ -108,8 +111,12 @@ const HomePage = () => {
 	}, [inView, isFetching, hasMore, creatorCount, fetchCreators]);
 
 	const handleCreatorCardClick = (username: string, theme: string) => {
+		// Save any necessary data in localStorage
 		localStorage.setItem("creatorURL", `/${username}`);
 		setCurrentTheme(theme);
+
+		// Trigger the route change immediately
+		router.push(`/${username}`);
 	};
 
 	return (
@@ -129,26 +136,22 @@ const HomePage = () => {
 						</div>
 					) : (
 						<section
-							className={`grid grid-cols-2 gap-2.5 px-2.5 lg:gap-5 lg:px-0 items-center`}
+							className={`grid xs:grid-cols-2 gap-2.5 px-2.5 lg:gap-5 lg:px-0 items-center`}
 						>
 							{creators &&
 								creators.map((creator, index) => (
-									<Link
-										href={`/${creator.username}`}
-										key={creator._id || index}
+									<section
+										key={creator._id} // Add a key for list rendering optimization
+										className="min-w-full transition-all duration-500 hover:scale-95 cursor-pointer"
+										onClick={() =>
+											handleCreatorCardClick(
+												creator.username,
+												creator.themeSelected
+											)
+										}
 									>
-										<section
-											className="min-w-full transition-all duration-500 hover:scale-95"
-											onClick={() =>
-												handleCreatorCardClick(
-													creator.username,
-													creator.themeSelected
-												)
-											}
-										>
-											<CreatorsGrid creator={creator} />
-										</section>
-									</Link>
+										<CreatorsGrid creator={creator} />
+									</section>
 								))}
 						</section>
 					)}

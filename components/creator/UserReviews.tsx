@@ -16,8 +16,8 @@ const UserReviews = ({
 	const [creatorFeedback, setCreatorFeedback] = useState<CreatorFeedback[]>([]);
 	const [feedbacksLoading, setFeedbacksLoading] = useState(true);
 	const [isExpanded, setIsExpanded] = useState(false);
-	const [page, setPage] = useState(1); // State to track pagination
-	const [hasMoreFeedbacks, setHasMoreFeedbacks] = useState(true); // State to track if more feedbacks are available
+	const [page, setPage] = useState(1);
+	const [hasMoreFeedbacks, setHasMoreFeedbacks] = useState(true);
 
 	const useScreenSize = () => {
 		const [isMobile, setIsMobile] = useState(false);
@@ -49,36 +49,52 @@ const UserReviews = ({
 		return text;
 	};
 
-	const fetchFeedback = async (loadMore = false) => {
+	const syncWithServerFeedback = async (serverFeedbacks: CreatorFeedback[]) => {
+		// Filter out feedbacks that no longer exist on the server
+		const updatedFeedback = creatorFeedback.filter((cachedFeedback) =>
+			serverFeedbacks.some(
+				(serverFeedback) =>
+					serverFeedback.createdAt === cachedFeedback.createdAt
+			)
+		);
+
+		// Add any new feedbacks from the server
+		const newFeedbacks = serverFeedbacks.filter(
+			(serverFeedback) =>
+				!updatedFeedback.some(
+					(cachedFeedback) =>
+						cachedFeedback.createdAt === serverFeedback.createdAt
+				)
+		);
+
+		const finalFeedback = [...updatedFeedback, ...newFeedbacks];
+		setCreatorFeedback(finalFeedback);
+
+		// Cache the synchronized feedbacks and timestamp
+		sessionStorage.setItem(
+			`feedback-${creatorId}`,
+			JSON.stringify(finalFeedback)
+		);
+		sessionStorage.setItem(
+			`feedback-timestamp-${creatorId}`,
+			JSON.stringify(Date.now())
+		);
+
+		// Increase the page number for subsequent requests
+		setPage((prevPage) => prevPage + 1);
+	};
+
+	const fetchFeedback = async () => {
 		try {
 			setFeedbacksLoading(true); // Set loading state to true when fetching
 			const response = await axios.get(
 				`/api/v1/feedback/creator/selected?creatorId=${creatorId}&page=${page}`
 			);
 
-			const newFeedbacks = response.data.feedbacks[0]?.feedbacks || [];
+			const serverFeedbacks = response.data.feedbacks[0]?.feedbacks || [];
 
-			if (newFeedbacks.length > 0) {
-				setCreatorFeedback((prevFeedback) => {
-					const existingFeedbackIds = new Set(
-						prevFeedback.map((feedback) => feedback.createdAt)
-					);
-					const filteredNewFeedbacks = newFeedbacks.filter(
-						(feedback: any) => !existingFeedbackIds.has(feedback.createdAt)
-					);
-					return loadMore
-						? [...prevFeedback, ...filteredNewFeedbacks]
-						: filteredNewFeedbacks;
-				});
-
-				// Cache the updated feedbacks
-				sessionStorage.setItem(
-					`feedback-${creatorId}`,
-					JSON.stringify([...creatorFeedback, ...newFeedbacks])
-				);
-
-				// Increase the page number for subsequent requests
-				setPage((prevPage) => prevPage + 1);
+			if (serverFeedbacks.length > 0) {
+				syncWithServerFeedback(serverFeedbacks);
 			} else {
 				setHasMoreFeedbacks(false);
 			}
@@ -92,9 +108,22 @@ const UserReviews = ({
 
 	useEffect(() => {
 		const cachedFeedback = sessionStorage.getItem(`feedback-${creatorId}`);
-		if (cachedFeedback) {
+		const cachedTimestamp = sessionStorage.getItem(
+			`feedback-timestamp-${creatorId}`
+		);
+
+		if (cachedFeedback && cachedTimestamp) {
+			const now = Date.now();
+			const lastFetched = JSON.parse(cachedTimestamp);
+			const fiveMinutes = 5 * 60 * 1000;
+
 			setCreatorFeedback(JSON.parse(cachedFeedback));
 			setFeedbacksLoading(false);
+
+			if (now - lastFetched > fiveMinutes) {
+				// Fetch new feedbacks if the cache is older than 5 minutes
+				fetchFeedback();
+			}
 		} else {
 			fetchFeedback();
 		}
@@ -141,7 +170,7 @@ const UserReviews = ({
 					{/* Fetch More Button */}
 					{hasMoreFeedbacks && !feedbacksLoading && (
 						<button
-							onClick={() => fetchFeedback(true)} // Fetch more feedbacks
+							onClick={() => fetchFeedback()} // Fetch more feedbacks
 							className="absolute top-0 right-4 mt-4 p-2 bg-[#232323]/35 rounded-full text-white hoverScaleDownEffect"
 						>
 							<svg
@@ -162,7 +191,7 @@ const UserReviews = ({
 					)}
 				</div>
 			) : (
-				<div />
+				<div className="-mt-2.5" />
 			)}
 		</>
 	);

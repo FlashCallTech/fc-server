@@ -38,7 +38,9 @@ export const WalletBalanceProvider = ({
 }) => {
 	const { currentUser, userType, authenticationSheetOpen } =
 		useCurrentUsersContext();
-	const [walletBalance, setWalletBalance] = useState<number>(-1);
+	const [walletBalance, setWalletBalance] = useState<number>(
+		currentUser?.walletBalance ?? -1
+	);
 	const isCreator = userType === "creator";
 
 	const updateAndSetWalletBalance = async () => {
