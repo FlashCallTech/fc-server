@@ -188,6 +188,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			router.replace("/updateDetails");
 			setTimeout(() => {
 				toast({
+					variant: "destructive",
 					title: "Greetings Friend",
 					description: "Complete Your Profile Details...",
 				});
@@ -214,6 +215,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 							console.log(data.token, authToken);
 							handleSignout();
 							toast({
+								variant: "destructive",
 								title: "Another Session Detected",
 								description: "Logging Out...",
 							});
@@ -263,33 +265,14 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			setStatusOffline();
 		};
 
-		// Handle visibility change event
-		const handleVisibilityChange = () => {
-			if (document.visibilityState === "hidden") {
-				setStatusOffline();
-			} else {
-				// Optionally, set the status back to "Online" when the user returns
-				setDoc(statusDocRef, { status: "Online" }, { merge: true })
-					.then(() => {
-						console.log("User status set to Online");
-					})
-					.catch((error) => {
-						Sentry.captureException(error);
-						console.error("Error updating user status: ", error);
-					});
-			}
-		};
-
 		// Add event listeners
 		window.addEventListener("beforeunload", handleBeforeUnload);
-		document.addEventListener("visibilitychange", handleVisibilityChange);
 
 		// Cleanup listener on component unmount
 		return () => {
 			unsubscribe();
 			setStatusOffline(); // Set offline on unmount
 			window.removeEventListener("beforeunload", handleBeforeUnload);
-			document.removeEventListener("visibilitychange", handleVisibilityChange);
 		};
 	}, [currentUser?._id]);
 

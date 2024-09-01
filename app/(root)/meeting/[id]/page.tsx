@@ -30,6 +30,7 @@ const MeetingPage = () => {
 	useEffect(() => {
 		if (!isCallLoading && !call) {
 			toast({
+				variant: "destructive",
 				title: "Call Not Found",
 				description: "Redirecting Back...",
 			});
@@ -111,6 +112,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 
 			if (!toastShown) {
 				toast({
+					variant: "destructive",
 					title: "Session Has Ended",
 					description: "Checking for Pending Transactions ...",
 				});

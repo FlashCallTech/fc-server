@@ -158,6 +158,7 @@ const CreatorHome = () => {
 			});
 			setPrices(newPrices);
 			toast({
+				variant: "destructive",
 				title: "Rates Updated",
 				description: "Values are updated...",
 			});
@@ -174,6 +175,7 @@ const CreatorHome = () => {
 			Sentry.captureException(error);
 			console.log(error);
 			toast({
+				variant: "destructive",
 				title: "Rates were Not Updated",
 				description: "Something went wrong...",
 			});

@@ -99,6 +99,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 		}
 
 		toast({
+			variant: "destructive",
 			title: `${action === "declined" ? "Call Declined" : "Call Accepted"}`,
 			description: `${
 				action === "declined"

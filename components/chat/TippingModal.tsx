@@ -58,6 +58,7 @@ const TippingModal = ({
 				0
 			) {
 				toast({
+					variant: "destructive",
 					title: "Error",
 					description: "Not sufficient balance",
 				});

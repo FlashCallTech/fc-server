@@ -129,6 +129,7 @@ const RechargeModal = ({
 						});
 
 						toast({
+							variant: "destructive",
 							title: "Recharge Successful",
 							description: `Credited Rs. ${parseInt(
 								rechargeAmount,
@@ -140,6 +141,7 @@ const RechargeModal = ({
 						Sentry.captureException(error);
 						console.error("Validation request failed:", error);
 						toast({
+							variant: "destructive",
 							title: "Something Went Wrong",
 							description: `Please enter a valid amount`,
 						});

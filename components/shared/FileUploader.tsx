@@ -57,6 +57,7 @@ const FileUploader = ({
 					(error) => {
 						console.error("Upload failed", error);
 						toast({
+							variant: "destructive",
 							title: "Unable to Upload Image",
 							description: "Please Try Again...",
 						});
@@ -74,6 +75,7 @@ const FileUploader = ({
 			} catch (error) {
 				Sentry.captureException(error);
 				toast({
+					variant: "destructive",
 					title: "Unable to Upload Image",
 					description: "Please Try Again...",
 				});

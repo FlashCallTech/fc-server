@@ -25,6 +25,7 @@ const CallFeedbackPage = () => {
 
 				if (feedbacks.length > 0) {
 					toast({
+						variant: "destructive",
 						title: "Feedback Already Exists",
 						description: "Returning to HomePage ...",
 					});
@@ -36,6 +37,7 @@ const CallFeedbackPage = () => {
 				Sentry.captureException(error);
 				console.error("Error fetching feedbacks:", error);
 				toast({
+					variant: "destructive",
 					title: "Error",
 					description: "An error occurred while fetching feedbacks",
 				});
@@ -64,6 +66,7 @@ const CallFeedbackPage = () => {
 	const handleFeedbackClose = async () => {
 		setShowFeedback(false);
 		toast({
+			variant: "destructive",
 			title: "Thanks For The Feedback",
 			description: "Hope to See You Again ...",
 		});

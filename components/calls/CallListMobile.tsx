@@ -37,7 +37,6 @@ const CallListMobile = () => {
 					)}&page=${page}&limit=10`
 				);
 				const data = await response.json();
-				console.log(data);
 				// If no more data, stop further API calls
 				if (data.length === 0) {
 					setHasMore(false);
@@ -64,8 +63,6 @@ const CallListMobile = () => {
 			</section>
 		);
 	}
-
-	console.log(hasMore);
 
 	return (
 		<>

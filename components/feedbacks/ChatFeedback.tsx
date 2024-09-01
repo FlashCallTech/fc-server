@@ -93,10 +93,12 @@ const ChatFeedback = ({
 
 			setFeedbackSubmitted(true);
 			toast({
+				variant: "destructive",
 				title: "Feedback Submitted Successfully",
 			});
 		} catch (error: any) {
 			toast({
+				variant: "destructive",
 				title: "Failed to Submit Feedback",
 			});
 			console.error("Error submitting feedback:", error);

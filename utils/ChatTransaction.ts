@@ -97,6 +97,7 @@ export const handleTransaction = async ({
 		Sentry.captureException(error);
 		console.error("Error handling wallet changes:", error);
 		toast({
+			variant: "destructive",
 			title: "Error",
 			description: "An error occurred while processing the Transactions",
 		});
