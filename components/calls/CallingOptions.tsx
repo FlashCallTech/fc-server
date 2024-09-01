@@ -352,74 +352,77 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					)}
 
 				{/* Book Video Call */}
-				{updatedCreator.videoAllowed && (
-					<div
-						className={`callOptionContainer ${
-							isProcessing ? "opacity-50 cursor-not-allowed" : ""
-						}`}
-						style={{
-							boxShadow: theme,
-						}}
-						onClick={() => handleClickOption("video")}
-					>
+				{updatedCreator.videoAllowed &&
+					parseInt(updatedCreator.videoRate, 10) > 0 && (
 						<div
-							className={`flex gap-4 items-center font-semibold`}
-							style={{ color: updatedCreator.themeSelected }}
+							className={`callOptionContainer ${
+								isProcessing ? "opacity-50 cursor-not-allowed" : ""
+							}`}
+							style={{
+								boxShadow: theme,
+							}}
+							onClick={() => handleClickOption("video")}
 						>
-							{video}
-							Book Video Call
+							<div
+								className={`flex gap-4 items-center font-semibold`}
+								style={{ color: updatedCreator.themeSelected }}
+							>
+								{video}
+								Book Video Call
+							</div>
+							<span className="text-sm tracking-widest">
+								Rs. {updatedCreator.videoRate}/Min
+							</span>
 						</div>
-						<span className="text-sm tracking-widest">
-							Rs. {updatedCreator.videoRate}/Min
-						</span>
-					</div>
-				)}
+					)}
 
 				{/* Book Audio Call */}
-				{updatedCreator.audioAllowed && (
-					<div
-						className={`callOptionContainer ${
-							isProcessing ? "opacity-50 cursor-not-allowed" : ""
-						}`}
-						style={{
-							boxShadow: theme,
-						}}
-						onClick={() => handleClickOption("audio")}
-					>
+				{updatedCreator.audioAllowed &&
+					parseInt(updatedCreator.audioRate, 10) > 0 && (
 						<div
-							className={`flex gap-4 items-center font-semibold`}
-							style={{ color: updatedCreator.themeSelected }}
+							className={`callOptionContainer ${
+								isProcessing ? "opacity-50 cursor-not-allowed" : ""
+							}`}
+							style={{
+								boxShadow: theme,
+							}}
+							onClick={() => handleClickOption("audio")}
 						>
-							{audio}
-							Book Audio Call
+							<div
+								className={`flex gap-4 items-center font-semibold`}
+								style={{ color: updatedCreator.themeSelected }}
+							>
+								{audio}
+								Book Audio Call
+							</div>
+							<span className="text-sm tracking-widest">
+								Rs. {updatedCreator.audioRate}/Min
+							</span>
 						</div>
-						<span className="text-sm tracking-widest">
-							Rs. {updatedCreator.audioRate}/Min
-						</span>
-					</div>
-				)}
+					)}
 
 				{/* Book Chat */}
-				{updatedCreator.chatAllowed && (
-					<div
-						className="callOptionContainer"
-						style={{
-							boxShadow: theme,
-						}}
-						onClick={handleChatClick}
-					>
-						<button
-							className={`flex gap-4 items-center font-semibold`}
-							style={{ color: updatedCreator.themeSelected }}
+				{updatedCreator.chatAllowed &&
+					parseInt(updatedCreator.chatRate, 10) > 0 && (
+						<div
+							className="callOptionContainer"
+							style={{
+								boxShadow: theme,
+							}}
+							onClick={handleChatClick}
 						>
-							{chat}
-							Chat Now
-						</button>
-						<span className="text-sm tracking-widest">
-							Rs. {updatedCreator.chatRate}/Min
-						</span>
-					</div>
-				)}
+							<button
+								className={`flex gap-4 items-center font-semibold`}
+								style={{ color: updatedCreator.themeSelected }}
+							>
+								{chat}
+								Chat Now
+							</button>
+							<span className="text-sm tracking-widest">
+								Rs. {updatedCreator.chatRate}/Min
+							</span>
+						</div>
+					)}
 
 				<Sheet
 					open={isSheetOpen}
