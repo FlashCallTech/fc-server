@@ -77,6 +77,7 @@ export const handleTransaction = async ({
 
 		if (transactionResponse) {
 			toast({
+				variant: "destructive",
 				title: "Transaction Done",
 				description: "Redirecting ...",
 			});
@@ -144,6 +145,7 @@ export const handleTransaction = async ({
 
 		console.error("Error handling wallet changes:", error);
 		toast({
+			variant: "destructive",
 			title: "Error",
 			description: "An error occurred while processing the Transactions",
 		});

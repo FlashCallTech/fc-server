@@ -224,6 +224,7 @@ const EditProfile = ({
 				// Display the error if an existing user is found
 				setFormError(response.error);
 				toast({
+					variant: "destructive",
 					title: "Unable to Edit Details",
 					description: `${response.error}`,
 				});
@@ -245,6 +246,7 @@ const EditProfile = ({
 				setUserData(newUserDetails);
 
 				toast({
+					variant: "destructive",
 					title: "Details Edited Successfully",
 					description: "Changes are now visible ...",
 				});

@@ -24,6 +24,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 
 				if (feedbacks.length > 0) {
 					toast({
+						variant: "destructive",
 						title: "Feedback Already Exists",
 						description: "Returning back ...",
 					});
@@ -35,6 +36,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 				Sentry.captureException(error);
 				console.error("Error fetching feedbacks:", error);
 				toast({
+					variant: "destructive",
 					title: "Error",
 					description: "An error occurred while fetching feedbacks",
 				});
@@ -49,6 +51,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 	const handleFeedbackClose = async () => {
 		setShowFeedback(false);
 		toast({
+			variant: "destructive",
 			title: "Thanks For The Feedback",
 			description: "Hope to See You Again ...",
 		});

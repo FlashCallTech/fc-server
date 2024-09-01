@@ -42,12 +42,14 @@ const ShareButton = ({
 			} catch (err) {
 				console.error("Failed to share: ", err);
 				toast({
+					variant: "destructive",
 					title: "Failed to share",
 					description: `There was an error sharing the content. Please try again.`,
 				});
 			}
 		} else {
 			toast({
+				variant: "destructive",
 				title: "Sharing not supported",
 				description:
 					"Your device or browser does not support the share feature.",

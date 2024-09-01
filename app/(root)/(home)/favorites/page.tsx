@@ -1,13 +1,12 @@
 "use client";
 
-import CreatorsGrid from "@/components/creator/CreatorsGrid";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
-import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import FavoritesGrid from "@/components/creator/FavoritesGrid";
 
 type FavoriteItem = {
 	creatorId: creatorUser;
@@ -19,6 +18,9 @@ const Favorites = () => {
 	const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
 	const { currentUser } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
+	const [isSticky, setIsSticky] = useState(false);
+	const stickyRef = useRef<HTMLDivElement>(null);
+
 	useEffect(() => {
 		const fetchFavorites = async () => {
 			try {
@@ -57,6 +59,36 @@ const Favorites = () => {
 		}
 	}, [currentUser?._id]);
 
+	const handleScroll = () => {
+		if (stickyRef.current) {
+			setIsSticky(window.scrollY > stickyRef.current.offsetTop);
+		}
+	};
+
+	useEffect(() => {
+		window.addEventListener("scroll", handleScroll);
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
+	}, []);
+
+	const handleFavoriteToggle = (
+		updatedCreator: creatorUser,
+		isFavorited: boolean
+	) => {
+		setFavorites((prevFavorites) => {
+			if (isFavorited) {
+				// Add to favorites
+				return [...prevFavorites, { creatorId: updatedCreator }];
+			} else {
+				// Remove from favorites
+				return prevFavorites.filter(
+					(fav) => fav.creatorId._id !== updatedCreator._id
+				);
+			}
+		});
+	};
+
 	return (
 		<section className="flex size-full flex-col gap-5 md:pb-14">
 			{loading || (currentUser && walletBalance < 0) ? (
@@ -73,24 +105,36 @@ const Favorites = () => {
 					No creators found.
 				</div>
 			) : (
-				<div
-					className={`animate-in grid ${
-						favorites.length > 1 ? "grid-cols-2" : "grid-cols-1"
-					}  gap-2.5 px-2.5 lg:gap-5 lg:px-0 items-center pb-6`}
-				>
-					{favorites.map((favorite, index) => {
-						const creator = favorite.creatorId;
-						return (
-							<Link
-								href={`/${creator?.username}`}
-								className="min-w-full transition-all duration-500 hover:scale-95"
-								key={creator?._id || index}
-							>
-								<CreatorsGrid creator={creator} />
-							</Link>
-						);
-					})}
-				</div>
+				<section className="flex size-full flex-col gap-2">
+					<div
+						ref={stickyRef}
+						className={`sticky top-16 bg-white z-30 w-full pl-4 lg:pl-0.5 ${
+							isSticky ? "pt-7" : "pt-2"
+						} pb-4 flex items-center justify-between transition-all duration-300`}
+					>
+						<h1 className="text-3xl font-bold">Favorite Creators</h1>
+					</div>
+					<div
+						className={`animate-in grid ${
+							favorites.length > 1 ? "lg:grid-cols-2" : "grid-cols-1"
+						}  px-2.5 gap-5 lg:px-0 items-center pb-8 lg:pb-0 overflow-x-hidden no-scrollbar`}
+					>
+						{favorites.map((favorite, index) => {
+							const creator = favorite.creatorId;
+							return (
+								<section
+									className="min-w-full transition-all duration-500"
+									key={creator?._id || index}
+								>
+									<FavoritesGrid
+										creator={creator}
+										onFavoriteToggle={handleFavoriteToggle}
+									/>
+								</section>
+							);
+						})}
+					</div>
+				</section>
 			)}
 		</section>
 	);

@@ -13,8 +13,9 @@ export const connectToDatabase = async () => {
 		cached.promise = mongoose.connect(MONGODB_URI, {
 			dbName: "flash",
 			bufferCommands: false,
-			connectTimeoutMS: 10000, // Optional: Increase the timeout
-			socketTimeoutMS: 45000, // Optional: Increase the timeout
+			connectTimeoutMS: 10000,
+			socketTimeoutMS: 45000,
+			minPoolSize: 5,
 		});
 	}
 

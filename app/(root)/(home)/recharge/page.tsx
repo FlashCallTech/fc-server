@@ -170,6 +170,7 @@ const About: React.FC = () => {
 			setLoading(false); // Set loading state to false on error
 			router.push("/payment");
 			toast({
+				variant: "destructive",
 				title: "Payment Failed",
 				description: "Redirecting ...",
 			});

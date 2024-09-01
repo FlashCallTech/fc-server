@@ -24,6 +24,7 @@ const MyCallUI = () => {
 
 		if (storedCallId && !hide && !hasRedirected) {
 			toast({
+				variant: "destructive",
 				title: "Ongoing Call or Transaction Pending",
 				description: "Redirecting you back ...",
 			});
@@ -49,6 +50,7 @@ const MyCallUI = () => {
 
 			const handleCallRejected = async () => {
 				toast({
+					variant: "destructive",
 					title: "Call Rejected",
 					description: "The call was rejected. Redirecting to HomePage...",
 				});

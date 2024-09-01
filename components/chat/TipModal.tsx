@@ -76,6 +76,7 @@ const TipModal = ({
 	const handleTransaction = async () => {
 		if (parseInt(tipAmount) > adjustedWalletBalance) {
 			toast({
+				variant: "destructive",
 				title: "Insufficient Wallet Balance",
 				description: "Try considering Lower Value.",
 			});
@@ -108,6 +109,7 @@ const TipModal = ({
 				Sentry.captureException(error);
 				console.error("Error handling wallet changes:", error);
 				toast({
+					variant: "destructive",
 					title: "Error",
 					description: "An error occurred while processing the Transactions",
 				});
