@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/database";
 import { handleError } from "@/lib/utils";
 import UserKyc from "../database/models/userkyc.model";
 import { RegisterUserKycParams, UpdateUserKycParams } from "@/types";
+import * as Sentry from "@sentry/nextjs";
 
 export async function createUserKyc(userKycData: RegisterUserKycParams) {
 	try {
@@ -11,6 +12,7 @@ export async function createUserKyc(userKycData: RegisterUserKycParams) {
 		// console.log(newUserKyc);
 		return newUserKyc.toJSON();
 	} catch (error) {
+		Sentry.captureException(error);
 		handleError(error);
 	}
 }
@@ -24,6 +26,7 @@ export async function getUserKycs() {
 		}
 		return userKycs.map((userKyc) => userKyc.toJSON());
 	} catch (error) {
+		Sentry.captureException(error);
 		handleError(error);
 	}
 }
@@ -37,6 +40,7 @@ export async function getUserKycById(userKycId: string) {
 		if (!userKyc) throw new Error("UserKyc record not found");
 		return userKyc.toJSON();
 	} catch (error) {
+		Sentry.captureException(error);
 		handleError(error);
 	}
 }
@@ -61,6 +65,7 @@ export async function updateUserKyc(
 
 		return updatedUserKyc.toJSON();
 	} catch (error) {
+		Sentry.captureException(error);
 		handleError(error);
 	}
 }

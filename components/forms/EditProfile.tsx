@@ -30,6 +30,7 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
 import axios from "axios";
 import { debounce } from "@/lib/utils";
+import * as Sentry from "@sentry/nextjs";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -223,6 +224,7 @@ const EditProfile = ({
 				// Display the error if an existing user is found
 				setFormError(response.error);
 				toast({
+					variant: "destructive",
 					title: "Unable to Edit Details",
 					description: `${response.error}`,
 				});
@@ -244,6 +246,7 @@ const EditProfile = ({
 				setUserData(newUserDetails);
 
 				toast({
+					variant: "destructive",
 					title: "Details Edited Successfully",
 					description: "Changes are now visible ...",
 				});
@@ -251,6 +254,7 @@ const EditProfile = ({
 				setEditData && setEditData((prev) => !prev);
 			}
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error updating user details:", error);
 			toast({
 				variant: "destructive",

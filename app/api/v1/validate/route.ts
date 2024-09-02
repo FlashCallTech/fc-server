@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import * as Sentry from "@sentry/nextjs";
 
 export async function POST(req: NextRequest) {
 	try {
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest) {
 		// If verification succeeds, return a success response
 		return NextResponse.json({ message: "Token validated successfully" });
 	} catch (error) {
+		Sentry.captureException(error);
 		// If there's an error during token verification, return an error response
 		return NextResponse.json({ message: "Invalid token" }, { status: 401 });
 	}

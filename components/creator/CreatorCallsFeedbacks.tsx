@@ -10,8 +10,8 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import CreatorFeedbackCheck from "../feedbacks/CreatorFeedbackCheck";
 import { Switch } from "../ui/switch";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import * as Sentry from "@sentry/nextjs";
 
 // Function to reorder the array based on the drag result
 const reorder = (
@@ -116,6 +116,7 @@ const CreatorCallsFeedbacks = () => {
 
 				setFeedbacks(feedbacksWithCallId);
 			} catch (error) {
+				Sentry.captureException(error);
 				console.warn(error);
 			} finally {
 				setLoading(false);
@@ -177,6 +178,7 @@ const CreatorCallsFeedbacks = () => {
 				)
 			);
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error updating feedback visibility:", error);
 		} finally {
 			setLoadingFeedbackId(null); // Reset loading state
@@ -267,6 +269,7 @@ const CreatorCallsFeedbacks = () => {
 
 			console.log("Changed feedback positions updated successfully.");
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error updating feedback positions:", error);
 		}
 	};

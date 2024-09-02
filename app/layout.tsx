@@ -11,6 +11,7 @@ import MovePageToTop from "@/components/shared/MovePageToTop";
 import { Analytics } from "@vercel/analytics/react";
 import { GoogleTagManager } from "@next/third-parties/google";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import { connectToDatabase } from "@/lib/database";
 
 export const metadata: Metadata = {
 	title: "Flashcall.me",

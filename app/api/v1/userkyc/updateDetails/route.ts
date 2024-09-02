@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { UpdateUserKycParams } from "@/types";
 import { updateUserKyc } from "@/lib/actions/userkyc.actions";
+import * as Sentry from "@sentry/nextjs";
 
 export async function PUT(request: Request) {
 	try {
@@ -15,6 +16,7 @@ export async function PUT(request: Request) {
 		);
 		return NextResponse.json(updatedUserKycDetails);
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		return new NextResponse("Internal Server Error", { status: 500 });
 	}

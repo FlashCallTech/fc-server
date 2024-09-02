@@ -1,11 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-
 import { connectToDatabase } from "@/lib/database";
-
 import { CreateCreatorParams, LinkType, UpdateCreatorParams } from "@/types";
 import Creator from "../database/models/creator.model";
+import * as Sentry from "@sentry/nextjs";
 
 export async function createCreatorUser(user: CreateCreatorParams) {
 	try {
@@ -23,6 +22,7 @@ export async function createCreatorUser(user: CreateCreatorParams) {
 		// console.log(newUser);
 		return JSON.parse(JSON.stringify(newUser));
 	} catch (error) {
+		Sentry.captureException(error);
 		console.log(error);
 	}
 }
@@ -36,32 +36,38 @@ export async function getUsers() {
 		}
 		return JSON.parse(JSON.stringify(users));
 	} catch (error) {
+		Sentry.captureException(error);
 		console.log(error);
 	}
 }
 
 export async function getUsersPaginated(offset = 0, limit = 2) {
 	try {
-		await connectToDatabase(); 
-
+		await connectToDatabase();
 		// MongoDB query to filter users with non-zero rates for audio, video, and chat
 		const query = {
-			audioRate: { $ne: "0" },  // Ensure audioRate is not "0"
-			videoRate: { $ne: "0" },  // Ensure videoRate is not "0"
-			chatRate: { $ne: "0" }    // Ensure chatRate is not "0"
+			$or: [
+				{ audioRate: { $ne: "0" } }, // Include if audioRate is not "0"
+				{ videoRate: { $ne: "0" } }, // Include if videoRate is not "0"
+				{ chatRate: { $ne: "0" } }, // Include if chatRate is not "0"
+			],
 		};
 
 		// Fetch users with pagination using skip, limit, and query filters
-		const users = await Creator.find(query).skip(offset).limit(limit).lean(); // Use lean() to get plain JavaScript objects
+		const users = await Creator.find(query)
+			.sort({ createdAt: -1 }) // Sort by creation date in descending order
+			.skip(offset)
+			.limit(limit)
+			.lean(); // Use lean() to get plain JavaScript objects
 
 		// Return the fetched users or an empty array if none are found
 		return users.length > 0 ? JSON.parse(JSON.stringify(users)) : [];
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Failed to fetch users:", error);
 		throw new Error("Failed to fetch users");
 	}
 }
-
 
 export async function getCreatorById(userId: string) {
 	try {
@@ -72,6 +78,7 @@ export async function getCreatorById(userId: string) {
 		if (!user) throw new Error("User not found");
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
+		Sentry.captureException(error);
 		console.log(error);
 	}
 }
@@ -85,6 +92,7 @@ export async function getUserByPhone(phone: string) {
 		if (!user) throw new Error("User not found");
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
+		Sentry.captureException(error);
 		console.log(error);
 	}
 }
@@ -99,6 +107,7 @@ export async function getUserByUsername(username: string) {
 
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
+		Sentry.captureException(error);
 		console.log(error);
 	}
 }
@@ -131,6 +140,7 @@ export async function updateCreatorUser(
 
 		return JSON.parse(JSON.stringify({ updatedUser }));
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Error updating user:", error); // Log the error
 		throw new Error("User update failed"); // Throw the error to be caught by the caller
 	}
@@ -153,6 +163,7 @@ export async function deleteCreatorLink(userId: string, link: LinkType) {
 
 		return updatedCreator;
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Error deleting link:", error);
 		throw new Error("Failed to delete the link.");
 	}
@@ -175,6 +186,7 @@ export async function deleteCreatorUser(userId: string) {
 
 		return deletedUser ? JSON.parse(JSON.stringify(deletedUser)) : null;
 	} catch (error) {
+		Sentry.captureException(error);
 		console.log(error);
 	}
 }

@@ -16,6 +16,7 @@ import jwt from "jsonwebtoken";
 import { deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useRouter } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 
 // Define the shape of the context value
 interface CurrentUsersContextValue {
@@ -31,7 +32,7 @@ interface CurrentUsersContextValue {
 	setCurrentTheme: any;
 	authenticationSheetOpen: boolean;
 	setAuthenticationSheetOpen: any;
-	userStatus: string;
+	fetchingUser: boolean;
 }
 
 // Create the context with a default value of null
@@ -63,6 +64,7 @@ const isTokenValid = (token: string): boolean => {
 
 		return decodedToken.exp > currentTime;
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Error decoding token:", error);
 		return false;
 	}
@@ -73,8 +75,8 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const [clientUser, setClientUser] = useState<clientUser | null>(null);
 	const [creatorUser, setCreatorUser] = useState<creatorUser | null>(null);
 	const [currentTheme, setCurrentTheme] = useState("");
-	const [userStatus, setUserStatus] = useState("");
 	const [authenticationSheetOpen, setAuthenticationSheetOpen] = useState(false);
+	const [fetchingUser, setFetchingUser] = useState(false);
 	const [userType, setUserType] = useState<string | null>(null);
 	const { toast } = useToast();
 	const router = useRouter();
@@ -90,6 +92,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					console.log("Document successfully deleted!");
 				})
 				.catch((error: any) => {
+					Sentry.captureException(error);
 					console.error("Error removing document: ", error);
 				});
 		}
@@ -104,6 +107,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	// Function to fetch the current user
 	const fetchCurrentUser = async () => {
 		try {
+			setFetchingUser(true);
 			const authToken = localStorage.getItem("authToken");
 			const userId = localStorage.getItem("currentUserID");
 
@@ -148,8 +152,11 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				handleSignout();
 			}
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error fetching current user:", error);
 			handleSignout();
+		} finally {
+			setFetchingUser(false);
 		}
 	};
 
@@ -181,12 +188,13 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			router.replace("/updateDetails");
 			setTimeout(() => {
 				toast({
+					variant: "destructive",
 					title: "Greetings Friend",
 					description: "Complete Your Profile Details...",
 				});
 			}, 1000);
 		}
-	}, [router]);
+	}, [router, userType]);
 
 	useEffect(() => {
 		const authToken = localStorage.getItem("authToken");
@@ -207,6 +215,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 							console.log(data.token, authToken);
 							handleSignout();
 							toast({
+								variant: "destructive",
 								title: "Another Session Detected",
 								description: "Logging Out...",
 							});
@@ -215,6 +224,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 						console.log("No such document!");
 					}
 				} catch (error) {
+					Sentry.captureException(error);
 					console.error(
 						"An error occurred while processing the document: ",
 						error
@@ -235,6 +245,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					console.log("User status set to Offline");
 				})
 				.catch((error: any) => {
+					Sentry.captureException(error);
 					console.error("Error updating user status: ", error);
 				});
 		};
@@ -245,6 +256,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				console.log("User status set to Online");
 			})
 			.catch((error) => {
+				Sentry.captureException(error);
 				console.error("Error updating user status: ", error);
 			});
 
@@ -253,34 +265,16 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			setStatusOffline();
 		};
 
-		// Handle visibility change event
-		const handleVisibilityChange = () => {
-			if (document.visibilityState === "hidden") {
-				setStatusOffline();
-			} else {
-				// Optionally, set the status back to "Online" when the user returns
-				setDoc(statusDocRef, { status: "Online" }, { merge: true })
-					.then(() => {
-						console.log("User status set to Online");
-					})
-					.catch((error) => {
-						console.error("Error updating user status: ", error);
-					});
-			}
-		};
-
 		// Add event listeners
 		window.addEventListener("beforeunload", handleBeforeUnload);
-		document.addEventListener("visibilitychange", handleVisibilityChange);
 
 		// Cleanup listener on component unmount
 		return () => {
 			unsubscribe();
 			setStatusOffline(); // Set offline on unmount
 			window.removeEventListener("beforeunload", handleBeforeUnload);
-			document.removeEventListener("visibilitychange", handleVisibilityChange);
 		};
-	}, [userType, currentUser?._id]);
+	}, [currentUser?._id]);
 
 	const values: CurrentUsersContextValue = {
 		clientUser,
@@ -295,7 +289,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		setCurrentTheme,
 		authenticationSheetOpen,
 		setAuthenticationSheetOpen,
-		userStatus,
+		fetchingUser,
 	};
 
 	return (

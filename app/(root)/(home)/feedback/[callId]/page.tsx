@@ -1,10 +1,11 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import CallFeedback from "@/components/feedbacks/CallFeedback";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useToast } from "@/components/ui/use-toast";
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 const CallFeedbackPage = () => {
 	const { callId } = useParams();
@@ -24,6 +25,7 @@ const CallFeedbackPage = () => {
 
 				if (feedbacks.length > 0) {
 					toast({
+						variant: "destructive",
 						title: "Feedback Already Exists",
 						description: "Returning to HomePage ...",
 					});
@@ -32,8 +34,10 @@ const CallFeedbackPage = () => {
 					setShowFeedback(true);
 				}
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error fetching feedbacks:", error);
 				toast({
+					variant: "destructive",
 					title: "Error",
 					description: "An error occurred while fetching feedbacks",
 				});
@@ -62,6 +66,7 @@ const CallFeedbackPage = () => {
 	const handleFeedbackClose = async () => {
 		setShowFeedback(false);
 		toast({
+			variant: "destructive",
 			title: "Thanks For The Feedback",
 			description: "Hope to See You Again ...",
 		});

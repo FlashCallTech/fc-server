@@ -69,7 +69,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		isAuthSheetOpen && setIsAuthSheetOpen(false);
 		return () => unsubscribe();
-	}, [creator._id]);
+	}, []);
 
 	useEffect(() => {
 		if (!chatReqSent) return;
@@ -114,7 +114,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}, 1000);
 
 		return () => clearInterval(intervalId);
-	}, [clientUser, router, chatReqSent]);
+	}, [clientUser?._id, router, chatReqSent]);
 
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
@@ -130,6 +130,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						console.log("Audio autoplay started!");
 					})
 					.catch((error) => {
+						Sentry.captureException(error);
 						console.error("Audio autoplay was prevented:", error);
 					});
 			}
@@ -261,8 +262,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			call.on("call.accepted", () => handleCallAccepted(call));
 			call.on("call.rejected", handleCallRejected);
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error(error);
-			toast({ title: "Failed to create Meeting" });
+			toast({ variant: "destructive", title: "Failed to create Meeting" });
 		}
 	};
 
@@ -291,6 +293,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				}
 			} else if (clientUser && storedCallId) {
 				toast({
+					variant: "destructive",
 					title: "Ongoing Call or Transaction Pending",
 					description: "Redirecting you back ...",
 				});
@@ -349,74 +352,77 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					)}
 
 				{/* Book Video Call */}
-				{updatedCreator.videoAllowed && (
-					<div
-						className={`callOptionContainer ${
-							isProcessing ? "opacity-50 cursor-not-allowed" : ""
-						}`}
-						style={{
-							boxShadow: theme,
-						}}
-						onClick={() => handleClickOption("video")}
-					>
+				{updatedCreator.videoAllowed &&
+					parseInt(updatedCreator.videoRate, 10) > 0 && (
 						<div
-							className={`flex gap-4 items-center font-semibold`}
-							style={{ color: updatedCreator.themeSelected }}
+							className={`callOptionContainer ${
+								isProcessing ? "opacity-50 cursor-not-allowed" : ""
+							}`}
+							style={{
+								boxShadow: theme,
+							}}
+							onClick={() => handleClickOption("video")}
 						>
-							{video}
-							Book Video Call
+							<div
+								className={`flex gap-4 items-center font-semibold`}
+								style={{ color: updatedCreator.themeSelected }}
+							>
+								{video}
+								Book Video Call
+							</div>
+							<span className="text-sm tracking-widest">
+								Rs. {updatedCreator.videoRate}/Min
+							</span>
 						</div>
-						<span className="text-sm tracking-widest">
-							Rs. {updatedCreator.videoRate}/Min
-						</span>
-					</div>
-				)}
+					)}
 
 				{/* Book Audio Call */}
-				{updatedCreator.audioAllowed && (
-					<div
-						className={`callOptionContainer ${
-							isProcessing ? "opacity-50 cursor-not-allowed" : ""
-						}`}
-						style={{
-							boxShadow: theme,
-						}}
-						onClick={() => handleClickOption("audio")}
-					>
+				{updatedCreator.audioAllowed &&
+					parseInt(updatedCreator.audioRate, 10) > 0 && (
 						<div
-							className={`flex gap-4 items-center font-semibold`}
-							style={{ color: updatedCreator.themeSelected }}
+							className={`callOptionContainer ${
+								isProcessing ? "opacity-50 cursor-not-allowed" : ""
+							}`}
+							style={{
+								boxShadow: theme,
+							}}
+							onClick={() => handleClickOption("audio")}
 						>
-							{audio}
-							Book Audio Call
+							<div
+								className={`flex gap-4 items-center font-semibold`}
+								style={{ color: updatedCreator.themeSelected }}
+							>
+								{audio}
+								Book Audio Call
+							</div>
+							<span className="text-sm tracking-widest">
+								Rs. {updatedCreator.audioRate}/Min
+							</span>
 						</div>
-						<span className="text-sm tracking-widest">
-							Rs. {updatedCreator.audioRate}/Min
-						</span>
-					</div>
-				)}
+					)}
 
 				{/* Book Chat */}
-				{updatedCreator.chatAllowed && (
-					<div
-						className="callOptionContainer"
-						style={{
-							boxShadow: theme,
-						}}
-						onClick={handleChatClick}
-					>
-						<button
-							className={`flex gap-4 items-center font-semibold`}
-							style={{ color: updatedCreator.themeSelected }}
+				{updatedCreator.chatAllowed &&
+					parseInt(updatedCreator.chatRate, 10) > 0 && (
+						<div
+							className="callOptionContainer"
+							style={{
+								boxShadow: theme,
+							}}
+							onClick={handleChatClick}
 						>
-							{chat}
-							Chat Now
-						</button>
-						<span className="text-sm tracking-widest">
-							Rs. {updatedCreator.chatRate}/Min
-						</span>
-					</div>
-				)}
+							<button
+								className={`flex gap-4 items-center font-semibold`}
+								style={{ color: updatedCreator.themeSelected }}
+							>
+								{chat}
+								Chat Now
+							</button>
+							<span className="text-sm tracking-widest">
+								Rs. {updatedCreator.chatRate}/Min
+							</span>
+						</div>
+					)}
 
 				<Sheet
 					open={isSheetOpen}
@@ -428,6 +434,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 								status: "ended",
 							});
 						} catch (error) {
+							Sentry.captureException(error);
 							console.error(error);
 						}
 					}}

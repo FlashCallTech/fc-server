@@ -2,6 +2,7 @@ import { getCreatorById } from "@/lib/actions/creator.actions";
 import { analytics, db } from "@/lib/firebase";
 import { logEvent } from "firebase/analytics";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import * as Sentry from "@sentry/nextjs";
 
 export const handleTransaction = async ({
 	call,
@@ -43,6 +44,7 @@ export const handleTransaction = async ({
 				});
 			}
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error updating Firestore timer: ", error);
 		}
 	};
@@ -75,6 +77,7 @@ export const handleTransaction = async ({
 
 		if (transactionResponse) {
 			toast({
+				variant: "destructive",
 				title: "Transaction Done",
 				description: "Redirecting ...",
 			});
@@ -137,10 +140,12 @@ export const handleTransaction = async ({
 			type: call?.type === "default" ? "video" : "audio",
 		});
 	} catch (error) {
+		Sentry.captureException(error);
 		const creatorURL = localStorage.getItem("creatorURL");
 
 		console.error("Error handling wallet changes:", error);
 		toast({
+			variant: "destructive",
 			title: "Error",
 			description: "An error occurred while processing the Transactions",
 		});

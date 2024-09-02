@@ -1,6 +1,7 @@
 import { getAllTransactionsByUserId } from "@/lib/actions/wallet.actions";
 import { connectToDatabase } from "@/lib/database";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 export async function GET(request: Request) {
 	try {
@@ -27,6 +28,7 @@ export async function GET(request: Request) {
 
 		return NextResponse.json({ transactions });
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error(error);
 		return new NextResponse("Internal Server Error", { status: 500 });
 	}
