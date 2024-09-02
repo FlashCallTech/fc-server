@@ -1,13 +1,36 @@
 'use client'
 import React, { useEffect, useState } from 'react';
 import Loader from '../shared/Loader';
+import { useCurrentUsersContext } from '@/lib/context/CurrentUsersContext';
+import { useRouter } from 'next/navigation';
 
 const KycForm: React.FC = () => {
+  const { currentUser, creatorUser } = useCurrentUsersContext();
   const [formLink, setFormLink] = useState<string | null>(null);
+  const [verification_id, setVerification_id] = useState<string>();
+  const [kycDone, setKycDone] = useState(false);
   const [loading, setLoading] = useState(true);
+  const router = useRouter()
 
   useEffect(() => {
+    if(creatorUser?.kyc_status === 'COMPLETED'){
+      setKycDone(true);
+      return;
+    }
+    const getKyc = async () => {
+      const response = await fetch(`/api/v1/userkyc/getKyc?userId=${currentUser?._id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const kycResponse = await response.json();
+      setVerification_id(kycResponse.verification_id);
+    }
+
     const getFormStatus = async () => {
+      if(!verification_id) return;
       try {
         const formResponse = await fetch('/api/get-form-status', {
           method: 'POST',
@@ -15,16 +38,30 @@ const KycForm: React.FC = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            verification_id: 'chirag1'
+            verification_id
           })
         });
 
         const formStatus = await formResponse.json();
-        const status = formStatus.data.form_status
-        console.log(formStatus.data.form_status)
-        console.log(formStatus.data.form_link);
+        const status = formStatus.data.form_status;
 
-        if (status === 'RECEIVED') {
+        if(formStatus.success){
+          const user = {
+            kyc_status: status
+          };
+          const response = await fetch('/api/v1/creator/updateUser', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              userId: currentUser?._id,
+              user
+            })
+          })
+        }
+
+        if (status === 'RECEIVED' || status === 'PENDING') {
           setFormLink(formStatus.data.form_link);
         } else {
           setFormLink(null);
@@ -34,11 +71,20 @@ const KycForm: React.FC = () => {
       }
     };
 
-    getFormStatus(); // Call the async function
-    setLoading(false);
-  }, []);
+    if(currentUser){
+      getKyc()
+      getFormStatus(); // Call the async function
+      setLoading(false);
+    }
+  }, [verification_id]);
+
+  const generateVerificationId = () => {
+    return `${currentUser?._id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  };
 
   const handleKyc = async () => {
+    const verificationId = generateVerificationId();
+
     try {
       const formResponse = await fetch('/api/kyc-form', {
         method: "POST",
@@ -46,14 +92,29 @@ const KycForm: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: 'Chirag Goel',
-          phone: "8791194073",
+          name: currentUser?.firstName + " " + currentUser?.lastName,
+          phone: currentUser?.phone.replace(/^\+91/, ''),
           template_name: 'Test',
-          verification_id: 'chirag1'
+          verification_id: verificationId,
         })
       });
 
       const formResult = await formResponse.json();
+
+      if (formResult.success) {
+        const response = await fetch('/api/v1/userkyc/createKyc', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: currentUser?._id,
+            verification_id: verificationId,
+            kyc_status: formResult.data.form_status,
+          })
+        })
+
+      }
 
       if (formResult.data?.form_link) {
         setFormLink(formResult.data.form_link);
@@ -63,9 +124,13 @@ const KycForm: React.FC = () => {
     }
   }
 
-  // console.log(formLink)
-  if(loading){
-    return <Loader/>
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (kycDone) {
+    return <div>You have completed your KYC</div>;
   }
 
   return (
