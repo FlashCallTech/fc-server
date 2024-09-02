@@ -6,6 +6,7 @@ import ContentLoading from "../shared/ContentLoading";
 import { formatDateTime } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import * as Sentry from "@sentry/nextjs";
 
 interface ChatDetailsProps {
 	creatorId: string | null;
@@ -38,6 +39,7 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({ creatorId }) => {
 
 				setChats(filteredChat ? [filteredChat] : undefined);
 			} catch (error) {
+				Sentry.captureException(error);
 				console.warn(error);
 			} finally {
 				setLoading(false);

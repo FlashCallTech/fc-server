@@ -11,9 +11,22 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 
+const NavLoader = () => {
+	return (
+		<div className="w-24 space-y-3">
+			<div className="grid grid-cols-3 gap-4">
+				<div className="h-2 bg-gray-300 rounded col-span-2"></div>
+				<div className="h-2 bg-gray-300 rounded col-span-1"></div>
+			</div>
+			<div className="h-2 bg-gray-300 rounded"></div>
+		</div>
+	);
+};
+
 const Navbar = () => {
 	const {
 		currentUser,
+		fetchingUser,
 		userType,
 		currentTheme,
 		authenticationSheetOpen,
@@ -156,16 +169,12 @@ const Navbar = () => {
 							</span>
 						</Link>
 					) : (
-						<div className="w-24 space-y-3">
-							<div className="grid grid-cols-3 gap-4">
-								<div className="h-2 bg-gray-300 rounded col-span-2"></div>
-								<div className="h-2 bg-gray-300 rounded col-span-1"></div>
-							</div>
-							<div className="h-2 bg-gray-300 rounded"></div>
-						</div>
+						<NavLoader />
 					)}
 					<MobileNav />
 				</div>
+			) : fetchingUser ? (
+				<NavLoader />
 			) : (
 				<Button
 					className="hover:!bg-green-1 hover:!text-white transition-all duration-300 hover:bg-green-700font-semibold w-fit mr-1 rounded-md"

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import * as Sentry from "@sentry/nextjs";
 
 const useUserStatus = () => {
 	const { currentUser } = useCurrentUsersContext();
@@ -22,6 +23,7 @@ const useUserStatus = () => {
 				});
 			}
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error updating user status:", error);
 		}
 	};

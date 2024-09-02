@@ -2,6 +2,7 @@
 
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import * as Sentry from "@sentry/nextjs";
 
 import Razorpay from "razorpay";
 import { useEffect } from "react";
@@ -150,6 +151,7 @@ export const useCallAudioNotification = (
 						console.log("Audio autoplay started!");
 					})
 					.catch((error) => {
+						Sentry.captureException(error);
 						console.error("Audio autoplay was prevented:", error);
 					});
 			}

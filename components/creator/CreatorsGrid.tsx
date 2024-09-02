@@ -1,7 +1,7 @@
 import { db } from "@/lib/firebase";
 import { isValidUrl } from "@/lib/utils";
 import { creatorUser } from "@/types";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
@@ -9,7 +9,7 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 	const [status, setStatus] = useState<string>("Offline"); // Default status to "Offline"
 
 	const imageSrc =
-		creator.photo && isValidUrl(creator.photo)
+		creator?.photo && isValidUrl(creator.photo)
 			? creator.photo
 			: "/images/defaultProfileImage.png";
 

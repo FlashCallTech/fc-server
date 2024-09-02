@@ -5,6 +5,7 @@ import { logEvent } from "firebase/analytics";
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 interface User2 {
 	_id: string;
@@ -97,6 +98,7 @@ const useEndChat = () => {
 				await updateDoc(chatRef, { messages: updatedMessages });
 			}
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error marking messages as seen:", error);
 		}
 	};
@@ -129,6 +131,7 @@ const useEndChat = () => {
 				// creatorId: creator._id,
 			});
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error ending chat:", error);
 		}
 	};

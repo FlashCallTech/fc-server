@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import axios from "axios";
+import * as Sentry from "@sentry/nextjs";
 
 export async function POST(req: NextRequest) {
 	try {
@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
 			);
 		}
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Error during OTP verification:", error);
 		return NextResponse.json(
 			{ error: "Failed to verify OTP" },

@@ -15,8 +15,8 @@ import { doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
-
 import CreatorLinks from "./CreatorLinks";
+import * as Sentry from "@sentry/nextjs";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
@@ -48,7 +48,7 @@ const CreatorHome = () => {
 	useEffect(() => {
 		setTimeout(() => {
 			setLoading(false);
-		}, 300);
+		}, 1000);
 	}, []);
 
 	useEffect(() => {
@@ -84,6 +84,7 @@ const CreatorHome = () => {
 			const totalEarnings = calculateTotalEarnings(fetchedTransactions);
 			setTodaysEarning(totalEarnings.toFixed(2));
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Error fetching transactions:", error);
 		} finally {
 			setTransactionsLoading(false);
@@ -135,6 +136,7 @@ const CreatorHome = () => {
 					});
 				}
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error updating Firestore call services: ", error);
 			}
 		}
@@ -156,6 +158,7 @@ const CreatorHome = () => {
 			});
 			setPrices(newPrices);
 			toast({
+				variant: "destructive",
 				title: "Rates Updated",
 				description: "Values are updated...",
 			});
@@ -169,8 +172,10 @@ const CreatorHome = () => {
 				newPrices
 			);
 		} catch (error) {
+			Sentry.captureException(error);
 			console.log(error);
 			toast({
+				variant: "destructive",
 				title: "Rates were Not Updated",
 				description: "Something went wrong...",
 			});
@@ -216,6 +221,7 @@ const CreatorHome = () => {
 
 				refreshCurrentUser();
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error updating services:", error);
 			}
 		};

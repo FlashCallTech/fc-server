@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
+import * as Sentry from "@sentry/nextjs";
 
 export const useGetCallById = (id: string | string[]) => {
 	const [call, setCall] = useState<Call>();
@@ -21,6 +22,7 @@ export const useGetCallById = (id: string | string[]) => {
 
 				setIsCallLoading(false);
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error(error);
 				setIsCallLoading(false);
 			}

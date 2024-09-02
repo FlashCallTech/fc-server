@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Image from "next/image";
 import { creatorUser } from "@/types";
+import * as Sentry from "@sentry/nextjs";
 
 interface FavoriteItem {
 	creatorId: creatorUser;
@@ -16,6 +17,7 @@ const Favorites = ({
 	creator,
 	user,
 	isCreatorOrExpertPath,
+	isFavoritesPath,
 }: {
 	setMarkedFavorite: React.Dispatch<React.SetStateAction<boolean>>;
 	markedFavorite: boolean;
@@ -23,7 +25,8 @@ const Favorites = ({
 	addingFavorite: boolean;
 	creator: creatorUser;
 	user: any;
-	isCreatorOrExpertPath: boolean;
+	isCreatorOrExpertPath?: boolean;
+	isFavoritesPath?: boolean;
 }) => {
 	useEffect(() => {
 		const fetchFavorites = async () => {
@@ -51,11 +54,12 @@ const Favorites = ({
 					console.error("Failed to fetch favorites");
 				}
 			} catch (error) {
+				Sentry.captureException(error);
 				console.error("Error fetching favorites:", error);
 			}
 		};
 
-		if (user?._id && isCreatorOrExpertPath) {
+		if (user?._id && (isCreatorOrExpertPath || isFavoritesPath)) {
 			fetchFavorites();
 		}
 	}, [user, creator._id]);
@@ -64,7 +68,9 @@ const Favorites = ({
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<Button
-					className={` px-3 py-6 rounded-xl transition-all duration-300  hover:scale-105 group ${
+					className={`${
+						isFavoritesPath ? "p-2.5 rounded-full" : "px-3 py-6 rounded-xl"
+					}  transition-all duration-300  hover:scale-105 group ${
 						markedFavorite ? "bg-green-1" : "bg-[#232323]/35"
 					} hover:bg-green-1 flex gap-2 items-center`}
 					onClick={handleToggleFavorite}
@@ -77,7 +83,7 @@ const Favorites = ({
 								viewBox="0 0 24 24"
 								strokeWidth={1.5}
 								stroke="currentColor"
-								className="size-6 invert"
+								className={`${isFavoritesPath ? "size-5" : "size-6"} invert`}
 							>
 								<path
 									strokeLinecap="round"
@@ -92,7 +98,7 @@ const Favorites = ({
 								viewBox="0 0 24 24"
 								strokeWidth={1.5}
 								stroke="currentColor"
-								className="size-6 invert"
+								className={`${isFavoritesPath ? "size-5" : "size-6"} invert`}
 							>
 								<path
 									strokeLinecap="round"

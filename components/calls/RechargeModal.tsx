@@ -21,6 +21,7 @@ import { useToast } from "../ui/use-toast";
 import Script from "next/script";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import * as Sentry from "@sentry/nextjs";
 
 const RechargeModal = ({
 	setWalletBalance,
@@ -96,6 +97,7 @@ const RechargeModal = ({
 							headers: { "Content-Type": "text/plain" },
 						});
 					} catch (error) {
+						Sentry.captureException(error);
 						console.log(error);
 					}
 
@@ -127,6 +129,7 @@ const RechargeModal = ({
 						});
 
 						toast({
+							variant: "destructive",
 							title: "Recharge Successful",
 							description: `Credited Rs. ${parseInt(
 								rechargeAmount,
@@ -135,8 +138,10 @@ const RechargeModal = ({
 						});
 						setRechargeAmount("");
 					} catch (error) {
+						Sentry.captureException(error);
 						console.error("Validation request failed:", error);
 						toast({
+							variant: "destructive",
 							title: "Something Went Wrong",
 							description: `Please enter a valid amount`,
 						});
@@ -164,6 +169,7 @@ const RechargeModal = ({
 
 			rzp1.open();
 		} catch (error) {
+			Sentry.captureException(error);
 			console.error("Payment request failed:", error);
 		} finally {
 			setOnGoingPayment(false);

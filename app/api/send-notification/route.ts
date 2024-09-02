@@ -1,6 +1,7 @@
 import admin from "firebase-admin";
 import { Message } from "firebase-admin/messaging";
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
@@ -39,6 +40,7 @@ export async function POST(request: NextRequest) {
 
 		return NextResponse.json({ success: true, message: "Notification sent!" });
 	} catch (error) {
+		Sentry.captureException(error);
 		return NextResponse.json({ success: false, error });
 	}
 }
