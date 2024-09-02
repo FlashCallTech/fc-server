@@ -25,6 +25,10 @@ const HomePage = () => {
 	const pathname = usePathname();
 	const { ref, inView } = useInView();
 
+	useEffect(() => {
+		localStorage.removeItem("currentCreator");
+	}, []);
+
 	const fetchCreators = useCallback(async (offset: number, limit: number) => {
 		try {
 			setIsFetching(true); // Set fetching state
