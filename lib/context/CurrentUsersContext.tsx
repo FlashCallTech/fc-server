@@ -6,6 +6,7 @@ import {
 	useContext,
 	useEffect,
 	useState,
+	useMemo,
 } from "react";
 import { getCreatorById } from "../actions/creator.actions";
 import { getUserById } from "../actions/client.actions";
@@ -81,6 +82,12 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const { toast } = useToast();
 	const router = useRouter();
 
+	// Define the unified currentUser state
+	const currentUser = useMemo(
+		() => creatorUser || clientUser,
+		[creatorUser, clientUser]
+	);
+
 	// Function to handle user signout
 	const handleSignout = () => {
 		if (currentUser) {
@@ -100,6 +107,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		localStorage.removeItem("userID");
 		localStorage.removeItem("authToken");
 		localStorage.removeItem("creatorURL");
+		localStorage.removeItem("notifyList");
 		setClientUser(null);
 		setCreatorUser(null);
 	};
@@ -179,9 +187,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		await fetchCurrentUser();
 	};
 
-	// Define the unified currentUser state
-	const currentUser = creatorUser || clientUser;
-
 	// Redirect to /updateDetails if username is missing
 	useEffect(() => {
 		if (currentUser && userType === "creator" && !currentUser.username) {
@@ -239,30 +244,41 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		const statusDocRef = doc(db, "userStatus", currentUser.phone);
 
 		// Function to update status to Offline
-		const setStatusOffline = () => {
-			setDoc(statusDocRef, { status: "Offline" }, { merge: true })
-				.then(() => {
-					console.log("User status set to Offline");
-				})
-				.catch((error: any) => {
-					Sentry.captureException(error);
-					console.error("Error updating user status: ", error);
-				});
+		const setStatusOffline = async () => {
+			try {
+				await setDoc(statusDocRef, { status: "Offline" }, { merge: true });
+				console.log("User status set to Offline");
+			} catch (error) {
+				Sentry.captureException(error);
+				console.error("Error updating user status: ", error);
+			}
 		};
 
 		// Update user status to "Online" when the component mounts
-		setDoc(statusDocRef, { status: "Online" }, { merge: true })
-			.then(() => {
+		const setStatusOnline = async () => {
+			try {
+				await setDoc(statusDocRef, { status: "Online" }, { merge: true });
 				console.log("User status set to Online");
-			})
-			.catch((error) => {
+			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error updating user status: ", error);
-			});
+			}
+		};
 
-		// Handle beforeunload event
-		const handleBeforeUnload = () => {
-			setStatusOffline();
+		setStatusOnline();
+
+		const handleBeforeUnload = async (event: BeforeUnloadEvent) => {
+			// Set offline status before unloading
+			await setStatusOffline();
+
+			// Use sendBeacon to ensure data is sent before unload
+			navigator.sendBeacon(
+				"/api/set-status",
+				JSON.stringify({ phone: currentUser.phone, status: "Offline" })
+			);
+
+			// Ensure we don’t suppress the default behavior
+			event.preventDefault();
 		};
 
 		// Add event listeners

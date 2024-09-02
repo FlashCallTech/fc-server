@@ -70,6 +70,7 @@ export type creatorUser = {
 	referralAmount: number;
 	creatorId?: string;
 	links?: LinkType[];
+	updatedAt?: string;
 };
 
 export type CreateCreatorParams = {

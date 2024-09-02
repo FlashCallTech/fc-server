@@ -49,7 +49,7 @@ export const sidebarLinksCreator = [
 	},
 	{
 		imgURL: "/icons/termsConditions.png",
-		route: "/terms&condition",
+		route: "/terms-and-condition",
 		label: "Terms & Conditions",
 	},
 ];
