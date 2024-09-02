@@ -14,9 +14,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // if (!response.ok) {
-    //   throw new Error('Failed to generate form link');
-    // }
+    if (!response.ok) {
+      throw new Error('Failed to generate form link');
+    }
 
     const result = await response.json();
     return NextResponse.json({ success: true, data: result });
