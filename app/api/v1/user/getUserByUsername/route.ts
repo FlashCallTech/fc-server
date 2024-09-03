@@ -7,7 +7,6 @@ export async function POST(request: Request) {
 		const { username } = await request.json();
 
 		const user = await getUserByUsername(username);
-		console.log(user);
 		if (user) {
 			return NextResponse.json(user);
 		} else {

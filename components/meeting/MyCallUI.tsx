@@ -28,7 +28,7 @@ const MyCallUI = () => {
 				title: "Ongoing Call or Transaction Pending",
 				description: "Redirecting you back ...",
 			});
-			router.push(`/meeting/${storedCallId}`);
+			router.replace(`/meeting/${storedCallId}`);
 			setHasRedirected(true); // Set the state to prevent repeated redirects
 		}
 	}, [router, hide, toast, hasRedirected]);
@@ -72,14 +72,14 @@ const MyCallUI = () => {
 					headers: { "Content-Type": "application/json" },
 				});
 
-				router.push(`${creatorURL ? creatorURL : "/"}`);
+				router.replace(`${creatorURL ? creatorURL : "/"}`);
 			};
 
 			const handleCallStarted = async () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
 				setShowCallUI(false); // Hide call UI
 
-				router.push(`/meeting/${call.id}`);
+				router.replace(`/meeting/${call.id}`);
 
 				await fetch("/api/v1/calls/updateCall", {
 					method: "POST",
