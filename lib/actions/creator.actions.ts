@@ -109,6 +109,7 @@ export async function getUserByUsername(username: string) {
 	} catch (error) {
 		Sentry.captureException(error);
 		console.log(error);
+		return [];
 	}
 }
 

@@ -112,7 +112,7 @@ const Favorites = ({
 							alt="Loading..."
 							width={1000}
 							height={1000}
-							className="w-6 h-6"
+							className={`${isFavoritesPath ? "size-4" : "size-6"} `}
 							priority
 						/>
 					)}

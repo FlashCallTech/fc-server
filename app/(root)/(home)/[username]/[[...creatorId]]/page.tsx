@@ -1,7 +1,7 @@
 import CreatorCard from "@/components/creator/CreatorCard";
-import { getUserByUsername } from "@/lib/actions/creator.actions";
 import { Metadata } from "next";
 import * as Sentry from "@sentry/nextjs";
+import { getUserByUsername } from "@/lib/actions/creator.actions";
 
 // Function to generate metadata dynamically
 export async function generateMetadata({
@@ -26,10 +26,15 @@ export async function generateMetadata({
 		}
 	};
 	const creator = await getUserByUsername(String(params.username));
-	let imageURL = await imageSrc(creator[0]);
-	const fullName =
-		`${creator[0]?.firstName || ""} ${creator[0]?.lastName || ""}`.trim() ||
-		params.username;
+	const creatorProfile = creator.length > 0 ? creator[0] : null;
+	const imageURL = creatorProfile
+		? imageSrc(creatorProfile)
+		: "/images/defaultProfileImage.png";
+	const fullName = creatorProfile
+		? `${creatorProfile.firstName || ""} ${
+				creatorProfile.lastName || ""
+		  }`.trim()
+		: params.username;
 
 	try {
 		return {
@@ -66,7 +71,7 @@ export async function generateMetadata({
 
 const CreatorProfile = () => {
 	return (
-		<div className="flex items-start justify-start h-full overflow-scroll no-scrollbar md:pb-14">
+		<div className="flex items-start justify-start h-full overflow-scroll no-scrollbar">
 			<CreatorCard />
 		</div>
 	);
