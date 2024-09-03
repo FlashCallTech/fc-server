@@ -151,7 +151,7 @@ const About: React.FC = () => {
 					address: "Razorpay Corporate Office",
 				},
 				theme: {
-					color: "#F37254",
+					color: "#50A65C",
 				},
 			};
 
