@@ -153,7 +153,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		});
 		setSheetOpen(false);
 		await call?.leave();
-		router.push(`/meeting/${call.id}`);
+		router.replace(`/meeting/${call.id}`);
 	};
 
 	const handleCallRejected = () => {
@@ -297,7 +297,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					title: "Ongoing Call or Transaction Pending",
 					description: "Redirecting you back ...",
 				});
-				router.push(`/meeting/${storedCallId}`);
+				router.replace(`/meeting/${storedCallId}`);
 			} else {
 				setIsAuthSheetOpen(true);
 			}

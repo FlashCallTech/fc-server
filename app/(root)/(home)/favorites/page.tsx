@@ -157,7 +157,7 @@ const Favorites = () => {
 					isSticky ? "pt-7" : "pt-2"
 				} pb-4 transition-all duration-300`}
 			>
-				<h1 className="text-3xl font-bold">Favorite Creators</h1>
+				<h1 className="text-3xl font-bold">Favorites</h1>
 				<button
 					onClick={toggleFilterPopup}
 					className="relative px-4 py-2 text-sm border rounded-lg bg-green-1 text-white flex items-center justify-center gap-1 hoverScaleDownEffect"
@@ -188,7 +188,7 @@ const Favorites = () => {
 			{/* Filter Popup */}
 			{isFilterOpen && (
 				<div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-40">
-					<section className="bg-white p-5 rounded-xl shadow-lg">
+					<section className="bg-white p-5 rounded-xl shadow-lg lg:w-fit w-[85%] ">
 						<h2 className="text-2xl font-semibold mb-4 tracking-wide text-green-1">
 							Filter Options
 						</h2>
@@ -285,7 +285,7 @@ const Favorites = () => {
 				<div
 					className={`animate-in grid ${
 						favorites.length > 1 ? "lg:grid-cols-2" : "grid-cols-1"
-					}  px-2.5 gap-5 lg:px-0 items-center pb-8 lg:pb-0 overflow-x-hidden no-scrollbar`}
+					}  px-2.5 gap-5 lg:px-0 items-start pb-8 lg:pb-5 overflow-x-hidden no-scrollbar`}
 				>
 					{groupBy === "profession"
 						? Object.entries(filteredFavorites()).map(

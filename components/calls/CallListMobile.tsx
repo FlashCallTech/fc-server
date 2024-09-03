@@ -27,14 +27,14 @@ const CallListMobile = () => {
 
 	useEffect(() => {
 		const loadMoreCalls = async () => {
-			if (!hasMore || !currentUser) return;
+			if (!hasMore || !currentUser || isFetching) return;
 
 			try {
 				setIsFetching(true); // Set fetching state
 				const response = await fetch(
 					`/api/v1/calls/getUserCalls?userId=${String(
 						currentUser?._id
-					)}&page=${page}&limit=10`
+					)}&page=${page}&limit=8`
 				);
 				const data = await response.json();
 				// If no more data, stop further API calls
@@ -52,7 +52,6 @@ const CallListMobile = () => {
 				setIsFetching(false);
 			}
 		};
-
 		loadMoreCalls();
 	}, [inView, currentUser]); // Fetch more calls when user scrolls into view
 
