@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import Head from "next/head";
 import AuthenticateViaOTP from "@/components/forms/AuthenticateViaOTP";
@@ -9,10 +9,6 @@ import AuthenticateViaOTP from "@/components/forms/AuthenticateViaOTP";
 export default function AuthenticationPage() {
 	const searchParams = useSearchParams();
 	const userType = searchParams.get("usertype");
-	const router = useRouter();
-	useEffect(() => {
-		localStorage.setItem("userType", (userType as string) ?? "client");
-	}, [router, searchParams, userType]);
 
 	useEffect(() => {
 		const handleResize = () => {
