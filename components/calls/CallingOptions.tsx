@@ -1,4 +1,4 @@
-	import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { audio, chat, video } from "@/constants/icons";
 import { creatorUser } from "@/types";
@@ -227,7 +227,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					title: "Insufficient Balance",
 					description: "Your balance is below the minimum amount.",
 				});
-				router.push(`/payment?callType=${callType}`);
+				router.push("/payment");
 				return;
 			}
 
