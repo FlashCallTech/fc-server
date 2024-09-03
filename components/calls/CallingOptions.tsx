@@ -331,6 +331,30 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
+	// const sendPushNotification = async () => {
+	// 	const token = await fetchCreatorToken(creator);
+
+	// 	try {
+	// 		const response = await fetch("/api/send-notification", {
+	// 			method: "POST",
+	// 			headers: {
+	// 				"Content-Type": "application/json",
+	// 			},
+	// 			body: JSON.stringify({
+	// 				token: token,
+	// 				title: "Test Notification",
+	// 				message: "This is a test notification",
+	// 				link: "/",
+	// 			}),
+	// 		});
+
+	// 		const data = await response.json();
+	// 		console.log(data);
+	// 	} catch (error) {
+	// 		console.error("Failed to send notification:", error);
+	// 	}
+	// };
+
 	const theme = `5px 5px 0px 0px ${creator.themeSelected}`;
 
 	if (isAuthSheetOpen && !clientUser)
