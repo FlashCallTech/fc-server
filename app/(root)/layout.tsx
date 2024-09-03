@@ -2,6 +2,7 @@
 
 import { ChatRequestProvider } from "@/lib/context/ChatRequestContext";
 import { CurrentUsersProvider } from "@/lib/context/CurrentUsersContext";
+import { UserStatusProvider } from "@/lib/context/UserStatusContext";
 import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
 import StreamVideoProvider from "@/providers/streamClientProvider";
 import { throttle } from "lodash";
@@ -103,9 +104,11 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 			<StreamVideoProvider>
 				<WalletBalanceProvider>
 					<ChatRequestProvider>
-						<div className="relative min-h-screen w-full">
-							{renderContent()}
-						</div>
+						<UserStatusProvider>
+							<div className="relative min-h-screen w-full">
+								{renderContent()}
+							</div>
+						</UserStatusProvider>
 					</ChatRequestProvider>
 				</WalletBalanceProvider>
 			</StreamVideoProvider>

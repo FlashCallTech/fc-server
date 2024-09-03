@@ -50,7 +50,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				title: "Insufficient Balance",
 				description: "Your balance is below the minimum amount.",
 			});
-			router.push("/payment?callType=chat");
+			router.push("/payment");
 			return;
 		}
 

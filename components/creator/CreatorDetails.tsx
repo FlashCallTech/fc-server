@@ -48,17 +48,6 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 			(docSnap) => {
 				if (docSnap.exists()) {
 					const data = docSnap.data();
-					if (data.status === "Online" && status !== "Online") {
-						const notificationSound = new Audio("/sounds/statusChange.mp3");
-						notificationSound.play().catch((error) => {
-							console.error("Failed to play sound:", error);
-						});
-
-						toast({
-							variant: "destructive",
-							title: `${creator?.firstName ?? creator?.username} is Online`,
-						});
-					}
 					setStatus(data.status || "Offline");
 				} else {
 					setStatus("Offline");

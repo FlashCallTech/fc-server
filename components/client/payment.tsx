@@ -23,7 +23,6 @@ import { enterAmountSchema } from "@/lib/validator";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { creatorUser } from "@/types";
 
 interface Transaction {
 	_id: string;
@@ -32,13 +31,8 @@ interface Transaction {
 	type: "credit" | "debit";
 }
 
-interface PaymentProps {
-	callType?: string;  // Define callType as an optional string
-}
-
-const Payment: React.FC<PaymentProps> = ({ callType }) => {
+const Payment: React.FC = () => {
 	const [btn, setBtn] = useState<"All" | "Credit" | "Debit">("All");
-	const [creator, setCreator] = useState<creatorUser>();
 	const { walletBalance } = useWalletBalanceContext();
 	const { currentUser } = useCurrentUsersContext();
 	const [loading, setLoading] = useState(false);
@@ -61,49 +55,6 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			window.removeEventListener("scroll", handleScroll);
 		};
 	}, []);
-
-	useEffect(() => {
-		const storedCreator = localStorage.getItem("currentCreator");
-		if (storedCreator) {
-			const parsedCreator: creatorUser = JSON.parse(storedCreator);
-			if (parsedCreator) {
-				setCreator(parsedCreator);
-			}
-		}
-	}, []);
-
-	const getRateForCallType = () => {
-		let rate: number | undefined;
-
-		switch (callType) {
-			case 'video':
-				rate = creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
-				break;
-			case 'audio':
-				rate = creator?.audioRate ? parseFloat(creator.audioRate) : undefined;
-				break;
-			case 'chat':
-				rate = creator?.chatRate ? parseFloat(creator.chatRate) : undefined;
-				break;
-			default:
-				rate = 0;
-				break;
-		}
-
-		return rate;
-	};
-
-	const amountToBeDisplayed = () => {
-		const ratePerMinute = getRateForCallType();
-		const costForFiveMinutes = ratePerMinute ? ratePerMinute * 5 : undefined;
-		const amountDue = costForFiveMinutes ? Math.max(0, costForFiveMinutes - walletBalance) : undefined;
-		return amountDue;
-	}
-
-	const generateAmounts = () => {
-		const rate = getRateForCallType();
-		return rate ? [5, 10, 15, 30, 40, 60].map(multiplier => (rate * multiplier).toFixed(2)) : ["99", "199", '499', '999', '1999', '2999'];
-	};
 
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof enterAmountSchema>>({
@@ -130,7 +81,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		try {
 			setLoading(true);
 			const response = await axios.get(
-				`/api/v1/transaction/getUserTransactionsPaginated?userId=${currentUser?._id
+				`/api/v1/transaction/getUserTransactionsPaginated?userId=${
+					currentUser?._id
 				}&filter=${btn.toLowerCase()}`
 			);
 			setTransactions(response.data.transactions);
@@ -160,10 +112,6 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			form.clearErrors("rechargeAmount");
 		}
 	}, [rechargeAmount, form]);
-
-	console.log(callType)
-	console.log(getRateForCallType())
-	console.log(creator)
 
 	return (
 		<div className="flex flex-col pt-4 bg-white text-gray-800 w-full h-full">
@@ -212,16 +160,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						</form>
 					</Form>
 				</div>
-				<div>
-					{/* Display the amount due message if there's an amount due */}
-					{amountToBeDisplayed() !== undefined && (
-						<p className="text-red-500">
-							₹{amountToBeDisplayed()?.toFixed(2)} more required for 5 minutes of {callType} 
-						</p>
-					)}
-				</div>
 				<div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8 text-sm font-semibold leading-4 w-full px-5">
-					{generateAmounts().map((amount) => (
+					{["99", "199", "299", "499", "999", "2999"].map((amount) => (
 						<button
 							key={amount}
 							className="px-4 py-3 border-2 border-black rounded shadow hover:bg-gray-200 dark:hover:bg-gray-800"
@@ -237,8 +177,9 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			{/* Transaction History Section */}
 			<section
 				ref={stickyRef}
-				className={`sticky top-16 bg-white z-30 w-full px-4 ${isSticky ? "pb-7" : "pb-4"
-					} pt-4`}
+				className={`sticky top-16 bg-white z-30 w-full px-4 ${
+					isSticky ? "pb-7" : "pb-4"
+				} pt-4`}
 			>
 				<div className="flex flex-col items-start justify-start gap-4 w-full h-fit">
 					<h2 className=" text-gray-500 text-xl pt-4 font-normal leading-7">
@@ -251,10 +192,11 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 								onClick={() => {
 									setBtn(filter as "All" | "Credit" | "Debit");
 								}}
-								className={`px-5 py-1 border-2 border-black rounded-full ${filter === btn
-									? "bg-gray-800 text-white"
-									: "bg-white text-black dark:bg-gray-700 dark:text-white"
-									}`}
+								className={`px-5 py-1 border-2 border-black rounded-full ${
+									filter === btn
+										? "bg-gray-800 text-white"
+										: "bg-white text-black dark:bg-gray-700 dark:text-white"
+								}`}
 							>
 								{filter}
 							</button>
@@ -287,10 +229,11 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 									</p>
 								</div>
 								<p
-									className={`font-bold text-sm leading-4 w-fit whitespace-nowrap ${transaction?.type === "credit"
-										? "text-green-500"
-										: "text-red-500"
-										} `}
+									className={`font-bold text-sm leading-4 w-fit whitespace-nowrap ${
+										transaction?.type === "credit"
+											? "text-green-500"
+											: "text-red-500"
+									} `}
 								>
 									{transaction?.type === "credit"
 										? `+ ₹${transaction?.amount.toFixed(2)}`

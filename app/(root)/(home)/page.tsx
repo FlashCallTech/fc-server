@@ -30,14 +30,6 @@ const HomePage = () => {
 	const router = useRouter();
 	const { ref, inView } = useInView();
 
-	useEffect(() => {
-		localStorage.removeItem("currentCreator");
-	}, []);
-
-	useEffect(() => {
-		localStorage.removeItem("currentCreator");
-	}, []);
-
 	const fetchCreators = useCallback(
 		async (offset: number, limit: number) => {
 			try {
