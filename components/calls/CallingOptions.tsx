@@ -13,6 +13,7 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
+import { trackEvent } from "@/lib/mixpanel";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -41,6 +42,26 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		audioAllowed: creator.audioAllowed,
 		chatAllowed: creator.chatAllowed,
 	});
+
+	const [onlineStatus, setOnlineStatus] = useState<String>();
+
+  useEffect(() => {
+    const creatorDocRef = doc(db, "userStatus", creator.phone);
+
+    // Set up a listener for real-time updates
+    const unsubscribe = onSnapshot(creatorDocRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+				setOnlineStatus(data.status);
+      } else {
+        console.error("No such document!");
+      }
+    });
+
+    // Clean up the listener when the component unmounts
+    return () => unsubscribe();
+  }, []);
+
 
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
@@ -144,7 +165,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	}, [chatState]);
 
 	// defining the actions for call accept and call reject
-	const handleCallAccepted = async (call: Call) => {
+	const handleCallAccepted = async (call: Call, callType: string) => {
 		setIsProcessing(false); // Reset processing state
 		toast({
 			variant: "destructive",
@@ -153,10 +174,23 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		});
 		setSheetOpen(false);
 		await call?.leave();
+		if (callType === "audio") {	
+			trackEvent('BookCall_Audio_Connected', {
+			Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+			Creator_ID: creator._id,
+			})
+		} else {
+			trackEvent('BookCall_Video_Connected', {
+				Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+			Creator_ID: creator._id,
+			})
+		}
 		router.replace(`/meeting/${call.id}`);
 	};
 
-	const handleCallRejected = () => {
+	const handleCallRejected = (callType: string) => {
 		setIsProcessing(false); // Reset processing state
 		toast({
 			variant: "destructive",
@@ -206,11 +240,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
+			const description = `${callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-			}`;
+				}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -227,7 +260,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					title: "Insufficient Balance",
 					description: "Your balance is below the minimum amount.",
 				});
-				router.push("/payment");
+				router.push(`/payment?callType=${callType}`);
 				return;
 			}
 
@@ -241,6 +274,20 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					},
 				},
 			});
+
+			if (callType === "audio") {	
+				trackEvent('BookCall_Audio_Clicked', {
+					Client_ID: clientUser._id,
+				User_First_Seen: clientUser.createdAt?.toISOString().split('T')[0],
+				Creator_ID: creator._id,
+				})
+			} else {
+				trackEvent('BookCall_Video_initiated', {
+					Client_ID: clientUser._id,
+				User_First_Seen: clientUser.createdAt?.toISOString().split('T')[0],
+				Creator_ID: creator._id,
+				})
+			}
 
 			logEvent(analytics, "call_initiated", {
 				clientId: clientUser?._id,
@@ -259,8 +306,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			call.on("call.accepted", () => handleCallAccepted(call));
-			call.on("call.rejected", handleCallRejected);
+			call.on("call.accepted", () => handleCallAccepted(call, callType));
+			call.on("call.rejected", () => handleCallRejected(callType));
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
@@ -273,24 +320,34 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		if (isProcessing) return; // Prevent double-click
 		setIsProcessing(true); // Set processing state
 
-		try {
+		try { 
+			if (callType === "audio") {
+				logEvent(analytics, "audio_now_click", {
+					clientId: clientUser?._id,
+					creatorId: creator._id,
+				});
+				trackEvent('BookCall_Audio_Clicked', {
+					utm_source: 'google',
+					Creator_ID: creator._id,
+					status: onlineStatus,
+				})
+			} else {
+				logEvent(analytics, "video_now_click", {
+					clientId: clientUser?._id,
+					creatorId: creator._id,
+				});
+				trackEvent('BookCall_Video_Clicked', {
+					utm_source: 'google',
+					Creator_ID: creator._id,
+					status: onlineStatus,
+				})
+			}
 			if (clientUser && !storedCallId) {
 				createMeeting(callType);
 				logEvent(analytics, "call_click", {
 					clientId: clientUser?._id,
 					creatorId: creator._id,
 				});
-				if (callType === "audio") {
-					logEvent(analytics, "audio_now_click", {
-						clientId: clientUser?._id,
-						creatorId: creator._id,
-					});
-				} else {
-					logEvent(analytics, "video_now_click", {
-						clientId: clientUser?._id,
-						creatorId: creator._id,
-					});
-				}
 			} else if (clientUser && storedCallId) {
 				toast({
 					variant: "destructive",
@@ -322,6 +379,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	const handleChatClick = () => {
 		if (clientUser) {
+			trackEvent('BookCall_Chat_Clicked', {
+				utm_source: 'google',
+				creator_id: creator._id,
+				status: onlineStatus,
+			})
 			setChatReqSent(true);
 			handleChat(creator, clientUser);
 			setSheetOpen(true);
@@ -379,9 +441,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{updatedCreator.videoAllowed &&
 					parseInt(updatedCreator.videoRate, 10) > 0 && (
 						<div
-							className={`callOptionContainer ${
-								isProcessing ? "opacity-50 cursor-not-allowed" : ""
-							}`}
+							className={`callOptionContainer ${isProcessing ? "opacity-50 cursor-not-allowed" : ""
+								}`}
 							style={{
 								boxShadow: theme,
 							}}
@@ -404,9 +465,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{updatedCreator.audioAllowed &&
 					parseInt(updatedCreator.audioRate, 10) > 0 && (
 						<div
-							className={`callOptionContainer ${
-								isProcessing ? "opacity-50 cursor-not-allowed" : ""
-							}`}
+							className={`callOptionContainer ${isProcessing ? "opacity-50 cursor-not-allowed" : ""
+								}`}
 							style={{
 								boxShadow: theme,
 							}}

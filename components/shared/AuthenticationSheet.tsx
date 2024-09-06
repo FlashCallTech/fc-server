@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import AuthenticateViaOTP from "../forms/AuthenticateViaOTP";
 import { Button } from "../ui/button";
+import { trackEvent } from "@/lib/mixpanel";
 
 const AuthenticationSheet = ({
 	isOpen,
@@ -9,6 +10,13 @@ const AuthenticationSheet = ({
 	isOpen: boolean;
 	onOpenChange: (isOpen: boolean) => void;
 }) => {
+
+	useEffect(()=> {
+		if(isOpen) {
+			trackEvent('Login_Bottomsheet_Impression')
+		}
+	}, [isOpen])
+
 	useEffect(() => {
 		const handleResize = () => {
 			const height = window.innerHeight;

@@ -27,7 +27,8 @@
 		"**/*.tsx",
 		".next/types/**/*.ts",
 		"lib/firebase.ts",
-		"server.ts"
+		"server.ts",
+		"mixpanel-browser.d.ts"
 	],
 	"exclude": ["node_modules"]
 }

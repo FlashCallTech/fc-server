@@ -4,6 +4,7 @@ import { ChatRequestProvider } from "@/lib/context/ChatRequestContext";
 import { CurrentUsersProvider } from "@/lib/context/CurrentUsersContext";
 import { UserStatusProvider } from "@/lib/context/UserStatusContext";
 import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
+import { initMixpanel } from "@/lib/mixpanel";
 import StreamVideoProvider from "@/providers/streamClientProvider";
 import { throttle } from "lodash";
 import Image from "next/image";
@@ -30,6 +31,10 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	// Set mounted state once the component is mounted
 	useEffect(() => {
 		setIsMounted(true);
+	}, []);
+
+	useEffect(() => {
+		initMixpanel(); // Initialize Mixpanel when the layout mounts
 	}, []);
 
 	const renderContent = () => {
