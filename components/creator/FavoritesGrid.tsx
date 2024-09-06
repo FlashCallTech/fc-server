@@ -70,12 +70,12 @@ const FavoritesGrid = ({
 	}, [creator.username, creator.phone]);
 
 	const handleToggleFavorite = async () => {
-		const clientId = clientUser?.phone;
+		const clientId = clientUser?._id;
 		setAddingFavorite(true);
 		try {
 			const response = await toggleFavorite({
 				clientId: clientId as string,
-				creatorId: creator.phone,
+				creatorId: creator._id,
 			});
 
 			if (response.success) {

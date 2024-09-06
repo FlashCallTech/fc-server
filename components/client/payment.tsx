@@ -23,6 +23,7 @@ import { enterAmountSchema } from "@/lib/validator";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { creatorUser } from "@/types";
 
 interface Transaction {
 	_id: string;
@@ -31,8 +32,13 @@ interface Transaction {
 	type: "credit" | "debit";
 }
 
-const Payment: React.FC = () => {
+interface PaymentProps {
+	callType?: string;  // Define callType as an optional string
+}
+
+const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const [btn, setBtn] = useState<"All" | "Credit" | "Debit">("All");
+	const [creator, setCreator] = useState<creatorUser>();
 	const { walletBalance } = useWalletBalanceContext();
 	const { currentUser } = useCurrentUsersContext();
 	const [loading, setLoading] = useState(false);
@@ -55,6 +61,45 @@ const Payment: React.FC = () => {
 			window.removeEventListener("scroll", handleScroll);
 		};
 	}, []);
+
+	useEffect(() => {
+		const storedCreator = localStorage.getItem("currentCreator");
+		if (storedCreator) {
+			const parsedCreator: creatorUser = JSON.parse(storedCreator);
+			if (parsedCreator) {
+				setCreator(parsedCreator);
+			}
+		}
+	}, []);
+
+	const getRateForCallType = () => {
+		let rate: number | undefined;
+		switch (callType) {
+			case 'video':
+				rate = creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
+				break;
+			case 'audio':
+				rate = creator?.audioRate ? parseFloat(creator.audioRate) : undefined;
+				break;
+			case 'chat':
+				rate = creator?.chatRate ? parseFloat(creator.chatRate) : undefined;
+				break;
+			default:
+				rate = 0;
+				break;
+		}
+		return rate;
+	};
+	const amountToBeDisplayed = () => {
+		const ratePerMinute = getRateForCallType();
+		const costForFiveMinutes = ratePerMinute ? ratePerMinute * 5 : undefined;
+		const amountDue = costForFiveMinutes ? Math.max(0, costForFiveMinutes - walletBalance) : undefined;
+		return amountDue;
+	}
+	const generateAmounts = () => {
+		const rate = getRateForCallType();
+		return rate ? [5, 10, 15, 30, 40, 60].map(multiplier => (rate * multiplier).toFixed(2)) : ["99", "199", '499', '999', '1999', '2999'];
+	};
 
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof enterAmountSchema>>({
@@ -160,8 +205,16 @@ const Payment: React.FC = () => {
 						</form>
 					</Form>
 				</div>
+				<div>
+					{/* Display the amount due message if there's an amount due */}
+					{amountToBeDisplayed() !== undefined && (
+						<p className="text-red-500">
+							₹{amountToBeDisplayed()?.toFixed(2)} more required for 5 minutes of {callType} 
+						</p>
+					)}
+				</div>
 				<div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8 text-sm font-semibold leading-4 w-full px-5">
-					{["99", "199", "299", "499", "999", "2999"].map((amount) => (
+				{generateAmounts().map((amount) => (
 						<button
 							key={amount}
 							className="px-4 py-3 border-2 border-black rounded shadow hover:bg-gray-200 dark:hover:bg-gray-800"

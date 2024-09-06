@@ -88,6 +88,16 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		[creatorUser, clientUser]
 	);
 
+	useEffect(() => {
+		const storedUserType = localStorage.getItem("userType");
+		// setUserType(currentUser?.profession ? "creator" : "client");
+		if (storedUserType) {
+			setUserType(storedUserType);
+		} else {
+			setUserType(currentUser?.profession ? "creator" : "client");
+		}
+	}, [currentUser?._id]);
+
 	// Function to handle user signout
 	const handleSignout = () => {
 		if (currentUser) {
@@ -104,7 +114,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				});
 		}
 
-		localStorage.removeItem("userID");
+		localStorage.removeItem("currentUserID");
 		localStorage.removeItem("authToken");
 		localStorage.removeItem("creatorURL");
 		localStorage.removeItem("notifyList");
@@ -170,10 +180,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 	// Call fetchCurrentUser when the component mounts
 	useEffect(() => {
-		const storedUserType = localStorage.getItem("userType");
 		const authToken = localStorage.getItem("authToken");
-
-		setUserType(storedUserType);
 
 		if (authToken && !isTokenValid(authToken)) {
 			handleSignout();
@@ -217,7 +224,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					if (doc.exists()) {
 						const data = doc.data();
 						if (data?.token && data.token !== authToken) {
-							console.log(data.token, authToken);
 							handleSignout();
 							toast({
 								variant: "destructive",

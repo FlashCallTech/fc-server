@@ -41,6 +41,7 @@ export type clientUser = {
 	creatorId?: string;
 	profession?: string;
 	themeSelected?: string;
+	createdAt?: Date;
 };
 
 // Creator Params

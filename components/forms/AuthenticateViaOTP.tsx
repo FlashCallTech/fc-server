@@ -16,13 +16,14 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Image from "next/image";
 import { success } from "@/constants/icons";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
 import { CreateCreatorParams, CreateUserParams } from "@/types";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import * as Sentry from "@sentry/nextjs";
+import { trackEvent } from "@/lib/mixpanel";
 
 const formSchema = z.object({
 	phone: z
@@ -45,9 +46,8 @@ const AuthenticateViaOTP = ({
 	userType: string;
 	onOpenChange?: (isOpen: boolean) => void;
 }) => {
-	const searchParams = useSearchParams();
 	const router = useRouter();
-	const { refreshCurrentUser, setAuthenticationSheetOpen } =
+	const { clientUser, currentUser, refreshCurrentUser, setAuthenticationSheetOpen } =
 		useCurrentUsersContext();
 	const [showOTP, setShowOTP] = useState(false);
 	const [phoneNumber, setPhoneNumber] = useState("");
@@ -56,14 +56,8 @@ const AuthenticateViaOTP = ({
 	const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
 	const [verificationSuccess, setVerificationSuccess] = useState(false);
 	const [error, setError] = useState({});
-
-	const pathname = usePathname();
-	const isAuthenticationPath = pathname.includes("/authenticate");
-	useEffect(() => {
-		localStorage.setItem("userType", (userType as string) ?? "client");
-	}, [router, searchParams, userType]);
-
 	const { toast } = useToast();
+
 	// SignUp form
 	const signUpForm = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -90,6 +84,7 @@ const AuthenticateViaOTP = ({
 			setPhoneNumber(values.phone);
 			setToken(response.data.token); // Store the token received from the API
 			setShowOTP(true);
+			trackEvent('Login_Bottomsheet_OTP_Generated')
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error sending OTP:", error);
@@ -144,6 +139,8 @@ const AuthenticateViaOTP = ({
 
 			let authToken = response.data.sessionToken;
 
+			trackEvent('Login_Bottomsheet_OTP_Submitted');
+
 			updateFirestoreAuthToken(authToken);
 
 			const creatorURL = localStorage.getItem("creatorURL");
@@ -158,18 +155,13 @@ const AuthenticateViaOTP = ({
 				phone: phoneNumber,
 			});
 
-			if (existingUser.data.userType) {
-				localStorage.setItem(
-					"userType",
-					(existingUser.data.userType as string) ?? "client"
-				);
+			let resolvedUserType = userType; // Default to the userType from the component prop
 
+			if (existingUser.data._id) {
+				resolvedUserType = (existingUser.data.userType as string) || "client";
+				console.log("current usertype: ", resolvedUserType);
 				localStorage.setItem("currentUserID", existingUser.data._id);
-
 				console.log("Existing user found. Proceeding as an existing user.");
-				refreshCurrentUser();
-				setAuthenticationSheetOpen(false);
-				isAuthenticationPath && router.push(`${creatorURL ? creatorURL : "/"}`);
 			} else {
 				console.log("No user found. Proceeding as a new user.");
 
@@ -209,9 +201,6 @@ const AuthenticateViaOTP = ({
 							"/api/v1/creator/createUser",
 							user as CreateCreatorParams
 						);
-						refreshCurrentUser();
-						setAuthenticationSheetOpen(false);
-						router.push("/updateDetails");
 					} catch (error: any) {
 						toast({
 							variant: "destructive",
@@ -219,6 +208,7 @@ const AuthenticateViaOTP = ({
 							description: `${error.response.data.error}`,
 						});
 						resetState();
+						return;
 					}
 				} else {
 					try {
@@ -226,9 +216,6 @@ const AuthenticateViaOTP = ({
 							"/api/v1/client/createUser",
 							user as CreateCreatorParams
 						);
-						refreshCurrentUser();
-						setAuthenticationSheetOpen(false);
-						router.push(`${creatorURL ? creatorURL : "/"}`);
 					} catch (error: any) {
 						toast({
 							variant: "destructive",
@@ -236,9 +223,17 @@ const AuthenticateViaOTP = ({
 							description: `${error.response.data.error}`,
 						});
 						resetState();
+						return;
 					}
 				}
 			}
+
+			localStorage.setItem("userType", resolvedUserType);
+			refreshCurrentUser();
+			setAuthenticationSheetOpen(false);
+		
+			router.push(`${creatorURL ? creatorURL : "/"}`);
+			
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);
 			let newErrors = { ...error };
@@ -248,6 +243,7 @@ const AuthenticateViaOTP = ({
 			setIsVerifyingOTP(false);
 		} finally {
 			setIsVerifyingOTP(false);
+			console.log(clientUser)
 		}
 	};
 

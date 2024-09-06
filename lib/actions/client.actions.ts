@@ -9,6 +9,8 @@ import { handleError } from "@/lib/utils";
 import { CreateUserParams, UpdateUserParams } from "@/types";
 import Client from "../database/models/client.model";
 import * as Sentry from "@sentry/nextjs";
+import { trackEvent } from "../mixpanel";
+import { addMoney } from "./wallet.actions";
 
 export async function createUser(user: CreateUserParams) {
 	try {
@@ -21,7 +23,18 @@ export async function createUser(user: CreateUserParams) {
 			return { error: "User with the same username already exists" };
 		}
 		const newUser = await Client.create(user);
-		// console.log(newUser);
+
+		await addMoney({
+			userId: newUser._id,
+			userType: "client",
+			amount: 0, // Set the initial balance here
+		});
+
+		const clientUser = JSON.parse(JSON.stringify(newUser));
+		trackEvent("Login_Success", {
+			Client_ID: clientUser._id,
+			User_First_Seen: clientUser.createdAt.toISOString().split("T")[0],
+		});
 		return JSON.parse(JSON.stringify(newUser));
 	} catch (error) {
 		Sentry.captureException(error);
