@@ -23,6 +23,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import * as Sentry from "@sentry/nextjs";
+import { trackEvent } from "@/lib/mixpanel";
 
 const formSchema = z.object({
 	phone: z
@@ -46,7 +47,7 @@ const AuthenticateViaOTP = ({
 	onOpenChange?: (isOpen: boolean) => void;
 }) => {
 	const router = useRouter();
-	const { refreshCurrentUser, setAuthenticationSheetOpen } =
+	const { clientUser, currentUser, refreshCurrentUser, setAuthenticationSheetOpen } =
 		useCurrentUsersContext();
 	const [showOTP, setShowOTP] = useState(false);
 	const [phoneNumber, setPhoneNumber] = useState("");
@@ -83,6 +84,7 @@ const AuthenticateViaOTP = ({
 			setPhoneNumber(values.phone);
 			setToken(response.data.token); // Store the token received from the API
 			setShowOTP(true);
+			trackEvent('Login_Bottomsheet_OTP_Generated')
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error sending OTP:", error);
@@ -136,6 +138,8 @@ const AuthenticateViaOTP = ({
 			});
 
 			let authToken = response.data.sessionToken;
+
+			trackEvent('Login_Bottomsheet_OTP_Submitted');
 
 			updateFirestoreAuthToken(authToken);
 
@@ -227,7 +231,9 @@ const AuthenticateViaOTP = ({
 			localStorage.setItem("userType", resolvedUserType);
 			refreshCurrentUser();
 			setAuthenticationSheetOpen(false);
+		
 			router.push(`${creatorURL ? creatorURL : "/"}`);
+			
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);
 			let newErrors = { ...error };
@@ -237,6 +243,7 @@ const AuthenticateViaOTP = ({
 			setIsVerifyingOTP(false);
 		} finally {
 			setIsVerifyingOTP(false);
+			console.log(clientUser)
 		}
 	};
 

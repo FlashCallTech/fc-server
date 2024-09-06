@@ -6,6 +6,7 @@ import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
+import { trackEvent } from "@/lib/mixpanel";
 
 interface User2 {
 	_id: string;
@@ -14,6 +15,7 @@ interface User2 {
 	request: string;
 	fullName: string;
 	photo: string;
+	User_First_Seen: string;
 }
 
 interface Chat {
@@ -125,6 +127,12 @@ const useEndChat = () => {
 			});
 
 			localStorage.removeItem("chatRequestId");
+
+			trackEvent('BookCall_Chat_Ended', {
+				Client_ID: user2?.clientId,
+				User_First_Seen: user2?.User_First_Seen,
+				Creator_ID: user2?.creatorId,
+			})
 
 			logEvent(analytics, "call_ended", {
 				userId: currentUser?._id,
