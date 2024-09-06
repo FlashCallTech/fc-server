@@ -8,7 +8,6 @@ import { Toaster } from "@/components/ui/toaster";
 import React from "react";
 import { Metadata } from "next";
 import MovePageToTop from "@/components/shared/MovePageToTop";
-import { Analytics } from "@vercel/analytics/react";
 import { GoogleTagManager } from "@next/third-parties/google";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 
@@ -49,7 +48,6 @@ export default function RootLayout({
 			<GoogleTagManager gtmId={`${process.env.NEXT_PUBLIC_MEASUREMENT_ID}`} />
 			<TooltipProvider>
 				<body className="overflow-y-scroll no-scrollbar">
-					<Analytics />
 					<Toaster />
 					<MovePageToTop />
 					{children}

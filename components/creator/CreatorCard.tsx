@@ -100,7 +100,7 @@ const CreatorCard: React.FC = () => {
 			<CreatorDetails creator={creator} />
 
 			{/* Calling Options & User Reviews */}
-			<div className="flex flex-col gap-10 items-center">
+			<div className="flex flex-col gap-10 items-center lg:mb-4">
 				{/* Calling Options */}
 				<CallingOptions creator={creator} />
 
