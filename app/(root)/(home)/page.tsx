@@ -184,7 +184,7 @@ const HomePage = () => {
 							alt="Loading..."
 							width={50}
 							height={50}
-							className="mx-auto invert my-4 z-20"
+							className="mx-auto invert my-7 z-20"
 						/>
 					)}
 					{hasMore && <div ref={ref} className=" mt-10 w-full" />}

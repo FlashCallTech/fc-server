@@ -50,9 +50,9 @@ const Navbar = () => {
 		if (userType === "creator") {
 			router.push("/authenticate?usertype=creator");
 		} else {
-			trackEvent('Login_TopNav_Clicked', {
-				utm_source: 'google',
-			})
+			trackEvent("Login_TopNav_Clicked", {
+				utm_source: "google",
+			});
 			setIsAuthSheetOpen(true);
 		}
 	};
@@ -75,10 +75,10 @@ const Navbar = () => {
 	}, [isAuthSheetOpen]);
 
 	const handleAppRedirect = () => {
-		trackEvent('Getlink_TopNav_Clicked', {
-			utm_source: 'google',
+		trackEvent("Getlink_TopNav_Clicked", {
+			utm_source: "google",
 			creator_id: currentUser?._id,
-		})
+		});
 		const isAndroid = /Android/i.test(navigator.userAgent);
 		const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 		let url = "";
