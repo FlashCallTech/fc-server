@@ -5,13 +5,14 @@ import { creatorUser } from "@/types";
 import CallingOptions from "../calls/CallingOptions";
 import CreatorDetails from "./CreatorDetails";
 import UserReviews from "./UserReviews";
-import SinglePostLoader from "../shared/SinglePostLoader";
 import { useToast } from "@/components/ui/use-toast";
 import { getUserByUsername } from "@/lib/actions/creator.actions";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useParams, useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import ContentLoading from "../shared/ContentLoading";
+import Image from "next/image";
 
 const CreatorCard: React.FC = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
@@ -53,9 +54,23 @@ const CreatorCard: React.FC = () => {
 
 	if (loading || (currentUser && walletBalance < 0)) {
 		return (
-			<section className="w-full h-full flex flex-col items-center justify-center">
-				<SinglePostLoader />
-			</section>
+			<div className="size-full flex flex-col gap-2 items-center justify-center">
+				<ContentLoading />
+
+				<h2 className="flex items-center justify-center gap-2 text-green-1 font-semibold text-base md:text-2xl w-[85%] md:w-full text-center">
+					{currentUser
+						? `Hey ${currentUser.username} Loading Content ...`
+						: "Fetching Creator Details"}
+					<Image
+						src="/icons/loading-circle.svg"
+						alt="Loading..."
+						width={24}
+						height={24}
+						className="invert"
+						priority
+					/>
+				</h2>
+			</div>
 		);
 	}
 

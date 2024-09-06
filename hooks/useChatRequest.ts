@@ -18,6 +18,7 @@ import useChat from "./useChat";
 import { logEvent } from "firebase/analytics";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import * as Sentry from "@sentry/nextjs";
+import { trackEvent } from "@/lib/mixpanel";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
@@ -50,7 +51,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				title: "Insufficient Balance",
 				description: "Your balance is below the minimum amount.",
 			});
-			router.push("/payment");
+			router.push("/payment?callType=chat");
 			return;
 		}
 
@@ -86,6 +87,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			await setDoc(newChatRequestRef, {
 				creatorId: creator?._id,
 				clientId: clientUser?._id,
+				client_first_seen: clientUser.createdAt.toISOString().split('T')[0],
 				clientName: clientUser?.username,
 				status: "pending",
 				chatId: chatId,
@@ -119,6 +121,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 						JSON.stringify({
 							clientId: data.clientId,
 							creatorId: data.creatorId,
+							User_First_Seen: clientUser.createdAt.toISOString().split('T')[0],
 							chatId: chatId,
 							requestId: doc.id,
 							fullName: creator.firstName + " " + creator?.lastName,
@@ -127,6 +130,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					);
 				}
 			});
+			trackEvent('BookCall_Chat_initiated', {
+				Client_ID: clientUser._id,
+				User_First_Seen: clientUser.createdAt.toISOString().split('T')[0],
+				Creator_ID: creator._id,
+			})
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
@@ -206,12 +214,19 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				JSON.stringify({
 					clientId: chatRequest.clientId,
 					creatorId: chatRequest.creatorId,
+					User_First_Seen: chatRequest.client_first_seen,
 					chatId: chatRequest.chatId,
 					requestId: chatRequest.id,
 					fullName: response.firstName + " " + response.lastname,
 					photo: response.photo,
 				})
 			);
+
+			trackEvent('BookCall_Chat_Connected', {
+				Client_ID: chatRequest.clientId,
+				User_First_Seen: chatRequest.client_first_seen,
+				Creator_ID: chatRequest.creatorId,
+				})
 
 			router.push(
 				`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`

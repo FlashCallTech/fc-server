@@ -33,6 +33,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 	useEffect(() => {
 		if (isCreatorOrExpertPath) {
 			localStorage.setItem("currentCreator", JSON.stringify(creator));
+			localStorage.setItem("creatorURL", `/${creator?.username}`);
 			setCurrentTheme(creator?.themeSelected);
 		}
 	}, [creator?._id, isCreatorOrExpertPath]);

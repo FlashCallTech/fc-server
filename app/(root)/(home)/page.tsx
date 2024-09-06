@@ -3,7 +3,6 @@
 import React, { useEffect, useState, Suspense, lazy, useCallback } from "react";
 import { useInView } from "react-intersection-observer";
 import * as Sentry from "@sentry/nextjs";
-import Link from "next/link";
 import { getUsersPaginated } from "@/lib/actions/creator.actions";
 import { creatorUser } from "@/types";
 import CreatorHome from "@/components/creator/CreatorHome";
@@ -11,6 +10,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { usePathname, useRouter } from "next/navigation";
 import PostLoader from "@/components/shared/PostLoader";
 import Image from "next/image";
+import ContentLoading from "@/components/shared/ContentLoading";
 
 const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
@@ -21,11 +21,12 @@ const HomePage = () => {
 		return cachedCreators ? JSON.parse(cachedCreators) : [];
 	});
 	const [loading, setLoading] = useState(creators.length === 0);
+	const [loadingCard, setLoadingCard] = useState(false);
 	const [creatorCount, setCreatorCount] = useState(creators.length);
 	const [isFetching, setIsFetching] = useState(false);
 	const [error, setError] = useState(false);
 	const [hasMore, setHasMore] = useState(true);
-	const { userType, setCurrentTheme } = useCurrentUsersContext();
+	const { currentUser, userType, setCurrentTheme } = useCurrentUsersContext();
 	const pathname = usePathname();
 	const router = useRouter();
 	const { ref, inView } = useInView();
@@ -111,21 +112,42 @@ const HomePage = () => {
 	}, [inView, isFetching, hasMore, creatorCount, fetchCreators]);
 
 	const handleCreatorCardClick = (username: string, theme: string) => {
+		setLoadingCard(true); // Set loading state before navigation
 		// Save any necessary data in localStorage
+		setLoading(true);
 		localStorage.setItem("creatorURL", `/${username}`);
 		setCurrentTheme(theme);
-
 		// Trigger the route change immediately
 		router.push(`/${username}`);
 	};
 
+	if (loadingCard || loading) {
+		return (
+			<div className="size-full flex flex-col gap-2 items-center justify-center">
+				<ContentLoading />
+
+				<h2 className="flex items-center justify-center gap-2 text-green-1 font-semibold text-base md:text-2xl w-[85%] md:w-full text-center">
+					{currentUser
+						? `Hey ${currentUser.username} Loading Content ...`
+						: "Hang Tight Fetching Details"}
+					<Image
+						src="/icons/loading-circle.svg"
+						alt="Loading..."
+						width={24}
+						height={24}
+						className="invert"
+						priority
+					/>
+				</h2>
+			</div>
+		);
+	}
+
 	return (
 		<main className="flex size-full flex-col gap-2">
-			{userType !== "creator" ? (
+			{userType === "client" ? (
 				<Suspense fallback={<PostLoader count={6} />}>
-					{loading ? (
-						<PostLoader count={6} />
-					) : error ? (
+					{error ? (
 						<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
 							Failed to fetch creators <br />
 							Please try again later.
@@ -155,6 +177,7 @@ const HomePage = () => {
 								))}
 						</section>
 					)}
+
 					{hasMore && isFetching && (
 						<Image
 							src="/icons/loading-circle.svg"
