@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import "@smastrom/react-rating/style.css";
 import "slick-carousel/slick/slick.css";
@@ -5,12 +6,18 @@ import "slick-carousel/slick/slick-theme.css";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
-import React from "react";
 import { Metadata } from "next";
 import MovePageToTop from "@/components/shared/MovePageToTop";
-import { Analytics } from "@vercel/analytics/react";
-import { GoogleTagManager } from "@next/third-parties/google";
-import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+
+// Dynamic imports
+const GoogleTagManager = React.lazy(() =>
+	import("@next/third-parties/google").then((module) => ({
+		default: module.GoogleTagManager,
+	}))
+);
+const GoogleAnalytics = React.lazy(
+	() => import("@/components/analytics/GoogleAnalytics")
+);
 
 export const metadata: Metadata = {
 	title: "Flashcall.me",
@@ -45,11 +52,12 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<GoogleAnalytics />
-			<GoogleTagManager gtmId={`${process.env.NEXT_PUBLIC_MEASUREMENT_ID}`} />
+			<Suspense fallback={null}>
+				<GoogleAnalytics />
+				<GoogleTagManager gtmId={`${process.env.NEXT_PUBLIC_MEASUREMENT_ID}`} />
+			</Suspense>
 			<TooltipProvider>
 				<body className="overflow-y-scroll no-scrollbar">
-					<Analytics />
 					<Toaster />
 					<MovePageToTop />
 					{children}
