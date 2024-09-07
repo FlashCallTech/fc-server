@@ -154,7 +154,7 @@ const UserReviews = ({
 				<div
 					className={`relative text-white size-full ${
 						creatorFeedback?.length > 1 ? "py-10" : "pt-10 pb-4"
-					} rounded-t-[24px] md:rounded-[24px] xl:w-[60%]`}
+					} rounded-t-[24px] lg:rounded-[24px] xl:w-[60%]`}
 					style={{ backgroundColor: theme }}
 				>
 					<h2 className="text-2xl font-semibold">Happy Client&apos;s</h2>
