@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Script from "next/script";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
+	creatorUser,
 	PaymentFailedResponse,
 	PaymentResponse,
 	RazorpayOptions,
@@ -17,12 +18,13 @@ import { analytics } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import ContentLoading from "@/components/shared/ContentLoading";
+import { trackEvent } from "@/lib/mixpanel";
 
 const About: React.FC = () => {
 	const { updateWalletBalance } = useWalletBalanceContext();
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, clientUser } = useCurrentUsersContext();
 	const { toast } = useToast();
-
+	const [creator, setCreator] = useState<creatorUser>();
 	const searchParams = useSearchParams();
 	const amount = searchParams.get("amount");
 
@@ -43,10 +45,36 @@ const About: React.FC = () => {
 			? parseFloat((subtotal + gstAmount).toFixed(2))
 			: null;
 
+	useEffect(() => {
+		const storedCreator = localStorage.getItem("currentCreator");
+		if (storedCreator) {
+			const parsedCreator: creatorUser = JSON.parse(storedCreator);
+			if (parsedCreator) {
+				setCreator(parsedCreator);
+			}
+		}
+	}, []);
+
+	useEffect(() => {
+		trackEvent('Recharge_Page_Cart_review_Impression', {
+			Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+			Creator_ID: creator?._id,
+		})
+	}, [])
+
+
+
 	const PaymentHandler = async (
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>
 	): Promise<void> => {
 		e.preventDefault();
+
+		trackEvent('Recharge_Page_Proceed_Clicked', {
+			Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+			Creator_ID: creator?._id,
+		})
 
 		logEvent(analytics, "wallet_recharge", {
 			userId: currentUser?._id,
@@ -131,9 +159,22 @@ const About: React.FC = () => {
 							userId: currentUser?._id,
 							amount: amount,
 						});
+
+						trackEvent('Recharge_Successfull', {
+							Client_ID: clientUser?._id,
+							User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+							Creator_ID: creator?._id,
+						})
+
 						router.push("/success");
 					} catch (error) {
 						Sentry.captureException(error);
+						
+						trackEvent('Recharge_Failed', {
+							Client_ID: clientUser?._id,
+							User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+							Creator_ID: creator?._id,
+						})
 
 						console.error("Validation request failed:", error);
 						setLoading(false);

@@ -24,6 +24,7 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
+import { trackEvent } from "@/lib/mixpanel";
 
 interface Transaction {
 	_id: string;
@@ -45,7 +46,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const [errorMessage, setErrorMessage] = useState("");
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const router = useRouter();
-
+	const { clientUser } = useCurrentUsersContext();
 	const [isSticky, setIsSticky] = useState(false);
 	const stickyRef = useRef<HTMLDivElement>(null);
 
@@ -71,6 +72,14 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			}
 		}
 	}, []);
+
+	useEffect(() => {
+		trackEvent('Recharge_Page_Impression', {
+			Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+			Creator_ID: creator?._id,
+			})
+	}, [])
 
 	const getRateForCallType = () => {
 		let rate: number | undefined;
@@ -100,6 +109,22 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		const rate = getRateForCallType();
 		return rate ? [5, 10, 15, 30, 40, 60].map(multiplier => (rate * multiplier).toFixed(2)) : ["99", "199", '499', '999', '1999', '2999'];
 	};
+
+	const tileClicked = () => {
+		trackEvent('Recharge_Page_TileClicked', {
+			Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+			Creator_ID: creator?._id,
+			})
+	}
+
+	const rechargeClicked = () => {
+		trackEvent('Recharge_Page_RechargeClicked', {
+			Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+			Creator_ID: creator?._id,
+			})
+	}
 
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof enterAmountSchema>>({
@@ -199,6 +224,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 							<Button
 								type="submit"
 								className="w-fit px-4 py-3 bg-gray-800 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-black/60"
+								onClick={rechargeClicked}
 							>
 								Recharge
 							</Button>
@@ -219,7 +245,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 							key={amount}
 							className="px-4 py-3 border-2 border-black rounded shadow hover:bg-gray-200 dark:hover:bg-gray-800"
 							style={{ boxShadow: "3px 3px black" }}
-							onClick={() => form.setValue("rechargeAmount", amount)}
+							onClick={() => {
+								form.setValue("rechargeAmount", amount)
+								tileClicked
+							}}
 						>
 							₹{amount}
 						</button>
