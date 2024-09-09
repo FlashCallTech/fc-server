@@ -42,7 +42,7 @@ const CallTimer = ({
 				handleCallRejected();
 			}, 1000);
 		}
-	}, [timeLeftInSeconds, handleCallRejected, isLoading]);
+	}, [timeLeftInSeconds, handleCallRejected, isLoading, toast, isToastShown]);
 
 	return (
 		<div

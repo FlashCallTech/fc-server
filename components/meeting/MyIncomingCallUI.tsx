@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import { useToast } from "../ui/use-toast";
 import * as Sentry from "@sentry/nextjs";
@@ -24,7 +24,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 		registerServiceWorker();
 	}, []);
 
-	const showNotification = () => {
+	const showNotification = useCallback(() => {
 		if ("Notification" in window && Notification.permission === "granted") {
 			navigator.serviceWorker.ready.then((registration) => {
 				registration.showNotification("Incoming Call", {
@@ -51,7 +51,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 				}
 			});
 		}
-	};
+	}, [call]);
 
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
@@ -85,7 +85,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 				audio.currentTime = 0;
 			}
 		};
-	}, [callState, shownNotification]);
+	}, [callState, shownNotification, showNotification]);
 
 	const handleCallState = async (action: string) => {
 		if (action === "declined") {

@@ -38,7 +38,7 @@ const MeetingPage = () => {
 				router.push(`${creatorURL ? creatorURL : "/"}`);
 			}, 1000);
 		}
-	}, [isCallLoading, call, router, toast]);
+	}, [isCallLoading, call, router, toast, creatorURL]);
 
 	if (isCallLoading) return <Loader />;
 
@@ -161,6 +161,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 		router,
 		updateWalletBalance,
 		toastShown,
+		call,
 	]);
 
 	if (loading) {

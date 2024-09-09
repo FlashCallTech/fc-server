@@ -109,7 +109,7 @@ const MeetingRoom = () => {
 
 			joinCall();
 		}
-	}, [callingState, call, hasJoined, callHasEnded]);
+	}, [callingState, call, hasJoined, callHasEnded, currentUser?._id]);
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -144,7 +144,7 @@ const MeetingRoom = () => {
 		}
 
 		return () => clearTimeout(timeoutId);
-	}, [participantCount, anyModalOpen, call]);
+	}, [participantCount, anyModalOpen, call, handleCallRejected, toast]);
 
 	const toggleCamera = async () => {
 		if (call && call.camera) {

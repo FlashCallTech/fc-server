@@ -22,7 +22,7 @@ const Success = ({
 		setTimeout(() => {
 			router.push(`${creatorURL ? creatorURL : redirectURL}`);
 		}, 1000);
-	}, [redirect, router]);
+	}, [redirect, router, creatorURL, redirectURL]);
 
 	return (
 		<div className="flex flex-col items-center justify-center min-w-full h-full gap-7">

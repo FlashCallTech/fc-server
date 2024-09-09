@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import axios from "axios";
 import * as Sentry from "@sentry/nextjs";
@@ -33,7 +33,7 @@ interface Transaction {
 }
 
 interface PaymentProps {
-	callType?: string;  // Define callType as an optional string
+	callType?: string; // Define callType as an optional string
 }
 
 const Payment: React.FC<PaymentProps> = ({ callType }) => {
@@ -75,13 +75,13 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const getRateForCallType = () => {
 		let rate: number | undefined;
 		switch (callType) {
-			case 'video':
+			case "video":
 				rate = creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
 				break;
-			case 'audio':
+			case "audio":
 				rate = creator?.audioRate ? parseFloat(creator.audioRate) : undefined;
 				break;
-			case 'chat':
+			case "chat":
 				rate = creator?.chatRate ? parseFloat(creator.chatRate) : undefined;
 				break;
 			default:
@@ -93,12 +93,18 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const amountToBeDisplayed = () => {
 		const ratePerMinute = getRateForCallType();
 		const costForFiveMinutes = ratePerMinute ? ratePerMinute * 5 : undefined;
-		const amountDue = costForFiveMinutes ? Math.max(0, costForFiveMinutes - walletBalance) : undefined;
+		const amountDue = costForFiveMinutes
+			? Math.max(0, costForFiveMinutes - walletBalance)
+			: undefined;
 		return amountDue;
-	}
+	};
 	const generateAmounts = () => {
 		const rate = getRateForCallType();
-		return rate ? [5, 10, 15, 30, 40, 60].map(multiplier => (rate * multiplier).toFixed(2)) : ["99", "199", '499', '999', '1999', '2999'];
+		return rate
+			? [5, 10, 15, 30, 40, 60].map((multiplier) =>
+					(rate * multiplier).toFixed(2)
+			  )
+			: ["99", "199", "499", "999", "1999", "2999"];
 	};
 
 	// 1. Define your form.
@@ -122,7 +128,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		router.push(`/recharge?amount=${rechargeAmount}`);
 	}
 
-	const fetchTransactions = async () => {
+	const fetchTransactions = useCallback(async () => {
 		try {
 			setLoading(true);
 			const response = await axios.get(
@@ -138,13 +144,19 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [btn, currentUser]); // Dependencies for fetchTransactions
 
 	useEffect(() => {
 		if (currentUser) {
 			fetchTransactions();
 		}
-	}, [btn]);
+	}, [fetchTransactions]); // Fetch transactions when fetchTransactions changes
+
+	useEffect(() => {
+		if (currentUser) {
+			fetchTransactions();
+		}
+	}, [btn, currentUser, fetchTransactions]);
 
 	useEffect(() => {
 		const amountPattern = /^\d*$/;
@@ -209,12 +221,13 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 					{/* Display the amount due message if there's an amount due */}
 					{amountToBeDisplayed() !== undefined && (
 						<p className="text-red-500">
-							₹{amountToBeDisplayed()?.toFixed(2)} more required for 5 minutes of {callType} 
+							₹{amountToBeDisplayed()?.toFixed(2)} more required for 5 minutes
+							of {callType}
 						</p>
 					)}
 				</div>
 				<div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8 text-sm font-semibold leading-4 w-full px-5">
-				{generateAmounts().map((amount) => (
+					{generateAmounts().map((amount) => (
 						<button
 							key={amount}
 							className="px-4 py-3 border-2 border-black rounded shadow hover:bg-gray-200 dark:hover:bg-gray-800"

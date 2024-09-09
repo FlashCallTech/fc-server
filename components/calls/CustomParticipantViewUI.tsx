@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
 	SfuModels,
 	useCall,
@@ -46,6 +46,19 @@ const CustomParticipantViewUI = () => {
 
 	const { isLocalParticipant } = participant;
 
+	const togglePictureInPicture = useCallback(() => {
+		if (videoElement && pictureInPictureElement !== videoElement) {
+			videoElement.requestPictureInPicture().catch(console.error);
+		} else {
+			document.exitPictureInPicture().catch(console.error);
+		}
+	}, [videoElement, pictureInPictureElement]);
+
+	const handleClick = useCallback(() => {
+		togglePictureInPicture();
+		setIsScaled((prev) => !prev);
+	}, [togglePictureInPicture]); // Add togglePictureInPicture as a dependency if needed
+
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"
 	);
@@ -88,20 +101,7 @@ const CustomParticipantViewUI = () => {
 			);
 			document.removeEventListener("visibilitychange", handleVisibilityChange);
 		};
-	}, [videoElement, pictureInPictureElement]);
-
-	const togglePictureInPicture = () => {
-		if (videoElement && pictureInPictureElement !== videoElement) {
-			videoElement.requestPictureInPicture().catch(console.error);
-		} else {
-			document.exitPictureInPicture().catch(console.error);
-		}
-	};
-
-	const handleClick = () => {
-		togglePictureInPicture();
-		setIsScaled((prev) => !prev);
-	};
+	}, [videoElement, pictureInPictureElement, handleClick]);
 
 	return (
 		<>
