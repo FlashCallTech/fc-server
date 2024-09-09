@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { CreatorFeedback } from "@/types";
 import ReviewSlider from "./ReviewSlider";
 import * as Sentry from "@sentry/nextjs";
@@ -85,7 +85,7 @@ const UserReviews = ({
 		setPage((prevPage) => prevPage + 1);
 	};
 
-	const fetchFeedback = async () => {
+	const fetchFeedback = useCallback(async () => {
 		try {
 			setFeedbacksLoading(true); // Set loading state to true when fetching
 			const response = await axios.get(
@@ -105,7 +105,7 @@ const UserReviews = ({
 		} finally {
 			setFeedbacksLoading(false); // Set loading state to false after fetching
 		}
-	};
+	}, [creatorId, page, syncWithServerFeedback]);
 
 	useEffect(() => {
 		const cachedFeedback = sessionStorage.getItem(`feedback-${creatorId}`);
@@ -128,7 +128,7 @@ const UserReviews = ({
 		} else {
 			fetchFeedback();
 		}
-	}, [creatorId]);
+	}, [creatorId, fetchFeedback]);
 
 	useEffect(() => {
 		// Update session storage only when feedbacks are fetched or changed
@@ -154,7 +154,7 @@ const UserReviews = ({
 				<div
 					className={`relative text-white size-full ${
 						creatorFeedback?.length > 1 ? "py-10" : "pt-10 pb-4"
-					} rounded-t-[24px] md:rounded-[24px] xl:w-[60%]`}
+					} rounded-t-[24px] lg:rounded-[24px] xl:w-[60%]`}
 					style={{ backgroundColor: theme }}
 				>
 					<h2 className="text-2xl font-semibold">Happy Client&apos;s</h2>

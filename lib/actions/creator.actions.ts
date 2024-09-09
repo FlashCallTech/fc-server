@@ -22,7 +22,7 @@ export async function createCreatorUser(user: CreateCreatorParams) {
 		const newUser = await Creator.create(user);
 		await addMoney({
 			userId: newUser._id,
-			userType: "creator",
+			userType: "Creator",
 			amount: 0, // Set the initial balance here
 		});
 		// console.log(newUser);

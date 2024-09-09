@@ -26,7 +26,7 @@ export async function createUser(user: CreateUserParams) {
 
 		await addMoney({
 			userId: newUser._id,
-			userType: "client",
+			userType: "Client",
 			amount: 0, // Set the initial balance here
 		});
 

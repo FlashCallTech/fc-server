@@ -53,7 +53,7 @@ const CallListMobile = () => {
 			}
 		};
 		loadMoreCalls();
-	}, [inView, currentUser]); // Fetch more calls when user scrolls into view
+	}, [inView, currentUser, hasMore, isFetching, page]); // Fetch more calls when user scrolls into view
 
 	if ((loading && calls.length === 0) || (currentUser && walletBalance < 0)) {
 		return (

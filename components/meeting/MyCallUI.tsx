@@ -107,7 +107,7 @@ const MyCallUI = () => {
 				call.off("call.accepted", handleCallStarted);
 			};
 		});
-	}, [calls, router, currentUser?._id, toast]);
+	}, [calls, router, currentUser?._id, toast, currentUser]);
 
 	// Filter incoming ringing calls
 	const incomingCalls = calls.filter(

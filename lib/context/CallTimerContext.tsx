@@ -177,6 +177,7 @@ export const CallTimerProvider = ({
 		callStartedAt,
 		walletBalance,
 		callId,
+		isVideoCall,
 	]);
 
 	return (

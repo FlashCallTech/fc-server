@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import OTPVerification from "./OTPVerification";
 import { z } from "zod";
@@ -47,8 +47,12 @@ const AuthenticateViaOTP = ({
 	onOpenChange?: (isOpen: boolean) => void;
 }) => {
 	const router = useRouter();
-	const { clientUser, currentUser, refreshCurrentUser, setAuthenticationSheetOpen } =
-		useCurrentUsersContext();
+	const {
+		clientUser,
+		currentUser,
+		refreshCurrentUser,
+		setAuthenticationSheetOpen,
+	} = useCurrentUsersContext();
 	const [showOTP, setShowOTP] = useState(false);
 	const [phoneNumber, setPhoneNumber] = useState("");
 	const [token, setToken] = useState<string | null>(null);
@@ -84,7 +88,7 @@ const AuthenticateViaOTP = ({
 			setPhoneNumber(values.phone);
 			setToken(response.data.token); // Store the token received from the API
 			setShowOTP(true);
-			trackEvent('Login_Bottomsheet_OTP_Generated')
+			trackEvent("Login_Bottomsheet_OTP_Generated");
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error sending OTP:", error);
@@ -139,7 +143,7 @@ const AuthenticateViaOTP = ({
 
 			let authToken = response.data.sessionToken;
 
-			trackEvent('Login_Bottomsheet_OTP_Submitted');
+			trackEvent("Login_Bottomsheet_OTP_Submitted");
 
 			updateFirestoreAuthToken(authToken);
 
@@ -231,9 +235,8 @@ const AuthenticateViaOTP = ({
 			localStorage.setItem("userType", resolvedUserType);
 			refreshCurrentUser();
 			setAuthenticationSheetOpen(false);
-		
+
 			router.push(`${creatorURL ? creatorURL : "/"}`);
-			
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);
 			let newErrors = { ...error };
@@ -243,7 +246,7 @@ const AuthenticateViaOTP = ({
 			setIsVerifyingOTP(false);
 		} finally {
 			setIsVerifyingOTP(false);
-			console.log(clientUser)
+			console.log(clientUser);
 		}
 	};
 
@@ -275,20 +278,22 @@ const AuthenticateViaOTP = ({
 
 	const sectionRef = useRef<HTMLElement>(null);
 
-	const handleClickOutside = (event: any) => {
-		if (sectionRef.current && !sectionRef.current.contains(event.target)) {
-			// Trigger your function here
-			console.log("Clicked outside the section");
-			onOpenChange && onOpenChange(false);
-		}
-	};
+	const handleClickOutside = useCallback(
+		(event: any) => {
+			if (sectionRef.current && !sectionRef.current.contains(event.target)) {
+				console.log("Clicked outside the section");
+				onOpenChange && onOpenChange(false);
+			}
+		},
+		[onOpenChange]
+	);
 
 	useEffect(() => {
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => {
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
-	}, []);
+	}, [handleClickOutside]);
 
 	return (
 		<section

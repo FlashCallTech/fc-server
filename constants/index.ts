@@ -104,3 +104,33 @@ export const feedbacks = [
 		location: "Beijing, China",
 	},
 ];
+
+// EXTERNAL LINKS
+
+export const externalLinks = [
+	{
+		label: "Privacy Policy",
+
+		route: "https://www.flashcall.me/privacy-policy",
+	},
+	{
+		label: "Platform Guidelines",
+
+		route: "https://www.flashcall.me/platform-guidelines",
+	},
+	{
+		label: "Terms of Services",
+
+		route: "https://www.flashcall.me/terms-of-services",
+	},
+	{
+		label: "Cancellation and Refunds",
+
+		route: "https://www.flashcall.me/cancellation-refunds",
+	},
+	{
+		label: "About Us",
+
+		route: "https://www.flashcall.me/about-us",
+	},
+];
