@@ -19,7 +19,7 @@ const Footer = () => {
 		}
 	}, [currentTheme]);
 	return (
-		<div className="flex flex-col items-center justify-center w-full bg-green-1">
+		<>
 			<div className="flex flex-col items-center justify-center w-full pt-7 pb-5 gap-7">
 				{/* logo */}
 				<Image
@@ -81,7 +81,7 @@ const Footer = () => {
 					</a>
 				</p>
 			</div>
-		</div>
+		</>
 	);
 };
 
