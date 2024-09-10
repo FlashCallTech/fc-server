@@ -107,7 +107,7 @@ const HomePage = () => {
 
 	useEffect(() => {
 		if (inView && !isFetching && hasMore) {
-			fetchCreators(creatorCount, 2);
+			fetchCreators(creatorCount, 4);
 		}
 	}, [inView, isFetching, hasMore, creatorCount, fetchCreators]);
 
