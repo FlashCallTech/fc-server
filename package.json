@@ -6,7 +6,10 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"lint": "next lint"
+		"lint": "next lint",
+		"start:docker:dev": "docker-compose -f docker-compose.dev.yml up",
+		"start:docker:prod": "docker-compose -f docker-compose.prod.yml up --build",
+		"build:docker:prod": "docker-compose -f docker-compose.prod.yml build"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^3.4.2",
@@ -47,7 +50,7 @@
 		"mixpanel-browser": "^2.55.1",
 		"mongodb": "^6.6.2",
 		"mongoose": "^8.6.0",
-		"next": "^14.2.4",
+		"next": "^14.2.9",
 		"npm": "^10.8.0",
 		"razorpay": "^2.9.4",
 		"rc-slider": "^10.6.2",
@@ -60,12 +63,14 @@
 		"react-simple-typewriter": "^5.0.1",
 		"react-slick": "^0.30.2",
 		"shadcn-ui": "^0.8.0",
+		"sharp": "^0.33.5",
 		"slick-carousel": "^1.8.1",
 		"svix": "^1.24.0",
 		"tailwind-merge": "^2.3.0",
 		"tailwindcss-animate": "^1.0.7",
 		"twilio": "^5.0.4",
 		"typewriter-effect": "^2.21.0",
+		"webpack": "^5.94.0",
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
@@ -77,10 +82,14 @@
 		"@types/react-beautiful-dnd": "^13.1.8",
 		"@types/react-dom": "^18",
 		"@types/react-slick": "^0.23.13",
+		"autoprefixer": "^10.4.20",
+		"css-loader": "^7.1.2",
 		"eslint": "^8",
 		"eslint-config-next": "14.2.3",
-		"postcss": "^8",
-		"tailwindcss": "^3.4.1",
+		"postcss": "^8.4.45",
+		"postcss-loader": "^8.1.1",
+		"style-loader": "^4.0.0",
+		"tailwindcss": "^3.4.10",
 		"typescript": "^5"
 	}
 }

@@ -311,7 +311,10 @@ const ChatInterface: React.FC = () => {
 					className="relative flex flex-col h-screen z-50"
 					style={{ backgroundBlendMode: "luminosity" }}
 				>
-					<div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center filter brightness-[0.25] blur-sx z-0" />
+					<div
+						className="absolute inset-0 bg-cover bg-center filter brightness-[0.25] blur-sx z-0"
+						style={{ backgroundImage: "url('/back.png')" }}
+					/>
 					<div className="absolute inset-0 bg-gradient-to-b from-[#232323] via-[#464646] to-[#383c39] opacity-90 z-0" />
 
 					<div className="relative flex flex-col h-full z-10">
