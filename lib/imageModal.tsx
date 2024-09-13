@@ -16,7 +16,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ imageUrl, onClose }) => {
     return (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-75 z-50" onClick={handleClickOutside}>
             <div className="relative max-h-full max-w-full overflow-auto">
-                <button onClick={onClose} className="absolute top-0 right-0 m-4 text-white text-2xl">&times;</button>
+                <button onClick={onClose} className="absolute top-4 right-4 px-2 text-black text-3xl rounded-full bg-red-600">&times;</button>
                 <img src={imageUrl} alt="Full Resolution" className="max-h-screen max-w-screen object-contain" />
             </div>
         </div>

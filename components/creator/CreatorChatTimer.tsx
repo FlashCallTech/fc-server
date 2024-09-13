@@ -39,12 +39,12 @@ const CreatorChatTimer = ({ chatId }: { chatId: string }) => {
 	}, [chatId]);
 
 	return (
-		<div className="leading-5 text-center text-white font-bold py-1 bg-[rgba(255,255,255,0.36)] mb-4">
+		<div className="text-[10px]">
 			{isLoading ? (
 				<p>Loading...</p>
 			) : (
-				<p className={`${minutes < 5 ? "text-red-500" : "text-white"}`}>
-					Time Left: {minutes}:{seconds}
+				<p className={`${minutes < 5 ? "text-red-500" : "text-white"} text-[10px]`}>
+					{minutes}:{seconds} mins
 				</p>
 			)}
 		</div>

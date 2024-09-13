@@ -19,13 +19,13 @@ export async function createCall(call: RegisterCallParams | any) {
 
 export async function createChat(chat: any) {
 	try {
-		console.log("inside createChat");
+		console.log(chat);
 		await connectToDatabase();
 		const newChat = await Chat.create(chat);
 		return newChat.toJSON();
 	} catch (error) {
 		Sentry.captureException(error);
-		handleError(error);
+		// handleError(error);
 	}
 }
 

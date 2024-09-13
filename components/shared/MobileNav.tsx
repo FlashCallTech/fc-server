@@ -42,8 +42,9 @@ const MobileNav = () => {
 	useEffect(() => {
 		trackEvent('Menu_Clicked', {
 			Client_ID: clientUser?._id,
-			// User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
 			Creator_ID: creator?._id,
+			Walletbalace_Available: clientUser?.walletBalance,
 		})
 	}, [])
 
@@ -53,8 +54,9 @@ const MobileNav = () => {
 	const handleAuthentication = () => {
 		trackEvent('Menu_Signout clicked', {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
 			Creator_ID: creator?._id,
+			Walletbalace_Available: clientUser?.walletBalance,
 		})
 		setAuthenticationSheetOpen(false);
 		if (currentUser) {
@@ -75,22 +77,43 @@ const MobileNav = () => {
 		if(label === 'Order History') {
 			trackEvent('Menu_OrderHistory_Clicked', {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
 				Creator_ID: creator?._id,
+				Walletbalace_Available: clientUser?.walletBalance,
 			})
 		}
 		if(label === 'Favorites') {
 			trackEvent('Menu_Favourites_Clicked', {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
 				Creator_ID: creator?._id,
+				Walletbalace_Available: clientUser?.walletBalance,
+			})
+		}
+		if(label === 'Support') {
+			trackEvent('Menu_Support_Clicked', {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				Creator_ID: creator?._id,
+				Walletbalace_Available: clientUser?.walletBalance,
 			})
 		}
 	}
 
+	const handleSheetOpenChange = (open: boolean) => {
+		if (open) {
+			trackEvent('Menu_Clicked', {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				Creator_ID: creator?._id,
+				Walletbalace_Available: clientUser?.walletBalance,
+			});
+		}
+	};
+
 	return (
 		<section className="flex items-center justify-center w-fit relative">
-			<Sheet>
+			<Sheet onOpenChange={handleSheetOpenChange}>
 				<SheetTrigger asChild>
 					<Image
 						src={currentUser?.photo || "/images/defaultProfile.png"}

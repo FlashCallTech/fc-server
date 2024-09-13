@@ -58,8 +58,10 @@ const About: React.FC = () => {
 	useEffect(() => {
 		trackEvent('Recharge_Page_Cart_review_Impression', {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
 			Creator_ID: creator?._id,
+			Recharge_value: amount,
+			Walletbalace_Available: clientUser?.walletBalance,
 		})
 	}, [])
 
@@ -72,8 +74,10 @@ const About: React.FC = () => {
 
 		trackEvent('Recharge_Page_Proceed_Clicked', {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
 			Creator_ID: creator?._id,
+			Recharge_value: amount,
+			Walletbalace_Available: clientUser?.walletBalance,
 		})
 
 		logEvent(analytics, "wallet_recharge", {
@@ -88,14 +92,14 @@ const About: React.FC = () => {
 		}
 
 		const totalPayableInPaise: number = totalPayable! * 100;
-		const amount: number = parseInt(totalPayableInPaise.toFixed(2));
+		const rechargeAmount: number = parseInt(totalPayableInPaise.toFixed(2));
 		const currency: string = "INR";
 		const receiptId: string = "kuchbhi";
 
 		try {
 			const response: Response = await fetch("/api/v1/order", {
 				method: "POST",
-				body: JSON.stringify({ amount, currency, receipt: receiptId }),
+				body: JSON.stringify({ rechargeAmount, currency, receipt: receiptId }),
 				headers: { "Content-Type": "application/json" },
 			});
 
@@ -103,7 +107,7 @@ const About: React.FC = () => {
 
 			const options: RazorpayOptions = {
 				key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string,
-				amount,
+				rechargeAmount,
 				currency,
 				name: "FlashCall.me",
 				description: "Test Transaction",
@@ -162,20 +166,15 @@ const About: React.FC = () => {
 
 						trackEvent('Recharge_Successfull', {
 							Client_ID: clientUser?._id,
-							User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
+							User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
 							Creator_ID: creator?._id,
+							Recharge_value: amount,
+							Walletbalace_Available: clientUser?.walletBalance,
 						})
 
 						router.push("/success");
 					} catch (error) {
 						Sentry.captureException(error);
-						
-						trackEvent('Recharge_Failed', {
-							Client_ID: clientUser?._id,
-							User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
-							Creator_ID: creator?._id,
-						})
-
 						console.error("Validation request failed:", error);
 						setLoading(false);
 					} finally {
@@ -207,6 +206,13 @@ const About: React.FC = () => {
 		} catch (error) {
 			Sentry.captureException(error);
 
+			trackEvent('Recharge_Failed', {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				Creator_ID: creator?._id,
+				Recharge_value: amount,
+				Walletbalace_Available: clientUser?.walletBalance,
+			})
 			console.error("Payment request failed:", error);
 			setLoading(false); // Set loading state to false on error
 			router.push("/payment");
