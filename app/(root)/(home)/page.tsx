@@ -11,8 +11,9 @@ import { usePathname, useRouter } from "next/navigation";
 import PostLoader from "@/components/shared/PostLoader";
 import Image from "next/image";
 import ContentLoading from "@/components/shared/ContentLoading";
+
 import { trackEvent } from "@/lib/mixpanel";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
@@ -46,8 +47,7 @@ const HomePage = () => {
 	const [isFetching, setIsFetching] = useState(false);
 	const [error, setError] = useState(false);
 	const [hasMore, setHasMore] = useState(true);
-	const [onlineStatus, setOnlineStatus] = useState<String>();
-	const { userType, setCurrentTheme, clientUser } = useCurrentUsersContext();
+	const { clientUser, userType, setCurrentTheme } = useCurrentUsersContext();
 	const pathname = usePathname();
 	const router = useRouter();
 	const { ref, inView } = useInView();
@@ -134,8 +134,24 @@ const HomePage = () => {
 		}
 	}, [inView, isFetching, hasMore, creatorCount, fetchCreators]);
 
-	const handleCreatorCardClick = (username: string, theme: string) => {
+	const handleCreatorCardClick = async (
+		phone: string,
+		username: string,
+		theme: string,
+		id: string
+	) => {
 		setLoadingCard(true); // Set loading state before navigation
+
+		const creatorDocRef = doc(db, "userStatus", phone);
+		const docSnap = await getDoc(creatorDocRef);
+
+		trackEvent("Page_View", {
+			UTM_Source: "google",
+			Creator_ID: id,
+			status: docSnap.data()?.status,
+			Wallet_Balance: clientUser?.walletBalance,
+		});
+
 		// Save any necessary data in localStorage
 		setLoading(true);
 		localStorage.setItem("creatorURL", `/${username}`);
@@ -181,7 +197,8 @@ const HomePage = () => {
 											handleCreatorCardClick(
 												creator.phone,
 												creator.username,
-												creator.themeSelected
+												creator.themeSelected,
+												creator._id
 											)
 										}
 									>
