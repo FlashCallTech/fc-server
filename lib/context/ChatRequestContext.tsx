@@ -4,6 +4,7 @@ import useChatRequest from "@/hooks/useChatRequest";
 import { useCurrentUsersContext } from "./CurrentUsersContext";
 import { creatorUser } from "@/types";
 import ChatRequest from "@/components/chat/ChatRequest";
+import { trackEvent } from "../mixpanel";
 
 const ChatRequestContext = createContext<any>(null);
 
@@ -63,6 +64,9 @@ export const ChatRequestProvider = ({
 				}));
 				if (chatRequests.length > 0) {
 					setChatRequest(chatRequests[0]);
+					// trackEvent('Creator_Chat_Initiated', {
+					// 	Creator_ID: chatRequests[0].creatorId,
+					// })
 				} else {
 					setChatRequest(null); // Clear chatRequest if no data
 				}

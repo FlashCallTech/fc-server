@@ -18,15 +18,36 @@ import ChatTimer from "./ChatTimer";
 import EndCallDecision from "../calls/EndCallDecision";
 import useEndChat from "@/hooks/useEndChat";
 import ContentLoading from "../shared/ContentLoading";
-import RechargeAndTip from "./RechargeAndTip";
+import RechargeAndTip from "./Tip";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import * as Sentry from "@sentry/nextjs";
+import CreatorChatTimer from "../creator/CreatorChatTimer";
+import Recharge from "./Recharge";
+import Tip from "./Tip";
 
 const ChatInterface: React.FC = () => {
-	const { handleEnd, chat, markMessagesAsSeen, loading } = useEndChat();
-	const { currentUser } = useCurrentUsersContext();
+
+	const [text, setText] = useState("");
+	const [isImgUploading, setIsImgUploading] = useState(false);
+	const [isAudioUploading, setIsAudioUploading] = useState(false);
+	const [showDialog, setShowDialog] = useState(false);
+	const [receiverId, setReceiverId] = useState(null);
+	const [img, setImg] = useState({
+		file: null,
+		url: "",
+	});
+	const [audio, setAudio] = useState<{ file: Blob | null; url: string }>({
+		file: null,
+		url: "",
+	});
+	const [messages, setMessages] = useState<{ text: string | null; img: string | null; audio: string | null }[]>(
+		[],
+	);
 
 	useUserStatus();
+
+	const { handleEnd, chat, markMessagesAsSeen, loading } = useEndChat();
+	const { currentUser, userType } = useCurrentUsersContext();
+	const { user2, chatId } = useEndChat();
 	const {
 		audioStream,
 		isRecording,
@@ -37,24 +58,8 @@ const ChatInterface: React.FC = () => {
 		mediaRecorderRef,
 		setIsRecording,
 	} = useMediaRecorder();
-	const { user2, chatId } = useEndChat();
-	const [text, setText] = useState("");
-	const [isImgUploading, setIsImgUploading] = useState(false);
-	const [isAudioUploading, setIsAudioUploading] = useState(false);
-	const [img, setImg] = useState({
-		file: null,
-		url: "",
-	});
-	const [showDialog, setShowDialog] = useState(false);
-	const [audio, setAudio] = useState<{ file: Blob | null; url: string }>({
-		file: null,
-		url: "",
-	});
-	const [receiverId, setReceiverId] = useState(null);
+
 	const audioContext = new AudioContext();
-	const [messages, setMessages] = useState<
-		{ text: string | null; img: string | null; audio: string | null }[]
-	>([]);
 
 	useEffect(() => {
 		updateDoc(doc(db, "chats", chatId as string), {
@@ -81,7 +86,6 @@ const ChatInterface: React.FC = () => {
 					setReceiverId(chat ? chat.receiverId : null);
 				}
 			} catch (error) {
-				Sentry.captureException(error);
 				console.error("Error fetching receiver ID:", error);
 			}
 		};
@@ -105,8 +109,21 @@ const ChatInterface: React.FC = () => {
 		return () => unsubscribe();
 	}, [receiverId, db]);
 
-	const handleImg = (e: any) => {
+	const handleCapturedImg = (e: any) => {
 		if (e.target.files && e.target.files[0]) {
+			console.log('hehe')
+			setImg({
+				file: e.target.files[0],
+				url: URL.createObjectURL(e.target.files[0]),
+			});
+			handleSend();
+		}
+	};
+
+	const handleImg = (e: any) => {
+		console.log('hehe')
+		if (e.target.files && e.target.files[0]) {
+			console.log('hehe2')
 			setImg({
 				file: e.target.files[0],
 				url: URL.createObjectURL(e.target.files[0]),
@@ -172,7 +189,6 @@ const ChatInterface: React.FC = () => {
 				}
 			});
 		} catch (error) {
-			Sentry.captureException(error);
 			console.error(error);
 		} finally {
 			setImg({
@@ -235,7 +251,6 @@ const ChatInterface: React.FC = () => {
 				}
 			});
 		} catch (error) {
-			Sentry.captureException(error);
 			console.error(error);
 		} finally {
 			setIsAudioUploading(false);
@@ -281,100 +296,102 @@ const ChatInterface: React.FC = () => {
 	};
 
 	const endCall = async () => {
-		setShowDialog(true); // Show the confirmation dialog
-		// setAnyModalOpen(true);
+		setShowDialog(true);
 	};
 
 	const handleDecisionDialog = async () => {
-		await handleEnd(chatId as string, user2);
-		if (loading) {
-			return <ContentLoading />;
-		}
+		await handleEnd(chatId as string, user2, userType as string);
 		setShowDialog(false);
-		// isMeetingOwner && router.push(`/feedback/${call?.id}/${totalTimeUtilized}`);
-		// toast({
-		// 	title: "Call Ended",
-		// 	description: "The call Ended. Redirecting ...",
-		// });
 	};
+
+	const discardImage = () => {
+		setIsImgUploading(false);
+		setImg({
+			file: null,
+			url: ""
+		})
+	}
 
 	const handleCloseDialog = () => {
 		setShowDialog(false);
 	};
 
 	return (
-		<>
-			{loading ? (
-				<ContentLoading />
-			) : (
-				<div
-					className="relative flex flex-col h-screen z-50"
-					style={{ backgroundBlendMode: "luminosity" }}
-				>
-					<div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center filter brightness-[0.25] blur-sx z-0" />
-					<div className="absolute inset-0 bg-gradient-to-b from-[#232323] via-[#464646] to-[#383c39] opacity-90 z-0" />
+		<div className={`relative flex flex-col h-screen z-50`}
+		// style={{ backgroundBlendMode: "luminosity" }}
+		>
+			<div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center z-0" />
 
-					<div className="relative flex flex-col h-full z-10">
-						<div className="sticky top-0 left-0 flex justify-between items-center px-5 py-4 bg-[#2c2c2c]">
-							<div className="flex items-center gap-2">
-								<Image
-									src={user2?.photo || "/avatar.svg"}
-									alt="profile"
-									width={40}
-									height={40}
-									className="rounded-full"
-								/>
-								<div className="flex flex-col">
-									<p
-										className="text-sm leading-4"
-										style={{ color: "rgba(112, 112, 112, 1)" }}
-									>
-										Ongoing chat with
-									</p>
-									<div className="text-white font-bold leading-6 text-xl">
-										{user2?.fullName || "Username"}
-									</div>
-								</div>
-							</div>
-							<button
-								onClick={endCall}
-								className="bg-[rgba(255,81,81,1)] text-white px-4 py-3 rounded-lg"
-							>
-								End Chat
-							</button>
-						</div>
-						{showDialog && (
-							<EndCallDecision
-								handleDecisionDialog={handleDecisionDialog}
-								setShowDialog={handleCloseDialog}
-							/>
-						)}
-						<ChatTimer endCall={endCall} />
-						<div className="w-1/4 mx-auto text-center bg-[rgba(255,255,255,0.24)] py-1 text-white text-xs leading-6 font-bold rounded-lg mt-2 mb-4">
-							07 Dec 2024
-						</div>
+			{/* <div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center filter brightness-[0.25] blur-sx z-0" /> */}
+			{/* <div className="absolute inset-0 bg-gradient-to-b from-[#232323] via-[#464646] to-[#383c39] opacity-90 z-0" /> */}
 
-						<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
-
-						<RechargeAndTip />
-
-						<ChatInput
-							isRecording={isRecording}
-							discardAudio={discardAudio}
-							text={text}
-							setText={setText}
-							handleImg={handleImg}
-							handleSend={handleSend}
-							toggleRecording={toggleRecording}
-							img={img}
-							audio={audio}
-							audioStream={audioStream!}
-							audioContext={audioContext}
+			<div className="relative flex flex-col h-full">
+				{/* Sticky Header */}
+				<div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-40">
+					<div className="flex items-center gap-2">
+						<Image
+							src={user2?.photo || "/avatar.svg"}
+							alt="profile"
+							width={0}
+							height={0}
+							className="w-10 h-10 rounded-full"
 						/>
+						<div className="flex flex-col">
+							<div className="text-white font-bold text-xs md:text-lg">
+								{"Chirag Goel" || "Username"}
+							</div>
+							{userType === "client" && <ChatTimer />}
+							{userType === "creator" && <CreatorChatTimer chatId={chatId as string} />}
+							<p className="text-[10px] md:text-sm text-green-500">
+								Ongoing chat
+							</p>
+						</div>
+					</div>
+					<div className="flex gap-2">
+						<Tip />
+						<button
+							onClick={endCall}
+							className="bg-[rgba(255,81,81,1)] text-white p-2 md:px-4 md:py-2 text-[10px] md:text-lg rounded-lg"
+						>
+							End
+						</button>
 					</div>
 				</div>
-			)}
-		</>
+
+				{showDialog && (
+					<EndCallDecision
+						handleDecisionDialog={handleDecisionDialog}
+						setShowDialog={handleCloseDialog}
+					/>
+				)}
+
+				{/* Chat Messages */}
+				<div className="flex-1 overflow-y-auto scrollbar-none z-30">
+					<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
+				</div>
+
+				{/* Sticky Chat Input at the Bottom */}
+				<div className="sticky bottom-0 w-full z-40">
+					<ChatInput
+						isRecording={isRecording}
+						discardAudio={discardAudio}
+						text={text}
+						setText={setText}
+						handleImg={handleImg}
+						handleSend={handleSend}
+						toggleRecording={toggleRecording}
+						img={img}
+						audio={audio}
+						audioStream={audioStream!}
+						audioContext={audioContext}
+						handleCapturedImg={handleCapturedImg}
+						isImgUploading={isImgUploading}
+						discardImage={discardImage}
+					/>
+				</div>
+			</div>
+		</div>
+
 	);
 };
 

@@ -28,7 +28,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [isSheetOpen, setSheetOpen] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
-	const { handleChat, chatRequestsRef } = useChatRequest();
+	const { handleChat, chatRequestsRef, SheetOpen } = useChatRequest();
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
@@ -45,22 +45,22 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	const [onlineStatus, setOnlineStatus] = useState<String>();
 
-  useEffect(() => {
-    const creatorDocRef = doc(db, "userStatus", creator.phone);
+	useEffect(() => {
+		const creatorDocRef = doc(db, "userStatus", creator.phone);
 
-    // Set up a listener for real-time updates
-    const unsubscribe = onSnapshot(creatorDocRef, (doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
+		// Set up a listener for real-time updates
+		const unsubscribe = onSnapshot(creatorDocRef, (doc) => {
+			if (doc.exists()) {
+				const data = doc.data();
 				setOnlineStatus(data.status);
-      } else {
-        console.error("No such document!");
-      }
-    });
+			} else {
+				console.error("No such document!");
+			}
+		});
 
-    // Clean up the listener when the component unmounts
-    return () => unsubscribe();
-  }, []);
+		// Clean up the listener when the component unmounts
+		return () => unsubscribe();
+	}, []);
 
 
 	useEffect(() => {
@@ -111,6 +111,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							setChatReqSent(false);
 							setChatState(data.status);
 							localStorage.removeItem("chatRequestId");
+							localStorage.removeItem("user2")
 							unsubscribe();
 						} else if (
 							data.status === "accepted" &&
@@ -165,7 +166,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	}, [chatState]);
 
 	// defining the actions for call accept and call reject
-	const handleCallAccepted = async (call: Call, callType: string) => {
+	const handleCallAccepted = async (call: Call, callType: string, callDuration: number) => {
 		setIsProcessing(false); // Reset processing state
 		toast({
 			variant: "destructive",
@@ -174,17 +175,21 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		});
 		setSheetOpen(false);
 		await call?.leave();
-		if (callType === "audio") {	
+		if (callType === "audio") {
 			trackEvent('BookCall_Audio_Connected', {
-			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
-			Creator_ID: creator._id,
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				Creator_ID: creator._id,
+				Time_Duration_Available: callDuration,
+				Walletbalance_Available: clientUser?.walletBalance,
 			})
 		} else {
 			trackEvent('BookCall_Video_Connected', {
 				Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toISOString().split('T')[0],
-			Creator_ID: creator._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				Creator_ID: creator._id,
+				Time_Duration_Available: callDuration,
+				Walletbalance_Available: clientUser?.walletBalance,
 			})
 		}
 		router.replace(`/meeting/${call.id}`);
@@ -241,8 +246,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			const startsAt = new Date(Date.now()).toISOString();
 			const description = `${callType === "video"
-					? `Video Call With Expert ${creator.username}`
-					: `Audio Call With Expert ${creator.username}`
+				? `Video Call With Expert ${creator.username}`
+				: `Audio Call With Expert ${creator.username}`
 				}`;
 
 			const ratePerMinute =
@@ -255,6 +260,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			// Check if maxCallDuration is less than 5 minutes (300 seconds)
 			if (maxCallDuration < 300) {
+				trackEvent('MinimumBalance_NotAvailable', {
+					Client_ID: clientUser?._id,
+					User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+					Creator_ID: creator._id,
+					Time_Duration_Available: maxCallDuration,
+					Walletbalance_Available: clientUser?.walletBalance,
+				})
+
 				toast({
 					variant: "destructive",
 					title: "Insufficient Balance",
@@ -263,6 +276,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				router.push(`/payment?callType=${callType}`);
 				return;
 			}
+
+			trackEvent('MinimumBalance_Available', {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				Creator_ID: creator._id,
+				Time_Duration_Available: maxCallDuration,
+				Walletbalance_Available: clientUser?.walletBalance,
+			})
 
 			await call.getOrCreate({
 				ring: true,
@@ -275,17 +296,21 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				},
 			});
 
-			if (callType === "audio") {	
-				trackEvent('BookCall_Audio_Clicked', {
+			if (callType === "audio") {
+				trackEvent('BookCall_Audio_initiated', {
 					Client_ID: clientUser._id,
-				User_First_Seen: clientUser.createdAt?.toISOString().split('T')[0],
-				Creator_ID: creator._id,
+					User_First_Seen: clientUser.createdAt?.toString().split('T')[0],
+					Creator_ID: creator._id,
+					Time_Duration_Available: maxCallDuration,
+					Walletbalace_Available: clientUser.walletBalance,
 				})
 			} else {
 				trackEvent('BookCall_Video_initiated', {
 					Client_ID: clientUser._id,
-				User_First_Seen: clientUser.createdAt?.toISOString().split('T')[0],
-				Creator_ID: creator._id,
+					User_First_Seen: clientUser.createdAt?.toString().split('T')[0],
+					Creator_ID: creator._id,
+					Time_Duration_Available: maxCallDuration,
+					Walletbalace_Available: clientUser.walletBalance,
 				})
 			}
 
@@ -306,7 +331,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			call.on("call.accepted", () => handleCallAccepted(call, callType));
+			call.on("call.accepted", () => handleCallAccepted(call, callType, maxCallDuration));
 			call.on("call.rejected", () => handleCallRejected(callType));
 		} catch (error) {
 			Sentry.captureException(error);
@@ -320,7 +345,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		if (isProcessing) return; // Prevent double-click
 		setIsProcessing(true); // Set processing state
 
-		try { 
+		try {
 			if (callType === "audio") {
 				logEvent(analytics, "audio_now_click", {
 					clientId: clientUser?._id,
@@ -329,7 +354,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				trackEvent('BookCall_Audio_Clicked', {
 					utm_source: 'google',
 					Creator_ID: creator._id,
-					status: onlineStatus,
+					Status: onlineStatus,
+					Walletbalace_Available: clientUser?.walletBalance,
 				})
 			} else {
 				logEvent(analytics, "video_now_click", {
@@ -340,6 +366,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					utm_source: 'google',
 					Creator_ID: creator._id,
 					status: onlineStatus,
+					Walletbalace_Available: clientUser?.walletBalance,
+
 				})
 			}
 			if (clientUser && !storedCallId) {
@@ -383,10 +411,17 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				utm_source: 'google',
 				creator_id: creator._id,
 				status: onlineStatus,
+				Walletbalace_Available: clientUser?.walletBalance,
 			})
 			setChatReqSent(true);
 			handleChat(creator, clientUser);
-			setSheetOpen(true);
+			let maxCallDuration = (walletBalance / parseInt(creator.chatRate, 10)) * 60;
+			maxCallDuration = maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+
+			if (maxCallDuration > 300) {
+				setSheetOpen(true);
+			}
+
 			// sendPushNotification();
 		} else {
 			setIsAuthSheetOpen(true);
