@@ -18,6 +18,35 @@ import { success } from "@/constants/icons";
 import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
+// Custom hook to track screen size
+const useScreenSize = () => {
+	const [isMobile, setIsMobile] = useState(false);
+
+	const handleResize = () => {
+		setIsMobile(window.innerWidth < 768);
+	};
+
+	useEffect(() => {
+		handleResize(); // Set initial value
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
+
+	return isMobile;
+};
+
+// Utility function to detect Android or iOS
+const isMobileDevice = () => {
+	const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+	if (/android/i.test(userAgent)) {
+		return true; // Android device
+	}
+	if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+		return true; // iOS device
+	}
+	return false; // Not Android or iOS
+};
+
 const TipModal = ({
 	walletBalance,
 	setWalletBalance,
@@ -38,11 +67,12 @@ const TipModal = ({
 	const [loading, setLoading] = useState(false);
 	const [tipPaid, setTipPaid] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
-
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
 	const { totalTimeUtilized, hasLowBalance } = useCallTimerContext();
+
+	const isMobile = useScreenSize() && isMobileDevice();
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -80,8 +110,29 @@ const TipModal = ({
 		videoRatePerMinute,
 	]);
 
+	useEffect(() => {
+		const handleResize = () => {
+			// Get the viewport height and calculate the 1% vh unit
+			const vh = window.innerHeight * 0.01;
+			// Set the --vh custom property to the root of the document
+			document.documentElement.style.setProperty("--vh", `${vh}px`);
+		};
+
+		// Initial calculation
+		handleResize();
+
+		// Add event listener for resize event to handle keyboard open/close
+		window.addEventListener("resize", handleResize);
+
+		// Cleanup the event listener
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
+
 	const handlePredefinedAmountClick = (amount: string) => {
 		setRechargeAmount(amount);
+		setErrorMessage("");
 	};
 
 	const handleTransaction = async () => {
@@ -144,9 +195,7 @@ const TipModal = ({
 		setRechargeAmount(amount);
 
 		if (parseInt(amount) > adjustedWalletBalance) {
-			setErrorMessage(
-				"Insufficient wallet balance. Please enter a lower amount."
-			);
+			setErrorMessage("Please enter a smaller amount to proceed.");
 		} else {
 			setErrorMessage("");
 		}
@@ -172,10 +221,18 @@ const TipModal = ({
 					</Button>
 				</SheetTrigger>
 				<SheetContent
+					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
 					className={`flex flex-col items-center justify-center ${
-						!loading ? "px-10 py-7" : "px-4"
-					} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
+						!loading ? "px-7 py-4" : "px-4"
+					}  border-none rounded-t-xl bg-white w-full mx-auto overflow-scroll no-scrollbar sm:max-w-[444px] ${
+						!isMobile
+							? predefinedOptions.length > 8
+								? "max-h-[450px] min-h-[420px]"
+								: "max-h-[400px] min-h-[380px]"
+							: "max-h-[350px] min-h-[350px]"
+					}`}
+					style={{ height: "calc(var(--vh, 1vh) * 100)" }}
 				>
 					{loading ? (
 						<ContentLoading />
@@ -196,27 +253,60 @@ const TipModal = ({
 									</p>
 								</SheetDescription>
 							</SheetHeader>
-							<div className="grid gap-4 py-4 w-full">
+							<section
+								className={`grid ${
+									errorMessage ? "py-2 gap-2 " : "py-4 gap-4"
+								} w-full`}
+							>
 								<span>Enter Desired amount in INR</span>
-								<Input
-									id="rechargeAmount"
-									type="number"
-									placeholder="Enter recharge amount"
-									value={rechargeAmount}
-									onChange={handleAmountChange}
-								/>
+								<section className="relative flex flex-col justify-center items-center">
+									<Input
+										id="rechargeAmount"
+										type="number"
+										placeholder="Enter recharge amount"
+										value={rechargeAmount}
+										onChange={handleAmountChange}
+										className="input-field-modal"
+									/>
+
+									<Button
+										className={`absolute right-2 bg-green-1 text-white hoverScaleDownEffect ${
+											(!rechargeAmount ||
+												parseInt(rechargeAmount) > adjustedWalletBalance) &&
+											"cursor-not-allowed"
+										}`}
+										onClick={handleTransaction}
+										disabled={
+											!rechargeAmount ||
+											parseInt(rechargeAmount) > adjustedWalletBalance
+										}
+									>
+										Proceed
+									</Button>
+								</section>
+
 								{errorMessage && (
-									<p className="text-red-500 text-sm">{errorMessage}</p>
+									<p className="text-red-500 text-sm text-center">
+										{errorMessage}
+									</p>
 								)}
-							</div>
-							<div className="flex flex-col items-start justify-center">
+							</section>
+							<section
+								className={`flex flex-col items-start justify-start w-full`}
+							>
 								<span className="text-sm">Predefined Options</span>
-								<div className="grid grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+								<div
+									className={`${
+										!isMobile
+											? "grid grid-cols-4 gap-4 mt-4 w-full"
+											: "flex justify-start items-center mt-4 space-x-4 w-full overflow-x-scroll overflow-y-hidden no-scrollbar"
+									}`}
+								>
 									{predefinedOptions.map((amount) => (
 										<Button
 											key={amount}
 											onClick={() => handlePredefinedAmountClick(amount)}
-											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleEffect ${
+											className={`w-20 bg-gray-200 hover:bg-gray-300 hoverScaleEffect ${
 												rechargeAmount === amount &&
 												"bg-green-1 text-white hover:bg-green-1"
 											}`}
@@ -225,16 +315,7 @@ const TipModal = ({
 										</Button>
 									))}
 								</div>
-							</div>
-							<SheetFooter className="mt-4">
-								<Button
-									className="bg-green-1 text-white"
-									onClick={handleTransaction}
-									disabled={parseInt(rechargeAmount) > adjustedWalletBalance}
-								>
-									Proceed
-								</Button>
-							</SheetFooter>
+							</section>
 						</>
 					) : (
 						<div className="flex flex-col items-center justify-center min-w-full h-full gap-4">

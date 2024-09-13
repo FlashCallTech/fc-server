@@ -26,8 +26,8 @@ export default function AuthenticationPage() {
 
 	return (
 		<main
+			className="fixed w-full z-50 inset-0 bg-green-1 top-0 flex flex-col items-center justify-end md:justify-center"
 			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
-			className="relative flex flex-col gap-5 w-full items-center justify-end md:justify-center bg-green-1 no-scrollbar overflow-hidden"
 		>
 			<Head>
 				<title>Authentication</title>

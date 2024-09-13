@@ -7,7 +7,7 @@ import { useToast } from "../ui/use-toast";
 import Favorites from "../shared/Favorites";
 import ShareButton from "../shared/ShareButton";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { isValidUrl } from "@/lib/utils";
+import { isValidUrl, isValidHexColor } from "@/lib/utils";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -23,24 +23,51 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 	const [isImageLoaded, setIsImageLoaded] = useState(false);
 	const [addingFavorite, setAddingFavorite] = useState(false);
 	const [markedFavorite, setMarkedFavorite] = useState(false);
+	const [isAlreadyNotified, setIsAlreadyNotified] = useState(false);
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [status, setStatus] = useState<string>("Online"); // Default status to "Offline"
+
+	const themeColor = isValidHexColor(creator.themeSelected)
+		? creator.themeSelected
+		: "#50A65C";
 
 	const { clientUser, setAuthenticationSheetOpen, setCurrentTheme } =
 		useCurrentUsersContext();
 	const { toast } = useToast();
 
+	const fullName =
+		`${creator?.firstName || ""} ${creator?.lastName || ""}`.trim() ||
+		creator.username;
+
+	const imageSrc =
+		creator?.photo && isValidUrl(creator?.photo)
+			? creator?.photo
+			: "/images/defaultProfileImage.png";
+
 	useEffect(() => {
 		if (isCreatorOrExpertPath) {
 			localStorage.setItem("currentCreator", JSON.stringify(creator));
 			localStorage.setItem("creatorURL", `/${creator?.username}`);
-			setCurrentTheme(creator?.themeSelected);
+			setCurrentTheme(themeColor);
 		}
-	}, [creator?._id, isCreatorOrExpertPath, creator, setCurrentTheme]);
+	}, [creator?._id, isCreatorOrExpertPath]);
+
+	useEffect(() => {
+		// Retrieve the notify list from localStorage
+		const notifyList = JSON.parse(localStorage.getItem("notifyList") || "{}");
+
+		// Check if the creator.username or creator.phone is already in the notify list
+		if (
+			notifyList[creator.username] === creator.phone ||
+			Object.values(notifyList).includes(creator.phone)
+		) {
+			setIsAlreadyNotified(true);
+		}
+	}, [creator.username, creator.phone]);
 
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
-	}, [isAuthSheetOpen, setAuthenticationSheetOpen]);
+	}, [isAuthSheetOpen]);
 
 	useEffect(() => {
 		const docRef = doc(db, "userStatus", creator.phone);
@@ -49,7 +76,23 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 			(docSnap) => {
 				if (docSnap.exists()) {
 					const data = docSnap.data();
-					setStatus(data.status || "Offline");
+					const newStatus = data.status || "Offline";
+					setStatus(newStatus);
+
+					// Check if the creator's status is now "Online" and reset notification
+					if (newStatus === "Online") {
+						const notifyList = JSON.parse(
+							localStorage.getItem("notifyList") || "{}"
+						);
+
+						// If the creator is in the notify list, remove them
+						if (
+							notifyList[creator.username] === creator.phone ||
+							Object.values(notifyList).includes(creator.phone)
+						) {
+							setIsAlreadyNotified(false); // Reset the notification state
+						}
+					}
 				} else {
 					setStatus("Offline");
 				}
@@ -62,7 +105,20 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 
 		// Clean up the listener on component unmount
 		return () => unsubscribe();
-	}, [status, creator?.phone]);
+	}, [creator.phone, creator.username]);
+
+	useEffect(() => {
+		const img = new Image();
+		img.src = imageSrc;
+
+		img.onload = () => {
+			setIsImageLoaded(true);
+		};
+
+		img.onerror = () => {
+			setIsImageLoaded(true);
+		};
+	}, [imageSrc]);
 
 	const handleToggleFavorite = async () => {
 		if (!clientUser) {
@@ -95,23 +151,41 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 		}
 	};
 
-	const imageSrc =
-		creator?.photo && isValidUrl(creator?.photo)
-			? creator?.photo
-			: "/images/defaultProfileImage.png";
+	const handleNotifyUser = () => {
+		try {
+			const notifyList = JSON.parse(localStorage.getItem("notifyList") || "{}");
 
-	useEffect(() => {
-		const img = new Image();
-		img.src = imageSrc;
+			// Check if the creator.username or creator.phone is already in the notify list
+			if (
+				!notifyList[creator.username] &&
+				!Object.values(notifyList).includes(creator.phone)
+			) {
+				// Add the creator's username and phone to the notify list
+				notifyList[creator.username] = creator.phone;
+				localStorage.setItem("notifyList", JSON.stringify(notifyList));
+				setIsAlreadyNotified(true); // Disable the button after adding
 
-		img.onload = () => {
-			setIsImageLoaded(true);
-		};
-
-		img.onerror = () => {
-			setIsImageLoaded(true);
-		};
-	}, [imageSrc]);
+				toast({
+					variant: "default",
+					title: `We&apos;ll let you know as soon as ${fullName} is back online!`,
+					description: `${fullName} isn&apos;t online yet, but feel free to explore other creators or services while you wait.`,
+				});
+			} else {
+				toast({
+					variant: "default",
+					title: "Can&apos;t repeat the action",
+					description: `You are already set to be notified when ${fullName} comes online.`,
+				});
+			}
+		} catch (error) {
+			console.error("Error storing notification:", error);
+			toast({
+				variant: "destructive",
+				title: "Error",
+				description: "There was an issue setting up the notification.",
+			});
+		}
+	};
 
 	const backgroundImageStyle = {
 		backgroundImage: `url(${imageSrc})`,
@@ -137,9 +211,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 				<div
 					className={`relative flex flex-col items-center w-full max-w-[85%] md:max-w-[60%] xl:max-w-[35%] mx-auto gap-4 p-4 rounded-[24px] z-10 `}
 					style={{
-						backgroundColor: creator.themeSelected
-							? creator.themeSelected
-							: "#50A65C",
+						backgroundColor: themeColor,
 					}}
 				>
 					{!isImageLoaded ? (
@@ -151,7 +223,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 							className={`relative rounded-xl w-full h-72 xl:h-80 bg-center`}
 							style={backgroundImageStyle}
 						>
-							<div className="flex flex-col-reverse items-center justify-center gap-2 absolute top-4 right-4">
+							<div className="flex flex-col items-end justify-center gap-2 absolute top-4 right-4">
 								<>
 									<ShareButton
 										username={
@@ -174,6 +246,37 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 									/>
 								</>
 							</div>
+
+							{status !== "Online" && clientUser && (
+								<button
+									className={`absolute bottom-0 right-0 ${
+										!isAlreadyNotified
+											? "bg-[#232323]/35 cursor-not-allowed"
+											: "bg-green-1"
+									}  p-3 rounded-xl rounded-tr-none rounded-bl-none transition-all duration-300 hover:scale-105 group text-white shadow-md white hover:bg-green-1 flex gap-2 items-center`}
+									onClick={handleNotifyUser}
+									disabled={isAlreadyNotified}
+								>
+									{isAlreadyNotified ? (
+										<span className="text-sm">You&apos;ll be notified</span>
+									) : (
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+											strokeWidth={1.5}
+											stroke="currentColor"
+											className="size-6"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5"
+											/>
+										</svg>
+									)}
+								</button>
+							)}
 						</div>
 					)}
 
@@ -191,13 +294,22 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 							<span className="text-md h-full">
 								{creator.profession ? creator.profession : "Expert"}
 							</span>
+
 							<div
 								className={`${
-									status === "Online" ? "bg-green-500" : "bg-red-500"
+									status === "Online"
+										? "bg-green-500"
+										: status === "Offline"
+										? "bg-red-500"
+										: "bg-orange-400"
 								} text-[10px] rounded-[4px] border border-white py-1 px-2 font-semibold`}
 							>
 								<span className="flex">
-									{status === "Online" ? "Online" : "Offline"}
+									{status === "Online"
+										? "Online"
+										: status === "Offline"
+										? "Offline"
+										: "Busy"}
 								</span>
 							</div>
 						</div>
@@ -206,7 +318,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 					<span
 						className="absolute top-1/3 -right-7"
 						style={{
-							color: creator.themeSelected ? creator.themeSelected : "#50A65C",
+							color: themeColor,
 						}}
 					>
 						{sparkles}
@@ -223,7 +335,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 
 					<span
 						className="absolute max-xl:top-7 xl:-bottom-2 -left-4"
-						style={{ color: creator.themeSelected }}
+						style={{ color: themeColor }}
 					>
 						{sparkles}
 					</span>

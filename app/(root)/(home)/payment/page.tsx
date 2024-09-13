@@ -21,7 +21,7 @@ const PaymentsPage = () => {
 				description: "Redirecting Back...",
 			});
 		}
-	}, [currentUser?._id, currentUser, router, toast]);
+	}, [currentUser?._id]);
 	const searchParams = useSearchParams();
 
 	// Retrieve the `callType` query parameter
@@ -29,7 +29,7 @@ const PaymentsPage = () => {
 	return (
 		<section className="size-full">
 			{userType !== "creator" ? (
-				<Payment callType={callType} /> // Pass the `callType` prop to Payment
+				<Payment callType={callType} />  // Pass the `callType` prop to Payment
 			) : (
 				<Withdraw />
 			)}

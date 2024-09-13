@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { UpdateUserParams } from "@/types";
@@ -13,26 +13,23 @@ const UpdateProfilePage = () => {
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
-	const getInitialState = useCallback(
-		(): UpdateUserParams => ({
-			id: currentUser?._id || "",
-			fullName:
-				(currentUser?.firstName || "") + " " + (currentUser?.lastName || ""),
-			firstName: currentUser?.firstName || "",
-			lastName: currentUser?.lastName || "",
-			username: currentUser?.username || "",
-			profession: currentUser?.profession || "",
-			themeSelected: currentUser?.themeSelected || "#50A65C",
-			phone: currentUser?.phone || "",
-			photo: currentUser?.photo || "",
-			bio: currentUser?.bio || "",
-			role: userType || "client",
-			gender: currentUser?.gender || "",
-			dob: currentUser?.dob || "",
-			creatorId: currentUser?.creatorId || "",
-		}),
-		[currentUser, userType]
-	);
+	const getInitialState = (): UpdateUserParams => ({
+		id: currentUser?._id || "",
+		fullName:
+			(currentUser?.firstName || "") + " " + (currentUser?.lastName || ""),
+		firstName: currentUser?.firstName || "",
+		lastName: currentUser?.lastName || "",
+		username: currentUser?.username || "",
+		profession: currentUser?.profession || "",
+		themeSelected: currentUser?.themeSelected || "#50A65C",
+		phone: currentUser?.phone || "",
+		photo: currentUser?.photo || "",
+		bio: currentUser?.bio || "",
+		role: userType || "client",
+		gender: currentUser?.gender || "",
+		dob: currentUser?.dob || "",
+		creatorId: currentUser?.creatorId || "",
+	});
 
 	const [userData, setUserData] = useState<UpdateUserParams>(getInitialState);
 	const [initialState, setInitialState] =
@@ -46,7 +43,7 @@ const UpdateProfilePage = () => {
 			setInitialState(updatedInitialState);
 			setLoading(false);
 		}
-	}, [currentUser?._id, userType, currentUser, getInitialState]);
+	}, [currentUser?._id, userType]);
 
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		refreshCurrentUser();

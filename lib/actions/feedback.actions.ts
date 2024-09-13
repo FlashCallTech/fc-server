@@ -1,10 +1,10 @@
 "use server";
 
 import { connectToDatabase } from "@/lib/database";
-import { handleError } from "@/lib/utils";
 import CallFeedbacks from "../database/models/callFeedbacks.model";
 import mongoose from "mongoose";
 import Client from "../database/models/client.model";
+import * as Sentry from "@sentry/nextjs";
 
 export async function createFeedback({
 	creatorId,
@@ -71,7 +71,7 @@ export async function createFeedback({
 
 		return { success: true };
 	} catch (error: any) {
-		handleError(error);
+		Sentry.captureException(error);
 		console.log("Error Creating Feedback ... ", error);
 		return { success: false, error: error.message };
 	}
@@ -135,6 +135,7 @@ export async function getCallFeedbacks(callId?: string, creatorId?: string) {
 		// Return the feedbacks as JSON
 		return JSON.parse(JSON.stringify(feedbacks));
 	} catch (error: any) {
+		Sentry.captureException(error);
 		console.log(error);
 		return { success: false, error: error.message };
 	}

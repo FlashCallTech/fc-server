@@ -296,16 +296,14 @@ const About: React.FC = () => {
 					</div>
 
 					{/* Payment Button */}
-					<div className="flex blurEffect w-full py-5 fixed bottom-0 md:-bottom-4 z-10">
-						<button
-							className="w-4/5 md:w-1/3 mx-auto py-3 text-black bg-white rounded-lg border-2 border-black hover:bg-green-1 hover:text-white font-semibold"
-							style={{ boxShadow: "3px 3px black" }}
-							onClick={PaymentHandler}
-							disabled={loading} // Disable the button when loading
-						>
-							Proceed to Payment
-						</button>
-					</div>
+					<button
+						className="w-4/5 md:w-1/3 mx-auto py-3 text-black bg-white rounded-lg border-2 border-black hover:bg-green-1 hover:text-white font-semibold fixed bottom-3"
+						style={{ boxShadow: "3px 3px black" }}
+						onClick={PaymentHandler}
+						disabled={loading} // Disable the button when loading
+					>
+						Proceed to Payment
+					</button>
 				</div>
 			)}
 		</>

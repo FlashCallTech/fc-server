@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import OTPVerification from "./OTPVerification";
+import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -47,12 +48,8 @@ const AuthenticateViaOTP = ({
 	onOpenChange?: (isOpen: boolean) => void;
 }) => {
 	const router = useRouter();
-	const {
-		clientUser,
-		currentUser,
-		refreshCurrentUser,
-		setAuthenticationSheetOpen,
-	} = useCurrentUsersContext();
+	const { refreshCurrentUser, setAuthenticationSheetOpen } =
+		useCurrentUsersContext();
 	const [showOTP, setShowOTP] = useState(false);
 	const [phoneNumber, setPhoneNumber] = useState("");
 	const [token, setToken] = useState<string | null>(null);
@@ -141,38 +138,45 @@ const AuthenticateViaOTP = ({
 				token: token,
 			});
 
-			let authToken = response.data.sessionToken;
+			// Extract the session token and user from the response
+			const { sessionToken } = response.data;
 
 			trackEvent("Login_Bottomsheet_OTP_Submitted");
 
-			updateFirestoreAuthToken(authToken);
+			// Update Firestore with the auth token
+			updateFirestoreAuthToken(sessionToken);
 
-			const creatorURL = localStorage.getItem("creatorURL");
+			const decodedToken = jwt.decode(sessionToken) as { user?: any };
 
-			// Save the auth token (with 7 days expiry) in localStorage
-			localStorage.setItem("authToken", authToken);
+			// Save the auth token (with 1 days expiry) in localStorage
+			localStorage.setItem("authToken", sessionToken);
 			console.log("OTP verified and token saved:");
 
 			setVerificationSuccess(true);
 
-			const existingUser = await axios.post("/api/v1/user/getUserByPhone", {
-				phone: phoneNumber,
-			});
+			// Use the user data from the decoded session token
+			const user = decodedToken.user || {};
+			let resolvedUserType = userType;
 
-			let resolvedUserType = userType; // Default to the userType from the component prop
-
-			if (existingUser.data._id) {
-				resolvedUserType = (existingUser.data.userType as string) || "client";
+			if (user._id) {
+				// Existing user found
+				resolvedUserType = user.userType || "client";
 				console.log("current usertype: ", resolvedUserType);
-				localStorage.setItem("currentUserID", existingUser.data._id);
+				localStorage.setItem("currentUserID", user._id);
 				console.log("Existing user found. Proceeding as an existing user.");
 			} else {
+				// No user found, proceed as new user
 				console.log("No user found. Proceeding as a new user.");
 
-				let user: CreateCreatorParams | CreateUserParams;
-				const formattedPhone = `+91${phoneNumber}`;
+				let newUser: CreateCreatorParams | CreateUserParams;
+
+				const formattedPhone = phoneNumber.startsWith("+91")
+					? phoneNumber
+					: `+91${phoneNumber}`;
+
+				// Prepare the new user object based on the userType
 				if (userType === "creator") {
-					user = {
+					newUser = {
 						firstName: "",
 						lastName: "",
 						fullName: "",
@@ -187,7 +191,7 @@ const AuthenticateViaOTP = ({
 						walletBalance: 0,
 					};
 				} else {
-					user = {
+					newUser = {
 						firstName: "",
 						lastName: "",
 						username: formattedPhone as string,
@@ -199,44 +203,35 @@ const AuthenticateViaOTP = ({
 					};
 				}
 
-				if (userType === "creator") {
-					try {
+				// Register the new user
+				try {
+					if (userType === "creator") {
 						await axios.post(
 							"/api/v1/creator/createUser",
-							user as CreateCreatorParams
+							newUser as CreateCreatorParams
 						);
-					} catch (error: any) {
-						toast({
-							variant: "destructive",
-							title: "Error Registering User",
-							description: `${error.response.data.error}`,
-						});
-						resetState();
-						return;
-					}
-				} else {
-					try {
+					} else {
 						await axios.post(
 							"/api/v1/client/createUser",
-							user as CreateCreatorParams
+							newUser as CreateUserParams
 						);
-					} catch (error: any) {
-						toast({
-							variant: "destructive",
-							title: "Error Registering User",
-							description: `${error.response.data.error}`,
-						});
-						resetState();
-						return;
 					}
+				} catch (error: any) {
+					toast({
+						variant: "destructive",
+						title: "Error Registering User",
+						description: `${error.response.data.error}`,
+					});
+					resetState();
+					return;
 				}
 			}
 
 			localStorage.setItem("userType", resolvedUserType);
 			refreshCurrentUser();
 			setAuthenticationSheetOpen(false);
-
-			router.push(`${creatorURL ? creatorURL : "/"}`);
+			const creatorURL = localStorage.getItem("creatorURL");
+			router.replace(`${creatorURL ? creatorURL : "/"}`);
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);
 			let newErrors = { ...error };
@@ -246,7 +241,6 @@ const AuthenticateViaOTP = ({
 			setIsVerifyingOTP(false);
 		} finally {
 			setIsVerifyingOTP(false);
-			console.log(clientUser);
 		}
 	};
 
@@ -278,22 +272,20 @@ const AuthenticateViaOTP = ({
 
 	const sectionRef = useRef<HTMLElement>(null);
 
-	const handleClickOutside = useCallback(
-		(event: any) => {
-			if (sectionRef.current && !sectionRef.current.contains(event.target)) {
-				console.log("Clicked outside the section");
-				onOpenChange && onOpenChange(false);
-			}
-		},
-		[onOpenChange]
-	);
+	const handleClickOutside = (event: any) => {
+		if (sectionRef.current && !sectionRef.current.contains(event.target)) {
+			// Trigger your function here
+			console.log("Clicked outside the section");
+			onOpenChange && onOpenChange(false);
+		}
+	};
 
 	useEffect(() => {
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => {
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
-	}, [handleClickOutside]);
+	}, []);
 
 	return (
 		<section

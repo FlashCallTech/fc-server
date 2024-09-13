@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import axios from "axios";
 import * as Sentry from "@sentry/nextjs";
@@ -24,6 +24,7 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
+import Link from "next/link";
 
 interface Transaction {
 	_id: string;
@@ -128,7 +129,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		router.push(`/recharge?amount=${rechargeAmount}`);
 	}
 
-	const fetchTransactions = useCallback(async () => {
+	const fetchTransactions = async () => {
 		try {
 			setLoading(true);
 			const response = await axios.get(
@@ -144,19 +145,13 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		} finally {
 			setLoading(false);
 		}
-	}, [btn, currentUser]); // Dependencies for fetchTransactions
+	};
 
 	useEffect(() => {
 		if (currentUser) {
 			fetchTransactions();
 		}
-	}, [fetchTransactions]); // Fetch transactions when fetchTransactions changes
-
-	useEffect(() => {
-		if (currentUser) {
-			fetchTransactions();
-		}
-	}, [btn, currentUser, fetchTransactions]);
+	}, [btn]);
 
 	useEffect(() => {
 		const amountPattern = /^\d*$/;
@@ -170,17 +165,27 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		}
 	}, [rechargeAmount, form]);
 
+	const creatorURL = localStorage.getItem("creatorURL");
+
 	return (
 		<div className="flex flex-col pt-4 bg-white text-gray-800 w-full h-full">
 			{/* Balance Section */}
-			<section className="w-full flex flex-col pb-5 px-4 ">
-				<span className="w-fit text-2xl leading-7 font-bold">
-					Rs. {walletBalance.toFixed(2)}
-				</span>
-				<h2 className="w-fit text-gray-500 font-normal leading-5">
-					Total Balance
-				</h2>
-			</section>
+			<div className="flex items-center pb-5 px-4 gap-4">
+				<Link
+					href={`${creatorURL ? creatorURL : "/"}`}
+					className="text-xl font-bold"
+				>
+					&larr;
+				</Link>
+				<section className="w-full flex flex-col">
+					<span className="w-fit text-2xl leading-7 font-bold">
+						Rs. {walletBalance.toFixed(2)}
+					</span>
+					<h2 className="w-fit text-gray-500 font-normal leading-5">
+						Total Balance
+					</h2>
+				</section>
+			</div>
 
 			{/* Recharge Section */}
 			<section className="flex flex-col gap-5 items-center justify-center md:items-start pb-7 px-4 ">

@@ -47,7 +47,7 @@ const CallFeedbackPage = () => {
 		};
 
 		fetchFeedbacks();
-	}, [creatorURL, callId, router, toast]);
+	}, [callId, router, toast]);
 
 	useEffect(() => {
 		const handleResize = () => {

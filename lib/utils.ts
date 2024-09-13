@@ -103,6 +103,28 @@ export const isValidUrl = (url: string) => {
 	}
 };
 
+export const isValidImageUrl = async (url: string) => {
+	try {
+		// First, check if the URL is a valid URL
+		const parsedUrl = new URL(url);
+
+		// Then, fetch the headers to validate the URL points to an image
+		const response = await fetch(parsedUrl.toString(), { method: "HEAD" });
+
+		// Check if the response is OK and if the Content-Type is an image type
+		const contentType = response.headers.get("Content-Type");
+		if (response.ok && contentType && contentType.startsWith("image/")) {
+			return true;
+		}
+
+		return false;
+	} catch (error) {
+		// If any error occurs, return false
+		console.error("Invalid image URL:", error);
+		return false;
+	}
+};
+
 export const imageSrc = (creator: any) => {
 	const isValidUrl = (url: string) => {
 		try {
@@ -167,4 +189,9 @@ export const useCallAudioNotification = (
 			}
 		};
 	}, [callState, audioFile, showNotification]);
+};
+
+export const isValidHexColor = (color: string): boolean => {
+	// Check if the color is a valid 6-digit or 3-digit hex code
+	return /^#([0-9A-F]{3}){1,2}$/i.test(color);
 };

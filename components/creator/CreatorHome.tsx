@@ -93,17 +93,30 @@ const CreatorHome = () => {
 
 	useEffect(() => {
 		if (creatorUser) {
-			const creatorRef = doc(db, "transactions", creatorUser?._id);
-			const unsubscribe = onSnapshot(creatorRef, (doc) => {
-				const data = doc.data();
+			try {
+				const creatorRef = doc(db, "transactions", creatorUser?._id);
+				const unsubscribe = onSnapshot(
+					creatorRef,
+					(doc) => {
+						const data = doc.data();
 
-				if (data) {
-					updateWalletBalance();
-					fetchTransactions();
-				}
-			});
+						if (data) {
+							updateWalletBalance();
+							fetchTransactions();
+						}
+					},
+					(error) => {
+						console.error("Error fetching snapshot: ", error);
+						// Optional: Retry or fallback logic when Firebase is down
+						updateWalletBalance();
+						fetchTransactions();
+					}
+				);
 
-			return () => unsubscribe();
+				return () => unsubscribe();
+			} catch (error) {
+				console.error("Error connecting to Firebase: ", error);
+			}
 		}
 	}, [creatorUser?._id]);
 
@@ -320,7 +333,7 @@ const CreatorHome = () => {
 								</p>
 							</div>
 						</div>
-						<Link href={"/payment"}>
+						<Link href={"/payment"} className="flex items-center">
 							<Button className="bg-green-600 w-auto h-auto text-white rounded-lg hover:bg-green-700">
 								View Wallet
 							</Button>

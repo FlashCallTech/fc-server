@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/components/ui/use-toast";
-import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 interface UserStatusContextType {
 	userStatus: Record<string, string>; // Store statuses for multiple users
@@ -15,16 +14,24 @@ const UserStatusContext = createContext<UserStatusContextType | undefined>(
 export const UserStatusProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
-	const { clientUser } = useCurrentUsersContext();
 	const [userStatus, setUserStatus] = useState<Record<string, string>>({});
 	const { toast } = useToast();
+	const [notifyList, setNotifyList] = useState<Record<string, string>>({});
+
+	// Only access localStorage on the client side
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			const storedNotifyList = JSON.parse(
+				localStorage.getItem("notifyList") || "{}"
+			);
+			setNotifyList(storedNotifyList);
+		}
+	}, []);
 
 	useEffect(() => {
 		const unsubscribeList: (() => void)[] = [];
-		const notifyList = JSON.parse(
-			localStorage.getItem("notifyList") || "{}"
-		) as Record<string, string>;
 
+		// Listen for changes in each user's status
 		Object.entries(notifyList).forEach(([username, phone]) => {
 			const docRef = doc(db, "userStatus", phone);
 			const unsubscribe = onSnapshot(
@@ -50,16 +57,19 @@ export const UserStatusProvider: React.FC<{ children: React.ReactNode }> = ({
 
 								toast({
 									variant: "destructive",
-									title: `${username} one of your Favorite's is online`,
+									title: `${username} is now online`,
 								});
 
-								// Remove the notified user from the notifyList in localStorage
-								const updatedNotifyList = { ...notifyList };
-								delete updatedNotifyList[username];
-								localStorage.setItem(
-									"notifyList",
-									JSON.stringify(updatedNotifyList)
-								);
+								// Remove the notified user from the notifyList in state and localStorage
+								setNotifyList((prevList) => {
+									const updatedNotifyList = { ...prevList };
+									delete updatedNotifyList[username];
+									localStorage.setItem(
+										"notifyList",
+										JSON.stringify(updatedNotifyList)
+									);
+									return updatedNotifyList;
+								});
 							} catch (error) {
 								console.error("Error handling notification:", error);
 							}
@@ -78,7 +88,7 @@ export const UserStatusProvider: React.FC<{ children: React.ReactNode }> = ({
 		return () => {
 			unsubscribeList.forEach((unsubscribe) => unsubscribe());
 		};
-	}, [clientUser, toast]); // Removed userStatus from dependencies
+	}, [notifyList]); // Only re-run when notifyList changes
 
 	return (
 		<UserStatusContext.Provider value={{ userStatus }}>

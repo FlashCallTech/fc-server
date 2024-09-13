@@ -28,9 +28,11 @@ const PreviousPage = () => {
 	}, []);
 
 	return (
-		<section className="flex size-full flex-col gap-2 pb-5 md:pb-14">
+		<section
+			ref={stickyRef}
+			className="flex size-full flex-col gap-2 pb-5 md:pb-14"
+		>
 			<div
-				ref={stickyRef}
 				className={`sticky top-16 bg-white z-30 w-full px-4 ${
 					isSticky ? "pt-7" : "pt-2"
 				} pb-4 flex items-center justify-between transition-all duration-300`}

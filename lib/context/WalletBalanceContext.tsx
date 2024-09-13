@@ -1,10 +1,10 @@
+// WalletBalanceContext.tsx
 import React, {
 	createContext,
 	useContext,
 	useState,
 	ReactNode,
 	useEffect,
-	useCallback,
 } from "react";
 import { getUserById } from "../actions/client.actions";
 import { getCreatorById } from "../actions/creator.actions";
@@ -43,7 +43,7 @@ export const WalletBalanceProvider = ({
 	);
 	const isCreator = userType === "creator";
 
-	const updateAndSetWalletBalance = useCallback(async () => {
+	const updateAndSetWalletBalance = async () => {
 		if (currentUser?._id) {
 			try {
 				const response = isCreator
@@ -56,23 +56,21 @@ export const WalletBalanceProvider = ({
 				setWalletBalance(0);
 			}
 		}
-	}, [currentUser?._id, isCreator]);
+	};
 
-	const fetchAndSetWalletBalance = useCallback(async () => {
+	const fetchAndSetWalletBalance = async () => {
 		try {
-			if (currentUser) {
-				setWalletBalance(currentUser.walletBalance ?? 0);
-			}
+			currentUser && setWalletBalance(currentUser?.walletBalance ?? 0);
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error fetching current user:", error);
 			setWalletBalance(0);
 		}
-	}, [currentUser]);
+	};
 
 	useEffect(() => {
 		fetchAndSetWalletBalance();
-	}, [userType, authenticationSheetOpen, fetchAndSetWalletBalance]);
+	}, [userType, authenticationSheetOpen, isCreator]);
 
 	const updateWalletBalance = async () => {
 		await updateAndSetWalletBalance();

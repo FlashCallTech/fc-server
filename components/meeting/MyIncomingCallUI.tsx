@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import { useToast } from "../ui/use-toast";
 import * as Sentry from "@sentry/nextjs";
@@ -7,6 +7,9 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 	const { toast } = useToast();
 	const [callState, setCallState] = useState("incoming");
 	const [shownNotification, setShownNotification] = useState(false);
+	const expert = call?.state?.members?.find(
+		(member) => member.custom.type === "expert"
+	);
 
 	useEffect(() => {
 		const registerServiceWorker = async () => {
@@ -24,7 +27,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 		registerServiceWorker();
 	}, []);
 
-	const showNotification = useCallback(() => {
+	const showNotification = () => {
 		if ("Notification" in window && Notification.permission === "granted") {
 			navigator.serviceWorker.ready.then((registration) => {
 				registration.showNotification("Incoming Call", {
@@ -51,7 +54,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 				}
 			});
 		}
-	}, [call]);
+	};
 
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
@@ -85,13 +88,40 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 				audio.currentTime = 0;
 			}
 		};
-	}, [callState, shownNotification, showNotification]);
+	}, [callState, shownNotification]);
+
+	// Function to update expert's status
+	const updateExpertStatus = async (phone: string, status: string) => {
+		try {
+			const response = await fetch("/api/set-status", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ phone, status }),
+			});
+
+			const data = await response.json();
+			if (!response.ok) {
+				throw new Error(data.message || "Failed to update status");
+			}
+
+			console.log("Expert status updated to:", status);
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error updating expert status:", error);
+		}
+	};
 
 	const handleCallState = async (action: string) => {
 		if (action === "declined") {
 			await call.leave({ reject: true });
 			setCallState("declined");
 		} else if (action === "accepted") {
+			const expertPhone = expert?.custom?.phone;
+			if (expertPhone) {
+				await updateExpertStatus(expertPhone, "Busy");
+			}
 			await call.accept();
 			setCallState("accepted");
 		} else if (action === "ended") {

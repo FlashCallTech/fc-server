@@ -1,7 +1,5 @@
 import Navbar from "@/components/shared/Navbar";
 import Sidebar from "@/components/shared/Sidebar";
-import Footer from "@/components/shared/Footer";
-
 import { Metadata } from "next";
 import React, { ReactNode } from "react";
 
@@ -41,13 +39,8 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 			<Navbar />
 			<div className="flex">
 				<Sidebar />
-				<section className="flex flex-1 flex-col gap-5">
-					<div className="min-h-screen w-full h-full relative pt-24 md:px-10">
-						{children}
-					</div>
-					<footer className="flex flex-col items-center justify-center w-full bg-green-1">
-						<Footer />
-					</footer>
+				<section className="flex min-h-screen flex-1 flex-col pt-24 md:px-10">
+					<div className="w-full h-full relative">{children}</div>
 				</section>
 			</div>
 		</main>

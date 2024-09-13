@@ -41,7 +41,23 @@ const FavoritesGrid = ({
 			(docSnap) => {
 				if (docSnap.exists()) {
 					const data = docSnap.data();
-					setStatus(data.status || "Offline");
+					const newStatus = data.status || "Offline";
+					setStatus(newStatus);
+
+					// Check if the creator's status is now "Online" and reset notification
+					if (newStatus === "Online") {
+						const notifyList = JSON.parse(
+							localStorage.getItem("notifyList") || "{}"
+						);
+
+						// If the creator is in the notify list, remove them
+						if (
+							notifyList[creator.username] === creator.phone ||
+							Object.values(notifyList).includes(creator.phone)
+						) {
+							setIsAlreadyNotified(false); // Reset the notification state
+						}
+					}
 				} else {
 					setStatus("Offline");
 				}
@@ -54,7 +70,7 @@ const FavoritesGrid = ({
 
 		// Clean up the listener on component unmount
 		return () => unsubscribe();
-	}, [status, creator?.phone]);
+	}, [creator.phone, creator.username]);
 
 	useEffect(() => {
 		// Retrieve the notify list from localStorage
@@ -114,13 +130,13 @@ const FavoritesGrid = ({
 
 				toast({
 					variant: "default",
-					title: "Notification Set",
-					description: `You'll be notified when ${fullName} comes online.`,
+					title: `We&apos;ll let you know as soon as ${fullName} is back online!`,
+					description: `${fullName} isn&apos;t online yet, but feel free to explore other creators or services while you wait.`,
 				});
 			} else {
 				toast({
 					variant: "default",
-					title: "Already Notified",
+					title: "Can&apos;t repeat the action",
 					description: `You are already set to be notified when ${fullName} comes online.`,
 				});
 			}
@@ -198,11 +214,11 @@ const FavoritesGrid = ({
 							isAlreadyNotified
 								? "bg-gray-400 cursor-not-allowed"
 								: "bg-green-1 hover:bg-green-700"
-						}  text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs`}
+						}  text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs whitespace-nowrap`}
 						onClick={handleNotifyUser}
 						disabled={isAlreadyNotified}
 					>
-						{isAlreadyNotified ? "Notified" : "Notify Me"}
+						{isAlreadyNotified ? "You&apos;ll be notified" : "Notify Me"}
 					</button>
 				) : (
 					<Link
