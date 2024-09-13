@@ -1,12 +1,6 @@
 // server/resendOTP.ts
 import { NextRequest, NextResponse } from "next/server";
-import { Twilio } from "twilio";
 import * as Sentry from "@sentry/nextjs";
-
-const client = new Twilio(
-	process.env.TWILIO_ACCOUNT_SID!,
-	process.env.TWILIO_AUTH_TOKEN!
-);
 
 export async function POST(req: NextRequest) {
 	try {

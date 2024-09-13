@@ -68,7 +68,28 @@ const UserReviews = ({
 				)
 		);
 
-		const finalFeedback = [...updatedFeedback, ...newFeedbacks];
+		// Merge the feedback arrays and sort by position
+		const finalFeedback = [...updatedFeedback, ...newFeedbacks].sort(
+			(a: any, b: any) => {
+				// If both positions are valid (not -1), sort by position
+				if (a.position !== -1 && b.position !== -1) {
+					return a.position - b.position;
+				}
+				// If a.position is -1, push it down
+				if (a.position === -1 && b.position !== -1) {
+					return 1;
+				}
+				// If b.position is -1, push it down
+				if (b.position === -1 && a.position !== -1) {
+					return -1;
+				}
+				// If both are -1, fall back to sorting by createdAt
+				return (
+					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+				);
+			}
+		);
+
 		setCreatorFeedback(finalFeedback);
 
 		// Cache the synchronized feedbacks and timestamp

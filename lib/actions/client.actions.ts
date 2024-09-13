@@ -11,16 +11,23 @@ import Client from "../database/models/client.model";
 import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "../mixpanel";
 import { addMoney } from "./wallet.actions";
+import { MongoServerError } from "mongodb";
 
 export async function createUser(user: CreateUserParams) {
 	try {
 		await connectToDatabase();
-		// Check for existing user with the same email or username
-		const existingUser = await Client.findOne({
-			$or: [{ username: user.username }],
+		// Check for existing user with the same username
+		const existingUserByUsername = await Client.findOne({
+			username: user.username,
 		});
-		if (existingUser) {
-			return { error: "User with the same username already exists" };
+		if (existingUserByUsername) {
+			return { error: "Username already exists" };
+		}
+
+		// Check for existing user with the same phone number
+		const existingUserByPhone = await Client.findOne({ phone: user.phone });
+		if (existingUserByPhone) {
+			return { error: "Phone number already exists" };
 		}
 		const newUser = await Client.create(user);
 
@@ -31,15 +38,24 @@ export async function createUser(user: CreateUserParams) {
 		});
 
 		const clientUser = JSON.parse(JSON.stringify(newUser));
-		
-		trackEvent('User_first_seen', {
+
+		trackEvent("User_first_seen", {
 			Client_ID: clientUser._id,
-		})
+		});
 		return JSON.parse(JSON.stringify(newUser));
 	} catch (error) {
+		if (error instanceof MongoServerError && error.code === 11000) {
+			// Handle duplicate key error specifically
+			if (error.message.includes("username")) {
+				return { error: "Username already exists" };
+			}
+			if (error.message.includes("phone")) {
+				return { error: "Phone number already exists" };
+			}
+		}
 		Sentry.captureException(error);
 		console.log(error);
-		handleError(error);
+		return { error: "An unexpected error occurred" };
 	}
 }
 

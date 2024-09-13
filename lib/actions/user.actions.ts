@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { connectToDatabase } from "../database";
 import Client from "../database/models/client.model";
 import Creator from "../database/models/creator.model";
@@ -32,7 +33,7 @@ export async function getUserByPhone(phone: string) {
 		return JSON.stringify("No User Found");
 	} catch (error) {
 		Sentry.captureException(error);
-		handleError(error);
+		return NextResponse.json({}, { status: 200 });
 	}
 }
 

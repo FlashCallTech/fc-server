@@ -7,6 +7,7 @@ import { useToast } from "../ui/use-toast";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import * as Sentry from "@sentry/nextjs";
 
 const MyCallUI = () => {
 	const router = useRouter();
@@ -18,6 +19,29 @@ const MyCallUI = () => {
 	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
 	const [hasRedirected, setHasRedirected] = useState(false);
 	const [showCallUI, setShowCallUI] = useState(false);
+
+	// Function to update expert's status
+	const updateExpertStatus = async (phone: string, status: string) => {
+		try {
+			const response = await fetch("/api/set-status", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ phone, status }),
+			});
+
+			const data = await response.json();
+			if (!response.ok) {
+				throw new Error(data.message || "Failed to update status");
+			}
+
+			console.log("Expert status updated to:", status);
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error updating expert status:", error);
+		}
+	};
 
 	useEffect(() => {
 		const storedCallId = localStorage.getItem("activeCallId");
@@ -37,14 +61,19 @@ const MyCallUI = () => {
 		calls.forEach((call) => {
 			const isMeetingOwner =
 				currentUser && currentUser?._id === call?.state?.createdBy?.id;
-
+			const expert = call?.state?.members?.find(
+				(member) => member.custom.type === "expert"
+			);
 			const handleCallEnded = async () => {
 				call.camera.disable();
 				call.microphone.disable();
 				if (!isMeetingOwner) {
 					localStorage.removeItem("activeCallId");
 				}
-
+				const expertPhone = expert?.custom?.phone;
+				if (expertPhone) {
+					await updateExpertStatus(expertPhone, "Online");
+				}
 				setShowCallUI(false); // Hide call UI
 			};
 
@@ -79,8 +108,6 @@ const MyCallUI = () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
 				setShowCallUI(false); // Hide call UI
 
-				router.replace(`/meeting/${call.id}`);
-
 				await fetch("/api/v1/calls/updateCall", {
 					method: "POST",
 					body: JSON.stringify({
@@ -94,6 +121,8 @@ const MyCallUI = () => {
 				logEvent(analytics, "call_accepted", {
 					callId: call.id,
 				});
+
+				router.replace(`/meeting/${call.id}`);
 			};
 
 			call.on("call.ended", handleCallEnded);

@@ -85,11 +85,19 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 							</span>
 							<div
 								className={`${
-									status === "Online" ? "bg-green-500" : "bg-red-500"
+									status === "Online"
+										? "bg-green-500"
+										: status === "Offline"
+										? "bg-red-500"
+										: "bg-orange-400"
 								} text-xs rounded-full sm:rounded-xl px-1.5 py-1.5 sm:px-4 sm:py-2`}
 							>
 								<span className="hidden sm:flex">
-									{status === "Online" ? "Online" : "Offline"}
+									{status === "Online"
+										? "Online"
+										: status === "Offline"
+										? "Offline"
+										: "Busy"}{" "}
 								</span>
 							</div>
 						</div>

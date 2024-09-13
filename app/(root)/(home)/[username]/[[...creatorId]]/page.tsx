@@ -42,7 +42,7 @@ export async function generateMetadata({
 			description: "Creator | Expert | Flashcall.me",
 			openGraph: {
 				type: "website",
-				url: `https://app.flashcall.me/${fullName}`,
+				url: `https://app.flashcall.me/${params.username}`,
 				title: `Creator | ${fullName}` || "FlashCall",
 				description: `Book your first consultation with ${fullName}`,
 				images: [

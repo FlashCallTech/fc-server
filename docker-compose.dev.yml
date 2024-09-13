@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: dev-container-flash
+    environment:
+      - NODE_ENV=development
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: aseem5047/flashcall:dev
+    ports:
+      - "3000:3000"
+
+    env_file:
+      - .env.local # Environment variables for development
+
+    volumes:
+      - .:/app
+      - /app/node_modules # Ensure the container's node_modules is used
+
+    command: npm run dev # Command to start the development server

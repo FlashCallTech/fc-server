@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: prod-container-flash
+    environment:
+      - NODE_ENV=production
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    image: aseem5047/flashcall:prod
+    ports:
+      - "3000:3000"
+
+    env_file:
+      - .env.production
+
+    # For production, avoid mounting volumes if not needed
+    # volumes:
+    #   - .:/app
+
+    command: npm start

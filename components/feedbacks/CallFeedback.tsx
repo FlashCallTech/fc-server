@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sheet, SheetContent } from "../ui/sheet";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
@@ -67,7 +67,21 @@ const CallFeedback = ({
 	);
 
 	const handleSubmitFeedback = async () => {
-		if (!currentUser || !call) return;
+		if (!currentUser || !call) {
+			toast({
+				variant: "destructive",
+				title: "Give it another try",
+				description: "Something went wrong",
+			});
+			return;
+		}
+		if (feedbackMessage.length < 3) {
+			toast({
+				variant: "destructive",
+				title: "Feedback must be at least 3 characters",
+			});
+			return;
+		}
 		try {
 			const userId = currentUser?._id as string;
 
@@ -83,18 +97,30 @@ const CallFeedback = ({
 			toast({
 				variant: "destructive",
 				title: "Feedback Submitted Successfully",
+				description: "Edit or Review at Order History",
 			});
 		} catch (error: any) {
 			toast({
 				variant: "destructive",
 				title: "Failed to Submit Feedback",
+				description: "Add new at Order History",
 			});
 			console.error("Error submitting feedback:", error);
 		} finally {
-			setRating(2);
+			setRating(5);
 			setFeedbackMessage("");
 		}
 	};
+
+	const handleKeyPress = (event: React.KeyboardEvent) => {
+		if (event.key === "Enter" && feedbackMessage.length >= 3) {
+			event.preventDefault();
+			handleSubmitFeedback();
+		}
+	};
+
+	// Disable submit button if feedback message is less than 3 characters
+	const isSubmitDisabled = feedbackMessage.length < 3;
 
 	if (!currentUser?._id || isCallLoading)
 		return (
@@ -171,16 +197,21 @@ const CallFeedback = ({
 						<textarea
 							value={feedbackMessage}
 							onChange={handleFeedbackChange}
+							onKeyDown={handleKeyPress}
 							placeholder="Write your feedback here..."
 							className="w-full p-2 border rounded resize-none h-full max-h-[100px] overflow-y-scroll no-scrollbar outline-none hover:bg-gray-50"
 						></textarea>
 
-						<Button
+						<button
 							onClick={handleSubmitFeedback}
-							className="bg-green-1 font-semibold text-white px-4 py-2 rounded-lg hover:opacity-80"
+							className={`bg-green-1 font-semibold text-white px-4 py-2 rounded-lg hover:opacity-80 ${
+								isSubmitDisabled &&
+								"!cursor-not-allowed opacity-50 hover:opacity-50"
+							}`}
+							disabled={isSubmitDisabled}
 						>
 							Submit Feedback
-						</Button>
+						</button>
 					</div>
 				) : (
 					<div className="flex flex-col items-center justify-center min-w-full h-full gap-4">

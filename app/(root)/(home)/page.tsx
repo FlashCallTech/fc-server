@@ -17,6 +17,23 @@ import { db } from "@/lib/firebase";
 
 const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
+// Custom hook to track screen size
+const useScreenSize = () => {
+	const [isMobile, setIsMobile] = useState(false);
+
+	const handleResize = () => {
+		setIsMobile(window.innerWidth < 1280);
+	};
+
+	useEffect(() => {
+		handleResize(); // Set initial value
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
+
+	return isMobile;
+};
+
 const HomePage = () => {
 	const CACHE_EXPIRY_TIME = 5 * 60 * 1000; // 5 minutes
 	const [creators, setCreators] = useState<creatorUser[]>(() => {
@@ -30,10 +47,11 @@ const HomePage = () => {
 	const [error, setError] = useState(false);
 	const [hasMore, setHasMore] = useState(true);
 	const [onlineStatus, setOnlineStatus] = useState<String>();
-	const { currentUser, userType, setCurrentTheme, clientUser } = useCurrentUsersContext();
+	const { userType, setCurrentTheme, clientUser } = useCurrentUsersContext();
 	const pathname = usePathname();
 	const router = useRouter();
 	const { ref, inView } = useInView();
+	const decreaseFetchLimit = useScreenSize();
 
 	const fetchCreators = useCallback(
 		async (offset: number, limit: number) => {
@@ -111,23 +129,13 @@ const HomePage = () => {
 
 	useEffect(() => {
 		if (inView && !isFetching && hasMore) {
-			fetchCreators(creatorCount, 2);
+			let limit = decreaseFetchLimit ? 2 : 3;
+			fetchCreators(creatorCount, limit);
 		}
 	}, [inView, isFetching, hasMore, creatorCount, fetchCreators]);
 
-	const handleCreatorCardClick = async(phone: string, username: string, theme: string, id: string) => {
+	const handleCreatorCardClick = (username: string, theme: string) => {
 		setLoadingCard(true); // Set loading state before navigation
-
-		const creatorDocRef = doc(db, "userStatus", phone);
-		const docSnap = await getDoc(creatorDocRef);
-
-		trackEvent('Page_View', {
-			UTM_Source: 'google',
-			Creator_ID: id,
-			status: docSnap.data()?.status,
-			Wallet_Balance: clientUser?.walletBalance,
-		})
-
 		// Save any necessary data in localStorage
 		setLoading(true);
 		localStorage.setItem("creatorURL", `/${username}`);
@@ -138,28 +146,14 @@ const HomePage = () => {
 
 	if (loadingCard || loading) {
 		return (
-			<div className="size-full flex flex-col gap-2 items-center justify-center">
+			<div className="size-full flex flex-col gap-2 items-center justify-center -mt-10">
 				<ContentLoading />
-
-				<h2 className="flex items-center justify-center gap-2 text-green-1 font-semibold text-base md:text-2xl w-[85%] md:w-full text-center">
-					{currentUser
-						? `Hey ${currentUser.username} Loading Content ...`
-						: "Hang Tight Fetching Details"}
-					<Image
-						src="/icons/loading-circle.svg"
-						alt="Loading..."
-						width={24}
-						height={24}
-						className="invert"
-						priority
-					/>
-				</h2>
 			</div>
 		);
 	}
 
 	return (
-		<main className="flex size-full flex-col gap-2">
+		<main className="flex flex-col size-full">
 			{userType === "client" ? (
 				<Suspense fallback={<PostLoader count={6} />}>
 					{error ? (
@@ -173,19 +167,21 @@ const HomePage = () => {
 						</div>
 					) : (
 						<section
-							className={`grid xs:grid-cols-2 gap-2.5 px-2.5 lg:gap-5 lg:px-0 items-center`}
+							className={`grid xs:grid-cols-2 xl:grid-cols-3 h-auto gap-2.5 px-2.5 lg:gap-5 lg:px-0 items-center overflow-hidden`}
+							style={{
+								WebkitTransform: "translateZ(0)",
+							}}
 						>
 							{creators &&
-								creators.map((creator, index) => (
+								creators.map((creator) => (
 									<section
 										key={creator._id} // Add a key for list rendering optimization
-										className="min-w-full transition-all duration-500 hover:scale-95 cursor-pointer"
+										className="w-full transition-all duration-500 hover:scale-95 cursor-pointer"
 										onClick={() =>
 											handleCreatorCardClick(
 												creator.phone,
 												creator.username,
-												creator.themeSelected,
-												creator._id,
+												creator.themeSelected
 											)
 										}
 									>
@@ -201,7 +197,7 @@ const HomePage = () => {
 							alt="Loading..."
 							width={50}
 							height={50}
-							className="mx-auto invert my-7 z-20"
+							className="mx-auto invert my-5 z-20"
 						/>
 					)}
 					{hasMore && <div ref={ref} className=" mt-10 w-full" />}

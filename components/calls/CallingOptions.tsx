@@ -14,6 +14,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
 import { trackEvent } from "@/lib/mixpanel";
+import { isValidHexColor } from "@/lib/utils";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -32,6 +33,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
+
+	const themeColor = isValidHexColor(creator.themeSelected)
+		? creator.themeSelected
+		: "#50A65C";
 
 	const [updatedCreator, setUpdatedCreator] = useState<creatorUser>({
 		...creator,
@@ -60,12 +65,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		// Clean up the listener when the component unmounts
 		return () => unsubscribe();
-	}, []);
-
+	}, [creator.phone]);
 
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
-	}, [isAuthSheetOpen]);
+	}, [isAuthSheetOpen, setAuthenticationSheetOpen]);
 
 	// logic to show the updated creator services in realtime
 	useEffect(() => {
@@ -88,9 +92,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			}
 		});
 
-		isAuthSheetOpen && setIsAuthSheetOpen(false);
+		// isAuthSheetOpen && setIsAuthSheetOpen(false);
 		return () => unsubscribe();
-	}, []);
+	}, [creator._id, isAuthSheetOpen]);
 
 	useEffect(() => {
 		if (!chatReqSent) return;
@@ -111,7 +115,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							setChatReqSent(false);
 							setChatState(data.status);
 							localStorage.removeItem("chatRequestId");
-							localStorage.removeItem("user2")
+							localStorage.removeItem("user2");
 							unsubscribe();
 						} else if (
 							data.status === "accepted" &&
@@ -166,7 +170,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	}, [chatState]);
 
 	// defining the actions for call accept and call reject
-	const handleCallAccepted = async (call: Call, callType: string, callDuration: number) => {
+	const handleCallAccepted = async (
+		call: Call,
+		callType: string,
+		callDuration: number
+	) => {
 		setIsProcessing(false); // Reset processing state
 		toast({
 			variant: "destructive",
@@ -174,24 +182,28 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			description: "The call has been accepted. Redirecting to meeting...",
 		});
 		setSheetOpen(false);
+
 		await call?.leave();
+
+		const createdAtDate = clientUser?.createdAt
+			? new Date(clientUser.createdAt)
+			: new Date();
+		const formattedDate = createdAtDate.toISOString().split("T")[0];
+
 		if (callType === "audio") {
-			trackEvent('BookCall_Audio_Connected', {
+			trackEvent("BookCall_Audio_Connected", {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				User_First_Seen: formattedDate,
 				Creator_ID: creator._id,
-				Time_Duration_Available: callDuration,
-				Walletbalance_Available: clientUser?.walletBalance,
-			})
+			});
 		} else {
-			trackEvent('BookCall_Video_Connected', {
+			trackEvent("BookCall_Video_Connected", {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				User_First_Seen: formattedDate,
 				Creator_ID: creator._id,
-				Time_Duration_Available: callDuration,
-				Walletbalance_Available: clientUser?.walletBalance,
-			})
+			});
 		}
+
 		router.replace(`/meeting/${call.id}`);
 	};
 
@@ -245,10 +257,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${callType === "video"
-				? `Video Call With Expert ${creator.username}`
-				: `Audio Call With Expert ${creator.username}`
-				}`;
+			const description = `${
+				callType === "video"
+					? `Video Call With Expert ${creator.username}`
+					: `Audio Call With Expert ${creator.username}`
+			}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -260,13 +273,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			// Check if maxCallDuration is less than 5 minutes (300 seconds)
 			if (maxCallDuration < 300) {
-				trackEvent('MinimumBalance_NotAvailable', {
+				trackEvent("MinimumBalance_NotAvailable", {
 					Client_ID: clientUser?._id,
-					User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+					User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 					Creator_ID: creator._id,
 					Time_Duration_Available: maxCallDuration,
 					Walletbalance_Available: clientUser?.walletBalance,
-				})
+				});
 
 				toast({
 					variant: "destructive",
@@ -277,13 +290,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				return;
 			}
 
-			trackEvent('MinimumBalance_Available', {
+			trackEvent("MinimumBalance_Available", {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 				Creator_ID: creator._id,
 				Time_Duration_Available: maxCallDuration,
 				Walletbalance_Available: clientUser?.walletBalance,
-			})
+			});
 
 			await call.getOrCreate({
 				ring: true,
@@ -296,22 +309,23 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				},
 			});
 
+			const createdAtDate = clientUser?.createdAt
+				? new Date(clientUser.createdAt)
+				: new Date();
+			const formattedDate = createdAtDate.toISOString().split("T")[0];
+
 			if (callType === "audio") {
-				trackEvent('BookCall_Audio_initiated', {
+				trackEvent("BookCall_Audio_Clicked", {
 					Client_ID: clientUser._id,
-					User_First_Seen: clientUser.createdAt?.toString().split('T')[0],
+					User_First_Seen: formattedDate,
 					Creator_ID: creator._id,
-					Time_Duration_Available: maxCallDuration,
-					Walletbalace_Available: clientUser.walletBalance,
-				})
+				});
 			} else {
-				trackEvent('BookCall_Video_initiated', {
+				trackEvent("BookCall_Video_initiated", {
 					Client_ID: clientUser._id,
-					User_First_Seen: clientUser.createdAt?.toString().split('T')[0],
+					User_First_Seen: formattedDate,
 					Creator_ID: creator._id,
-					Time_Duration_Available: maxCallDuration,
-					Walletbalace_Available: clientUser.walletBalance,
-				})
+				});
 			}
 
 			logEvent(analytics, "call_initiated", {
@@ -331,7 +345,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			call.on("call.accepted", () => handleCallAccepted(call, callType, maxCallDuration));
+			call.on("call.accepted", () =>
+				handleCallAccepted(call, callType, maxCallDuration)
+			);
 			call.on("call.rejected", () => handleCallRejected(callType));
 		} catch (error) {
 			Sentry.captureException(error);
@@ -351,24 +367,21 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					clientId: clientUser?._id,
 					creatorId: creator._id,
 				});
-				trackEvent('BookCall_Audio_Clicked', {
-					utm_source: 'google',
+				trackEvent("BookCall_Audio_Clicked", {
+					utm_source: "google",
 					Creator_ID: creator._id,
-					Status: onlineStatus,
-					Walletbalace_Available: clientUser?.walletBalance,
-				})
+					status: onlineStatus,
+				});
 			} else {
 				logEvent(analytics, "video_now_click", {
 					clientId: clientUser?._id,
 					creatorId: creator._id,
 				});
-				trackEvent('BookCall_Video_Clicked', {
-					utm_source: 'google',
+				trackEvent("BookCall_Video_Clicked", {
+					utm_source: "google",
 					Creator_ID: creator._id,
 					status: onlineStatus,
-					Walletbalace_Available: clientUser?.walletBalance,
-
-				})
+				});
 			}
 			if (clientUser && !storedCallId) {
 				createMeeting(callType);
@@ -407,16 +420,17 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	const handleChatClick = () => {
 		if (clientUser) {
-			trackEvent('BookCall_Chat_Clicked', {
-				utm_source: 'google',
+			trackEvent("BookCall_Chat_Clicked", {
+				utm_source: "google",
 				creator_id: creator._id,
 				status: onlineStatus,
-				Walletbalace_Available: clientUser?.walletBalance,
-			})
+			});
 			setChatReqSent(true);
 			handleChat(creator, clientUser);
-			let maxCallDuration = (walletBalance / parseInt(creator.chatRate, 10)) * 60;
-			maxCallDuration = maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+			let maxCallDuration =
+				(walletBalance / parseInt(creator.chatRate, 10)) * 60;
+			maxCallDuration =
+				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
 			if (maxCallDuration > 300) {
 				setSheetOpen(true);
@@ -452,7 +466,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	// 	}
 	// };
 
-	const theme = `5px 5px 0px 0px ${creator.themeSelected}`;
+	const theme = `5px 5px 0px 0px ${themeColor}`;
 
 	if (isAuthSheetOpen && !clientUser)
 		return (
@@ -476,16 +490,25 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{updatedCreator.videoAllowed &&
 					parseInt(updatedCreator.videoRate, 10) > 0 && (
 						<div
-							className={`callOptionContainer ${isProcessing ? "opacity-50 cursor-not-allowed" : ""
-								}`}
+							className={`callOptionContainer ${
+								isProcessing || onlineStatus !== "Online"
+									? "opacity-50 !cursor-not-allowed"
+									: ""
+							}`}
 							style={{
 								boxShadow: theme,
 							}}
-							onClick={() => handleClickOption("video")}
+							onClick={() => {
+								if (onlineStatus === "Online") {
+									handleClickOption("video");
+								} else {
+									setIsAuthSheetOpen(true);
+								}
+							}}
 						>
 							<div
 								className={`flex gap-4 items-center font-semibold`}
-								style={{ color: updatedCreator.themeSelected }}
+								style={{ color: themeColor }}
 							>
 								{video}
 								Book Video Call
@@ -500,16 +523,25 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{updatedCreator.audioAllowed &&
 					parseInt(updatedCreator.audioRate, 10) > 0 && (
 						<div
-							className={`callOptionContainer ${isProcessing ? "opacity-50 cursor-not-allowed" : ""
-								}`}
+							className={`callOptionContainer ${
+								isProcessing || onlineStatus !== "Online"
+									? "opacity-50 !cursor-not-allowed"
+									: ""
+							}`}
 							style={{
 								boxShadow: theme,
 							}}
-							onClick={() => handleClickOption("audio")}
+							onClick={() => {
+								if (onlineStatus === "Online") {
+									handleClickOption("audio");
+								} else {
+									setIsAuthSheetOpen(true);
+								}
+							}}
 						>
 							<div
 								className={`flex gap-4 items-center font-semibold`}
-								style={{ color: updatedCreator.themeSelected }}
+								style={{ color: themeColor }}
 							>
 								{audio}
 								Book Audio Call
@@ -524,15 +556,26 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{updatedCreator.chatAllowed &&
 					parseInt(updatedCreator.chatRate, 10) > 0 && (
 						<div
-							className="callOptionContainer"
+							className={`callOptionContainer ${
+								onlineStatus !== "Online"
+									? "opacity-50 !cursor-not-allowed"
+									: ""
+							}`}
 							style={{
 								boxShadow: theme,
 							}}
-							onClick={handleChatClick}
+							onClick={() => {
+								if (onlineStatus === "Online") {
+									handleChatClick();
+								} else {
+									setIsAuthSheetOpen(true);
+								}
+							}}
 						>
 							<button
 								className={`flex gap-4 items-center font-semibold`}
-								style={{ color: updatedCreator.themeSelected }}
+								style={{ color: themeColor }}
+								disabled={onlineStatus !== "Online"}
 							>
 								{chat}
 								Chat Now

@@ -4,11 +4,11 @@ const PostLoader = ({ count = 6 }: { count?: number }) => {
 	const placeholders = Array.from({ length: count });
 
 	return (
-		<div className="grid grid-cols-2 gap-5 items-start justify-start h-full pb-6">
+		<div className="grid grid-cols-2 xl:grid-cols-3 gap-7 items-start justify-start h-full w-full pb-6">
 			{placeholders.map((_, index) => (
 				<div
 					key={index}
-					className="flex flex-col justify-center items-start gap-5 shadow-md rounded-lg p-6 max-w-lg h-full w-full mx-auto animate-pulse"
+					className="flex flex-col justify-center items-start gap-5 shadow-md rounded-lg p-6 size-full max-w-2xl mx-auto animate-pulse"
 				>
 					<div className="flex items-center space-x-4 w-full">
 						<div className="rounded-full bg-slate-300 h-12 w-12"></div>
