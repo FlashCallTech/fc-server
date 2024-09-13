@@ -337,8 +337,8 @@ const ChatInterface: React.FC = () => {
 							className="w-10 h-10 rounded-full"
 						/>
 						<div className="flex flex-col">
-							<div className="text-white font-bold text-xs md:text-lg">
-								{"Chirag Goel" || "Username"}
+						<div className="text-white font-bold text-xs md:text-lg">
+								Username
 							</div>
 							{userType === "client" && <ChatTimer />}
 							{userType === "creator" && <CreatorChatTimer chatId={chatId as string} />}
