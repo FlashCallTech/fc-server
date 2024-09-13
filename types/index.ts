@@ -41,7 +41,7 @@ export type clientUser = {
 	creatorId?: string;
 	profession?: string;
 	themeSelected?: string;
-	createdAt?: string;
+	createdAt?: Date;
 };
 
 // Creator Params
@@ -72,7 +72,6 @@ export type creatorUser = {
 	creatorId?: string;
 	links?: LinkType[];
 	updatedAt?: string;
-	createdAt?: string;
 };
 
 export type CreateCreatorParams = {
@@ -94,8 +93,8 @@ export type CreateCreatorParams = {
 	kyc_status?: string;
 	walletBalance: number;
 	referralId?: string;
-	referredBy?: string | null;
-	referralAmount?: number | null;
+	referredBy?: string;
+	referralAmount?: number;
 	creatorId?: string;
 };
 
@@ -253,7 +252,7 @@ export type UpdateCallParams = {
 
 export interface RazorpayOptions {
 	key: string;
-	rechargeAmount: number;
+	amount: number;
 	currency: string;
 	name: string;
 	description: string;

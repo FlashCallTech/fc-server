@@ -11,7 +11,6 @@ import { usePathname, useRouter } from "next/navigation";
 import PostLoader from "@/components/shared/PostLoader";
 import Image from "next/image";
 import ContentLoading from "@/components/shared/ContentLoading";
-
 import { trackEvent } from "@/lib/mixpanel";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -47,7 +46,7 @@ const HomePage = () => {
 	const [isFetching, setIsFetching] = useState(false);
 	const [error, setError] = useState(false);
 	const [hasMore, setHasMore] = useState(true);
-	const { userType, setCurrentTheme, clientUser } = useCurrentUsersContext();
+	const { clientUser, userType, setCurrentTheme } = useCurrentUsersContext();
 	const pathname = usePathname();
 	const router = useRouter();
 	const { ref, inView } = useInView();
@@ -140,6 +139,12 @@ const HomePage = () => {
 		theme: string,
 		id: string
 	) => {
+		setLoadingCard(true); // Set loading state before navigation
+		// Save any necessary data in localStorage
+		setLoading(true);
+		localStorage.setItem("creatorURL", `/${username}`);
+		setCurrentTheme(theme);
+
 		const creatorDocRef = doc(db, "userStatus", phone);
 		const docSnap = await getDoc(creatorDocRef);
 
@@ -150,11 +155,6 @@ const HomePage = () => {
 			Wallet_Balance: clientUser?.walletBalance,
 		});
 
-		setLoadingCard(true); // Set loading state before navigation
-		// Save any necessary data in localStorage
-		setLoading(true);
-		localStorage.setItem("creatorURL", `/${username}`);
-		setCurrentTheme(theme);
 		// Trigger the route change immediately
 		router.push(`/${username}`);
 	};

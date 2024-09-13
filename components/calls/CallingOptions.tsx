@@ -29,7 +29,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [isSheetOpen, setSheetOpen] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
-	const { handleChat, chatRequestsRef, SheetOpen } = useChatRequest();
+	const { handleChat, chatRequestsRef } = useChatRequest();
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
@@ -115,7 +115,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							setChatReqSent(false);
 							setChatState(data.status);
 							localStorage.removeItem("chatRequestId");
-							localStorage.removeItem("user2");
 							unsubscribe();
 						} else if (
 							data.status === "accepted" &&
@@ -170,11 +169,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	}, [chatState]);
 
 	// defining the actions for call accept and call reject
-	const handleCallAccepted = async (
-		call: Call,
-		callType: string,
-		callDuration: number
-	) => {
+	const handleCallAccepted = async (call: Call, callType: string) => {
 		setIsProcessing(false); // Reset processing state
 		toast({
 			variant: "destructive",
@@ -273,14 +268,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			// Check if maxCallDuration is less than 5 minutes (300 seconds)
 			if (maxCallDuration < 300) {
-				trackEvent("MinimumBalance_NotAvailable", {
-					Client_ID: clientUser?._id,
-					User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-					Creator_ID: creator._id,
-					Time_Duration_Available: maxCallDuration,
-					Walletbalance_Available: clientUser?.walletBalance,
-				});
-
 				toast({
 					variant: "destructive",
 					title: "Insufficient Balance",
@@ -289,14 +276,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				router.push(`/payment?callType=${callType}`);
 				return;
 			}
-
-			trackEvent("MinimumBalance_Available", {
-				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-				Creator_ID: creator._id,
-				Time_Duration_Available: maxCallDuration,
-				Walletbalance_Available: clientUser?.walletBalance,
-			});
 
 			await call.getOrCreate({
 				ring: true,
@@ -345,9 +324,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			call.on("call.accepted", () =>
-				handleCallAccepted(call, callType, maxCallDuration)
-			);
+			call.on("call.accepted", () => handleCallAccepted(call, callType));
 			call.on("call.rejected", () => handleCallRejected(callType));
 		} catch (error) {
 			Sentry.captureException(error);
@@ -427,15 +404,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			});
 			setChatReqSent(true);
 			handleChat(creator, clientUser);
-			let maxCallDuration =
-				(walletBalance / parseInt(creator.chatRate, 10)) * 60;
-			maxCallDuration =
-				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
-
-			if (maxCallDuration > 300) {
-				setSheetOpen(true);
-			}
-
+			setSheetOpen(true);
 			// sendPushNotification();
 		} else {
 			setIsAuthSheetOpen(true);
@@ -501,7 +470,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							onClick={() => {
 								if (onlineStatus === "Online") {
 									handleClickOption("video");
-								} else {
+								} else if (!clientUser) {
 									setIsAuthSheetOpen(true);
 								}
 							}}
@@ -534,7 +503,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							onClick={() => {
 								if (onlineStatus === "Online") {
 									handleClickOption("audio");
-								} else {
+								} else if (!clientUser) {
 									setIsAuthSheetOpen(true);
 								}
 							}}
@@ -567,7 +536,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							onClick={() => {
 								if (onlineStatus === "Online") {
 									handleChatClick();
-								} else {
+								} else if (!clientUser) {
 									setIsAuthSheetOpen(true);
 								}
 							}}

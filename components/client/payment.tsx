@@ -24,8 +24,6 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
-import { trackEvent } from "@/lib/mixpanel";
-import Link from "next/link";
 import Link from "next/link";
 
 interface Transaction {
@@ -48,7 +46,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const [errorMessage, setErrorMessage] = useState("");
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const router = useRouter();
-	const { clientUser } = useCurrentUsersContext();
+
 	const [isSticky, setIsSticky] = useState(false);
 	const stickyRef = useRef<HTMLDivElement>(null);
 
@@ -73,15 +71,6 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 				setCreator(parsedCreator);
 			}
 		}
-	}, []);
-
-	useEffect(() => {
-		trackEvent("Recharge_Page_Impression", {
-			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-			Creator_ID: creator?._id,
-			Walletbalace_Available: clientUser?.walletBalance,
-		});
 	}, []);
 
 	const getRateForCallType = () => {
@@ -119,16 +108,6 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			: ["99", "199", "499", "999", "1999", "2999"];
 	};
 
-	const tileClicked = (index: any) => {
-		trackEvent("Recharge_Page_TileClicked", {
-			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-			Creator_ID: creator?._id,
-			Tile_Number: index,
-			Walletbalace_Available: clientUser?.walletBalance,
-		});
-	};
-
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof enterAmountSchema>>({
 		resolver: zodResolver(enterAmountSchema),
@@ -143,20 +122,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	// 3. Define a submit handler.
 	function onSubmit(values: z.infer<typeof enterAmountSchema>) {
 		const rechargeAmount = values.rechargeAmount;
-
 		logEvent(analytics, "payment_initiated", {
 			userId: currentUser?._id,
 			amount: rechargeAmount,
 		});
-
-		trackEvent("Recharge_Page_RechargeClicked", {
-			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-			Creator_ID: creator?._id,
-			Recharge_value: rechargeAmount,
-			Walletbalace_Available: clientUser?.walletBalance,
-		});
-
 		router.push(`/recharge?amount=${rechargeAmount}`);
 	}
 
@@ -200,9 +169,6 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 	return (
 		<div className="flex flex-col pt-4 bg-white text-gray-800 w-full h-full">
-			<Link href="/payment" className="text-xl font-bold p-4">
-				&larr;
-			</Link>
 			{/* Balance Section */}
 			<div className="flex items-center pb-5 px-4 gap-4">
 				<Link
@@ -266,15 +232,12 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 					)}
 				</div>
 				<div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8 text-sm font-semibold leading-4 w-full px-5">
-					{generateAmounts().map((amount, index) => (
+					{generateAmounts().map((amount) => (
 						<button
 							key={amount}
 							className="px-4 py-3 border-2 border-black rounded shadow hover:bg-gray-200 dark:hover:bg-gray-800"
 							style={{ boxShadow: "3px 3px black" }}
-							onClick={() => {
-								form.setValue("rechargeAmount", amount);
-								tileClicked(index);
-							}}
+							onClick={() => form.setValue("rechargeAmount", amount)}
 						>
 							₹{amount}
 						</button>

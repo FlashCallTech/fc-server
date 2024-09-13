@@ -120,7 +120,7 @@ const CallFeedback = ({
 	};
 
 	// Disable submit button if feedback message is less than 3 characters
-	const isSubmitDisabled = feedbackMessage.length < 3;
+	const isSubmitDisabled = !rating;
 
 	if (!currentUser?._id || isCallLoading)
 		return (

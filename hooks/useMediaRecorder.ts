@@ -1,8 +1,10 @@
+// hooks/useMediaRecorder.ts
 import { useState, useRef } from "react";
 import * as Sentry from "@sentry/nextjs";
 
 const useMediaRecorder = () => {
 	const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+
 	const [isRecording, setIsRecording] = useState(false);
 	const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -14,15 +16,13 @@ const useMediaRecorder = () => {
 				.getUserMedia({ audio: true })
 				.then((stream: MediaStream) => {
 					setAudioStream(stream);
-					mediaRecorderRef.current = new MediaRecorder(stream, {
-						mimeType: "audio/webm", // Change mimeType here
-					});
+					mediaRecorderRef.current = new MediaRecorder(stream);
 					mediaRecorderRef.current.ondataavailable = (e: BlobEvent) => {
 						audioChunksRef.current.push(e.data);
 					};
 					mediaRecorderRef.current.onstop = () => {
 						const audioBlob = new Blob(audioChunksRef.current, {
-							type: "audio/webm", // Ensure consistent type here
+							type: "audio/wav",
 						});
 						setAudioBlob(audioBlob);
 						audioChunksRef.current = [];

@@ -14,7 +14,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
-import { trackEvent } from "@/lib/mixpanel";
 type FavoriteItem = {
 	creatorId: creatorUser;
 };
@@ -26,34 +25,14 @@ type GroupedFavorites = {
 const Favorites = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(false);
-	const [creator, setCreator] = useState<creatorUser>();
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
 	const [sortBy, setSortBy] = useState<string>(""); // to manage sorting criteria
 	const [groupBy, setGroupBy] = useState<string>(""); // to manage grouping criteria
 	const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
-	const { currentUser, clientUser } = useCurrentUsersContext();
+	const { currentUser } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
 	const [isSticky, setIsSticky] = useState(false);
 	const stickyRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const storedCreator = localStorage.getItem("currentCreator");
-		if (storedCreator) {
-			const parsedCreator: creatorUser = JSON.parse(storedCreator);
-			if (parsedCreator) {
-				setCreator(parsedCreator);
-			}
-		}
-	}, []);
-
-	useEffect(() => {
-		trackEvent('Favourites_Impression', {
-			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
-			Creator_ID: creator?._id,
-			Walletbalace_Available: clientUser?.walletBalance,
-		})
-	}, [])
 
 	useEffect(() => {
 		const fetchFavorites = async () => {
