@@ -69,7 +69,8 @@ export async function getUserById(userId: string) {
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
 		Sentry.captureException(error);
-		handleError(error);
+		console.log(error);
+		return { error: "An unexpected error occurred" };
 	}
 }
 

@@ -150,23 +150,6 @@ const HomePage = () => {
 			Wallet_Balance: clientUser?.walletBalance,
 		});
 		setLoadingCard(true); // Set loading state before navigation
-
-		const creatorDocRef = doc(db, "userStatus", phone);
-		const docSnap = await getDoc(creatorDocRef);
-
-		trackEvent("Page_View", {
-			UTM_Source: "google",
-			Creator_ID: id,
-			status: docSnap.data()?.status,
-			Wallet_Balance: clientUser?.walletBalance,
-		});
-
-		// Save any necessary data in localStorage
-		setLoading(true);
-		localStorage.setItem("creatorURL", `/${username}`);
-		setCurrentTheme(theme);
-		// Trigger the route change immediately
-		router.push(`/${username}`);
 	};
 
 	if (loadingCard || loading) {

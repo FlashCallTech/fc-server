@@ -253,7 +253,12 @@ const AuthenticateViaOTP = ({
 			refreshCurrentUser();
 			setAuthenticationSheetOpen(false);
 			const creatorURL = localStorage.getItem("creatorURL");
-			router.replace(`${creatorURL ? creatorURL : "/"}`);
+
+			if (userType === "creator") {
+				router.replace("/updateDetails");
+			} else {
+				router.replace(`${creatorURL ? creatorURL : "/"}`);
+			}
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);
 			let newErrors = { ...error };
