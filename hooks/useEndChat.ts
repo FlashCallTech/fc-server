@@ -42,7 +42,7 @@ const useEndChat = () => {
 	const [endedAt, setEndedAt] = useState<number>();
 	const [startedAt, setStartedAt] = useState<number>();
 	const [loading, setLoading] = useState(false);
-	const hasCHatEnded = useRef(false);
+	const hasChatEnded = useRef(false);
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
@@ -71,10 +71,10 @@ const useEndChat = () => {
 	}, [chatId]);
 
 	useEffect(() => {
-		if (hasCHatEnded.current === true) return;
+		if (hasChatEnded.current === true) return;
 
 		if (chatEnded) {
-			hasCHatEnded.current = true;
+			hasChatEnded.current = true;
 			router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
 		}
 	}, [chatEnded]);
@@ -107,7 +107,8 @@ const useEndChat = () => {
 
 	const handleEnd = async (
 		chatId: string | string[],
-		user2: User2 | undefined
+		user2: User2 | undefined,
+		endedBy: string
 	) => {
 		try {
 			setLoading(true);
@@ -132,12 +133,15 @@ const useEndChat = () => {
 				Client_ID: user2?.clientId,
 				User_First_Seen: user2?.User_First_Seen,
 				Creator_ID: user2?.creatorId,
+				Time_Duration_Available: (endedAt! - startedAt!).toString(),
+				Walletbalace_Available: currentUser?.walletBalance,
+				Endedby: endedBy,
 			})
 
-			logEvent(analytics, "call_ended", {
-				userId: currentUser?._id,
-				// creatorId: creator._id,
-			});
+			// logEvent(analytics, "call_ended", {
+			// 	userId: currentUser?._id,
+			// 	// creatorId: creator._id,
+			// });
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error ending chat:", error);

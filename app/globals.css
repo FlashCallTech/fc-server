@@ -24,6 +24,10 @@
 	animation: spin 2s linear infinite;
 }
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes spin {
 	0% {
 		transform: rotate(0deg);
@@ -262,10 +266,6 @@ input[type="number"] {
 
 	.input-field-modal {
 		@apply bg-gray-100 hover:bg-gray-200 h-[54px] focus-visible:ring-offset-0 placeholder:text-gray-500 rounded-xl px-4 py-3 border-none focus-visible:ring-transparent !important;
-	}
-
-	.error-message {
-		@apply text-sm text-red-500 ml-1;
 	}
 
 	.textarea {

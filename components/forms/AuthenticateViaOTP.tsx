@@ -25,6 +25,7 @@ import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
+import usePlatform from "@/hooks/usePlatform";
 
 const formSchema = z.object({
 	phone: z
@@ -42,9 +43,11 @@ const FormSchemaOTP = z.object({
 
 const AuthenticateViaOTP = ({
 	userType,
+	refId,
 	onOpenChange,
 }: {
 	userType: string;
+	refId: string | null;
 	onOpenChange?: (isOpen: boolean) => void;
 }) => {
 	const router = useRouter();
@@ -58,6 +61,7 @@ const AuthenticateViaOTP = ({
 	const [verificationSuccess, setVerificationSuccess] = useState(false);
 	const [error, setError] = useState({});
 	const { toast } = useToast();
+	const { getDevicePlatform } = usePlatform();
 
 	// SignUp form
 	const signUpForm = useForm<z.infer<typeof formSchema>>({
@@ -85,7 +89,9 @@ const AuthenticateViaOTP = ({
 			setPhoneNumber(values.phone);
 			setToken(response.data.token); // Store the token received from the API
 			setShowOTP(true);
-			trackEvent("Login_Bottomsheet_OTP_Generated");
+			trackEvent("Login_Bottomsheet_OTP_Generated", {
+				Platform: getDevicePlatform(),
+			});
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error sending OTP:", error);
@@ -141,7 +147,9 @@ const AuthenticateViaOTP = ({
 			// Extract the session token and user from the response
 			const { sessionToken } = response.data;
 
-			trackEvent("Login_Bottomsheet_OTP_Submitted");
+			trackEvent("Login_Bottomsheet_OTP_Submitted", {
+				Platform: getDevicePlatform(),
+			});
 
 			// Update Firestore with the auth token
 			updateFirestoreAuthToken(sessionToken);
@@ -163,6 +171,18 @@ const AuthenticateViaOTP = ({
 				resolvedUserType = user.userType || "client";
 				console.log("current usertype: ", resolvedUserType);
 				localStorage.setItem("currentUserID", user._id);
+				if (resolvedUserType === "client") {
+					trackEvent("Login_Success", {
+						Client_ID: user?._id,
+						User_First_Seen: user?.createdAt?.toString().split("T")[0],
+					});
+				} else {
+					trackEvent("Login_Success", {
+						Creator_ID: user?._id,
+						User_First_Seen: user?.createdAt?.toString().split("T")[0],
+						Platform: getDevicePlatform(),
+					});
+				}
 				console.log("Existing user found. Proceeding as an existing user.");
 			} else {
 				// No user found, proceed as new user
@@ -189,6 +209,8 @@ const AuthenticateViaOTP = ({
 						audioRate: "0",
 						chatRate: "0",
 						walletBalance: 0,
+						referredBy: refId ? refId : null,
+						referralAmount: refId ? 5000 : null,
 					};
 				} else {
 					newUser = {

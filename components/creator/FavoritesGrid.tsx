@@ -11,6 +11,7 @@ import * as Sentry from "@sentry/nextjs";
 import { usePathname } from "next/navigation";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { trackEvent } from "@/lib/mixpanel";
 
 const FavoritesGrid = ({
 	creator,
@@ -129,13 +130,13 @@ const FavoritesGrid = ({
 
 				toast({
 					variant: "default",
-					title: `${fullName} is ${status}.`,
-					description: `Will let you know as soon as ${fullName} is back online!`,
+					title: `We&apos;ll let you know as soon as ${fullName} is back online!`,
+					description: `${fullName} isn&apos;t online yet.`,
 				});
 			} else {
 				toast({
 					variant: "default",
-					title: "Repeated Action Performed",
+					title: "Can&apos;t repeat the action",
 					description: `You are already set to be notified when ${fullName} comes online.`,
 				});
 			}
@@ -159,6 +160,14 @@ const FavoritesGrid = ({
 			<div className="flex flex-col items-start justify-between w-full h-full gap-2">
 				{/* Expert's Details */}
 				<Link
+					onClick={() =>
+						trackEvent("Favourites_Profile_Clicked", {
+							Client_ID: clientUser?._id,
+							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+							Creator_ID: creator?._id,
+							Walletbalace_Available: clientUser?.walletBalance,
+						})
+					}
 					href={`/${creator.username}`}
 					className="w-full flex items-center justify-start gap-4 cursor-pointer hoverScaleDownEffect"
 				>
@@ -217,7 +226,7 @@ const FavoritesGrid = ({
 						onClick={handleNotifyUser}
 						disabled={isAlreadyNotified}
 					>
-						{isAlreadyNotified ? "Alert Registered" : "Notify Me"}
+						{isAlreadyNotified ? "You&apos;ll be notified" : "Notify Me"}
 					</button>
 				) : (
 					<Link

@@ -17,10 +17,13 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
 import CreatorLinks from "./CreatorLinks";
 import * as Sentry from "@sentry/nextjs";
+import { trackEvent } from "@/lib/mixpanel";
+import usePlatform from "@/hooks/usePlatform";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
+	const { getDevicePlatform } = usePlatform();
 	const { toast } = useToast();
 	// State for toggle switches
 	const [services, setServices] = useState({
@@ -160,6 +163,7 @@ const CreatorHome = () => {
 		audioCall: string;
 		chat: string;
 	}) => {
+		console.log(newPrices)
 		try {
 			await axios.put("/api/v1/creator/updateUser", {
 				userId: creatorUser?._id,
@@ -169,6 +173,30 @@ const CreatorHome = () => {
 					chatRate: newPrices.chat,
 				},
 			});
+			if(newPrices.audioCall !== prices.audioCall){
+				trackEvent('Creator_Audio_Price_Updated', {
+					Creator_ID: creatorUser?._id,
+					Creator_First_Seen: creatorUser?.createdAt?.toString().split('T')[0],
+					Platform: getDevicePlatform(),
+					Price: newPrices.audioCall
+				})
+			}
+			if(newPrices.videoCall !== prices.videoCall){
+				trackEvent('Creator_Video_Price_Updated', {
+					Creator_ID: creatorUser?._id,
+					Creator_First_Seen: creatorUser?.createdAt?.toString().split('T')[0],
+					Platform: getDevicePlatform(),
+					Price: newPrices.videoCall
+				})
+			}
+			if(newPrices.chat !== prices.chat){
+				trackEvent('Creator_Chat_Price_Updated', {
+					Creator_ID: creatorUser?._id,
+					Creator_First_Seen: creatorUser?.createdAt?.toString().split('T')[0],
+					Platform: getDevicePlatform(),
+					Price: newPrices.chat
+				})
+			}
 			setPrices(newPrices);
 			toast({
 				variant: "destructive",
@@ -207,6 +235,7 @@ const CreatorHome = () => {
 					audioCall: newMyServicesState,
 					chat: newMyServicesState,
 				};
+				console.log(newServices)
 				updateFirestoreCallServices(newServices, prices);
 				return newServices;
 			} else {
@@ -243,7 +272,7 @@ const CreatorHome = () => {
 			updateServices();
 		}
 	}, [services]);
-
+	
 	if (!creatorUser || loading || walletBalance < 0)
 		return (
 			<section className="w-full h-full -mt-10 flex flex-col items-center justify-center">

@@ -140,7 +140,10 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			localStorage.removeItem("authToken");
 			// localStorage.removeItem("notifyList");
 
-			if (window.location.pathname === "/") {
+			if (
+				window.location.pathname === "/" ||
+				window.location.pathname === "/home"
+			) {
 				localStorage.removeItem("creatorURL");
 			}
 		}
@@ -224,7 +227,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		await fetchCurrentUser();
 	};
 
-	// Redirect to /updateDetails if firstName is missing
+	// Redirect to /updateDetails if username is missing
 	useEffect(() => {
 		if (currentUser && userType === "creator" && !currentUser.firstName) {
 			router.replace("/updateDetails");
