@@ -8,11 +8,20 @@ export async function POST(request: Request) {
 		const formattedPhone = user.phone.startsWith("+91")
 			? user.phone
 			: `+91${user.phone}`;
-		const newUser = await createCreatorUser({ ...user, phone: formattedPhone });
+		const result = await createCreatorUser({ ...user, phone: formattedPhone });
 
-		return NextResponse.json(newUser);
+		if (result.error) {
+			return new NextResponse(JSON.stringify({ error: result.error }), {
+				status: 400,
+			});
+		}
+
+		return NextResponse.json(result);
 	} catch (error: any) {
 		console.error(error);
-		return new NextResponse(error);
+		return new NextResponse(
+			JSON.stringify({ error: "An unexpected error occurred" }),
+			{ status: 500 }
+		);
 	}
 }

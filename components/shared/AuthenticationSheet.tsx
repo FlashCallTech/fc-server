@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import AuthenticateViaOTP from "../forms/AuthenticateViaOTP";
-import { Button } from "../ui/button";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 
@@ -13,13 +12,13 @@ const AuthenticationSheet = ({
 }) => {
 	const { getDevicePlatform } = usePlatform();
 
-	useEffect(()=> {
-		if(isOpen) {
-			trackEvent('Login_Bottomsheet_Impression', {
-				platform: getDevicePlatform()
-			})
+	useEffect(() => {
+		if (isOpen) {
+			trackEvent("Login_Bottomsheet_Impression", {
+				platform: getDevicePlatform(),
+			});
 		}
-	}, [isOpen])
+	}, [isOpen]);
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -41,7 +40,11 @@ const AuthenticationSheet = ({
 		>
 			<div className="flex relative items-center justify-center">
 				{isOpen && (
-					<AuthenticateViaOTP userType={"client"} refId = {null} onOpenChange={onOpenChange} />
+					<AuthenticateViaOTP
+						userType={"client"}
+						refId={null}
+						onOpenChange={onOpenChange}
+					/>
 				)}
 			</div>
 		</section>

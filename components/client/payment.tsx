@@ -26,6 +26,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
 import Link from "next/link";
+import Link from "next/link";
 
 interface Transaction {
 	_id: string;
@@ -35,7 +36,7 @@ interface Transaction {
 }
 
 interface PaymentProps {
-	callType?: string;  // Define callType as an optional string
+	callType?: string; // Define callType as an optional string
 }
 
 const Payment: React.FC<PaymentProps> = ({ callType }) => {
@@ -75,24 +76,24 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	}, []);
 
 	useEffect(() => {
-		trackEvent('Recharge_Page_Impression', {
+		trackEvent("Recharge_Page_Impression", {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 			Creator_ID: creator?._id,
 			Walletbalace_Available: clientUser?.walletBalance,
-		})
-	}, [])
+		});
+	}, []);
 
 	const getRateForCallType = () => {
 		let rate: number | undefined;
 		switch (callType) {
-			case 'video':
+			case "video":
 				rate = creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
 				break;
-			case 'audio':
+			case "audio":
 				rate = creator?.audioRate ? parseFloat(creator.audioRate) : undefined;
 				break;
-			case 'chat':
+			case "chat":
 				rate = creator?.chatRate ? parseFloat(creator.chatRate) : undefined;
 				break;
 			default:
@@ -104,23 +105,29 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const amountToBeDisplayed = () => {
 		const ratePerMinute = getRateForCallType();
 		const costForFiveMinutes = ratePerMinute ? ratePerMinute * 5 : undefined;
-		const amountDue = costForFiveMinutes ? Math.max(0, costForFiveMinutes - walletBalance) : undefined;
+		const amountDue = costForFiveMinutes
+			? Math.max(0, costForFiveMinutes - walletBalance)
+			: undefined;
 		return amountDue;
-	}
+	};
 	const generateAmounts = () => {
 		const rate = getRateForCallType();
-		return rate ? [5, 10, 15, 30, 40, 60].map(multiplier => (rate * multiplier).toFixed(2)) : ["99", "199", '499', '999', '1999', '2999'];
+		return rate
+			? [5, 10, 15, 30, 40, 60].map((multiplier) =>
+					(rate * multiplier).toFixed(2)
+			  )
+			: ["99", "199", "499", "999", "1999", "2999"];
 	};
 
 	const tileClicked = (index: any) => {
-		trackEvent('Recharge_Page_TileClicked', {
+		trackEvent("Recharge_Page_TileClicked", {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 			Creator_ID: creator?._id,
 			Tile_Number: index,
 			Walletbalace_Available: clientUser?.walletBalance,
-		})
-	}
+		});
+	};
 
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof enterAmountSchema>>({
@@ -142,13 +149,13 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			amount: rechargeAmount,
 		});
 
-		trackEvent('Recharge_Page_RechargeClicked', {
+		trackEvent("Recharge_Page_RechargeClicked", {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 			Creator_ID: creator?._id,
 			Recharge_value: rechargeAmount,
 			Walletbalace_Available: clientUser?.walletBalance,
-		})
+		});
 
 		router.push(`/recharge?amount=${rechargeAmount}`);
 	}
@@ -157,7 +164,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		try {
 			setLoading(true);
 			const response = await axios.get(
-				`/api/v1/transaction/getUserTransactionsPaginated?userId=${currentUser?._id
+				`/api/v1/transaction/getUserTransactionsPaginated?userId=${
+					currentUser?._id
 				}&filter=${btn.toLowerCase()}`
 			);
 			setTransactions(response.data.transactions);
@@ -188,20 +196,30 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		}
 	}, [rechargeAmount, form]);
 
+	const creatorURL = localStorage.getItem("creatorURL");
+
 	return (
 		<div className="flex flex-col pt-4 bg-white text-gray-800 w-full h-full">
 			<Link href="/payment" className="text-xl font-bold p-4">
 				&larr;
 			</Link>
 			{/* Balance Section */}
-			<section className="w-full flex flex-col pb-5 px-4 ">
-				<span className="w-fit text-2xl leading-7 font-bold">
-					Rs. {walletBalance.toFixed(2)}
-				</span>
-				<h2 className="w-fit text-gray-500 font-normal leading-5">
-					Total Balance
-				</h2>
-			</section>
+			<div className="flex items-center pb-5 px-4 gap-4">
+				<Link
+					href={`${creatorURL ? creatorURL : "/"}`}
+					className="text-xl font-bold"
+				>
+					&larr;
+				</Link>
+				<section className="w-full flex flex-col">
+					<span className="w-fit text-2xl leading-7 font-bold">
+						Rs. {walletBalance.toFixed(2)}
+					</span>
+					<h2 className="w-fit text-gray-500 font-normal leading-5">
+						Total Balance
+					</h2>
+				</section>
+			</div>
 
 			{/* Recharge Section */}
 			<section className="flex flex-col gap-5 items-center justify-center md:items-start pb-7 px-4 ">
@@ -242,7 +260,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 					{/* Display the amount due message if there's an amount due */}
 					{amountToBeDisplayed() !== undefined && (
 						<p className="text-red-500">
-							₹{amountToBeDisplayed()?.toFixed(2)} more required for 5 minutes of {callType}
+							₹{amountToBeDisplayed()?.toFixed(2)} more required for 5 minutes
+							of {callType}
 						</p>
 					)}
 				</div>
@@ -253,8 +272,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 							className="px-4 py-3 border-2 border-black rounded shadow hover:bg-gray-200 dark:hover:bg-gray-800"
 							style={{ boxShadow: "3px 3px black" }}
 							onClick={() => {
-								form.setValue("rechargeAmount", amount)
-								tileClicked(index)
+								form.setValue("rechargeAmount", amount);
+								tileClicked(index);
 							}}
 						>
 							₹{amount}
@@ -266,8 +285,9 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			{/* Transaction History Section */}
 			<section
 				ref={stickyRef}
-				className={`sticky top-16 bg-white z-30 w-full px-4 ${isSticky ? "pb-7" : "pb-4"
-					} pt-4`}
+				className={`sticky top-16 bg-white z-30 w-full px-4 ${
+					isSticky ? "pb-7" : "pb-4"
+				} pt-4`}
 			>
 				<div className="flex flex-col items-start justify-start gap-4 w-full h-fit">
 					<h2 className=" text-gray-500 text-xl pt-4 font-normal leading-7">
@@ -280,10 +300,11 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 								onClick={() => {
 									setBtn(filter as "All" | "Credit" | "Debit");
 								}}
-								className={`px-5 py-1 border-2 border-black rounded-full ${filter === btn
-									? "bg-gray-800 text-white"
-									: "bg-white text-black dark:bg-gray-700 dark:text-white"
-									}`}
+								className={`px-5 py-1 border-2 border-black rounded-full ${
+									filter === btn
+										? "bg-gray-800 text-white"
+										: "bg-white text-black dark:bg-gray-700 dark:text-white"
+								}`}
 							>
 								{filter}
 							</button>
@@ -316,10 +337,11 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 									</p>
 								</div>
 								<p
-									className={`font-bold text-sm leading-4 w-fit whitespace-nowrap ${transaction?.type === "credit"
-										? "text-green-500"
-										: "text-red-500"
-										} `}
+									className={`font-bold text-sm leading-4 w-fit whitespace-nowrap ${
+										transaction?.type === "credit"
+											? "text-green-500"
+											: "text-red-500"
+									} `}
 								>
 									{transaction?.type === "credit"
 										? `+ ₹${transaction?.amount.toFixed(2)}`

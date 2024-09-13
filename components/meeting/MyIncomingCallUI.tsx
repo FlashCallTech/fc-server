@@ -7,6 +7,9 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 	const { toast } = useToast();
 	const [callState, setCallState] = useState("incoming");
 	const [shownNotification, setShownNotification] = useState(false);
+	const expert = call?.state?.members?.find(
+		(member) => member.custom.type === "expert"
+	);
 
 	useEffect(() => {
 		const registerServiceWorker = async () => {
@@ -87,11 +90,38 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 		};
 	}, [callState, shownNotification]);
 
+	// Function to update expert's status
+	const updateExpertStatus = async (phone: string, status: string) => {
+		try {
+			const response = await fetch("/api/set-status", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ phone, status }),
+			});
+
+			const data = await response.json();
+			if (!response.ok) {
+				throw new Error(data.message || "Failed to update status");
+			}
+
+			console.log("Expert status updated to:", status);
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error updating expert status:", error);
+		}
+	};
+
 	const handleCallState = async (action: string) => {
 		if (action === "declined") {
 			await call.leave({ reject: true });
 			setCallState("declined");
 		} else if (action === "accepted") {
+			const expertPhone = expert?.custom?.phone;
+			if (expertPhone) {
+				await updateExpertStatus(expertPhone, "Busy");
+			}
 			await call.accept();
 			setCallState("accepted");
 		} else if (action === "ended") {

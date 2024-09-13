@@ -47,7 +47,7 @@ const CallTimer = ({
 	return (
 		<div
 			className={`fixed top-4 right-4 font-semibold ${
-				hasLowBalance ? "bg-[#ffffff21]" : "bg-green-1"
+				hasLowBalance ? "bg-[#ffffff21]" : "bg-white/30"
 			} p-4 rounded-lg`}
 		>
 			{isLoading ? (

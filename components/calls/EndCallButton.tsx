@@ -1,10 +1,8 @@
 "use client";
 
 import { useCall } from "@stream-io/video-react-sdk";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "../ui/button";
-import { useToast } from "../ui/use-toast";
 import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 
 import EndCallDecision from "./EndCallDecision";

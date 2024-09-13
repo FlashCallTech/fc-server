@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import * as Sentry from "@sentry/nextjs";
+import { getUserByPhone } from "@/lib/actions/user.actions";
 
 export async function POST(req: NextRequest) {
 	try {
 		const { phone, otp } = await req.json();
 		const countryCode = 91;
-		const fullPhoneNumber = `+${countryCode}${phone}`;
+		const formattedPhone = phone.startsWith("+91") ? phone : `+91${phone}`;
 		const secret = process.env.JWT_KEY;
 
 		if (!secret) {
@@ -37,24 +38,11 @@ export async function POST(req: NextRequest) {
 
 		const data = await response.json();
 
-		console.log(process.env.NEXT_PUBLIC_BASE_URL);
-
 		if (response.ok && data.Status === "Success") {
 			// OTP verified successfully
-			const userResponse = await fetch(
-				`${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/user/getUserByPhone`,
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({ phone: phone }),
-				}
-			);
+			const user = await getUserByPhone(formattedPhone);
 
-			const user = await userResponse.json();
-
-			const payload = { phone, ...(user && { user }) };
+			const payload = { phone, user: user || {} };
 			const sessionToken = jwt.sign(payload, secret, { expiresIn: "7d" });
 			return NextResponse.json(
 				{

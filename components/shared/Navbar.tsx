@@ -91,15 +91,15 @@ const Navbar = () => {
 		trackEvent("Getlink_TopNav_Clicked");
 		const isAndroid = /Android/i.test(navigator.userAgent);
 		const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-		let url = "";
+		let url = "https://forms.gle/bo42SCVG6T4YjJzg8";
 
-		if (isAndroid) {
-			url = "https://play.google.com/store/apps?hl=en_US";
-		} else if (isIOS) {
-			url = "https://flashcall.me";
-		} else {
-			url = "https://flashcall.me";
-		}
+		// if (isAndroid) {
+		// 	url = "https://play.google.com/store/apps?hl=en_US";
+		// } else if (isIOS) {
+		// 	url = "https://flashcall.me";
+		// } else {
+		// 	url = "https://flashcall.me";
+		// }
 
 		window.open(url, "_blank");
 	};

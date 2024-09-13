@@ -1,10 +1,10 @@
 "use server";
 
 import { connectToDatabase } from "@/lib/database";
-import { handleError } from "@/lib/utils";
 import Favorites from "../database/models/favorites.model";
 import mongoose from "mongoose";
 import Creator from "../database/models/creator.model";
+import * as Sentry from "@sentry/nextjs";
 
 export async function toggleFavorite({
 	clientId,
@@ -44,6 +44,7 @@ export async function toggleFavorite({
 
 		return { success: "Favorites updated successfully" };
 	} catch (error: any) {
+		Sentry.captureException(error);
 		console.log("Error updating favorites ... ", error);
 		return { success: false, error: error.message };
 	}
@@ -65,6 +66,7 @@ export async function getFavorites(clientId: string) {
 		// Return the favorites as JSON
 		return JSON.parse(JSON.stringify(favorites));
 	} catch (error: any) {
+		Sentry.captureException(error);
 		console.log("Error Fetching Favorites ... ", error);
 		return { success: false, error: error.message };
 	}

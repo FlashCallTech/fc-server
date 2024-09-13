@@ -23,7 +23,7 @@ const PoorConnectionNotification = () => {
 		connectionQuality === SfuModels.ConnectionQuality.POOR
 	) {
 		return (
-			<span className="animate-enterFromBottom fixed top-4 left-4 text-white bg-red-600 p-4 rounded-xl">
+			<span className="text-center py-5 fixed top-4 left-0 text-white bg-red-600 p-4 rounded-xl z-20">
 				Poor connection quality
 			</span>
 		);
@@ -125,10 +125,10 @@ const CustomParticipantViewUI = () => {
 				)}
 
 			<span
-				className={`absolute bottom-1.5 left-2.5 w-full text-sm text-ellipsis overflow-hidden ${
+				className={`absolute   w-full text-sm text-ellipsis overflow-hidden ${
 					expert?.user_id !== participant.userId
-						? "max-w-[85%]"
-						: "max-w-[55%] sm:max-w-[65%]"
+						? "max-w-[85%] pb-2 bottom-0 left-3"
+						: "max-w-[55%] sm:max-w-[65%] bottom-1.5 left-2.5"
 				} overflow-scroll no-scrollbar`}
 			>
 				{participant.name}

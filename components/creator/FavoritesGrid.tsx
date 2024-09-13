@@ -11,7 +11,6 @@ import * as Sentry from "@sentry/nextjs";
 import { usePathname } from "next/navigation";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Button } from "../ui/button";
 import { trackEvent } from "@/lib/mixpanel";
 
 const FavoritesGrid = ({
@@ -42,7 +41,23 @@ const FavoritesGrid = ({
 			(docSnap) => {
 				if (docSnap.exists()) {
 					const data = docSnap.data();
-					setStatus(data.status || "Offline");
+					const newStatus = data.status || "Offline";
+					setStatus(newStatus);
+
+					// Check if the creator's status is now "Online" and reset notification
+					if (newStatus === "Online") {
+						const notifyList = JSON.parse(
+							localStorage.getItem("notifyList") || "{}"
+						);
+
+						// If the creator is in the notify list, remove them
+						if (
+							notifyList[creator.username] === creator.phone ||
+							Object.values(notifyList).includes(creator.phone)
+						) {
+							setIsAlreadyNotified(false); // Reset the notification state
+						}
+					}
 				} else {
 					setStatus("Offline");
 				}
@@ -55,7 +70,7 @@ const FavoritesGrid = ({
 
 		// Clean up the listener on component unmount
 		return () => unsubscribe();
-	}, [status]);
+	}, [creator.phone, creator.username]);
 
 	useEffect(() => {
 		// Retrieve the notify list from localStorage
@@ -86,8 +101,9 @@ const FavoritesGrid = ({
 				toast({
 					variant: "destructive",
 					title: "List Updated",
-					description: `${isFavorited ? "Added to Favorites" : "Removed From Favorites"
-						}`,
+					description: `${
+						isFavorited ? "Added to Favorites" : "Removed From Favorites"
+					}`,
 				});
 			}
 		} catch (error) {
@@ -114,13 +130,13 @@ const FavoritesGrid = ({
 
 				toast({
 					variant: "default",
-					title: "Notification Set",
-					description: `You'll be notified when ${fullName} comes online.`,
+					title: `We&apos;ll let you know as soon as ${fullName} is back online!`,
+					description: `${fullName} isn&apos;t online yet.`,
 				});
 			} else {
 				toast({
 					variant: "default",
-					title: "Already Notified",
+					title: "Can&apos;t repeat the action",
 					description: `You are already set to be notified when ${fullName} comes online.`,
 				});
 			}
@@ -144,12 +160,14 @@ const FavoritesGrid = ({
 			<div className="flex flex-col items-start justify-between w-full h-full gap-2">
 				{/* Expert's Details */}
 				<Link
-					onClick={() => trackEvent('Favourites_Profile_Clicked', {
-						Client_ID: clientUser?._id,
-						User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
-						Creator_ID: creator?._id,
-						Walletbalace_Available: clientUser?.walletBalance,
-					})}
+					onClick={() =>
+						trackEvent("Favourites_Profile_Clicked", {
+							Client_ID: clientUser?._id,
+							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+							Creator_ID: creator?._id,
+							Walletbalace_Available: clientUser?.walletBalance,
+						})
+					}
 					href={`/${creator.username}`}
 					className="w-full flex items-center justify-start gap-4 cursor-pointer hoverScaleDownEffect"
 				>
@@ -164,8 +182,9 @@ const FavoritesGrid = ({
 						/>
 
 						<div
-							className={`absolute bottom-0 right-0 ${status === "Online" ? "bg-green-500" : "bg-red-500"
-								} text-xs rounded-full sm:rounded-xl p-1.5 border-2 border-white`}
+							className={`absolute bottom-0 right-0 ${
+								status === "Online" ? "bg-green-500" : "bg-red-500"
+							} text-xs rounded-full sm:rounded-xl p-1.5 border-2 border-white`}
 						/>
 					</section>
 					{/* creator details */}
@@ -199,14 +218,15 @@ const FavoritesGrid = ({
 				/>
 				{status === "Offline" ? (
 					<button
-						className={`${isAlreadyNotified
+						className={`${
+							isAlreadyNotified
 								? "bg-gray-400 cursor-not-allowed"
 								: "bg-green-1 hover:bg-green-700"
-							}  text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs`}
+						}  text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs whitespace-nowrap`}
 						onClick={handleNotifyUser}
 						disabled={isAlreadyNotified}
 					>
-						{isAlreadyNotified ? "Notified" : "Notify Me"}
+						{isAlreadyNotified ? "You&apos;ll be notified" : "Notify Me"}
 					</button>
 				) : (
 					<Link

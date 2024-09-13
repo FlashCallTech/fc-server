@@ -1,8 +1,9 @@
 import React from "react";
 import Link from "next/link";
-import { terms } from "@/constants/services/TermsOfServices.json";
+import terms_services from "@/constants/services/TermsOfServices.json";
 
 const TermsOfServices = () => {
+	const terms = terms_services.terms;
 	const aboutPlatform = terms.aboutPlatform;
 	const tableOfContents = terms.tableOfContents;
 	return (

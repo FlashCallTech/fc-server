@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Image from "next/image";
 import { creatorUser } from "@/types";
@@ -27,6 +27,8 @@ const Favorites = ({
 	isCreatorOrExpertPath?: boolean;
 	isFavoritesPath?: boolean;
 }) => {
+	const [loading, setLoading] = useState(true);
+
 	useEffect(() => {
 		const fetchFavorites = async () => {
 			try {
@@ -55,6 +57,8 @@ const Favorites = ({
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error fetching favorites:", error);
+			} finally {
+				setLoading(false);
 			}
 		};
 
@@ -74,7 +78,7 @@ const Favorites = ({
 					} hover:bg-green-1 flex gap-2 items-center`}
 					onClick={handleToggleFavorite}
 				>
-					{!addingFavorite ? (
+					{!addingFavorite || !loading ? (
 						!markedFavorite ? (
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
