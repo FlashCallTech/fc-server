@@ -11,8 +11,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useParams, useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import ContentLoading from "../shared/ContentLoading";
-import Image from "next/image";
+import SinglePostLoader from "../shared/SinglePostLoader";
 
 const CreatorCard: React.FC = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
@@ -55,7 +54,7 @@ const CreatorCard: React.FC = () => {
 	if (loading || (currentUser && walletBalance < 0)) {
 		return (
 			<div className="size-full flex flex-col gap-2 items-center justify-center -mt-10">
-				<ContentLoading />
+				<SinglePostLoader />
 			</div>
 		);
 	}

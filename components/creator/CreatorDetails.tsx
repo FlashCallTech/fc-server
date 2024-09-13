@@ -167,13 +167,13 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 
 				toast({
 					variant: "default",
-					title: `We&apos;ll let you know as soon as ${fullName} is back online!`,
-					description: `${fullName} isn&apos;t online yet.`,
+					title: `${fullName} is ${status}.`,
+					description: `Will let you know as soon as ${fullName} is back online!`,
 				});
 			} else {
 				toast({
 					variant: "default",
-					title: "Can&apos;t repeat the action",
+					title: "Repeated Action Performed",
 					description: `You are already set to be notified when ${fullName} comes online.`,
 				});
 			}
@@ -251,8 +251,8 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 								<button
 									className={`absolute bottom-0 right-0 ${
 										!isAlreadyNotified
-											? "bg-[#232323]/35 cursor-not-allowed"
-											: "bg-green-1"
+											? "bg-[#232323]/35"
+											: "bg-green-1 cursor-not-allowed"
 									}  p-3 rounded-xl rounded-tr-none rounded-bl-none transition-all duration-300 hover:scale-105 group text-white shadow-md white hover:bg-green-1 flex gap-2 items-center`}
 									onClick={handleNotifyUser}
 									disabled={isAlreadyNotified}
