@@ -17,16 +17,47 @@ import { Button } from "../ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useEffect, useState } from "react";
+import { trackEvent } from "@/lib/mixpanel";
+import { creatorUser } from "@/types";
 
 const MobileNav = () => {
 	const pathname = usePathname();
-	const { currentUser, userType, handleSignout, setAuthenticationSheetOpen } =
+	const { currentUser, userType, handleSignout, setAuthenticationSheetOpen, clientUser } =
 		useCurrentUsersContext();
+	const [creator, setCreator] = useState<creatorUser>();
+
 	// const router = useRouter();
+
+	useEffect(() => {
+		const storedCreator = localStorage.getItem("currentCreator");
+		if (storedCreator) {
+			const parsedCreator: creatorUser = JSON.parse(storedCreator);
+			if (parsedCreator) {
+				setCreator(parsedCreator);
+			}
+		}
+	}, []);
+
+	useEffect(() => {
+		trackEvent('Menu_Clicked', {
+			Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			Creator_ID: creator?._id,
+			Walletbalace_Available: clientUser?.walletBalance,
+		})
+	}, [])
+
 	const sidebarItems =
 		userType === "creator" ? sidebarLinksCreator : sidebarLinks;
 
 	const handleAuthentication = () => {
+		trackEvent('Menu_Signout clicked', {
+			Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			Creator_ID: creator?._id,
+			Walletbalace_Available: clientUser?.walletBalance,
+		})
 		setAuthenticationSheetOpen(false);
 		if (currentUser) {
 			const statusDocRef = doc(db, "userStatus", currentUser.phone);
@@ -42,9 +73,47 @@ const MobileNav = () => {
 		handleSignout();
 	};
 
+	const handleClick = (label: string) => {
+		if(label === 'Order History') {
+			trackEvent('Menu_OrderHistory_Clicked', {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				Creator_ID: creator?._id,
+				Walletbalace_Available: clientUser?.walletBalance,
+			})
+		}
+		if(label === 'Favorites') {
+			trackEvent('Menu_Favourites_Clicked', {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				Creator_ID: creator?._id,
+				Walletbalace_Available: clientUser?.walletBalance,
+			})
+		}
+		if(label === 'Support') {
+			trackEvent('Menu_Support_Clicked', {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				Creator_ID: creator?._id,
+				Walletbalace_Available: clientUser?.walletBalance,
+			})
+		}
+	}
+
+	const handleSheetOpenChange = (open: boolean) => {
+		if (open) {
+			trackEvent('Menu_Clicked', {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				Creator_ID: creator?._id,
+				Walletbalace_Available: clientUser?.walletBalance,
+			});
+		}
+	};
+
 	return (
 		<section className="flex items-center justify-center w-fit relative">
-			<Sheet>
+			<Sheet onOpenChange={handleSheetOpenChange}>
 				<SheetTrigger asChild>
 					<Image
 						src={currentUser?.photo || "/images/defaultProfile.png"}
@@ -101,6 +170,7 @@ const MobileNav = () => {
 														"bg-green-1": isActive,
 													}
 												)}
+												onClick={() => handleClick(item.label)}
 											>
 												<Image
 													src={item.imgURL}

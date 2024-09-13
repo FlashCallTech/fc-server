@@ -3,8 +3,11 @@ import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { Timestamp } from "firebase/firestore";
-import { MemberRequest, creatorUser } from "@/types";
+import { MemberRequest, clientUser, creatorUser } from "@/types";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { getCreatorById } from "@/lib/actions/creator.actions";
+import { getDefaultLocale } from "react-datepicker";
+import { getUserById } from "@/lib/actions/client.actions";
 
 interface Chat {
 	startedAt: number;
@@ -33,14 +36,37 @@ const useChat = () => {
 	const [chatEnded, setChatEnded] = useState(false);
 	const [startedAt, setStartedAt] = useState<number>();
 	const [creator, setCreator] = useState<creatorUser>();
+	const [client, setClient] = useState<clientUser>();
 	const [endedAt, setEndedAt] = useState<number | undefined>();
 	const [duration, setDuration] = useState<number | undefined>();
 	const [amount, setAmount] = useState<number | undefined>(); // Use state for amount
+	const [rejected, setRejected] = useState<boolean>(false);
 	const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
 	const [user2, setUser2] = useState<User2 | undefined>();
 	const [flag, setFlag] = useState(true);
+	const [ended, setEnded] = useState<boolean>(false);
 	const { chatId } = useParams();
-	const { currentUser } = useCurrentUsersContext();
+
+	const members: MemberRequest[] = [
+		{
+			user_id: creator?._id!,
+			custom: {
+				name: String(creator?.username),
+				type: "expert",
+				image: String(creator?.photo),
+			},
+			role: "call_member",
+		},
+		{
+			user_id: String(client?._id),
+			custom: {
+				name: String(client?.username),
+				type: "client",
+				image: String(client?.photo),
+			},
+			role: "admin",
+		},
+	];
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -50,8 +76,33 @@ const useChat = () => {
 			if (parsedCreator.chatRate) {
 				setChatRatePerMinute(parseInt(parsedCreator.chatRate, 10));
 			}
+		} else {
+			const creatorId = localStorage.getItem('currentUserID');
+			const getCreator = async() => {
+				const response = await getCreatorById(creatorId as string);
+				setCreator(response);
+			}
+			getCreator();
 		}
-	}, [chatId]);
+		const userType = localStorage.getItem('userType');
+		console.log(userType);
+		if(userType === 'client') {
+			const clientId = localStorage.getItem('currentUserID');
+			const getClient = async() => {
+				const response = await getUserById(clientId as string);
+				setClient(response);
+			}
+			getClient();
+		} else if(userType === 'creator' && rejected === true) {
+			console.log(user2);
+			const clientId = user2?.clientId;
+			// const getClient = async() => {
+			// 	const response = await getUserById(clientId as string);
+			// 	setClient(response);
+			// }
+			// getClient();
+		}
+	}, [chatId, rejected]);
 
 	useEffect(() => {
 		const storedUser = localStorage.getItem("user2");
@@ -84,32 +135,11 @@ const useChat = () => {
 			const chatDurationMinutes = chatDuration / (1000 * 60); // Convert milliseconds to minutes
 			const calculatedAmount = chatDurationMinutes * chatRatePerMinute;
 			setAmount(calculatedAmount);
+			setEnded(true)
 		}
 	}, [chatEnded, startedAt, endedAt, chatRatePerMinute]);
 
-	const members: MemberRequest[] = [
-		{
-			user_id: user2?.creatorId!,
-			// user_id: "66681d96436f89b49d8b498b",
-			custom: {
-				name: String(creator?.username),
-				type: "expert",
-				image: String(creator?.photo),
-			},
-			role: "call_member",
-		},
-		{
-			user_id: String(currentUser?._id),
-			custom: {
-				name: String(currentUser?.username),
-				type: "client",
-				image: String(currentUser?.photo),
-			},
-			role: "admin",
-		},
-	];
-
-	const createChat = async (chatId: string, status: string) => {
+	const createChat = async (chatId: string, status: string, clientId: string | undefined) => {
 		const [existingChat] = await Promise.all([
 			fetch(`/api/v1/calls/getChat?chatId=${chatId}`).then((res) => res.json()),
 		]);
@@ -141,15 +171,17 @@ const useChat = () => {
 			}
 		} else {
 			if (status === "rejected") {
+				setRejected(true);
 				await fetch("/api/v1/calls/registerChat", {
 					method: "POST",
 					body: JSON.stringify({
 						chatId: chatId,
-						creator: user2?.clientId,
+						creator: clientId,
 						status: status,
 						members: members,
 						startedAt: new Date(),
-						duration: duration,
+						endedAt: endedAt ? endedAt : null,
+						duration: duration ? duration : null,
 					}),
 				});
 			} else {
@@ -172,17 +204,14 @@ const useChat = () => {
 	};
 
 	if (
-		duration &&
-		endedAt &&
-		amount &&
+		ended &&
 		flag &&
-		user2?.clientId === currentUser?._id
+		user2?.clientId === client?._id
 	) {
-		console.log("outside", flag);
 		setFlag(false);
-		createChat(chatId as string, "ended");
+		createChat(chatId as string, "ended", user2?.clientId);
 	}
-
+	
 	return { duration, amount, createChat };
 };
 

@@ -11,6 +11,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import { trackEvent } from "@/lib/mixpanel";
+import { creatorUser } from "@/types";
 
 const NavLoader = () => {
 	return (
@@ -35,6 +36,7 @@ const Navbar = () => {
 	} = useCurrentUsersContext();
 	const router = useRouter();
 	const [userTheme, setUserTheme] = useState("#000000");
+	const [creator, setCreator] = useState<creatorUser>();
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
 	const [isCreatorOrExpertPath, setIsCreatorOrExpertPath] = useState(false);
 	const pathname = usePathname();
@@ -45,6 +47,16 @@ const Navbar = () => {
 
 	// const isCreatorOrExpertPath = pathname.includes(`/${currentCreatorUsername}`);
 
+	useEffect(() => {
+		const storedCreator = localStorage.getItem("currentCreator");
+		if (storedCreator) {
+			const parsedCreator: creatorUser = JSON.parse(storedCreator);
+			if (parsedCreator) {
+				setCreator(parsedCreator);
+			}
+		}
+	}, []);
+
 	const handleRouting = () => {
 		// localStorage.setItem("userType", "client");
 		if (userType === "creator") {
@@ -52,6 +64,7 @@ const Navbar = () => {
 		} else {
 			trackEvent("Login_TopNav_Clicked", {
 				utm_source: "google",
+				Creator_ID: creator?._id,
 			});
 			setIsAuthSheetOpen(true);
 		}
@@ -75,10 +88,7 @@ const Navbar = () => {
 	}, [isAuthSheetOpen]);
 
 	const handleAppRedirect = () => {
-		trackEvent("Getlink_TopNav_Clicked", {
-			utm_source: "google",
-			creator_id: currentUser?._id,
-		});
+		trackEvent("Getlink_TopNav_Clicked");
 		const isAndroid = /Android/i.test(navigator.userAgent);
 		const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 		let url = "";

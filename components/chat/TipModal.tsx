@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -153,18 +153,18 @@ const TipModal = ({
 				}}
 			>
 				<SheetTrigger asChild>
-					<Button
-						className="bg-black/40 text-white mt-2 w-full hoverScaleEffect"
+					<button
+						className="bg-black/40 text-white p-2 rounded-lg text-[10px] md:text-lg hoverScaleEffect"
 						onClick={() => setIsSheetOpen(true)}
 					>
-						Provide Tip
-					</Button>
+						Give Tip
+					</button>
 				</SheetTrigger>
 				<SheetContent
+					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className={`flex flex-col items-center justify-center ${
-						!loading ? "px-10 py-7" : "px-4"
-					} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
+					className={`flex flex-col items-center justify-center ${!loading ? "px-10 py-7" : "px-4"
+						} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
 				>
 					{loading ? (
 						<ContentLoading />
@@ -176,9 +176,8 @@ const TipModal = ({
 									<p>
 										Balance Left
 										<span
-											className={`ml-2 ${
-												hasLowBalance ? "text-red-500" : "text-green-1"
-											}`}
+											className={`ml-2 ${hasLowBalance ? "text-red-500" : "text-green-1"
+												}`}
 										>
 											₹ {adjustedWalletBalance.toFixed(2)}
 										</span>
@@ -187,13 +186,23 @@ const TipModal = ({
 							</SheetHeader>
 							<div className="grid gap-4 py-4 w-full">
 								<span>Enter Desired amount in INR</span>
-								<Input
-									id="rechargeAmount"
-									type="number"
-									placeholder="Enter recharge amount"
-									value={tipAmount}
-									onChange={handleAmountChange}
-								/>
+								<div className="flex flex-row justify-between rounded-lg border p-1">
+									<Input
+										id="tipAmount"
+										type="number"
+										placeholder="Enter tip amount"
+										value={tipAmount}
+										className="border-none outline-none focus-visible:ring-offset-0 focus-visible:!ring-transparent placeholder:text-grey-500"
+										onChange={handleAmountChange}
+									/>
+									<Button
+										className="bg-green-1 text-white"
+										onClick={handleTransaction}
+										disabled={parseInt(tipAmount) > adjustedWalletBalance}
+									>
+										Proceed
+									</Button>
+								</div>
 								{errorMessage && (
 									<p className="text-red-500 text-sm">{errorMessage}</p>
 								)}
@@ -205,17 +214,16 @@ const TipModal = ({
 										<Button
 											key={amount}
 											onClick={() => handlePredefinedAmountClick(amount)}
-											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleEffect ${
-												tipAmount === amount &&
+											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleEffect ${tipAmount === amount &&
 												"bg-green-1 text-white hover:bg-green-1"
-											}`}
+												}`}
 										>
 											₹{amount}
 										</Button>
 									))}
 								</div>
 							</div>
-							<SheetFooter className="mt-4">
+							{/* <SheetFooter className="mt-4">
 								<Button
 									className="bg-green-1 text-white"
 									onClick={handleTransaction}
@@ -223,7 +231,7 @@ const TipModal = ({
 								>
 									Proceed
 								</Button>
-							</SheetFooter>
+							</SheetFooter> */}
 						</>
 					) : (
 						<div className="flex flex-col items-center justify-center min-w-full h-full gap-4">

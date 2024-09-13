@@ -33,7 +33,7 @@ const EndCallDecision = ({
 							Proceeding further will End the Ongoing Call.
 						</SheetDescription>
 					</SheetHeader>
-					<div className="flex flex-col justify-center items-start gap-5 rounded-lg max-w-lg h-fit w-full mx-auto animate-pulse">
+					{/* <div className="flex flex-col justify-center items-start gap-5 rounded-lg max-w-lg h-fit w-full mx-auto animate-pulse">
 						<div className="flex items-center space-x-4 w-full">
 							<div className="rounded-full bg-slate-300 h-12 w-12"></div>
 							<div className="flex-1 space-y-4 py-1">
@@ -47,7 +47,7 @@ const EndCallDecision = ({
 								</div>
 							</div>
 						</div>
-					</div>
+					</div> */}
 					<div className="flex w-full items-center justify-start gap-2">
 						<Button
 							onClick={() => setShowDialog(false)}

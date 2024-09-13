@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import useEndChat from "@/hooks/useEndChat";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import Loader from "@/components/shared/Loader";
 
 const Page = () => {
 	const [queryParams, setQueryParams] = useState<{
@@ -20,7 +21,8 @@ const Page = () => {
 	const { chatEnded, user2, chatId, handleEnd } = useEndChat();
 	const { updateWalletBalance } = useWalletBalanceContext();
 	const { toast } = useToast();
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
+	const [transactionDone, setTransactionDone] = useState<boolean>(false);
 	const clientId = user2?.clientId;
 	const router = useRouter();
 	let isTabClosing = false;
@@ -32,7 +34,7 @@ const Page = () => {
 
 	const handleTabClose = () => {
 		if (isTabClosing) {
-			handleEnd(chatId as string, user2);
+			handleEnd(chatId as string, user2, userType!);
 		}
 	};
 
@@ -49,9 +51,11 @@ const Page = () => {
 				duration: duration ? duration?.toString() : "",
 				clientId: clientId,
 				chatId: chatId as string,
+				creatorId: queryParams.creatorId as string,
 				updateWalletBalance,
 				router,
 				toast,
+				setTransactionDone
 			});
 			setCheck(false);
 		}
@@ -75,6 +79,10 @@ const Page = () => {
 
 	if (!queryParams.clientId || !queryParams.creatorId) {
 		return null; // or Loading indicator or some error handling
+	}
+
+	if(transactionDone) {
+		return <Loader />
 	}
 
 	return (
