@@ -138,8 +138,11 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		if (isBrowser()) {
 			localStorage.removeItem("currentUserID");
 			localStorage.removeItem("authToken");
-			localStorage.removeItem("creatorURL");
-			localStorage.removeItem("notifyList");
+			// localStorage.removeItem("notifyList");
+
+			if (window.location.pathname === "/") {
+				localStorage.removeItem("creatorURL");
+			}
 		}
 		setClientUser(null);
 		setCreatorUser(null);

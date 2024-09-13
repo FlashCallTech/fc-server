@@ -10,10 +10,10 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { usePathname, useRouter } from "next/navigation";
 import PostLoader from "@/components/shared/PostLoader";
 import Image from "next/image";
-import ContentLoading from "@/components/shared/ContentLoading";
 import { trackEvent } from "@/lib/mixpanel";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import SinglePostLoader from "@/components/shared/SinglePostLoader";
 
 const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
@@ -162,7 +162,7 @@ const HomePage = () => {
 	if (loadingCard || loading) {
 		return (
 			<div className="size-full flex flex-col gap-2 items-center justify-center -mt-10">
-				<ContentLoading />
+				<SinglePostLoader />
 			</div>
 		);
 	}

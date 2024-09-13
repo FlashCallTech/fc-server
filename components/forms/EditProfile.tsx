@@ -31,6 +31,7 @@ import { usePathname } from "next/navigation";
 import axios from "axios";
 import { debounce } from "@/lib/utils";
 import * as Sentry from "@sentry/nextjs";
+import Image from "next/image";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -83,6 +84,7 @@ const EditProfile = ({
 
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof schema>>({
+		mode: "onChange",
 		resolver: zodResolver(schema),
 		defaultValues: {
 			firstName: userData.firstName,
@@ -97,6 +99,9 @@ const EditProfile = ({
 			creatorId: userData.creatorId || `${userData.phone}@creator`,
 		},
 	});
+
+	const { formState } = form;
+	const { errors, isValid } = formState;
 
 	// Watch form values to detect changes
 	const watchedValues = useWatch({ control: form.control });
@@ -297,7 +302,9 @@ const EditProfile = ({
 									onFileSelect={setSelectedFile}
 								/>
 							</FormControl>
-							<FormMessage />
+							<FormMessage className="error-message">
+								{errors.photo?.message}
+							</FormMessage>
 						</FormItem>
 					)}
 				/>
@@ -325,9 +332,11 @@ const EditProfile = ({
 								/>
 							</FormControl>
 							{usernameError && (
-								<p className="text-sm text-red-500 ml-1">{usernameError}</p>
+								<p className="error-message">{usernameError}</p>
 							)}
-							<FormMessage />
+							<FormMessage className="error-message">
+								{errors.username?.message}
+							</FormMessage>
 						</FormItem>
 					)}
 				/>
@@ -364,7 +373,9 @@ const EditProfile = ({
 										/>
 									)}
 								</FormControl>
-								<FormMessage />
+								<FormMessage className="error-message">
+									{errors[field.name]?.message}
+								</FormMessage>
 							</FormItem>
 						)}
 					/>
@@ -389,7 +400,9 @@ const EditProfile = ({
 									/>
 								</FormControl>
 
-								<FormMessage />
+								<FormMessage className="error-message">
+									{errors.profession?.message}
+								</FormMessage>
 							</FormItem>
 						)}
 					/>
@@ -449,7 +462,9 @@ const EditProfile = ({
 								<FormDescription className="text-xs text-gray-400 ml-1">
 									Choose any one from the above
 								</FormDescription>
-								<FormMessage />
+								<FormMessage className="error-message">
+									{errors.gender?.message}
+								</FormMessage>
 							</FormItem>
 						)}
 					/>
@@ -474,7 +489,9 @@ const EditProfile = ({
 								<FormDescription className="text-xs text-gray-400 ml-1">
 									Tap the icon to select date
 								</FormDescription>
-								<FormMessage />
+								<FormMessage className="error-message">
+									{errors.dob?.message}
+								</FormMessage>
 							</FormItem>
 						)}
 					/>
@@ -500,7 +517,9 @@ const EditProfile = ({
 									<FormDescription className="text-xs text-gray-400 ml-1">
 										Ex. Nitra123@creator
 									</FormDescription>
-									<FormMessage />
+									<FormMessage className="error-message">
+										{errors.creatorId?.message}
+									</FormMessage>
 								</FormItem>
 							)}
 						/>
@@ -559,7 +578,9 @@ const EditProfile = ({
 								<FormDescription className="text-xs text-gray-400 ml-1">
 									Select your theme color
 								</FormDescription>
-								<FormMessage />
+								<FormMessage className="error-message">
+									{errors.themeSelected?.message}
+								</FormMessage>
 							</FormItem>
 						)}
 					/>
@@ -572,8 +593,20 @@ const EditProfile = ({
 					<Button
 						className="bg-green-1 hover:opacity-80 w-3/4 mx-auto text-white"
 						type="submit"
+						disabled={!isValid || form.formState.isSubmitting}
 					>
-						Update Details
+						{form.formState.isSubmitting ? (
+							<Image
+								src="/icons/loading-circle.svg"
+								alt="Loading..."
+								width={24}
+								height={24}
+								className=""
+								priority
+							/>
+						) : (
+							"Update Details"
+						)}
 					</Button>
 				)}
 			</form>

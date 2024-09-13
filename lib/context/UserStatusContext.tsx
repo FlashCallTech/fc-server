@@ -48,7 +48,7 @@ export const UserStatusProvider: React.FC<{ children: React.ReactNode }> = ({
 						}));
 
 						// Handle notification when the user goes online
-						if (status === "Online") {
+						if (status === "Online" && notifyList[username]) {
 							try {
 								const notificationSound = new Audio("/sounds/statusChange.mp3");
 								notificationSound.play().catch((error) => {
@@ -58,16 +58,20 @@ export const UserStatusProvider: React.FC<{ children: React.ReactNode }> = ({
 								toast({
 									variant: "destructive",
 									title: `${username} is now online`,
+									description: `Visit ${username} to book your Call`,
 								});
 
-								// Remove the notified user from the notifyList in state and localStorage
+								// Update notifyList both in state and localStorage
 								setNotifyList((prevList) => {
 									const updatedNotifyList = { ...prevList };
 									delete updatedNotifyList[username];
+
+									// Ensure localStorage is updated synchronously with state
 									localStorage.setItem(
 										"notifyList",
 										JSON.stringify(updatedNotifyList)
 									);
+
 									return updatedNotifyList;
 								});
 							} catch (error) {
@@ -88,7 +92,7 @@ export const UserStatusProvider: React.FC<{ children: React.ReactNode }> = ({
 		return () => {
 			unsubscribeList.forEach((unsubscribe) => unsubscribe());
 		};
-	}, [notifyList]); // Only re-run when notifyList changes
+	}, [notifyList]); // Re-run when notifyList changes
 
 	return (
 		<UserStatusContext.Provider value={{ userStatus }}>

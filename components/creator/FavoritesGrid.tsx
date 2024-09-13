@@ -129,13 +129,13 @@ const FavoritesGrid = ({
 
 				toast({
 					variant: "default",
-					title: `We&apos;ll let you know as soon as ${fullName} is back online!`,
-					description: `${fullName} isn&apos;t online yet.`,
+					title: `${fullName} is ${status}.`,
+					description: `Will let you know as soon as ${fullName} is back online!`,
 				});
 			} else {
 				toast({
 					variant: "default",
-					title: "Can&apos;t repeat the action",
+					title: "Repeated Action Performed",
 					description: `You are already set to be notified when ${fullName} comes online.`,
 				});
 			}
@@ -217,7 +217,7 @@ const FavoritesGrid = ({
 						onClick={handleNotifyUser}
 						disabled={isAlreadyNotified}
 					>
-						{isAlreadyNotified ? "You&apos;ll be notified" : "Notify Me"}
+						{isAlreadyNotified ? "Alert Registered" : "Notify Me"}
 					</button>
 				) : (
 					<Link
