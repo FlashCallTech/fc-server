@@ -274,9 +274,9 @@ const EditProfile = ({
 	if (loading)
 		return (
 			<section
-				className={`w-full ${pathname.includes(
-					"/updateDetails" ? "w-screen" : "w-full"
-				)} flex items-center justify-center`}
+				className={`w-full ${
+					pathname.includes("/updateDetails") ? "w-screen" : "w-full"
+				} flex items-center justify-center`}
 			>
 				<SinglePostLoader />
 			</section>
