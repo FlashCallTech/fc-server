@@ -56,7 +56,7 @@ const CreatorFeedbackCheck = ({ feedback }: { feedback: UserFeedback }) => {
 								alt={feedback?.clientId?.username}
 								width={44}
 								height={44}
-								className="w-5 h-5 rounded-full"
+								className="w-5 h-5 rounded-full object-cover"
 								onError={(e) => {
 									e.currentTarget.src = "/images/defaultProfileImage.png";
 								}}

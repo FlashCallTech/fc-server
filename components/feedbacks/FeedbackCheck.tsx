@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import UserFeedback from "./UserFeedback";
 import { getCallFeedbacks } from "@/lib/actions/feedback.actions";
 import { Rating } from "@smastrom/react-rating";
@@ -22,15 +22,17 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 	const [userFeedbacks, setUserFeedbacks] = useState<any[] | null>(null);
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-	const checkFeedback = useCallback(async () => {
+	const checkFeedback = async () => {
 		if (!callId) {
 			console.log("Error: CallId is not Valid.");
+
 			setFeedbackExists(false);
+
 			return;
 		}
 
 		try {
-			const response = await getCallFeedbacks(callId);
+			const response = callId && (await getCallFeedbacks(callId));
 			const hasFeedback = response.length > 0;
 
 			setFeedbackExists(hasFeedback);
@@ -46,13 +48,13 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 			console.log("Error checking feedback:", error);
 			setFeedbackExists(false);
 		}
-	}, [callId, currentUser]);
+	};
 
 	useEffect(() => {
 		if (currentUser?._id) {
 			checkFeedback();
 		}
-	}, [callId, currentUser?._id, checkFeedback]);
+	}, [callId, currentUser?._id]);
 
 	if (feedbackExists === null) {
 		return (

@@ -1,22 +1,28 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { connectToDatabase } from "@/lib/database";
 import { CreateCreatorParams, LinkType, UpdateCreatorParams } from "@/types";
 import Creator from "../database/models/creator.model";
 import * as Sentry from "@sentry/nextjs";
 import { addMoney } from "./wallet.actions";
+import { MongoServerError } from "mongodb";
 
 export async function createCreatorUser(user: CreateCreatorParams) {
 	try {
 		await connectToDatabase();
 
-		// Check for existing user with the same username or phone number
-		const existingUser = await Creator.findOne({
-			$or: [{ username: user.username, phone: user.phone }],
+		// Check for existing user with the same username
+		const existingUserByUsername = await Creator.findOne({
+			username: user.username,
 		});
-		if (existingUser) {
-			return { error: "User with the same username already exists" };
+		if (existingUserByUsername) {
+			return { error: "Username already exists" };
+		}
+
+		// Check for existing user with the same phone number
+		const existingUserByPhone = await Creator.findOne({ phone: user.phone });
+		if (existingUserByPhone) {
+			return { error: "Phone number already exists" };
 		}
 
 		const newUser = await Creator.create(user);
@@ -25,11 +31,20 @@ export async function createCreatorUser(user: CreateCreatorParams) {
 			userType: "Creator",
 			amount: 0, // Set the initial balance here
 		});
-		// console.log(newUser);
 		return JSON.parse(JSON.stringify(newUser));
 	} catch (error) {
+		if (error instanceof MongoServerError && error.code === 11000) {
+			// Handle duplicate key error specifically
+			if (error.message.includes("username")) {
+				return { error: "Username already exists" };
+			}
+			if (error.message.includes("phone")) {
+				return { error: "Phone number already exists" };
+			}
+		}
 		Sentry.captureException(error);
 		console.log(error);
+		return { error: "An unexpected error occurred" };
 	}
 }
 
@@ -181,19 +196,21 @@ export async function deleteCreatorUser(userId: string) {
 		await connectToDatabase();
 
 		// Find user to delete
-		const userToDelete = await Creator.findOne({ userId });
+		const userToDelete = await Creator.findById(userId);
 
 		if (!userToDelete) {
-			throw new Error("User not found");
+			return { error: "User not found" };
 		}
 
 		// Delete user
-		const deletedUser = await Creator.findByIdAndDelete(userToDelete._id);
-		revalidatePath("/");
+		const deletedUser = await Creator.findByIdAndDelete(userId);
 
-		return deletedUser ? JSON.parse(JSON.stringify(deletedUser)) : null;
+		return deletedUser
+			? JSON.parse(JSON.stringify(deletedUser))
+			: { error: "Failed to delete user" };
 	} catch (error) {
 		Sentry.captureException(error);
 		console.log(error);
+		return { error: "An unexpected error occurred" };
 	}
 }

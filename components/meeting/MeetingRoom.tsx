@@ -51,6 +51,7 @@ const useScreenSize = () => {
 
 const MeetingRoom = () => {
 	const [showParticipants, setShowParticipants] = useState(false);
+	const [showControls, setShowControls] = useState(true);
 	const { useCallCallingState, useCallEndedAt, useParticipantCount } =
 		useCallStateHooks();
 	const [hasJoined, setHasJoined] = useState(false);
@@ -104,12 +105,12 @@ const MeetingRoom = () => {
 		};
 
 		if (!hasJoined && call) {
-			call.camera.enable();
+			isVideoCall && call.camera.enable();
 			call.microphone.enable();
 
 			joinCall();
 		}
-	}, [callingState, call, hasJoined, callHasEnded, currentUser?._id]);
+	}, [callingState, call, hasJoined, callHasEnded]);
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -124,6 +125,25 @@ const MeetingRoom = () => {
 			window.removeEventListener("resize", handleResize);
 		};
 	}, []);
+
+	// Hide/Show controls on mobile touch outside controls section
+	useEffect(() => {
+		if (!isMobile) return;
+
+		const handleTouchOutsideControls = (event: TouchEvent) => {
+			const controlsElement = document.querySelector(".call-controls");
+			if (controlsElement && !controlsElement.contains(event.target as Node)) {
+				setShowControls(false);
+			} else {
+				setShowControls(true);
+			}
+		};
+
+		document.addEventListener("touchstart", handleTouchOutsideControls);
+		return () => {
+			document.removeEventListener("touchstart", handleTouchOutsideControls);
+		};
+	}, [isMobile]);
 
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout;
@@ -144,7 +164,7 @@ const MeetingRoom = () => {
 		}
 
 		return () => clearTimeout(timeoutId);
-	}, [participantCount, anyModalOpen, call, handleCallRejected, toast]);
+	}, [participantCount, anyModalOpen, call]);
 
 	const toggleCamera = async () => {
 		if (call && call.camera) {
@@ -212,64 +232,70 @@ const MeetingRoom = () => {
 			)}
 
 			{/* Call Controls */}
-			<div className="fixed bg-dark-1 bottom-0 flex w-full items-center justify-start py-2 px-4 transition-all">
-				<div className="flex overflow-x-scroll no-scrollbar w-fit items-center mx-auto justify-start gap-4">
-					{/* Audio Button */}
-					<SpeakingWhileMutedNotification>
-						{isMobile ? <AudioToggleButton /> : <ToggleAudioPublishingButton />}
-					</SpeakingWhileMutedNotification>
+			{showControls && (
+				<section className="fixed bg-dark-1 bottom-0 flex w-full items-center justify-start py-2 px-4 transition-all">
+					<div className="flex overflow-x-scroll no-scrollbar w-fit items-center mx-auto justify-start gap-4">
+						{/* Audio Button */}
+						<SpeakingWhileMutedNotification>
+							{isMobile ? (
+								<AudioToggleButton />
+							) : (
+								<ToggleAudioPublishingButton />
+							)}
+						</SpeakingWhileMutedNotification>
 
-					{/* Audio Device List */}
-					{isMobile && (
-						<AudioDeviceList
-							showAudioDeviceList={showAudioDeviceList}
-							setShowAudioDeviceList={setShowAudioDeviceList}
-						/>
-					)}
+						{/* Audio Device List */}
+						{isMobile && (
+							<AudioDeviceList
+								showAudioDeviceList={showAudioDeviceList}
+								setShowAudioDeviceList={setShowAudioDeviceList}
+							/>
+						)}
 
-					{/* Video Button */}
-					{isVideoCall &&
-						(isMobile ? (
-							<VideoToggleButton />
-						) : (
-							<ToggleVideoPublishingButton />
-						))}
+						{/* Video Button */}
+						{isVideoCall &&
+							(isMobile ? (
+								<VideoToggleButton />
+							) : (
+								<ToggleVideoPublishingButton />
+							))}
 
-					{/* Switch Camera */}
-					{isVideoCall && isMobile && (
-						<SwitchCameraType toggleCamera={toggleCamera} />
-					)}
+						{/* Switch Camera */}
+						{isVideoCall && isMobile && (
+							<SwitchCameraType toggleCamera={toggleCamera} />
+						)}
 
-					<Tooltip>
-						<TooltipTrigger className="hidden md:block">
-							<button onClick={() => setShowParticipants((prev) => !prev)}>
-								<div className="cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[#4c535b] flex items-center">
-									<Users size={20} className="text-white" />
-								</div>
-							</button>
-						</TooltipTrigger>
-						<TooltipContent className="mb-2 bg-gray-700  border-none">
-							<p className="!text-white">Participants</p>
-						</TooltipContent>
-					</Tooltip>
+						<Tooltip>
+							<TooltipTrigger className="hidden md:block">
+								<button onClick={() => setShowParticipants((prev) => !prev)}>
+									<div className="cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[#4c535b] flex items-center">
+										<Users size={20} className="text-white" />
+									</div>
+								</button>
+							</TooltipTrigger>
+							<TooltipContent className="mb-2 bg-gray-700  border-none">
+								<p className="!text-white">Participants</p>
+							</TooltipContent>
+						</Tooltip>
 
-					{/* End Call Button */}
-					<Tooltip>
-						<TooltipTrigger>
-							<EndCallButton />
-						</TooltipTrigger>
-						<TooltipContent className="hidden md:block mb-2 bg-red-500  border-none">
-							<p className="!text-white">End Call</p>
-						</TooltipContent>
-					</Tooltip>
+						{/* End Call Button */}
+						<Tooltip>
+							<TooltipTrigger>
+								<EndCallButton />
+							</TooltipTrigger>
+							<TooltipContent className="hidden md:block mb-2 bg-red-500  border-none">
+								<p className="!text-white">End Call</p>
+							</TooltipContent>
+						</Tooltip>
 
-					{isVideoCall && (
-						<div className="absolute bottom-3 right-4 z-20 w-fit hidden md:flex items-center gap-2">
-							<DeviceSettings />
-						</div>
-					)}
-				</div>
-			</div>
+						{isVideoCall && (
+							<div className="absolute bottom-3 right-4 z-20 w-fit hidden md:flex items-center gap-2">
+								<DeviceSettings />
+							</div>
+						)}
+					</div>
+				</section>
+			)}
 		</section>
 	);
 };

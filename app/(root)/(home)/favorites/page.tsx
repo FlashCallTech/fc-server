@@ -157,7 +157,7 @@ const Favorites = () => {
 					isSticky ? "pt-7" : "pt-2"
 				} pb-4 transition-all duration-300`}
 			>
-				<h1 className="text-3xl font-bold">Favorites</h1>
+				<h1 className="text-3xl font-bold pl-1">Favorites</h1>
 				<button
 					onClick={toggleFilterPopup}
 					className="relative px-4 py-2 text-sm border rounded-lg bg-green-1 text-white flex items-center justify-center gap-1 hoverScaleDownEffect"

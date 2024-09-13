@@ -74,7 +74,7 @@ const OTPVerification = ({
 
 	useEffect(() => {
 		onOTPChange(pin);
-	}, [pin, onOTPChange]);
+	}, [pin]);
 
 	return (
 		<>

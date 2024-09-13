@@ -42,3 +42,11 @@ export const enterAmountSchema = z.object({
 		.min(1, "Amount must be at least 1 rupees")
 		.max(6, "Amount must be at most 1,00,000 rupees"),
 });
+
+export const enterTipAmountSchema = z.object({
+	amount: z
+		.string()
+		.regex(/^\d+$/, "Amount must be a numeric value")
+		.min(1, "Amount must be at least 1 rupees")
+		.max(6, "Amount must be at most 1,00,000 rupees"),
+});

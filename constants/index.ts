@@ -1,9 +1,9 @@
 export const sidebarLinks = [
-	{
-		imgURL: "/icons/Home.svg",
-		route: "/",
-		label: "Home",
-	},
+	// {
+	// 	imgURL: "/icons/Home.svg",
+	// 	route: "/",
+	// 	label: "Home",
+	// },
 	{
 		imgURL: "/icons/orderHistory.png",
 		route: "/previous",
@@ -22,11 +22,11 @@ export const sidebarLinks = [
 ];
 
 export const sidebarLinksCreator = [
-	{
-		imgURL: "/icons/Home.svg",
-		route: "/",
-		label: "Home",
-	},
+	// {
+	// 	imgURL: "/icons/Home.svg",
+	// 	route: "/",
+	// 	label: "Home",
+	// },
 	{
 		imgURL: "/icons/orderHistory.png",
 		route: "/previous",

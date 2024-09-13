@@ -14,6 +14,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
 import { trackEvent } from "@/lib/mixpanel";
+import { isValidHexColor } from "@/lib/utils";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -32,6 +33,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
+
+	const themeColor = isValidHexColor(creator.themeSelected)
+		? creator.themeSelected
+		: "#50A65C";
 
 	const [updatedCreator, setUpdatedCreator] = useState<creatorUser>({
 		...creator,
@@ -87,7 +92,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			}
 		});
 
-		isAuthSheetOpen && setIsAuthSheetOpen(false);
+		// isAuthSheetOpen && setIsAuthSheetOpen(false);
 		return () => unsubscribe();
 	}, [creator._id, isAuthSheetOpen]);
 
@@ -172,20 +177,28 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			description: "The call has been accepted. Redirecting to meeting...",
 		});
 		setSheetOpen(false);
+
 		await call?.leave();
+
+		const createdAtDate = clientUser?.createdAt
+			? new Date(clientUser.createdAt)
+			: new Date();
+		const formattedDate = createdAtDate.toISOString().split("T")[0];
+
 		if (callType === "audio") {
 			trackEvent("BookCall_Audio_Connected", {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toISOString().split("T")[0],
+				User_First_Seen: formattedDate,
 				Creator_ID: creator._id,
 			});
 		} else {
 			trackEvent("BookCall_Video_Connected", {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toISOString().split("T")[0],
+				User_First_Seen: formattedDate,
 				Creator_ID: creator._id,
 			});
 		}
+
 		router.replace(`/meeting/${call.id}`);
 	};
 
@@ -275,16 +288,21 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				},
 			});
 
+			const createdAtDate = clientUser?.createdAt
+				? new Date(clientUser.createdAt)
+				: new Date();
+			const formattedDate = createdAtDate.toISOString().split("T")[0];
+
 			if (callType === "audio") {
 				trackEvent("BookCall_Audio_Clicked", {
 					Client_ID: clientUser._id,
-					User_First_Seen: clientUser.createdAt?.toISOString().split("T")[0],
+					User_First_Seen: formattedDate,
 					Creator_ID: creator._id,
 				});
 			} else {
 				trackEvent("BookCall_Video_initiated", {
 					Client_ID: clientUser._id,
-					User_First_Seen: clientUser.createdAt?.toISOString().split("T")[0],
+					User_First_Seen: formattedDate,
 					Creator_ID: creator._id,
 				});
 			}
@@ -417,7 +435,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	// 	}
 	// };
 
-	const theme = `5px 5px 0px 0px ${creator.themeSelected}`;
+	const theme = `5px 5px 0px 0px ${themeColor}`;
 
 	if (isAuthSheetOpen && !clientUser)
 		return (
@@ -442,16 +460,24 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					parseInt(updatedCreator.videoRate, 10) > 0 && (
 						<div
 							className={`callOptionContainer ${
-								isProcessing ? "opacity-50 cursor-not-allowed" : ""
+								isProcessing || onlineStatus !== "Online"
+									? "opacity-50 !cursor-not-allowed"
+									: ""
 							}`}
 							style={{
 								boxShadow: theme,
 							}}
-							onClick={() => handleClickOption("video")}
+							onClick={() => {
+								if (onlineStatus === "Online") {
+									handleClickOption("video");
+								} else {
+									setIsAuthSheetOpen(true);
+								}
+							}}
 						>
 							<div
 								className={`flex gap-4 items-center font-semibold`}
-								style={{ color: updatedCreator.themeSelected }}
+								style={{ color: themeColor }}
 							>
 								{video}
 								Book Video Call
@@ -467,16 +493,24 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					parseInt(updatedCreator.audioRate, 10) > 0 && (
 						<div
 							className={`callOptionContainer ${
-								isProcessing ? "opacity-50 cursor-not-allowed" : ""
+								isProcessing || onlineStatus !== "Online"
+									? "opacity-50 !cursor-not-allowed"
+									: ""
 							}`}
 							style={{
 								boxShadow: theme,
 							}}
-							onClick={() => handleClickOption("audio")}
+							onClick={() => {
+								if (onlineStatus === "Online") {
+									handleClickOption("audio");
+								} else {
+									setIsAuthSheetOpen(true);
+								}
+							}}
 						>
 							<div
 								className={`flex gap-4 items-center font-semibold`}
-								style={{ color: updatedCreator.themeSelected }}
+								style={{ color: themeColor }}
 							>
 								{audio}
 								Book Audio Call
@@ -491,15 +525,26 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{updatedCreator.chatAllowed &&
 					parseInt(updatedCreator.chatRate, 10) > 0 && (
 						<div
-							className="callOptionContainer"
+							className={`callOptionContainer ${
+								onlineStatus !== "Online"
+									? "opacity-50 !cursor-not-allowed"
+									: ""
+							}`}
 							style={{
 								boxShadow: theme,
 							}}
-							onClick={handleChatClick}
+							onClick={() => {
+								if (onlineStatus === "Online") {
+									handleChatClick();
+								} else {
+									setIsAuthSheetOpen(true);
+								}
+							}}
 						>
 							<button
 								className={`flex gap-4 items-center font-semibold`}
-								style={{ color: updatedCreator.themeSelected }}
+								style={{ color: themeColor }}
+								disabled={onlineStatus !== "Online"}
 							>
 								{chat}
 								Chat Now

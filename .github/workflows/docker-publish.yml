@@ -1,0 +1,93 @@
+name: Build and Push Docker Images
+
+# Triggers the workflow on push or pull request to the main branch
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+# Define environment variables and permissions
+env:
+  DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+  IMAGE_NAME: aseem5047/flashcall
+  NEXT_PUBLIC_STREAM_API_KEY: ${{ secrets.NEXT_PUBLIC_STREAM_API_KEY }}
+  STREAM_SECRET_KEY: ${{ secrets.STREAM_SECRET_KEY }}
+  NEXT_PUBLIC_STREAM_SECRET_KEY: ${{ secrets.NEXT_PUBLIC_STREAM_SECRET_KEY }}
+  NEXT_PUBLIC_STREAM_APP_ID: ${{ secrets.NEXT_PUBLIC_STREAM_APP_ID }}
+  TWOFACTOR_API_KEY: ${{ secrets.TWOFACTOR_API_KEY }}
+  JWT_KEY: ${{ secrets.JWT_KEY }}
+  NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
+  MONGODB_URI: ${{ secrets.MONGODB_URI }}
+  NEXT_PUBLIC_MIXPANEL_TOKEN: ${{ secrets.NEXT_PUBLIC_MIXPANEL_TOKEN }}
+  NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.NEXT_PUBLIC_RAZORPAY_KEY_ID }}
+  NEXT_PUBLIC_RAZORPAY_SECRET: ${{ secrets.NEXT_PUBLIC_RAZORPAY_SECRET }}
+  NEXT_PUBLIC_CASHFREE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_CASHFREE_CLIENT_ID }}
+  NEXT_PUBLIC_CASHFREE_CLIENT_SECRET: ${{ secrets.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET }}
+  NEXT_PUBLIC_HYPERVERGE_APP_ID: ${{ secrets.NEXT_PUBLIC_HYPERVERGE_APP_ID }}
+  NEXT_PUBLIC_HYPERVERGE_APP_KEY: ${{ secrets.NEXT_PUBLIC_HYPERVERGE_APP_KEY }}
+  NEXT_PUBLIC_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_MEASUREMENT_ID }}
+  NODE_ENV: ${{ secrets.NODE_ENV }}
+  NEXT_PUBLIC_FIREBASE_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_KEY }}
+  FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repo
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Log in to Docker Hub
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+      # Build the development image
+      - name: Build dev image
+        run: docker build --no-cache -f Dockerfile.dev -t aseem5047/flashcall:dev .
+
+      - name: Log environment variables
+        run: |
+          echo "NEXT_PUBLIC_STREAM_API_KEY=${{ secrets.NEXT_PUBLIC_STREAM_API_KEY }}"
+          echo "STREAM_SECRET_KEY=${{ secrets.STREAM_SECRET_KEY }}"
+          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}"
+
+      # Build the production image
+      - name: Build prod image
+        run: |
+          docker build --no-cache \
+          --build-arg NEXT_PUBLIC_STREAM_API_KEY='${{ env.NEXT_PUBLIC_STREAM_API_KEY }}' \
+          --build-arg STREAM_SECRET_KEY='${{ env.STREAM_SECRET_KEY }}' \
+          --build-arg NEXT_PUBLIC_STREAM_SECRET_KEY='${{ env.NEXT_PUBLIC_STREAM_SECRET_KEY }}' \
+          --build-arg NEXT_PUBLIC_STREAM_APP_ID='${{ env.NEXT_PUBLIC_STREAM_APP_ID }}' \
+          --build-arg TWOFACTOR_API_KEY='${{ env.TWOFACTOR_API_KEY }}' \
+          --build-arg JWT_KEY='${{ env.JWT_KEY }}' \
+          --build-arg NEXT_PUBLIC_BASE_URL='${{ env.NEXT_PUBLIC_BASE_URL }}' \
+          --build-arg MONGODB_URI='${{ env.MONGODB_URI }}' \
+          --build-arg NEXT_PUBLIC_MIXPANEL_TOKEN='${{ env.NEXT_PUBLIC_MIXPANEL_TOKEN }}' \
+          --build-arg NEXT_PUBLIC_RAZORPAY_KEY_ID='${{ env.NEXT_PUBLIC_RAZORPAY_KEY_ID }}' \
+          --build-arg NEXT_PUBLIC_RAZORPAY_SECRET='${{ env.NEXT_PUBLIC_RAZORPAY_SECRET }}' \
+          --build-arg NEXT_PUBLIC_CASHFREE_CLIENT_ID='${{ env.NEXT_PUBLIC_CASHFREE_CLIENT_ID }}' \
+          --build-arg NEXT_PUBLIC_CASHFREE_CLIENT_SECRET='${{ env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET }}' \
+          --build-arg NEXT_PUBLIC_HYPERVERGE_APP_ID='${{ env.NEXT_PUBLIC_HYPERVERGE_APP_ID }}' \
+          --build-arg NEXT_PUBLIC_HYPERVERGE_APP_KEY='${{ env.NEXT_PUBLIC_HYPERVERGE_APP_KEY }}' \
+          --build-arg NEXT_PUBLIC_MEASUREMENT_ID='${{ env.NEXT_PUBLIC_MEASUREMENT_ID }}' \
+          --build-arg NODE_ENV='${{ env.NODE_ENV }}' \
+          --build-arg NEXT_PUBLIC_FIREBASE_KEY='${{ env.NEXT_PUBLIC_FIREBASE_KEY }}' \
+          --build-arg FIREBASE_SERVICE_ACCOUNT_BASE64='${{ env.FIREBASE_SERVICE_ACCOUNT_BASE64 }}' \
+          -f Dockerfile.prod -t aseem5047/flashcall:prod .
+
+      # Push development image to Docker Hub
+      - name: Push dev image
+        run: docker push aseem5047/flashcall:dev
+
+      # Push production image to Docker Hub
+      - name: Push prod image
+        run: docker push aseem5047/flashcall:prod
+
+      # Prune dangling images to free up space
+      - name: Prune dangling images
+        run: docker image prune -f

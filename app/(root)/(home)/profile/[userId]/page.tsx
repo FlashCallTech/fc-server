@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { UpdateUserParams } from "@/types";
 import { Cursor, Typewriter } from "react-simple-typewriter";
@@ -13,26 +13,23 @@ import { usePathname } from "next/navigation";
 const UserProfilePage = () => {
 	const { currentUser, userType, refreshCurrentUser } =
 		useCurrentUsersContext();
-	const getInitialState = useCallback(
-		(): UpdateUserParams => ({
-			id: currentUser?._id || "",
-			fullName:
-				(currentUser?.firstName || "") + " " + (currentUser?.lastName || ""),
-			firstName: currentUser?.firstName || "",
-			lastName: currentUser?.lastName || "",
-			username: currentUser?.username || "",
-			profession: currentUser?.profession || "",
-			themeSelected: currentUser?.themeSelected || "#50A65C",
-			phone: currentUser?.phone || "",
-			photo: currentUser?.photo || "/images/defaultProfile.png",
-			bio: currentUser?.bio || "",
-			role: userType || "client",
-			gender: currentUser?.gender || "",
-			dob: currentUser?.dob || "",
-			creatorId: currentUser?.creatorId || "",
-		}),
-		[currentUser, userType]
-	);
+	const getInitialState = (): UpdateUserParams => ({
+		id: currentUser?._id || "",
+		fullName:
+			(currentUser?.firstName || "") + " " + (currentUser?.lastName || ""),
+		firstName: currentUser?.firstName || "",
+		lastName: currentUser?.lastName || "",
+		username: currentUser?.username || "",
+		profession: currentUser?.profession || "",
+		themeSelected: currentUser?.themeSelected || "#50A65C",
+		phone: currentUser?.phone || "",
+		photo: currentUser?.photo || "/images/defaultProfile.png",
+		bio: currentUser?.bio || "",
+		role: userType || "client",
+		gender: currentUser?.gender || "",
+		dob: currentUser?.dob || "",
+		creatorId: currentUser?.creatorId || "",
+	});
 
 	const pathname = usePathname();
 	const [userData, setUserData] = useState<UpdateUserParams>(getInitialState);
@@ -46,7 +43,7 @@ const UserProfilePage = () => {
 			setUserData(updatedInitialState);
 			setInitialState(updatedInitialState);
 		}
-	}, [userType, pathname, currentUser, getInitialState]);
+	}, [userType, pathname]);
 
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		setUserData(newUserData);

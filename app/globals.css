@@ -70,6 +70,13 @@
 	border-radius: 10px;
 }
 
+/* tip modal custom styles */
+.sheetContent {
+	height: calc(var(--vh, 1vh) * 100);
+	min-height: 444px;
+	max-height: 460px;
+}
+
 @media only screen and (max-width: 768px) {
 	.cl-internal-phfxlr {
 		width: 85vw;
@@ -101,10 +108,9 @@
 .str-video__speaker-layout .str-video__speaker-layout__spotlight {
 	display: flex;
 	justify-content: center;
-	min-height: 0;
-	height: 89%;
+	height: 89% !important;
 	/* margin-bottom: 16rem; */
-	position: absolute;
+	position: absolute !important;
 	top: 0rem;
 	left: 0px;
 	width: 100%;
@@ -113,12 +119,12 @@
 
 .str-video__speaker-layout
 	.str-video__speaker-layout__participants-bar-buttons-wrapper {
-	position: absolute;
+	position: absolute !important;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	bottom: 13%;
-	right: 7%;
+	bottom: 13% !important;
+	right: 7% !important;
 }
 
 .str-video__participant-view {
@@ -129,12 +135,13 @@
 	.str-video__speaker-layout__participants-bar-wrapper
 	.str-video__speaker-layout__participants-bar
 	.str-video__speaker-layout__participant-tile {
-	width: 144px !important;
-	min-width: 144px;
-	max-width: 25vh;
+	width: 100% !important;
+	min-width: 144px !important;
+	max-width: 160px !important;
 	padding: 0px;
 	border: 2px solid rgba(255, 255, 255, 0.233);
 	border-radius: 15px;
+	padding: 0px !important;
 }
 
 .str-video__speaker-layout
@@ -216,6 +223,17 @@
 	-webkit-backdrop-filter: blur(4px) !important;
 }
 
+/* Hide spinner controls for number input */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+input[type="number"] {
+	-moz-appearance: textfield; /* Firefox */
+}
+
 @layer base {
 	body {
 		@apply !font-default;
@@ -240,6 +258,10 @@
 
 	.input-field {
 		@apply bg-gray-50 h-[54px] focus-visible:ring-offset-0 placeholder:text-gray-500 rounded-xl px-4 py-3 border-none focus-visible:ring-transparent !important;
+	}
+
+	.input-field-modal {
+		@apply bg-gray-100 hover:bg-gray-200 h-[54px] focus-visible:ring-offset-0 placeholder:text-gray-500 rounded-xl px-4 py-3 border-none focus-visible:ring-transparent !important;
 	}
 
 	.textarea {

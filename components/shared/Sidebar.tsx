@@ -25,7 +25,7 @@ const Sidebar = () => {
 		userType === "creator" ? sidebarLinksCreator : sidebarLinks;
 
 	return (
-		<section className="sticky left-0 top-0 flex h-screen z-20 flex-col justify-between p-6 pt-24  max-md:hidden lg:w-[264px] shadow-md">
+		<section className="sticky left-0 top-0 flex h-screen flex-col justify-between p-6 pt-24  max-md:hidden lg:w-[264px] shadow-md">
 			<div className="flex flex-1 flex-col gap-6">
 				{sidebarItems.map((item, index) => {
 					const isActive =

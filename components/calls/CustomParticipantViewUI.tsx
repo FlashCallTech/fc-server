@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import {
 	SfuModels,
 	useCall,
@@ -23,7 +23,7 @@ const PoorConnectionNotification = () => {
 		connectionQuality === SfuModels.ConnectionQuality.POOR
 	) {
 		return (
-			<span className="animate-enterFromBottom fixed top-4 left-4 text-white bg-red-600 p-4 rounded-xl">
+			<span className="text-center py-5 fixed top-4 left-0 text-white bg-red-600 p-4 rounded-xl z-20">
 				Poor connection quality
 			</span>
 		);
@@ -45,19 +45,6 @@ const CustomParticipantViewUI = () => {
 	const { isEnabled } = useCameraState();
 
 	const { isLocalParticipant } = participant;
-
-	const togglePictureInPicture = useCallback(() => {
-		if (videoElement && pictureInPictureElement !== videoElement) {
-			videoElement.requestPictureInPicture().catch(console.error);
-		} else {
-			document.exitPictureInPicture().catch(console.error);
-		}
-	}, [videoElement, pictureInPictureElement]);
-
-	const handleClick = useCallback(() => {
-		togglePictureInPicture();
-		setIsScaled((prev) => !prev);
-	}, [togglePictureInPicture]); // Add togglePictureInPicture as a dependency if needed
 
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"
@@ -101,7 +88,20 @@ const CustomParticipantViewUI = () => {
 			);
 			document.removeEventListener("visibilitychange", handleVisibilityChange);
 		};
-	}, [videoElement, pictureInPictureElement, handleClick]);
+	}, [videoElement, pictureInPictureElement]);
+
+	const togglePictureInPicture = () => {
+		if (videoElement && pictureInPictureElement !== videoElement) {
+			videoElement.requestPictureInPicture().catch(console.error);
+		} else {
+			document.exitPictureInPicture().catch(console.error);
+		}
+	};
+
+	const handleClick = () => {
+		togglePictureInPicture();
+		setIsScaled((prev) => !prev);
+	};
 
 	return (
 		<>
@@ -125,10 +125,10 @@ const CustomParticipantViewUI = () => {
 				)}
 
 			<span
-				className={`absolute bottom-1.5 left-2.5 w-full text-sm text-ellipsis overflow-hidden ${
+				className={`absolute   w-full text-sm text-ellipsis overflow-hidden ${
 					expert?.user_id !== participant.userId
-						? "max-w-[85%]"
-						: "max-w-[55%] sm:max-w-[65%]"
+						? "max-w-[85%] pb-2 bottom-0 left-3"
+						: "max-w-[55%] sm:max-w-[65%] bottom-1.5 left-2.5"
 				} overflow-scroll no-scrollbar`}
 			>
 				{participant.name}

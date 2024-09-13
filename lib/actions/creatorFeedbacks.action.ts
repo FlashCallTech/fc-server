@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import Client from "../database/models/client.model";
 import CreatorFeedback from "../database/models/creatorFeedbacks.model";
 import Creator from "../database/models/creator.model";
+import * as Sentry from "@sentry/nextjs";
 
 export async function createFeedback({
 	creatorId,
@@ -81,6 +82,7 @@ export async function createFeedback({
 
 		return { success: "Feedback Added/Updated successfully" };
 	} catch (error: any) {
+		Sentry.captureException(error);
 		handleError(error);
 		console.log("Error Adding/Updating Feedback ... ", error);
 		return { success: false, error: error.message };
@@ -139,6 +141,7 @@ export async function getCreatorFeedback(
 		// Return the feedbacks as JSON
 		return JSON.parse(JSON.stringify(creatorFeedbacks));
 	} catch (error: any) {
+		Sentry.captureException(error);
 		console.log(error);
 		return { success: false, error: error.message };
 	}
