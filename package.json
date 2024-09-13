@@ -81,6 +81,7 @@
 		"@types/formidable": "^3.4.5",
 		"@types/jsonwebtoken": "^9.0.6",
 		"@types/lodash": "^4.17.7",
+		"@types/next": "^9.0.0",
 		"@types/node": "^20.12.12",
 		"@types/react": "^18",
 		"@types/react-beautiful-dnd": "^13.1.8",
