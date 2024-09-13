@@ -149,7 +149,14 @@ const HomePage = () => {
 			status: docSnap.data()?.status,
 			Wallet_Balance: clientUser?.walletBalance,
 		});
+
 		setLoadingCard(true); // Set loading state before navigation
+		// Save any necessary data in localStorage
+		setLoading(true);
+		localStorage.setItem("creatorURL", `/${username}`);
+		setCurrentTheme(theme);
+		// Trigger the route change immediately
+		router.push(`/${username}`);
 	};
 
 	if (loadingCard || loading) {
