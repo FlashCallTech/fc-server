@@ -168,7 +168,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 				toast({
 					variant: "default",
 					title: `We&apos;ll let you know as soon as ${fullName} is back online!`,
-					description: `${fullName} isn&apos;t online yet, but feel free to explore other creators or services while you wait.`,
+					description: `${fullName} isn&apos;t online yet.`,
 				});
 			} else {
 				toast({
