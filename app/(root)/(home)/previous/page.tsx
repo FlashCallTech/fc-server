@@ -7,18 +7,40 @@ import CallListMobile from "@/components/calls/CallListMobile";
 import ChatList from "@/components/calls/ChatList";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import CreatorCallsFeedbacks from "@/components/creator/CreatorCallsFeedbacks";
+import { creatorUser } from "@/types";
+import { trackEvent } from "@/lib/mixpanel";
 
 const PreviousPage = () => {
 	const [historyType, setHistoryType] = useState<"Calls" | "Chats">("Calls");
+	const [creator, setCreator] = useState<creatorUser>();
 	const [isSticky, setIsSticky] = useState(false);
 	const options: ("Calls" | "Chats")[] = ["Calls", "Chats"];
 	const stickyRef = useRef<HTMLDivElement>(null);
-	const { userType } = useCurrentUsersContext();
+	const { userType, clientUser } = useCurrentUsersContext();
 	const handleScroll = () => {
 		if (stickyRef.current) {
 			setIsSticky(window.scrollY > stickyRef.current.offsetTop);
 		}
 	};
+
+	useEffect(() => {
+		const storedCreator = localStorage.getItem("currentCreator");
+		if (storedCreator) {
+			const parsedCreator: creatorUser = JSON.parse(storedCreator);
+			if (parsedCreator) {
+				setCreator(parsedCreator);
+			}
+		}
+	}, []);
+
+	useEffect(() => {
+		trackEvent('OrderHistory_Impression', {
+			Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			Creator_ID: creator?._id,
+			Walletbalace_Available: clientUser?.walletBalance,
+		})
+	}, [])
 
 	useEffect(() => {
 		window.addEventListener("scroll", handleScroll);

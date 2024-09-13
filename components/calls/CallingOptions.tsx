@@ -29,7 +29,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [isSheetOpen, setSheetOpen] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
-	const { handleChat, chatRequestsRef } = useChatRequest();
+	const { handleChat, chatRequestsRef, SheetOpen } = useChatRequest();
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
@@ -115,6 +115,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							setChatReqSent(false);
 							setChatState(data.status);
 							localStorage.removeItem("chatRequestId");
+							localStorage.removeItem("user2");
 							unsubscribe();
 						} else if (
 							data.status === "accepted" &&
@@ -169,7 +170,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	}, [chatState]);
 
 	// defining the actions for call accept and call reject
-	const handleCallAccepted = async (call: Call, callType: string) => {
+	const handleCallAccepted = async (
+		call: Call,
+		callType: string,
+		callDuration: number
+	) => {
 		setIsProcessing(false); // Reset processing state
 		toast({
 			variant: "destructive",
@@ -178,7 +183,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		});
 		setSheetOpen(false);
 
-		await call?.leave();
+		// await call?.leave();
 
 		const createdAtDate = clientUser?.createdAt
 			? new Date(clientUser.createdAt)
@@ -199,16 +204,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			});
 		}
 
-		router.replace(`/meeting/${call.id}`);
+		// router.replace(`/meeting/${call.id}`);
 	};
 
 	const handleCallRejected = (callType: string) => {
 		setIsProcessing(false); // Reset processing state
-		toast({
-			variant: "destructive",
-			title: "Call Rejected",
-			description: "The call was rejected. Please try again later.",
-		});
 		setSheetOpen(false);
 	};
 
@@ -268,6 +268,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			// Check if maxCallDuration is less than 5 minutes (300 seconds)
 			if (maxCallDuration < 300) {
+				trackEvent("MinimumBalance_NotAvailable", {
+					Client_ID: clientUser?._id,
+					User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+					Creator_ID: creator._id,
+					Time_Duration_Available: maxCallDuration,
+					Walletbalance_Available: clientUser?.walletBalance,
+				});
+
 				toast({
 					variant: "destructive",
 					title: "Insufficient Balance",
@@ -276,6 +284,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				router.push(`/payment?callType=${callType}`);
 				return;
 			}
+
+			trackEvent("MinimumBalance_Available", {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+				Creator_ID: creator._id,
+				Time_Duration_Available: maxCallDuration,
+				Walletbalance_Available: clientUser?.walletBalance,
+			});
 
 			await call.getOrCreate({
 				ring: true,
@@ -324,7 +340,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			call.on("call.accepted", () => handleCallAccepted(call, callType));
+			call.on("call.accepted", () =>
+				handleCallAccepted(call, callType, maxCallDuration)
+			);
 			call.on("call.rejected", () => handleCallRejected(callType));
 		} catch (error) {
 			Sentry.captureException(error);
@@ -404,7 +422,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			});
 			setChatReqSent(true);
 			handleChat(creator, clientUser);
-			setSheetOpen(true);
+			let maxCallDuration =
+				(walletBalance / parseInt(creator.chatRate, 10)) * 60;
+			maxCallDuration =
+				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+
+			if (maxCallDuration > 300) {
+				setSheetOpen(true);
+			}
+
 			// sendPushNotification();
 		} else {
 			setIsAuthSheetOpen(true);
@@ -470,7 +496,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							onClick={() => {
 								if (onlineStatus === "Online") {
 									handleClickOption("video");
-								} else if (!clientUser) {
+								} else {
 									setIsAuthSheetOpen(true);
 								}
 							}}
@@ -503,7 +529,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							onClick={() => {
 								if (onlineStatus === "Online") {
 									handleClickOption("audio");
-								} else if (!clientUser) {
+								} else {
 									setIsAuthSheetOpen(true);
 								}
 							}}
@@ -536,7 +562,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							onClick={() => {
 								if (onlineStatus === "Online") {
 									handleChatClick();
-								} else if (!clientUser) {
+								} else {
 									setIsAuthSheetOpen(true);
 								}
 							}}

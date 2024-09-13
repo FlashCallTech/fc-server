@@ -38,12 +38,10 @@ export async function createUser(user: CreateUserParams) {
 		});
 
 		const clientUser = JSON.parse(JSON.stringify(newUser));
-		if (clientUser) {
-			trackEvent("Login_Success", {
-				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toISOString().split("T")[0],
-			});
-		}
+
+		trackEvent("User_first_seen", {
+			Client_ID: clientUser._id,
+		});
 		return JSON.parse(JSON.stringify(newUser));
 	} catch (error) {
 		if (error instanceof MongoServerError && error.code === 11000) {
@@ -71,7 +69,8 @@ export async function getUserById(userId: string) {
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
 		Sentry.captureException(error);
-		handleError(error);
+		console.log(error);
+		return { error: "An unexpected error occurred" };
 	}
 }
 

@@ -8,6 +8,9 @@ import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 import EndCallDecision from "./EndCallDecision";
 import Image from "next/image";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { trackEvent } from "@/lib/mixpanel";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const EndCallButton = () => {
 	const call = useCall();
@@ -27,6 +30,18 @@ const EndCallButton = () => {
 	};
 
 	const handleDecisionDialog = async () => {
+
+		const callDocRef = doc(db, "calls", call.id);
+		const docSnap = await getDoc(callDocRef);
+
+		trackEvent('BookCall_Chat_Ended', {
+			Client_ID: call.state.createdBy?.id,
+			// User_First_Seen: user2?.User_First_Seen,
+			Creator_ID: call.state.members.find(member => member.role === 'call_member')?.user_id,
+			Time_Duration_Available: docSnap.data()?.timeUtilized,
+			Walletbalace_Available: currentUser?.walletBalance,
+			Endedby: call.state.endedBy?.role === 'admin'? 'Client': 'Creator',
+		})
 		await call.endCall();
 		setShowDialog(false);
 	};
@@ -35,6 +50,8 @@ const EndCallButton = () => {
 		setShowDialog(false);
 		setAnyModalOpen(false);
 	};
+
+	console.log(call.state);
 
 	return (
 		<>

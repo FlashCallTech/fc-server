@@ -7,27 +7,30 @@ export const handleTransaction = async ({
 	duration,
 	clientId,
 	chatId,
+	creatorId,
 	router,
 	toast,
 	updateWalletBalance,
+	setTransactionDone,
 }: {
 	duration: string | undefined;
 	clientId: string | undefined;
 	chatId: string | string[];
+	creatorId: string | undefined;
 	router: any;
 	toast: any;
 	updateWalletBalance: () => Promise<void>;
+	setTransactionDone: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
 	// console.log("duration in handleTransaction", duration);
 	if (!duration) return;
 
-	const creatorId = "664c90ae43f0af8f1b3d5803";
-
 	try {
+		setTransactionDone(true);
 		const roundToNearestThousand = (num: number) => {
 			return Math.round(num / 1000) * 1000;
 		};
-		const creator = await getCreatorById(creatorId);
+		const creator = await getCreatorById(creatorId!);
 		const rate = creator.chatRate;
 		const amountToBePaid = (
 			(roundToNearestThousand(parseInt(duration, 10)) / (1000 * 60)) *
@@ -92,6 +95,7 @@ export const handleTransaction = async ({
 					headers: { "Content-Type": "application/json" },
 				}),
 			]);
+			setTransactionDone(false);
 		}
 	} catch (error) {
 		Sentry.captureException(error);
