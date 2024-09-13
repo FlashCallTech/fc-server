@@ -19,17 +19,15 @@ import { logEvent } from "firebase/analytics";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
-import usePlatform from "./usePlatform";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
-	const [SheetOpen, setSheetOpen] = useState(false); // State to manage sheet visibility
+	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
 	const router = useRouter();
 	const { createChat } = useChat();
 	const { walletBalance } = useWalletBalanceContext();
-	const { getDevicePlatform } = usePlatform();
 
 	const handleChat = async (creator: any, clientUser: any) => {
 		logEvent(analytics, "chat_now_click", {
@@ -44,9 +42,10 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 		if (!clientUser) router.push("sign-in");
 		let maxCallDuration = (walletBalance / parseInt(creator.chatRate, 10)) * 60;
-		maxCallDuration = maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+		maxCallDuration =
+			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
-		if (maxCallDuration < 300) {
+		if (maxCallDuration < 60) {
 			toast({
 				variant: "destructive",
 				title: "Insufficient Balance",
@@ -55,8 +54,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			router.push("/payment?callType=chat");
 			return;
 		}
-
-		setSheetOpen(true);
 
 		try {
 			const userChatsDocRef = doc(db, "userchats", clientUser?._id);
@@ -90,10 +87,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			await setDoc(newChatRequestRef, {
 				creatorId: creator?._id,
 				clientId: clientUser?._id,
-				client_first_seen: clientUser.createdAt.toString().split('T')[0],
-				creator_first_seen: creator.createdAt.toString().split('T')[0],
-				client_balance: clientUser.walletBalance,
-				rate: creator.chatRate,
+				client_first_seen: clientUser.createdAt.toISOString().split('T')[0],
 				clientName: clientUser?.username,
 				status: "pending",
 				chatId: chatId,
@@ -127,7 +121,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 						JSON.stringify({
 							clientId: data.clientId,
 							creatorId: data.creatorId,
-							User_First_Seen: clientUser.createdAt.toString().split('T')[0],
+							User_First_Seen: clientUser.createdAt.toISOString().split('T')[0],
 							chatId: chatId,
 							requestId: doc.id,
 							fullName: creator.firstName + " " + creator?.lastName,
@@ -138,10 +132,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			});
 			trackEvent('BookCall_Chat_initiated', {
 				Client_ID: clientUser._id,
-				User_First_Seen: clientUser.createdAt.toString().split('T')[0],
+				User_First_Seen: clientUser.createdAt.toISOString().split('T')[0],
 				Creator_ID: creator._id,
-				Time_Duration_Available: maxCallDuration,
-				Walletbalace_Available: clientUser.walletBalance,
 			})
 		} catch (error) {
 			Sentry.captureException(error);
@@ -230,23 +222,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				})
 			);
 
-			let maxCallDuration = (walletBalance / parseInt(chatRequest.rate, 10)) * 60;
-			maxCallDuration = maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
-
 			trackEvent('BookCall_Chat_Connected', {
 				Client_ID: chatRequest.clientId,
 				User_First_Seen: chatRequest.client_first_seen,
 				Creator_ID: chatRequest.creatorId,
-				Time_Duration_Available: maxCallDuration,
-				Walletbalace_Available: chatRequest.client_balance,
-			})
-
-			trackEvent('Creator_Chat_Connected', {
-				Client_ID: chatRequest.clientId,
-				Creator_First_Seen: chatRequest.creator_first_seen,
-				Creator_ID: chatRequest.creatorId,
-				Platform: getDevicePlatform(),
-			})
+				})
 
 			router.push(
 				`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
@@ -262,53 +242,13 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	const handleRejectChat = async (chatRequest: any) => {
 		if (!chatRequest) return;
 
-		const userChatsRef = collection(db, "userchats");
-		const chatId = chatRequest.chatId
-
-		const creatorChatUpdate = updateDoc(
-			doc(userChatsRef, chatRequest.creatorId),
-			{
-				chats: arrayUnion({
-					chatId: chatId,
-					lastMessage: "",
-					receiverId: chatRequest.clientId,
-					updatedAt: new Date(),
-				}),
-				online: false,
-			}
-		);
-
-		const clientChatUpdate = updateDoc(
-			doc(userChatsRef, chatRequest.clientId),
-			{
-				chats: arrayUnion({
-					chatId: chatId,
-					lastMessage: "",
-					receiverId: chatRequest.creatorId,
-					updatedAt: new Date(),
-				}),
-				online: false,
-			}
-		);
-		await Promise.all([creatorChatUpdate, clientChatUpdate]);
-
-		localStorage.setItem('user2',
-			JSON.stringify({
-				clientId: chatRequest.clientId,
-				creatorId: chatRequest.creatorId,
-				User_First_Seen: chatRequest.client_first_seen,
-				chatId: chatRequest.chatId,
-				requestId: chatRequest.id,
-			})
-		);
-
 		try {
 			const status = "rejected";
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
 				status: status,
 			});
 
-			await createChat(chatRequest.chatId, status, chatRequest.clientId);
+			await createChat(chatRequest.chatId, status);
 
 			if (onChatRequestUpdate) {
 				onChatRequestUpdate(null);
@@ -320,7 +260,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	};
 
-	return { handleAcceptChat, handleRejectChat, handleChat, chatRequestsRef, SheetOpen };
+	return { handleAcceptChat, handleRejectChat, handleChat, chatRequestsRef };
 };
 
 export default useChatRequest;

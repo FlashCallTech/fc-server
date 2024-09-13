@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDateTime, isValidUrl } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import { RegisterCallParams } from "@/types";
 import React, { useEffect, useState } from "react";
 import ContentLoading from "../shared/ContentLoading";
@@ -88,11 +88,7 @@ const CallListMobile = () => {
 									>
 										{/* creator image */}
 										<Image
-											src={
-												isValidUrl(call.members[0].custom.image)
-													? call.members[0].custom.image
-													: "/images/defaultProfileImage.png"
-											}
+											src={call.members[0].custom.image}
 											alt="Expert"
 											height={1000}
 											width={1000}

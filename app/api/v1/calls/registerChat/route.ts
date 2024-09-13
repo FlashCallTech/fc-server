@@ -24,8 +24,8 @@ export async function POST(request: Request) {
 				{
 					startedAt,
 					status,
-					endedAt: endedAt ?? null, // Optional
-					duration: duration ?? null, // Optional
+					endedAt: endedAt ?? undefined, // Optional
+					duration: duration ?? undefined, // Optional
 				},
 			],
 		};

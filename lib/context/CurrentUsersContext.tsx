@@ -221,7 +221,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		await fetchCurrentUser();
 	};
 
-	// Redirect to /updateDetails if username is missing
+	// Redirect to /updateDetails if firstName is missing
 	useEffect(() => {
 		if (currentUser && userType === "creator" && !currentUser.firstName) {
 			router.replace("/updateDetails");

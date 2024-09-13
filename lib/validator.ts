@@ -6,7 +6,12 @@ export const UpdateProfileFormSchema = z.object({
 	username: z.string().min(4, "Last name must be at least 4 characters"),
 	profession: z.string().min(5, "Profession must be at least 5 characters"),
 	themeSelected: z.string().min(3, "Profile Theme must be a valid hexcode"),
-	photo: z.string().optional(),
+	photo: z
+		.string()
+		.optional()
+		.refine((value) => !value || /^https?:\/\/.+\..+/i.test(value), {
+			message: "Photo must be a valid URL",
+		}),
 	bio: z
 		.string()
 		.min(3, "Description must be at least 3 characters")

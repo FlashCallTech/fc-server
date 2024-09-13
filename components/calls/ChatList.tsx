@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDateTime, isValidUrl } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import { SelectedChat } from "@/types";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -96,11 +96,7 @@ const ChatList = () => {
 									>
 										{/* creator image */}
 										<Image
-											src={
-												isValidUrl(chat.members[0].custom.image)
-													? chat.members[0].custom.image
-													: "/images/defaultProfileImage.png"
-											}
+											src={chat.members[0].custom.image}
 											alt="Expert"
 											height={1000}
 											width={1000}
