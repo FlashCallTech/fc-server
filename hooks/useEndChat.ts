@@ -138,10 +138,10 @@ const useEndChat = () => {
 				Endedby: endedBy,
 			})
 
-			logEvent(analytics, "call_ended", {
-				userId: currentUser?._id,
-				// creatorId: creator._id,
-			});
+			// logEvent(analytics, "call_ended", {
+			// 	userId: currentUser?._id,
+			// 	// creatorId: creator._id,
+			// });
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error ending chat:", error);
