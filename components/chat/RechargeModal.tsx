@@ -81,8 +81,7 @@ const RechargeModal = ({
 
 			const options: RazorpayOptions = {
 				key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string,
-				amount,
-				currency,
+				rechargeAmount: amount,				currency,
 				name: "FlashCall.me",
 				description: "Test Transaction",
 				image: "https://example.com/your_logo",
