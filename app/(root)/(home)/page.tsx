@@ -46,7 +46,6 @@ const HomePage = () => {
 	const [isFetching, setIsFetching] = useState(false);
 	const [error, setError] = useState(false);
 	const [hasMore, setHasMore] = useState(true);
-	const [onlineStatus, setOnlineStatus] = useState<String>();
 	const { userType, setCurrentTheme, clientUser } = useCurrentUsersContext();
 	const pathname = usePathname();
 	const router = useRouter();
@@ -134,7 +133,16 @@ const HomePage = () => {
 		}
 	}, [inView, isFetching, hasMore, creatorCount, fetchCreators]);
 
-	const handleCreatorCardClick = (username: string, theme: string) => {
+	const handleCreatorCardClick = async(phone: string, username: string, theme: string, id: string) => {
+		const creatorDocRef = doc(db, "userStatus", phone);
+		const docSnap = await getDoc(creatorDocRef);
+
+		trackEvent('Page_View', {
+			UTM_Source: 'google',
+			Creator_ID: id,
+			status: docSnap.data()?.status,
+			Wallet_Balance: clientUser?.walletBalance,
+		})
 		setLoadingCard(true); // Set loading state before navigation
 		// Save any necessary data in localStorage
 		setLoading(true);
@@ -181,7 +189,8 @@ const HomePage = () => {
 											handleCreatorCardClick(
 												creator.phone,
 												creator.username,
-												creator.themeSelected
+												creator.themeSelected,
+												creator._id
 											)
 										}
 									>
