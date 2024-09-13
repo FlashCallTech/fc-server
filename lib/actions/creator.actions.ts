@@ -6,8 +6,10 @@ import { CreateCreatorParams, LinkType, UpdateCreatorParams } from "@/types";
 import Creator from "../database/models/creator.model";
 import * as Sentry from "@sentry/nextjs";
 import { addMoney } from "./wallet.actions";
+import { trackEvent } from "../mixpanel";
 
 export async function createCreatorUser(user: CreateCreatorParams) {
+
 	try {
 		await connectToDatabase();
 
@@ -22,9 +24,13 @@ export async function createCreatorUser(user: CreateCreatorParams) {
 		const newUser = await Creator.create(user);
 		await addMoney({
 			userId: newUser._id,
-			userType: "creator",
+			userType: "Creator",
 			amount: 0, // Set the initial balance here
 		});
+		const creatorUser = JSON.parse(JSON.stringify(newUser));
+		trackEvent('User_first_seen', {
+			Creator_ID: creatorUser._id,
+		})
 		// console.log(newUser);
 		return JSON.parse(JSON.stringify(newUser));
 	} catch (error) {

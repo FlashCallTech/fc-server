@@ -12,6 +12,7 @@ import { usePathname } from "next/navigation";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "../ui/button";
+import { trackEvent } from "@/lib/mixpanel";
 
 const FavoritesGrid = ({
 	creator,
@@ -85,9 +86,8 @@ const FavoritesGrid = ({
 				toast({
 					variant: "destructive",
 					title: "List Updated",
-					description: `${
-						isFavorited ? "Added to Favorites" : "Removed From Favorites"
-					}`,
+					description: `${isFavorited ? "Added to Favorites" : "Removed From Favorites"
+						}`,
 				});
 			}
 		} catch (error) {
@@ -144,6 +144,12 @@ const FavoritesGrid = ({
 			<div className="flex flex-col items-start justify-between w-full h-full gap-2">
 				{/* Expert's Details */}
 				<Link
+					onClick={() => trackEvent('Favourites_Profile_Clicked', {
+						Client_ID: clientUser?._id,
+						User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+						Creator_ID: creator?._id,
+						Walletbalace_Available: clientUser?.walletBalance,
+					})}
 					href={`/${creator.username}`}
 					className="w-full flex items-center justify-start gap-4 cursor-pointer hoverScaleDownEffect"
 				>
@@ -158,9 +164,8 @@ const FavoritesGrid = ({
 						/>
 
 						<div
-							className={`absolute bottom-0 right-0 ${
-								status === "Online" ? "bg-green-500" : "bg-red-500"
-							} text-xs rounded-full sm:rounded-xl p-1.5 border-2 border-white`}
+							className={`absolute bottom-0 right-0 ${status === "Online" ? "bg-green-500" : "bg-red-500"
+								} text-xs rounded-full sm:rounded-xl p-1.5 border-2 border-white`}
 						/>
 					</section>
 					{/* creator details */}
@@ -194,11 +199,10 @@ const FavoritesGrid = ({
 				/>
 				{status === "Offline" ? (
 					<button
-						className={`${
-							isAlreadyNotified
+						className={`${isAlreadyNotified
 								? "bg-gray-400 cursor-not-allowed"
 								: "bg-green-1 hover:bg-green-700"
-						}  text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs`}
+							}  text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs`}
 						onClick={handleNotifyUser}
 						disabled={isAlreadyNotified}
 					>

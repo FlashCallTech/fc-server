@@ -26,15 +26,15 @@ export async function createUser(user: CreateUserParams) {
 
 		await addMoney({
 			userId: newUser._id,
-			userType: "client",
+			userType: "Client",
 			amount: 0, // Set the initial balance here
 		});
 
 		const clientUser = JSON.parse(JSON.stringify(newUser));
-		trackEvent("Login_Success", {
+		
+		trackEvent('User_first_seen', {
 			Client_ID: clientUser._id,
-			User_First_Seen: clientUser.createdAt.toISOString().split("T")[0],
-		});
+		})
 		return JSON.parse(JSON.stringify(newUser));
 	} catch (error) {
 		Sentry.captureException(error);
