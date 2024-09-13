@@ -149,7 +149,7 @@ const HomePage = () => {
 	}
 
 	return (
-		<main className="block size-full">
+		<main className="flex flex-col size-full">
 			{userType === "client" ? (
 				<Suspense fallback={<PostLoader count={6} />}>
 					{error ? (
@@ -164,6 +164,9 @@ const HomePage = () => {
 					) : (
 						<section
 							className={`grid xs:grid-cols-2 xl:grid-cols-3 h-auto gap-2.5 px-2.5 lg:gap-5 lg:px-0 items-center overflow-hidden`}
+							style={{
+								WebkitTransform: "translateZ(0)",
+							}}
 						>
 							{creators &&
 								creators.map((creator) => (
