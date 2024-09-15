@@ -199,13 +199,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 	return (
 		<div className="flex flex-col pt-4 bg-white text-gray-800 w-full h-full">
-			<Link href="/payment" className="text-xl font-bold p-4">
-				&larr;
-			</Link>
 			{/* Balance Section */}
 			<div className="flex items-center pb-5 px-4 gap-4">
 				<Link
-					href={`${creatorURL ? creatorURL : "/"}`}
+					href={`${creatorURL ? creatorURL : "/home"}`}
 					className="text-xl font-bold"
 				>
 					&larr;

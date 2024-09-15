@@ -101,7 +101,7 @@ const MyCallUI = () => {
 					headers: { "Content-Type": "application/json" },
 				});
 
-				router.replace(`${creatorURL ? creatorURL : "/"}`);
+				router.replace(`${creatorURL ? creatorURL : "/home"}`);
 			};
 
 			const handleCallStarted = async () => {

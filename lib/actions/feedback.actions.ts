@@ -67,7 +67,7 @@ export async function createFeedback({
 			}
 		}
 
-		// revalidatePath("/");
+		// revalidatePath("/home");
 
 		return { success: true };
 	} catch (error: any) {

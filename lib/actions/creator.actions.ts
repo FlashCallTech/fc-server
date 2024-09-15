@@ -5,7 +5,7 @@ import { CreateCreatorParams, LinkType, UpdateCreatorParams } from "@/types";
 import Creator from "../database/models/creator.model";
 import * as Sentry from "@sentry/nextjs";
 import { addMoney } from "./wallet.actions";
-import { trackEvent } from "../mixpanel";
+// import { trackEvent } from "../mixpanel";
 import { MongoServerError } from "mongodb";
 
 export async function createCreatorUser(user: CreateCreatorParams) {
@@ -33,9 +33,9 @@ export async function createCreatorUser(user: CreateCreatorParams) {
 			amount: 0, // Set the initial balance here
 		});
 		const creatorUser = JSON.parse(JSON.stringify(newUser));
-		trackEvent("User_first_seen", {
-			Creator_ID: creatorUser._id,
-		});
+		// trackEvent("User_first_seen", {
+		// 	Creator_ID: creatorUser._id,
+		// });
 		return JSON.parse(JSON.stringify(newUser));
 	} catch (error) {
 		if (error instanceof MongoServerError && error.code === 11000) {

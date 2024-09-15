@@ -255,7 +255,7 @@ const AuthenticateViaOTP = ({
 			const creatorURL = localStorage.getItem("creatorURL");
 
 			router.replace(
-				`${creatorURL && userType !== "creator" ? creatorURL : "/"}`
+				`${creatorURL && userType !== "creator" ? creatorURL : "/home"}`
 			);
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);
@@ -315,7 +315,7 @@ const AuthenticateViaOTP = ({
 	return (
 		<section
 			ref={sectionRef}
-			className="relative bg-[#F8F8F8] rounded-t-3xl md:rounded-xl flex flex-col items-center justify-center gap-4 px-8 pt-8 pb-2 shadow-lg w-screen md:w-full md:min-w-[24rem] md:max-w-sm mx-auto animate-enterFromBottom z-50"
+			className="relative bg-[#F8F8F8] rounded-t-3xl md:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-8 pb-2 shadow-lg w-screen h-fit md:w-full md:min-w-[24rem] md:max-w-sm mx-auto animate-enterFromBottom z-50 overflow-y-scroll no-scrollbar"
 		>
 			{onOpenChange && (
 				<Button
@@ -341,17 +341,17 @@ const AuthenticateViaOTP = ({
 			{!showOTP ? (
 				// SignUp form
 				<>
-					<div className="flex flex-col items-center justify-enter gap-2">
+					<div className="flex flex-col items-center justify-enter gap-2 text-center">
 						<Image
-							src="/icons/logoMobile.png"
+							src="/icons/logoMain.png"
 							width={1000}
 							height={1000}
 							alt="flashcall logo"
-							className="w-14 h-full mb-4 rounded-xl hoverScaleEffect"
+							className="w-3/4 h-10 p-2 mb-2 bg-green-1"
 						/>
 						<h2 className="text-lg font-semibold">Login or Signup</h2>
-						<p className="text-sm text-gray-500 mb-4">
-							To book your first consultation
+						<p className="text-sm text-[#707070] mb-4">
+							Get start with your first consultation <br /> and start earning
 						</p>
 					</div>
 					<Form {...signUpForm}>

@@ -42,8 +42,8 @@ const Navbar = () => {
 	const pathname = usePathname();
 	const creatorURL = localStorage.getItem("creatorURL");
 	const currentCreatorUsername = creatorURL
-		? creatorURL.split("/").filter((url) => url)[0]
-		: pathname.split("/")[1];
+		? creatorURL.split("/home").filter((url) => url)[0]
+		: pathname.split("/home")[1];
 
 	// const isCreatorOrExpertPath = pathname.includes(`/${currentCreatorUsername}`);
 
@@ -147,7 +147,10 @@ const Navbar = () => {
 		>
 			{currentUser ? (
 				userType === "creator" ? (
-					<Link href="/" className="flex items-center justify-center lg:ml-2">
+					<Link
+						href="/home"
+						className="flex items-center justify-center lg:ml-2"
+					>
 						<Image
 							src="/icons/logoDesktop.png"
 							width={100}

@@ -25,7 +25,7 @@
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;
+	display: none;
 }
 
 @keyframes spin {
@@ -105,6 +105,12 @@
 
 .rc-slider-mark {
 	top: -40px !important;
+}
+
+/* react slick carousel styles */
+
+.slick-dots {
+	bottom: 0 !important;
 }
 
 /* stream custom styles */

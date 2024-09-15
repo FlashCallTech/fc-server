@@ -105,7 +105,7 @@ export const handleTransaction = async ({
 			title: "Error",
 			description: "An error occurred while processing the Transactions",
 		});
-		router.push("/");
+		router.push("/home");
 	} finally {
 		updateWalletBalance();
 		localStorage.removeItem("user2");
