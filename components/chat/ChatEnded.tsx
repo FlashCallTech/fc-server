@@ -19,7 +19,7 @@ const ChatEnded = () => {
 	}, []);
 
 	const goToHomePage = () => {
-		router.replace("/"); // For react-router-dom v6, use 'navigate('/')'
+		router.replace("/home"); // For react-router-dom v6, use 'navigate('/')'
 	};
 	return (
 		<div className="flex items-center justify-center min-h-screen bg-gray-100">

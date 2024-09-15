@@ -149,7 +149,7 @@ export const handleTransaction = async ({
 			title: "Error",
 			description: "An error occurred while processing the Transactions",
 		});
-		router.push(`${creatorURL ? creatorURL : "/"}`);
+		router.push(`${creatorURL ? creatorURL : "/home"}`);
 	} finally {
 		// Update wallet balance after transaction
 		router.push(`/feedback/${callId}`);

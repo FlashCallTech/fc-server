@@ -105,7 +105,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	// Function to handle user signout
 	const handleSignout = () => {
 		const phone = currentUser?.phone; // Store phone number before resetting the state
-
 		if (phone) {
 			const userAuthRef = doc(db, "authToken", phone);
 
@@ -138,14 +137,8 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		if (isBrowser()) {
 			localStorage.removeItem("currentUserID");
 			localStorage.removeItem("authToken");
-			// localStorage.removeItem("notifyList");
-
-			if (
-				window.location.pathname === "/" ||
-				window.location.pathname === "/home"
-			) {
-				localStorage.removeItem("creatorURL");
-			}
+			localStorage.removeItem("creatorURL");
+			localStorage.removeItem("notifyList");
 		}
 		setClientUser(null);
 		setCreatorUser(null);
@@ -229,7 +222,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 	// Redirect to /updateDetails if username is missing
 	useEffect(() => {
-		if (currentUser && userType === "creator" && !currentUser.firstName) {
+		if (currentUser && userType === "creator" && !currentUser.username) {
 			router.replace("/updateDetails");
 			setTimeout(() => {
 				toast({
@@ -239,7 +232,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				});
 			}, 1000);
 		}
-	}, [router, userType, currentUser?._id]);
+	}, [router, userType]);
 
 	// Use heartbeat and beforeunload to update user status
 	useEffect(() => {
@@ -279,6 +272,27 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			}
 		);
 
+		// Fetch the current status before setting online
+		const setStatusOnline = async () => {
+			try {
+				const statusSnapshot = await getDoc(statusDocRef);
+				if (statusSnapshot.exists()) {
+					const currentStatus = statusSnapshot.data()?.status;
+					// Check if current status is not 'Busy'
+					if (currentStatus !== "Busy") {
+						await setStatus("Online");
+					}
+				} else {
+					// If document does not exist, create it with 'Online' status
+					await setStatus("Online");
+				}
+			} catch (error) {
+				Sentry.captureException(error);
+				console.error("Error checking or setting status online: ", error);
+			}
+		};
+
+		// Update user status
 		const setStatus = async (status: string) => {
 			try {
 				await setDoc(statusDocRef, { status }, { merge: true });
@@ -286,18 +300,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error(`Error updating user status to ${status}: `, error);
-			}
-		};
-
-		const setStatusOnline = async () => {
-			const statusSnapshot = await getDoc(statusDocRef);
-			if (statusSnapshot.exists()) {
-				const currentStatus = statusSnapshot.data()?.status;
-				if (currentStatus !== "Busy") {
-					await setStatus("Online");
-				}
-			} else {
-				await setStatus("Online");
 			}
 		};
 

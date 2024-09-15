@@ -163,7 +163,7 @@ const CreatorHome = () => {
 		audioCall: string;
 		chat: string;
 	}) => {
-		console.log(newPrices)
+		console.log(newPrices);
 		try {
 			await axios.put("/api/v1/creator/updateUser", {
 				userId: creatorUser?._id,
@@ -173,29 +173,29 @@ const CreatorHome = () => {
 					chatRate: newPrices.chat,
 				},
 			});
-			if(newPrices.audioCall !== prices.audioCall){
-				trackEvent('Creator_Audio_Price_Updated', {
+			if (newPrices.audioCall !== prices.audioCall) {
+				trackEvent("Creator_Audio_Price_Updated", {
 					Creator_ID: creatorUser?._id,
-					Creator_First_Seen: creatorUser?.createdAt?.toString().split('T')[0],
+					Creator_First_Seen: creatorUser?.createdAt?.toString().split("T")[0],
 					Platform: getDevicePlatform(),
-					Price: newPrices.audioCall
-				})
+					Price: newPrices.audioCall,
+				});
 			}
-			if(newPrices.videoCall !== prices.videoCall){
-				trackEvent('Creator_Video_Price_Updated', {
+			if (newPrices.videoCall !== prices.videoCall) {
+				trackEvent("Creator_Video_Price_Updated", {
 					Creator_ID: creatorUser?._id,
-					Creator_First_Seen: creatorUser?.createdAt?.toString().split('T')[0],
+					Creator_First_Seen: creatorUser?.createdAt?.toString().split("T")[0],
 					Platform: getDevicePlatform(),
-					Price: newPrices.videoCall
-				})
+					Price: newPrices.videoCall,
+				});
 			}
-			if(newPrices.chat !== prices.chat){
-				trackEvent('Creator_Chat_Price_Updated', {
+			if (newPrices.chat !== prices.chat) {
+				trackEvent("Creator_Chat_Price_Updated", {
 					Creator_ID: creatorUser?._id,
-					Creator_First_Seen: creatorUser?.createdAt?.toString().split('T')[0],
+					Creator_First_Seen: creatorUser?.createdAt?.toString().split("T")[0],
 					Platform: getDevicePlatform(),
-					Price: newPrices.chat
-				})
+					Price: newPrices.chat,
+				});
 			}
 			setPrices(newPrices);
 			toast({
@@ -235,7 +235,7 @@ const CreatorHome = () => {
 					audioCall: newMyServicesState,
 					chat: newMyServicesState,
 				};
-				console.log(newServices)
+				console.log(newServices);
 				updateFirestoreCallServices(newServices, prices);
 				return newServices;
 			} else {
@@ -272,7 +272,7 @@ const CreatorHome = () => {
 			updateServices();
 		}
 	}, [services]);
-	
+
 	if (!creatorUser || loading || walletBalance < 0)
 		return (
 			<section className="w-full h-full -mt-10 flex flex-col items-center justify-center">
@@ -419,7 +419,7 @@ const CreatorHome = () => {
 						<div className="text-center text-[13px] text-gray-400">
 							If you are interested in learning how to create an account on{" "}
 							<b>Flashcall</b> and how it works. <br />{" "}
-							<Link href={"/"} className="text-green-1">
+							<Link href={"/home"} className="text-green-1">
 								{" "}
 								<b> please click here. </b>{" "}
 							</Link>

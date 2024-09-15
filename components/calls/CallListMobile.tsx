@@ -180,7 +180,7 @@ const CallListMobile = () => {
 					<ContentLoading />
 					<h1 className="text-2xl font-semibold text-black">No Orders Yet</h1>
 					<Link
-						href="/"
+						href="/home"
 						className={`flex gap-4 items-center p-4 rounded-lg justify-center bg-green-1 hover:opacity-80 mx-auto w-fit`}
 					>
 						<Image

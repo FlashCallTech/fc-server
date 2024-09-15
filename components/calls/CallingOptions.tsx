@@ -450,7 +450,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	// 				token: token,
 	// 				title: "Test Notification",
 	// 				message: "This is a test notification",
-	// 				link: "/",
+	// 				link: "/home",
 	// 			}),
 	// 		});
 

@@ -30,7 +30,7 @@ const CreatorCard: React.FC = () => {
 				title: "You are a Creator",
 				description: "Redirecting to HomePage ...",
 			});
-			router.push("/"); // Redirect to homepage if userType is creator
+			router.push("/home"); // Redirect to homepage if userType is creator
 			return;
 		}
 

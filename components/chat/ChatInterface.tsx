@@ -25,7 +25,6 @@ import Recharge from "./Recharge";
 import Tip from "./Tip";
 
 const ChatInterface: React.FC = () => {
-
 	const [text, setText] = useState("");
 	const [isImgUploading, setIsImgUploading] = useState(false);
 	const [isAudioUploading, setIsAudioUploading] = useState(false);
@@ -39,9 +38,9 @@ const ChatInterface: React.FC = () => {
 		file: null,
 		url: "",
 	});
-	const [messages, setMessages] = useState<{ text: string | null; img: string | null; audio: string | null }[]>(
-		[],
-	);
+	const [messages, setMessages] = useState<
+		{ text: string | null; img: string | null; audio: string | null }[]
+	>([]);
 
 	useUserStatus();
 
@@ -111,7 +110,7 @@ const ChatInterface: React.FC = () => {
 
 	const handleCapturedImg = (e: any) => {
 		if (e.target.files && e.target.files[0]) {
-			console.log('hehe')
+			console.log("hehe");
 			setImg({
 				file: e.target.files[0],
 				url: URL.createObjectURL(e.target.files[0]),
@@ -121,9 +120,9 @@ const ChatInterface: React.FC = () => {
 	};
 
 	const handleImg = (e: any) => {
-		console.log('hehe')
+		console.log("hehe");
 		if (e.target.files && e.target.files[0]) {
-			console.log('hehe2')
+			console.log("hehe2");
 			setImg({
 				file: e.target.files[0],
 				url: URL.createObjectURL(e.target.files[0]),
@@ -308,17 +307,18 @@ const ChatInterface: React.FC = () => {
 		setIsImgUploading(false);
 		setImg({
 			file: null,
-			url: ""
-		})
-	}
+			url: "",
+		});
+	};
 
 	const handleCloseDialog = () => {
 		setShowDialog(false);
 	};
 
 	return (
-		<div className={`relative flex flex-col h-screen z-50`}
-		// style={{ backgroundBlendMode: "luminosity" }}
+		<div
+			className={`relative flex flex-col h-screen z-50`}
+			// style={{ backgroundBlendMode: "luminosity" }}
 		>
 			<div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center z-0" />
 
@@ -337,11 +337,13 @@ const ChatInterface: React.FC = () => {
 							className="w-10 h-10 rounded-full"
 						/>
 						<div className="flex flex-col">
-						<div className="text-white font-bold text-xs md:text-lg">
-								Username
+							<div className="text-white font-bold text-xs md:text-lg">
+								{currentUser?.username ?? "Username"}
 							</div>
 							{userType === "client" && <ChatTimer />}
-							{userType === "creator" && <CreatorChatTimer chatId={chatId as string} />}
+							{userType === "creator" && (
+								<CreatorChatTimer chatId={chatId as string} />
+							)}
 							<p className="text-[10px] md:text-sm text-green-500">
 								Ongoing chat
 							</p>
@@ -391,7 +393,6 @@ const ChatInterface: React.FC = () => {
 				</div>
 			</div>
 		</div>
-
 	);
 };
 

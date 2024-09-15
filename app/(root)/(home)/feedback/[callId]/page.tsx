@@ -29,7 +29,7 @@ const CallFeedbackPage = () => {
 						title: "Feedback Already Exists",
 						description: "Returning to HomePage ...",
 					});
-					router.push(`${creatorURL ? creatorURL : "/"}`);
+					router.push(`${creatorURL ? creatorURL : "/home"}`);
 				} else {
 					setShowFeedback(true);
 				}
@@ -70,7 +70,7 @@ const CallFeedbackPage = () => {
 			title: "Thanks For The Feedback",
 			description: "Hope to See You Again ...",
 		});
-		router.push(`${creatorURL ? creatorURL : "/"}`);
+		router.push(`${creatorURL ? creatorURL : "/home"}`);
 	};
 
 	if (loadingFeedback) {

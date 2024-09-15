@@ -9,7 +9,7 @@ import { handleError } from "@/lib/utils";
 import { CreateUserParams, UpdateUserParams } from "@/types";
 import Client from "../database/models/client.model";
 import * as Sentry from "@sentry/nextjs";
-import { trackEvent } from "../mixpanel";
+// import { trackEvent } from "../mixpanel";
 import { addMoney } from "./wallet.actions";
 import { MongoServerError } from "mongodb";
 
@@ -39,9 +39,9 @@ export async function createUser(user: CreateUserParams) {
 
 		const clientUser = JSON.parse(JSON.stringify(newUser));
 
-		trackEvent("User_first_seen", {
-			Client_ID: clientUser._id,
-		});
+		// trackEvent("User_first_seen", {
+		// 	Client_ID: clientUser._id,
+		// });
 		return JSON.parse(JSON.stringify(newUser));
 	} catch (error) {
 		if (error instanceof MongoServerError && error.code === 11000) {
@@ -131,24 +131,26 @@ export async function updateUser(userId: string, user: UpdateUserParams) {
 	}
 }
 
-export async function deleteUser(userId: string) {
+export async function deleteClientUser(userId: string) {
 	try {
 		await connectToDatabase();
 
 		// Find user to delete
-		const userToDelete = await Client.findOne({ userId });
+		const userToDelete = await Client.findById(userId);
 
 		if (!userToDelete) {
-			throw new Error("User not found");
+			return { error: "User not found" };
 		}
 
 		// Delete user
-		const deletedUser = await Client.findByIdAndDelete(userToDelete._id);
-		revalidatePath("/");
+		const deletedUser = await Client.findByIdAndDelete(userId);
 
-		return deletedUser ? JSON.parse(JSON.stringify(deletedUser)) : null;
+		return deletedUser
+			? JSON.parse(JSON.stringify(deletedUser))
+			: { error: "Failed to delete user" };
 	} catch (error) {
 		Sentry.captureException(error);
-		handleError(error);
+		console.log(error);
+		return { error: "An unexpected error occurred" };
 	}
 }

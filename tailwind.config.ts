@@ -13,6 +13,7 @@ const config = {
 		extend: {
 			screens: {
 				xs: "320px",
+				xm: "400px",
 				m: "460px",
 				sm: "584px",
 				md: "768px",
@@ -25,6 +26,7 @@ const config = {
 				default: ["Helvetica", "sans-serif"],
 			},
 			colors: {
+				secondary: "#232323",
 				dark: {
 					1: "#1C1F2E",
 					2: "#161925",
@@ -100,7 +102,8 @@ const config = {
 				enterFromTop: "enterFromTop 1s ease-in-out forwards",
 			},
 			backgroundImage: {
-				hero: "url('/images/hero-background.png')",
+				hero: "url('/web/images/grid.png')",
+				pattern: "url('/web/images/pattern.png')",
 			},
 		},
 	},

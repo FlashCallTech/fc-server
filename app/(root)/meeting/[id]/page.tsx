@@ -35,7 +35,7 @@ const MeetingPage = () => {
 				description: "Redirecting Back...",
 			});
 			setTimeout(() => {
-				router.push(`${creatorURL ? creatorURL : "/"}`);
+				router.push(`${creatorURL ? creatorURL : "/home"}`);
 			}, 1000);
 		}
 	}, [isCallLoading, call, router, toast]);
@@ -150,7 +150,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 		if (isMeetingOwner && !transactionHandled.current) {
 			handleCallEnd();
 		} else if (!isMeetingOwner) {
-			router.push(`/`);
+			router.push(`/home`);
 		}
 	}, [
 		isMeetingOwner,
