@@ -14,11 +14,17 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import React from "react";
 
 const HomePage = () => {
-	const { currentUser, handleSignout } = useCurrentUsersContext();
+	const { currentUser, handleSignout, fetchingUser } = useCurrentUsersContext();
 	return (
 		<main className="grid grid-cols-1 items-center">
 			{/* Navbar web */}
-			{<NavbarWeb currentUser={currentUser} handleSignout={handleSignout} />}
+			{
+				<NavbarWeb
+					currentUser={currentUser}
+					handleSignout={handleSignout}
+					fetchingUser={fetchingUser}
+				/>
+			}
 			{/* Hero Section */}
 			<Hero />
 			{/* About section */}

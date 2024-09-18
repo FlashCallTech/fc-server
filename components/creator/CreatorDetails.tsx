@@ -31,7 +31,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 		? creator.themeSelected
 		: "#50A65C";
 
-	const { clientUser, setAuthenticationSheetOpen, setCurrentTheme } =
+	const { clientUser, setAuthenticationSheetOpen, setCurrentTheme, userType } =
 		useCurrentUsersContext();
 	const { toast } = useToast();
 
@@ -47,7 +47,8 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 	useEffect(() => {
 		if (isCreatorOrExpertPath) {
 			localStorage.setItem("currentCreator", JSON.stringify(creator));
-			localStorage.setItem("creatorURL", `/${creator?.username}`);
+			userType !== "creator" &&
+				localStorage.setItem("creatorURL", `/${creator?.username}`);
 			setCurrentTheme(themeColor);
 		}
 	}, [creator?._id, isCreatorOrExpertPath]);
@@ -201,7 +202,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 		return (
 			<AuthenticationSheet
 				isOpen={isAuthSheetOpen}
-				onOpenChange={setIsAuthSheetOpen} // Handle sheet close
+				onOpenChange={setIsAuthSheetOpen}
 			/>
 		);
 
@@ -209,18 +210,18 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 		<>
 			<div className="flex flex-col items-center px-5 sm:px-7 justify-center">
 				<div
-					className={`relative flex flex-col items-center w-full max-w-[85%] md:max-w-[60%] xl:max-w-[35%] mx-auto gap-4 p-4 rounded-[24px] z-10 `}
+					className={`relative flex flex-col items-center w-full max-w-[85%] md:max-w-[70%] xl:max-w-[35%] mx-auto gap-4 p-4 rounded-[24px] z-10`}
 					style={{
 						backgroundColor: themeColor,
 					}}
 				>
 					{!isImageLoaded ? (
 						<div
-							className={`bg-gray-300 opacity-60 animate-pulse rounded-[24px]  w-full h-72 xl:h-80 object-cover`}
+							className={`bg-gray-300 opacity-60 animate-pulse rounded-[24px] w-full h-[200px] sm:h-72 xl:h-80 object-cover`}
 						/>
 					) : (
 						<div
-							className={`relative rounded-xl w-full h-72 xl:h-80 bg-center`}
+							className={`relative rounded-xl w-full h-[200px] sm:h-72 xl:h-80 bg-center`}
 							style={backgroundImageStyle}
 						>
 							<div className="flex flex-col items-end justify-center gap-2 absolute top-4 right-4">
@@ -235,15 +236,17 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 										lastName={creator.lastName}
 									/>
 
-									<Favorites
-										setMarkedFavorite={setMarkedFavorite}
-										markedFavorite={markedFavorite}
-										handleToggleFavorite={handleToggleFavorite}
-										addingFavorite={addingFavorite}
-										creator={creator}
-										user={clientUser}
-										isCreatorOrExpertPath={isCreatorOrExpertPath}
-									/>
+									{userType === "client" && (
+										<Favorites
+											setMarkedFavorite={setMarkedFavorite}
+											markedFavorite={markedFavorite}
+											handleToggleFavorite={handleToggleFavorite}
+											addingFavorite={addingFavorite}
+											creator={creator}
+											user={clientUser}
+											isCreatorOrExpertPath={isCreatorOrExpertPath}
+										/>
+									)}
 								</>
 							</div>
 

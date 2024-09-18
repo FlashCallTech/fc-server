@@ -101,6 +101,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		}
 		return rate;
 	};
+
 	const amountToBeDisplayed = () => {
 		const ratePerMinute = getRateForCallType();
 		const costForFiveMinutes = ratePerMinute ? ratePerMinute * 5 : undefined;

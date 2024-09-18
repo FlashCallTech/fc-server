@@ -3,10 +3,10 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Switch } from "@/components/ui/switch";
 import { useInView } from "react-intersection-observer";
 import Image from "next/image";
 import { sparkles } from "@/constants/icons";
+import { SwitchWeb } from "../ui/switchWeb";
 
 const SwitchToggle = () => {
 	const [showContent, setShowContent] = useState(false);
@@ -67,16 +67,16 @@ const SwitchToggle = () => {
 			</div>
 			{!showContent ? (
 				<div className="mt-8 flex flex-col items-center justify-center gap-4">
-					<Switch
-						className="bg-[#A7A8A1] w-[133px] py-7"
+					<SwitchWeb
+						className="bg-white/25 w-[133px] py-7"
 						checked={toggleSwitch}
 						onCheckedChange={handleToggle}
 					/>
-					<span className="text-[#A7A8A1] text-xs">Click to go Online</span>
+					<span className="text-white text-xs">Click to go Online</span>
 				</div>
 			) : (
 				<div className="relative flex flex-col items-center justify-center px-2 w-full flex-1">
-					<div className="relative flex flex-col items-center w-fit mx-auto gap-4 p-7 rounded-xl bg-black z-10">
+					<div className="relative flex flex-col items-center w-fit mx-auto gap-4 p-4 rounded-xl bg-black z-10">
 						<Image
 							src="/web/images/user.png"
 							alt="profile picture"

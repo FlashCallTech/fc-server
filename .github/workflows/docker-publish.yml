@@ -1,6 +1,6 @@
 name: Build and Push Docker Images
 
-# Triggers the workflow on push or pull request to the main branch
+# Triggers the workflow on push or pull request to the master branch
 on:
   push:
     branches:
@@ -49,15 +49,12 @@ jobs:
       - name: Build dev image
         run: docker build --no-cache -f Dockerfile.dev -t aseem5047/flashcall:dev .
 
-      - name: Log environment variables
-        run: |
-          echo "NEXT_PUBLIC_STREAM_API_KEY=${{ secrets.NEXT_PUBLIC_STREAM_API_KEY }}"
-          echo "STREAM_SECRET_KEY=${{ secrets.STREAM_SECRET_KEY }}"
-          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}"
-
       # Build the production image
       - name: Build prod image
+        id: build_prod
         run: |
+          IMAGE_TAG=$(git rev-parse --short HEAD)
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
           docker build --no-cache \
           --build-arg NEXT_PUBLIC_STREAM_API_KEY='${{ env.NEXT_PUBLIC_STREAM_API_KEY }}' \
           --build-arg STREAM_SECRET_KEY='${{ env.STREAM_SECRET_KEY }}' \
@@ -78,7 +75,7 @@ jobs:
           --build-arg NODE_ENV='${{ env.NODE_ENV }}' \
           --build-arg NEXT_PUBLIC_FIREBASE_KEY='${{ env.NEXT_PUBLIC_FIREBASE_KEY }}' \
           --build-arg FIREBASE_SERVICE_ACCOUNT_BASE64='${{ env.FIREBASE_SERVICE_ACCOUNT_BASE64 }}' \
-          -f Dockerfile.prod -t aseem5047/flashcall:prod .
+          -t aseem5047/flashcall:${IMAGE_TAG} -f Dockerfile.prod .
 
       # Push development image to Docker Hub
       - name: Push dev image
@@ -86,7 +83,9 @@ jobs:
 
       # Push production image to Docker Hub
       - name: Push prod image
-        run: docker push aseem5047/flashcall:prod
+        run: |
+          IMAGE_TAG=$(git rev-parse --short HEAD)
+          docker push aseem5047/flashcall:${IMAGE_TAG}
 
       # Prune dangling images to free up space
       - name: Prune dangling images

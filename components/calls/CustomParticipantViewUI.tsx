@@ -105,7 +105,7 @@ const CustomParticipantViewUI = () => {
 
 	return (
 		<>
-			{call?.camera?.state?.status === "enabled" &&
+			{/* {call?.camera?.state?.status === "enabled" &&
 				expert?.user_id !== participant.userId && (
 					<button
 						disabled={!document.pictureInPictureEnabled}
@@ -122,7 +122,7 @@ const CustomParticipantViewUI = () => {
 							<PictureInPicture />
 						)}
 					</button>
-				)}
+				)} */}
 
 			<span
 				className={`absolute   w-full text-sm text-ellipsis overflow-hidden ${

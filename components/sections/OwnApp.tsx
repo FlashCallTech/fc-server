@@ -28,7 +28,7 @@ const OwnApp = () => {
 					</span>
 					<Link href="https://forms.gle/bo42SCVG6T4YjJzg8">
 						<Button
-							className="hidden lg:flex items-center justify-center gap-4 uppercase bg-transparent text-white border border-white w-[320px] !py-6 md:mt-4"
+							className="hidden lg:flex items-center justify-center gap-4 uppercase bg-transparent text-white border border-white w-[320px] !py-6 md:mt-4 hoverScaleDownEffect"
 							style={{
 								boxShadow: theme,
 							}}
@@ -54,7 +54,7 @@ const OwnApp = () => {
 				/>
 
 				<Button
-					className="flex lg:hidden items-center justify-center w-[95%] mx-auto gap-4 uppercase bg-transparent text-white border border-white !py-8 mt-7 lg:mt-0"
+					className="flex lg:hidden items-center justify-center w-[95%] mx-auto gap-4 uppercase bg-transparent text-white border border-white !py-8 mt-7 lg:mt-0 hoverScaleDownEffect"
 					style={{
 						boxShadow: theme,
 					}}

@@ -5,6 +5,7 @@ import { CurrentUsersProvider } from "@/lib/context/CurrentUsersContext";
 import { UserStatusProvider } from "@/lib/context/UserStatusContext";
 import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
 import { initMixpanel } from "@/lib/mixpanel";
+import { QueryProvider } from "@/lib/react-query/QueryProvider";
 import StreamVideoProvider from "@/providers/streamClientProvider";
 import { throttle } from "lodash";
 import Image from "next/image";
@@ -105,19 +106,21 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	};
 
 	return (
-		<CurrentUsersProvider>
-			<StreamVideoProvider>
-				<WalletBalanceProvider>
-					<ChatRequestProvider>
-						<UserStatusProvider>
-							<div className="relative min-h-screen w-full">
-								{renderContent()}
-							</div>
-						</UserStatusProvider>
-					</ChatRequestProvider>
-				</WalletBalanceProvider>
-			</StreamVideoProvider>
-		</CurrentUsersProvider>
+		<QueryProvider>
+			<CurrentUsersProvider>
+				<StreamVideoProvider>
+					<WalletBalanceProvider>
+						<ChatRequestProvider>
+							<UserStatusProvider>
+								<div className="relative min-h-screen w-full">
+									{renderContent()}
+								</div>
+							</UserStatusProvider>
+						</ChatRequestProvider>
+					</WalletBalanceProvider>
+				</StreamVideoProvider>
+			</CurrentUsersProvider>
+		</QueryProvider>
 	);
 };
 

@@ -5,12 +5,30 @@ import { CreateCreatorParams, LinkType, UpdateCreatorParams } from "@/types";
 import Creator from "../database/models/creator.model";
 import * as Sentry from "@sentry/nextjs";
 import { addMoney } from "./wallet.actions";
-// import { trackEvent } from "../mixpanel";
 import { MongoServerError } from "mongodb";
+
+// Regular expression to validate username
+const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+
+// Function to validate username
+export const validateUsername = (username: string) => {
+	if (!usernameRegex.test(username)) {
+		return false;
+	}
+	return true;
+};
 
 export async function createCreatorUser(user: CreateCreatorParams) {
 	try {
 		await connectToDatabase();
+
+		// Validate the username
+		if (!validateUsername(user.username)) {
+			return {
+				error:
+					"Username contains invalid characters. Only alphanumeric characters, underscores, and dashes are allowed.",
+			};
+		}
 
 		// Check for existing user with the same username
 		const existingUserByUsername = await Creator.findOne({
@@ -32,10 +50,7 @@ export async function createCreatorUser(user: CreateCreatorParams) {
 			userType: "Creator",
 			amount: 0, // Set the initial balance here
 		});
-		const creatorUser = JSON.parse(JSON.stringify(newUser));
-		// trackEvent("User_first_seen", {
-		// 	Creator_ID: creatorUser._id,
-		// });
+
 		return JSON.parse(JSON.stringify(newUser));
 	} catch (error) {
 		if (error instanceof MongoServerError && error.code === 11000) {
@@ -70,23 +85,21 @@ export async function getUsers() {
 export async function getUsersPaginated(offset = 0, limit = 2) {
 	try {
 		await connectToDatabase();
-		// MongoDB query to filter users with non-zero rates for audio, video, and chat
+
 		const query = {
 			$or: [
-				{ audioRate: { $ne: "0" } }, // Include if audioRate is not "0"
-				{ videoRate: { $ne: "0" } }, // Include if videoRate is not "0"
-				{ chatRate: { $ne: "0" } }, // Include if chatRate is not "0"
+				{ audioRate: { $ne: "0" } },
+				{ videoRate: { $ne: "0" } },
+				{ chatRate: { $ne: "0" } },
 			],
 		};
 
-		// Fetch users with pagination using skip, limit, and query filters
 		const users = await Creator.find(query)
-			.sort({ createdAt: -1 }) // Sort by creation date in descending order
+			.sort({ createdAt: -1 })
 			.skip(offset)
 			.limit(limit)
-			.lean(); // Use lean() to get plain JavaScript objects
+			.lean();
 
-		// Return the fetched users or an empty array if none are found
 		return users.length > 0 ? JSON.parse(JSON.stringify(users)) : [];
 	} catch (error) {
 		Sentry.captureException(error);
@@ -126,16 +139,22 @@ export async function getUserByPhone(phone: string) {
 export async function getUserByUsername(username: string) {
 	try {
 		await connectToDatabase();
+		// Decode the URL-encoded username
+		const decodedUsername = decodeURIComponent(username as string);
 
-		const user = await Creator.find({ username });
+		// Remove "@" from the beginning if it exists
+		const formattedUsername = decodedUsername.startsWith("@")
+			? decodedUsername.substring(1)
+			: decodedUsername;
+		// Find user based on the formatted username
+		const user = await Creator.findOne({ username: formattedUsername });
 
 		if (!user) throw new Error("User not found");
 
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
-		Sentry.captureException(error);
-		console.log(error);
-		return [];
+		console.error(error);
+		return { error: "An unexpected error occurred" };
 	}
 }
 
@@ -145,6 +164,14 @@ export async function updateCreatorUser(
 ) {
 	try {
 		await connectToDatabase();
+
+		// Validate the username
+		if (updates.username && !validateUsername(updates.username)) {
+			return {
+				error:
+					"Username contains invalid characters. Only alphanumeric characters, underscores, and dashes are allowed.",
+			};
+		}
 
 		// Construct the update object
 		const updateObject: any = { ...updates };

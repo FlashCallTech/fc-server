@@ -22,7 +22,7 @@ const Hero = () => {
 					</span>
 					<Link href="https://forms.gle/bo42SCVG6T4YjJzg8">
 						<Button
-							className="hidden lg:flex items-center justify-center gap-4 uppercase bg-green-1 text-white grdientEffect border border-black w-[320px] !py-6"
+							className="hidden lg:flex items-center justify-center gap-4 uppercase bg-green-1 text-white grdientEffect border border-black w-[320px] !py-6 hoverScaleDownEffect"
 							style={{
 								boxShadow: theme,
 							}}
@@ -39,21 +39,31 @@ const Hero = () => {
 					</Link>
 				</div>
 				{/* banner */}
+
 				<Image
-					src="/web/images/hero.png"
+					src="/web/images/hero_web.png"
 					alt="logo"
 					width={1000}
 					height={1000}
-					className="rounded-xl w-full h-full max-h-[480px] object-contain"
+					className="hidden lg:block rounded-xl w-full h-full max-h-[480px] object-contain"
 				/>
+				<Image
+					src="/web/images/hero_mobile.png"
+					alt="logo"
+					width={1000}
+					height={1000}
+					className="lg:hidden rounded-xl w-full h-full max-h-[480px] object-contain"
+				/>
+
 				{/* more content */}
 				<span className="text-xl text-[#707070] leading-loose lg:hidden">
 					Join 1000+ people who are earning upto 10 Lakhs a month just by
 					talking to their followers. Stop worrying about scheduling calls or
 					collecting payments, flashcall handles everything for you.
 				</span>
-				<Button
-					className="flex lg:hidden items-center justify-center w-full gap-4 uppercase bg-green-1 text-white grdientEffect border border-black !py-8"
+				<Link
+					href="https://forms.gle/bo42SCVG6T4YjJzg8"
+					className="flex lg:hidden items-center justify-center w-full gap-4 uppercase bg-green-1 text-white grdientEffect border border-black py-4 hoverScaleDownEffect rounded-lg"
 					style={{
 						boxShadow: theme,
 					}}
@@ -65,8 +75,8 @@ const Hero = () => {
 						height={200}
 						className="rounded-xl w-6 h-6"
 					/>
-					<p className="text-xl font-semibold">Get Your Link</p>
-				</Button>
+					<p className="font-semibold">Get Your Link</p>
+				</Link>
 			</div>
 		</section>
 	);

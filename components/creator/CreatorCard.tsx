@@ -5,39 +5,27 @@ import { creatorUser } from "@/types";
 import CallingOptions from "../calls/CallingOptions";
 import CreatorDetails from "./CreatorDetails";
 import UserReviews from "./UserReviews";
-import { useToast } from "@/components/ui/use-toast";
 import { getUserByUsername } from "@/lib/actions/creator.actions";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import ContentLoading from "../shared/ContentLoading";
+import SinglePostLoader from "../shared/SinglePostLoader";
 
 const CreatorCard: React.FC = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
 	const [loading, setLoading] = useState(true);
 	const { username } = useParams();
-	const { toast } = useToast();
-	const router = useRouter();
-	const { currentUser, userType, setCurrentTheme } = useCurrentUsersContext();
+	const { currentUser, setCurrentTheme } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
 
 	useEffect(() => {
 		creator?.themeSelected && setCurrentTheme(creator?.themeSelected);
-		if (userType === "creator") {
-			toast({
-				variant: "destructive",
-				title: "You are a Creator",
-				description: "Redirecting to HomePage ...",
-			});
-			router.push("/home"); // Redirect to homepage if userType is creator
-			return;
-		}
 
 		const fetchCreator = async () => {
 			try {
 				const response = await getUserByUsername(String(username));
-				setCreator(response[0] || null);
+				setCreator(response || null);
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error fetching creator:", error);
@@ -54,7 +42,7 @@ const CreatorCard: React.FC = () => {
 	if (loading || (currentUser && walletBalance < 0)) {
 		return (
 			<div className="size-full flex flex-col gap-2 items-center justify-center -mt-10">
-				<ContentLoading />
+				<SinglePostLoader />
 			</div>
 		);
 	}
