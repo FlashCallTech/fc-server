@@ -25,8 +25,17 @@ export async function generateMetadata({
 			return "/images/defaultProfileImage.png";
 		}
 	};
-	const creator = await getUserByUsername(String(params.username));
-	const creatorProfile = creator.length > 0 ? creator[0] : null;
+
+	// Decode the URL-encoded username
+	const decodedUsername = decodeURIComponent(params.username as string);
+
+	// Remove "@" from the beginning if it exists
+	const formattedUsername = decodedUsername.startsWith("@")
+		? decodedUsername.substring(1)
+		: decodedUsername;
+
+	const creator = await getUserByUsername(String(formattedUsername));
+	const creatorProfile = creator ? creator : null;
 	const imageURL = creatorProfile
 		? imageSrc(creatorProfile)
 		: "/images/defaultProfileImage.png";
@@ -34,7 +43,7 @@ export async function generateMetadata({
 		? `${creatorProfile.firstName || ""} ${
 				creatorProfile.lastName || ""
 		  }`.trim()
-		: params.username;
+		: formattedUsername;
 
 	try {
 		return {
@@ -42,7 +51,7 @@ export async function generateMetadata({
 			description: "Creator | Expert | Flashcall.me",
 			openGraph: {
 				type: "website",
-				url: `https://app.flashcall.me/${params.username}`,
+				url: `https://flashcall.me/@${formattedUsername}`,
 				title: `Creator | ${fullName}` || "FlashCall",
 				description: `Book your first consultation with ${fullName}`,
 				images: [

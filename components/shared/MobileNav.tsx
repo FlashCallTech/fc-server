@@ -146,8 +146,10 @@ const MobileNav = () => {
 									className="rounded-full w-12 h-12 max-w-[56px] object-cover"
 								/>
 								<div className="flex flex-col items-start justify-center text-white">
-									<span className="text-lg capitalize">
-										{currentUser?.username || "Hello User"}
+									<span className="text-lg capitalize max-w-[75%] overflow-hidden text-ellipsis whitespace-nowrap">
+										{currentUser?.username ||
+											currentUser?.firstName ||
+											"Hello User"}
 									</span>
 									<span className="text-sm text-green-1">
 										{currentUser?.phone?.replace(

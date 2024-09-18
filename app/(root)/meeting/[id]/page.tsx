@@ -122,6 +122,23 @@ const CallEnded = ({ toast, router, call }: any) => {
 
 			setLoading(true);
 
+			// Stop camera and microphone
+			const stopMediaStreams = () => {
+				navigator.mediaDevices
+					.getUserMedia({ video: true, audio: true })
+					.then((mediaStream) => {
+						mediaStream.getTracks().forEach((track) => {
+							track.stop();
+						});
+					})
+					.catch((error) => {
+						console.error("Error stopping media streams: ", error);
+					});
+			};
+
+			// Call stopMediaStreams to stop the tracks
+			stopMediaStreams();
+
 			await fetch("/api/v1/calls/updateCall", {
 				method: "POST",
 				body: JSON.stringify({

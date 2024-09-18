@@ -66,6 +66,7 @@ const EditProfile = ({
 	const [selectedFile, setSelectedFile] = useState<File | null>(null); // State to store the selected file
 	const [loading, setLoading] = useState(false);
 	const [usernameError, setUsernameError] = useState<string | null>(null);
+
 	const [formError, setFormError] = useState<string | null>(null); // State to store form error
 	const [selectedColor, setSelectedColor] = useState(
 		userData.themeSelected ?? "#50A65C"
@@ -96,7 +97,6 @@ const EditProfile = ({
 			bio: userData.bio,
 			gender: userData.gender,
 			dob: userData.dob,
-			creatorId: userData.creatorId || `${userData.phone}@creator`,
 		},
 	});
 
@@ -116,8 +116,7 @@ const EditProfile = ({
 			watchedValues.photo !== initialState.photo ||
 			watchedValues.bio !== initialState.bio ||
 			watchedValues.gender !== initialState.gender ||
-			watchedValues.dob !== initialState.dob ||
-			watchedValues.creatorId !== initialState.creatorId;
+			watchedValues.dob !== initialState.dob;
 
 		setIsChanged(hasChanged);
 	}, [watchedValues, initialState]);
@@ -216,7 +215,7 @@ const EditProfile = ({
 				response = await updateCreatorUser(userData.id!, {
 					...commonValues,
 					...creatorProfileDetails,
-					creatorId: values.creatorId || userData.id,
+					creatorId: `@${values.username || userData.username}`,
 				} as UpdateCreatorParams);
 			} else {
 				response = await updateUser(
@@ -320,16 +319,27 @@ const EditProfile = ({
 								Username
 							</FormLabel>
 							<FormControl>
-								<Input
-									type="text"
-									placeholder="Enter your username"
-									{...field}
-									className="input-field"
-									onChange={(e) => {
-										field.onChange(e);
-										debouncedCheckUsernameAvailability(e.target.value);
-									}}
-								/>
+								<div
+									className={`relative flex items-center  ${
+										userType === "creator" ? " w-fit gap-2.5" : "w-full"
+									}`}
+								>
+									{userType === "creator" && (
+										<span className="text-gray-400 pl-2">
+											https://flashcall.me/
+										</span>
+									)}
+									<Input
+										type="text"
+										placeholder="Enter your username"
+										{...field}
+										className="input-field"
+										onChange={(e) => {
+											field.onChange(e);
+											debouncedCheckUsernameAvailability(e.target.value);
+										}}
+									/>
+								</div>
 							</FormControl>
 							{usernameError && (
 								<p className="error-message">{usernameError}</p>
@@ -341,29 +351,19 @@ const EditProfile = ({
 					)}
 				/>
 
-				{(["firstName", "lastName", "bio"] as const).map((field, index) => (
-					<FormField
-						key={index}
-						control={form.control}
-						name={field}
-						render={({ field }) => (
-							<FormItem className="w-full">
-								<FormLabel className="font-medium text-sm text-gray-400 ml-1">
-									{field.name === "bio"
-										? userData?.bio?.length === 0
-											? "Add"
-											: "Edit"
-										: ""}{" "}
-									{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
-								</FormLabel>
-								<FormControl>
-									{field.name === "bio" ? (
-										<Textarea
-											className="textarea max-h-32"
-											placeholder="Tell us a little bit about yourself"
-											{...field}
-										/>
-									) : (
+				{/* Container for firstName and lastName */}
+				<div className="flex gap-4 w-full">
+					{(["firstName", "lastName"] as const).map((field, index) => (
+						<FormField
+							key={index}
+							control={form.control}
+							name={field}
+							render={({ field }) => (
+								<FormItem className="flex-1">
+									<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+										{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
+									</FormLabel>
+									<FormControl>
 										<Input
 											placeholder={`Enter ${
 												field.name.charAt(0).toUpperCase() + field.name.slice(1)
@@ -371,15 +371,38 @@ const EditProfile = ({
 											{...field}
 											className="input-field"
 										/>
-									)}
-								</FormControl>
-								<FormMessage className="error-message">
-									{errors[field.name]?.message}
-								</FormMessage>
-							</FormItem>
-						)}
-					/>
-				))}
+									</FormControl>
+									<FormMessage className="error-message">
+										{errors[field.name]?.message}
+									</FormMessage>
+								</FormItem>
+							)}
+						/>
+					))}
+				</div>
+
+				{/* Container for bio */}
+				<FormField
+					control={form.control}
+					name="bio"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+								{userData?.bio?.length === 0 ? "Add" : "Edit"} Bio
+							</FormLabel>
+							<FormControl>
+								<Textarea
+									className="textarea max-h-32"
+									placeholder="Tell us a little bit about yourself"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage className="error-message">
+								{errors.bio?.message}
+							</FormMessage>
+						</FormItem>
+					)}
+				/>
 
 				{/* profession */}
 				{userData.role === "creator" && (
@@ -409,9 +432,7 @@ const EditProfile = ({
 				)}
 
 				<div
-					className={`w-full grid grid-cols-1 md:grid-cols-2 ${
-						userData.role === "creator" ? "xl:grid-cols-[1fr_1fr_2fr]" : ""
-					} items-center justify-between gap-8`}
+					className={`w-full grid grid-cols-2  items-center justify-between gap-8`}
 				>
 					{/* gender */}
 					<FormField
@@ -497,7 +518,7 @@ const EditProfile = ({
 					/>
 
 					{/* creator id */}
-					{userData.role === "creator" && (
+					{/* {userData.role === "creator" && (
 						<FormField
 							control={form.control}
 							name="creatorId"
@@ -509,9 +530,10 @@ const EditProfile = ({
 									<FormControl>
 										<Input
 											type="text"
-											placeholder={`Create Your ID`}
+											placeholder="Create Your ID"
 											{...field}
 											className="input-field"
+											readOnly
 										/>
 									</FormControl>
 									<FormDescription className="text-xs text-gray-400 ml-1">
@@ -523,7 +545,7 @@ const EditProfile = ({
 								</FormItem>
 							)}
 						/>
-					)}
+					)} */}
 				</div>
 
 				{/* profile theme */}

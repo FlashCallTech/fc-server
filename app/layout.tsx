@@ -27,12 +27,12 @@ export const metadata: Metadata = {
 	},
 	openGraph: {
 		type: "website",
-		url: "https://app.flashcall.me",
+		url: "https://flashcall.me",
 		title: "FlashCall",
 		description: "Book your first consultation",
 		images: [
 			{
-				url: "/icons/metadataBg.png",
+				url: "https://flashcall.me/icons/metadataBg.png",
 				width: 800,
 				height: 600,
 				alt: "FlashCall Logo",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
 		locale: "en_US",
 	},
 
-	metadataBase: new URL("https://app.flashcall.me"),
+	metadataBase: new URL("https://flashcall.me"),
 };
 
 export default function RootLayout({
@@ -56,6 +56,7 @@ export default function RootLayout({
 				<GoogleAnalytics />
 				<GoogleTagManager gtmId={`${process.env.NEXT_PUBLIC_MEASUREMENT_ID}`} />
 			</Suspense>
+
 			<TooltipProvider>
 				<body className="overflow-y-scroll no-scrollbar">
 					<Toaster />

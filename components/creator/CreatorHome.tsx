@@ -123,7 +123,7 @@ const CreatorHome = () => {
 		}
 	}, [creatorUser?._id]);
 
-	const creatorLink = `https://app.flashcall.me/${creatorUser?.username}`;
+	const creatorLink = `https://flashcall.me/${creatorUser?.username}`;
 
 	const theme = creatorUser?.themeSelected;
 
@@ -331,7 +331,11 @@ const CreatorHome = () => {
 						<p className="text-white text-sm">
 							{creatorUser?.firstName} {creatorUser?.lastName}
 						</p>
-						<p className="text-white text-sm">{creatorUser?.creatorId}</p>
+						<p className="text-white text-sm">
+							{creatorUser?.creatorId?.startsWith("@")
+								? creatorUser.creatorId
+								: `@${creatorUser?.username}`}
+						</p>
 					</section>
 				</div>
 				<div className="flex-grow flex flex-col gap-4 bg-gray-50 rounded-t-3xl p-4">

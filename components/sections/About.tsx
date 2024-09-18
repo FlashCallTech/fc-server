@@ -8,11 +8,11 @@ const About = () => {
 		<section className="w-full h-fit py-10 md:py-20 bg-white grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-0 items-center md:px-14 lg:px-24 max-md:px-4">
 			{/* About Banner */}
 			<Image
-				src="/web/images/about.png"
+				src="/web/images/about_web.png"
 				alt="logo"
 				width={1000}
 				height={1000}
-				className="rounded-xl w-full h-full max-h-[380px] object-contain hidden md:block"
+				className="hidden lg:flex rounded-xl w-full h-full max-h-[444px] object-contain"
 			/>
 			{/* heading and content */}{" "}
 			<div className="flex flex-col items-start justify-center gap-7">
@@ -30,11 +30,11 @@ const About = () => {
 			</div>
 			{/* About Banner Phone*/}
 			<Image
-				src="/web/images/about.png"
+				src="/web/images/about_mobile.png"
 				alt="logo"
 				width={1000}
 				height={1000}
-				className="rounded-xl w-full h-full max-h-[380px] object-contain md:hidden"
+				className="rounded-xl w-full h-full max-h-[380px] object-contain lg:hidden"
 			/>
 		</section>
 	);

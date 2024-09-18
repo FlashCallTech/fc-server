@@ -120,7 +120,7 @@ const Navbar = () => {
 				className="w-6 h-6 rounded-full"
 			/>
 
-			<span className="w-full whitespace-nowrap text-sm font-semibold">
+			<span className="w-full whitespace-nowrap text-xs font-semibold">
 				Get Your Link
 			</span>
 		</Button>
@@ -152,11 +152,14 @@ const Navbar = () => {
 						className="flex items-center justify-center lg:ml-2"
 					>
 						<Image
-							src="/icons/logoDesktop.png"
-							width={100}
-							height={100}
+							src="/icons/logoMain.png"
+							width={1000}
+							height={1000}
 							alt="flashcall logo"
-							className="w-full h-full rounded-xl hoverScaleEffect"
+							className="w-[130px] md:w-[144px] h-[40px] p-2 bg-green-1 rounded-[4px] hoverScaleDownEffect"
+							style={{
+								boxShadow: `5px 5px 0px 0px ${userTheme}`,
+							}}
 						/>
 					</Link>
 				) : (
@@ -171,7 +174,7 @@ const Navbar = () => {
 					{walletBalance >= 0 ? (
 						<Link
 							href="/payment"
-							className={`w-fit flex items-center justify-center gap-2 text-black px-2 py-3 border border-black rounded-[4px] hover:bg-green-1 ${
+							className={`w-fit flex items-center justify-center gap-2 text-black p-3 border border-black rounded-[4px] hover:bg-green-1 ${
 								pathname.includes("/payment") && "bg-green-1 text-white"
 							} group`}
 							style={{
@@ -188,7 +191,7 @@ const Navbar = () => {
 								}`}
 							/>
 							<span className="w-full text-xs whitespace-nowrap font-semibold group-hover:text-white">
-								{`Rs. ${walletBalance.toFixed(2)}`}
+								{`Rs. ${Math.round(walletBalance)}`}
 							</span>
 						</Link>
 					) : (

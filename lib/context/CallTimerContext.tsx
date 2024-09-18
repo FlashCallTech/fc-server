@@ -43,14 +43,6 @@ export const useCallTimerContext = () => {
 	return context;
 };
 
-const formatTimeLeft = (timeLeft: number): string => {
-	const minutes = Math.floor(timeLeft);
-	const seconds = Math.floor((timeLeft - minutes) * 60);
-	const paddedMinutes = minutes.toString().padStart(2, "0");
-	const paddedSeconds = seconds.toString().padStart(2, "0");
-	return `${paddedMinutes}:${paddedSeconds}`;
-};
-
 export const CallTimerProvider = ({
 	children,
 	isVideoCall,
@@ -182,7 +174,7 @@ export const CallTimerProvider = ({
 	return (
 		<CallTimerContext.Provider
 			value={{
-				timeLeft: formatTimeLeft(timeLeft),
+				timeLeft: String(timeLeft),
 				hasLowBalance,
 				pauseTimer,
 				resumeTimer,

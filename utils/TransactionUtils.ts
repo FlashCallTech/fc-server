@@ -45,7 +45,7 @@ export const handleTransaction = async ({
 			}
 		} catch (error) {
 			Sentry.captureException(error);
-			console.error("Error updating Firestore timer: ", error);
+			console.error("Error updating Firestore Transactions: ", error);
 		}
 	};
 

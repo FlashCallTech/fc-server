@@ -195,3 +195,14 @@ export const isValidHexColor = (color: string): boolean => {
 	// Check if the color is a valid 6-digit or 3-digit hex code
 	return /^#([0-9A-F]{3}){1,2}$/i.test(color);
 };
+
+// Regular expression to validate username
+const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+
+// Function to validate username
+export const validateUsername = (username: string) => {
+	if (!usernameRegex.test(username)) {
+		return false;
+	}
+	return true;
+};

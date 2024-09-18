@@ -4,10 +4,24 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { clientUser, creatorUser } from "@/types";
 
+const NavLoader = () => {
+	return (
+		<div className="w-24 space-y-3">
+			<div className="grid grid-cols-3 gap-4">
+				<div className="h-2 bg-gray-300 rounded col-span-2"></div>
+				<div className="h-2 bg-gray-300 rounded col-span-1"></div>
+			</div>
+			<div className="h-2 bg-gray-300 rounded"></div>
+		</div>
+	);
+};
+
 const NavbarWeb = ({
+	fetchingUser,
 	currentUser,
 	handleSignout,
 }: {
+	fetchingUser: boolean;
 	currentUser: clientUser | creatorUser | null;
 	handleSignout: () => void;
 }) => {
@@ -44,58 +58,62 @@ const NavbarWeb = ({
 				</Link>
 
 				{/* navLinks */}
-				<div className="flex items-center justify-center gap-4 px-2 md:px-4 md:py-2">
-					{currentUser ? (
-						<>
-							{/* Home Button */}
-							<Link href="/home">
-								<Button
-									className="uppercase bg-green-1 text-white rounded-[4px] hoverScaleDownEffect text-xs border border-black md:!px-7"
-									style={{
-										boxShadow: theme,
-									}}
-								>
-									Home
-								</Button>
-							</Link>
-							{/* Sign Out Button */}
-							<Button
-								className="uppercase bg-white hover:bg-white rounded-[4px] hoverScaleDownEffect text-xs border border-black md:!px-7"
-								onClick={handleSignout}
-								style={{
-									boxShadow: theme,
-								}}
-							>
-								Sign Out
-							</Button>
-						</>
-					) : (
-						<>
-							{/* Sign Up Button */}
-							<Link href="/authenticate?usertype=creator">
-								<Button
-									className="uppercase bg-green-1 text-white rounded-[4px] hoverScaleDownEffect text-xs border border-black md:!px-7"
-									style={{
-										boxShadow: theme,
-									}}
-								>
-									For Creator
-								</Button>
-							</Link>
-							{/* Login Button */}
-							<Link href="/authenticate">
+				{fetchingUser ? (
+					<NavLoader />
+				) : (
+					<div className="flex items-center justify-center gap-4 px-2 md:px-4 md:py-2">
+						{currentUser ? (
+							<>
+								{/* Home Button */}
+								<Link href="/home">
+									<Button
+										className="uppercase bg-green-1 text-white rounded-[4px] hoverScaleDownEffect text-xs border border-black md:!px-7"
+										style={{
+											boxShadow: theme,
+										}}
+									>
+										Home
+									</Button>
+								</Link>
+								{/* Sign Out Button */}
 								<Button
 									className="uppercase bg-white hover:bg-white rounded-[4px] hoverScaleDownEffect text-xs border border-black md:!px-7"
+									onClick={handleSignout}
 									style={{
 										boxShadow: theme,
 									}}
 								>
-									For Client
+									Sign Out
 								</Button>
-							</Link>
-						</>
-					)}
-				</div>
+							</>
+						) : (
+							<>
+								{/* Sign Up Button */}
+								<Link href="/authenticate?usertype=creator">
+									<Button
+										className="uppercase bg-green-1 text-white rounded-[4px] hoverScaleDownEffect text-xs border border-black md:!px-7"
+										style={{
+											boxShadow: theme,
+										}}
+									>
+										For Creator
+									</Button>
+								</Link>
+								{/* Login Button */}
+								<Link href="/authenticate">
+									<Button
+										className="uppercase bg-white hover:bg-white rounded-[4px] hoverScaleDownEffect text-xs border border-black md:!px-7"
+										style={{
+											boxShadow: theme,
+										}}
+									>
+										For Client
+									</Button>
+								</Link>
+							</>
+						)}
+					</div>
+				)}
 			</section>
 		</nav>
 	);

@@ -24,7 +24,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
 	const client = useStreamVideoClient();
-	const { clientUser, setAuthenticationSheetOpen } = useCurrentUsersContext();
+	const { clientUser, userType, setAuthenticationSheetOpen } =
+		useCurrentUsersContext();
 	const { toast } = useToast();
 	const [isSheetOpen, setSheetOpen] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
@@ -82,12 +83,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				let services = data.services;
 				setUpdatedCreator((prev) => ({
 					...prev,
-					videoRate: prices.videoCall,
-					audioRate: prices.audioCall,
-					chatRate: prices.chat,
-					videoAllowed: services.videoCall,
-					audioAllowed: services.audioCall,
-					chatAllowed: services.chat,
+					videoRate: prices?.videoCall ?? "",
+					audioRate: prices?.audioCall ?? "",
+					chatRate: prices?.chat ?? "",
+					videoAllowed: services?.videoCall ?? false,
+					audioAllowed: services?.audioCall ?? false,
+					chatAllowed: services?.chat ?? false,
 				}));
 			}
 		});
@@ -170,20 +171,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	}, [chatState]);
 
 	// defining the actions for call accept and call reject
-	const handleCallAccepted = async (
-		call: Call,
-		callType: string,
-		callDuration: number
-	) => {
+	const handleCallAccepted = async (call: Call, callType: string) => {
 		setIsProcessing(false); // Reset processing state
+
 		toast({
 			variant: "destructive",
 			title: "Call Accepted",
 			description: "The call has been accepted. Redirecting to meeting...",
 		});
-		setSheetOpen(false);
 
-		// await call?.leave();
+		setSheetOpen(false);
 
 		const createdAtDate = clientUser?.createdAt
 			? new Date(clientUser.createdAt)
@@ -234,21 +231,21 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						image: creator.photo || "/images/defaultProfile.png",
 						phone: creator.phone,
 					},
-					role: "call_member",
-				},
-				// client
-				{
-					user_id: String(clientUser?._id),
-					custom: {
-						name: String(
-							clientUser?.username ? clientUser.username : clientUser.phone
-						),
-						type: "client",
-						image: clientUser?.photo,
-						phone: clientUser?.phone,
-					},
 					role: "admin",
 				},
+				// client
+				// {
+				// 	user_id: String(clientUser?._id),
+				// 	custom: {
+				// 		name: String(
+				// 			clientUser?.username ? clientUser.username : clientUser.phone
+				// 		),
+				// 		type: "client",
+				// 		image: clientUser?.photo,
+				// 		phone: clientUser?.phone,
+				// 	},
+				// 	role: "admin",
+				// },
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
@@ -304,6 +301,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				},
 			});
 
+			if (call) {
+				await call.join();
+				console.log("Successfully joined the call");
+			}
+
 			const createdAtDate = clientUser?.createdAt
 				? new Date(clientUser.createdAt)
 				: new Date();
@@ -340,9 +342,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			call.on("call.accepted", () =>
-				handleCallAccepted(call, callType, maxCallDuration)
-			);
+			call.on("call.accepted", () => handleCallAccepted(call, callType));
 			call.on("call.rejected", () => handleCallRejected(callType));
 		} catch (error) {
 			Sentry.captureException(error);
@@ -355,6 +355,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleClickOption = (callType: string) => {
 		if (isProcessing) return; // Prevent double-click
 		setIsProcessing(true); // Set processing state
+
+		if (userType === "creator") {
+			toast({
+				variant: "destructive",
+				title: "Unable to Create Meeting",
+				description: "You are a Creator",
+			});
+
+			return;
+		}
 
 		try {
 			if (callType === "audio") {
@@ -414,6 +424,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChatClick = () => {
+		if (userType === "creator") {
+			toast({
+				variant: "destructive",
+				title: "Unable to Initiate Chat",
+				description: "You are a Creator",
+			});
+
+			return;
+		}
 		if (clientUser) {
 			trackEvent("BookCall_Chat_Clicked", {
 				utm_source: "google",
@@ -486,7 +505,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					parseInt(updatedCreator.videoRate, 10) > 0 && (
 						<div
 							className={`callOptionContainer ${
-								isProcessing || onlineStatus !== "Online"
+								isProcessing ||
+								userType === "creator" ||
+								onlineStatus !== "Online"
 									? "opacity-50 !cursor-not-allowed"
 									: ""
 							}`}
@@ -519,7 +540,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					parseInt(updatedCreator.audioRate, 10) > 0 && (
 						<div
 							className={`callOptionContainer ${
-								isProcessing || onlineStatus !== "Online"
+								isProcessing ||
+								userType === "creator" ||
+								onlineStatus !== "Online"
 									? "opacity-50 !cursor-not-allowed"
 									: ""
 							}`}
@@ -552,7 +575,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					parseInt(updatedCreator.chatRate, 10) > 0 && (
 						<div
 							className={`callOptionContainer ${
-								onlineStatus !== "Online"
+								userType === "creator" || onlineStatus !== "Online"
 									? "opacity-50 !cursor-not-allowed"
 									: ""
 							}`}

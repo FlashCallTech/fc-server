@@ -5,8 +5,8 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
+	const [status, setStatus] = useState<string>("Offline");
 	const [isImageLoaded, setIsImageLoaded] = useState(false);
-	const [status, setStatus] = useState<string>("Offline"); // Default status to "Offline"
 
 	const imageSrc =
 		creator?.photo && isValidUrl(creator.photo)
@@ -24,7 +24,7 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 		img.onerror = () => {
 			setIsImageLoaded(true);
 		};
-	}, [creator.photo]);
+	}, [imageSrc]);
 
 	useEffect(() => {
 		const docRef = doc(db, "userStatus", creator.phone);
@@ -54,17 +54,17 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 		backgroundPosition: "center",
 		backgroundRepeat: "no-repeat",
 		opacity: isImageLoaded ? 1 : 0,
-		transform: isImageLoaded ? "scale(1)" : "scale(0.95)",
-		transition: "opacity 0.5s ease-in-out, transform 0.5s ease-in-out",
 	};
 
 	return (
 		<>
 			{!isImageLoaded ? (
-				<div className="bg-gray-300 animate-pulse rounded-xl w-full mx-auto h-72 lg:h-96 object-cover" />
+				<div
+					className={`bg-gray-300 opacity-60 animate-pulse rounded-[24px] w-full  h-72 xl:h-80 2xl:h-96 object-cover`}
+				/>
 			) : (
 				<div
-					className="relative flex flex-col items-center justify-center rounded-xl w-full h-72 lg:h-96 object-cover"
+					className="relative flex flex-col items-center justify-center rounded-xl w-full h-72 xl:h-80 2xl:h-96  transition-all duration-300 hover:scale-95"
 					style={backgroundImageStyle}
 				>
 					<div className="text-white flex flex-col items-start w-full creatorsGirdHighlight">

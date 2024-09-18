@@ -4,7 +4,7 @@ const PostLoader = ({ count = 6 }: { count?: number }) => {
 	const placeholders = Array.from({ length: count });
 
 	return (
-		<div className="grid grid-cols-2 xl:grid-cols-3 gap-7 items-start justify-start h-full w-full pb-6">
+		<div className="grid grid-cols-2 gap-7 items-start justify-start h-full w-full pb-6">
 			{placeholders.map((_, index) => (
 				<div
 					key={index}
