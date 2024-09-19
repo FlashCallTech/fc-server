@@ -45,6 +45,18 @@ export async function POST(request: NextRequest) {
       console.log(error);
     }
 
+    const kyc = {
+      userId: userId,
+      aadhaar: {
+        ref_id: result.ref_id,
+        name: result.name,
+        img_link: result.photo_link,
+        status: result.status,
+      }
+    }
+
+    await createUserKyc(kyc, 'pan');
+
     return NextResponse.json({ success: true, data: result });
   } catch (error) {
     console.error('Unexpected error:', error);

@@ -7,6 +7,7 @@ import * as Sentry from "@sentry/nextjs";
 export async function createUserKyc(kyc: any, type: 'pan' | 'aadhaar' | 'liveliness' | 'name_match' | 'face_match') {
 	try {
 		// Ensure the MongoDB connection is established
+		// Ensure the MongoDB connection is established
 		await connectToDatabase();
 
 		// Check if the user already exists
@@ -49,7 +50,9 @@ export async function createUserKyc(kyc: any, type: 'pan' | 'aadhaar' | 'livelin
 		}
 	} catch (error) {
 		// Log the error using Sentry or other error handling mechanism
+		// Log the error using Sentry or other error handling mechanism
 		Sentry.captureException(error);
+		// handleError(error);
 		// handleError(error);
 	}
 }

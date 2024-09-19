@@ -2,7 +2,7 @@ import { createUserKyc } from '@/lib/actions/userkyc.actions';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const { panNumber, userId, type } = await request.json();
+  const { panNumber, userId } = await request.json();
 
   const payload = {
     pan: panNumber,
@@ -23,28 +23,22 @@ export async function POST(request: NextRequest) {
       throw new Error('Failed to verify PAN');
     }
 
-    const panResponse = await response.json();
+    const result = await response.json();
 
-    try {
-      const kyc = {
-        userId: userId,
-        pan: {
-          pan_number: panResponse.pan,
-          reference_id: panResponse.reference_id,
-          registered_name: panResponse.registered_name,
-          name_match_score: panResponse.name_match_score,
-          valid: panResponse.valid
-        }
+    const kyc = {
+      userId: userId,
+      pan: {
+        pan_number: result.pan,
+        reference_id: result.reference_id,
+        registered_name: result.registered_name,
+        name_match_score: result.name_match_score,
+        valid: result.valid,
       }
-
-      await createUserKyc(kyc, type);
-
-    } catch (error) {
-      console.log(error)
     }
 
+    await createUserKyc(kyc, 'pan');
 
-    return NextResponse.json({ success: true, data: panResponse });
+    return NextResponse.json({ success: true, data: result });
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message });
   }
