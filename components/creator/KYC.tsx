@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Loader from '../shared/Loader';
 import Image from 'next/image';
 import upload from '@/lib/upload';
+import Verify from '../shared/Verify';
 
 const KYC: React.FC = () => {
   const [panNumber, setPanNumber] = useState('');
@@ -407,6 +408,12 @@ const KYC: React.FC = () => {
 
   const handleLivelinessCheckLabelClick = () => {
     setLivelinessCheckInputVisible(!isLivelinessCheckInputVisible);
+  }
+
+  if(verifying){
+    return(
+      <Verify />
+    )
   }
 
   if (loading) {
