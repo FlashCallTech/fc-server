@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import Loader from '../shared/Loader';
 import { useCurrentUsersContext } from '@/lib/context/CurrentUsersContext';
-import { useRouter } from 'next/navigation';
 
 const KycForm: React.FC = () => {
   const { currentUser, creatorUser } = useCurrentUsersContext();
@@ -10,7 +9,6 @@ const KycForm: React.FC = () => {
   const [verification_id, setVerification_id] = useState<string>();
   const [kycDone, setKycDone] = useState(false);
   const [loading, setLoading] = useState(true);
-  const router = useRouter()
 
   useEffect(() => {
     if(creatorUser?.kyc_status === 'COMPLETED'){
@@ -25,6 +23,7 @@ const KycForm: React.FC = () => {
         }
       })
 
+      if(!response) return ;
       const kycResponse = await response.json();
       setVerification_id(kycResponse.verification_id);
     }
@@ -124,7 +123,6 @@ const KycForm: React.FC = () => {
     }
   }
 
-
   if (loading) {
     return <Loader />;
   }
@@ -135,7 +133,7 @@ const KycForm: React.FC = () => {
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full'>
-      <button className='rounded bg-black text-white font-bold p-4 mb-4' onClick={handleKyc}>
+      <button className='rounded bg-black text-white font-bold p-4 mb-4 hover:cursor-pointer' onClick={handleKyc} disabled={formLink !== undefined? true: false}>
         Start Your Kyc
       </button>
 
