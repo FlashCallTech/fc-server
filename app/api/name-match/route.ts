@@ -1,15 +1,17 @@
-import { createUserKyc } from '@/lib/actions/userkyc.actions';
-import { NextRequest, NextResponse } from 'next/server';
+import { createUserKyc } from "@/lib/actions/userkyc.actions";
+import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
-  const { panNumber, userId } = await request.json();
-
-  const payload = {
-    pan: panNumber,
-  };
-
   try {
-    const response = await fetch('https://api.cashfree.com/verification/pan', {
+    const {name1, name2, userId, verificationId} = await request.json();
+    
+    const payload = {
+      name_1: name1,
+      name_2: name2,
+      verification_id: verificationId,
+    }
+    
+    const response = await fetch('https://api.cashfree.com/verification/name-match', {
       method: 'POST',
       headers: {
         'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
@@ -28,18 +30,20 @@ export async function POST(request: NextRequest) {
     const kyc = {
       userId: userId,
       pan: {
-        pan_number: result.pan,
+        verification_id: result.verification_id,
         reference_id: result.reference_id,
-        registered_name: result.registered_name,
-        name_match_score: result.name_match_score,
+        name_1: result.name_1,
+        name_2: result.name_2,
+        score: result.score,
         valid: result.valid,
+        status: result.status,
+        reason: result.reason,
       }
     }
 
-    await createUserKyc(kyc, 'pan');
+    await createUserKyc(kyc, 'name-match');
 
-    return NextResponse.json({ success: true, data: result });
   } catch (error) {
-    return NextResponse.json({ success: false, error: (error as Error).message });
+    
   }
 }

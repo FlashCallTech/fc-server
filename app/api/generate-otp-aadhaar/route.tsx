@@ -18,9 +18,9 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(payload),
     });
 
-    // if (!response.ok) {
-    //   throw new Error('Failed to verify PAN');
-    // }
+    if (!response.ok) {
+      throw new Error('Failed to verify PAN');
+    }
 
     const result = await response.json();
     return NextResponse.json({ success: true, data: result });

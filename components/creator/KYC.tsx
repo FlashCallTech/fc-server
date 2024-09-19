@@ -1,20 +1,211 @@
 'use client'
-import React, { useState } from 'react';
+import { useCurrentUsersContext } from '@/lib/context/CurrentUsersContext';
+import React, { useEffect, useState } from 'react';
+import Loader from '../shared/Loader';
+import Image from 'next/image';
+import upload from '@/lib/upload';
 
 const KYC: React.FC = () => {
   const [panNumber, setPanNumber] = useState('');
-  const [panVerified, setPanVerified] = useState(false);
   const [aadhaarNumber, setAadhaarNumber] = useState('');
-  const [aadhaarFile, setAadhaarFile] = useState<File | null>(null);
-  const [verificationMethod, setVerificationMethod] = useState<'otp' | 'image'>('otp');
+  const [livelinessCheckFile, setLivelinessCheckFile] = useState<File | null>(null);
+  const [panVerified, setPanVerified] = useState(false);
+  const [aadhaarVerified, setAadhaarVerified] = useState(false);
+  const [livelinessCheckVerified, setLivelinessCheckVerified] = useState<boolean>(false);
+  const [nameMatch, setNameMatch] = useState<boolean>(false);
+  const [faceMatch, setFaceMatch] = useState<boolean>(false);
+  // const [verificationMethod, setVerificationMethod] = useState<'otp' | 'image'>('otp');
   const [otp, setOtp] = useState<string>('');
+  const [generatingOtp, setGeneratingOtp] = useState<boolean>(false);
   const [otpGenerated, setOtpGenerated] = useState(false);
   const [otpRefId, setOtpRefId] = useState<string | null>(null);
+  const [otpSubmitted, setOtpSubmitted] = useState<boolean>(false);
+  const [kycDone, setKycDone] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isPanInputVisible, setPanInputVisible] = useState(false);
+  const [isAadhaarInputVisible, setAadhaarInputVisible] = useState(false);
+  const [isLivelinessCheckInputVisible, setLivelinessCheckInputVisible] = useState<boolean>(false);
+  const [verifyingPan, setVerifyingPan] = useState<boolean>(false);
+  const [verifyingAadhaar, setVerifyingAadhaar] = useState<boolean>(false);
+  const [verifyingLiveliness, setVerifyingLiveliness] = useState<boolean>(false);
 
-  const handleSubmit = async () => {
+  const { creatorUser } = useCurrentUsersContext();
+
+  useEffect(() => {
+    
+    const getKyc = async () => {
+      if (creatorUser?.kyc_status) {
+        setKycDone(creatorUser?.kyc_status);
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(`/api/v1/userkyc/getKyc?userId=${creatorUser?._id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        setLoading(false);
+        return;
+      }
+
+      const kycResponse = await response.json();
+      if (kycResponse.pan) {
+        if(kycResponse.pan.valid){
+          setPanVerified(true);
+          setPanNumber(kycResponse.pan.pan_number);
+        }
+      }
+      if (kycResponse.aadhaar) {
+        if(kycResponse.aadhaar.status === 'VALID')
+        setAadhaarVerified(true);
+      }
+      if(kycResponse.liveliness){
+        if(kycResponse.liveliness.liveliness)
+        setLivelinessCheckVerified(true);
+      }
+      if(kycResponse.name_match){
+        if(kycResponse.name_match.score > 0.84){
+          setNameMatch(true);
+        }
+      }
+      setLoading(false);
+    }
+
+    if (creatorUser) getKyc();
+  }, [])
+
+  useEffect(() => {
+    
+    let kycResponse: any;
+    const verificationId = generateVerificationId();
+    
+    const name_face_match = async () => {
+      if(kycDone === 'COMPLETED' || 'FAILED') return;
+
+      const response = await fetch(`/api/v1/userkyc/getKyc?userId=${creatorUser?._id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if(!response.ok){
+        return;
+      }
+
+      kycResponse = await response.json();
+      console.log(kycResponse);
+
+      const nameMatchResponse = await fetch('/api/name-match', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: creatorUser?._id,
+          name1: kycResponse.pan.registered_name,
+          name2: kycResponse.aadhaar.name,
+          verificationId
+        })
+      })
+
+      const result = await nameMatchResponse.json();
+
+      if(result.data.score > 0.84){
+        setNameMatch(true);
+      }
+      else if (result.data.score < 0.85) {
+        const user = {
+          kyc_status: 'FAILED'
+        };
+        const response = await fetch('/api/v1/creator/updateUser', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            userId: creatorUser?._id,
+            user
+          })
+        })
+      }
+
+      const face_match_response = await fetch('/api/face-match', {
+        method: 'POST',
+        headers: {
+          'Content_Type': 'application/json'
+        },
+        body: JSON.stringify({
+          verificationId,
+          first_img: kycResponse.liveliness.img_url,
+          second_img: kycResponse.aadhaar.img_link,
+          userId: creatorUser?._id,
+        })
+      })
+
+      const face_match_result = await face_match_response.json();
+      if(face_match_result.data.status === 'SUCCESS'){
+        setFaceMatch(true);
+      }
+      else if (face_match_result.data.status !== 'SUCCESS') {
+        const user = {
+          kyc_status: 'FAILED'
+        };
+        const response = await fetch('/api/v1/creator/updateUser', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            userId: creatorUser?._id,
+            user
+          })
+        })
+      }
+    }
+
+    if(creatorUser && panVerified && aadhaarVerified && livelinessCheckVerified){
+        name_face_match();
+    }
+
+  }, [panVerified, aadhaarVerified, livelinessCheckVerified])
+
+  useEffect(() => {
+    const kyc = async() => {
+      const user = {
+        kyc_status: 'COMPLETED'
+      };
+      const response = await fetch('/api/v1/creator/updateUser', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: creatorUser?._id,
+          user
+        })
+      })
+    }
+
+    if(creatorUser && nameMatch && faceMatch){
+      kyc();
+    }
+    
+  }, [nameMatch, faceMatch])
+
+  const generateVerificationId = () => {
+    return `${creatorUser?._id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  };
+
+  const handlePanVerification = async () => {
+    setVerifyingPan(true);
     if (!panVerified) {
       if (!panNumber) {
         alert('Please enter your PAN number.');
+        setVerifyingPan(false);
         return;
       }
 
@@ -24,186 +215,375 @@ const KYC: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ panNumber }),
+          body: JSON.stringify({ panNumber, userId: creatorUser?._id, type: 'pan' }),
         });
 
         const panResult = await panResponse.json();
-        if(panResult.data.valid) setPanVerified(true);
+        if (panResult.data.valid) {
+          setPanVerified(true);
+        }
 
         console.log('PAN Verification result:', panResult);
+        setVerifyingPan(false);
+        return;
+
       } catch (error) {
         console.error('Error verifying PAN:', error);
+        setVerifyingPan(false);
+        return;
       }
     }
+  }
 
-    if (verificationMethod === 'otp') {
-      if (!otpGenerated) {
-        if (!aadhaarNumber) {
-          alert('Please enter your Aadhaar number.');
-          return;
-        }
-
-        try {
-          const otpResponse = await fetch('/api/generate-otp-aadhaar', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ aadhaarNumber }),
-          });
-
-          const otpResult = await otpResponse.json();
-          setOtpRefId(otpResult.data.ref_id);
-          console.log('OTP generated:', otpResult);
-
-          if (otpResult.data.status === 'SUCCESS') {
-            setOtpGenerated(true);
-            alert('OTP has been sent to your Aadhaar-registered mobile number.');
-          }
-        } catch (error) {
-          console.error('Error generating OTP:', error);
-        }
-      } else {
-        if (!otp) {
-          alert('Please enter the OTP.');
-          return;
-        }
-
-        try {
-          const otpVerificationResponse = await fetch('/api/verify-aadhaar-otp', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ otp, ref_id: otpRefId }),
-          });
-
-          const otpVerificationResult = await otpVerificationResponse.json();
-          console.log('OTP Verification result:', otpVerificationResult);
-        } catch (error) {
-          console.error('Error verifying Aadhaar with OTP:', error);
-        }
-      }
-    } else if (verificationMethod === 'image') {
-      if (!aadhaarFile) {
-        alert('Please upload your Aadhaar front image.');
+  const handleAadhaarVerification = async () => {
+    setVerifyingAadhaar(true)
+    // if (verificationMethod === 'otp') {
+    if (!otpGenerated) {
+      if (!aadhaarNumber) {
+        alert('Please enter your Aadhaar number.');
+        setVerifyingAadhaar(false);
         return;
       }
 
       try {
-        const formData = new FormData();
-        formData.append('aadhaar', aadhaarFile);
-
-        const imageResponse = await fetch('https://sandbox.cashfree.com/verification/document/aadhaar', {
+        setGeneratingOtp(true);
+        const otpResponse = await fetch('/api/generate-otp-aadhaar', {
           method: 'POST',
-          body: formData,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ aadhaarNumber }),
         });
 
-        const imageResult = await imageResponse.json();
-        console.log('Image Verification result:', imageResult);
+        const otpResult = await otpResponse.json();
+        setOtpRefId(otpResult.data.ref_id);
+        console.log('OTP generated:', otpResult);
+
+        if (otpResult.data.status === 'SUCCESS') {
+          setOtpGenerated(true);
+          alert('OTP has been sent to your Aadhaar-registered mobile number.');
+          setGeneratingOtp(false);
+          setVerifyingAadhaar(false);
+        }
       } catch (error) {
-        console.error('Error verifying Aadhaar with image:', error);
+        console.error('Error generating OTP:', error);
+        setVerifyingAadhaar(false);
+      }
+    } else {
+      if (!otp) {
+        alert('Please enter the OTP.');
+        setVerifyingAadhaar(false);
+        return;
+      }
+
+      try {
+        setOtpSubmitted(true);
+        const otpVerificationResponse = await fetch('/api/verify-aadhaar-otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ otp, ref_id: otpRefId, userId: creatorUser?._id }),
+        });
+
+        const otpVerificationResult = await otpVerificationResponse.json();
+        if (otpVerificationResult.success) setAadhaarVerified(true);
+        else {
+          setOtp('');
+          setOtpRefId(null)
+          setOtpGenerated(false);
+        }
+        setOtpSubmitted(false);
+        console.log('OTP Verification result:', otpVerificationResult);
+        setVerifyingAadhaar(false);
+      } catch (error) {
+        console.error('Error verifying Aadhaar with OTP:', error);
+        setVerifyingAadhaar(false);
       }
     }
+    // } else if (verificationMethod === 'image') {
+    //   if (!aadhaarFile) {
+    //     alert('Please upload your Aadhaar front image.');
+    //     setVerifyingAadhaar(false);
+    //     return;
+    //   }
+
+    //   try {
+    //     const verificationId = generateVerificationId();
+    //     console.log(verificationId);
+    //     const formData = new FormData();
+    //     formData.append('front_image', aadhaarFile);
+    //     formData.append('verification_id', verificationId);
+    //     formData.append('userId', creatorUser?._id as string);
+
+    //     const response = await fetch('/api/verify-aadhaar-image', {
+    //       method: 'POST',
+    //       body: formData,
+    //     });
+
+    //     const result = await response.json();
+    //     console.log('Image Verification result:', result);
+    //     setVerifyingAadhaar(false);
+    //   } catch (error) {
+    //     console.error('Error verifying Aadhaar with image:', error);
+    //     setVerifyingAadhaar(false);
+    //   }
+    // }
   };
 
-  console.log(otpRefId)
-  console.log(otp)
+  const handleLivelinessVerification = async () => {
+    setVerifyingLiveliness(true);
+    if (!livelinessCheckFile) {
+      return;
+    }
+
+    try {
+      const verificationId = generateVerificationId();
+      const img_url = await upload(livelinessCheckFile, 'image');
+      const formData = new FormData();
+      formData.append('image', livelinessCheckFile);
+      formData.append('verification_id', verificationId);
+      formData.append('userId', creatorUser?._id as string);
+      formData.append('img_url', img_url);
+
+      const response = await fetch('/api/liveliness', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      console.log('Liveliness Verification result:', result);
+      if(result.data.liveliness) setLivelinessCheckVerified(true);
+      else {
+        alert('Verify Again');
+      }
+      setVerifyingLiveliness(false);
+    } catch (error) {
+      console.error('Error verifying liveliness:', error);
+      setVerifyingLiveliness(false);
+    }
+  }
+
+
+  const handleLabelClick = () => {
+    setPanInputVisible(!isPanInputVisible);
+  };
+
+  const handleAadhaarLabelClick = () => {
+    setAadhaarInputVisible(!isAadhaarInputVisible);
+  }
+
+  const handleLivelinessCheckLabelClick = () => {
+    setLivelinessCheckInputVisible(!isLivelinessCheckInputVisible);
+  }
+
+  if (loading) {
+    return (
+      <Loader />
+    )
+  }
 
   return (
-    <div className="flex flex-col items-start justify-start h-full bg-gray-100">
-      <div className="flex flex-col p-6 w-full h-full">
+    <div className="flex flex-col w-full items-start justify-start h-full bg-gray-100">
+      <div className="flex flex-col p-4 w-full h-full">
         <button className="text-left text-lg font-medium text-gray-900">
           &lt;
         </button>
         <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-start py-2">
           KYC Documents
         </h2>
-
         <div className="mb-4">
-          <label htmlFor="pan" className="block text-sm font-bold text-gray-700">
-            PAN Card Number
-          </label>
-          <input
-            type="text"
-            id="pan"
-            placeholder="Enter PAN"
-            value={panNumber}
-            onChange={(e) => setPanNumber(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-sm"
-          />
-        </div>
+          <div className='rounded-md p-2 bg-white border'>
+            <label htmlFor="pan" className="flex flex-row justify-between items-center text-sm font-bold rounded-md text-gray-700 p-3 bg-white hover:cursor-pointer " onClick={handleLabelClick}>
+              <span>
+                PAN
+              </span>
 
-        <div className="mb-4">
-          <label htmlFor="aadhaar" className="block text-sm font-bold text-gray-700 pb-2">
-            Aadhaar Card Details
-          </label>
+              <div className='flex flex-row gap-2'>
+                {panVerified ? (
+                  <Image src={'/green.svg'} width={0} height={0} alt='not done' className='w-[3.5vh] h-[3.5vh]' onContextMenu={(e) => e.preventDefault()} />
+                ) : (
+                  !isPanInputVisible && <Image src={'/red.svg'} width={0} height={0} alt='not done' className='w-[3.5vh] h-[3.5vh]' onContextMenu={(e) => e.preventDefault()} />
+                )
+                }
+                <Image src={'/down.svg'} width={0} height={0} alt='drop down' className='w-[3vh] h-[3vh] ' onContextMenu={(e) => e.preventDefault()} />
+              </div>
 
-          <div className="flex items-center mb-2">
-            <input
-              type="radio"
-              id="otp"
-              name="verificationMethod"
-              value="otp"
-              checked={verificationMethod === 'otp'}
-              onChange={() => {
-                setVerificationMethod('otp');
-                setOtpGenerated(false);
-              }}
-              className="mr-2"
-            />
-            <label htmlFor="otp" className="mr-4">Verify via OTP</label>
 
-            <input
-              type="radio"
-              id="image"
-              name="verificationMethod"
-              value="image"
-              checked={verificationMethod === 'image'}
-              onChange={() => setVerificationMethod('image')}
-              className="mr-2"
-            />
-            <label htmlFor="image">Verify via Image</label>
-          </div>
-
-          {verificationMethod === 'otp' && (
-            <>
+            </label>
+            {isPanInputVisible && (
               <input
                 type="text"
-                id="aadhaar"
-                placeholder="Enter Aadhaar Number"
-                value={aadhaarNumber}
-                onChange={(e) => setAadhaarNumber(e.target.value)}
+                id="pan"
+                placeholder="Enter PAN"
+                value={panNumber}
+                onChange={(e) => setPanNumber(e.target.value)}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-sm"
+                disabled={panVerified}
               />
-              {otpGenerated && (
-                <input
-                  type="text"
-                  placeholder="Enter OTP"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-sm"
-                />
-              )}
-            </>
-          )}
+            )}
 
-          {verificationMethod === 'image' && (
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setAadhaarFile(e.target.files ? e.target.files[0] : null)}
-              className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-sm"
-            />
-          )}
+            {isPanInputVisible && !panVerified &&
+              <div className='flex w-full items-center mt-2'>
+                <button className='p-2 w-full rounded-md bg-[#50A65C]' onClick={handlePanVerification} disabled={verifyingPan}>
+                  {verifyingPan ? 'Verifying...' : 'Verify'}
+                </button>
+              </div>
+            }
+          </div>
         </div>
 
-        <button
-          onClick={handleSubmit}
-          className="mt-4 w-full py-2 bg-blue-500 text-white rounded-md text-center font-medium"
-        >
-          {verificationMethod === 'otp' && !otpGenerated ? 'Generate OTP' : 'Submit'}
-        </button>
+        <div className="mb-4">
+          <div className='rounded-md p-2 bg-white border'>
+            <label htmlFor="aadhaar" className="flex flex-row justify-between items-center text-sm font-bold rounded-md text-gray-700 p-3 bg-white hover:cursor-pointer " onClick={handleAadhaarLabelClick} >
+              <span>
+                Aadhaar
+              </span>
+
+              <div className='flex flex-row gap-2'>
+                {aadhaarVerified ? (
+                  <Image src={'/green.svg'} width={0} height={0} alt='not done' className='w-[3.5vh] h-[3.5vh]' onContextMenu={(e) => e.preventDefault()} />
+                ) : (
+                  !isAadhaarInputVisible && <Image src={'/red.svg'} width={0} height={0} alt='not done' className='w-[3.5vh] h-[3.5vh]' onContextMenu={(e) => e.preventDefault()} />
+                )
+                }
+                <Image src={'/down.svg'} width={0} height={0} alt='drop down' className='w-[3vh] h-[3vh]' onContextMenu={(e) => e.preventDefault()} />
+              </div>
+
+
+            </label>
+            {/* {isAadhaarInputVisible &&
+              <div className="flex flex-col gap-2 p-2 items-start mb-2 rounded-md border">
+                <div >
+                  <input
+                    type="radio"
+                    id="otp"
+                    name="verificationMethod"
+                    value="otp"
+                    checked={verificationMethod === 'otp'}
+                    onChange={() => {
+                      setVerificationMethod('otp');
+                      setOtpGenerated(false);
+                    }}
+                    className="mr-2"
+                    disabled={aadhaarVerified || verifyingAadhaar || otpGenerated}
+                  />
+                  <label htmlFor="otp" className="mr-4">Verify via OTP</label>
+                </div>
+                <div >
+                  <input
+                    type="radio"
+                    id="image"
+                    name="verificationMethod"
+                    value="image"
+                    checked={verificationMethod === 'image'}
+                    onChange={() => setVerificationMethod('image')}
+                    className="mr-2"
+                    disabled={aadhaarVerified || verifyingAadhaar || otpGenerated}
+                  />
+                  <label htmlFor="image">Verify via Image</label>
+                </div>
+              </div>
+            } */}
+
+            {isAadhaarInputVisible && (
+              <>
+                <input
+                  type="text"
+                  id="aadhaar"
+                  placeholder={aadhaarVerified ? 'Verified' : "Enter you Aadhaar Number"}
+                  value={aadhaarNumber}
+                  onChange={(e) => setAadhaarNumber(e.target.value)}
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-sm"
+                  disabled={otpGenerated || aadhaarVerified}
+                />
+                {otpGenerated && (
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-sm"
+                  />
+                )}
+              </>
+            )}
+
+            {/* {isAadhaarInputVisible && verificationMethod === 'image' && (
+              <input
+                type="file"
+                accept=".jpg,.jpeg,.png"
+                capture="environment"
+                onChange={(e) => setAadhaarFile(e.target.files ? e.target.files[0] : null)}
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-sm"
+              />
+            )} */}
+
+            {isAadhaarInputVisible && !aadhaarVerified &&
+              <div className='flex w-full items-center mt-2'>
+                <button className='p-2 w-full rounded-md bg-[#50A65C]' onClick={handleAadhaarVerification}>
+                  {otpGenerated ? verifyingAadhaar ? 'Verifying...' : 'Verify' : verifyingAadhaar ? 'Generating OTP...' : 'Get OTP'}
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <div className='rounded-md p-2 bg-white border'>
+            <label htmlFor="liveliness_check" className="flex flex-row justify-between items-center text-sm font-bold rounded-md text-gray-700 p-3 bg-white hover:cursor-pointer " onClick={handleLivelinessCheckLabelClick}>
+              <span>
+                Liveliness Check
+              </span>
+
+              <div className='flex flex-row gap-2'>
+                {livelinessCheckVerified ? (
+                  <Image src={'/green.svg'} width={0} height={0} alt='not done' className='w-[3.5vh] h-[3.5vh]' onContextMenu={(e) => e.preventDefault()} />
+                ) : (
+                  !isLivelinessCheckInputVisible && <Image src={'/red.svg'} width={0} height={0} alt='not done' className='w-[3.5vh] h-[3.5vh]' onContextMenu={(e) => e.preventDefault()} />
+                )
+                }
+                <Image src={'/down.svg'} width={0} height={0} alt='drop down' className='w-[3vh] h-[3vh] ' onContextMenu={(e) => e.preventDefault()} />
+              </div>
+
+
+            </label>
+            {isLivelinessCheckInputVisible && (
+              livelinessCheckVerified ? (
+                <div className='border p-2 rounded-md text-sm'>
+                  Verified
+                </div>
+              ) : (
+                <input
+                type="file"
+                accept=".jpg,.jpeg,.png"
+                capture="environment"
+                onChange={(e) => setLivelinessCheckFile(e.target.files ? e.target.files[0] : null)}
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-sm"
+                />
+              )
+            )}
+
+            {isLivelinessCheckInputVisible && !livelinessCheckVerified &&
+              <div className='flex w-full items-center mt-2'>
+                <button className='p-2 w-full rounded-md bg-[#50A65C]' onClick={handleLivelinessVerification} disabled={verifyingLiveliness}>
+                  {verifyingLiveliness ? 'Verifying...' : 'Verify'}
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+        <div className='flex h-full items-end'>
+          {kycDone === 'COMPLETED'? (
+            <div className='text-green text-center'>
+              KYC Completed
+            </div>
+          ) : (
+            kycDone === 'FAILED' && <div className='text-red-500 text-center'>
+              KYC Verification Failed <br></br> Please Contact Support
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
