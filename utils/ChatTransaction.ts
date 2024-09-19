@@ -32,11 +32,12 @@ export const handleTransaction = async ({
 		};
 		const creator = await getCreatorById(creatorId!);
 		const rate = creator.chatRate;
+		console.log(`Duration: ${roundToNearestThousand(parseInt(duration, 10))} + rate: ${rate}`);
 		const amountToBePaid = (
 			(roundToNearestThousand(parseInt(duration, 10)) / (1000 * 60)) *
-			rate
+			rate * 0.8
 		).toFixed(1);
-		// console.log("amount paid", amountToBePaid);
+		console.log("amount paid", amountToBePaid);
 		// console.log("clientID: ", clientId)
 
 		if (amountToBePaid && clientId) {
