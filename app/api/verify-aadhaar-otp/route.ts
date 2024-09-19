@@ -1,7 +1,8 @@
+import { createUserKyc } from '@/lib/actions/userkyc.actions';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const { otp, ref_id } = await request.json();
+  const { otp, ref_id, userId } = await request.json();
 
   const payload = {
     otp: otp,
@@ -27,6 +28,18 @@ export async function POST(request: NextRequest) {
       console.error('Cashfree error response:', result);
       return NextResponse.json({ success: false, error: result.message || 'Validation error' });
     }
+
+    const kyc = {
+      userId: userId,
+      aadhaar: {
+        ref_id: result.ref_id,
+        name: result.name,
+        img_link: result.photo_link,
+        status: result.status,
+      }
+    }
+
+    await createUserKyc(kyc, 'pan');
 
     return NextResponse.json({ success: true, data: result });
   } catch (error) {
