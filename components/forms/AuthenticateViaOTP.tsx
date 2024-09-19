@@ -145,7 +145,14 @@ const AuthenticateViaOTP = ({
 			});
 
 			// Extract the session token and user from the response
-			const { sessionToken } = response.data;
+			const { sessionToken, message } = response.data;
+
+			// Check if the sessionToken is missing, indicating an OTP verification failure
+			if (!sessionToken) {
+				throw new Error(
+					message || "OTP verification failed. No session token provided."
+				);
+			}
 
 			trackEvent("Login_Bottomsheet_OTP_Submitted", {
 				Platform: getDevicePlatform(),
@@ -261,7 +268,7 @@ const AuthenticateViaOTP = ({
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);
 			let newErrors = { ...error };
-			newErrors.otpVerificationError = error.response.data.error;
+			newErrors.otpVerificationError = error.message;
 			setError(newErrors);
 			otpForm.reset(); // Reset OTP form
 			setIsVerifyingOTP(false);

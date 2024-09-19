@@ -142,27 +142,27 @@ export const externalLinks = [
 	{
 		label: "Privacy Policy",
 
-		route: "https://www.flashcall.me/privacy-policy",
+		route: "/privacy-policy",
 	},
 	{
 		label: "Platform Guidelines",
 
-		route: "https://www.flashcall.me/platform-guidelines",
+		route: "/platform-guidelines",
 	},
 	{
 		label: "Terms of Services",
 
-		route: "https://www.flashcall.me/terms-of-services",
+		route: "/terms-and-conditions",
 	},
 	{
 		label: "Cancellation and Refunds",
 
-		route: "https://www.flashcall.me/cancellation-refunds",
+		route: "/cancellation-refunds",
 	},
 	{
 		label: "About Us",
 
-		route: "https://www.flashcall.me/about-us",
+		route: "/about-us",
 	},
 ];
 
