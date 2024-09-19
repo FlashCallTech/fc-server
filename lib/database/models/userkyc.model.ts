@@ -30,7 +30,7 @@ const LivelinessSchema = new Schema({
 })
 
 const NameMatch = new Schema({
-	reference_id : {type: String, required: true, unique: true},
+	reference_id : {type: Number, required: true, unique: true},
 	verification_id: {type: String, required: true, unique: true},
 	name_1: {type: String},
 	name_2: {type: String},
@@ -40,7 +40,7 @@ const NameMatch = new Schema({
 })
 
 const FaceMatch = new Schema({
-	reference_id: {type: String},
+	reference_id: {type: Number},
 	verification_id: {type: String, required: true, unique: true},
 	status: {type: String},
 	face_match_result: {type: String},
@@ -53,6 +53,7 @@ const UserKycSchema = new Schema({
 	aadhaar: {type: AadhaarSchema, default: null},
 	liveliness: {type: LivelinessSchema, default: null},
 	name_match: {type: NameMatch, default: null},
+	face_match: {type: FaceMatch, default: null},
 });
 
 const UserKyc = models.UserKyc || model("UserKyc", UserKycSchema);
