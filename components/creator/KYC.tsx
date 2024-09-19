@@ -16,15 +16,7 @@ const KYC: React.FC = () => {
   const [nameMatch, setNameMatch] = useState<boolean>(false);
   const [faceMatch, setFaceMatch] = useState<boolean>(false);
   // const [verificationMethod, setVerificationMethod] = useState<'otp' | 'image'>('otp');
-  const [livelinessCheckFile, setLivelinessCheckFile] = useState<File | null>(null);
-  const [panVerified, setPanVerified] = useState(false);
-  const [aadhaarVerified, setAadhaarVerified] = useState(false);
-  const [livelinessCheckVerified, setLivelinessCheckVerified] = useState<boolean>(false);
-  const [nameMatch, setNameMatch] = useState<boolean>(false);
-  const [faceMatch, setFaceMatch] = useState<boolean>(false);
-  // const [verificationMethod, setVerificationMethod] = useState<'otp' | 'image'>('otp');
   const [otp, setOtp] = useState<string>('');
-  const [generatingOtp, setGeneratingOtp] = useState<boolean>(false);
   const [generatingOtp, setGeneratingOtp] = useState<boolean>(false);
   const [otpGenerated, setOtpGenerated] = useState(false);
   const [otpRefId, setOtpRefId] = useState<string | null>(null);
@@ -247,7 +239,6 @@ const KYC: React.FC = () => {
       if (!panNumber) {
         alert('Please enter your PAN number.');
         setVerifyingPan(false);
-        setVerifyingPan(false);
         return;
       }
 
@@ -258,21 +249,14 @@ const KYC: React.FC = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ panNumber, userId: creatorUser?._id, type: 'pan' }),
-          body: JSON.stringify({ panNumber, userId: creatorUser?._id, type: 'pan' }),
         });
 
         const panResult = await panResponse.json();
         if (panResult.data.valid) {
           setPanVerified(true);
         }
-        if (panResult.data.valid) {
-          setPanVerified(true);
-        }
 
         console.log('PAN Verification result:', panResult);
-        setVerifyingPan(false);
-        return;
-
         setVerifyingPan(false);
         return;
 
@@ -283,21 +267,7 @@ const KYC: React.FC = () => {
       }
     }
   }
-        setVerifyingPan(false);
-        return;
-      }
-    }
-  }
 
-  const handleAadhaarVerification = async () => {
-    setVerifyingAadhaar(true)
-    // if (verificationMethod === 'otp') {
-    if (!otpGenerated) {
-      if (!aadhaarNumber) {
-        alert('Please enter your Aadhaar number.');
-        setVerifyingAadhaar(false);
-        return;
-      }
   const handleAadhaarVerification = async () => {
     setVerifyingAadhaar(true)
     // if (verificationMethod === 'otp') {
@@ -317,39 +287,11 @@ const KYC: React.FC = () => {
           },
           body: JSON.stringify({ aadhaarNumber }),
         });
-      try {
-        setGeneratingOtp(true);
-        const otpResponse = await fetch('/api/generate-otp-aadhaar', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ aadhaarNumber }),
-        });
 
         const otpResult = await otpResponse.json();
         setOtpRefId(otpResult.data.ref_id);
         console.log('OTP generated:', otpResult);
-        const otpResult = await otpResponse.json();
-        setOtpRefId(otpResult.data.ref_id);
-        console.log('OTP generated:', otpResult);
 
-        if (otpResult.data.status === 'SUCCESS') {
-          setOtpGenerated(true);
-          alert('OTP has been sent to your Aadhaar-registered mobile number.');
-          setGeneratingOtp(false);
-          setVerifyingAadhaar(false);
-        }
-      } catch (error) {
-        console.error('Error generating OTP:', error);
-        setVerifyingAadhaar(false);
-      }
-    } else {
-      if (!otp) {
-        alert('Please enter the OTP.');
-        setVerifyingAadhaar(false);
-        return;
-      }
         if (otpResult.data.status === 'SUCCESS') {
           setOtpGenerated(true);
           alert('OTP has been sent to your Aadhaar-registered mobile number.');
@@ -376,29 +318,7 @@ const KYC: React.FC = () => {
           },
           body: JSON.stringify({ otp, ref_id: otpRefId, userId: creatorUser?._id }),
         });
-      try {
-        setOtpSubmitted(true);
-        const otpVerificationResponse = await fetch('/api/verify-aadhaar-otp', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ otp, ref_id: otpRefId, userId: creatorUser?._id }),
-        });
 
-        const otpVerificationResult = await otpVerificationResponse.json();
-        if (otpVerificationResult.success) setAadhaarVerified(true);
-        else {
-          setOtp('');
-          setOtpRefId(null)
-          setOtpGenerated(false);
-        }
-        setOtpSubmitted(false);
-        console.log('OTP Verification result:', otpVerificationResult);
-        setVerifyingAadhaar(false);
-      } catch (error) {
-        console.error('Error verifying Aadhaar with OTP:', error);
-        setVerifyingAadhaar(false);
         const otpVerificationResult = await otpVerificationResponse.json();
         if (otpVerificationResult.success) setAadhaarVerified(true);
         else {
@@ -449,42 +369,6 @@ const KYC: React.FC = () => {
     if (!livelinessCheckFile) {
       return;
     }
-    }
-    // } else if (verificationMethod === 'image') {
-    //   if (!aadhaarFile) {
-    //     alert('Please upload your Aadhaar front image.');
-    //     setVerifyingAadhaar(false);
-    //     return;
-    //   }
-
-    //   try {
-    //     const verificationId = generateVerificationId();
-    //     console.log(verificationId);
-    //     const formData = new FormData();
-    //     formData.append('front_image', aadhaarFile);
-    //     formData.append('verification_id', verificationId);
-    //     formData.append('userId', creatorUser?._id as string);
-
-    //     const response = await fetch('/api/verify-aadhaar-image', {
-    //       method: 'POST',
-    //       body: formData,
-    //     });
-
-    //     const result = await response.json();
-    //     console.log('Image Verification result:', result);
-    //     setVerifyingAadhaar(false);
-    //   } catch (error) {
-    //     console.error('Error verifying Aadhaar with image:', error);
-    //     setVerifyingAadhaar(false);
-    //   }
-    // }
-  };
-
-  const handleLivelinessVerification = async () => {
-    setVerifyingLiveliness(true);
-    if (!livelinessCheckFile) {
-      return;
-    }
 
     try {
       const verificationId = generateVerificationId();
@@ -494,19 +378,7 @@ const KYC: React.FC = () => {
       formData.append('verification_id', verificationId);
       formData.append('userId', creatorUser?._id as string);
       formData.append('img_url', img_url);
-    try {
-      const verificationId = generateVerificationId();
-      const img_url = await upload(livelinessCheckFile, 'image');
-      const formData = new FormData();
-      formData.append('image', livelinessCheckFile);
-      formData.append('verification_id', verificationId);
-      formData.append('userId', creatorUser?._id as string);
-      formData.append('img_url', img_url);
 
-      const response = await fetch('/api/liveliness', {
-        method: 'POST',
-        body: formData,
-      });
       const response = await fetch('/api/liveliness', {
         method: 'POST',
         body: formData,
@@ -551,8 +423,6 @@ const KYC: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col w-full items-start justify-start h-full bg-gray-100">
-      <div className="flex flex-col p-4 w-full h-full">
     <div className="flex flex-col w-full items-start justify-start h-full bg-gray-100">
       <div className="flex flex-col p-4 w-full h-full">
         <button className="text-left text-lg font-medium text-gray-900">
@@ -654,80 +524,7 @@ const KYC: React.FC = () => {
                 </div>
               </div>
             } */}
-          <div className='rounded-md p-2 bg-white border'>
-            <label htmlFor="aadhaar" className="flex flex-row justify-between items-center text-sm font-bold rounded-md text-gray-700 p-3 bg-white hover:cursor-pointer " onClick={handleAadhaarLabelClick} >
-              <span>
-                Aadhaar
-              </span>
 
-              <div className='flex flex-row gap-2'>
-                {aadhaarVerified ? (
-                  <Image src={'/green.svg'} width={0} height={0} alt='not done' className='w-[3.5vh] h-[3.5vh]' onContextMenu={(e) => e.preventDefault()} />
-                ) : (
-                  !isAadhaarInputVisible && <Image src={'/red.svg'} width={0} height={0} alt='not done' className='w-[3.5vh] h-[3.5vh]' onContextMenu={(e) => e.preventDefault()} />
-                )
-                }
-                <Image src={'/down.svg'} width={0} height={0} alt='drop down' className='w-[3vh] h-[3vh]' onContextMenu={(e) => e.preventDefault()} />
-              </div>
-
-
-            </label>
-            {/* {isAadhaarInputVisible &&
-              <div className="flex flex-col gap-2 p-2 items-start mb-2 rounded-md border">
-                <div >
-                  <input
-                    type="radio"
-                    id="otp"
-                    name="verificationMethod"
-                    value="otp"
-                    checked={verificationMethod === 'otp'}
-                    onChange={() => {
-                      setVerificationMethod('otp');
-                      setOtpGenerated(false);
-                    }}
-                    className="mr-2"
-                    disabled={aadhaarVerified || verifyingAadhaar || otpGenerated}
-                  />
-                  <label htmlFor="otp" className="mr-4">Verify via OTP</label>
-                </div>
-                <div >
-                  <input
-                    type="radio"
-                    id="image"
-                    name="verificationMethod"
-                    value="image"
-                    checked={verificationMethod === 'image'}
-                    onChange={() => setVerificationMethod('image')}
-                    className="mr-2"
-                    disabled={aadhaarVerified || verifyingAadhaar || otpGenerated}
-                  />
-                  <label htmlFor="image">Verify via Image</label>
-                </div>
-              </div>
-            } */}
-
-            {isAadhaarInputVisible && (
-              <>
-                <input
-                  type="text"
-                  id="aadhaar"
-                  placeholder={aadhaarVerified ? 'Verified' : "Enter you Aadhaar Number"}
-                  value={aadhaarNumber}
-                  onChange={(e) => setAadhaarNumber(e.target.value)}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-sm"
-                  disabled={otpGenerated || aadhaarVerified}
-                />
-                {otpGenerated && (
-                  <input
-                    type="text"
-                    placeholder="Enter OTP"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-sm"
-                  />
-                )}
-              </>
-            )}
             {isAadhaarInputVisible && (
               <>
                 <input
