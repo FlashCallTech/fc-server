@@ -246,3 +246,39 @@ export async function deleteCreatorUser(userId: string) {
 		return { error: "An unexpected error occurred" };
 	}
 }
+
+export async function updateCreatorLink({ userId }: { userId?: string }) {
+	try {
+		await connectToDatabase();
+
+		let user: any;
+
+		// Determine how to find the user
+		if (userId) {
+			// Find user by userId
+			user = await Creator.findById(userId);
+		} else {
+			return { error: "No identifier provided" };
+		}
+
+		if (!user) {
+			return { error: "User not found" };
+		}
+
+		// Construct the new creatorId in the format `@username`
+		const newCreatorId = `@${user.username}`;
+
+		// Update the creatorId field with the new value
+		user.creatorId = newCreatorId;
+		await user.save();
+
+		// Construct the creator link
+		const creatorLink = `https://flashcall.me/${user.username}`;
+
+		// Return the updated creatorId and creatorLink
+		return { creatorId: newCreatorId, creatorLink };
+	} catch (error) {
+		console.error("Error updating creatorId:", error);
+		return { error: "Failed to update creatorId" };
+	}
+}

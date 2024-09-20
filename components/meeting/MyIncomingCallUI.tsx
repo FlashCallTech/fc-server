@@ -140,7 +140,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 	};
 
 	return (
-		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:w-[35%] 3xl:[25%] flex flex-col items-center justify-between py-10 sm:rounded-xl bottom-0 right-0 sm:top-4 sm:right-4 gap-5">
+		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:w-[45%] xl:[35%] 3xl:[25%] flex flex-col items-center justify-between py-10 sm:rounded-xl bottom-0 right-0 sm:top-4 sm:right-4 gap-5">
 			<h1 className="font-bold text-xl mb-2">Incoming Call ...</h1>
 			<div className="flex flex-col items-center justify-center gap-10">
 				<img
