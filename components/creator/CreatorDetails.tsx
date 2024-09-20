@@ -231,7 +231,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 											creator.username ? creator.username : creator.phone
 										}
 										profession={creator.profession ?? "Astrologer"}
-										gender={creator.gender ?? ""}
+										gender={creator.gender ? creator.gender.toLowerCase() : ""}
 										firstName={creator.firstName}
 										lastName={creator.lastName}
 									/>

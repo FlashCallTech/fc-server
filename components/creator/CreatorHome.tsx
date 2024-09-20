@@ -40,6 +40,7 @@ const CreatorHome = () => {
 
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
 	const [loading, setLoading] = useState(true);
+	const [creatorLink, setCreatorLink] = useState<string | null>(null);
 	const [todaysEarning, setTodaysEarning] = useState(0);
 	const [isPriceEditOpen, setIsPriceEditOpen] = useState(false);
 	const [prices, setPrices] = useState({
@@ -47,6 +48,31 @@ const CreatorHome = () => {
 		audioCall: creatorUser?.audioRate || "0",
 		chat: creatorUser?.chatRate || "0",
 	});
+
+	const fetchCreatorLink = async () => {
+		try {
+			const response = await axios.get(
+				`/api/v1/creator/creatorLink?userId=${creatorUser?._id}`
+			);
+
+			return response.data.creatorLink;
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error fetching creator link:", error);
+			return null;
+		}
+	};
+
+	useEffect(() => {
+		if (creatorUser) {
+			const fetchLink = async () => {
+				const link = await fetchCreatorLink();
+
+				setCreatorLink(link || `https://flashcall.me/${creatorUser.username}`);
+			};
+			fetchLink();
+		}
+	}, [creatorUser?._id]);
 
 	useEffect(() => {
 		setTimeout(() => {
@@ -122,8 +148,6 @@ const CreatorHome = () => {
 			}
 		}
 	}, [creatorUser?._id]);
-
-	const creatorLink = `https://flashcall.me/${creatorUser?.username}`;
 
 	const theme = creatorUser?.themeSelected;
 
@@ -340,7 +364,9 @@ const CreatorHome = () => {
 				</div>
 				<div className="flex-grow flex flex-col gap-4 bg-gray-50 rounded-t-3xl p-4">
 					<CopyToClipboard
-						link={creatorLink}
+						link={
+							creatorLink ?? `https://flashcall.me/${creatorUser?.username}`
+						}
 						username={
 							creatorUser.username ? creatorUser.username : creatorUser.phone
 						}

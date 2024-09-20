@@ -4,7 +4,11 @@ import { audio, chat, video } from "@/constants/icons";
 import { creatorUser } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
-import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
+import {
+	Call,
+	CallingState,
+	useStreamVideoClient,
+} from "@stream-io/video-react-sdk";
 import { logEvent } from "firebase/analytics";
 import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { analytics, db } from "@/lib/firebase";
@@ -174,6 +178,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleCallAccepted = async (call: Call, callType: string) => {
 		setIsProcessing(false); // Reset processing state
 
+		if (call.state.callingState !== CallingState.JOINED) {
+			// Leave the call only if the user hasn't left or ended the call
+			await call?.join();
+		}
+
 		toast({
 			variant: "destructive",
 			title: "Call Accepted",
@@ -300,11 +309,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					},
 				},
 			});
-
-			if (call) {
-				await call.join();
-				console.log("Successfully joined the call");
-			}
 
 			const createdAtDate = clientUser?.createdAt
 				? new Date(clientUser.createdAt)

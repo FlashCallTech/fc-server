@@ -7,6 +7,7 @@ import {
 
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 import { getUsersPaginated } from "../actions/creator.actions";
+import { getCreatorFeedback } from "../actions/creatorFeedbacks.action";
 
 // Updating (post or put or delete) = Mutation and Fetching (get) = Query
 
@@ -32,5 +33,24 @@ export const useGetCreators = () => {
 			return allPages.length * limit;
 		},
 		initialPageParam: 0, // Start with an offset of 0
+	});
+};
+
+// ============================================================
+// FEEDBACK QUERIES
+// ============================================================
+
+export const useGetCreatorFeedbacks = (creatorId: string) => {
+	const limit = 10; // Define the limit per page
+
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_CREATOR_FEEDBACKS, creatorId],
+		queryFn: ({ pageParam = 1 }) =>
+			getCreatorFeedback(creatorId, pageParam, limit),
+		getNextPageParam: (lastPage, allPages) => {
+			return lastPage.hasMore ? allPages.length + 1 : undefined;
+		},
+		enabled: !!creatorId, // Only enable the query if creatorId is provided
+		initialPageParam: 1, // Start with page 1
 	});
 };
