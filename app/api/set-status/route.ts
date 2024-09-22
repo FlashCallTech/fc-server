@@ -3,7 +3,6 @@ import { db } from "../../../lib/firebase"; // Adjust path as needed
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
-// This is your API route handler
 export async function POST(request: Request) {
 	try {
 		const { phone, status } = await request.json();

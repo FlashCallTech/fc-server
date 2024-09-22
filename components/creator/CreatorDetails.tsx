@@ -152,42 +152,6 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 		}
 	};
 
-	const handleNotifyUser = () => {
-		try {
-			const notifyList = JSON.parse(localStorage.getItem("notifyList") || "{}");
-
-			// Check if the creator.username or creator.phone is already in the notify list
-			if (
-				!notifyList[creator.username] &&
-				!Object.values(notifyList).includes(creator.phone)
-			) {
-				// Add the creator's username and phone to the notify list
-				notifyList[creator.username] = creator.phone;
-				localStorage.setItem("notifyList", JSON.stringify(notifyList));
-				setIsAlreadyNotified(true); // Disable the button after adding
-
-				toast({
-					variant: "default",
-					title: `${fullName} is ${status}.`,
-					description: `Will let you know as soon as ${fullName} is back online!`,
-				});
-			} else {
-				toast({
-					variant: "default",
-					title: "Repeated Action Performed",
-					description: `You are already set to be notified when ${fullName} comes online.`,
-				});
-			}
-		} catch (error) {
-			console.error("Error storing notification:", error);
-			toast({
-				variant: "destructive",
-				title: "Error",
-				description: "There was an issue setting up the notification.",
-			});
-		}
-	};
-
 	const backgroundImageStyle = {
 		backgroundImage: `url(${imageSrc})`,
 		backgroundSize: "cover",
@@ -249,37 +213,6 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 									)}
 								</>
 							</div>
-
-							{status !== "Online" && clientUser && (
-								<button
-									className={`absolute bottom-0 right-0 ${
-										!isAlreadyNotified
-											? "bg-[#232323]/35"
-											: "bg-green-1 cursor-not-allowed"
-									}  p-3 rounded-xl rounded-tr-none rounded-bl-none transition-all duration-300 hover:scale-105 group text-white shadow-md white hover:bg-green-1 flex gap-2 items-center`}
-									onClick={handleNotifyUser}
-									disabled={isAlreadyNotified}
-								>
-									{isAlreadyNotified ? (
-										<span className="text-sm">You&apos;ll be notified</span>
-									) : (
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											fill="none"
-											viewBox="0 0 24 24"
-											strokeWidth={1.5}
-											stroke="currentColor"
-											className="size-6"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5"
-											/>
-										</svg>
-									)}
-								</button>
-							)}
 						</div>
 					)}
 

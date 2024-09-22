@@ -20,9 +20,11 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "./usePlatform";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
+	const { currentUser } = useCurrentUsersContext();
 	const [SheetOpen, setSheetOpen] = useState(false); // State to manage sheet visibility
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
@@ -30,6 +32,29 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	const { createChat } = useChat();
 	const { walletBalance } = useWalletBalanceContext();
 	const { getDevicePlatform } = usePlatform();
+
+	// Function to update expert's status
+	const updateExpertStatus = async (phone: string, status: string) => {
+		try {
+			const response = await fetch("/api/set-status", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ phone, status }),
+			});
+
+			const data = await response.json();
+			if (!response.ok) {
+				throw new Error(data.message || "Failed to update status");
+			}
+
+			console.log("Expert status updated to:", status);
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error updating expert status:", error);
+		}
+	};
 
 	const handleChat = async (creator: any, clientUser: any) => {
 		logEvent(analytics, "chat_now_click", {
@@ -254,6 +279,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				Creator_ID: chatRequest.creatorId,
 				Platform: getDevicePlatform(),
 			});
+
+			updateExpertStatus(currentUser?.phone as string, "Busy");
 
 			router.push(
 				`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`

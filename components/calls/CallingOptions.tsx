@@ -39,6 +39,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [chatReqSent, setChatReqSent] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
 
+	const [onlineStatus, setOnlineStatus] = useState<String>("");
+
 	const themeColor = isValidHexColor(creator.themeSelected)
 		? creator.themeSelected
 		: "#50A65C";
@@ -52,25 +54,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		audioAllowed: creator.audioAllowed,
 		chatAllowed: creator.chatAllowed,
 	});
-
-	const [onlineStatus, setOnlineStatus] = useState<String>();
-
-	useEffect(() => {
-		const creatorDocRef = doc(db, "userStatus", creator.phone);
-
-		// Set up a listener for real-time updates
-		const unsubscribe = onSnapshot(creatorDocRef, (doc) => {
-			if (doc.exists()) {
-				const data = doc.data();
-				setOnlineStatus(data.status);
-			} else {
-				console.error("No such document!");
-			}
-		});
-
-		// Clean up the listener when the component unmounts
-		return () => unsubscribe();
-	}, [creator.phone]);
 
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
@@ -94,6 +77,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					audioAllowed: services?.audioCall ?? false,
 					chatAllowed: services?.chat ?? false,
 				}));
+
+				// Check if any of the services is enabled
+				const isOnline =
+					services?.videoCall || services?.audioCall || services?.chat;
+
+				setOnlineStatus(isOnline ? "Online" : "Offline");
 			}
 		});
 
@@ -178,11 +167,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleCallAccepted = async (call: Call, callType: string) => {
 		setIsProcessing(false); // Reset processing state
 
-		if (call.state.callingState !== CallingState.JOINED) {
-			// Leave the call only if the user hasn't left or ended the call
-			await call?.join();
-		}
-
 		toast({
 			variant: "destructive",
 			title: "Call Accepted",
@@ -213,7 +197,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		// router.replace(`/meeting/${call.id}`);
 	};
 
-	const handleCallRejected = (callType: string) => {
+	const handleCallRejected = () => {
 		setIsProcessing(false); // Reset processing state
 		setSheetOpen(false);
 	};
@@ -300,6 +284,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			});
 
 			await call.getOrCreate({
+				members_limit: 2,
 				ring: true,
 				data: {
 					starts_at: startsAt,
@@ -347,7 +332,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			});
 
 			call.on("call.accepted", () => handleCallAccepted(call, callType));
-			call.on("call.rejected", () => handleCallRejected(callType));
+			call.on("call.rejected", handleCallRejected);
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
@@ -408,18 +393,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			} else {
 				setIsAuthSheetOpen(true);
 			}
-
-			// Optionally log a success message to Sentry
-			Sentry.captureMessage("handleClickOption executed successfully", {
-				level: "info",
-				extra: {
-					callType,
-					clientUserId: clientUser?._id,
-					creatorId: creator._id,
-				},
-			});
 		} catch (error) {
-			// Capture the exception and log it to Sentry
 			Sentry.captureException(error);
 			console.error("Error in handleClickOption:", error);
 		} finally {
@@ -460,30 +434,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	// const sendPushNotification = async () => {
-	// 	const token = await fetchCreatorToken(creator);
-
-	// 	try {
-	// 		const response = await fetch("/api/send-notification", {
-	// 			method: "POST",
-	// 			headers: {
-	// 				"Content-Type": "application/json",
-	// 			},
-	// 			body: JSON.stringify({
-	// 				token: token,
-	// 				title: "Test Notification",
-	// 				message: "This is a test notification",
-	// 				link: "/home",
-	// 			}),
-	// 		});
-
-	// 		const data = await response.json();
-	// 		console.log(data);
-	// 	} catch (error) {
-	// 		console.error("Failed to send notification:", error);
-	// 	}
-	// };
-
 	const theme = `5px 5px 0px 0px ${themeColor}`;
 
 	if (isAuthSheetOpen && !clientUser)
@@ -493,120 +443,93 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				onOpenChange={setIsAuthSheetOpen} // Handle sheet close
 			/>
 		);
+
+	const services = [
+		{
+			type: "video",
+			enabled:
+				updatedCreator.videoAllowed &&
+				parseInt(updatedCreator.videoRate, 10) > 0,
+			rate: updatedCreator.videoRate,
+			label: "Book Video Call",
+			icon: video,
+			onClick: () => {
+				if (clientUser || onlineStatus !== "Busy") {
+					handleClickOption("video");
+				} else {
+					setIsAuthSheetOpen(true);
+				}
+			},
+		},
+		{
+			type: "audio",
+			enabled:
+				updatedCreator.audioAllowed &&
+				parseInt(updatedCreator.audioRate, 10) > 0,
+			rate: updatedCreator.audioRate,
+			label: "Book Audio Call",
+			icon: audio,
+			onClick: () => {
+				if (clientUser || onlineStatus !== "Busy") {
+					handleClickOption("audio");
+				} else {
+					setIsAuthSheetOpen(true);
+				}
+			},
+		},
+		{
+			type: "chat",
+			enabled:
+				updatedCreator.chatAllowed && parseInt(updatedCreator.chatRate, 10) > 0,
+			rate: updatedCreator.chatRate,
+			label: "Chat Now",
+			icon: chat,
+			onClick: () => {
+				if (clientUser || onlineStatus !== "Busy") {
+					handleChatClick();
+				} else {
+					setIsAuthSheetOpen(true);
+				}
+			},
+		},
+	];
+
+	// Sort services based on priority and enabled status
+	const sortedServices = services.sort((a, b) => {
+		if (a.enabled && !b.enabled) return -1;
+		if (!a.enabled && b.enabled) return 1;
+
+		const priority: any = { video: 1, audio: 2, chat: 3 };
+		return priority[a.type] - priority[b.type];
+	});
 	return (
 		<>
 			<div className="flex flex-col w-full items-center justify-center gap-4">
-				{!updatedCreator.videoAllowed &&
-					!updatedCreator.audioAllowed &&
-					!updatedCreator.chatAllowed && (
-						<span className="text-red-500 font-medium text-lg">
-							None of the Services are Available Right Now
+				{sortedServices.map((service) => (
+					<div
+						key={service.type}
+						className={`callOptionContainer ${
+							isProcessing || !service.enabled || onlineStatus === "Busy"
+								? "opacity-50 !cursor-not-allowed"
+								: ""
+						}`}
+						style={{
+							boxShadow: theme,
+						}}
+						onClick={service.onClick}
+					>
+						<div
+							className={`flex gap-4 items-center font-semibold`}
+							style={{ color: themeColor }}
+						>
+							{service.icon}
+							{service.label}
+						</div>
+						<span className="text-sm tracking-widest">
+							Rs. {service.rate}/Min
 						</span>
-					)}
-
-				{/* Book Video Call */}
-				{updatedCreator.videoAllowed &&
-					parseInt(updatedCreator.videoRate, 10) > 0 && (
-						<div
-							className={`callOptionContainer ${
-								isProcessing ||
-								userType === "creator" ||
-								onlineStatus !== "Online"
-									? "opacity-50 !cursor-not-allowed"
-									: ""
-							}`}
-							style={{
-								boxShadow: theme,
-							}}
-							onClick={() => {
-								if (onlineStatus === "Online") {
-									handleClickOption("video");
-								} else {
-									setIsAuthSheetOpen(true);
-								}
-							}}
-						>
-							<div
-								className={`flex gap-4 items-center font-semibold`}
-								style={{ color: themeColor }}
-							>
-								{video}
-								Book Video Call
-							</div>
-							<span className="text-sm tracking-widest">
-								Rs. {updatedCreator.videoRate}/Min
-							</span>
-						</div>
-					)}
-
-				{/* Book Audio Call */}
-				{updatedCreator.audioAllowed &&
-					parseInt(updatedCreator.audioRate, 10) > 0 && (
-						<div
-							className={`callOptionContainer ${
-								isProcessing ||
-								userType === "creator" ||
-								onlineStatus !== "Online"
-									? "opacity-50 !cursor-not-allowed"
-									: ""
-							}`}
-							style={{
-								boxShadow: theme,
-							}}
-							onClick={() => {
-								if (onlineStatus === "Online") {
-									handleClickOption("audio");
-								} else {
-									setIsAuthSheetOpen(true);
-								}
-							}}
-						>
-							<div
-								className={`flex gap-4 items-center font-semibold`}
-								style={{ color: themeColor }}
-							>
-								{audio}
-								Book Audio Call
-							</div>
-							<span className="text-sm tracking-widest">
-								Rs. {updatedCreator.audioRate}/Min
-							</span>
-						</div>
-					)}
-
-				{/* Book Chat */}
-				{updatedCreator.chatAllowed &&
-					parseInt(updatedCreator.chatRate, 10) > 0 && (
-						<div
-							className={`callOptionContainer ${
-								userType === "creator" || onlineStatus !== "Online"
-									? "opacity-50 !cursor-not-allowed"
-									: ""
-							}`}
-							style={{
-								boxShadow: theme,
-							}}
-							onClick={() => {
-								if (onlineStatus === "Online") {
-									handleChatClick();
-								} else {
-									setIsAuthSheetOpen(true);
-								}
-							}}
-						>
-							<button
-								className={`flex gap-4 items-center font-semibold`}
-								style={{ color: themeColor }}
-								disabled={onlineStatus !== "Online"}
-							>
-								{chat}
-								Chat Now
-							</button>
-							<span className="text-sm tracking-widest">
-								Rs. {updatedCreator.chatRate}/Min
-							</span>
-						</div>
-					)}
+					</div>
+				))}
 
 				<Sheet
 					open={isSheetOpen}

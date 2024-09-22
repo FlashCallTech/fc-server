@@ -19,6 +19,7 @@ import CreatorLinks from "./CreatorLinks";
 import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
+import ProfileDialog from "./ProfileDialog";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
@@ -104,10 +105,12 @@ const CreatorHome = () => {
 	const fetchTransactions = async () => {
 		try {
 			setTransactionsLoading(true);
-			// Get today's date in YYYY-MM-DD format
-			const today = new Date().toISOString().split("T")[0];
+			// Get today's date in local YYYY-MM-DD format
+			const today = new Date();
+			const localDate = today.toLocaleDateString("en-CA"); // 'en-CA' gives YYYY-MM-DD format
+			console.log(localDate);
 			const response = await axios.get(
-				`/api/v1/transaction/getTodaysEarnings?userId=${creatorUser?._id}&date=${today}`
+				`/api/v1/transaction/getTodaysEarnings?userId=${creatorUser?._id}&date=${localDate}`
 			);
 			const fetchedTransactions = response.data.transactions;
 			const totalEarnings = calculateTotalEarnings(fetchedTransactions);
@@ -163,6 +166,7 @@ const CreatorHome = () => {
 		if (creatorUser) {
 			try {
 				const callServicesDocRef = doc(db, "services", creatorUser._id);
+
 				const callServicesDoc = await getDoc(callServicesDocRef);
 				if (callServicesDoc.exists()) {
 					await updateDoc(callServicesDocRef, {
@@ -173,6 +177,23 @@ const CreatorHome = () => {
 					await setDoc(callServicesDocRef, {
 						services,
 						prices,
+					});
+				}
+
+				// Determine if any service is active
+				const isOnline =
+					services.videoCall || services.audioCall || services.chat;
+
+				const creatorStatusDocRef = doc(db, "userStatus", creatorUser.phone);
+				// Update or set the creator's status
+				const creatorStatusDoc = await getDoc(creatorStatusDocRef);
+				if (creatorStatusDoc.exists()) {
+					await updateDoc(creatorStatusDocRef, {
+						status: isOnline ? "Online" : "Offline",
+					});
+				} else {
+					await setDoc(creatorStatusDocRef, {
+						status: isOnline ? "Online" : "Offline",
 					});
 				}
 			} catch (error) {
@@ -230,9 +251,9 @@ const CreatorHome = () => {
 			updateFirestoreCallServices(
 				{
 					myServices: services.myServices,
-					videoCall: services.videoCall || false,
-					audioCall: services.audioCall || false,
-					chat: services.chat || false,
+					videoCall: services.videoCall,
+					audioCall: services.audioCall,
+					chat: services.chat,
 				},
 				newPrices
 			);
@@ -252,6 +273,7 @@ const CreatorHome = () => {
 	) => {
 		setServices((prevStates) => {
 			if (service === "myServices") {
+				// Toggle the master switch and update all services accordingly
 				const newMyServicesState = !prevStates.myServices;
 				const newServices = {
 					myServices: newMyServicesState,
@@ -259,14 +281,24 @@ const CreatorHome = () => {
 					audioCall: newMyServicesState,
 					chat: newMyServicesState,
 				};
-				console.log(newServices);
+
 				updateFirestoreCallServices(newServices, prices);
 				return newServices;
 			} else {
+				// Toggle an individual service
+				const newServiceState = !prevStates[service];
 				const newServices = {
 					...prevStates,
-					[service]: !prevStates[service],
+					[service]: newServiceState,
 				};
+
+				// Check if any of the individual services are true
+				const isAnyServiceOn =
+					newServices.videoCall || newServices.audioCall || newServices.chat;
+
+				// Update the master toggle (myServices) accordingly
+				newServices.myServices = isAnyServiceOn;
+
 				updateFirestoreCallServices(newServices, prices);
 				return newServices;
 			}
@@ -344,13 +376,7 @@ const CreatorHome = () => {
 					</Link>
 				</div>
 				<div className="flex flex-col items-center justify-center p-4">
-					<Image
-						src={imageSrc}
-						width={1000}
-						height={1000}
-						alt="avatar"
-						className="w-32 h-32 bg-white rounded-full p-2 object-cover"
-					/>
+					<ProfileDialog creator={creatorUser} imageSrc={imageSrc} />
 					<section className="flex flex-col items-center p-2">
 						<p className="text-white text-sm">
 							{creatorUser?.firstName} {creatorUser?.lastName}

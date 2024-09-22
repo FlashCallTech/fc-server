@@ -87,7 +87,7 @@ const Withdraw: React.FC = () => {
 
 	if (!creatorUser?._id)
 		return (
-			<section className="w-full h-full flex items-center justify-center">
+			<section className="size-full flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
 			</section>
 		);
@@ -241,7 +241,9 @@ const Withdraw: React.FC = () => {
 							))
 						)
 					) : (
-						<ContentLoading />
+						<div className="size-full flex flex-col gap-2 items-center justify-center">
+							<ContentLoading />
+						</div>
 					)}
 				</ul>
 			</div>
