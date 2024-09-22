@@ -26,7 +26,6 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
 import Link from "next/link";
-import Link from "next/link";
 
 interface Transaction {
 	_id: string;
@@ -196,13 +195,12 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		}
 	}, [rechargeAmount, form]);
 
+	console.log(rechargeAmount);
+
 	const creatorURL = localStorage.getItem("creatorURL");
 
 	return (
 		<div className="flex flex-col pt-4 bg-white text-gray-800 w-full h-full">
-			<Link href="/payment" className="text-xl font-bold p-4">
-				&larr;
-			</Link>
 			{/* Balance Section */}
 			<div className="flex items-center pb-5 px-4 gap-4">
 				<Link

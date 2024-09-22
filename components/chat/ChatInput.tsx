@@ -44,6 +44,9 @@ const ChatInput: React.FC<Props> = ({
         setFullImageUrl(imageUrl);
     };
 
+    const textSizeClass = getDevicePlatform() === 'iOS' ? 'text-base' : 'text-sm'; // 'text-base' is 16px, 'text-sm' is 14px in Tailwind
+
+
     // If img.url is present, only display the image section
     if (img.url) {
         return (
@@ -79,7 +82,7 @@ const ChatInput: React.FC<Props> = ({
                             placeholder="Add a caption"
                             value={isImgUploading ? 'Sending Image' : text}
                             onChange={e => setText(e.target.value)}
-                            className="px-2 text-sm leading-5 font-normal flex-auto bg-transparent outline-none "
+                            className={`px-2 ${textSizeClass} font-normal flex-auto bg-transparent outline-none`}
                         />
                         <button onClick={handleSend} onContextMenu={(e) => e.preventDefault()}>
                             <div className='flex justify-center items-center bg-green-500 rounded-full px-2 py-2'>
@@ -110,7 +113,7 @@ const ChatInput: React.FC<Props> = ({
                         placeholder="Message"
                         value={isImgUploading ? 'Sending Image' : text}
                         onChange={e => setText(e.target.value)}
-                        className="px-2 text-sm leading-5 font-normal flex-auto bg-transparent outline-none "
+                        className={`px-2 ${textSizeClass} font-normal flex-auto bg-transparent outline-none`}
                     />
                     <div className="flex flex-row gap-3 px-2 ml-auto">
                         <label htmlFor="file" onContextMenu={(e) => e.preventDefault()}>

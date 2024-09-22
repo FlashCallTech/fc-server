@@ -94,6 +94,10 @@ const PaymentSettings = () => {
 		[]
 	);
 
+	const generateVerificationId = () => {
+    return `${currentUser?._id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  };
+
 	const handleSave = async () => {
 		let hasError = false;
 		const newErrors = {
@@ -149,20 +153,39 @@ const PaymentSettings = () => {
 			};
 
 			try {
-				const response = await fetch("/api/v1/creator/save-payment", {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(paymentData),
-				});
+				// const verification_id = generateVerificationId();
+				// const reversePennyDrop = await fetch('/api/v1/reverse-penny-drop', {
+				// 	method: 'POST',
+				// 	headers: {
+				// 		'Content-Type': 'application/json'
+				// 	},
+				// 	body: JSON.stringify({
+				// 		verification_id,
+				// 		name: currentUser?.firstName + ' ' + currentUser?.lastName
+				// 	})
+				// })
+				
+				// const result  = await reversePennyDrop.json();
 
-				if (response.ok) {
-					alert("Payment details saved successfully!");
-					// Update initial states to reflect the new saved state
-					setInitialPaymentMethod(paymentMethod);
-					setInitialBankDetails(bankDetails);
-				} else {
-					alert("Failed to save payment details.");
-				}
+				// if(result.success){
+					const response = await fetch("/api/v1/creator/save-payment", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(paymentData),
+					});
+					
+					if (response.ok) {
+						alert("Payment details saved successfully!");
+						// Update initial states to reflect the new saved state
+						setInitialPaymentMethod(paymentMethod);
+						setInitialBankDetails(bankDetails);
+					} else {
+						alert("Failed to save payment details.");
+					}
+			// }
+				// else {
+				// 	alert('Penny Drop Failed');
+				// }
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error saving payment details:", error);

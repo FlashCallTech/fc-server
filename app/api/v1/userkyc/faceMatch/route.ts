@@ -36,15 +36,14 @@ export async function POST(request: NextRequest) {
         'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
       },
     });
+    
+    // Parse the API response
+    const result = await response.json();
 
     // Check if the response is OK
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`API request failed with status ${response.status}: ${errorData.message || 'Unknown error'}`);
+      return NextResponse.json({ success: false, error: result.message || 'Validation error' });
     }
-
-    // Parse the API response
-    const result = await response.json();
 
     const kyc = {
       userId: userId,

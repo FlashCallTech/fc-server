@@ -5,6 +5,7 @@ import Loader from '../shared/Loader';
 import Image from 'next/image';
 import upload from '@/lib/upload';
 import Verify from '../shared/Verify';
+import imageCompression from 'browser-image-compression';
 
 const KYC: React.FC = () => {
   const [panNumber, setPanNumber] = useState('');
@@ -111,7 +112,7 @@ const KYC: React.FC = () => {
 
 
       if (!nameMatch) {
-        const nameMatchResponse = await fetch('/api/name-match', {
+        const nameMatchResponse = await fetch('/api/v1/userKyc/name-match', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -153,7 +154,7 @@ const KYC: React.FC = () => {
       }
 
       if (!faceMatch) {
-        const face_match_response = await fetch('/api/face-match', {
+        const face_match_response = await fetch('/api/v1/userKyc/face-match', {
           method: 'POST',
           headers: {
             'Content_Type': 'application/json'
@@ -243,12 +244,12 @@ const KYC: React.FC = () => {
       }
 
       try {
-        const panResponse = await fetch('/api/verify-pan', {
+        const panResponse = await fetch('/api/v1/userKyc/verify-pan', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ panNumber, userId: creatorUser?._id, type: 'pan' }),
+          body: JSON.stringify({ panNumber, userId: creatorUser?._id }),
         });
 
         const panResult = await panResponse.json();
@@ -280,7 +281,7 @@ const KYC: React.FC = () => {
 
       try {
         setGeneratingOtp(true);
-        const otpResponse = await fetch('/api/generate-otp-aadhaar', {
+        const otpResponse = await fetch('/api/v1/userKyc/generate-aadhaar-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -311,7 +312,7 @@ const KYC: React.FC = () => {
 
       try {
         setOtpSubmitted(true);
-        const otpVerificationResponse = await fetch('/api/verify-aadhaar-otp', {
+        const otpVerificationResponse = await fetch('/api/v1/userKyc/verify-aadhaar-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -379,7 +380,7 @@ const KYC: React.FC = () => {
       formData.append('userId', creatorUser?._id as string);
       formData.append('img_url', img_url);
 
-      const response = await fetch('/api/liveliness', {
+      const response = await fetch('/api/v1/userKyc/liveliness', {
         method: 'POST',
         body: formData,
       });
@@ -409,6 +410,23 @@ const KYC: React.FC = () => {
   const handleLivelinessCheckLabelClick = () => {
     setLivelinessCheckInputVisible(!isLivelinessCheckInputVisible);
   }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      try {
+        const options = {
+          maxSizeMB: 1, // Ensure the file size is under 1 MB
+          maxWidthOrHeight: 1920, // Optional: Set a max width or height for the image
+          useWebWorker: true, // Optional: Use a web worker for faster compression
+        };
+        const compressedFile = await imageCompression(file, options);
+        setLivelinessCheckFile(compressedFile); // Store the compressed file
+      } catch (error) {
+        console.error('Image compression error:', error);
+      }
+    }
+  };
 
   if(verifying){
     return(
@@ -597,7 +615,7 @@ const KYC: React.FC = () => {
                   type="file"
                   accept=".jpg,.jpeg,.png"
                   capture="environment"
-                  onChange={(e) => setLivelinessCheckFile(e.target.files ? e.target.files[0] : null)}
+                  onChange={handleFileChange}
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-sm"
                 />
               )

@@ -1,15 +1,14 @@
-import { createUserKyc } from '@/lib/actions/userkyc.actions';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const { panNumber, userId } = await request.json();
+  const { aadhaarNumber } = await request.json();
 
   const payload = {
-    pan: panNumber,
+    aadhaar_number: aadhaarNumber,
   };
 
   try {
-    const response = await fetch('https://api.cashfree.com/verification/pan', {
+    const response = await fetch('https://api.cashfree.com/verification/offline-aadhaar/otp', {
       method: 'POST',
       headers: {
         'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
@@ -19,24 +18,11 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      throw new Error('Failed to verify PAN');
-    }
-
     const result = await response.json();
-
-    const kyc = {
-      userId: userId,
-      pan: {
-        pan_number: result.pan,
-        reference_id: result.reference_id,
-        registered_name: result.registered_name,
-        name_match_score: result.name_match_score,
-        valid: result.valid,
-      }
+    
+    if (!response.ok) {
+      return NextResponse.json({ success: false, error: result.message || 'Validation error' });
     }
-
-    await createUserKyc(kyc, 'pan');
 
     return NextResponse.json({ success: true, data: result });
   } catch (error) {

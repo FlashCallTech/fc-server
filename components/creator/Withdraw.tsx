@@ -8,6 +8,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import * as Sentry from "@sentry/nextjs";
+import usePayout from "@/hooks/usePayout";
 
 interface Transaction {
 	_id: string;
@@ -26,6 +27,7 @@ const Withdraw: React.FC = () => {
 		new Map()
 	);
 	const [isSticky, setIsSticky] = useState(false);
+	const { initiateWithdraw } = usePayout();
 	const stickyRef = useRef<HTMLDivElement>(null);
 
 	const handleScroll = () => {
@@ -145,6 +147,7 @@ const Withdraw: React.FC = () => {
 							{isSticky && (
 								<Button
 									type="submit"
+									onClick={() => initiateWithdraw(creatorUser._id)}
 									className="right-0 w-auto px-4 py-3 shadow bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
 								>
 									Withdraw
@@ -154,6 +157,7 @@ const Withdraw: React.FC = () => {
 						{!isSticky && (
 							<Button
 								type="submit"
+								onClick={() => initiateWithdraw(creatorUser._id)}
 								className="w-full px-4 bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
 							>
 								Withdraw
