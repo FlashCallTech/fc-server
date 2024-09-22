@@ -129,12 +129,11 @@ const About: React.FC = () => {
 		const totalPayableInPaise: number = totalPayable! * 100;
 		const rechargeAmount: number = parseInt(totalPayableInPaise.toFixed(2));
 		const currency: string = "INR";
-		const receiptId: string = "kuchbhi";
 
 		try {
 			const response: Response = await fetch("/api/v1/order", {
 				method: "POST",
-				body: JSON.stringify({ rechargeAmount, currency, receipt: receiptId }),
+				body: JSON.stringify({ amount: rechargeAmount , currency }),
 				headers: { "Content-Type": "application/json" },
 			});
 

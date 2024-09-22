@@ -14,7 +14,7 @@ const OrderSchema: Schema = new Schema({
   order_id: { type: String, required: true },
   amount: { type: Number, required: true },
   currency: { type: String, required: true },
-  receipt: { type: String, required: true },
+  receipt: { type: String},
   status: { type: String, required: true },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }

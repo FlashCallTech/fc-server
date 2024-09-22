@@ -7,19 +7,19 @@ export async function GET(request: Request) {
         const userId = searchParams.get('userId');
 
         if (!userId) {
-            return new NextResponse('User ID is required.', { status: 400 });
+            return NextResponse.json({ success: false, message: 'User ID is required.'});
         }
 
         // Fetch the KYC details for the given userId
         const userKyc = await UserKyc.findOne({ userId });
 
         if (!userKyc) {
-            return new NextResponse('KYC details not found.', { status: 404 });
+            return NextResponse.json({ success: false, message: 'KYC details not found.' });
         }
 
-        return NextResponse.json(userKyc);
+        return NextResponse.json({ success: true, data: userKyc});
     } catch (error: any) {
         console.error("Error fetching KYC details:", error);
-        return new NextResponse('Failed to fetch KYC details.', { status: 500 });
+        return NextResponse.json({ success: false, message: 'Failed to fetch KYC details.'});
     }
 }
