@@ -213,7 +213,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				if (userType) fetchCurrentUser();
 			}
 		}
-	}, [userType]);
+	}, [userType, currentUser?._id]);
 
 	// Function to refresh the current user data
 	const refreshCurrentUser = async () => {
@@ -241,7 +241,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		}
 
 		const userAuthRef = doc(db, "authToken", currentUser.phone);
-		const statusDocRef = doc(db, "userStatus", currentUser.phone);
 
 		const unsubscribe = onSnapshot(
 			userAuthRef,
@@ -272,71 +271,8 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			}
 		);
 
-		// Fetch the current status before setting online
-		const setStatusOnline = async () => {
-			try {
-				const statusSnapshot = await getDoc(statusDocRef);
-				if (statusSnapshot.exists()) {
-					const currentStatus = statusSnapshot.data()?.status;
-					// Check if current status is not 'Busy'
-					if (currentStatus !== "Busy") {
-						await setStatus("Online");
-					}
-				} else {
-					// If document does not exist, create it with 'Online' status
-					await setStatus("Online");
-				}
-			} catch (error) {
-				Sentry.captureException(error);
-				console.error("Error checking or setting status online: ", error);
-			}
-		};
-
-		// Update user status
-		const setStatus = async (status: string) => {
-			try {
-				await setDoc(statusDocRef, { status }, { merge: true });
-				console.log(`User status set to ${status}`);
-			} catch (error) {
-				Sentry.captureException(error);
-				console.error(`Error updating user status to ${status}: `, error);
-			}
-		};
-
-		const setStatusOffline = () => setStatus("Offline");
-
-		// Periodic heartbeats every 30 seconds to keep status "Online"
-		const heartbeatInterval = setInterval(() => {
-			setStatusOnline();
-		}, 30000); // 30 seconds
-
-		// Call once to set status online on component mount
-		setStatusOnline();
-
-		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-			const phone = currentUser?.phone; // Store the phone number before signout
-
-			if (phone) {
-				// Send the phone and status with the beacon
-				navigator.sendBeacon(
-					"/api/set-status",
-					JSON.stringify({ phone, status: "Offline" })
-				);
-			}
-		};
-
-		// Add event listener for unload events
-		if (isBrowser()) {
-			window.addEventListener("beforeunload", handleBeforeUnload);
-		}
-
 		// Cleanup function to clear heartbeat and update status to "Offline"
 		return () => {
-			clearInterval(heartbeatInterval);
-			if (isBrowser()) {
-				window.removeEventListener("beforeunload", handleBeforeUnload);
-			}
-			setStatusOffline();
 			unsubscribe();
 		};
 	}, [currentUser?.phone]);

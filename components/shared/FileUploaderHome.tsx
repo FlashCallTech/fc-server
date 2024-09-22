@@ -12,12 +12,14 @@ type FileUploaderProps = {
 	fieldChange: (url: string) => void;
 	mediaUrl: string;
 	onFileSelect: (file: File) => void;
+	creatorUser: any; // The creatorUser object is passed as props
 };
 
-const FileUploader = ({
+const FileUploaderHome = ({
 	fieldChange,
 	mediaUrl,
 	onFileSelect,
+	creatorUser,
 }: FileUploaderProps) => {
 	const [fileUrl, setFileUrl] = useState(mediaUrl); // Old image
 	const [newFileUrl, setNewFileUrl] = useState<string | null>(null); // New image preview
@@ -64,13 +66,13 @@ const FileUploader = ({
 						});
 						setLoading(false); // Set loading state to false if upload fails
 					},
-					() => {
-						getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-							setNewFileUrl(downloadURL); // Show new image preview
-							console.log("File available at", downloadURL);
-							fieldChange(downloadURL); // Pass only new image URL to parent form state
-							setLoading(false); // Set loading state to false once upload completes
-						});
+					async () => {
+						const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+						setNewFileUrl(downloadURL); // Show new image preview
+						console.log("File available at", downloadURL);
+						fieldChange(downloadURL); // Pass only new image URL to parent form state
+
+						setLoading(false); // Set loading state to false once upload completes
 					}
 				);
 			} catch (error) {
@@ -83,7 +85,7 @@ const FileUploader = ({
 				setLoading(false); // Set loading state to false if upload fails
 			}
 		},
-		[fieldChange, onFileSelect, toast]
+		[fieldChange, onFileSelect, toast, creatorUser]
 	);
 
 	const { getRootProps, getInputProps } = useDropzone({
@@ -109,7 +111,7 @@ const FileUploader = ({
 					/>
 				</div>
 				{/* Progress Bar */}
-				<div className="w-[25%] bg-gray-200 rounded-xl h-2 dark:bg-gray-700">
+				<div className="w-1/2 bg-gray-200 rounded-xl h-2 dark:bg-gray-700">
 					<div
 						className="bg-green-1 h-2 rounded-xl transition-all duration-500"
 						style={{ width: `${uploadProgress}%` }}
@@ -151,7 +153,9 @@ const FileUploader = ({
 							<img
 								src={fileUrl}
 								alt="Current image"
-								className={`w-20 h-20 rounded-full border-2 border-white`}
+								className={`${
+									newFileUrl ? "w-32 h-32" : "w-32 h-32"
+								} rounded-full border-2 border-white`}
 							/>
 						)}
 
@@ -174,4 +178,4 @@ const FileUploader = ({
 	);
 };
 
-export default FileUploader;
+export default FileUploaderHome;

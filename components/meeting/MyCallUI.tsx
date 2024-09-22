@@ -5,9 +5,10 @@ import MyIncomingCallUI from "./MyIncomingCallUI";
 import MyOutgoingCallUI from "./MyOutgoingCallUI";
 import { useToast } from "../ui/use-toast";
 import { logEvent } from "firebase/analytics";
-import { analytics } from "@/lib/firebase";
+import { analytics, db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
 const MyCallUI = () => {
 	const router = useRouter();
@@ -19,6 +20,29 @@ const MyCallUI = () => {
 	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
 	const [hasRedirected, setHasRedirected] = useState(false);
 	const [showCallUI, setShowCallUI] = useState(false);
+
+	const updateFirestoreSessions = async (
+		userId: string,
+		callId: string,
+		status: string
+	) => {
+		try {
+			const SessionDocRef = doc(db, "sessions", userId);
+			const SessionDoc = await getDoc(SessionDocRef);
+			if (SessionDoc.exists()) {
+				await updateDoc(SessionDocRef, {
+					ongoingCall: { id: callId, status: status },
+				});
+			} else {
+				await setDoc(SessionDocRef, {
+					ongoingCall: { id: callId, status: status },
+				});
+			}
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error updating Firestore Sessions: ", error);
+		}
+	};
 
 	// Function to update expert's status
 	const updateExpertStatus = async (phone: string, status: string) => {
@@ -44,18 +68,45 @@ const MyCallUI = () => {
 	};
 
 	useEffect(() => {
-		const storedCallId = localStorage.getItem("activeCallId");
+		const checkFirestoreSession = async (userId: string) => {
+			try {
+				const sessionDocRef = doc(db, "sessions", userId);
+				const sessionDoc = await getDoc(sessionDocRef);
 
-		if (storedCallId && !hide && !hasRedirected) {
-			toast({
-				variant: "destructive",
-				title: "Ongoing Call or Transaction Pending",
-				description: "Redirecting you back ...",
-			});
-			router.replace(`/meeting/${storedCallId}`);
-			setHasRedirected(true); // Set the state to prevent repeated redirects
+				if (sessionDoc.exists()) {
+					const { ongoingCall } = sessionDoc.data();
+					if (ongoingCall && ongoingCall.status !== "ended") {
+						// Call is still pending, redirect the user back to the meeting
+						toast({
+							variant: "destructive",
+							title: "Pending Call Session",
+							description: "Redirecting you back ...",
+						});
+						router.replace(`/meeting/${ongoingCall.id}`);
+						setHasRedirected(true);
+					}
+				} else {
+					// If no ongoing call in Firestore, check local storage
+					const storedCallId = localStorage.getItem("activeCallId");
+					if (storedCallId && !hide && !hasRedirected) {
+						toast({
+							variant: "destructive",
+							title: "Ongoing Call or Session Pending",
+							description: "Redirecting you back ...",
+						});
+						router.replace(`/meeting/${storedCallId}`);
+						setHasRedirected(true);
+					}
+				}
+			} catch (error) {
+				console.error("Error checking Firestore session: ", error);
+			}
+		};
+
+		if (!hide && !hasRedirected && currentUser?._id) {
+			checkFirestoreSession(currentUser._id);
 		}
-	}, [router, hide, toast, hasRedirected]);
+	}, [router, hide, toast, hasRedirected, currentUser?._id]);
 
 	useEffect(() => {
 		calls.forEach((call) => {
@@ -118,6 +169,9 @@ const MyCallUI = () => {
 					keepalive: true,
 				});
 
+				isMeetingOwner &&
+					(await updateFirestoreSessions(currentUser?._id, call.id, "ongoing"));
+
 				logEvent(analytics, "call_accepted", {
 					callId: call.id,
 				});
@@ -128,7 +182,6 @@ const MyCallUI = () => {
 					(call.state.callingState === CallingState.JOINED ||
 						call.state.callingState === CallingState.JOINING)
 				) {
-					// Leave the call only if the user hasn't left or ended the call
 					await call?.leave();
 				}
 
@@ -177,7 +230,7 @@ const MyCallUI = () => {
 
 	// Handle outgoing call UI
 	const [outgoingCall] = outgoingCalls;
-	if (outgoingCall && showCallUI) {
+	if (outgoingCall && showCallUI && !hide) {
 		return <MyOutgoingCallUI call={outgoingCall} />;
 	}
 

@@ -29,6 +29,7 @@ import { analytics } from "@/lib/firebase";
 import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
+import { useRouter } from "next/navigation";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -69,6 +70,8 @@ const MeetingRoom = () => {
 	const { anyModalOpen } = useCallTimerContext();
 	const [layout, setLayout] = useState<CallLayoutType>("grid");
 
+	const router = useRouter();
+
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () =>
 		call?.endCall()
 	);
@@ -89,7 +92,12 @@ const MeetingRoom = () => {
 
 	useEffect(() => {
 		const joinCall = async () => {
-			if (!hasJoined && callingState !== CallingState.JOINED && !callHasEnded) {
+			if (
+				!hasJoined &&
+				callingState !== CallingState.JOINED &&
+				!callHasEnded &&
+				participantCount < 2
+			) {
 				try {
 					await call?.join();
 					setHasJoined(true);
@@ -99,6 +107,32 @@ const MeetingRoom = () => {
 				} catch (error: any) {
 					console.warn("Error Joining Call ", error);
 				}
+			} else {
+				setHasJoined(true);
+				toast({
+					variant: "destructive",
+					title: "Participants Limit Reached",
+					description: "At most 2 Participants are allowed",
+				});
+
+				// Stop camera and microphone
+				const stopMediaStreams = () => {
+					navigator.mediaDevices
+						.getUserMedia({ video: true, audio: true })
+						.then((mediaStream) => {
+							mediaStream.getTracks().forEach((track) => {
+								track.stop();
+							});
+						})
+						.catch((error) => {
+							console.error("Error stopping media streams: ", error);
+						});
+				};
+
+				stopMediaStreams();
+				setTimeout(() => {
+					router.replace("/home");
+				}, 1000);
 			}
 		};
 

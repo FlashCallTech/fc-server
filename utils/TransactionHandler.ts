@@ -1,27 +1,19 @@
-import { getCreatorById } from "@/lib/actions/creator.actions";
-import { analytics, db } from "@/lib/firebase";
-import { logEvent } from "firebase/analytics";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import * as Sentry from "@sentry/nextjs";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
-export const handleTransaction = async ({
+export const transactionHandler = async ({
 	expertId,
 	clientId,
 	callId,
 	duration,
 	isVideoCall,
-	toast,
-	router,
-	updateWalletBalance,
 }: {
 	expertId: string;
 	clientId: string;
 	callId: string;
 	duration: string;
 	isVideoCall: boolean;
-	toast: any;
-	router: any;
-	updateWalletBalance: () => Promise<void>;
 }) => {
 	const updateFirestoreSessions = async (
 		userId: string,
@@ -65,56 +57,36 @@ export const handleTransaction = async ({
 		}
 	};
 
-	const removeActiveCallId = () => {
-		const activeCallId = localStorage.getItem("activeCallId");
-		if (activeCallId) {
-			localStorage.removeItem("activeCallId");
-			console.log("activeCallId removed successfully");
-		} else {
-			console.warn("activeCallId was not found in localStorage");
-		}
-	};
-
-	if (!clientId) {
-		console.error("Client ID is undefined");
+	// Check if a transaction already exists for the given callId
+	const transactionResponse = await fetch(
+		`/api/v1/calls/transaction/getTransaction?callId=${callId}`
+	);
+	const existingTransaction = await transactionResponse.json();
+	// If a transaction exists and any of the callDetails have isDone: true, return early
+	if (existingTransaction) {
+		console.log("Transaction for this callId has already been completed.");
+		await updateFirestoreTransactionStatus(callId);
+		await updateFirestoreSessions(clientId, callId, "ended");
 		return;
 	}
 
 	try {
-		const [transactionResponse, creator] = await Promise.all([
-			fetch(`/api/v1/calls/transaction/getTransaction?callId=${callId}`).then(
-				(res) => res.json()
-			),
-			getCreatorById(expertId),
-		]);
-
-		if (transactionResponse) {
-			toast({
-				variant: "destructive",
-				title: "Transaction Already Done",
-				description: "Redirecting ...",
-			});
-
-			removeActiveCallId();
-			await updateFirestoreSessions(clientId, callId, "ended");
-			await updateFirestoreTransactionStatus(callId);
-			logEvent(analytics, "call_ended", {
-				callId: callId,
-				duration: duration,
-				type: isVideoCall,
-			});
-
-			return;
-		}
+		const creatorResponse = await fetch(`/api/v1/creator/getUserById`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ userId: expertId }),
+		});
+		const creator = await creatorResponse.json();
 
 		if (!creator) {
-			console.error("Creator not found");
+			console.error("Creator not found.");
 			return;
 		}
 
 		const rate = isVideoCall ? creator.videoRate : creator.audioRate;
 		const amountToBePaid = ((parseFloat(duration) / 60) * rate).toFixed(2);
 
+		// Perform wallet transactions
 		await Promise.all([
 			fetch("/api/v1/wallet/payout", {
 				method: "POST",
@@ -146,29 +118,10 @@ export const handleTransaction = async ({
 			}),
 		]);
 
-		removeActiveCallId();
-		await updateFirestoreSessions(clientId, callId, "ended");
 		await updateFirestoreTransactionStatus(callId);
-
-		logEvent(analytics, "call_ended", {
-			callId: callId,
-			duration: duration,
-			type: isVideoCall,
-		});
+		await updateFirestoreSessions(clientId, callId, "ended");
 	} catch (error) {
 		Sentry.captureException(error);
-		const creatorURL = localStorage.getItem("creatorURL");
-
 		console.error("Error handling wallet changes:", error);
-		toast({
-			variant: "destructive",
-			title: "Error",
-			description: "An error occurred while processing the Transactions",
-		});
-		router.push(`${creatorURL ? creatorURL : "/home"}`);
-	} finally {
-		// Update wallet balance after transaction
-		router.push(`/feedback/${callId}`);
-		updateWalletBalance();
 	}
 };

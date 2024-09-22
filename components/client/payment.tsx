@@ -348,7 +348,9 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						))
 					)
 				) : (
-					<ContentLoading />
+					<div className="size-full flex flex-col gap-2 items-center justify-center">
+						<ContentLoading />
+					</div>
 				)}
 			</ul>
 		</div>

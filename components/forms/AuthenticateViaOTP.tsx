@@ -116,18 +116,6 @@ const AuthenticateViaOTP = ({
 					token,
 				});
 			}
-
-			const userStatusDocRef = doc(db, "userStatus", updatedPhoneNumber);
-			const userStatusDoc = await getDoc(userStatusDocRef);
-			if (userStatusDoc.exists()) {
-				await updateDoc(userStatusDocRef, {
-					status: "Online",
-				});
-			} else {
-				await setDoc(userStatusDocRef, {
-					status: "Online",
-				});
-			}
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error updating Firestore Data: ", error);

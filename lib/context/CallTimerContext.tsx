@@ -95,6 +95,7 @@ export const CallTimerProvider = ({
 		}
 
 		const callStartedTime = new Date(callStartedAt);
+		let lastFirestoreUpdateTime = 0; // Track the last update time
 
 		const updateFirestoreTimer = async (
 			timeLeft: number,

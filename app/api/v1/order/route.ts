@@ -8,20 +8,17 @@ export async function POST(req: NextRequest) {
 
 	try {
 		const options = await req.json();
+
 		const razorpayOrder = await razorpay.orders.create(options);
 
 		if (!razorpayOrder) {
-			return NextResponse.json(
-				{ error: "Error creating order" },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: razorpayOrder }, { status: 500 });
 		}
 
 		const newOrder = new Order({
 			order_id: razorpayOrder.id,
 			amount: razorpayOrder.amount,
 			currency: razorpayOrder.currency,
-			receipt: razorpayOrder.receipt,
 			status: razorpayOrder.status,
 			created_at: new Date(razorpayOrder.created_at * 1000),
 			updated_at: new Date(razorpayOrder.created_at * 1000),

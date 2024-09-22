@@ -130,13 +130,13 @@ const MobileNav = () => {
 				</SheetTrigger>
 				<SheetContent
 					side="right"
-					className="border-none bg-dark-1 rounded-l-xl size-full max-w-[320px] "
+					className="border-none bg-dark-1 rounded-l-xl size-full max-w-sm "
 				>
-					<div className="flex h-[calc(100vh-72px)]  flex-col justify-between overflow-y-auto no-scrollbar">
+					<div className="flex h-[calc(100vh-72px)] w-full  flex-col justify-between overflow-y-auto no-scrollbar">
 						<SheetClose asChild>
 							<Link
 								href={`/profile/${currentUser?._id}`}
-								className={`w-fit flex gap-4 items-center rounded-lg hoverScaleDownEffect lg:px-2 justify-start`}
+								className={`w-full flex gap-4 items-center rounded-lg hoverScaleDownEffect lg:px-2 justify-start`}
 							>
 								<Image
 									src={currentUser?.photo || "/images/defaultProfile.png"}
@@ -145,8 +145,8 @@ const MobileNav = () => {
 									height={1000}
 									className="rounded-full w-12 h-12 max-w-[56px] object-cover"
 								/>
-								<div className="flex flex-col items-start justify-center text-white">
-									<span className="text-lg capitalize max-w-[75%] overflow-hidden text-ellipsis whitespace-nowrap">
+								<div className="flex flex-col w-full items-start justify-center text-white">
+									<span className="text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap">
 										{currentUser?.username ||
 											currentUser?.firstName ||
 											"Hello User"}

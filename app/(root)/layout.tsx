@@ -2,7 +2,6 @@
 
 import { ChatRequestProvider } from "@/lib/context/ChatRequestContext";
 import { CurrentUsersProvider } from "@/lib/context/CurrentUsersContext";
-import { UserStatusProvider } from "@/lib/context/UserStatusContext";
 import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
 import { initMixpanel } from "@/lib/mixpanel";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
@@ -111,11 +110,9 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 				<StreamVideoProvider>
 					<WalletBalanceProvider>
 						<ChatRequestProvider>
-							<UserStatusProvider>
-								<div className="relative min-h-screen w-full">
-									{renderContent()}
-								</div>
-							</UserStatusProvider>
+							<div className="relative min-h-screen w-full">
+								{renderContent()}
+							</div>
 						</ChatRequestProvider>
 					</WalletBalanceProvider>
 				</StreamVideoProvider>

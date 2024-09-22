@@ -87,7 +87,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 						readOnly
 					/>
 					<span className="text-ellipsis overflow-hidden w-full max-w-[200px] whitespace-nowrap pr-2 text-sm text-end">
-						{userFeedbacks[0].feedback}
+						{userFeedbacks[0].feedback || "No Feedback Provided"}
 					</span>
 				</DialogTrigger>
 				<DialogContent className="bg-white rounded-lg max-h-[500px] overflow-y-scroll no-scrollbar">
