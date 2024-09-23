@@ -6,7 +6,7 @@ const usePayout = () => {
   const { creatorUser } = useCurrentUsersContext();
   const [beneficiary_details, setBeneficiary_details] = useState<any>();
   const [transfer_details, setTransfer_details] = useState<any>();
-  const router = useRouter
+  const router = useRouter();
 
 
   const initiateWithdraw = async (creatorId: string) => {
@@ -31,7 +31,7 @@ const usePayout = () => {
       }
     } else {
       alert('Complete your Payment Settings')
-      
+      router.push('/payment-settings');
     }
     const getBeneficiaryResponse = await fetch(`/api/v1/beneficiary/getBeneficiary?user_id=${creatorId}`, {
       method: 'GET',

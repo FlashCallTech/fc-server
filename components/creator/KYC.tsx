@@ -67,23 +67,28 @@ const KYC: React.FC = () => {
 			}
 
 			const kycResponse = await response.json();
-			if (kycResponse.data.pan) {
-				if (kycResponse.data.pan.valid) {
-					setPanVerified(true);
+			if (kycResponse.success) {
+
+				if (kycResponse.data.pan) {
+					if (kycResponse.data.pan.valid) {
+						setPanVerified(true);
+					}
 				}
-			}
-			if (kycResponse.data.aadhaar) {
-				if (kycResponse.data.aadhaar.status === "VALID") setAadhaarVerified(true);
-			}
-			if (kycResponse.data.liveliness) {
-				if (kycResponse.data.liveliness.liveliness) setLivelinessCheckVerified(true);
-			}
-			if (kycResponse.data.name_match) {
-				if (kycResponse.data.name_match.score > 0.84) {
-					setNameMatch(true);
+				if (kycResponse.data.aadhaar) {
+					if (kycResponse.data.aadhaar.status === "VALID") setAadhaarVerified(true);
 				}
+				if (kycResponse.data.liveliness) {
+					if (kycResponse.data.liveliness.liveliness) setLivelinessCheckVerified(true);
+				}
+				if (kycResponse.data.name_match) {
+					if (kycResponse.data.name_match.score > 0.84) {
+						setNameMatch(true);
+					}
+				}
+				setLoading(false);
+			} else {
+				setLoading(false);
 			}
-			setLoading(false);
 		};
 
 		if (creatorUser) getKyc();
