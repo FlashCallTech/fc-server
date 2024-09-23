@@ -9,16 +9,16 @@ export async function GET(request: Request) {
         const userId = searchParams.get('userId');
 
         if (!userId) {
-            return NextResponse.json({ message: 'User ID is required' }, { status: 400 });
+            return NextResponse.json({success: false, message: 'User ID is required' });
         }
 
         const paymentDetails = await PaymentModel.findOne({ userId });
 
         if (!paymentDetails) {
-            return NextResponse.json({ message: 'Payment details not found' }, { status: 404 });
+            return NextResponse.json({success: false,  message: 'Payment details not found' });
         }
 
-        return NextResponse.json(paymentDetails);
+        return NextResponse.json({success: true, data: paymentDetails});
     } catch (error: any) {
         console.error("Error fetching payment details:", error);
         return NextResponse.json({ message: 'Failed to fetch payment details.' }, { status: 500 });

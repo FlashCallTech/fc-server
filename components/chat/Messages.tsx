@@ -118,12 +118,10 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 									<ImageModal imageUrl={fullImageUrl} onClose={handleCloseModal} />
 								)}
 								{message.audio && (
-									<div className="w-full items-center justify-center">
-										<audio
-											controls
-											src={message.audio}
-											className="w-[40vw] lg:w-[20vw] mb-3"
-										></audio>
+									<div className="w-full items-center justify-center mb-1">
+										<CustomAudioPlayer
+											audioSrc={message.audio}
+										/>
 									</div>
 								)}
 
@@ -148,7 +146,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 											: "w-full flex justify-end items-center absolute bottom-1 right-1"
 									}
 								>
-									<span className="text-xs text-gray-500 mr-2">
+									<span className="text-[10px] text-gray-500 mr-2">
 										{formatTime(message.createdAt)}
 									</span>
 

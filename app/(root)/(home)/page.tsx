@@ -39,8 +39,14 @@ const HomePage = () => {
 	const CACHE_EXPIRY_TIME = 5 * 60 * 1000; // 5 minutes
 	const [creators, setCreators] = useState<creatorUser[]>(() => {
 		const cachedCreators = localStorage.getItem("creators");
-		return cachedCreators ? JSON.parse(cachedCreators) : [];
+		try {
+			return cachedCreators ? JSON.parse(cachedCreators) : [];
+		} catch (error) {
+			console.error("Failed to parse cached creators:", error);
+			return [];
+		}
 	});
+
 	const [loading, setLoading] = useState(creators.length === 0);
 	const [loadingCard, setLoadingCard] = useState(false);
 	const [creatorCount, setCreatorCount] = useState(creators.length);
