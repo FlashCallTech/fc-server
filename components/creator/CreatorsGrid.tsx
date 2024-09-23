@@ -5,8 +5,8 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
+	const [status, setStatus] = useState<string>("Offline");
 	const [isImageLoaded, setIsImageLoaded] = useState(false);
-	const [status, setStatus] = useState<string>("Offline"); // Default status to "Offline"
 
 	const imageSrc =
 		creator?.photo && isValidUrl(creator.photo)
@@ -24,29 +24,27 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 		img.onerror = () => {
 			setIsImageLoaded(true);
 		};
-	}, [creator.photo]);
+	}, [imageSrc]);
 
 	useEffect(() => {
-		const docRef = doc(db, "userStatus", creator.phone);
-		const unsubscribe = onSnapshot(
-			docRef,
-			(docSnap) => {
-				if (docSnap.exists()) {
-					const data = docSnap.data();
-					setStatus(data.status || "Offline");
-				} else {
-					setStatus("Offline"); // If document doesn't exist, mark the creator as offline
-				}
-			},
-			(error) => {
-				console.error("Error fetching status:", error);
-				setStatus("Offline");
-			}
-		);
+		const creatorRef = doc(db, "services", creator._id);
+		const unsubscribe = onSnapshot(creatorRef, (doc) => {
+			const data = doc.data();
 
-		// Clean up the listener on component unmount
+			if (data) {
+				let services = data.services;
+
+				// Check if any of the services is enabled
+				const isOnline =
+					services?.videoCall || services?.audioCall || services?.chat;
+
+				setStatus(isOnline ? "Online" : "Offline");
+			}
+		});
+
+		// isAuthSheetOpen && setIsAuthSheetOpen(false);
 		return () => unsubscribe();
-	}, [creator.phone]);
+	}, [creator._id]);
 
 	const backgroundImageStyle = {
 		backgroundImage: `url(${imageSrc})`,
@@ -54,17 +52,17 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 		backgroundPosition: "center",
 		backgroundRepeat: "no-repeat",
 		opacity: isImageLoaded ? 1 : 0,
-		transform: isImageLoaded ? "scale(1)" : "scale(0.95)",
-		transition: "opacity 0.5s ease-in-out, transform 0.5s ease-in-out",
 	};
 
 	return (
 		<>
 			{!isImageLoaded ? (
-				<div className="bg-gray-300 animate-pulse rounded-xl w-full mx-auto h-72 lg:h-96 object-cover" />
+				<div
+					className={`bg-gray-300 opacity-60 animate-pulse rounded-[24px] w-full  h-72 xl:h-80 2xl:h-96 object-cover`}
+				/>
 			) : (
 				<div
-					className="relative flex flex-col items-center justify-center rounded-xl w-full h-72 lg:h-96 object-cover"
+					className="relative flex flex-col items-center justify-center rounded-xl w-full h-72 xl:h-80 2xl:h-96  transition-all duration-300 hover:scale-95"
 					style={backgroundImageStyle}
 				>
 					<div className="text-white flex flex-col items-start w-full creatorsGirdHighlight">
@@ -89,7 +87,9 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 										? "bg-green-500"
 										: status === "Offline"
 										? "bg-red-500"
-										: "bg-orange-400"
+										: status === "Busy"
+										? "bg-orange-400"
+										: ""
 								} text-xs rounded-full sm:rounded-xl px-1.5 py-1.5 sm:px-4 sm:py-2`}
 							>
 								<span className="hidden sm:flex">
@@ -97,7 +97,9 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 										? "Online"
 										: status === "Offline"
 										? "Offline"
-										: "Busy"}{" "}
+										: status === "Busy"
+										? "Busy"
+										: "Unknown"}
 								</span>
 							</div>
 						</div>

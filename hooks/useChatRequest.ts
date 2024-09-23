@@ -20,9 +20,11 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "./usePlatform";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
+	const { currentUser } = useCurrentUsersContext();
 	const [SheetOpen, setSheetOpen] = useState(false); // State to manage sheet visibility
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
@@ -30,6 +32,29 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	const { createChat } = useChat();
 	const { walletBalance } = useWalletBalanceContext();
 	const { getDevicePlatform } = usePlatform();
+
+	// Function to update expert's status
+	const updateExpertStatus = async (phone: string, status: string) => {
+		try {
+			const response = await fetch("/api/set-status", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ phone, status }),
+			});
+
+			const data = await response.json();
+			if (!response.ok) {
+				throw new Error(data.message || "Failed to update status");
+			}
+
+			console.log("Expert status updated to:", status);
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error updating expert status:", error);
+		}
+	};
 
 	const handleChat = async (creator: any, clientUser: any) => {
 		logEvent(analytics, "chat_now_click", {
@@ -44,7 +69,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 		if (!clientUser) router.push("sign-in");
 		let maxCallDuration = (walletBalance / parseInt(creator.chatRate, 10)) * 60;
-		maxCallDuration = maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+		maxCallDuration =
+			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
 		if (maxCallDuration < 300) {
 			toast({
@@ -85,13 +111,17 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			}
 
 			const chatId = existingChatId || doc(chatRef).id;
-
 			const newChatRequestRef = doc(chatRequestsRef);
+			const createdAtDate = clientUser?.createdAt
+				? new Date(clientUser.createdAt)
+				: new Date();
+			const formattedDate = createdAtDate.toISOString().split("T")[0];
+
 			await setDoc(newChatRequestRef, {
 				creatorId: creator?._id,
 				clientId: clientUser?._id,
-				client_first_seen: clientUser.createdAt.toString().split('T')[0],
-				creator_first_seen: creator.createdAt.toString().split('T')[0],
+				client_first_seen: formattedDate,
+				creator_first_seen: creator.createdAt.toString().split("T")[0],
 				client_balance: clientUser.walletBalance,
 				rate: creator.chatRate,
 				clientName: clientUser?.username,
@@ -127,7 +157,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 						JSON.stringify({
 							clientId: data.clientId,
 							creatorId: data.creatorId,
-							User_First_Seen: clientUser.createdAt.toString().split('T')[0],
+							User_First_Seen: formattedDate,
 							chatId: chatId,
 							requestId: doc.id,
 							fullName: creator.firstName + " " + creator?.lastName,
@@ -136,13 +166,13 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					);
 				}
 			});
-			trackEvent('BookCall_Chat_initiated', {
+			trackEvent("BookCall_Chat_initiated", {
 				Client_ID: clientUser._id,
-				User_First_Seen: clientUser.createdAt.toString().split('T')[0],
+				User_First_Seen: formattedDate,
 				Creator_ID: creator._id,
 				Time_Duration_Available: maxCallDuration,
 				Walletbalace_Available: clientUser.walletBalance,
-			})
+			});
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
@@ -230,23 +260,27 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				})
 			);
 
-			let maxCallDuration = (walletBalance / parseInt(chatRequest.rate, 10)) * 60;
-			maxCallDuration = maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+			let maxCallDuration =
+				(walletBalance / parseInt(chatRequest.rate, 10)) * 60;
+			maxCallDuration =
+				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
-			trackEvent('BookCall_Chat_Connected', {
+			trackEvent("BookCall_Chat_Connected", {
 				Client_ID: chatRequest.clientId,
 				User_First_Seen: chatRequest.client_first_seen,
 				Creator_ID: chatRequest.creatorId,
 				Time_Duration_Available: maxCallDuration,
 				Walletbalace_Available: chatRequest.client_balance,
-			})
+			});
 
-			trackEvent('Creator_Chat_Connected', {
+			trackEvent("Creator_Chat_Connected", {
 				Client_ID: chatRequest.clientId,
 				Creator_First_Seen: chatRequest.creator_first_seen,
 				Creator_ID: chatRequest.creatorId,
 				Platform: getDevicePlatform(),
-			})
+			});
+
+			updateExpertStatus(currentUser?.phone as string, "Busy");
 
 			router.push(
 				`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
@@ -263,7 +297,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		if (!chatRequest) return;
 
 		const userChatsRef = collection(db, "userchats");
-		const chatId = chatRequest.chatId
+		const chatId = chatRequest.chatId;
 
 		const creatorChatUpdate = updateDoc(
 			doc(userChatsRef, chatRequest.creatorId),
@@ -292,7 +326,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		);
 		await Promise.all([creatorChatUpdate, clientChatUpdate]);
 
-		localStorage.setItem('user2',
+		localStorage.setItem(
+			"user2",
 			JSON.stringify({
 				clientId: chatRequest.clientId,
 				creatorId: chatRequest.creatorId,
@@ -320,7 +355,13 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	};
 
-	return { handleAcceptChat, handleRejectChat, handleChat, chatRequestsRef, SheetOpen };
+	return {
+		handleAcceptChat,
+		handleRejectChat,
+		handleChat,
+		chatRequestsRef,
+		SheetOpen,
+	};
 };
 
 export default useChatRequest;

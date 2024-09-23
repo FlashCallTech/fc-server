@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
+import { set } from "lodash";
 
 interface User2 {
 	_id: string;
@@ -43,12 +44,38 @@ const useEndChat = () => {
 	const [startedAt, setStartedAt] = useState<number>();
 	const [loading, setLoading] = useState(false);
 	const hasChatEnded = useRef(false);
+	const [creatorPhone, setCreatorPhone] = useState("");
+
+	// Function to update expert's status
+	const updateExpertStatus = async (phone: string, status: string) => {
+		try {
+			const response = await fetch("/api/set-status", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ phone, status }),
+			});
+
+			const data = await response.json();
+			if (!response.ok) {
+				throw new Error(data.message || "Failed to update status");
+			}
+
+			console.log("Expert status updated to:", status);
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error updating expert status:", error);
+		}
+	};
+
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
 			const parsedCreator: creatorUser = JSON.parse(storedCreator);
 			if (parsedCreator.chatRate) {
 				setChatRatePerMinute(parseInt(parsedCreator.chatRate, 10));
+				setCreatorPhone(parsedCreator?.phone);
 			}
 		}
 	}, [chatId]);
@@ -75,6 +102,7 @@ const useEndChat = () => {
 
 		if (chatEnded) {
 			hasChatEnded.current = true;
+			updateExpertStatus(creatorPhone, "Online");
 			router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
 		}
 	}, [chatEnded]);
@@ -129,14 +157,14 @@ const useEndChat = () => {
 
 			localStorage.removeItem("chatRequestId");
 
-			trackEvent('BookCall_Chat_Ended', {
+			trackEvent("BookCall_Chat_Ended", {
 				Client_ID: user2?.clientId,
 				User_First_Seen: user2?.User_First_Seen,
 				Creator_ID: user2?.creatorId,
 				Time_Duration_Available: (endedAt! - startedAt!).toString(),
 				Walletbalace_Available: currentUser?.walletBalance,
 				Endedby: endedBy,
-			})
+			});
 
 			// logEvent(analytics, "call_ended", {
 			// 	userId: currentUser?._id,

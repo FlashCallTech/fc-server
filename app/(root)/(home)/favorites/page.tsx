@@ -47,13 +47,13 @@ const Favorites = () => {
 	}, []);
 
 	useEffect(() => {
-		trackEvent('Favourites_Impression', {
+		trackEvent("Favourites_Impression", {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 			Creator_ID: creator?._id,
 			Walletbalace_Available: clientUser?.walletBalance,
-		})
-	}, [])
+		});
+	}, []);
 
 	useEffect(() => {
 		const fetchFavorites = async () => {
@@ -305,7 +305,7 @@ const Favorites = () => {
 			) : (
 				<div
 					className={`animate-in grid ${
-						favorites.length > 1 ? "lg:grid-cols-2" : "grid-cols-1"
+						favorites.length > 1 ? "xl:grid-cols-2" : "grid-cols-1"
 					}  px-2.5 gap-5 lg:px-0 items-start pb-8 lg:pb-5 overflow-x-hidden no-scrollbar`}
 				>
 					{groupBy === "profession"

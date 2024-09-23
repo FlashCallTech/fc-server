@@ -25,7 +25,7 @@
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;
+	display: none;
 }
 
 @keyframes spin {
@@ -105,6 +105,12 @@
 
 .rc-slider-mark {
 	top: -40px !important;
+}
+
+/* react slick carousel styles */
+
+.slick-dots {
+	bottom: 0 !important;
 }
 
 /* stream custom styles */
@@ -260,6 +266,10 @@ input[type="number"] {
 		@apply flex justify-between items-center;
 	}
 
+	.error-message {
+		@apply text-red-500 text-sm;
+	}
+
 	.input-field {
 		@apply bg-gray-50 h-[54px] focus-visible:ring-offset-0 placeholder:text-gray-500 rounded-xl px-4 py-3 border-none focus-visible:ring-transparent !important;
 	}
@@ -294,7 +304,7 @@ input[type="number"] {
 
 	/* File uploader */
 	.file_uploader-img {
-		@apply h-44 min-w-44 max-w-44 rounded-full object-cover;
+		@apply h-44 w-full min-w-44 max-w-44 rounded-full object-cover;
 	}
 
 	.file_uploader-label {
@@ -361,4 +371,24 @@ input[type="number"] {
 
 .transition-slide-previous {
 	animation: slide-out 0.5s ease-in-out backwards;
+}
+
+@keyframes fadeInUp {
+	0% {
+		opacity: 0;
+		transform: translateY(50px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.creator-card {
+	opacity: 0;
+	animation: fadeInUp 0.5s forwards; /* Animation duration and direction */
+}
+
+.creator-card.entered {
+	animation-delay: var(--delay); /* Each card will have a different delay */
 }

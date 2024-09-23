@@ -14,7 +14,7 @@ const PaymentsPage = () => {
 
 	useEffect(() => {
 		if (!currentUser) {
-			router.push("/");
+			router.push("/home");
 			toast({
 				variant: "destructive",
 				title: "Authentication Required",
@@ -29,7 +29,7 @@ const PaymentsPage = () => {
 	return (
 		<section className="size-full">
 			{userType !== "creator" ? (
-				<Payment callType={callType} />  // Pass the `callType` prop to Payment
+				<Payment callType={callType} /> // Pass the `callType` prop to Payment
 			) : (
 				<Withdraw />
 			)}

@@ -4,13 +4,13 @@ import React, { useState, useRef } from "react";
 import Slider from "react-slick";
 
 const ReviewSlider = ({
-	creatorFeedback,
+	creatorFeedbacks,
 	getClampedText,
 	isExpanded,
 	setIsExpanded,
 	toggleReadMore,
 }: {
-	creatorFeedback: CreatorFeedback[];
+	creatorFeedbacks: CreatorFeedback[];
 	getClampedText: (text: string) => string;
 	isExpanded: boolean;
 	setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
@@ -21,7 +21,7 @@ const ReviewSlider = ({
 	const dummyFeedbacks = ["1", "2", "3", "4", "5", "6", "7"];
 	// Carousel settings
 	const settings = {
-		infinite: creatorFeedback.length > 1,
+		infinite: creatorFeedbacks.length > 1,
 		centerPadding: "60px",
 		slidesToShow: 1,
 		speed: 500,
@@ -41,7 +41,7 @@ const ReviewSlider = ({
 	return (
 		<>
 			<Slider {...settings} ref={sliderRef} className="py-7">
-				{creatorFeedback.map((feedback, index) => (
+				{creatorFeedbacks.map((feedback, index) => (
 					<div
 						className="flex flex-col items-center justify-center px-4 cursor-grabbing"
 						key={index}
@@ -75,7 +75,7 @@ const ReviewSlider = ({
 											fill: "white",
 											marginLeft: "-10px",
 										}}
-										value={Math.floor(feedback.rating)}
+										value={Math.floor(feedback?.rating)}
 										items={5}
 										spaceBetween="medium"
 										transition="zoom"
@@ -96,8 +96,8 @@ const ReviewSlider = ({
 										}`}
 										style={{ maxHeight: isExpanded ? "10rem" : "7rem" }}
 									>
-										{getClampedText(feedback.feedback)}
-										{!isExpanded && feedback.feedback.length > 100 && (
+										{getClampedText(feedback?.feedback)}
+										{!isExpanded && feedback?.feedback?.length > 100 && (
 											<span className="text-white">
 												<button
 													onClick={toggleReadMore}
@@ -141,10 +141,10 @@ const ReviewSlider = ({
 				))}
 			</Slider>
 			{/* navigation */}
-			{creatorFeedback?.length > 1 && (
+			{creatorFeedbacks?.length > 1 && (
 				<div className="flex items-center justify-center w-full">
 					<div className="flex gap-2 items-center max-w-[75%] md:max-w-[85%] py-[0.75px] overflow-x-scroll no-scrollbar bg-black/10 rounded-xl">
-						{creatorFeedback?.map((_, index) => (
+						{creatorFeedbacks?.map((_, index) => (
 							<button
 								key={index}
 								className={`${

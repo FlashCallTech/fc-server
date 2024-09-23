@@ -139,7 +139,7 @@ export async function getCreatorFeedback(
 		});
 
 		// Return the feedbacks as JSON
-		return JSON.parse(JSON.stringify(creatorFeedbacks));
+		return JSON.parse(JSON.stringify(creatorFeedbacks[0].feedbacks));
 	} catch (error: any) {
 		Sentry.captureException(error);
 		console.log(error);

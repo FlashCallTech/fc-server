@@ -23,7 +23,6 @@ const FavoritesGrid = ({
 	const [addingFavorite, setAddingFavorite] = useState(false);
 	const [markedFavorite, setMarkedFavorite] = useState(false);
 	const [status, setStatus] = useState<string>("Online"); // Default status to "Offline"
-	const [isAlreadyNotified, setIsAlreadyNotified] = useState(false);
 
 	const { clientUser } = useCurrentUsersContext();
 	const pathname = usePathname();
@@ -35,55 +34,24 @@ const FavoritesGrid = ({
 		creator.username;
 
 	useEffect(() => {
-		const docRef = doc(db, "userStatus", creator.phone);
-		const unsubscribe = onSnapshot(
-			docRef,
-			(docSnap) => {
-				if (docSnap.exists()) {
-					const data = docSnap.data();
-					const newStatus = data.status || "Offline";
-					setStatus(newStatus);
+		const creatorRef = doc(db, "services", creator._id);
+		const unsubscribe = onSnapshot(creatorRef, (doc) => {
+			const data = doc.data();
 
-					// Check if the creator's status is now "Online" and reset notification
-					if (newStatus === "Online") {
-						const notifyList = JSON.parse(
-							localStorage.getItem("notifyList") || "{}"
-						);
+			if (data) {
+				let services = data.services;
 
-						// If the creator is in the notify list, remove them
-						if (
-							notifyList[creator.username] === creator.phone ||
-							Object.values(notifyList).includes(creator.phone)
-						) {
-							setIsAlreadyNotified(false); // Reset the notification state
-						}
-					}
-				} else {
-					setStatus("Offline");
-				}
-			},
-			(error) => {
-				console.error("Error fetching status:", error);
-				setStatus("Offline");
+				// Check if any of the services is enabled
+				const isOnline =
+					services?.videoCall || services?.audioCall || services?.chat;
+
+				setStatus(isOnline ? "Online" : "Offline");
 			}
-		);
+		});
 
-		// Clean up the listener on component unmount
+		// isAuthSheetOpen && setIsAuthSheetOpen(false);
 		return () => unsubscribe();
-	}, [creator.phone, creator.username]);
-
-	useEffect(() => {
-		// Retrieve the notify list from localStorage
-		const notifyList = JSON.parse(localStorage.getItem("notifyList") || "{}");
-
-		// Check if the creator.username or creator.phone is already in the notify list
-		if (
-			notifyList[creator.username] === creator.phone ||
-			Object.values(notifyList).includes(creator.phone)
-		) {
-			setIsAlreadyNotified(true);
-		}
-	}, [creator.username, creator.phone]);
+	}, [creator._id]);
 
 	const handleToggleFavorite = async () => {
 		const clientId = clientUser?._id;
@@ -111,42 +79,6 @@ const FavoritesGrid = ({
 			console.log(error);
 		} finally {
 			setAddingFavorite(false);
-		}
-	};
-
-	const handleNotifyUser = () => {
-		try {
-			const notifyList = JSON.parse(localStorage.getItem("notifyList") || "{}");
-
-			// Check if the creator.username or creator.phone is already in the notify list
-			if (
-				!notifyList[creator.username] &&
-				!Object.values(notifyList).includes(creator.phone)
-			) {
-				// Add the creator's username and phone to the notify list
-				notifyList[creator.username] = creator.phone;
-				localStorage.setItem("notifyList", JSON.stringify(notifyList));
-				setIsAlreadyNotified(true); // Disable the button after adding
-
-				toast({
-					variant: "default",
-					title: `We&apos;ll let you know as soon as ${fullName} is back online!`,
-					description: `${fullName} isn&apos;t online yet.`,
-				});
-			} else {
-				toast({
-					variant: "default",
-					title: "Can&apos;t repeat the action",
-					description: `You are already set to be notified when ${fullName} comes online.`,
-				});
-			}
-		} catch (error) {
-			console.error("Error storing notification:", error);
-			toast({
-				variant: "destructive",
-				title: "Error",
-				description: "There was an issue setting up the notification.",
-			});
 		}
 	};
 
@@ -216,17 +148,11 @@ const FavoritesGrid = ({
 					user={clientUser}
 					isFavoritesPath={isFavoritesPath}
 				/>
-				{status === "Offline" ? (
+				{status !== "Online" ? (
 					<button
-						className={`${
-							isAlreadyNotified
-								? "bg-gray-400 cursor-not-allowed"
-								: "bg-green-1 hover:bg-green-700"
-						}  text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs whitespace-nowrap`}
-						onClick={handleNotifyUser}
-						disabled={isAlreadyNotified}
+						className={`bg-red-500 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs whitespace-nowrap`}
 					>
-						{isAlreadyNotified ? "You&apos;ll be notified" : "Notify Me"}
+						Unavailable
 					</button>
 				) : (
 					<Link

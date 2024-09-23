@@ -101,6 +101,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		}
 		return rate;
 	};
+
 	const amountToBeDisplayed = () => {
 		const ratePerMinute = getRateForCallType();
 		const costForFiveMinutes = ratePerMinute ? ratePerMinute * 5 : undefined;
@@ -204,7 +205,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			{/* Balance Section */}
 			<div className="flex items-center pb-5 px-4 gap-4">
 				<Link
-					href={`${creatorURL ? creatorURL : "/"}`}
+					href={`${creatorURL ? creatorURL : "/home"}`}
 					className="text-xl font-bold"
 				>
 					&larr;
@@ -349,7 +350,9 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						))
 					)
 				) : (
-					<ContentLoading />
+					<div className="size-full flex flex-col gap-2 items-center justify-center">
+						<ContentLoading />
+					</div>
 				)}
 			</ul>
 		</div>

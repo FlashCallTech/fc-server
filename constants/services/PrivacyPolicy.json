@@ -1,0 +1,95 @@
+{
+	"policies": {
+		"welcomeMessage": {
+			"title": "Welcome to Flashcall",
+			"description": "Flashcall is a platform where clients can avail consultation services from consultants. This privacy policy applies to clients, consultants, and all users of our platform, and is part of our Terms of Use. By using our platform, you agree that your personal information that you provide directly to us or that we collect through your use of the platform, may be transferred to and stored in the United States and handled as described in this Policy."
+		},
+
+		"informationProvideByYou": {
+			"title": "Information You Provide Through Your Account",
+			"description": "This is information that you provide to us through text fields, such as your name, payment information and benefits. The information we collect differs depending on if you make an account, become a subscriber, or become a consultant.",
+			"collecteInfo": [
+				"Email Address",
+				"Username / Instagram Username",
+				"Mobile Number",
+				"PAN Number",
+				"Aadhaar Number",
+				"Bank Account Details"
+			],
+			"endingPara": "You may also sign up using a Facebook, Instagram or Google account. We will ask permission to access basic information from your Facebook, Instagram or Google account, such as your name, email, and profile picture. You can choose to stop sharing that information with us at any time by going to Facebook or Google to remove Flashcall’s access to that account and your ability to log in."
+		},
+
+		"clients": {
+			"title": "Clients",
+			"para1": "A subscriber is someone who joins Flashcall’s platform to avail service provided by the consultant. You may have to make payment on our platform to avail the benefits or purchase any services offered by a consultant. We assure you that the payments get processed by most trusted third party payment gateways.",
+			"para2": "We collect and process information about the consultants you support, the level at which you support them, what benefits you receive and how often you support them. As a subscriber, if you select a benefit with a physical benefit, then you have to provide your shipping information so the consultant can ship you the benefit."
+		},
+		"consultants": {
+			"title": "Consultants",
+			"para1": "A consultant is someone who provides consultation for their clients through Flashcall’s platform. To become a Consultant, you must create a page (also called a consultant's personal website) that describes what you are creating and any benefits you are offering. To receive payouts you have to provide us your preferred payment mode with your details e.g. UPI / Bank Transfer etc.",
+			"para2": "You must also provide us with additional information for tax purposes.",
+			"details": ["Legal name", "Address Proof", "PAN Card / Aadhar Card"]
+		},
+
+		"additionalInfo": {
+			"title": "Additional Information We Collect",
+			"para1": "We collect information automatically as you navigate the site or through our third party analytics providers. We may store usage information such as the type of device you use to access Flashcall, your operating system, browser type, IP address, and device ID, the pages you visit or request, links clicked, referring sites, user interactions and your search terms. We also derive your location from your self-disclosed country, your IP address.",
+			"para2": "We also collect the information from your interaction with our platform in terms of user comments, services browsed etc."
+		},
+
+		"infoUsage": {
+			"title": "How We Use Your Information",
+			"description": "We process your information to",
+			"purposes": [
+				"provide Flashcall services to you",
+				"allow you to sign in to your account",
+				"allow you to join a consultant's membership program on Flashcall",
+				"process a consultant's membership payments",
+				"send you emails relevant to your usage, as controlled by your email preferences",
+				" reply to your questions",
+				"market Flashcall to you",
+				"understand how you use the service and create better tools for consultants to serve subscribers",
+				"conduct research and development to improve Flashcall and develop future products",
+				"prevent fraud and abuse on Flashcall",
+				"ship merchandise to you if a benefit includes it",
+				"allow us to provide you with reasonable accommodation, if you notify us of a disability"
+			]
+		},
+
+		"infoSharing": {
+			"title": "Information Sharing",
+			"description": "We share the sensitive personal information to any third party without obtaining the prior consent of the user in the following limited circumstances:",
+			"circumstances": "When it is requested or required by law or by any court or governmental agency or authority to disclose, for the purpose of verification of identity, or for the prevention, detection, investigation including cyber incidents, or for prosecution and punishment of offences. These disclosures are made in good faith and belief that such disclosure is reasonably necessary for enforcing these Terms; for complying with the applicable laws and regulations.",
+
+			"infoSharingWithConsultatnts": {
+				"title": "Information We Share with consultants",
+				"infoShared": {
+					"description": "By becoming a subscriber of a consultant, you agree to have the following information shared with that consultant:",
+					"info": [
+						"your name and other profile information you’ve provided",
+						"any messages you send consultants through Flashcall",
+						"some aggregated and anonymized data about how you use Flashcall that cannot be linked back to you or to any individual user"
+					]
+				}
+			}
+		},
+
+		"infoSecurity": {
+			"title": "Information Security",
+			"para1": "We take appropriate security measures to protect against unauthorized access to or unauthorized alteration, disclosure or destruction of data. These include internal reviews of our data collection, storage and processing practices and security measures, including appropriate encryption and physical security measures to guard against unauthorized access to systems where we store personal data.",
+			"para2": "All information gathered on our Website is securely stored within our controlled database. The database is stored on servers secured behind a firewall; access to the servers is password-protected and is strictly limited. However, as effective as our security measures are, no security system is impenetrable. We cannot guarantee the security of our database, nor can we guarantee that information you supply will not be intercepted while being transmitted to us over the Internet. And, of course, any information you include in a posting to the discussion areas is available to anyone with Internet access.",
+			"para3": "However the internet is an ever evolving medium. We may change our Privacy Policy from time to time to incorporate necessary future changes. Of course, our use of any information we gather will always be consistent with the policy under which the information was collected, regardless of what the new policy may be."
+		},
+
+		"cookies": {
+			"title": "Cookies",
+			"para1": "To improve the responsiveness of the sites for our users, we may use 'cookies', or similar electronic tools to collect information to assign each visitor a unique, random number as a User Identification (User ID) to understand the user's individual interests using the Identified Computer. Unless you voluntarily identify yourself (through registration, for example), we will have no way of knowing who you are, even if we assign a cookie to your computer. The only personal information a cookie can contain is information you supply (an example of this is when you ask for our Personalised Horoscope). A cookie cannot read data off your hard drive. Our advertisers may also assign their own cookies to your browser (if you click on their ads), a process that we do not control.",
+			"para2": "Our web servers automatically collect limited information about your computer's connection to the Internet, including your IP address, when you visit our site. (Your IP address is a number that lets computers attached to the Internet know where to send you data -- such as the web pages you view.) Your IP address does not identify you personally. We use this information to deliver our web pages to you upon request, to tailor our site to the interests of our users, to measure traffic within our site and let advertisers know the geographic locations from where our visitors come."
+		},
+		"redressal": {
+			"title": "Grievance Redressal",
+			"description": "Redressal Mechanism: Any complaints, abuse or concerns with regards to content and or comment or breach of these terms shall be immediately informed to the designated Grievance Officer as mentioned below via in writing or through email signed with the electronic signature to the “Grievance Officer”",
+			"email": "support@Flashcall.me"
+		}
+	}
+}

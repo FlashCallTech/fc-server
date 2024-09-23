@@ -27,7 +27,15 @@ export async function GET(request: Request) {
 		}
 
 		const feedbacks = await getCreatorFeedback(creatorId, page, limit);
-		return NextResponse.json({ feedbacks });
+
+		if (feedbacks.length === 0) {
+			return NextResponse.json({
+				message: "No feedbacks found",
+				feedbacks: [],
+			});
+		}
+
+		return NextResponse.json(feedbacks);
 	} catch (error) {
 		Sentry.captureException(error);
 		console.error(error);

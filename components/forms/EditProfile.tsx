@@ -31,6 +31,7 @@ import { usePathname } from "next/navigation";
 import axios from "axios";
 import { debounce } from "@/lib/utils";
 import * as Sentry from "@sentry/nextjs";
+import Image from "next/image";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -65,6 +66,7 @@ const EditProfile = ({
 	const [selectedFile, setSelectedFile] = useState<File | null>(null); // State to store the selected file
 	const [loading, setLoading] = useState(false);
 	const [usernameError, setUsernameError] = useState<string | null>(null);
+
 	const [formError, setFormError] = useState<string | null>(null); // State to store form error
 	const [selectedColor, setSelectedColor] = useState(
 		userData.themeSelected ?? "#50A65C"
@@ -83,6 +85,7 @@ const EditProfile = ({
 
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof schema>>({
+		mode: "onChange",
 		resolver: zodResolver(schema),
 		defaultValues: {
 			firstName: userData.firstName,
@@ -94,9 +97,11 @@ const EditProfile = ({
 			bio: userData.bio,
 			gender: userData.gender,
 			dob: userData.dob,
-			creatorId: userData.creatorId || `${userData.phone}@creator`,
 		},
 	});
+
+	const { formState } = form;
+	const { errors, isValid } = formState;
 
 	// Watch form values to detect changes
 	const watchedValues = useWatch({ control: form.control });
@@ -111,8 +116,7 @@ const EditProfile = ({
 			watchedValues.photo !== initialState.photo ||
 			watchedValues.bio !== initialState.bio ||
 			watchedValues.gender !== initialState.gender ||
-			watchedValues.dob !== initialState.dob ||
-			watchedValues.creatorId !== initialState.creatorId;
+			watchedValues.dob !== initialState.dob;
 
 		setIsChanged(hasChanged);
 	}, [watchedValues, initialState]);
@@ -211,7 +215,7 @@ const EditProfile = ({
 				response = await updateCreatorUser(userData.id!, {
 					...commonValues,
 					...creatorProfileDetails,
-					creatorId: values.creatorId || userData.id,
+					creatorId: `@${values.username || userData.username}`,
 				} as UpdateCreatorParams);
 			} else {
 				response = await updateUser(
@@ -269,9 +273,9 @@ const EditProfile = ({
 	if (loading)
 		return (
 			<section
-				className={`w-full ${pathname.includes(
-					"/updateDetails" ? "w-screen" : "w-full"
-				)} flex items-center justify-center`}
+				className={`w-full ${
+					pathname.includes("/updateDetails") ? "w-screen" : "w-full"
+				} flex items-center justify-center`}
 			>
 				<SinglePostLoader />
 			</section>
@@ -297,7 +301,9 @@ const EditProfile = ({
 									onFileSelect={setSelectedFile}
 								/>
 							</FormControl>
-							<FormMessage />
+							<FormMessage className="error-message">
+								{errors.photo?.message}
+							</FormMessage>
 						</FormItem>
 					)}
 				/>
@@ -313,48 +319,51 @@ const EditProfile = ({
 								Username
 							</FormLabel>
 							<FormControl>
-								<Input
-									type="text"
-									placeholder="Enter your username"
-									{...field}
-									className="input-field"
-									onChange={(e) => {
-										field.onChange(e);
-										debouncedCheckUsernameAvailability(e.target.value);
-									}}
-								/>
+								<div
+									className={`relative flex items-center  ${
+										userType === "creator" ? " w-fit gap-2.5" : "w-full"
+									}`}
+								>
+									{userType === "creator" && (
+										<span className="text-gray-400 pl-2">
+											https://flashcall.me/
+										</span>
+									)}
+									<Input
+										type="text"
+										placeholder="Enter your username"
+										{...field}
+										className="input-field"
+										onChange={(e) => {
+											field.onChange(e);
+											debouncedCheckUsernameAvailability(e.target.value);
+										}}
+									/>
+								</div>
 							</FormControl>
 							{usernameError && (
-								<p className="text-sm text-red-500 ml-1">{usernameError}</p>
+								<p className="error-message">{usernameError}</p>
 							)}
-							<FormMessage />
+							<FormMessage className="error-message">
+								{errors.username?.message}
+							</FormMessage>
 						</FormItem>
 					)}
 				/>
 
-				{(["firstName", "lastName", "bio"] as const).map((field, index) => (
-					<FormField
-						key={index}
-						control={form.control}
-						name={field}
-						render={({ field }) => (
-							<FormItem className="w-full">
-								<FormLabel className="font-medium text-sm text-gray-400 ml-1">
-									{field.name === "bio"
-										? userData?.bio?.length === 0
-											? "Add"
-											: "Edit"
-										: ""}{" "}
-									{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
-								</FormLabel>
-								<FormControl>
-									{field.name === "bio" ? (
-										<Textarea
-											className="textarea max-h-32"
-											placeholder="Tell us a little bit about yourself"
-											{...field}
-										/>
-									) : (
+				{/* Container for firstName and lastName */}
+				<div className="flex gap-4 w-full">
+					{(["firstName", "lastName"] as const).map((field, index) => (
+						<FormField
+							key={index}
+							control={form.control}
+							name={field}
+							render={({ field }) => (
+								<FormItem className="flex-1">
+									<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+										{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
+									</FormLabel>
+									<FormControl>
 										<Input
 											placeholder={`Enter ${
 												field.name.charAt(0).toUpperCase() + field.name.slice(1)
@@ -362,13 +371,38 @@ const EditProfile = ({
 											{...field}
 											className="input-field"
 										/>
-									)}
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-				))}
+									</FormControl>
+									<FormMessage className="error-message">
+										{errors[field.name]?.message}
+									</FormMessage>
+								</FormItem>
+							)}
+						/>
+					))}
+				</div>
+
+				{/* Container for bio */}
+				<FormField
+					control={form.control}
+					name="bio"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+								{userData?.bio?.length === 0 ? "Add" : "Edit"} Bio
+							</FormLabel>
+							<FormControl>
+								<Textarea
+									className="textarea max-h-32"
+									placeholder="Tell us a little bit about yourself"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage className="error-message">
+								{errors.bio?.message}
+							</FormMessage>
+						</FormItem>
+					)}
+				/>
 
 				{/* profession */}
 				{userData.role === "creator" && (
@@ -389,16 +423,16 @@ const EditProfile = ({
 									/>
 								</FormControl>
 
-								<FormMessage />
+								<FormMessage className="error-message">
+									{errors.profession?.message}
+								</FormMessage>
 							</FormItem>
 						)}
 					/>
 				)}
 
 				<div
-					className={`w-full grid grid-cols-1 md:grid-cols-2 ${
-						userData.role === "creator" ? "xl:grid-cols-[1fr_1fr_2fr]" : ""
-					} items-center justify-between gap-8`}
+					className={`w-full grid grid-cols-2  items-center justify-between gap-8`}
 				>
 					{/* gender */}
 					<FormField
@@ -449,7 +483,9 @@ const EditProfile = ({
 								<FormDescription className="text-xs text-gray-400 ml-1">
 									Choose any one from the above
 								</FormDescription>
-								<FormMessage />
+								<FormMessage className="error-message">
+									{errors.gender?.message}
+								</FormMessage>
 							</FormItem>
 						)}
 					/>
@@ -474,13 +510,15 @@ const EditProfile = ({
 								<FormDescription className="text-xs text-gray-400 ml-1">
 									Tap the icon to select date
 								</FormDescription>
-								<FormMessage />
+								<FormMessage className="error-message">
+									{errors.dob?.message}
+								</FormMessage>
 							</FormItem>
 						)}
 					/>
 
 					{/* creator id */}
-					{userData.role === "creator" && (
+					{/* {userData.role === "creator" && (
 						<FormField
 							control={form.control}
 							name="creatorId"
@@ -492,19 +530,22 @@ const EditProfile = ({
 									<FormControl>
 										<Input
 											type="text"
-											placeholder={`Create Your ID`}
+											placeholder="Create Your ID"
 											{...field}
 											className="input-field"
+											readOnly
 										/>
 									</FormControl>
 									<FormDescription className="text-xs text-gray-400 ml-1">
 										Ex. Nitra123@creator
 									</FormDescription>
-									<FormMessage />
+									<FormMessage className="error-message">
+										{errors.creatorId?.message}
+									</FormMessage>
 								</FormItem>
 							)}
 						/>
-					)}
+					)} */}
 				</div>
 
 				{/* profile theme */}
@@ -559,7 +600,9 @@ const EditProfile = ({
 								<FormDescription className="text-xs text-gray-400 ml-1">
 									Select your theme color
 								</FormDescription>
-								<FormMessage />
+								<FormMessage className="error-message">
+									{errors.themeSelected?.message}
+								</FormMessage>
 							</FormItem>
 						)}
 					/>
@@ -572,8 +615,20 @@ const EditProfile = ({
 					<Button
 						className="bg-green-1 hover:opacity-80 w-3/4 mx-auto text-white"
 						type="submit"
+						disabled={!isValid || form.formState.isSubmitting}
 					>
-						Update Details
+						{form.formState.isSubmitting ? (
+							<Image
+								src="/icons/loading-circle.svg"
+								alt="Loading..."
+								width={24}
+								height={24}
+								className=""
+								priority
+							/>
+						) : (
+							"Update Details"
+						)}
 					</Button>
 				)}
 			</form>

@@ -48,7 +48,7 @@ const UpdateProfilePage = () => {
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		refreshCurrentUser();
 		setLoading(true);
-		router.push("/");
+		router.push("/home");
 	};
 
 	// const isInitialState = userData.id === "";

@@ -54,8 +54,8 @@ export async function POST(req: NextRequest) {
 		} else {
 			// OTP verification failed
 			return NextResponse.json(
-				{ error: data.Details || "Invalid OTP" },
-				{ status: 400 }
+				{ message: data.Details || "Invalid OTP" },
+				{ status: 200 }
 			);
 		}
 	} catch (error) {

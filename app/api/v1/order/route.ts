@@ -12,10 +12,7 @@ export async function POST(req: NextRequest) {
 		const razorpayOrder = await razorpay.orders.create(options);
 
 		if (!razorpayOrder) {
-			return NextResponse.json(
-				{ error: razorpayOrder },
-				{ status: 500 }
-			);
+			return NextResponse.json({ error: razorpayOrder }, { status: 500 });
 		}
 
 		const newOrder = new Order({

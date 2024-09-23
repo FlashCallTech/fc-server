@@ -24,15 +24,18 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
 	const client = useStreamVideoClient();
-	const { clientUser, setAuthenticationSheetOpen } = useCurrentUsersContext();
+	const { clientUser, userType, setAuthenticationSheetOpen } =
+		useCurrentUsersContext();
 	const { toast } = useToast();
 	const [isSheetOpen, setSheetOpen] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
-	const { handleChat, chatRequestsRef, SheetOpen } = useChatRequest();
+	const { handleChat, chatRequestsRef } = useChatRequest();
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
+
+	const [onlineStatus, setOnlineStatus] = useState<String>("");
 
 	const themeColor = isValidHexColor(creator.themeSelected)
 		? creator.themeSelected
@@ -47,25 +50,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		audioAllowed: creator.audioAllowed,
 		chatAllowed: creator.chatAllowed,
 	});
-
-	const [onlineStatus, setOnlineStatus] = useState<String>();
-
-	useEffect(() => {
-		const creatorDocRef = doc(db, "userStatus", creator.phone);
-
-		// Set up a listener for real-time updates
-		const unsubscribe = onSnapshot(creatorDocRef, (doc) => {
-			if (doc.exists()) {
-				const data = doc.data();
-				setOnlineStatus(data.status);
-			} else {
-				console.error("No such document!");
-			}
-		});
-
-		// Clean up the listener when the component unmounts
-		return () => unsubscribe();
-	}, [creator.phone]);
 
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
@@ -82,13 +66,19 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				let services = data.services;
 				setUpdatedCreator((prev) => ({
 					...prev,
-					videoRate: prices.videoCall,
-					audioRate: prices.audioCall,
-					chatRate: prices.chat,
-					videoAllowed: services.videoCall,
-					audioAllowed: services.audioCall,
-					chatAllowed: services.chat,
+					videoRate: prices?.videoCall ?? "",
+					audioRate: prices?.audioCall ?? "",
+					chatRate: prices?.chat ?? "",
+					videoAllowed: services?.videoCall ?? false,
+					audioAllowed: services?.audioCall ?? false,
+					chatAllowed: services?.chat ?? false,
 				}));
+
+				// Check if any of the services is enabled
+				const isOnline =
+					services?.videoCall || services?.audioCall || services?.chat;
+
+				setOnlineStatus(isOnline ? "Online" : "Offline");
 			}
 		});
 
@@ -172,20 +162,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	}, [chatState]);
 
 	// defining the actions for call accept and call reject
-	const handleCallAccepted = async (
-		call: Call,
-		callType: string,
-		callDuration: number
-	) => {
+	const handleCallAccepted = async (call: Call, callType: string) => {
 		setIsProcessing(false); // Reset processing state
+
 		toast({
 			variant: "destructive",
 			title: "Call Accepted",
 			description: "The call has been accepted. Redirecting to meeting...",
 		});
-		setSheetOpen(false);
 
-		await call?.leave();
+		setSheetOpen(false);
 
 		const createdAtDate = clientUser?.createdAt
 			? new Date(clientUser.createdAt)
@@ -206,16 +192,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			});
 		}
 
-		router.replace(`/meeting/${call.id}`);
+		// router.replace(`/meeting/${call.id}`);
 	};
 
-	const handleCallRejected = (callType: string) => {
+	const handleCallRejected = () => {
 		setIsProcessing(false); // Reset processing state
-		toast({
-			variant: "destructive",
-			title: "Call Rejected",
-			description: "The call was rejected. Please try again later.",
-		});
 		setSheetOpen(false);
 	};
 
@@ -241,28 +222,29 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						image: creator.photo || "/images/defaultProfile.png",
 						phone: creator.phone,
 					},
-					role: "call_member",
-				},
-				// client
-				{
-					user_id: String(clientUser?._id),
-					custom: {
-						name: String(
-							clientUser?.username ? clientUser.username : clientUser.phone
-						),
-						type: "client",
-						image: clientUser?.photo,
-						phone: clientUser?.phone,
-					},
 					role: "admin",
 				},
+				// client
+				// {
+				// 	user_id: String(clientUser?._id),
+				// 	custom: {
+				// 		name: String(
+				// 			clientUser?.username ? clientUser.username : clientUser.phone
+				// 		),
+				// 		type: "client",
+				// 		image: clientUser?.photo,
+				// 		phone: clientUser?.phone,
+				// 	},
+				// 	role: "admin",
+				// },
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${callType === "video"
+			const description = `${
+				callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-				}`;
+			}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -300,6 +282,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			});
 
 			await call.getOrCreate({
+				members_limit: 2,
 				ring: true,
 				data: {
 					starts_at: startsAt,
@@ -346,10 +329,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			call.on("call.accepted", () =>
-				handleCallAccepted(call, callType, maxCallDuration)
-			);
-			call.on("call.rejected", () => handleCallRejected(callType));
+			call.on("call.accepted", () => handleCallAccepted(call, callType));
+			call.on("call.rejected", handleCallRejected);
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
@@ -361,6 +342,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleClickOption = (callType: string) => {
 		if (isProcessing) return; // Prevent double-click
 		setIsProcessing(true); // Set processing state
+
+		if (userType === "creator") {
+			toast({
+				variant: "destructive",
+				title: "Unable to Create Meeting",
+				description: "You are a Creator",
+			});
+
+			return;
+		}
 
 		try {
 			if (callType === "audio") {
@@ -400,18 +391,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			} else {
 				setIsAuthSheetOpen(true);
 			}
-
-			// Optionally log a success message to Sentry
-			Sentry.captureMessage("handleClickOption executed successfully", {
-				level: "info",
-				extra: {
-					callType,
-					clientUserId: clientUser?._id,
-					creatorId: creator._id,
-				},
-			});
 		} catch (error) {
-			// Capture the exception and log it to Sentry
 			Sentry.captureException(error);
 			console.error("Error in handleClickOption:", error);
 		} finally {
@@ -420,6 +400,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChatClick = () => {
+		if (userType === "creator") {
+			toast({
+				variant: "destructive",
+				title: "Unable to Initiate Chat",
+				description: "You are a Creator",
+			});
+
+			return;
+		}
 		if (clientUser) {
 			trackEvent("BookCall_Chat_Clicked", {
 				utm_source: "google",
@@ -443,30 +432,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	// const sendPushNotification = async () => {
-	// 	const token = await fetchCreatorToken(creator);
-
-	// 	try {
-	// 		const response = await fetch("/api/send-notification", {
-	// 			method: "POST",
-	// 			headers: {
-	// 				"Content-Type": "application/json",
-	// 			},
-	// 			body: JSON.stringify({
-	// 				token: token,
-	// 				title: "Test Notification",
-	// 				message: "This is a test notification",
-	// 				link: "/",
-	// 			}),
-	// 		});
-
-	// 		const data = await response.json();
-	// 		console.log(data);
-	// 	} catch (error) {
-	// 		console.error("Failed to send notification:", error);
-	// 	}
-	// };
-
 	const theme = `5px 5px 0px 0px ${themeColor}`;
 
 	if (isAuthSheetOpen && !clientUser)
@@ -476,113 +441,93 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				onOpenChange={setIsAuthSheetOpen} // Handle sheet close
 			/>
 		);
+
+	const services = [
+		{
+			type: "video",
+			enabled:
+				updatedCreator.videoAllowed &&
+				parseInt(updatedCreator.videoRate, 10) > 0,
+			rate: updatedCreator.videoRate,
+			label: "Book Video Call",
+			icon: video,
+			onClick: () => {
+				if (clientUser || onlineStatus !== "Busy") {
+					handleClickOption("video");
+				} else {
+					setIsAuthSheetOpen(true);
+				}
+			},
+		},
+		{
+			type: "audio",
+			enabled:
+				updatedCreator.audioAllowed &&
+				parseInt(updatedCreator.audioRate, 10) > 0,
+			rate: updatedCreator.audioRate,
+			label: "Book Audio Call",
+			icon: audio,
+			onClick: () => {
+				if (clientUser || onlineStatus !== "Busy") {
+					handleClickOption("audio");
+				} else {
+					setIsAuthSheetOpen(true);
+				}
+			},
+		},
+		{
+			type: "chat",
+			enabled:
+				updatedCreator.chatAllowed && parseInt(updatedCreator.chatRate, 10) > 0,
+			rate: updatedCreator.chatRate,
+			label: "Chat Now",
+			icon: chat,
+			onClick: () => {
+				if (clientUser || onlineStatus !== "Busy") {
+					handleChatClick();
+				} else {
+					setIsAuthSheetOpen(true);
+				}
+			},
+		},
+	];
+
+	// Sort services based on priority and enabled status
+	const sortedServices = services.sort((a, b) => {
+		if (a.enabled && !b.enabled) return -1;
+		if (!a.enabled && b.enabled) return 1;
+
+		const priority: any = { video: 1, audio: 2, chat: 3 };
+		return priority[a.type] - priority[b.type];
+	});
 	return (
 		<>
 			<div className="flex flex-col w-full items-center justify-center gap-4">
-				{!updatedCreator.videoAllowed &&
-					!updatedCreator.audioAllowed &&
-					!updatedCreator.chatAllowed && (
-						<span className="text-red-500 font-medium text-lg">
-							None of the Services are Available Right Now
+				{sortedServices.map((service) => (
+					<div
+						key={service.type}
+						className={`callOptionContainer ${
+							isProcessing || !service.enabled || onlineStatus === "Busy"
+								? "opacity-50 !cursor-not-allowed"
+								: ""
+						}`}
+						style={{
+							boxShadow: theme,
+						}}
+						onClick={service.onClick}
+					>
+						<div
+							className={`flex gap-4 items-center font-semibold`}
+							style={{ color: themeColor }}
+						>
+							{service.icon}
+							{service.label}
+						</div>
+						<span className="text-sm tracking-widest">
+							Rs. {service.rate}/Min
 						</span>
-					)}
-
-				{/* Book Video Call */}
-				{updatedCreator.videoAllowed &&
-					parseInt(updatedCreator.videoRate, 10) > 0 && (
-						<div
-							className={`callOptionContainer ${isProcessing || onlineStatus !== "Online"
-									? "opacity-50 !cursor-not-allowed"
-									: ""
-								}`}
-							style={{
-								boxShadow: theme,
-							}}
-							onClick={() => {
-								if (onlineStatus === "Online") {
-									handleClickOption("video");
-								} else {
-									setIsAuthSheetOpen(true);
-								}
-							}}
-						>
-							<div
-								className={`flex gap-4 items-center font-semibold`}
-								style={{ color: themeColor }}
-							>
-								{video}
-								Book Video Call
-							</div>
-							<span className="text-sm tracking-widest">
-								Rs. {updatedCreator.videoRate}/Min
-							</span>
-						</div>
-					)}
-
-				{/* Book Audio Call */}
-				{updatedCreator.audioAllowed &&
-					parseInt(updatedCreator.audioRate, 10) > 0 && (
-						<div
-							className={`callOptionContainer ${isProcessing || onlineStatus !== "Online"
-									? "opacity-50 !cursor-not-allowed"
-									: ""
-								}`}
-							style={{
-								boxShadow: theme,
-							}}
-							onClick={() => {
-								if (onlineStatus === "Online") {
-									handleClickOption("audio");
-								} else {
-									setIsAuthSheetOpen(true);
-								}
-							}}
-						>
-							<div
-								className={`flex gap-4 items-center font-semibold`}
-								style={{ color: themeColor }}
-							>
-								{audio}
-								Book Audio Call
-							</div>
-							<span className="text-sm tracking-widest">
-								Rs. {updatedCreator.audioRate}/Min
-							</span>
-						</div>
-					)}
-
-				{/* Book Chat */}
-				{updatedCreator.chatAllowed &&
-					parseInt(updatedCreator.chatRate, 10) > 0 && (
-						<div
-							className={`callOptionContainer ${onlineStatus !== "Online"
-									? "opacity-50 !cursor-not-allowed"
-									: ""
-								}`}
-							style={{
-								boxShadow: theme,
-							}}
-							onClick={() => {
-								if (onlineStatus === "Online") {
-									handleChatClick();
-								} else {
-									setIsAuthSheetOpen(true);
-								}
-							}}
-						>
-							<button
-								className={`flex gap-4 items-center font-semibold`}
-								style={{ color: themeColor }}
-								disabled={onlineStatus !== "Online"}
-							>
-								{chat}
-								Chat Now
-							</button>
-							<span className="text-sm tracking-widest">
-								Rs. {updatedCreator.chatRate}/Min
-							</span>
-						</div>
-					)}
+					</div>
+				))}
 
 				<Sheet
 					open={isSheetOpen}
