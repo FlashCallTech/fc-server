@@ -67,20 +67,21 @@ const KYC: React.FC = () => {
 			}
 
 			const kycResponse = await response.json();
-			if (kycResponse.pan) {
-				if (kycResponse.pan.valid) {
+			if (kycResponse.data.pan) {
+				if (kycResponse.data.pan.valid) {
 					setPanVerified(true);
-					setPanNumber(kycResponse.pan.pan_number);
 				}
 			}
-			if (kycResponse.aadhaar) {
-				if (kycResponse.aadhaar.status === "VALID") setAadhaarVerified(true);
+			if (kycResponse.data.aadhaar) {
+				if (kycResponse.data.aadhaar.status === "VALID")
+					setAadhaarVerified(true);
 			}
-			if (kycResponse.liveliness) {
-				if (kycResponse.liveliness.liveliness) setLivelinessCheckVerified(true);
+			if (kycResponse.data.liveliness) {
+				if (kycResponse.data.liveliness.liveliness)
+					setLivelinessCheckVerified(true);
 			}
-			if (kycResponse.name_match) {
-				if (kycResponse.name_match.score > 0.84) {
+			if (kycResponse.data.name_match) {
+				if (kycResponse.data.name_match.score > 0.84) {
 					setNameMatch(true);
 				}
 			}
@@ -116,6 +117,7 @@ const KYC: React.FC = () => {
 			}
 
 			kycResponse = await response.json();
+			console.log(kycResponse);
 
 			if (!nameMatch) {
 				const nameMatchResponse = await fetch("/api/v1/userkyc/nameMatch", {
@@ -125,17 +127,16 @@ const KYC: React.FC = () => {
 					},
 					body: JSON.stringify({
 						userId: creatorUser?._id,
-						name1: kycResponse.pan.registered_name,
-						name2: kycResponse.aadhaar.name,
+						name1: kycResponse.data.pan.registered_name,
+						name2: kycResponse.data.aadhaar.name,
 						verificationId,
 					}),
 				});
 
 				const result = await nameMatchResponse.json();
-
-				if (result.data.score > 0.84) {
+				if (result.success) {
 					setNameMatch(true);
-				} else if (result.data.score < 0.85) {
+				} else {
 					const user = {
 						kyc_status: "FAILED",
 					};
@@ -150,8 +151,8 @@ const KYC: React.FC = () => {
 						}),
 					});
 					if (response.ok) {
-						const result = await response.json();
-						setKycDone(result.kyc_status);
+						alert("Name not matched");
+						setKycDone("FAILED");
 						setVerifying(false);
 						return;
 					}
@@ -166,8 +167,8 @@ const KYC: React.FC = () => {
 					},
 					body: JSON.stringify({
 						verificationId,
-						first_img: kycResponse.liveliness.img_url,
-						second_img: kycResponse.aadhaar.img_link,
+						first_img: kycResponse.data.liveliness.img_url,
+						second_img: kycResponse.data.aadhaar.img_link,
 						userId: creatorUser?._id,
 					}),
 				});
@@ -190,8 +191,8 @@ const KYC: React.FC = () => {
 						}),
 					});
 					if (response.ok) {
-						const result = await response.json();
-						setKycDone(result.kyc_status);
+						alert("Face not matched");
+						setKycDone("FAILED");
 						setVerifying(false);
 						return;
 					}
@@ -226,6 +227,7 @@ const KYC: React.FC = () => {
 				}),
 			});
 			if (response.ok) {
+				setKycDone("COMPLETED");
 				const result = await response.json();
 				setKycDone(result.kyc_status);
 				setVerifying(false);
@@ -732,8 +734,8 @@ const KYC: React.FC = () => {
 					) : (
 						kycDone === "FAILED" && (
 							<div className="w-full  text-red-500 text-center p-2">
-								Our team will verify the details you have submitted.<br></br>{" "}
-								This usually takes 24 hours.
+								<b>Our team will verify the details you have submitted.</b>
+								<br></br> This usually takes 24 hours.
 							</div>
 						)
 					)}
