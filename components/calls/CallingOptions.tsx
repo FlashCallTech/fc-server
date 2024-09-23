@@ -128,9 +128,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 								creatorId: data.creatorId,
 							});
 							setChatReqSent(false);
-							router.push(
-								`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`
-							);
+							setTimeout(() => {
+								router.push(
+									`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`
+								);
+							}, 2000);
 						} else {
 							setChatState(data.status);
 						}
@@ -257,11 +259,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
+			const description = `${callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-			}`;
+				}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -490,11 +491,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{updatedCreator.videoAllowed &&
 					parseInt(updatedCreator.videoRate, 10) > 0 && (
 						<div
-							className={`callOptionContainer ${
-								isProcessing || onlineStatus !== "Online"
+							className={`callOptionContainer ${isProcessing || onlineStatus !== "Online"
 									? "opacity-50 !cursor-not-allowed"
 									: ""
-							}`}
+								}`}
 							style={{
 								boxShadow: theme,
 							}}
@@ -523,11 +523,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{updatedCreator.audioAllowed &&
 					parseInt(updatedCreator.audioRate, 10) > 0 && (
 						<div
-							className={`callOptionContainer ${
-								isProcessing || onlineStatus !== "Online"
+							className={`callOptionContainer ${isProcessing || onlineStatus !== "Online"
 									? "opacity-50 !cursor-not-allowed"
 									: ""
-							}`}
+								}`}
 							style={{
 								boxShadow: theme,
 							}}
@@ -556,11 +555,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{updatedCreator.chatAllowed &&
 					parseInt(updatedCreator.chatRate, 10) > 0 && (
 						<div
-							className={`callOptionContainer ${
-								onlineStatus !== "Online"
+							className={`callOptionContainer ${onlineStatus !== "Online"
 									? "opacity-50 !cursor-not-allowed"
 									: ""
-							}`}
+								}`}
 							style={{
 								boxShadow: theme,
 							}}

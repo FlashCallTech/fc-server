@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     const kyc = {
       userId: userId,
-      liveliness: {
+      face_match: {
         reference_id: result.ref_id,
         verification_id: result.verification_id,
         status: result.status,
