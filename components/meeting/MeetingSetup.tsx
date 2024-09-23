@@ -53,7 +53,7 @@ const MeetingSetup = ({
 	}, [isMicCamToggled, call.camera, call.microphone]);
 
 	const handleCallEnded = () => {
-		router.push("/");
+		router.push("/home");
 	};
 
 	const handleCancel = () => {

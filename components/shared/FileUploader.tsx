@@ -19,7 +19,8 @@ const FileUploader = ({
 	mediaUrl,
 	onFileSelect,
 }: FileUploaderProps) => {
-	const [fileUrl, setFileUrl] = useState(mediaUrl);
+	const [fileUrl, setFileUrl] = useState(mediaUrl); // Old image
+	const [newFileUrl, setNewFileUrl] = useState<string | null>(null); // New image preview
 	const [uploadProgress, setUploadProgress] = useState(0);
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
@@ -65,9 +66,9 @@ const FileUploader = ({
 					},
 					() => {
 						getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-							setFileUrl(downloadURL);
+							setNewFileUrl(downloadURL); // Show new image preview
 							console.log("File available at", downloadURL);
-							fieldChange(downloadURL); // Pass URL to the parent
+							fieldChange(downloadURL); // Pass only new image URL to parent form state
 							setLoading(false); // Set loading state to false once upload completes
 						});
 					}
@@ -117,6 +118,8 @@ const FileUploader = ({
 			</div>
 		);
 
+	console.log(fileUrl, newFileUrl);
+
 	return (
 		<div
 			{...getRootProps()}
@@ -141,8 +144,26 @@ const FileUploader = ({
 					</Button>
 				</div>
 			) : (
-				<div className="flex flex-1 items-center justify-center w-full pt-2">
-					<img src={fileUrl} alt="image" className={`file_uploader-img`} />
+				<div className="flex items-center justify-center w-full pt-2">
+					<div className="flex flex-wrap justify-center items-center space-x-4">
+						{/* Old Image */}
+						{fileUrl && (
+							<img
+								src={fileUrl}
+								alt="Current image"
+								className={`w-20 h-20 rounded-full border-2 border-white`}
+							/>
+						)}
+
+						{/* New Image Preview */}
+						{newFileUrl && (
+							<img
+								src={newFileUrl}
+								alt="New image preview"
+								className={` border-2 border-green-500 file_uploader-img`}
+							/>
+						)}
+					</div>
 				</div>
 			)}
 

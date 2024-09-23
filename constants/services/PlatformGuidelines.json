@@ -1,0 +1,133 @@
+{
+	"guidelines": {
+		"enforcement": {
+			"title": "How these guidelines are enforced",
+			"description": {
+				"para1": "Please realize that Flashcall is a diverse community and, while you may not necessarily agree with someone’s point of view, it may not be a violation of our Platform Guidelines. That said, when you see a page on Flashcall that you feel violates our Platform Guidelines, please take the time to report them via our reporting tool. A member of the team will review the report and if our Platform Guidelines have been violated, the case manager will contact the consultant to let them know that they are outside these guidelines.",
+
+				"para2": "This is a commitment to consultants. We know this is your livelihood. Our first reflex is always to try to educate consultants to help them understand how a rule has been broken and how to remedy the issue. In cases where the violation is particularly bad or intentional we may take further action such as suspending or removing their account. In the most extreme cases we may ban a consultant from using Flashcall.",
+
+				"para3": "Flashcall is for consultants who put something original out into the world. As a consultant, you may not post creations that infringe on others' intellectual property rights.",
+
+				"conditions": [
+					"You cannot create fake pages or collect money for things, services  you’re not actually delivering. For example, you cannot create a client page for someone else",
+					"You cannot pretend to be or impersonate someone else by using the name, brand or works of another to deceive clients. We will review satire and comedy in a different way as we believe these subgenres are original creations."
+				]
+			}
+		},
+		"bullyingHarassment": {
+			"title": "Bullying, harassment, and threats",
+			"about": "We do not allow bullying or harassment because we want Flashcall to be a safe place for our various communities. At the same time, we want people to be able to express themselves, be critical, and discuss controversial issues.",
+			"sections": {
+				"bullying": {
+					"title": "Bullying",
+					"content": "You cannot attempt to intimidate anyone, either directly or by using your influence over others. We treat real-life interactions and online interactions with equal seriousness when analyzing whether a line has been crossed and take appropriate steps to arrest the incident immediately."
+				},
+				"harassment": {
+					"title": "Harassment",
+					"content": "Anyone on Flashcall should be able to express their opinion in a way that doesn't threaten or cause any distress, pain to another person. In this respect, we take threats of violence very seriously. Any consultant or client threatening the well-being of an individual or group of people will be removed from the platform immediately without any notice. This includes threatening behavior such as stalking or inciting others to commit violent acts. If you are a victim of this behavior and feel that your personal safety is at risk, we suggest you contact your local law enforcement, in addition to reporting the behavior to us."
+				},
+				"hateSpeech": {
+					"title": "Hate speech",
+					"content": "There is no room on Flashcall for projects funding hate speech, such as calling for violence, exclusion, or segregation. This includes serious attacks on people based on their race, ethnicity, national origin, religion, sex, gender, sexual orientation, age, disability or serious medical conditions."
+				}
+			}
+		},
+		"contentRestrictions": {
+			"title": "Content Restrictions",
+			"sections": {
+				"18Plus": {
+					"title": "18+ Creations",
+					"content": "As we strive to create a community that is inclusive and diverse, we want to take into consideration our diverse user base of different ages and sensitivities. We require that all services on your page be appropriate for all audiences/ages.",
+					"categories": [
+						{
+							"title": "Nudity",
+							"description": "You cannot post nude creations on Flashcall of both real and fictional subjects. This means that you cannot post nudity in public areas including your profile picture, banner, reward images or ‘about me’ section. As a reminder, you should never post or share nude creations of any individual under the age of 18, including yourself."
+						},
+						{
+							"title": "Pornography and sexual services",
+							"description": "We do not allow pornographic or sexual services on Flashcall. We have a zero tolerance towards such profiles and they will be banned and appropriate measures will be taken."
+						},
+						{
+							"title": "Offensive and graphic creations",
+							"description": "We review any content reported as offensive and graphic & we have zero tolerance when it comes to the glorification of sexual violence which includes bestiality, rape, and child exploitation (i.e., sexualized depiction of minors). This is true for illustrated, animated, or any other type of creations. Flashcall reserves the right to review and remove accounts that may violate this guideline. \n\nWe also do not allow other fringe sexual fetish creations, such as incest, necrophilia, or fetish creations."
+						}
+					]
+				},
+				"whoCanUserFlashcall": {
+					"title": "People who can use Flashcall",
+					"description": "Because Flashcall empowers people financially, we restrict both the types of media and projects that can be funded on Flashcall, and also which people can and cannot receive funds through Flashcall. After creating a Flashcall page, any consultant caught in the act or convicted of making credible violent threats, committing violent crimes, malicious doxing, coordinating nonviolent harm (such as fraud, money laundering and gambling), or encouraging others to do any of these activities may be banned from using Flashcall.",
+					"categories": [
+						{
+							"title": "Politicians",
+							"content": "You cannot use Flashcall to fund your run for office or to fund for political campaigns."
+						},
+						{
+							"title": "Criminal or Harmful Past",
+							"content": "Any consultant caught in the act or convicted of making credible violent threats, committing violent crimes, child abuse, malicious doxing, coordinating nonviolent harm (such as fraud, money laundering, and gambling), or encouraging others to do any of these activities, may be banned from using Flashcall."
+						},
+						{
+							"title": "Dangerous Organizations",
+							"content": "Any individual or group with a criminal history or a suspect or having any affiliation with violent or dangerous groups (including terrorist or cyber terrorist organizations, organized criminal groups, and violent hate groups), cannot receive funds through Flashcall, no matter the purpose or apparent intention of their Flashcall page. \n\nAny consultant praising or actively supporting these groups or their leaders will not be allowed to use Flashcall."
+						},
+						{
+							"title": "Harmful and illegal activities",
+							"content": "We do not allow funds to be collected for any harmful or illegal activities. You cannot fund creations that advocate, threaten, or show you causing harm to yourself, other people or any other living being or causing damage, harm to property etc. In the same way, you cannot promote illegal activities such as property crime, distribution of illegal weapons, or drug manufacturing etc."
+						},
+						{
+							"title": "Self-harm",
+							"content": "We do not allow any consultant that promotes or glorifies self-harm, self-injury, suicide, physical challenges or an eating disorder. \n\nIf you or someone close to you might be in danger of hurting themselves, please contact local authorities or seek help."
+						},
+						{
+							"title": "Illegal activity",
+							"content": "We do not allow pages that collect money for any illegal purpose, or that encourage others to break the law. For example, consultants should not promote illegal weapons, drug manufacturing techniques or distribution, or property crime. For example, we do not allow creations that help organize or encourage vandalism. Note that we do allow street art."
+						},
+						{
+							"title": "Dangerous activities",
+							"content": "We do not allow consultants who are sharing dangerous stunts on the platform. You are not allowed to do such stunts while communicating."
+						}
+					]
+				},
+				"spam": {
+					"title": "Spam",
+					"content": "While it can be hard to grow a client base, no one likes being spammed. Be creative and original, don’t post repetitive comments or send unwanted private messages to other members of the community.",
+					"prohibitedActions": {
+						"title": "These are some of the actions we consider to be spamming, which is prohibited on Flashcall",
+						"actions": [
+							"Don’t engage in getting fake positive reviews for your page",
+							"Don’t use Flashcall to release or link to malware or phishing schemes",
+							"Don’t send a large number of unsolicited private messages asking for support",
+							"Don't use incorrect tagging in order to drive more search results."
+						]
+					},
+					"endPara": "When reviewing reports about spam, we will distinguish between commercial spam and friendly abuse such as legitimate consultants spamming other consultants’ pages. If we determine the spam is friendly abuse, the account will be flagged; repeat offenses will lead to full removal of the consultant or client page. Commercial spamming by an account that is not a legitimate consultant will be removed from Flashcall."
+				}
+			}
+		},
+		"clientAccounts": {
+			"title": "Client Accounts",
+			"para1": "The philosophy behind these guidelines also applies to clients. While we believe that consultants are best at managing their communities there are some instances when our team will review reports for clients' behavior.",
+			"para2": "If you would like us to review the behavior of one of your clients we will keep the review confidential.Our team reviews reports around hate speech, harassment and solicitation very carefully and we will take action against a client account if we find that they are in violation of these guidelines.",
+			"para3": "Please remember that we will not share any details related to what kind of action we might have taken against a client’s account. Most importantly, if you feel unsafe because a client is stalking or harassing you, you should always try to seek the help of your local law enforcement and contact the cyber crime unit. Flashcall will work closely with law enforcement whenever there is an investigation.",
+			"para4": "This policy is part of Flashcall’s Terms of Use. For further information, contact Flashcall at support@Flashcall.me. Flashcall’s role",
+			"para5": "At Flashcall our endeavour is to create an environment where an individual consultant/business can earn and focus on their art. We will do our best in making sure the consultants get the opportunity to monetize their art and client following. We aspire to empower the consultants so that they can become their own BOSS. Said that we clearly understand and also propagate the fact that we all need to work in the realms of law.",
+
+			"clientAccountsTerms": {
+				"description": "We function as a platform connecting consultants with their clients to help them earn from their creations. Our role strictly is of an intermediary between consultants and their clients. We have belief and trust in Indian laws governing the intermediary and we follow them strictly. Here are the terms that we intend to follow while operating our platform which does not allow any consultant on Flashcall to post the content which :",
+				"terms": [
+					"belongs to another person and to which the user does not have any right to",
+					"is grossly harmful, harassing, blasphemous, defamatory, obscene, pornographic, pedophilic, libelous, invasive of another's privacy, hateful, or racially, ethnically objectionable, disparaging, relating or encouraging money laundering or gambling, or otherwise unlawful in any manner whatever",
+					"harm minors in any way",
+					"infringes any patent, trademark, copyright or other proprietary rights",
+					"violates any law for the time being in force",
+					"deceives or misleads the addressee about the origin of such messages or communicates any information which is grossly offensive or menacing in nature",
+					"impersonates another person",
+					"contains software viruses or any other computer code, files or programs designed to interrupt, destroy or limit the functionality of any computer resource",
+					"threatens the unity, integrity, defence, security or sovereignty of India, friendly relations with foreign states, or public order, or causes incitement to the commission of any cognisable offence or prevents investigation of any offence or is insulting any other nation.",
+					"threatens public health or safety; promotion of cigarettes or any other tobacco products or consumption of intoxicant including alcohol and Electronic Nicotine Delivery System (ENDS) & like products that enable nicotine delivery except for the purpose & in the manner and to the extent, as may be approved under the Drugs and Cosmetics Act, 1940 and Rules made thereunder",
+					"threatens critical information infrastructure"
+				]
+			}
+		}
+	}
+}

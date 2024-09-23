@@ -1,11 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { CreatorFeedback } from "@/types";
 import ReviewSlider from "./ReviewSlider";
-import * as Sentry from "@sentry/nextjs";
-import axios from "axios";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { useToast } from "../ui/use-toast";
+import { useGetCreatorFeedbacks } from "@/lib/react-query/queries";
 
 const UserReviews = ({
 	theme,
@@ -14,11 +13,51 @@ const UserReviews = ({
 	theme: string;
 	creatorId: string;
 }) => {
-	const [creatorFeedback, setCreatorFeedback] = useState<CreatorFeedback[]>([]);
-	const [feedbacksLoading, setFeedbacksLoading] = useState(true);
 	const [isExpanded, setIsExpanded] = useState(false);
-	const [page, setPage] = useState(1);
-	const [hasMoreFeedbacks, setHasMoreFeedbacks] = useState(true);
+	const [isLoadMoreButtonHidden, setIsLoadMoreButtonHidden] = useState(false);
+	const [isRefetchButtonHidden, setIsRefetchButtonHidden] = useState(false);
+	const [isFetchingMore, setIsFetchingMore] = useState(false);
+
+	const { toast } = useToast();
+	const {
+		data: feedbackData,
+		isLoading,
+		isError,
+		isFetching,
+		fetchNextPage,
+		hasNextPage,
+		refetch,
+	} = useGetCreatorFeedbacks(creatorId);
+
+	// Safeguard to ensure creatorFeedbacks is always an array
+	const creatorFeedbacks =
+		feedbackData?.pages?.flatMap((page: any) => page) || [];
+
+	const handleFetchNextPage = async () => {
+		if (hasNextPage && !isFetching && !isLoadMoreButtonHidden) {
+			setIsFetchingMore(true);
+			setIsLoadMoreButtonHidden(true); // Hide the button
+			await fetchNextPage();
+			setIsFetchingMore(false);
+
+			// Show the button again after a timeout
+			setTimeout(() => {
+				setIsLoadMoreButtonHidden(false);
+			}, 15000); // 15 seconds timeout
+		}
+	};
+
+	const handleRefetch = async () => {
+		if (!isFetching && !isRefetchButtonHidden) {
+			setIsRefetchButtonHidden(true); // Hide the button
+			await refetch();
+
+			// Show the button again after a timeout
+			setTimeout(() => {
+				setIsRefetchButtonHidden(false);
+			}, 10000); // 10 seconds timeout
+		}
+	};
 
 	const useScreenSize = () => {
 		const [isMobile, setIsMobile] = useState(false);
@@ -50,118 +89,7 @@ const UserReviews = ({
 		return text;
 	};
 
-	const syncWithServerFeedback = async (serverFeedbacks: CreatorFeedback[]) => {
-		// Filter out feedbacks that no longer exist on the server
-		const updatedFeedback = creatorFeedback.filter((cachedFeedback) =>
-			serverFeedbacks.some(
-				(serverFeedback) =>
-					serverFeedback.createdAt === cachedFeedback.createdAt
-			)
-		);
-
-		// Add any new feedbacks from the server
-		const newFeedbacks = serverFeedbacks.filter(
-			(serverFeedback) =>
-				!updatedFeedback.some(
-					(cachedFeedback) =>
-						cachedFeedback.createdAt === serverFeedback.createdAt
-				)
-		);
-
-		// Merge the feedback arrays and sort by position
-		const finalFeedback = [...updatedFeedback, ...newFeedbacks].sort(
-			(a: any, b: any) => {
-				// If both positions are valid (not -1), sort by position
-				if (a.position !== -1 && b.position !== -1) {
-					return a.position - b.position;
-				}
-				// If a.position is -1, push it down
-				if (a.position === -1 && b.position !== -1) {
-					return 1;
-				}
-				// If b.position is -1, push it down
-				if (b.position === -1 && a.position !== -1) {
-					return -1;
-				}
-				// If both are -1, fall back to sorting by createdAt
-				return (
-					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-				);
-			}
-		);
-
-		setCreatorFeedback(finalFeedback);
-
-		// Cache the synchronized feedbacks and timestamp
-		sessionStorage.setItem(
-			`feedback-${creatorId}`,
-			JSON.stringify(finalFeedback)
-		);
-		sessionStorage.setItem(
-			`feedback-timestamp-${creatorId}`,
-			JSON.stringify(Date.now())
-		);
-
-		// Increase the page number for subsequent requests
-		setPage((prevPage) => prevPage + 1);
-	};
-
-	const fetchFeedback = async () => {
-		try {
-			setFeedbacksLoading(true); // Set loading state to true when fetching
-			const response = await axios.get(
-				`/api/v1/feedback/creator/selected?creatorId=${creatorId}&page=${page}`
-			);
-
-			const serverFeedbacks = response.data.feedbacks[0]?.feedbacks || [];
-
-			if (serverFeedbacks.length > 0) {
-				syncWithServerFeedback(serverFeedbacks);
-			} else {
-				setHasMoreFeedbacks(false);
-			}
-		} catch (err) {
-			Sentry.captureException(err);
-			console.error("Error fetching feedback:", err);
-		} finally {
-			setFeedbacksLoading(false); // Set loading state to false after fetching
-		}
-	};
-
-	useEffect(() => {
-		const cachedFeedback = sessionStorage.getItem(`feedback-${creatorId}`);
-		const cachedTimestamp = sessionStorage.getItem(
-			`feedback-timestamp-${creatorId}`
-		);
-
-		if (cachedFeedback && cachedTimestamp) {
-			const now = Date.now();
-			const lastFetched = JSON.parse(cachedTimestamp);
-			const fiveMinutes = 5 * 60 * 1000;
-
-			setCreatorFeedback(JSON.parse(cachedFeedback));
-			setFeedbacksLoading(false);
-
-			if (now - lastFetched > fiveMinutes) {
-				// Fetch new feedbacks if the cache is older than 5 minutes
-				fetchFeedback();
-			}
-		} else {
-			fetchFeedback();
-		}
-	}, [creatorId]);
-
-	useEffect(() => {
-		// Update session storage only when feedbacks are fetched or changed
-		if (creatorFeedback.length > 0) {
-			sessionStorage.setItem(
-				`feedback-${creatorId}`,
-				JSON.stringify(creatorFeedback)
-			);
-		}
-	}, [creatorFeedback, creatorId]);
-
-	if (feedbacksLoading && page === 1) {
+	if (isLoading) {
 		return (
 			<section className="w-full h-full flex items-center justify-center">
 				<SinglePostLoader />
@@ -169,12 +97,21 @@ const UserReviews = ({
 		);
 	}
 
+	if (isError) {
+		console.error("Error fetching feedbacks:", isError);
+		toast({
+			variant: "destructive",
+			title: "Error",
+			description: "Failed to fetch feedbacks.",
+		});
+	}
+
 	return (
 		<>
-			{creatorFeedback?.length > 0 ? (
+			{creatorFeedbacks.length > 0 ? (
 				<div
 					className={`relative text-white size-full ${
-						creatorFeedback?.length > 1 ? "py-10" : "pt-10 pb-4"
+						creatorFeedbacks.length > 1 ? "py-10" : "pt-10 pb-4"
 					} rounded-t-[24px] lg:rounded-[24px] xl:w-[60%]`}
 					style={{ backgroundColor: theme }}
 				>
@@ -182,7 +119,7 @@ const UserReviews = ({
 
 					{/* main section */}
 					<ReviewSlider
-						creatorFeedback={creatorFeedback}
+						creatorFeedbacks={creatorFeedbacks}
 						getClampedText={getClampedText}
 						isExpanded={isExpanded}
 						setIsExpanded={setIsExpanded}
@@ -192,10 +129,42 @@ const UserReviews = ({
 					{/* Fetch More Button */}
 					<Tooltip>
 						<TooltipTrigger asChild>
-							{hasMoreFeedbacks && !feedbacksLoading && (
+							{hasNextPage &&
+								!isFetchingMore &&
+								!isLoadMoreButtonHidden &&
+								!isFetching && (
+									<button
+										onClick={handleFetchNextPage}
+										className="absolute top-0 right-16 mt-4 p-2 bg-[#232323]/35 rounded-full text-white hoverScaleDownEffect"
+									>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+											strokeWidth={1.5}
+											stroke="currentColor"
+											className="size-5"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+											/>
+										</svg>
+									</button>
+								)}
+						</TooltipTrigger>
+						<TooltipContent className="bg-green-1 border-none text-white">
+							<span>Load More</span>
+						</TooltipContent>
+					</Tooltip>
+
+					<Tooltip>
+						<TooltipTrigger asChild>
+							{!isFetching && !isRefetchButtonHidden && (
 								<button
-									onClick={() => fetchFeedback()} // Fetch more feedbacks
-									className="absolute top-0 right-4 mt-4 p-2 bg-[#232323]/35 rounded-full text-white hoverScaleDownEffect"
+									onClick={handleRefetch}
+									className="absolute top-0 right-6 mt-4 p-2 bg-[#232323]/35 rounded-full text-white hoverScaleDownEffect"
 								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"

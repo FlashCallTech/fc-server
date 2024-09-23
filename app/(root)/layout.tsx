@@ -2,10 +2,11 @@
 
 import { ChatRequestProvider } from "@/lib/context/ChatRequestContext";
 import { CurrentUsersProvider } from "@/lib/context/CurrentUsersContext";
-import { UserStatusProvider } from "@/lib/context/UserStatusContext";
 import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
 import { initMixpanel } from "@/lib/mixpanel";
+import { QueryProvider } from "@/lib/react-query/QueryProvider";
 import StreamVideoProvider from "@/providers/streamClientProvider";
+import axios from "axios";
 import { throttle } from "lodash";
 import Image from "next/image";
 import React, { ReactNode, useEffect, useState } from "react";
@@ -35,6 +36,10 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 
 	useEffect(() => {
 		initMixpanel(); // Initialize Mixpanel when the layout mounts
+	}, []);
+
+	useEffect(() => {
+		axios.defaults.withCredentials = true;
 	}, []);
 
 	const renderContent = () => {
@@ -105,19 +110,19 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	};
 
 	return (
-		<CurrentUsersProvider>
-			<StreamVideoProvider>
-				<WalletBalanceProvider>
-					<ChatRequestProvider>
-						<UserStatusProvider>
+		<QueryProvider>
+			<CurrentUsersProvider>
+				<StreamVideoProvider>
+					<WalletBalanceProvider>
+						<ChatRequestProvider>
 							<div className="relative min-h-screen w-full">
 								{renderContent()}
 							</div>
-						</UserStatusProvider>
-					</ChatRequestProvider>
-				</WalletBalanceProvider>
-			</StreamVideoProvider>
-		</CurrentUsersProvider>
+						</ChatRequestProvider>
+					</WalletBalanceProvider>
+				</StreamVideoProvider>
+			</CurrentUsersProvider>
+		</QueryProvider>
 	);
 };
 

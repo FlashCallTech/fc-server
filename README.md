@@ -1,6 +1,6 @@
 Deployed Site ... https://flashcall.vercel.app 
 
-Deployed Site ... https://app.flashcall.me
+Deployed Site ... https://flashcall.me
 
 ## Getting Started
 

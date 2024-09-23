@@ -8,7 +8,6 @@ import { createFeedback } from "@/lib/actions/feedback.actions";
 import { useToast } from "../ui/use-toast";
 import { success } from "@/constants/icons";
 import { useGetCallById } from "@/hooks/useGetCallById";
-import { Button } from "../ui/button";
 import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -75,10 +74,10 @@ const CallFeedback = ({
 			});
 			return;
 		}
-		if (feedbackMessage.length < 3) {
+		if (!rating) {
 			toast({
 				variant: "destructive",
-				title: "Feedback must be at least 3 characters",
+				title: "Feedback Rating is Required",
 			});
 			return;
 		}
@@ -120,7 +119,7 @@ const CallFeedback = ({
 	};
 
 	// Disable submit button if feedback message is less than 3 characters
-	const isSubmitDisabled = feedbackMessage.length < 3;
+	const isSubmitDisabled = !rating;
 
 	if (!currentUser?._id || isCallLoading)
 		return (
@@ -200,7 +199,7 @@ const CallFeedback = ({
 							onKeyDown={handleKeyPress}
 							placeholder="Write your feedback here..."
 							className="w-full p-2 border rounded resize-none h-full max-h-[100px] overflow-y-scroll no-scrollbar outline-none hover:bg-gray-50"
-						></textarea>
+						/>
 
 						<button
 							onClick={handleSubmitFeedback}

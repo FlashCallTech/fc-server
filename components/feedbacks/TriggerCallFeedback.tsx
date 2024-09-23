@@ -28,7 +28,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 						title: "Feedback Already Exists",
 						description: "Returning back ...",
 					});
-					router.push(`${creatorURL ? creatorURL : "/"}`);
+					router.push(`${creatorURL ? creatorURL : "/home"}`);
 				} else {
 					setShowFeedback(true);
 				}
@@ -55,7 +55,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 			title: "Thanks For The Feedback",
 			description: "Hope to See You Again ...",
 		});
-		router.push(`${creatorURL ? creatorURL : "/"}`);
+		router.push(`${creatorURL ? creatorURL : "/home"}`);
 	};
 
 	if (loadingFeedback) {

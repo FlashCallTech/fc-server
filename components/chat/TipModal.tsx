@@ -163,8 +163,9 @@ const TipModal = ({
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className={`flex flex-col items-center justify-center ${!loading ? "px-10 py-7" : "px-4"
-						} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
+					className={`flex flex-col items-center justify-center ${
+						!loading ? "px-10 py-7" : "px-4"
+					} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
 				>
 					{loading ? (
 						<ContentLoading />
@@ -176,8 +177,9 @@ const TipModal = ({
 									<p>
 										Balance Left
 										<span
-											className={`ml-2 ${hasLowBalance ? "text-red-500" : "text-green-1"
-												}`}
+											className={`ml-2 ${
+												hasLowBalance ? "text-red-500" : "text-green-1"
+											}`}
 										>
 											₹ {adjustedWalletBalance.toFixed(2)}
 										</span>
@@ -214,24 +216,16 @@ const TipModal = ({
 										<Button
 											key={amount}
 											onClick={() => handlePredefinedAmountClick(amount)}
-											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleEffect ${tipAmount === amount &&
+											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleEffect ${
+												tipAmount === amount &&
 												"bg-green-1 text-white hover:bg-green-1"
-												}`}
+											}`}
 										>
 											₹{amount}
 										</Button>
 									))}
 								</div>
 							</div>
-							{/* <SheetFooter className="mt-4">
-								<Button
-									className="bg-green-1 text-white"
-									onClick={handleTransaction}
-									disabled={parseInt(tipAmount) > adjustedWalletBalance}
-								>
-									Proceed
-								</Button>
-							</SheetFooter> */}
 						</>
 					) : (
 						<div className="flex flex-col items-center justify-center min-w-full h-full gap-4">

@@ -1,0 +1,23 @@
+{
+	"conditions": {
+		"title": "Cancellation and Refund",
+		"terms1": [
+			"No refund shall be processed on the order of any reports under any circumstances if the order has reached the “processing” (Assigned to an Creator) stage. The risk and liability of placing order in a haste and careless manner totally lies with the User and the Website is not responsible for any refund once the processing stage has started.",
+			"No refund shall be processed once the Order has been placed and executed.",
+			"Any technical delay or glitch reported in the Website during the processing of the request which includes generating reports by the service provider i.e. Creator shall not be eligible for claiming refund. The User agrees that the timelines are approximate and all essential steps would be taken to adhere to the timelines as displayed.",
+			"No refund shall be processed for the reason that in-correct information or data has been provided by You. The User agrees to be careful while providing any information to the Website and must re-check the information filled before clicking on “Submit”. The User can request for change in the in-correct information or data entered provided, the request for such change has been made with the customer care within 1 (one hour) of execution of the service rendered by the service provider."
+		],
+		"terms2": {
+			"description": "In case the Website or Payment gateway’s webpage, that is linked to the Website, is experiencing any server related issues like ‘slow down’ or ‘failure’ or ‘session timeout’, the User shall, before initiating the second payment, check whether his/her Bank Account has been debited or not and accordingly resort to one of the following options:",
+			"terms": [
+				"In case the Bank Account appears to be debited, ensure that you do not make the payment twice and immediately thereafter contact the Website via customer care to confirm payment.",
+				"In case the Bank Account is not debited, the User may initiate a fresh transaction to make payment."
+			]
+		},
+		"terms3": [
+			"However, refund for multiple payment, if any, even after the above precaution against the same order shall be refunded in full without deduction of the transaction charges as mentioned above. The Website shall only retain the cost of one single order as intended to be placed by the User.",
+			"If there are orders that the Website is unable to accept and must cancel, the Website at its sole discretion, reserves the right to refuse or cancel any order for any reason whatsoever. Some situations may result in the order being cancelled and include, without limitation, non-availability of the service, inaccuracy, error in pricing information or other problems as identified.",
+			"The money once credited into your wallet cannot be withdrawn to any account and will remain in your wallet and can be used for future consultation."
+		]
+	}
+}

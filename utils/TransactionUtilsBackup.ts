@@ -81,7 +81,7 @@ export const handleTransaction = async ({
 				title: "Error",
 				description: "An error occurred while processing the Transactions",
 			});
-			router.push("/");
+			router.push("/home");
 		} finally {
 			// Update wallet balance after enqueuing the job
 			router.push(`/feedback/${callId}`);

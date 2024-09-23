@@ -105,7 +105,7 @@ const CustomParticipantViewUI = () => {
 
 	return (
 		<>
-			{call?.camera?.state?.status === "enabled" &&
+			{/* {call?.camera?.state?.status === "enabled" &&
 				expert?.user_id !== participant.userId && (
 					<button
 						disabled={!document.pictureInPictureEnabled}
@@ -122,7 +122,7 @@ const CustomParticipantViewUI = () => {
 							<PictureInPicture />
 						)}
 					</button>
-				)}
+				)} */}
 
 			<span
 				className={`absolute   w-full text-sm text-ellipsis overflow-hidden ${
@@ -131,7 +131,12 @@ const CustomParticipantViewUI = () => {
 						: "max-w-[55%] sm:max-w-[65%] bottom-1.5 left-2.5"
 				} overflow-scroll no-scrollbar`}
 			>
-				{participant.name}
+				{participant.name.startsWith("+91")
+					? participant.name.replace(
+							/(\+91)(\d+)/,
+							(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+					  )
+					: participant.name}
 			</span>
 
 			<PoorConnectionNotification />

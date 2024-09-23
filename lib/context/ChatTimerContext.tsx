@@ -73,7 +73,7 @@ export const ChatTimerProvider = ({
 			title: "Chat Ended",
 			description: "Wallet is Empty. Redirecting ...",
 		});
-		router.push("/");
+		router.push("/home");
 	};
 	const pauseTimer = () => setIsTimerRunning(false);
 	const resumeTimer = () => setIsTimerRunning(true);
@@ -91,7 +91,7 @@ export const ChatTimerProvider = ({
 		if (!chatId) {
 			return; // Exit early if not the meeting owner or callId is undefined
 		}
-		if(userType === 'client'){
+		if (userType === "client") {
 			const ratePerMinute = chatRatePerMinute;
 			let maxChatDuration = (walletBalance / ratePerMinute) * 60; // in seconds
 			maxChatDuration = maxChatDuration > 3600 ? 3600 : maxChatDuration; // Limit to 60 minutes (3600 seconds)
@@ -99,9 +99,9 @@ export const ChatTimerProvider = ({
 				setTimeLeft(maxChatDuration);
 				return;
 			}
-			
+
 			const chatStartedTime = new Date(startedAt);
-			
+
 			const updateFirestoreTimer = async (
 				timeLeft: number,
 				timeUtilized: number
@@ -124,26 +124,26 @@ export const ChatTimerProvider = ({
 					console.error("Error updating Firestore timer: ", error);
 				}
 			};
-			
+
 			const intervalId = setInterval(() => {
 				if (isTimerRunning) {
 					const now = new Date();
-					const timeUtilized = (now.getTime() - chatStartedTime.getTime()) / 1000; // Time in seconds
+					const timeUtilized =
+						(now.getTime() - chatStartedTime.getTime()) / 1000; // Time in seconds
 					const newTimeLeft = maxChatDuration - timeUtilized;
 					const clampedTimeLeft = newTimeLeft > 0 ? newTimeLeft : 0;
-					
+
 					setTimeLeft(clampedTimeLeft);
 					setTotalTimeUtilized(timeUtilized);
 					updateFirestoreTimer(clampedTimeLeft, timeUtilized);
-					
-					
+
 					if (clampedTimeLeft <= 0) {
 						clearInterval(intervalId);
 						if (clientId === clientUser?._id) {
-							handleEnd(chatId as string, user2, 'low_balance');
+							handleEnd(chatId as string, user2, "low_balance");
 						}
 					}
-					
+
 					if (
 						clientId === clientUser?._id &&
 						newTimeLeft <= lowBalanceThreshold &&
@@ -165,11 +165,11 @@ export const ChatTimerProvider = ({
 			}, 1000);
 			return () => clearInterval(intervalId);
 		}
-		}, [
-			isTimerRunning,
-			clientId,
-			chatRatePerMinute,
-			lowBalanceNotified,
+	}, [
+		isTimerRunning,
+		clientId,
+		chatRatePerMinute,
+		lowBalanceNotified,
 		lowBalanceThreshold,
 		endChat,
 		toast,

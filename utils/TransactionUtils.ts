@@ -5,7 +5,8 @@ import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import * as Sentry from "@sentry/nextjs";
 
 export const handleTransaction = async ({
-	call,
+	expertId,
+	clientId,
 	callId,
 	duration,
 	isVideoCall,
@@ -13,7 +14,8 @@ export const handleTransaction = async ({
 	router,
 	updateWalletBalance,
 }: {
-	call: any;
+	expertId: string;
+	clientId: string;
 	callId: string;
 	duration: string;
 	isVideoCall: boolean;
@@ -21,18 +23,32 @@ export const handleTransaction = async ({
 	router: any;
 	updateWalletBalance: () => Promise<void>;
 }) => {
-	const expert = call?.state?.members?.find(
-		(member: any) => member.custom.type === "expert"
-	);
-
-	if (!expert?.user_id) {
-		console.error("Creator ID is undefined");
-		return;
-	}
+	const updateFirestoreSessions = async (
+		userId: string,
+		callId: string,
+		status: string
+	) => {
+		try {
+			const SessionDocRef = doc(db, "sessions", userId);
+			const SessionDoc = await getDoc(SessionDocRef);
+			if (SessionDoc.exists()) {
+				await updateDoc(SessionDocRef, {
+					ongoingCall: { id: callId, status: status },
+				});
+			} else {
+				await setDoc(SessionDocRef, {
+					ongoingCall: { id: callId, status: status },
+				});
+			}
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error updating Firestore Sessions: ", error);
+		}
+	};
 
 	const updateFirestoreTransactionStatus = async (callId: string) => {
 		try {
-			const transactionDocRef = doc(db, "transactions", expert?.user_id);
+			const transactionDocRef = doc(db, "transactions", expertId);
 			const transactionDoc = await getDoc(transactionDocRef);
 			if (transactionDoc.exists()) {
 				await updateDoc(transactionDocRef, {
@@ -45,7 +61,7 @@ export const handleTransaction = async ({
 			}
 		} catch (error) {
 			Sentry.captureException(error);
-			console.error("Error updating Firestore timer: ", error);
+			console.error("Error updating Firestore Transactions: ", error);
 		}
 	};
 
@@ -59,9 +75,6 @@ export const handleTransaction = async ({
 		}
 	};
 
-	const creatorId = expert?.user_id;
-	const clientId = call?.state?.createdBy?.id;
-
 	if (!clientId) {
 		console.error("Client ID is undefined");
 		return;
@@ -72,17 +85,24 @@ export const handleTransaction = async ({
 			fetch(`/api/v1/calls/transaction/getTransaction?callId=${callId}`).then(
 				(res) => res.json()
 			),
-			getCreatorById(creatorId),
+			getCreatorById(expertId),
 		]);
 
 		if (transactionResponse) {
 			toast({
 				variant: "destructive",
-				title: "Transaction Done",
+				title: "Transaction Already Done",
 				description: "Redirecting ...",
 			});
 
 			removeActiveCallId();
+			await updateFirestoreSessions(clientId, callId, "ended");
+			await updateFirestoreTransactionStatus(callId);
+			logEvent(analytics, "call_ended", {
+				callId: callId,
+				duration: duration,
+				type: isVideoCall,
+			});
 
 			return;
 		}
@@ -94,11 +114,6 @@ export const handleTransaction = async ({
 
 		const rate = isVideoCall ? creator.videoRate : creator.audioRate;
 		const amountToBePaid = ((parseFloat(duration) / 60) * rate).toFixed(2);
-		const percentage = 0.2;
-		const amountDeducted = (parseFloat(amountToBePaid) * percentage).toFixed(2);
-		const netAmountForCreator = (
-			parseFloat(amountToBePaid) - parseFloat(amountDeducted)
-		).toFixed(2);
 
 		await Promise.all([
 			fetch("/api/v1/wallet/payout", {
@@ -113,9 +128,9 @@ export const handleTransaction = async ({
 			fetch("/api/v1/wallet/addMoney", {
 				method: "POST",
 				body: JSON.stringify({
-					userId: creatorId,
+					userId: expertId,
 					userType: "Creator",
-					amount: netAmountForCreator,
+					amount: (parseInt(amountToBePaid) * 0.8).toFixed(2),
 				}),
 				headers: { "Content-Type": "application/json" },
 			}),
@@ -132,12 +147,13 @@ export const handleTransaction = async ({
 		]);
 
 		removeActiveCallId();
-		updateFirestoreTransactionStatus(call?.id);
+		await updateFirestoreSessions(clientId, callId, "ended");
+		await updateFirestoreTransactionStatus(callId);
 
 		logEvent(analytics, "call_ended", {
-			callId: call.id,
+			callId: callId,
 			duration: duration,
-			type: call?.type === "default" ? "video" : "audio",
+			type: isVideoCall,
 		});
 	} catch (error) {
 		Sentry.captureException(error);
@@ -149,7 +165,7 @@ export const handleTransaction = async ({
 			title: "Error",
 			description: "An error occurred while processing the Transactions",
 		});
-		router.push(`${creatorURL ? creatorURL : "/"}`);
+		router.push(`${creatorURL ? creatorURL : "/home"}`);
 	} finally {
 		// Update wallet balance after transaction
 		router.push(`/feedback/${callId}`);

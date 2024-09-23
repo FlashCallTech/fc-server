@@ -20,7 +20,7 @@ import { Cursor, Typewriter } from "react-simple-typewriter";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { trackEvent } from "@/lib/mixpanel";
 
-const About: React.FC = () => {
+const Recharge: React.FC = () => {
 	const { updateWalletBalance } = useWalletBalanceContext();
 	const { currentUser, clientUser } = useCurrentUsersContext();
 	const { toast } = useToast();
@@ -56,15 +56,14 @@ const About: React.FC = () => {
 	}, []);
 
 	useEffect(() => {
-		trackEvent('Recharge_Page_Cart_review_Impression', {
+		trackEvent("Recharge_Page_Cart_review_Impression", {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 			Creator_ID: creator?._id,
 			Recharge_value: amount,
 			Walletbalace_Available: clientUser?.walletBalance,
-		})
-	}, [])
-
+		});
+	}, []);
 
 	// const PaymentHandler = async () => {
 	// 	const totalPayableInPaise: number = totalPayable! * 100;
@@ -98,22 +97,20 @@ const About: React.FC = () => {
 	// 		console.log(error);
 	// 	}
 
-
 	// }
-
 
 	const PaymentHandler = async (
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>
 	): Promise<void> => {
 		e.preventDefault();
 
-		trackEvent('Recharge_Page_Proceed_Clicked', {
+		trackEvent("Recharge_Page_Proceed_Clicked", {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 			Creator_ID: creator?._id,
 			Recharge_value: amount,
 			Walletbalace_Available: clientUser?.walletBalance,
-		})
+		});
 
 		logEvent(analytics, "wallet_recharge", {
 			userId: currentUser?._id,
@@ -133,7 +130,7 @@ const About: React.FC = () => {
 		try {
 			const response: Response = await fetch("/api/v1/order", {
 				method: "POST",
-				body: JSON.stringify({ amount: rechargeAmount , currency }),
+				body: JSON.stringify({ amount: rechargeAmount, currency }),
 				headers: { "Content-Type": "application/json" },
 			});
 
@@ -198,13 +195,13 @@ const About: React.FC = () => {
 							amount: amount,
 						});
 
-						trackEvent('Recharge_Successfull', {
+						trackEvent("Recharge_Successfull", {
 							Client_ID: clientUser?._id,
-							User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 							Creator_ID: creator?._id,
 							Recharge_value: amount,
 							Walletbalace_Available: clientUser?.walletBalance,
-						})
+						});
 
 						router.push("/success");
 					} catch (error) {
@@ -240,13 +237,13 @@ const About: React.FC = () => {
 		} catch (error) {
 			Sentry.captureException(error);
 
-			trackEvent('Recharge_Failed', {
+			trackEvent("Recharge_Failed", {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 				Creator_ID: creator?._id,
 				Recharge_value: amount,
 				Walletbalace_Available: clientUser?.walletBalance,
-			})
+			});
 			console.error("Payment request failed:", error);
 			setLoading(false); // Set loading state to false on error
 			router.push("/payment");
@@ -280,7 +277,6 @@ const About: React.FC = () => {
 				<div className="overflow-y-scroll p-4 pt-0 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center justify-center w-full">
 					<Script src="https://checkout.razorpay.com/v1/checkout.js" />
 					{/* <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" /> */}
-
 
 					{/* Payment Information */}
 					<section className="w-full mb-8 sticky">
@@ -393,4 +389,4 @@ const About: React.FC = () => {
 	);
 };
 
-export default About;
+export default Recharge;

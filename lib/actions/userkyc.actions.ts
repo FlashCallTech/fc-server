@@ -1,10 +1,13 @@
 import { connectToDatabase } from "@/lib/database";
 import { handleError } from "@/lib/utils";
 import UserKyc from "../database/models/userkyc.model";
-import { RegisterUserKycParams, UpdateUserKycParams } from "@/types";
+import { UpdateUserKycParams } from "@/types";
 import * as Sentry from "@sentry/nextjs";
 
-export async function createUserKyc(kyc: any, type: 'pan' | 'aadhaar' | 'liveliness' | 'name_match' | 'face_match') {
+export async function createUserKyc(
+	kyc: any,
+	type: "pan" | "aadhaar" | "liveliness" | "name_match" | "face_match"
+) {
 	try {
 		// Ensure the MongoDB connection is established
 		await connectToDatabase();
@@ -14,35 +17,32 @@ export async function createUserKyc(kyc: any, type: 'pan' | 'aadhaar' | 'livelin
 
 		// If user exists, update the specific field (PAN or Aadhaar)
 		if (existingUserKyc) {
-			if (type === 'pan' && kyc.pan) {
-				existingUserKyc.set('pan', kyc.pan);
+			if (type === "pan" && kyc.pan) {
+				existingUserKyc.set("pan", kyc.pan);
 			}
 			// If updating Aadhaar
-			else if (type === 'aadhaar' && kyc.aadhaar) {
-				existingUserKyc.set('aadhaar', kyc.aadhaar);
-			}
-			else if(type === 'liveliness' && kyc.liveliness){
-				existingUserKyc.set('liveliness', kyc.liveliness);
-			}
-			else if(type === 'name_match' && kyc.name_match){
-				existingUserKyc.set('name_match', kyc.name_match);
-			}
-			else if(type === 'face_match' && kyc.face_match){
-				existingUserKyc.set('face_match', kyc.face_match);
+			else if (type === "aadhaar" && kyc.aadhaar) {
+				existingUserKyc.set("aadhaar", kyc.aadhaar);
+			} else if (type === "liveliness" && kyc.liveliness) {
+				existingUserKyc.set("liveliness", kyc.liveliness);
+			} else if (type === "name_match" && kyc.name_match) {
+				existingUserKyc.set("name_match", kyc.name_match);
+			} else if (type === "face_match" && kyc.face_match) {
+				existingUserKyc.set("face_match", kyc.face_match);
 			}
 			// Save the updated document
 			const updatedUserKyc = await existingUserKyc.save();
 			return updatedUserKyc.toJSON();
 		} else {
-			console.log('hehe');
+			console.log("hehe");
 			// If the user does not exist, create a new document with the appropriate data
 			const newUserKyc = new UserKyc({
 				userId: kyc.userId,
-				pan: type === 'pan' ? kyc.pan : undefined,
-				aadhaar: type === 'aadhaar' ? kyc.aadhaar : undefined,
-				liveliness: type === 'liveliness' ? kyc.liveliness : undefined,
-				name_match: type === 'name_match' ? kyc.name_match : undefined,
-				face_match: type === 'face_match' ? kyc.face_match : undefined,
+				pan: type === "pan" ? kyc.pan : undefined,
+				aadhaar: type === "aadhaar" ? kyc.aadhaar : undefined,
+				liveliness: type === "liveliness" ? kyc.liveliness : undefined,
+				name_match: type === "name_match" ? kyc.name_match : undefined,
+				face_match: type === "face_match" ? kyc.face_match : undefined,
 			});
 			await newUserKyc.save();
 			console.log(newUserKyc.toJSON());
@@ -51,7 +51,8 @@ export async function createUserKyc(kyc: any, type: 'pan' | 'aadhaar' | 'livelin
 	} catch (error) {
 		// Log the error using Sentry or other error handling mechanism
 		Sentry.captureException(error);
-		handleError(error);
+		// handleError(error);
+		// handleError(error);
 	}
 }
 

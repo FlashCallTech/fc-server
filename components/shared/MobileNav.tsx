@@ -23,8 +23,13 @@ import { creatorUser } from "@/types";
 
 const MobileNav = () => {
 	const pathname = usePathname();
-	const { currentUser, userType, handleSignout, setAuthenticationSheetOpen, clientUser } =
-		useCurrentUsersContext();
+	const {
+		currentUser,
+		userType,
+		handleSignout,
+		setAuthenticationSheetOpen,
+		clientUser,
+	} = useCurrentUsersContext();
 	const [creator, setCreator] = useState<creatorUser>();
 
 	// const router = useRouter();
@@ -40,24 +45,24 @@ const MobileNav = () => {
 	}, []);
 
 	useEffect(() => {
-		trackEvent('Menu_Clicked', {
+		trackEvent("Menu_Clicked", {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 			Creator_ID: creator?._id,
 			Walletbalace_Available: clientUser?.walletBalance,
-		})
-	}, [])
+		});
+	}, []);
 
 	const sidebarItems =
 		userType === "creator" ? sidebarLinksCreator : sidebarLinks;
 
 	const handleAuthentication = () => {
-		trackEvent('Menu_Signout clicked', {
+		trackEvent("Menu_Signout clicked", {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 			Creator_ID: creator?._id,
 			Walletbalace_Available: clientUser?.walletBalance,
-		})
+		});
 		setAuthenticationSheetOpen(false);
 		if (currentUser) {
 			const statusDocRef = doc(db, "userStatus", currentUser.phone);
@@ -74,37 +79,37 @@ const MobileNav = () => {
 	};
 
 	const handleClick = (label: string) => {
-		if(label === 'Order History') {
-			trackEvent('Menu_OrderHistory_Clicked', {
+		if (label === "Order History") {
+			trackEvent("Menu_OrderHistory_Clicked", {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 				Creator_ID: creator?._id,
 				Walletbalace_Available: clientUser?.walletBalance,
-			})
+			});
 		}
-		if(label === 'Favorites') {
-			trackEvent('Menu_Favourites_Clicked', {
+		if (label === "Favorites") {
+			trackEvent("Menu_Favourites_Clicked", {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 				Creator_ID: creator?._id,
 				Walletbalace_Available: clientUser?.walletBalance,
-			})
+			});
 		}
-		if(label === 'Support') {
-			trackEvent('Menu_Support_Clicked', {
+		if (label === "Support") {
+			trackEvent("Menu_Support_Clicked", {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 				Creator_ID: creator?._id,
 				Walletbalace_Available: clientUser?.walletBalance,
-			})
+			});
 		}
-	}
+	};
 
 	const handleSheetOpenChange = (open: boolean) => {
 		if (open) {
-			trackEvent('Menu_Clicked', {
+			trackEvent("Menu_Clicked", {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 				Creator_ID: creator?._id,
 				Walletbalace_Available: clientUser?.walletBalance,
 			});
@@ -125,13 +130,13 @@ const MobileNav = () => {
 				</SheetTrigger>
 				<SheetContent
 					side="right"
-					className="border-none bg-dark-1 rounded-l-xl h-full"
+					className="border-none bg-dark-1 rounded-l-xl size-full max-w-sm "
 				>
-					<div className="flex h-[calc(100vh-72px)]  flex-col justify-between overflow-y-auto">
+					<div className="flex h-[calc(100vh-72px)] w-full  flex-col justify-between overflow-y-auto no-scrollbar">
 						<SheetClose asChild>
 							<Link
 								href={`/profile/${currentUser?._id}`}
-								className={`w-fit flex gap-4 items-center rounded-lg hoverScaleDownEffect lg:px-2 justify-start`}
+								className={`w-full flex gap-4 items-center rounded-lg hoverScaleDownEffect lg:px-2 justify-start`}
 							>
 								<Image
 									src={currentUser?.photo || "/images/defaultProfile.png"}
@@ -140,9 +145,11 @@ const MobileNav = () => {
 									height={1000}
 									className="rounded-full w-12 h-12 max-w-[56px] object-cover"
 								/>
-								<div className="flex flex-col items-start justify-center text-white">
-									<span className="text-lg capitalize">
-										{currentUser?.username || "Hello User"}
+								<div className="flex flex-col w-full items-start justify-center text-white">
+									<span className="text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap">
+										{currentUser?.username ||
+											currentUser?.firstName ||
+											"Hello User"}
 									</span>
 									<span className="text-sm text-green-1">
 										{currentUser?.phone?.replace(
@@ -155,39 +162,40 @@ const MobileNav = () => {
 						</SheetClose>
 						<div className="w-full border border-gray-500 my-7" />
 						<SheetClose asChild>
-							<section className="flex h-full items-start flex-col gap-6 text-white">
-								{sidebarItems.map((item) => {
-									const isActive = pathname === item.route;
+							<section className="flex size-full items-start flex-col">
+								<section className="flex flex-1 flex-col gap-4 w-full max-h-[92%] overflow-y-scroll no-scrollbar text-white">
+									{sidebarItems.map((item) => {
+										const isActive = pathname === item.route;
 
-									return (
-										<SheetClose asChild key={item.route}>
-											<Link
-												href={item.route}
-												key={item.label}
-												className={cn(
-													"flex gap-4 items-center p-4 rounded-lg w-full max-w-60 hover:bg-green-1",
-													{
-														"bg-green-1": isActive,
-													}
-												)}
-												onClick={() => handleClick(item.label)}
-											>
-												<Image
-													src={item.imgURL}
-													alt={item.label}
-													width={20}
-													height={20}
-													className="invert-0 brightness-200 w-6 h-6 object-cover "
-												/>
-												<p className="font-semibold">{item.label}</p>
-											</Link>
-										</SheetClose>
-									);
-								})}
-
+										return (
+											<SheetClose asChild key={item.route}>
+												<Link
+													href={item.route}
+													key={item.label}
+													className={cn(
+														"flex gap-4 items-center p-4 rounded-lg w-full md:max-w-60 hover:bg-green-1",
+														{
+															"bg-green-1": isActive,
+														}
+													)}
+													onClick={() => handleClick(item.label)}
+												>
+													<Image
+														src={item.imgURL}
+														alt={item.label}
+														width={20}
+														height={20}
+														className="invert-0 brightness-200 w-6 h-6 object-cover "
+													/>
+													<p className="font-semibold">{item.label}</p>
+												</Link>
+											</SheetClose>
+										);
+									})}
+								</section>
 								<Button
 									className={cn(
-										"absolute bottom-4 md:bottom-6 flex gap-4 items-center p-6 rounded-lg w-[85%] bg-green-1 outline-none focus:ring-0 hoverScaleDownEffect"
+										"absolute bottom-4 md:bottom-6 flex gap-4 items-center p-6 rounded-lg w-[85%] text-white bg-green-1 outline-none focus:ring-0 hoverScaleDownEffect"
 									)}
 									onClick={handleAuthentication}
 								>

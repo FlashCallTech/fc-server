@@ -13,6 +13,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useInView } from "react-intersection-observer";
 import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import { getCreatorById } from "@/lib/actions/creator.actions";
 
 const CallListMobile = () => {
 	const [calls, setCalls] = useState<RegisterCallParams[]>([]);
@@ -41,8 +42,18 @@ const CallListMobile = () => {
 				if (data.length === 0) {
 					setHasMore(false);
 				} else {
-					setCalls((prevCalls) => [...prevCalls, ...data]);
-					setPage((prevPage) => prevPage + 1); // Increment page number
+					// Fetch creator details for each call
+					const callsWithCreatorDetails = await Promise.all(
+						data.map(async (call: RegisterCallParams) => {
+							const creatorDetails = await getCreatorById(
+								call.members[0].user_id
+							);
+							return { ...call, creatorDetails };
+						})
+					);
+
+					setCalls((prevCalls) => [...prevCalls, ...callsWithCreatorDetails]);
+					setPage((prevPage) => prevPage + 1);
 				}
 			} catch (error) {
 				Sentry.captureException(error);
@@ -73,6 +84,7 @@ const CallListMobile = () => {
 				>
 					{calls.map((call, index) => {
 						const formattedDate = formatDateTime(call.startedAt as Date);
+						const creator = call.creatorDetails;
 						return (
 							<div
 								key={index}
@@ -83,14 +95,14 @@ const CallListMobile = () => {
 								<div className="flex flex-col items-start justify-start w-full gap-2">
 									{/* Expert's Details */}
 									<Link
-										href={`/${call.members[0].custom.name}`}
+										href={`/${creator?.username}`}
 										className="w-1/2 flex items-center justify-start gap-4 hoverScaleDownEffect"
 									>
 										{/* creator image */}
 										<Image
 											src={
-												isValidUrl(call.members[0].custom.image)
-													? call.members[0].custom.image
+												isValidUrl(creator?.photo as string)
+													? (creator?.photo as string)
 													: "/images/defaultProfileImage.png"
 											}
 											alt="Expert"
@@ -101,9 +113,11 @@ const CallListMobile = () => {
 										{/* creator details */}
 										<div className="flex flex-col">
 											<p className="text-base tracking-wide">
-												{call.members[0].custom.name}
+												{creator?.username}
 											</p>
-											<span className="text-sm text-green-1">Astrologer</span>
+											<span className="text-sm text-green-1">
+												{creator?.profession || "Expert"}
+											</span>
 										</div>
 									</Link>
 									{/* call details */}
@@ -146,7 +160,7 @@ const CallListMobile = () => {
 										<FeedbackCheck callId={call?.callId} />
 									) : (
 										<Link
-											href={`/${call.members[0].custom.name}`}
+											href={`/${creator?.username}`}
 											className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
 										>
 											Visit Again
@@ -180,7 +194,7 @@ const CallListMobile = () => {
 					<ContentLoading />
 					<h1 className="text-2xl font-semibold text-black">No Orders Yet</h1>
 					<Link
-						href="/"
+						href="/home"
 						className={`flex gap-4 items-center p-4 rounded-lg justify-center bg-green-1 hover:opacity-80 mx-auto w-fit`}
 					>
 						<Image

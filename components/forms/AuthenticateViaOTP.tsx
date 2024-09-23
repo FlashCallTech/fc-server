@@ -116,18 +116,6 @@ const AuthenticateViaOTP = ({
 					token,
 				});
 			}
-
-			const userStatusDocRef = doc(db, "userStatus", updatedPhoneNumber);
-			const userStatusDoc = await getDoc(userStatusDocRef);
-			if (userStatusDoc.exists()) {
-				await updateDoc(userStatusDocRef, {
-					status: "Online",
-				});
-			} else {
-				await setDoc(userStatusDocRef, {
-					status: "Online",
-				});
-			}
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error updating Firestore Data: ", error);
@@ -145,7 +133,14 @@ const AuthenticateViaOTP = ({
 			});
 
 			// Extract the session token and user from the response
-			const { sessionToken } = response.data;
+			const { sessionToken, message } = response.data;
+
+			// Check if the sessionToken is missing, indicating an OTP verification failure
+			if (!sessionToken) {
+				throw new Error(
+					message || "OTP verification failed. No session token provided."
+				);
+			}
 
 			trackEvent("Login_Bottomsheet_OTP_Submitted", {
 				Platform: getDevicePlatform(),
@@ -211,6 +206,7 @@ const AuthenticateViaOTP = ({
 						walletBalance: 0,
 						referredBy: refId ? refId : null,
 						referralAmount: refId ? 5000 : null,
+						creatorId: `@${formattedPhone as string}`,
 					};
 				} else {
 					newUser = {
@@ -253,11 +249,14 @@ const AuthenticateViaOTP = ({
 			refreshCurrentUser();
 			setAuthenticationSheetOpen(false);
 			const creatorURL = localStorage.getItem("creatorURL");
-			router.replace(`${creatorURL ? creatorURL : "/"}`);
+
+			router.replace(
+				`${creatorURL && userType !== "creator" ? creatorURL : "/home"}`
+			);
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);
 			let newErrors = { ...error };
-			newErrors.otpVerificationError = error.response.data.error;
+			newErrors.otpVerificationError = error.message;
 			setError(newErrors);
 			otpForm.reset(); // Reset OTP form
 			setIsVerifyingOTP(false);
@@ -312,7 +311,7 @@ const AuthenticateViaOTP = ({
 	return (
 		<section
 			ref={sectionRef}
-			className="relative bg-[#F8F8F8] rounded-t-3xl md:rounded-xl flex flex-col items-center justify-center gap-4 px-8 pt-8 pb-2 shadow-lg w-screen md:w-full md:min-w-[24rem] md:max-w-sm mx-auto animate-enterFromBottom z-50"
+			className="relative bg-[#F8F8F8] rounded-t-3xl md:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-8 pb-2 shadow-lg w-screen h-fit md:w-full md:min-w-[24rem] md:max-w-sm mx-auto animate-enterFromBottom z-50 overflow-y-scroll no-scrollbar"
 		>
 			{onOpenChange && (
 				<Button
@@ -338,17 +337,17 @@ const AuthenticateViaOTP = ({
 			{!showOTP ? (
 				// SignUp form
 				<>
-					<div className="flex flex-col items-center justify-enter gap-2">
+					<div className="flex flex-col items-center justify-enter gap-2 text-center">
 						<Image
-							src="/icons/logoMobile.png"
+							src="/icons/logoMain.png"
 							width={1000}
 							height={1000}
 							alt="flashcall logo"
-							className="w-14 h-full mb-4 rounded-xl hoverScaleEffect"
+							className="w-3/4 h-10 p-2 mb-2 bg-green-1"
 						/>
 						<h2 className="text-lg font-semibold">Login or Signup</h2>
-						<p className="text-sm text-gray-500 mb-4">
-							To book your first consultation
+						<p className="text-sm text-[#707070] mb-4">
+							Get start with your first consultation <br /> and start earning
 						</p>
 					</div>
 					<Form {...signUpForm}>
