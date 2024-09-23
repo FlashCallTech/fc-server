@@ -15,8 +15,6 @@ const CustomAudioPlayer: React.FC<CustomAudioPlayer> = ({ audioSrc }) => {
 
   useEffect(() => {
     const audio = audioRef.current;
-    console.log(audio?.duration);
-
 
     const formatTime = (time: number): string => {
       const minutes = Math.floor(time / 60)
@@ -57,7 +55,7 @@ const CustomAudioPlayer: React.FC<CustomAudioPlayer> = ({ audioSrc }) => {
     };
   }, [isPlaying]);
 
-  const togglePlayPause = async() => {
+  const togglePlayPause = async () => {
     const audio = audioRef.current;
     if (audio) {
       if (isPlaying) {
@@ -70,11 +68,11 @@ const CustomAudioPlayer: React.FC<CustomAudioPlayer> = ({ audioSrc }) => {
   };
 
   return (
-    <div className="flex items-center space-x-4 p-3 bg-green-600 rounded-lg">
+    <div className="flex items-center space-x-4 p-3 bg-green-600 rounded-md">
       {/* Play/Pause Button */}
       <button
         onClick={togglePlayPause}
-        className="w-10 h-10 flex justify-center items-center bg-white text-green-600 rounded-full focus:outline-none"
+        className="w-10 h-8 flex justify-center items-center bg-white text-green-600 rounded-full focus:outline-none"
       >
         {isPlaying ? <FaPause className="w-4 h-4" /> : <FaPlay className="w-4 h-4" />}
       </button>
@@ -84,6 +82,7 @@ const CustomAudioPlayer: React.FC<CustomAudioPlayer> = ({ audioSrc }) => {
         <input
           type="range"
           value={progress}
+          disabled={duration === '00:00'}
           onChange={(e) => {
             const newProgress = Number(e.target.value);
             if (audioRef.current) {
@@ -93,9 +92,12 @@ const CustomAudioPlayer: React.FC<CustomAudioPlayer> = ({ audioSrc }) => {
           }}
           className="w-full h-1 rounded-lg appearance-none bg-gray-300"
         />
-        <div className="flex justify-between text-xs text-white mt-1">
-          <span>{currentTime}</span>
-          <span>{duration}</span>
+        <div className="flex text-xs text-white mt-1">
+          {isPlaying ? (
+            <span>{currentTime}</span>
+          ) : (
+            <span>{duration}</span>
+          )}
         </div>
       </div>
 

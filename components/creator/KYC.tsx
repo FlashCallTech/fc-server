@@ -38,7 +38,6 @@ const KYC: React.FC = () => {
 
     const getKyc = async () => {
       if (creatorUser?.kyc_status) {
-        console.log('Kyc Status: ', creatorUser?.kyc_status);
         setKycDone(creatorUser.kyc_status);
         setPanVerified(true);
         setAadhaarVerified(true);
@@ -639,7 +638,7 @@ const KYC: React.FC = () => {
           ) : (
             kycDone === 'FAILED' &&
             <div className='w-full  text-red-500 text-center p-2'>
-              <b>KYC Verification Failed! </b> <br></br> Please Contact Support.
+              Our team will verify the details you have submitted.<br></br> This usually takes 24 hours.
             </div>
           )}
         </div>

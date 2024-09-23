@@ -1,17 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 
 interface AudioVisualizerProps {
-    audioContext: AudioContext;  // Pass AudioContext as a prop
+    // audioContext: AudioContext;  // Pass AudioContext as a prop
     audioStream: MediaStream;
 }
 
-const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ audioContext, audioStream }) => {
+const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ audioStream }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const analyserRef = useRef<AnalyserNode | null>(null);
     const dataArrayRef = useRef<Float32Array | null>(null);
     const animationFrameRef = useRef<number | null>(null);
 
     useEffect(() => {
+        const audioContext = new AudioContext
         const analyser = audioContext.createAnalyser();
         const source = audioContext.createMediaStreamSource(audioStream);
 
@@ -70,7 +71,7 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ audioContext, audioSt
             cancelAnimationFrame(animationFrameRef.current!);
             // Don't close the audioContext here to prevent it from being closed multiple times
         };
-    }, [audioContext, audioStream]);
+    }, [ audioStream]);
 
     return <canvas ref={canvasRef} width="300" height="50" className='rounded-full w-full h-8'/>;
 };
