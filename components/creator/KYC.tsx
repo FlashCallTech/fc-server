@@ -154,7 +154,7 @@ const KYC: React.FC = () => {
 						}),
 					});
 					if (response.ok) {
-						alert('Name not matched');
+						alert("Name not matched");
 						setKycDone("FAILED");
 						setVerifying(false);
 						return;
@@ -230,7 +230,7 @@ const KYC: React.FC = () => {
 				}),
 			});
 			if (response.ok) {
-				setKycDone('COMPLETED');
+				setKycDone("COMPLETED");
 				const result = await response.json();
 				setKycDone(result.kyc_status);
 				setVerifying(false);
@@ -294,16 +294,13 @@ const KYC: React.FC = () => {
 
 			try {
 				setGeneratingOtp(true);
-				const otpResponse = await fetch(
-					"/api/v1/userkyc/generateAadhaarOtp",
-					{
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({ aadhaarNumber }),
-					}
-				);
+				const otpResponse = await fetch("/api/v1/userkyc/generateAadhaarOtp", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ aadhaarNumber }),
+				});
 
 				const otpResult = await otpResponse.json();
 				setOtpRefId(otpResult.data.ref_id);
@@ -655,8 +652,8 @@ const KYC: React.FC = () => {
 											? "Verifying..."
 											: "Verify"
 										: verifyingAadhaar
-											? "Generating OTP..."
-											: "Get OTP"}
+										? "Generating OTP..."
+										: "Get OTP"}
 								</button>
 							</div>
 						)}
@@ -740,8 +737,8 @@ const KYC: React.FC = () => {
 					) : (
 						kycDone === "FAILED" && (
 							<div className="w-full  text-red-500 text-center p-2">
-								<b>Our team will verify the details you have submitted.</b><br></br>{" "}
-								This usually takes 24 hours.
+								<b>Our team will verify the details you have submitted.</b>
+								<br></br> This usually takes 24 hours.
 							</div>
 						)
 					)}
