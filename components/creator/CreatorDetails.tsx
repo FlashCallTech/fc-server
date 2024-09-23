@@ -23,9 +23,8 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 	const [isImageLoaded, setIsImageLoaded] = useState(false);
 	const [addingFavorite, setAddingFavorite] = useState(false);
 	const [markedFavorite, setMarkedFavorite] = useState(false);
-	const [isAlreadyNotified, setIsAlreadyNotified] = useState(false);
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
-	const [status, setStatus] = useState<string>("Online"); // Default status to "Offline"
+	const [status, setStatus] = useState<string>(""); // Default status to "Offline"
 
 	const themeColor = isValidHexColor(creator.themeSelected)
 		? creator.themeSelected
@@ -54,59 +53,28 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 	}, [creator?._id, isCreatorOrExpertPath]);
 
 	useEffect(() => {
-		// Retrieve the notify list from localStorage
-		const notifyList = JSON.parse(localStorage.getItem("notifyList") || "{}");
-
-		// Check if the creator.username or creator.phone is already in the notify list
-		if (
-			notifyList[creator.username] === creator.phone ||
-			Object.values(notifyList).includes(creator.phone)
-		) {
-			setIsAlreadyNotified(true);
-		}
-	}, [creator.username, creator.phone]);
-
-	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
 	}, [isAuthSheetOpen]);
 
 	useEffect(() => {
-		const docRef = doc(db, "userStatus", creator.phone);
-		const unsubscribe = onSnapshot(
-			docRef,
-			(docSnap) => {
-				if (docSnap.exists()) {
-					const data = docSnap.data();
-					const newStatus = data.status || "Offline";
-					setStatus(newStatus);
+		const creatorRef = doc(db, "services", creator._id);
+		const unsubscribe = onSnapshot(creatorRef, (doc) => {
+			const data = doc.data();
 
-					// Check if the creator's status is now "Online" and reset notification
-					if (newStatus === "Online") {
-						const notifyList = JSON.parse(
-							localStorage.getItem("notifyList") || "{}"
-						);
+			if (data) {
+				let services = data.services;
 
-						// If the creator is in the notify list, remove them
-						if (
-							notifyList[creator.username] === creator.phone ||
-							Object.values(notifyList).includes(creator.phone)
-						) {
-							setIsAlreadyNotified(false); // Reset the notification state
-						}
-					}
-				} else {
-					setStatus("Offline");
-				}
-			},
-			(error) => {
-				console.error("Error fetching status:", error);
-				setStatus("Offline");
+				// Check if any of the services is enabled
+				const isOnline =
+					services?.videoCall || services?.audioCall || services?.chat;
+
+				setStatus(isOnline ? "Online" : "Offline");
 			}
-		);
+		});
 
-		// Clean up the listener on component unmount
+		// isAuthSheetOpen && setIsAuthSheetOpen(false);
 		return () => unsubscribe();
-	}, [creator.phone, creator.username]);
+	}, [creator._id]);
 
 	useEffect(() => {
 		const img = new Image();
@@ -218,13 +186,7 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 
 					<div className="text-white flex flex-col items-start w-full">
 						<p className="font-semibold text-3xl max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
-							{creator.firstName ? (
-								<span className="capitalize">
-									{creator.firstName} {creator.lastName}
-								</span>
-							) : (
-								creator.username
-							)}
+							{fullName}
 						</p>
 						<div className="flex items-center justify-between w-full mt-2">
 							<span className="text-md h-full">
@@ -237,7 +199,9 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 										? "bg-green-500"
 										: status === "Offline"
 										? "bg-red-500"
-										: "bg-orange-400"
+										: status === "Busy"
+										? "bg-orange-400"
+										: ""
 								} text-[10px] rounded-[4px] border border-white py-1 px-2 font-semibold`}
 							>
 								<span className="flex">
@@ -245,7 +209,9 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 										? "Online"
 										: status === "Offline"
 										? "Offline"
-										: "Busy"}
+										: status === "Busy"
+										? "Busy"
+										: "Unknown"}
 								</span>
 							</div>
 						</div>

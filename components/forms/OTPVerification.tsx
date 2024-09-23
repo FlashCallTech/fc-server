@@ -45,9 +45,12 @@ const OTPVerification = ({
 		if (resendTime === 0) {
 			try {
 				setResending(true);
-				const response = await axios.post("/api/v1/resend-otp", {
-					phone: phoneNumber,
-				});
+				const response = await axios.post(
+					`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/otp/resend-otp`,
+					{
+						phone: phoneNumber,
+					}
+				);
 				setResendTime(30); // Reset timer after resending
 				changeError({});
 				setToken(response.data.token);

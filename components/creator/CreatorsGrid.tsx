@@ -27,26 +27,24 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 	}, [imageSrc]);
 
 	useEffect(() => {
-		const docRef = doc(db, "userStatus", creator.phone);
-		const unsubscribe = onSnapshot(
-			docRef,
-			(docSnap) => {
-				if (docSnap.exists()) {
-					const data = docSnap.data();
-					setStatus(data.status || "Offline");
-				} else {
-					setStatus("Offline"); // If document doesn't exist, mark the creator as offline
-				}
-			},
-			(error) => {
-				console.error("Error fetching status:", error);
-				setStatus("Offline");
-			}
-		);
+		const creatorRef = doc(db, "services", creator._id);
+		const unsubscribe = onSnapshot(creatorRef, (doc) => {
+			const data = doc.data();
 
-		// Clean up the listener on component unmount
+			if (data) {
+				let services = data.services;
+
+				// Check if any of the services is enabled
+				const isOnline =
+					services?.videoCall || services?.audioCall || services?.chat;
+
+				setStatus(isOnline ? "Online" : "Offline");
+			}
+		});
+
+		// isAuthSheetOpen && setIsAuthSheetOpen(false);
 		return () => unsubscribe();
-	}, [creator.phone]);
+	}, [creator._id]);
 
 	const backgroundImageStyle = {
 		backgroundImage: `url(${imageSrc})`,
@@ -89,7 +87,9 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 										? "bg-green-500"
 										: status === "Offline"
 										? "bg-red-500"
-										: "bg-orange-400"
+										: status === "Busy"
+										? "bg-orange-400"
+										: ""
 								} text-xs rounded-full sm:rounded-xl px-1.5 py-1.5 sm:px-4 sm:py-2`}
 							>
 								<span className="hidden sm:flex">
@@ -97,7 +97,9 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 										? "Online"
 										: status === "Offline"
 										? "Offline"
-										: "Busy"}{" "}
+										: status === "Busy"
+										? "Busy"
+										: "Unknown"}
 								</span>
 							</div>
 						</div>

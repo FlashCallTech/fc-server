@@ -4,11 +4,7 @@ import { audio, chat, video } from "@/constants/icons";
 import { creatorUser } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
-import {
-	Call,
-	CallingState,
-	useStreamVideoClient,
-} from "@stream-io/video-react-sdk";
+import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { logEvent } from "firebase/analytics";
 import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { analytics, db } from "@/lib/firebase";
@@ -34,7 +30,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [isSheetOpen, setSheetOpen] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
-	const { handleChat, chatRequestsRef, SheetOpen } = useChatRequest();
+	const { handleChat, chatRequestsRef } = useChatRequest();
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
@@ -122,9 +118,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 								creatorId: data.creatorId,
 							});
 							setChatReqSent(false);
-							router.push(
-								`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`
-							);
+							setTimeout(() => {
+								router.push(
+									`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`
+								);
+							}, 2000);
 						} else {
 							setChatState(data.status);
 						}
