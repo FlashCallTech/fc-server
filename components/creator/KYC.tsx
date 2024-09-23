@@ -118,7 +118,7 @@ const KYC: React.FC = () => {
 			kycResponse = await response.json();
 
 			if (!nameMatch) {
-				const nameMatchResponse = await fetch("/api/v1/userKyc/name-match", {
+				const nameMatchResponse = await fetch("/api/v1/userkyc/nameMatch", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -159,7 +159,7 @@ const KYC: React.FC = () => {
 			}
 
 			if (!faceMatch) {
-				const face_match_response = await fetch("/api/v1/userKyc/face-match", {
+				const face_match_response = await fetch("/api/v1/userKyc/faceMatch", {
 					method: "POST",
 					headers: {
 						Content_Type: "application/json",
@@ -253,7 +253,7 @@ const KYC: React.FC = () => {
 			}
 
 			try {
-				const panResponse = await fetch("/api/v1/userKyc/verify-pan", {
+				const panResponse = await fetch("/api/v1/userkyc/verifyPan", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -289,16 +289,13 @@ const KYC: React.FC = () => {
 
 			try {
 				setGeneratingOtp(true);
-				const otpResponse = await fetch(
-					"/api/v1/userKyc/generate-aadhaar-otp",
-					{
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({ aadhaarNumber }),
-					}
-				);
+				const otpResponse = await fetch("/api/v1/userkyc/generateAadhaarOtp", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ aadhaarNumber }),
+				});
 
 				const otpResult = await otpResponse.json();
 				setOtpRefId(otpResult.data.ref_id);
@@ -324,7 +321,7 @@ const KYC: React.FC = () => {
 			try {
 				setOtpSubmitted(true);
 				const otpVerificationResponse = await fetch(
-					"/api/v1/userKyc/verify-aadhaar-otp",
+					"/api/v1/userkyc/verifyAadhaarOtp",
 					{
 						method: "POST",
 						headers: {
@@ -398,7 +395,7 @@ const KYC: React.FC = () => {
 			formData.append("userId", creatorUser?._id as string);
 			formData.append("img_url", img_url);
 
-			const response = await fetch("/api/v1/userKyc/liveliness", {
+			const response = await fetch("/api/v1/userkyc/liveliness", {
 				method: "POST",
 				body: formData,
 			});
