@@ -46,28 +46,7 @@ const useChat = () => {
 	const [flag, setFlag] = useState(true);
 	const [ended, setEnded] = useState<boolean>(false);
 	const { chatId } = useParams();
-
-	const members: MemberRequest[] = [
-		{
-			user_id: creator?._id!,
-			custom: {
-				name: String(creator?.username),
-				type: "expert",
-				image: String(creator?.photo),
-			},
-			role: "call_member",
-		},
-		{
-			user_id: String(client?._id),
-			custom: {
-				name: String(client?.username),
-				type: "client",
-				image: String(client?.photo),
-			},
-			role: "admin",
-		},
-	];
-
+	
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
@@ -85,7 +64,6 @@ const useChat = () => {
 			getCreator();
 		}
 		const userType = localStorage.getItem('userType');
-		console.log(userType);
 		if(userType === 'client') {
 			const clientId = localStorage.getItem('currentUserID');
 			const getClient = async() => {
@@ -94,15 +72,36 @@ const useChat = () => {
 			}
 			getClient();
 		} else if(userType === 'creator' && rejected === true) {
-			console.log(user2);
 			const clientId = user2?.clientId;
-			// const getClient = async() => {
-			// 	const response = await getUserById(clientId as string);
-			// 	setClient(response);
-			// }
-			// getClient();
+			const getClient = async() => {
+				const response = await getUserById(clientId as string);
+				setClient(response);
+			}
+			getClient();
 		}
 	}, [chatId, rejected]);
+	
+	const members: MemberRequest[] = [
+		{
+			user_id: user2?.creatorId!,
+			// user_id: "66681d96436f89b49d8b498b",
+			custom: {
+				name: String(creator?.username),
+				type: "expert",
+				image: String(creator?.photo),
+			},
+			role: "call_member",
+		},
+		{
+			user_id: String(client?._id),
+			custom: {
+				name: String(client?.username),
+				type: "client",
+				image: String(client?.photo),
+			},
+			role: "admin",
+		},
+	];
 
 	useEffect(() => {
 		const storedUser = localStorage.getItem("user2");
@@ -204,8 +203,11 @@ const useChat = () => {
 	};
 
 	if (
-		ended &&
+		duration &&
+		endedAt &&
+		amount &&
 		flag &&
+		ended &&
 		user2?.clientId === client?._id
 	) {
 		setFlag(false);
