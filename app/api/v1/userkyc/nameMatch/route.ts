@@ -35,20 +35,26 @@ export async function POST(request: NextRequest) {
 			});
 		}
 
-		const kyc = {
-			userId: userId,
-			name_match: {
-				reference_id: result.reference_id,
-				verification_id: result.verification_id,
-				name_1: result.name_1,
-				name_2: result.name_2,
-				status: result.status,
-				score: result.score,
-				reason: result.reason,
-			},
-		};
+		if(result.score > 0.84){	
+			const kyc = {
+				userId: userId,
+				name_match: {
+					reference_id: result.reference_id,
+					verification_id: result.verification_id,
+					name_1: result.name_1,
+					name_2: result.name_2,
+					status: result.status,
+					score: result.score,
+					reason: result.reason,
+				},
+			};
+			
+			await createUserKyc(kyc, "name_match");
+		} else {
+			return NextResponse.json({success: false, data: 'Name not matching in Pan and Aadhaar'});
+		}
 
-		await createUserKyc(kyc, "name_match");
+
 
 		return NextResponse.json({ success: true, data: result });
 	} catch (error) {

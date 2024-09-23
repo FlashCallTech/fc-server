@@ -14,14 +14,13 @@ export async function createUserKyc(
 
 		// Check if the user already exists
 		const existingUserKyc = await UserKyc.findOne({ userId: kyc.userId });
+		console.log("Existing User KYC:", existingUserKyc); // Log the existing user data
 
-		// If user exists, update the specific field (PAN or Aadhaar)
+		// If user exists, update the specific field (PAN, Aadhaar, etc.)
 		if (existingUserKyc) {
 			if (type === "pan" && kyc.pan) {
 				existingUserKyc.set("pan", kyc.pan);
-			}
-			// If updating Aadhaar
-			else if (type === "aadhaar" && kyc.aadhaar) {
+			} else if (type === "aadhaar" && kyc.aadhaar) {
 				existingUserKyc.set("aadhaar", kyc.aadhaar);
 			} else if (type === "liveliness" && kyc.liveliness) {
 				existingUserKyc.set("liveliness", kyc.liveliness);
@@ -29,13 +28,17 @@ export async function createUserKyc(
 				existingUserKyc.set("name_match", kyc.name_match);
 			} else if (type === "face_match" && kyc.face_match) {
 				existingUserKyc.set("face_match", kyc.face_match);
+			} else {
+				console.warn("No matching type or missing data for update");
 			}
+
 			// Save the updated document
 			const updatedUserKyc = await existingUserKyc.save();
+			console.log("Updated User KYC:", updatedUserKyc); // Log the updated user data
 			return updatedUserKyc.toJSON();
 		} else {
-			console.log("hehe");
-			// If the user does not exist, create a new document with the appropriate data
+			// If the user does not exist, create a new document
+			console.log("Creating new User KYC entry"); // Log when creating a new entry
 			const newUserKyc = new UserKyc({
 				userId: kyc.userId,
 				pan: type === "pan" ? kyc.pan : undefined,
@@ -45,16 +48,21 @@ export async function createUserKyc(
 				face_match: type === "face_match" ? kyc.face_match : undefined,
 			});
 			await newUserKyc.save();
-			console.log(newUserKyc.toJSON());
+			console.log("New User KYC created:", newUserKyc); // Log the created document
 			return newUserKyc.toJSON();
 		}
-	} catch (error) {
-		// Log the error using Sentry or other error handling mechanism
+	} catch (error: any) {
+		// Log detailed error
+		console.error("Error in createUserKyc function:", error);
+
+		// Capture the error using Sentry or other error handling mechanism
 		Sentry.captureException(error);
+		// Optional: Use a custom error handler if needed
 		// handleError(error);
-		// handleError(error);
+		throw new Error(`Failed to create or update KYC: ${error.message}`);
 	}
 }
+
 
 export async function getUserKycs() {
 	try {
