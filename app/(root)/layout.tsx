@@ -6,6 +6,7 @@ import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
 import { initMixpanel } from "@/lib/mixpanel";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
 import StreamVideoProvider from "@/providers/streamClientProvider";
+import axios from "axios";
 import { throttle } from "lodash";
 import Image from "next/image";
 import React, { ReactNode, useEffect, useState } from "react";
@@ -35,6 +36,10 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 
 	useEffect(() => {
 		initMixpanel(); // Initialize Mixpanel when the layout mounts
+	}, []);
+
+	useEffect(() => {
+		axios.defaults.withCredentials = true;
 	}, []);
 
 	const renderContent = () => {

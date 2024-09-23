@@ -38,7 +38,6 @@ const Navbar = () => {
 	const [userTheme, setUserTheme] = useState("#000000");
 	const [creator, setCreator] = useState<creatorUser>();
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
-	const [isCreatorOrExpertPath, setIsCreatorOrExpertPath] = useState(false);
 	const pathname = usePathname();
 	const creatorURL = localStorage.getItem("creatorURL");
 	const currentCreatorUsername = creatorURL
@@ -69,11 +68,9 @@ const Navbar = () => {
 			setIsAuthSheetOpen(true);
 		}
 	};
-	const theme = `5px 5px 0px 0px #000000`;
 	const { walletBalance } = useWalletBalanceContext();
 
 	useEffect(() => {
-		setIsCreatorOrExpertPath(pathname.includes(`/${currentCreatorUsername}`));
 		// Todo theme ko ek jaisa krne ka jugaad krna hai
 		if (currentTheme) {
 			const newTheme = currentTheme === "#50A65C" ? "#000000" : currentTheme;
@@ -138,11 +135,7 @@ const Navbar = () => {
 		<nav
 			className="justify-between items-center fixed z-40 top-0 left-0 w-full px-2 sm:px-4 py-4 bg-white shadow-sm"
 			style={{
-				display: `${
-					isCreatorOrExpertPath && authenticationSheetOpen && !currentUser
-						? "none"
-						: "flex"
-				}`,
+				display: `${authenticationSheetOpen && !currentUser ? "none" : "flex"}`,
 			}}
 		>
 			{currentUser ? (

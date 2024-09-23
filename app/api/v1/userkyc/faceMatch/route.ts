@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
 		// Make a POST request to the Cashfree Face Match API
 		const response = await fetch(
-			"https://api.cashfree.com/verification/faceMatch",
+			"https://api.cashfree.com/verification/face-match",
 			{
 				method: "POST",
 				body: formData,

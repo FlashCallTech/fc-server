@@ -20,6 +20,7 @@ env:
   TWOFACTOR_API_KEY: ${{ secrets.TWOFACTOR_API_KEY }}
   JWT_KEY: ${{ secrets.JWT_KEY }}
   NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
+  NEXT_PUBLIC_BASE_URL_BACKEND: ${{ secrets.NEXT_PUBLIC_BASE_URL_BACKEND }}
   MONGODB_URI: ${{ secrets.MONGODB_URI }}
   NEXT_PUBLIC_MIXPANEL_TOKEN: ${{ secrets.NEXT_PUBLIC_MIXPANEL_TOKEN }}
   NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.NEXT_PUBLIC_RAZORPAY_KEY_ID }}
@@ -63,6 +64,7 @@ jobs:
           --build-arg TWOFACTOR_API_KEY='${{ env.TWOFACTOR_API_KEY }}' \
           --build-arg JWT_KEY='${{ env.JWT_KEY }}' \
           --build-arg NEXT_PUBLIC_BASE_URL='${{ env.NEXT_PUBLIC_BASE_URL }}' \
+          --build-arg NEXT_PUBLIC_BASE_URL_BACKEND='${{ env.NEXT_PUBLIC_BASE_URL_BACKEND }}' \
           --build-arg MONGODB_URI='${{ env.MONGODB_URI }}' \
           --build-arg NEXT_PUBLIC_MIXPANEL_TOKEN='${{ env.NEXT_PUBLIC_MIXPANEL_TOKEN }}' \
           --build-arg NEXT_PUBLIC_RAZORPAY_KEY_ID='${{ env.NEXT_PUBLIC_RAZORPAY_KEY_ID }}' \

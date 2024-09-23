@@ -34,26 +34,24 @@ const FavoritesGrid = ({
 		creator.username;
 
 	useEffect(() => {
-		const docRef = doc(db, "userStatus", creator.phone);
-		const unsubscribe = onSnapshot(
-			docRef,
-			(docSnap) => {
-				if (docSnap.exists()) {
-					const data = docSnap.data();
-					setStatus(data.status || "Offline");
-				} else {
-					setStatus("Offline"); // If document doesn't exist, mark the creator as offline
-				}
-			},
-			(error) => {
-				console.error("Error fetching status:", error);
-				setStatus("Offline");
-			}
-		);
+		const creatorRef = doc(db, "services", creator._id);
+		const unsubscribe = onSnapshot(creatorRef, (doc) => {
+			const data = doc.data();
 
-		// Clean up the listener on component unmount
+			if (data) {
+				let services = data.services;
+
+				// Check if any of the services is enabled
+				const isOnline =
+					services?.videoCall || services?.audioCall || services?.chat;
+
+				setStatus(isOnline ? "Online" : "Offline");
+			}
+		});
+
+		// isAuthSheetOpen && setIsAuthSheetOpen(false);
 		return () => unsubscribe();
-	}, [creator.phone]);
+	}, [creator._id]);
 
 	const handleToggleFavorite = async () => {
 		const clientId = clientUser?._id;
@@ -150,7 +148,7 @@ const FavoritesGrid = ({
 					user={clientUser}
 					isFavoritesPath={isFavoritesPath}
 				/>
-				{status === "Offline" ? (
+				{status !== "Online" ? (
 					<button
 						className={`bg-red-500 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs whitespace-nowrap`}
 					>
