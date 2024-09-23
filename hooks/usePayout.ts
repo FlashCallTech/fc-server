@@ -1,10 +1,38 @@
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const usePayout = () => {
   const { creatorUser } = useCurrentUsersContext();
-  const [haveBeneficiary, setHaveBeneficiary] = useState<boolean>(false);
+  const [beneficiary_details, setBeneficiary_details] = useState<any>();
+  const [transfer_details, setTransfer_details] = useState<any>();
+  const router = useRouter
+
+
   const initiateWithdraw = async (creatorId: string) => {
+    const response = await fetch(`/api/v1/creator/getPayment?userId=${creatorId}`,);
+    const result = await response.json();
+    if (result.success) {
+      const method = result.data.paymentMode === "BANK_TRANSFER" ? "banktransfer" : "upi";
+      if (method === 'upi') {
+        const details = {
+          method,
+          vpa: result.data.upiId
+        }
+        setTransfer_details(details);
+      }
+      else if (method === 'banktransfer') {
+        const details = {
+          method,
+          bank_account_number: result.data.bank_account_number,
+          bank_ifsc: result.data.ifsc
+        }
+        setTransfer_details(details);
+      }
+    } else {
+      alert('Complete your Payment Settings')
+      
+    }
     const getBeneficiaryResponse = await fetch(`/api/v1/beneficiary/getBeneficiary?user_id=${creatorId}`, {
       method: 'GET',
       headers: {
@@ -48,15 +76,24 @@ const usePayout = () => {
           })
         }
       }
-      const transferResponse = fetch('/api/v1/transfer/initiate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          
+      else {
+        setBeneficiary_details(getBeneficiaryResult.data)
+      }
+      setTimeout(() => {
+
+        const transferResponse = fetch('/api/v1/transfer/initiate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            transfer_id: 'transfer1',
+            transfer_amount: 1,
+            beneficiary_details,
+          })
         })
-      })
+
+      }, 10);
     }
   }
 
