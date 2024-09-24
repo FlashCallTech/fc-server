@@ -3,7 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, verification_id, vpa } = await request.json();
+    const { userId, vpa } = await request.json();
+    const generateVerificationId = () => {
+      return `${userId}_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+    };
+    const verification_id = generateVerificationId();
     const payload = {
       verification_id,
       vpa,
