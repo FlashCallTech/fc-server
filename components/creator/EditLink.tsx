@@ -40,7 +40,7 @@ const EditLink: React.FC<EditLinkProps> = ({link, onClose, onSave }) => {
 					<div className="flex flex-col gap-2">
 						<input
 							type="url"
-							name="link"
+							name="url"
 							value={linkData.url}
 							onChange={handleChange}
 							className="border-b p-2 focus:outline-none"
