@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 			});
 		}
 
-		if(result.score > 0.84){	
+		if (result.score > 0.84) {
 			const kyc = {
 				userId: userId,
 				name_match: {
@@ -48,15 +48,13 @@ export async function POST(request: NextRequest) {
 					reason: result.reason,
 				},
 			};
-			
+
 			await createUserKyc(kyc, "name_match");
+			return NextResponse.json({ success: true });
+
 		} else {
-			return NextResponse.json({success: false, data: 'Name not matching in Pan and Aadhaar'});
+			return NextResponse.json({ success: false });
 		}
-
-
-
-		return NextResponse.json({ success: true, data: result });
 	} catch (error) {
 		console.error("Unexpected error:", error);
 		return NextResponse.json({

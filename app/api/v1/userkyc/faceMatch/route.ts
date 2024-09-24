@@ -53,21 +53,25 @@ export async function POST(request: NextRequest) {
 			});
 		}
 
-		const kyc = {
-			userId: userId,
-			face_match: {
-				reference_id: result.ref_id,
-				verification_id: result.verification_id,
-				status: result.status,
-				face_match_result: result.face_match_result,
-				face_match_score: result.face_match_score,
-			},
-		};
-
-		await createUserKyc(kyc, "face_match");
-
-		// Return the result using NextResponse
-		return NextResponse.json({ success: true, data: result });
+		if(result.face_match_score > 0.89){
+			const kyc = {
+				userId: userId,
+				face_match: {
+					reference_id: result.ref_id,
+					verification_id: result.verification_id,
+					status: result.status,
+					face_match_result: result.face_match_result,
+					face_match_score: result.face_match_score,
+				},
+			};
+			
+			await createUserKyc(kyc, "face_match");
+			
+			// Return the result using NextResponse
+			return NextResponse.json({ success: true });
+		} else {
+			return NextResponse.json({success: false});
+		}
 	} catch (error: any) {
 		// Handle errors and return a structured error response using NextResponse
 		return NextResponse.json({

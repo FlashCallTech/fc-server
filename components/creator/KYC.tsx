@@ -41,14 +41,18 @@ const KYC: React.FC = () => {
 
 	useEffect(() => {
 		const getKyc = async () => {
-			if (creatorUser?.kyc_status) {
-				setKycDone(creatorUser.kyc_status);
-				setPanVerified(true);
-				setAadhaarVerified(true);
-				setLivelinessCheckVerified(true);
-				setLoading(false);
+			if (creatorUser) {
+				if (creatorUser.kyc_status) {
+					if (creatorUser.kyc_status === 'COMPLETED' || 'FAILED') {
+						setKycDone(creatorUser.kyc_status);
+						setPanVerified(true);
+						setAadhaarVerified(true);
+						setLivelinessCheckVerified(true);
+						setLoading(false);
 
-				return;
+						return;
+					}
+				}
 			}
 
 			const response = await fetch(
@@ -62,13 +66,13 @@ const KYC: React.FC = () => {
 			);
 
 			if (!response.ok) {
+				console.log('response not ok')
 				setLoading(false);
 				return;
 			}
 
 			const kycResponse = await response.json();
 			if (kycResponse.success) {
-
 				if (kycResponse.data.pan) {
 					if (kycResponse.data.pan.valid) {
 						setPanVerified(true);
@@ -91,155 +95,10 @@ const KYC: React.FC = () => {
 			}
 		};
 
-		if (creatorUser) getKyc();
+		if (creatorUser) {
+			getKyc();
+		}
 	}, []);
-
-	useEffect(() => {
-		let kycResponse: any;
-		const verificationId = generateVerificationId();
-
-		const name_face_match = async () => {
-			if (kycDone) {
-				setVerifying(false);
-				return;
-			}
-
-			const response = await fetch(
-				`/api/v1/userkyc/getKyc?userId=${creatorUser?._id}`,
-				{
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json",
-					},
-				}
-			);
-
-			if (!response.ok) {
-				setVerifying(false);
-				return;
-			}
-
-			kycResponse = await response.json();
-
-			if (!nameMatch) {
-				const nameMatchResponse = await fetch("/api/v1/userkyc/nameMatch", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						userId: creatorUser?._id,
-						name1: kycResponse.data.pan.registered_name,
-						name2: kycResponse.data.aadhaar.name,
-						verificationId,
-					}),
-				});
-
-				const result = await nameMatchResponse.json();
-				if (result.success) {
-					setNameMatch(true);
-				} else {
-					const user = {
-						kyc_status: "FAILED",
-					};
-					const response = await fetch("/api/v1/creator/updateUser", {
-						method: "PUT",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({
-							userId: creatorUser?._id,
-							user,
-						}),
-					});
-					if (response.ok) {
-						alert("Name not matched");
-						setKycDone("FAILED");
-						setVerifying(false);
-						return;
-					}
-				}
-			}
-
-			if (!faceMatch) {
-				const face_match_response = await fetch("/api/v1/userKyc/faceMatch", {
-					method: "POST",
-					headers: {
-						Content_Type: "application/json",
-					},
-					body: JSON.stringify({
-						verificationId,
-						first_img: kycResponse.data.liveliness.img_url,
-						second_img: kycResponse.data.aadhaar.img_link,
-						userId: creatorUser?._id,
-					}),
-				});
-
-				const face_match_result = await face_match_response.json();
-				if (face_match_result.data.status === "SUCCESS") {
-					setFaceMatch(true);
-				} else if (face_match_result.data.status !== "SUCCESS") {
-					const user = {
-						kyc_status: "FAILED",
-					};
-					const response = await fetch("/api/v1/creator/updateUser", {
-						method: "PUT",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({
-							userId: creatorUser?._id,
-							user,
-						}),
-					});
-					if (response.ok) {
-						alert("Face not matched");
-						setKycDone("FAILED");
-						setVerifying(false);
-						return;
-					}
-				}
-			}
-		};
-
-		if (
-			creatorUser &&
-			panVerified &&
-			aadhaarVerified &&
-			livelinessCheckVerified
-		) {
-			setVerifying(true);
-			name_face_match();
-		}
-	}, [panVerified, aadhaarVerified, livelinessCheckVerified]);
-
-	useEffect(() => {
-		const kyc = async () => {
-			const user = {
-				kyc_status: "COMPLETED",
-			};
-			const response = await fetch("/api/v1/creator/updateUser", {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					userId: creatorUser?._id,
-					user,
-				}),
-			});
-			if (response.ok) {
-				setKycDone("COMPLETED");
-				const result = await response.json();
-				setKycDone(result.kyc_status);
-				setVerifying(false);
-			}
-		};
-
-		if (creatorUser && nameMatch && faceMatch) {
-			kyc();
-		}
-	}, [nameMatch, faceMatch]);
 
 	const generateVerificationId = () => {
 		return `${creatorUser?._id}_${Date.now()}_${Math.random()
@@ -266,11 +125,26 @@ const KYC: React.FC = () => {
 				});
 
 				const panResult = await panResponse.json();
-				if (panResult.data.valid) {
+				if (panResult.success) {
+					if(panResult.kycStatus){
+						setKycDone("COMPLETED");
+						alert('KYC VERIFIED');
+					} else {
+						if(panResult.message === 'Our team will verify the details you have submitted. This usually takes 24 hours.') {
+							setKycDone("FAILED");
+							alert('KYC FAILED');
+						} else {
+							setKycDone("PENDING");
+						}
+					}
 					setPanVerified(true);
+				} else {
+					if(panResult.message === 'This PAN number is already associated with another account.'){
+						setPanNumber('');
+						alert('This PAN number is already associated with another account.');
+					}
 				}
 
-				console.log("PAN Verification result:", panResult);
 				setVerifyingPan(false);
 				return;
 			} catch (error) {
@@ -305,11 +179,14 @@ const KYC: React.FC = () => {
 				setOtpRefId(otpResult.data.ref_id);
 				console.log("OTP generated:", otpResult);
 
-				if (otpResult.data.status === "SUCCESS") {
+				if (otpResult.data.message === "OTP sent successfully") {
 					setOtpGenerated(true);
 					alert("OTP has been sent to your Aadhaar-registered mobile number.");
 					setGeneratingOtp(false);
 					setVerifyingAadhaar(false);
+				} else if (otpResult.data.message === "Aadhaar not linked to mobile number") {
+					alert('Aadhaar not linked to mobile number');
+					return;
 				}
 			} catch (error) {
 				console.error("Error generating OTP:", error);
@@ -333,6 +210,7 @@ const KYC: React.FC = () => {
 						},
 						body: JSON.stringify({
 							otp,
+							aadhaarNumber,
 							ref_id: otpRefId,
 							userId: creatorUser?._id,
 						}),
@@ -340,8 +218,25 @@ const KYC: React.FC = () => {
 				);
 
 				const otpVerificationResult = await otpVerificationResponse.json();
-				if (otpVerificationResult.success) setAadhaarVerified(true);
+				if (otpVerificationResult.success){
+					if(otpVerificationResult.kycStatus){
+						setKycDone("COMPLETED");
+						alert('KYC VERIFIED');
+					} else {
+						if(otpVerificationResult.message === 'Our team will verify the details you have submitted. This usually takes 24 hours.') {
+							setKycDone("FAILED");
+							alert('KYC FAILED');
+						} else {
+							setKycDone("PENDING");
+						}
+					}
+					setAadhaarVerified(true);
+				} 
 				else {
+					if(otpVerificationResult.message === 'This Aadhaar number is already associated with another account.'){
+						alert('This PAN number is already associated with another account.');
+						setAadhaarNumber('');
+					}
 					setOtp("");
 					setOtpRefId(null);
 					setOtpGenerated(false);
@@ -405,8 +300,20 @@ const KYC: React.FC = () => {
 			});
 
 			const result = await response.json();
-			console.log("Liveliness Verification result:", result);
-			if (result.data.liveliness) setLivelinessCheckVerified(true);
+			if (result.success){
+				if(result.kycStatus){
+					setKycDone("COMPLETED");
+					alert('KYC VERIFIED');
+				} else {
+					if(result.message === 'Our team will verify the details you have submitted. This usually takes 24 hours.') {
+						setKycDone("FAILED");
+						alert('KYC FAILED');
+					} else {
+						setKycDone("PENDING");
+					}
+				}
+				setLivelinessCheckVerified(true);
+			} 
 			else {
 				alert("Verify Again");
 			}
@@ -651,8 +558,8 @@ const KYC: React.FC = () => {
 											? "Verifying..."
 											: "Verify"
 										: verifyingAadhaar
-										? "Generating OTP..."
-										: "Get OTP"}
+											? "Generating OTP..."
+											: "Get OTP"}
 								</button>
 							</div>
 						)}
