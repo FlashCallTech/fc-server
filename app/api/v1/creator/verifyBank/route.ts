@@ -1,8 +1,9 @@
+import { createPaymentSettings } from "@/lib/actions/paymentSettings.actions";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST (request: NextRequest) {
   try {
-    const { bank_account, ifsc } = await request.json();
+    const { userId, bank_account, ifsc } = await request.json();
     const payload = {
       bank_account,
       ifsc,
@@ -25,6 +26,14 @@ export async function POST (request: NextRequest) {
     }
 
     if(result.account_status === 'VALID'){
+      const details = {
+        userId,
+        bankDetails: {
+          accountNumber: bank_account,
+          ifsc,
+        }
+      };
+      await createPaymentSettings(details);
       return NextResponse.json({success: true, data: result});
     } else {
       return NextResponse.json({success: false, data: result.account_status})
