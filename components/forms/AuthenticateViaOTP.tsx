@@ -66,7 +66,11 @@ const AuthenticateViaOTP = ({
 	const { toast } = useToast();
 	const { getDevicePlatform } = usePlatform();
 
-	console.log(backendBaseUrl);
+	console.log(
+		backendBaseUrl,
+		process.env.NEXT_PUBLIC_BASE_URL_BACKEND,
+		process.env.NEXT_PUBLIC_BASE_URL
+	);
 
 	// SignUp form
 	const signUpForm = useForm<z.infer<typeof formSchema>>({
