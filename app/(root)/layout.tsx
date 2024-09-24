@@ -39,6 +39,7 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	}, []);
 
 	useEffect(() => {
+		axios.defaults.baseURL = process.env.NEXT_PUBLIC_BASE_URL_BACKEND;
 		axios.defaults.withCredentials = true;
 	}, []);
 

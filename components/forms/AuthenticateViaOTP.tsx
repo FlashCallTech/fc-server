@@ -66,6 +66,8 @@ const AuthenticateViaOTP = ({
 	const { toast } = useToast();
 	const { getDevicePlatform } = usePlatform();
 
+	console.log(backendBaseUrl);
+
 	// SignUp form
 	const signUpForm = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
