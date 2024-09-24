@@ -15,35 +15,42 @@ export async function POST(request: NextRequest) {
       vpa,
     }
 
-    const response = await fetch('https://api.cashfree.com/verification/upi', {
-      method: 'POST',
-      headers: {
-        'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
-        'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    })
+		const response = await fetch("https://api.cashfree.com/verification/upi", {
+			method: "POST",
+			headers: {
+				"x-client-id": process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
+				"x-client-secret": process.env
+					.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(payload),
+		});
 
-    const result = await response.json();
+		const result = await response.json();
 
-    if (!response.ok) {
-      return NextResponse.json({ success: false, error: result.message || 'Validation error' });
-    }
+		if (!response.ok) {
+			return NextResponse.json({
+				success: false,
+				error: result.message || "Validation error",
+			});
+		}
 
-    if (result.status === 'VALID') {
-      const details = {
-        userId,
-        method: 'upi',
-        upiId: result.vpa
-      }
-      await createPaymentSettings(details);
+		if (result.status === "VALID") {
+			const details = {
+				userId,
+				method: "upi",
+				upiId: result.vpa,
+			};
+			await createPaymentSettings(details);
 
-      return NextResponse.json({ success: true, data: result });
-    } else {
-      return NextResponse.json({ success: false, data: result.status })
-    }
-  } catch (error) {
-    return NextResponse.json({ success: false, error: (error as Error).message });
-  }
+			return NextResponse.json({ success: true, data: result });
+		} else {
+			return NextResponse.json({ success: false, data: result.status });
+		}
+	} catch (error) {
+		return NextResponse.json({
+			success: false,
+			error: (error as Error).message,
+		});
+	}
 }
