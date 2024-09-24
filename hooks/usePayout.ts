@@ -32,7 +32,31 @@ const usePayout = () => {
     } else {
       alert('Complete your Payment Settings')
       router.push('/payment-settings');
+      return;
     }
+    const kycResponse = await fetch(
+      `/api/v1/userkyc/getKyc?userId=${creatorId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const kycResult = await kycResponse.json();
+    if (!kycResult.success) {
+      alert('Complete KYC Verification');
+      router.push('/kyc');
+      return;
+    } else {
+      if (kycResult.data.kyc_status === 'FAILED' || kycResult.data.kyc_status === 'PENDING') {
+        alert('Complete KYC Verification');
+        router.push('/kyc');
+        return;
+      }
+    }
+
+
     const getBeneficiaryResponse = await fetch(`/api/v1/beneficiary/getBeneficiary?user_id=${creatorId}`, {
       method: 'GET',
       headers: {

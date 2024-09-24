@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
 			await createUserKyc(kyc, "liveliness");
 
-			const kycResponse = await fetch(`http://localhost:3000/api/v1/userkyc/getKyc?userId=${userId}`, {
+			const kycResponse = await fetch(`https://flashcall.me/api/v1/userkyc/getKyc?userId=${userId}`, {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json'
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 						};
 						const verificationId = generateVerificationId();
 
-						const nameMatchResponse = await fetch('http://localhost:3000/api/v1/userkyc/nameMatch', {
+						const nameMatchResponse = await fetch('https://flashcall.me/api/v1/userkyc/nameMatch', {
 							method: 'POST',
 							headers: {
 								'Content-Type': 'application/json'
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
 						const nameMatchResult = await nameMatchResponse.json();
 
-						const faceMatchResponse = await fetch('http://localhost:3000/api/v1/userkyc/faceMatch', {
+						const faceMatchResponse = await fetch('https://flashcall.me/api/v1/userkyc/faceMatch', {
 							method: 'POST',
 							headers: {
 								'Content-Type': 'application/json'
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 							const user = {
 								kyc_status: "COMPLETED",
 							};
-							const userResponse = await fetch("http://localhost:3000/api/v1/creator/updateUser", {
+							const userResponse = await fetch("https://flashcall.me/api/v1/creator/updateUser", {
 								method: "PUT",
 								headers: {
 									"Content-Type": "application/json",
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
 							const user = {
 								kyc_status: "FAILED",
 							};
-							const userResponse = await fetch("http://localhost:3000/api/v1/creator/updateUser", {
+							const userResponse = await fetch("https://flashcall.me/api/v1/creator/updateUser", {
 								method: "PUT",
 								headers: {
 									"Content-Type": "application/json",
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
 						const user = {
 							kyc_status: "PENDING",
 						};
-						const userResponse = await fetch("http://localhost:3000/api/v1/creator/updateUser", {
+						const userResponse = await fetch("https://flashcall.me/api/v1/creator/updateUser", {
 							method: "PUT",
 							headers: {
 								"Content-Type": "application/json",
