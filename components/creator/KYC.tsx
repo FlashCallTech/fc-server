@@ -120,7 +120,6 @@ const KYC: React.FC = () => {
 			}
 
 			kycResponse = await response.json();
-			console.log(kycResponse);
 
 			if (!nameMatch) {
 				const nameMatchResponse = await fetch("/api/v1/userkyc/nameMatch", {
