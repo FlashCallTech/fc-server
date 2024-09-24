@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import { useToast } from "../ui/use-toast";
 import * as Sentry from "@sentry/nextjs";
+import { updateExpertStatus } from "@/lib/utils";
 
 const MyIncomingCallUI = ({ call }: { call: Call }) => {
 	const { toast } = useToast();
@@ -89,29 +90,6 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 			}
 		};
 	}, [callState, shownNotification]);
-
-	// Function to update expert's status
-	const updateExpertStatus = async (phone: string, status: string) => {
-		try {
-			const response = await fetch("/api/set-status", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ phone, status }),
-			});
-
-			const data = await response.json();
-			if (!response.ok) {
-				throw new Error(data.message || "Failed to update status");
-			}
-
-			console.log("Expert status updated to:", status);
-		} catch (error) {
-			Sentry.captureException(error);
-			console.error("Error updating expert status:", error);
-		}
-	};
 
 	const handleCallState = async (action: string) => {
 		if (action === "declined") {

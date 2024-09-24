@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { audio, chat, video } from "@/constants/icons";
-import { creatorUser } from "@/types";
+import { creatorUser, MemberRequest } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
 import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { logEvent } from "firebase/analytics";
-import { doc, updateDoc, onSnapshot } from "firebase/firestore";
+import { doc, updateDoc, onSnapshot, getDoc, setDoc } from "firebase/firestore";
 import { analytics, db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
@@ -14,7 +14,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
 import { trackEvent } from "@/lib/mixpanel";
-import { isValidHexColor } from "@/lib/utils";
+import { isValidHexColor, updateFirestoreSessions } from "@/lib/utils";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -34,7 +34,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
-
+	const [isClientBusy, setIsClientBusy] = useState(false);
 	const [onlineStatus, setOnlineStatus] = useState<String>("");
 
 	const themeColor = isValidHexColor(creator.themeSelected)
@@ -58,6 +58,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	// logic to show the updated creator services in realtime
 	useEffect(() => {
 		const creatorRef = doc(db, "services", creator._id);
+		const statusDocRef = doc(db, "userStatus", creator.phone);
+		const clientStatusDocRef = doc(
+			db,
+			"userStatus",
+			clientUser?.phone as string
+		);
+
 		const unsubscribe = onSnapshot(creatorRef, (doc) => {
 			const data = doc.data();
 
@@ -79,10 +86,44 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					services?.videoCall || services?.audioCall || services?.chat;
 
 				setOnlineStatus(isOnline ? "Online" : "Offline");
+
+				// Now listen for the creator's status
+				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
+					const statusData = statusDoc.data();
+
+					if (statusData) {
+						// Check if status is "Busy"
+						if (statusData.status === "Busy") {
+							setOnlineStatus("Busy");
+						} else {
+							// Update status based on services
+							setOnlineStatus(isOnline ? "Online" : "Offline");
+						}
+					}
+				});
+
+				// Listen for the client's status
+				const unsubscribeClientStatus = onSnapshot(
+					clientStatusDocRef,
+					(clientStatusDoc) => {
+						const clientStatusData = clientStatusDoc.data();
+
+						if (clientStatusData) {
+							setIsClientBusy(clientStatusData.status === "Busy");
+						} else {
+							setIsClientBusy(false);
+						}
+					}
+				);
+
+				// Clean up both status listeners
+				return () => {
+					unsubscribeStatus();
+					unsubscribeClientStatus();
+				};
 			}
 		});
 
-		// isAuthSheetOpen && setIsAuthSheetOpen(false);
 		return () => unsubscribe();
 	}, [creator._id, isAuthSheetOpen]);
 
@@ -162,7 +203,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	}, [chatState]);
 
 	// defining the actions for call accept and call reject
-	const handleCallAccepted = async (call: Call, callType: string) => {
+	const handleCallAccepted = async (callType: string) => {
 		setIsProcessing(false); // Reset processing state
 
 		toast({
@@ -236,6 +277,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				// 		phone: clientUser?.phone,
 				// 	},
 				// 	role: "admin",
+
 				// },
 			];
 
@@ -329,7 +371,27 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			call.on("call.accepted", () => handleCallAccepted(call, callType));
+			await updateFirestoreSessions(
+				clientUser?._id as string,
+				call.id,
+				"ongoing",
+				[
+					// creator
+					{
+						user_id: creator?._id,
+						expert: creator?.username,
+						status: "joining",
+					},
+					// client
+					{
+						user_id: clientUser?._id,
+						client: clientUser?.username,
+						status: "joining",
+					},
+				]
+			);
+
+			call.on("call.accepted", () => handleCallAccepted(callType));
 			call.on("call.rejected", handleCallRejected);
 		} catch (error) {
 			Sentry.captureException(error);
@@ -446,6 +508,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		{
 			type: "video",
 			enabled:
+				!isClientBusy &&
 				updatedCreator.videoAllowed &&
 				parseInt(updatedCreator.videoRate, 10) > 0,
 			rate: updatedCreator.videoRate,
@@ -462,6 +525,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		{
 			type: "audio",
 			enabled:
+				!isClientBusy &&
 				updatedCreator.audioAllowed &&
 				parseInt(updatedCreator.audioRate, 10) > 0,
 			rate: updatedCreator.audioRate,
@@ -478,12 +542,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		{
 			type: "chat",
 			enabled:
-				updatedCreator.chatAllowed && parseInt(updatedCreator.chatRate, 10) > 0,
+				!isClientBusy &&
+				updatedCreator.chatAllowed &&
+				parseInt(updatedCreator.chatRate, 10) > 0,
 			rate: updatedCreator.chatRate,
 			label: "Chat Now",
 			icon: chat,
 			onClick: () => {
-				if (clientUser || onlineStatus !== "Busy") {
+				if (clientUser && onlineStatus !== "Busy") {
 					handleChatClick();
 				} else {
 					setIsAuthSheetOpen(true);
@@ -500,11 +566,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		const priority: any = { video: 1, audio: 2, chat: 3 };
 		return priority[a.type] - priority[b.type];
 	});
+
+	console.log(onlineStatus, isClientBusy);
 	return (
 		<>
 			<div className="flex flex-col w-full items-center justify-center gap-4">
 				{sortedServices.map((service) => (
-					<div
+					<button
+						disabled={!service.enabled}
 						key={service.type}
 						className={`callOptionContainer ${
 							isProcessing || !service.enabled || onlineStatus === "Busy"
@@ -526,7 +595,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						<span className="text-sm tracking-widest">
 							Rs. {service.rate}/Min
 						</span>
-					</div>
+					</button>
 				))}
 
 				<Sheet

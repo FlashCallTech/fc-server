@@ -28,23 +28,46 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 
 	useEffect(() => {
 		const creatorRef = doc(db, "services", creator._id);
-		const unsubscribe = onSnapshot(creatorRef, (doc) => {
+		const statusDocRef = doc(db, "userStatus", creator.phone);
+
+		const unsubscribeServices = onSnapshot(creatorRef, (doc) => {
 			const data = doc.data();
 
 			if (data) {
-				let services = data.services;
+				const services = data.services;
 
-				// Check if any of the services is enabled
+				// Check if any of the services are enabled
 				const isOnline =
 					services?.videoCall || services?.audioCall || services?.chat;
 
+				// Set initial status to Online or Offline based on services
 				setStatus(isOnline ? "Online" : "Offline");
+
+				// Now listen for the user's status
+				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
+					const statusData = statusDoc.data();
+
+					if (statusData) {
+						// Check if status is "Busy"
+						if (statusData.status === "Busy") {
+							setStatus("Busy");
+						} else {
+							// Update status based on services
+							setStatus(isOnline ? "Online" : "Offline");
+						}
+					}
+				});
+
+				// Clean up the status listener
+				return () => unsubscribeStatus();
 			}
 		});
 
-		// isAuthSheetOpen && setIsAuthSheetOpen(false);
-		return () => unsubscribe();
-	}, [creator._id]);
+		// Clean up the services listener
+		return () => {
+			unsubscribeServices();
+		};
+	}, [creator._id, creator.phone]);
 
 	const backgroundImageStyle = {
 		backgroundImage: `url(${imageSrc})`,

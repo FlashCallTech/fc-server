@@ -2,6 +2,9 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import Razorpay from "razorpay";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { db } from "./firebase";
+import * as Sentry from "@sentry/nextjs";
 
 const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 const key_secret = process.env.NEXT_PUBLIC_RAZORPAY_SECRET;
@@ -164,4 +167,65 @@ export const validateUsername = (username: string) => {
 		return false;
 	}
 	return true;
+};
+
+export const updateFirestoreSessions = async (
+	userId: string,
+	callId: string,
+	status: string,
+	members: any[]
+) => {
+	try {
+		const SessionDocRef = doc(db, "sessions", userId);
+		const SessionDoc = await getDoc(SessionDocRef);
+		if (SessionDoc.exists()) {
+			await updateDoc(SessionDocRef, {
+				ongoingCall: { id: callId, status: status, members },
+			});
+		} else {
+			await setDoc(SessionDocRef, {
+				ongoingCall: { id: callId, status: status, members },
+			});
+		}
+	} catch (error) {
+		Sentry.captureException(error);
+		console.error("Error updating Firestore Sessions: ", error);
+	}
+};
+
+// Function to update expert's status
+export const updateExpertStatus = async (phone: string, status: string) => {
+	try {
+		const response = await fetch("/api/set-status", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ phone, status }),
+		});
+
+		const data = await response.json();
+		if (!response.ok) {
+			throw new Error(data.message || "Failed to update status");
+		}
+
+		console.log("Expert status updated to:", status);
+	} catch (error) {
+		Sentry.captureException(error);
+		console.error("Error updating expert status:", error);
+	}
+};
+
+// Stop camera and microphone
+export const stopMediaStreams = () => {
+	navigator.mediaDevices
+		.getUserMedia({ video: true, audio: true })
+		.then((mediaStream) => {
+			mediaStream.getTracks().forEach((track) => {
+				track.stop();
+			});
+		})
+		.catch((error) => {
+			console.error("Error stopping media streams: ", error);
+		});
 };

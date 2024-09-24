@@ -3,21 +3,25 @@ export const sidebarLinks = [
 		imgURL: "/icons/Home.svg",
 		route: "/home",
 		label: "Home",
+		protected: false,
 	},
 	{
 		imgURL: "/icons/orderHistory.png",
 		route: "/previous",
 		label: "Order History",
+		protected: true,
 	},
 	{
 		imgURL: "/icons/favorites.png",
 		route: "/favorites",
 		label: "Favorites",
+		protected: true,
 	},
 	{
 		imgURL: "/icons/support.png",
 		route: "/support",
 		label: "Support",
+		protected: false,
 	},
 ];
 
@@ -26,37 +30,44 @@ export const sidebarLinksCreator = [
 		imgURL: "/icons/Home.svg",
 		route: "/home",
 		label: "Home",
+		protected: false,
 	},
 	{
 		imgURL: "/icons/orderHistory.png",
 		route: "/previous",
 		label: "User Feedback's",
+		protected: true,
 	},
 	{
 		imgURL: "/icons/kyc.png",
 		route: "/kyc",
 		label: "KYC",
+		protected: true,
 	},
 	{
 		imgURL: "/icons/refer-and-earn.svg",
 		route: "/refer",
 		label: "Refer and Earn",
+		protected: true,
 	},
 
 	{
 		imgURL: "/icons/support.png",
 		route: "/support",
 		label: "Support",
+		protected: false,
 	},
 	{
 		imgURL: "/icons/paymentSettings.png",
 		route: "/payment-settings",
 		label: "Payment Settings",
+		protected: true,
 	},
 	{
 		imgURL: "/icons/termsConditions.png",
-		route: "/terms-and-condition",
+		route: "/terms-and-conditions",
 		label: "Terms & Conditions",
+		protected: false,
 	},
 ];
 

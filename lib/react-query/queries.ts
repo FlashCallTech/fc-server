@@ -7,7 +7,8 @@ import {
 
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 import { getUsersPaginated } from "../actions/creator.actions";
-import { getCreatorFeedback } from "../actions/creatorFeedbacks.action";
+
+import axios from "axios";
 
 // Updating (post or put or delete) = Mutation and Fetching (get) = Query
 
@@ -24,7 +25,7 @@ export const useGetCreators = () => {
 	return useInfiniteQuery({
 		queryKey: [QUERY_KEYS.GET_CREATORS],
 		queryFn: ({ pageParam = 0 }) => getUsersPaginated(pageParam, limit), // Pass the limit to getUsersPaginated
-		getNextPageParam: (lastPage, allPages) => {
+		getNextPageParam: (lastPage: any, allPages: any) => {
 			// If there's no data, there are no more pages.
 			if (lastPage && lastPage.length === 0) {
 				return null;
@@ -45,9 +46,21 @@ export const useGetCreatorFeedbacks = (creatorId: string) => {
 
 	return useInfiniteQuery({
 		queryKey: [QUERY_KEYS.GET_CREATOR_FEEDBACKS, creatorId],
-		queryFn: ({ pageParam = 1 }) =>
-			getCreatorFeedback(creatorId, pageParam, limit),
-		getNextPageParam: (lastPage, allPages) => {
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(
+				`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/feedback/creator/selected`,
+				{
+					params: {
+						creatorId,
+						page: pageParam,
+						limit,
+					},
+				}
+			);
+
+			return response.status === 200 ? response.data : [];
+		},
+		getNextPageParam: (lastPage: any, allPages: any) => {
 			return lastPage.hasMore ? allPages.length + 1 : undefined;
 		},
 		enabled: !!creatorId, // Only enable the query if creatorId is provided

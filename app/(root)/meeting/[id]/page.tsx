@@ -20,6 +20,7 @@ import ContentLoading from "@/components/shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
+import { stopMediaStreams } from "@/lib/utils";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -126,7 +127,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			navigator.sendBeacon(
-				"https://backend.flashcall.me/api/v1/calls/transaction/handleTransaction",
+				`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/calls/transaction/handleTransaction`,
 				JSON.stringify({
 					expertId,
 					clientId,
@@ -153,39 +154,11 @@ const CallEnded = ({ toast, router, call }: any) => {
 
 			setLoading(true);
 
-			// Stop camera and microphone
-			const stopMediaStreams = () => {
-				navigator.mediaDevices
-					.getUserMedia({ video: true, audio: true })
-					.then((mediaStream) => {
-						mediaStream.getTracks().forEach((track) => {
-							track.stop();
-						});
-					})
-					.catch((error) => {
-						console.error("Error stopping media streams: ", error);
-					});
-			};
-
 			stopMediaStreams();
-
-			await fetch("/api/v1/calls/updateCall", {
-				method: "POST",
-				body: JSON.stringify({
-					callId: call.id,
-					call: {
-						status: "Ended",
-						startedAt: callStartsAtTime,
-						endedAt: callEndedAt,
-						duration: duration,
-					},
-				}),
-				headers: { "Content-Type": "application/json" },
-			});
 
 			// Trigger transaction in backend
 			const transactionResponse = await fetch(
-				"https://backend.flashcall.me/api/v1/calls/transaction/handleTransaction",
+				`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/calls/transaction/handleTransaction`,
 				{
 					method: "POST",
 					body: JSON.stringify({
@@ -200,6 +173,20 @@ const CallEnded = ({ toast, router, call }: any) => {
 					},
 				}
 			);
+
+			await fetch("/api/v1/calls/updateCall", {
+				method: "POST",
+				body: JSON.stringify({
+					callId: call.id,
+					call: {
+						status: "Ended",
+						startedAt: callStartsAtTime,
+						endedAt: callEndedAt,
+						duration: duration,
+					},
+				}),
+				headers: { "Content-Type": "application/json" },
+			});
 
 			if (transactionResponse.ok) {
 				// Execute the logic after successful transaction

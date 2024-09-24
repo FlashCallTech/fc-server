@@ -29,6 +29,14 @@ export async function generateMetadata({
 	// Decode the URL-encoded username
 	const decodedUsername = decodeURIComponent(params.username as string);
 
+	// Check if the username is valid and avoid processing reserved paths like "_next"
+	if (!decodedUsername || decodedUsername.startsWith("_next")) {
+		return {
+			title: "FlashCall",
+			description: "Creator Platform | FlashCall",
+		};
+	}
+
 	// Remove "@" from the beginning if it exists
 	const formattedUsername = decodedUsername.startsWith("@")
 		? decodedUsername.substring(1)
@@ -36,6 +44,14 @@ export async function generateMetadata({
 
 	const creator = await getUserByUsername(String(formattedUsername));
 	const creatorProfile = creator ? creator : null;
+
+	if (!creatorProfile) {
+		return {
+			title: "FlashCall",
+			description: "Creator Not Found",
+		};
+	}
+
 	const imageURL = creatorProfile
 		? imageSrc(creatorProfile)
 		: "/images/defaultProfileImage.png";

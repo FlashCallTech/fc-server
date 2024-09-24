@@ -25,11 +25,13 @@ import SwitchCameraType from "../calls/SwitchCameraType";
 import AudioDeviceList from "../calls/AudioDeviceList";
 import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
 import { logEvent } from "firebase/analytics";
-import { analytics } from "@/lib/firebase";
+import { analytics, db } from "@/lib/firebase";
 import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { stopMediaStreams } from "@/lib/utils";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -92,57 +94,98 @@ const MeetingRoom = () => {
 
 	useEffect(() => {
 		const joinCall = async () => {
-			if (
-				!hasJoined &&
-				callingState !== CallingState.JOINED &&
-				!callHasEnded &&
-				participantCount < 2
-			) {
-				try {
-					await call?.join();
-					setHasJoined(true);
-					logEvent(analytics, "call_connected", {
-						userId: currentUser?._id,
-					});
-				} catch (error: any) {
-					console.warn("Error Joining Call ", error);
-				}
-			} else {
-				setHasJoined(true);
-				toast({
-					variant: "destructive",
-					title: "Participants Limit Reached",
-					description: "At most 2 Participants are allowed",
-				});
+			if (hasJoined || callingState === CallingState.JOINED || callHasEnded)
+				return;
 
-				// Stop camera and microphone
-				const stopMediaStreams = () => {
-					navigator.mediaDevices
-						.getUserMedia({ video: true, audio: true })
-						.then((mediaStream) => {
-							mediaStream.getTracks().forEach((track) => {
-								track.stop();
+			try {
+				const SessionDocRef = doc(
+					db,
+					"sessions",
+					call?.state?.createdBy?.id as string
+				);
+				const SessionDoc = await getDoc(SessionDocRef);
+				const sessionData = SessionDoc.data();
+
+				// Check if the session data and ongoingCall are available
+				if (sessionData && Array.isArray(sessionData.ongoingCall.members)) {
+					const ongoingCall = sessionData.ongoingCall;
+					const currentUserId = currentUser?._id;
+
+					// Check if the current user is a member and their join status
+					const isMember = ongoingCall.members.some(
+						(member: any) => member.user_id === currentUserId
+					);
+					const isAlreadyJoined = ongoingCall.members.some(
+						(member: any) =>
+							member.user_id === currentUserId && member.status === "joined"
+					);
+
+					console.log(ongoingCall);
+					console.log(isMember, isAlreadyJoined);
+
+					if (isMember) {
+						if (isAlreadyJoined) {
+							// Current user is already joined
+							toast({
+								variant: "destructive",
+								title: "Unauthorized Access",
+								description: "You are already in the call.",
 							});
-						})
-						.catch((error) => {
-							console.error("Error stopping media streams: ", error);
-						});
-				};
+							setTimeout(() => {
+								router.replace("/home"); // Redirect after a short delay
+							}, 1000);
 
-				stopMediaStreams();
+							stopMediaStreams();
+						} else {
+							// Update the member's status to "joined"
+							const updatedMembers = ongoingCall.members.map((member: any) =>
+								member.user_id === currentUserId
+									? { ...member, status: "joined" }
+									: member
+							);
+
+							// Update Firestore with the new members array
+							await updateDoc(SessionDocRef, {
+								ongoingCall: {
+									id: call?.id,
+									status: "ongoing",
+									members: updatedMembers,
+								},
+							});
+
+							await call?.join();
+							setHasJoined(true);
+							logEvent(analytics, "call_connected", { userId: currentUserId });
+						}
+					} else {
+						toast({
+							variant: "destructive",
+							title: "Unauthorized Access",
+							description: "You are not allowed to join this meeting.",
+						});
+
+						router.replace("/home");
+					}
+				} else {
+					console.warn("Something went wrong with Firebase");
+
+					router.replace("/home");
+				}
+			} catch (error) {
+				console.warn("Error Joining Call ", error);
+				// Redirect on error
 				setTimeout(() => {
 					router.replace("/home");
 				}, 1000);
 			}
 		};
 
-		if (!hasJoined && call) {
-			isVideoCall && call.camera.enable();
+		if (call) {
+			if (isVideoCall) call.camera.enable();
 			call.microphone.enable();
-
 			joinCall();
 		}
-	}, [call, hasJoined, callHasEnded]);
+	}, [call, hasJoined, callHasEnded, participantCount]);
 
 	useEffect(() => {
 		const handleResize = () => {

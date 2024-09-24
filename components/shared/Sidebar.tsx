@@ -26,7 +26,7 @@ const Sidebar = () => {
 
 	return (
 		<section className="sticky left-0 top-0 flex h-screen flex-col justify-between p-6 pt-24  max-md:hidden lg:w-[264px] shadow-md">
-			<div className="flex flex-1 flex-col gap-5 max-h-[88%] overflow-y-scroll no-scrollbar">
+			<div className="flex flex-1 flex-col gap-3.5 max-h-[88%] overflow-y-scroll no-scrollbar">
 				{sidebarItems.map((item, index) => {
 					const isActive =
 						pathname === item.route || pathname.startsWith(`${item.route}/`);
@@ -38,11 +38,11 @@ const Sidebar = () => {
 									href={
 										item.label === "Home"
 											? "/home"
-											: currentUser
-											? item.route
-											: userType === "creator"
-											? "/authenticate?usertype=creator"
-											: "/authenticate"
+											: item.protected
+											? userType === "creator"
+												? "/authenticate?usertype=creator"
+												: "/authenticate"
+											: item.route
 									}
 									key={item.label}
 									className={`flex w-full gap-4 items-center p-4 rounded-lg justify-center lg:justify-start 

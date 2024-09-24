@@ -1,10 +1,40 @@
 import React from "react";
 import Link from "next/link";
-import { terms } from "../../../../constants/services/TermsOfServices.json";
+import termsData from "../../../../constants/services/TermsOfServices.json";
 
 const TermsOfServices = () => {
+	const { terms } = termsData;
+
 	const aboutPlatform = terms.aboutPlatform;
 	const tableOfContents = terms.tableOfContents;
+
+	let A = terms.A;
+	let B = terms.B;
+	let C = terms.C;
+	let D = terms.D;
+	let E = terms.E;
+	let F = terms.F;
+	let G = terms.G;
+	let H = terms.H;
+	let I = terms.I;
+	let J = terms.J;
+	let K = terms.K;
+	let L = terms.L;
+	let M = terms.M;
+	let N = terms.N;
+	let O = terms.O;
+	let P = terms.P;
+	let Q = terms.Q;
+	let R = terms.R;
+	let S = terms.S;
+	let T = terms.T;
+	// let U = terms.U;
+	let V = terms.V;
+	let W = terms.W;
+	let X = terms.X;
+	let Y = terms.Y;
+	let Z = terms.Z;
+
 	return (
 		<section className="w-full h-fit py-7 pb-24 bg-white flex flex-col gap-4 items-center justify-start md:px-12 lg:px-24 max-md:px-4">
 			{/* page title */}
@@ -104,32 +134,32 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="A"
 			>
-				<h2 className="text-lg font-medium ">A. {terms.A.title}</h2>
+				<h2 className="text-lg font-medium ">A. {A.title}</h2>
 				<p>
-					{terms.A.para1} <strong>(the &apos;Registration&apos;)</strong>.
+					{A.para1} <strong>(the &apos;Registration&apos;)</strong>.
 				</p>
 				<p>
-					{terms.A.para2}{" "}
+					{A.para2}{" "}
 					<strong>
 						{" "}
 						If You are under the age of 13 years, You may neither use our
 						Platform in any manner nor may You register for an account.
 					</strong>
 				</p>
-				<p>{terms.A.para3}</p>
+				<p>{A.para3}</p>
 
 				<section>
-					{terms.A.para4}{" "}
+					{A.para4}{" "}
 					<Link
 						href="/privacy-policy"
 						className="mx-1 text-[#50a65c] hover:underline underline-offset-2"
 					>
 						Privacy Policy
 					</Link>
-					{terms.A.para5}
+					{A.para5}
 				</section>
 
-				<p>{terms.A.para6}</p>
+				<p>{A.para6}</p>
 			</section>
 
 			{/* Content B */}
@@ -137,12 +167,12 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="B"
 			>
-				<h2 className="text-lg font-medium ">B. {terms.B.title}</h2>
+				<h2 className="text-lg font-medium ">B. {B.title}</h2>
 
-				<p>{terms.B.para1}</p>
-				<p>{terms.B.para2}</p>
-				<p>{terms.B.para3}</p>
-				<p>{terms.B.para4}</p>
+				<p>{B.para1}</p>
+				<p>{B.para2}</p>
+				<p>{B.para3}</p>
+				<p>{B.para4}</p>
 			</section>
 
 			{/* Content C */}
@@ -150,9 +180,9 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="C"
 			>
-				<h2 className="text-lg font-medium ">C. {terms.C.title}</h2>
+				<h2 className="text-lg font-medium ">C. {C.title}</h2>
 
-				<p>{terms.C.para1}</p>
+				<p>{C.para1}</p>
 			</section>
 
 			{/* Content D */}
@@ -160,9 +190,9 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="D"
 			>
-				<h2 className="text-lg font-medium ">D. {terms.D.title}</h2>
+				<h2 className="text-lg font-medium ">D. {D.title}</h2>
 
-				<p>{terms.D.para1}</p>
+				<p>{D.para1}</p>
 			</section>
 
 			{/* Content E */}
@@ -170,12 +200,12 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="E"
 			>
-				<h2 className="text-lg font-medium ">E. {terms.E.title}</h2>
+				<h2 className="text-lg font-medium ">E. {E.title}</h2>
 
-				<p>{terms.E.para1}</p>
-				<p>{terms.E.para2}</p>
-				<p>{terms.E.para3}</p>
-				<p>{terms.E.para4}</p>
+				<p>{E.para1}</p>
+				<p>{E.para2}</p>
+				<p>{E.para3}</p>
+				<p>{E.para4}</p>
 			</section>
 
 			{/* Content F */}
@@ -183,9 +213,9 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="F"
 			>
-				<h2 className="text-lg font-medium ">F. {terms.F.title}</h2>
+				<h2 className="text-lg font-medium ">F. {F.title}</h2>
 
-				<p>{terms.F.para1}</p>
+				<p>{F.para1}</p>
 			</section>
 
 			{/* Content G */}
@@ -193,9 +223,9 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="G"
 			>
-				<h2 className="text-lg font-medium ">G. {terms.G.title}</h2>
+				<h2 className="text-lg font-medium ">G. {G.title}</h2>
 
-				<p>{terms.G.para1}</p>
+				<p>{G.para1}</p>
 			</section>
 
 			{/* Content H */}
@@ -203,56 +233,52 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="H"
 			>
-				<h2 className="text-lg font-medium">H. {terms.H.title}</h2>
+				<h2 className="text-lg font-medium">H. {H.title}</h2>
 
 				{/* Legit Usage */}
-				<p className="font-medium mt-2">{terms.H.conducts.legitUsage.title}</p>
-				<p>{terms.H.conducts.legitUsage.description}</p>
+				<p className="font-medium mt-2">{H.conducts.legitUsage.title}</p>
+				<p>{H.conducts.legitUsage.description}</p>
 
 				{/* Communication */}
-				<p className="font-medium mt-2">
-					{terms.H.conducts.communication.title}
-				</p>
-				<p>{terms.H.conducts.communication.description}</p>
+				<p className="font-medium mt-2">{H.conducts.communication.title}</p>
+				<p>{H.conducts.communication.description}</p>
 
 				{/* Hateful Communication */}
 				<p className="font-medium mt-2">
-					{terms.H.conducts.hatefulCommunication.title}
+					{H.conducts.hatefulCommunication.title}
 				</p>
-				<p>{terms.H.conducts.hatefulCommunication.description}</p>
+				<p>{H.conducts.hatefulCommunication.description}</p>
 
 				{/* Violent Communication */}
 				<p className="font-medium mt-2">
-					{terms.H.conducts.voilentCommunication.title}
+					{H.conducts.voilentCommunication.title}
 				</p>
-				<p>{terms.H.conducts.voilentCommunication.description}</p>
+				<p>{H.conducts.voilentCommunication.description}</p>
 
 				{/* Harassment */}
-				<p className="font-medium mt-2">{terms.H.conducts.harassment.title}</p>
-				<p>{terms.H.conducts.harassment.description}</p>
+				<p className="font-medium mt-2">{H.conducts.harassment.title}</p>
+				<p>{H.conducts.harassment.description}</p>
 
 				{/* Spam */}
-				<p className="font-medium mt-2">{terms.H.conducts.spam.title}</p>
-				<p>{terms.H.conducts.spam.description}</p>
+				<p className="font-medium mt-2">{H.conducts.spam.title}</p>
+				<p>{H.conducts.spam.description}</p>
 
 				{/* Scams */}
-				<p className="font-medium mt-2">{terms.H.conducts.scams.title}</p>
-				<p>{terms.H.conducts.scams.description}</p>
+				<p className="font-medium mt-2">{H.conducts.scams.title}</p>
+				<p>{H.conducts.scams.description}</p>
 
 				{/* Violation */}
-				<p className="font-medium mt-2">{terms.H.conducts.violation.title}</p>
-				<p>{terms.H.conducts.violation.description}</p>
+				<p className="font-medium mt-2">{H.conducts.violation.title}</p>
+				<p>{H.conducts.violation.description}</p>
 
 				{/* Impersonation */}
-				<p className="font-medium mt-2">
-					{terms.H.conducts.impersonation.title}
-				</p>
-				<p>{terms.H.conducts.impersonation.description}</p>
+				<p className="font-medium mt-2">{H.conducts.impersonation.title}</p>
+				<p>{H.conducts.impersonation.description}</p>
 
 				{/* Access */}
-				<p className="font-medium mt-2">{terms.H.conducts.access.title}</p>
-				<p>{terms.H.conducts.access.description}</p>
-				<p>{terms.H.conducts.access.moreInfo}</p>
+				<p className="font-medium mt-2">{H.conducts.access.title}</p>
+				<p>{H.conducts.access.description}</p>
+				<p>{H.conducts.access.moreInfo}</p>
 			</section>
 
 			{/* Content I */}
@@ -260,20 +286,19 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="I"
 			>
-				<h2 className="text-lg font-medium ">I. {terms.I.title}</h2>
+				<h2 className="text-lg font-medium ">I. {I.title}</h2>
 
 				<p>
-					<strong>{terms.I.flashcallContent.title}:</strong>{" "}
-					{terms.I.flashcallContent.para1}{" "}
+					<strong>{I.flashcallContent.title}:</strong>{" "}
+					{I.flashcallContent.para1}{" "}
 					<strong>(&apos;Flashcall Content&apos;).</strong>{" "}
-					{terms.I.flashcallContent.para2}
+					{I.flashcallContent.para2}
 				</p>
-				<p>{terms.I.flashcallContent.para2}</p>
-				<p>{terms.I.flashcallContent.para3}</p>
+				<p>{I.flashcallContent.para2}</p>
+				<p>{I.flashcallContent.para3}</p>
 
 				<p>
-					<strong>{terms.I.yourContent.title}:</strong>{" "}
-					{terms.I.yourContent.description}
+					<strong>{I.yourContent.title}:</strong> {I.yourContent.description}
 				</p>
 			</section>
 
@@ -282,11 +307,11 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="J"
 			>
-				<h2 className="text-lg font-medium ">J. {terms.J.title}</h2>
+				<h2 className="text-lg font-medium ">J. {J.title}</h2>
 
-				<p className="whitespace-pre-line">{terms.J.para1}</p>
-				<p className="whitespace-pre-line">{terms.J.para2}</p>
-				<p className="whitespace-pre-line">{terms.J.para3}</p>
+				<p className="whitespace-pre-line">{J.para1}</p>
+				<p className="whitespace-pre-line">{J.para2}</p>
+				<p className="whitespace-pre-line">{J.para3}</p>
 			</section>
 
 			{/* Content K */}
@@ -294,11 +319,11 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="K"
 			>
-				<h2 className="text-lg font-medium ">K. {terms.K.title}</h2>
+				<h2 className="text-lg font-medium ">K. {K.title}</h2>
 
 				<p className="whitespace-pre-line">
-					{terms.K.para1} <strong>(&apos;Feedback&apos;)</strong> {", "}
-					{terms.K.para2}
+					{K.para1} <strong>(&apos;Feedback&apos;)</strong> {", "}
+					{K.para2}
 				</p>
 			</section>
 
@@ -307,13 +332,13 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="L"
 			>
-				<h2 className="text-lg font-medium ">L. {terms.L.title}</h2>
+				<h2 className="text-lg font-medium ">L. {L.title}</h2>
 
-				<p className="whitespace-pre-line">{terms.L.para1}</p>
-				<p className="whitespace-pre-line">{terms.L.para2}</p>
-				<p className="whitespace-pre-line">{terms.L.para3}</p>
-				<p className="whitespace-pre-line">{terms.L.para4}</p>
-				<p className="whitespace-pre-line">{terms.L.para5}</p>
+				<p className="whitespace-pre-line">{L.para1}</p>
+				<p className="whitespace-pre-line">{L.para2}</p>
+				<p className="whitespace-pre-line">{L.para3}</p>
+				<p className="whitespace-pre-line">{L.para4}</p>
+				<p className="whitespace-pre-line">{L.para5}</p>
 			</section>
 
 			{/* Content M */}
@@ -321,46 +346,44 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="M"
 			>
-				<h2 className="text-lg font-medium ">M. {terms.M.title}</h2>
+				<h2 className="text-lg font-medium ">M. {M.title}</h2>
 				<p className="whitespace-pre-line">
 					<span className="underline underline-offset-2">
 						Copyright Complaints
 					</span>
 					{": "}
-					{terms.M.description}
+					{M.description}
 				</p>
 				<ul className="flex flex-col items-start justify-center gap-4 pl-7">
-					{terms.M.infomation.map((info, index) => (
+					{M.infomation.map((info, index) => (
 						<li key={index} className="list-disc">
 							{info}
 						</li>
 					))}
 				</ul>
-				<p className="whitespace-pre-line">{terms.M.para1}</p>
+				<p className="whitespace-pre-line">{M.para1}</p>
 
 				<p className="whitespace-pre-line">
 					<span className="underline underline-offset-2">Counter-Notice</span>
 					{": "}
-					{terms.M.counterNotice.description}
+					{M.counterNotice.description}
 				</p>
 				<ul className="flex flex-col items-start justify-center gap-4 pl-7">
-					{terms.M.counterNotice.points.map((info, index) => (
+					{M.counterNotice.points.map((info, index) => (
 						<li key={index} className="list-disc">
 							{info}
 						</li>
 					))}
 				</ul>
 
-				<p className="whitespace-pre-line">
-					{terms.M.counterNotice.endingPara}
-				</p>
+				<p className="whitespace-pre-line">{M.counterNotice.endingPara}</p>
 
 				<p className="whitespace-pre-line">
 					<span className="underline underline-offset-2">
-						{terms.M.repeatInfringer.title}
+						{M.repeatInfringer.title}
 					</span>
 					{": "}
-					{terms.M.repeatInfringer.description}
+					{M.repeatInfringer.description}
 				</p>
 			</section>
 
@@ -369,15 +392,15 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="N"
 			>
-				<h2 className="text-lg font-medium ">N. {terms.N.title} </h2>
+				<h2 className="text-lg font-medium ">N. {N.title} </h2>
 
-				<p className="whitespace-pre-line">{terms.N.para1} </p>
+				<p className="whitespace-pre-line">{N.para1} </p>
 				<p className="whitespace-pre-line">
-					{terms.N.para2} (For copyright complaints, please refer to{" "}
+					{N.para2} (For copyright complaints, please refer to{" "}
 					<span className="underline underline-offset-2">
 						&apos;Copyright Complaints and Takedown Policy&apos;
 					</span>{" "}
-					section above). {terms.N.para3}
+					section above). {N.para3}
 				</p>
 			</section>
 
@@ -386,9 +409,9 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="O"
 			>
-				<h2 className="text-lg font-medium ">O. {terms.O.title} </h2>
+				<h2 className="text-lg font-medium ">O. {O.title} </h2>
 
-				<p className="whitespace-pre-line">{terms.O.description} </p>
+				<p className="whitespace-pre-line">{O.description} </p>
 			</section>
 
 			{/* Content O */}
@@ -396,9 +419,9 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="O"
 			>
-				<h2 className="text-lg font-medium ">O. {terms.O.title} </h2>
+				<h2 className="text-lg font-medium ">O. {O.title} </h2>
 
-				<p className="whitespace-pre-line">{terms.O.description} </p>
+				<p className="whitespace-pre-line">{O.description} </p>
 			</section>
 
 			{/* Content P */}
@@ -406,40 +429,40 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="P"
 			>
-				<h2 className="text-lg font-medium ">P. {terms.P.title} </h2>
+				<h2 className="text-lg font-medium ">P. {P.title} </h2>
 
 				<p className="whitespace-pre-line">
-					<strong>{terms.P.services.pricing.title}</strong>
+					<strong>{P.services.pricing.title}</strong>
 					{": "}
-					{terms.P.services.pricing.para1} (referred to as the{" "}
+					{P.services.pricing.para1} (referred to as the{" "}
 					<strong>&apos;consultant Fee&apos;</strong>) at their sole discretion
 					and Flashcall is not responsible for the same.
 				</p>
 
 				<p className="whitespace-pre-line">
-					<strong>{terms.P.services.charges.title}</strong>
+					<strong>{P.services.charges.title}</strong>
 					{": "}
-					{terms.P.services.charges.para1} (referred to as the{" "}
+					{P.services.charges.para1} (referred to as the{" "}
 					<strong>&apos;Platform Service Charge&apos;</strong>{" "}
-					{terms.P.services.charges.para2})
+					{P.services.charges.para2})
 				</p>
 
 				<p className="whitespace-pre-line">
-					<strong>{terms.P.services.payments.title}</strong>
+					<strong>{P.services.payments.title}</strong>
 					{": "}
-					{terms.P.services.payments.para1}
+					{P.services.payments.para1}
 				</p>
 
-				<p>{terms.P.services.payments.para2}</p>
+				<p>{P.services.payments.para2}</p>
 
 				<p className="whitespace-pre-line">
-					<strong>{terms.P.services.payments.types.type1.title}</strong>
-					{": "} {terms.P.services.payments.types.type1.para1}
+					<strong>{P.services.payments.types.type1.title}</strong>
+					{": "} {P.services.payments.types.type1.para1}
 				</p>
-				<p>{terms.P.services.payments.types.type1.para2}</p>
+				<p>{P.services.payments.types.type1.para2}</p>
 				<p>
 					<strong>For consultants based in India, </strong>
-					{terms.P.services.payments.types.type1.para3}
+					{P.services.payments.types.type1.para3}
 				</p>
 
 				<p>
@@ -451,18 +474,16 @@ const TermsOfServices = () => {
 				</p>
 
 				<ul className="flex flex-col items-start justify-center gap-4 pl-7">
-					{terms.P.services.payments.types.type1.bulletPoints.map(
-						(info, index) => (
-							<li key={index} className="list-disc">
-								{info}
-							</li>
-						)
-					)}
+					{P.services.payments.types.type1.bulletPoints.map((info, index) => (
+						<li key={index} className="list-disc">
+							{info}
+						</li>
+					))}
 				</ul>
 
 				<p className="whitespace-pre-line">
-					<strong>{terms.P.services.payments.types.type2.title}</strong>
-					{": "} {terms.P.services.payments.types.type2.para1}
+					<strong>{P.services.payments.types.type2.title}</strong>
+					{": "} {P.services.payments.types.type2.para1}
 				</p>
 			</section>
 
@@ -471,9 +492,9 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="Q"
 			>
-				<h2 className="text-lg font-medium ">Q. {terms.Q.title} </h2>
+				<h2 className="text-lg font-medium ">Q. {Q.title} </h2>
 
-				<p className="whitespace-pre-line">{terms.Q.description} </p>
+				<p className="whitespace-pre-line">{Q.description} </p>
 			</section>
 
 			{/* Content R */}
@@ -481,9 +502,9 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="R"
 			>
-				<h2 className="text-lg font-medium ">R. {terms.R.title} </h2>
+				<h2 className="text-lg font-medium ">R. {R.title} </h2>
 
-				<p className="whitespace-pre-line">{terms.R.description} </p>
+				<p className="whitespace-pre-line">{R.description} </p>
 			</section>
 
 			{/* Content T */}
@@ -491,9 +512,9 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="T"
 			>
-				<h2 className="text-lg font-medium ">T. {terms.T.title} </h2>
+				<h2 className="text-lg font-medium ">T. {T.title} </h2>
 
-				<p className="whitespace-pre-line">{terms.T.description} </p>
+				<p className="whitespace-pre-line">{T.description} </p>
 			</section>
 
 			{/* Content U */}
@@ -503,9 +524,9 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="V"
 			>
-				<h2 className="text-lg font-medium ">V. {terms.V.title} </h2>
+				<h2 className="text-lg font-medium ">V. {V.title} </h2>
 
-				<p className="whitespace-pre-line">{terms.V.description} </p>
+				<p className="whitespace-pre-line">{V.description} </p>
 			</section>
 
 			{/* Content W */}
@@ -513,9 +534,9 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="W"
 			>
-				<h2 className="text-lg font-medium ">W. {terms.W.title} </h2>
+				<h2 className="text-lg font-medium ">W. {W.title} </h2>
 
-				<p className="whitespace-pre-line">{terms.W.description} </p>
+				<p className="whitespace-pre-line">{W.description} </p>
 			</section>
 
 			{/* Content X */}
@@ -523,10 +544,10 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="X"
 			>
-				<h2 className="text-lg font-medium ">X. {terms.X.title} </h2>
+				<h2 className="text-lg font-medium ">X. {X.title} </h2>
 
-				<p className="whitespace-pre-line">{terms.X.para1} </p>
-				<p className="whitespace-pre-line">{terms.X.para2} </p>
+				<p className="whitespace-pre-line">{X.para1} </p>
+				<p className="whitespace-pre-line">{X.para2} </p>
 			</section>
 
 			{/* Content Y */}
@@ -534,32 +555,22 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="Y"
 			>
-				<h2 className="text-lg font-medium ">Y. {terms.Y.title} </h2>
+				<h2 className="text-lg font-medium ">Y. {Y.title} </h2>
 
-				<p className="whitespace-pre-line font-medium mt-2">
-					{terms.Y.heading1}{" "}
-				</p>
-				<p className="whitespace-pre-line">{terms.Y.description1} </p>
+				<p className="whitespace-pre-line font-medium mt-2">{Y.heading1} </p>
+				<p className="whitespace-pre-line">{Y.description1} </p>
 
-				<p className="whitespace-pre-line font-medium mt-2">
-					{terms.Y.heading2}{" "}
-				</p>
-				<p className="whitespace-pre-line">{terms.Y.description2} </p>
+				<p className="whitespace-pre-line font-medium mt-2">{Y.heading2} </p>
+				<p className="whitespace-pre-line">{Y.description2} </p>
 
-				<p className="whitespace-pre-line font-medium mt-2">
-					{terms.Y.heading3}{" "}
-				</p>
-				<p className="whitespace-pre-line">{terms.Y.description3} </p>
+				<p className="whitespace-pre-line font-medium mt-2">{Y.heading3} </p>
+				<p className="whitespace-pre-line">{Y.description3} </p>
 
-				<p className="whitespace-pre-line font-medium mt-2">
-					{terms.Y.heading4}{" "}
-				</p>
-				<p className="whitespace-pre-line">{terms.Y.description4} </p>
+				<p className="whitespace-pre-line font-medium mt-2">{Y.heading4} </p>
+				<p className="whitespace-pre-line">{Y.description4} </p>
 
-				<p className="whitespace-pre-line font-medium mt-2">
-					{terms.Y.heading5}{" "}
-				</p>
-				<p className="whitespace-pre-line">{terms.Y.description5} </p>
+				<p className="whitespace-pre-line font-medium mt-2">{Y.heading5} </p>
+				<p className="whitespace-pre-line">{Y.description5} </p>
 			</section>
 
 			{/* Content Z */}
@@ -567,8 +578,8 @@ const TermsOfServices = () => {
 				className="w-full h-fit flex flex-col gap-4 items-start justify-center mt-10"
 				id="Z"
 			>
-				<h2 className="text-lg font-medium ">Z. {terms.Z.title} </h2>
-				<p>{terms.Z.description}</p>
+				<h2 className="text-lg font-medium ">Z. {Z.title} </h2>
+				<p>{Z.description}</p>
 
 				<a
 					href="mailto:support@Flashcall.me"
