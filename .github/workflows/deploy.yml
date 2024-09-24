@@ -7,6 +7,7 @@ on:
     types:
       - completed
 
+# Jobs to go through the defined flow
 jobs:
   deploy:
     runs-on: ubuntu-latest
