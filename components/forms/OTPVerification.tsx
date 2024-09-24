@@ -16,6 +16,7 @@ import {
 import axios from "axios";
 import Image from "next/image";
 import * as Sentry from "@sentry/nextjs";
+import { backendBaseUrl } from "@/lib/utils";
 
 const OTPVerification = ({
 	phoneNumber,
@@ -43,12 +44,9 @@ const OTPVerification = ({
 		if (resendTime === 0) {
 			try {
 				setResending(true);
-				const response = await axios.post(
-					`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/otp/resend-otp`,
-					{
-						phone: phoneNumber,
-					}
-				);
+				const response = await axios.post(`${backendBaseUrl}/otp/resend-otp`, {
+					phone: phoneNumber,
+				});
 				setResendTime(30); // Reset timer after resending
 				changeError({});
 

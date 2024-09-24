@@ -26,6 +26,7 @@ import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
+import { backendBaseUrl } from "@/lib/utils";
 
 const formSchema = z.object({
 	phone: z
@@ -85,12 +86,9 @@ const AuthenticateViaOTP = ({
 	const handleSignUpSubmit = async (values: z.infer<typeof formSchema>) => {
 		setIsSendingOTP(true);
 		try {
-			const response = await axios.post(
-				`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/otp/send-otp`,
-				{
-					phone: values.phone,
-				}
-			);
+			await axios.post(`${backendBaseUrl}/otp/send-otp`, {
+				phone: values.phone,
+			});
 			setPhoneNumber(values.phone);
 			setShowOTP(true);
 			trackEvent("Login_Bottomsheet_OTP_Generated", {
@@ -109,13 +107,10 @@ const AuthenticateViaOTP = ({
 	const handleOTPSubmit = async (values: z.infer<typeof FormSchemaOTP>) => {
 		setIsVerifyingOTP(true);
 		try {
-			const response = await axios.post(
-				`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/otp/verify-otp`,
-				{
-					phone: phoneNumber,
-					otp: values.pin,
-				}
-			);
+			const response = await axios.post(`${backendBaseUrl}/otp/verify-otp`, {
+				phone: phoneNumber,
+				otp: values.pin,
+			});
 
 			// Extract the session token and user from the response
 			const { sessionToken, message } = response.data;
@@ -207,12 +202,12 @@ const AuthenticateViaOTP = ({
 				try {
 					if (userType === "creator") {
 						await axios.post(
-							`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/creator/createUser`,
+							`${backendBaseUrl}/creator/createUser`,
 							newUser as CreateCreatorParams
 						);
 					} else {
 						await axios.post(
-							`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/client/createUser`,
+							`${backendBaseUrl}/client/createUser`,
 							newUser as CreateUserParams
 						);
 					}

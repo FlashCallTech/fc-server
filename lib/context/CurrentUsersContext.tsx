@@ -16,6 +16,7 @@ import { deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 import { usePathname, useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
+import { backendBaseUrl } from "../utils";
 
 // Define the shape of the context value
 interface CurrentUsersContextValue {
@@ -103,9 +104,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		}
 
 		// Clear user data and local storage
-		await axios.post(
-			`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/user/endSession`
-		);
+		await axios.post(`${backendBaseUrl}/user/endSession`);
 
 		localStorage.removeItem("currentUserID");
 		localStorage.removeItem("authToken");
@@ -124,12 +123,9 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			setFetchingUser(true);
 			// Call the backend endpoint to get the profile data
 
-			const response = await axios.get(
-				`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/user/getProfile`,
-				{
-					withCredentials: true, // Ensure cookies are sent with the request
-				}
-			);
+			const response = await axios.get(`${backendBaseUrl}/user/getProfile`, {
+				withCredentials: true, // Ensure cookies are sent with the request
+			});
 
 			const { success, data, token } = response.data;
 
