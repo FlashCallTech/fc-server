@@ -140,20 +140,24 @@ export async function getUserByUsername(username: string) {
 	try {
 		await connectToDatabase();
 		// Decode the URL-encoded username
-		const decodedUsername = decodeURIComponent(username as string);
+		const decodedUsername = decodeURIComponent(username);
 
 		// Remove "@" from the beginning if it exists
 		const formattedUsername = decodedUsername.startsWith("@")
 			? decodedUsername.substring(1)
 			: decodedUsername;
+
 		// Find user based on the formatted username
 		const user = await Creator.findOne({ username: formattedUsername });
 
-		if (!user) throw new Error("User not found");
+		if (!user) {
+			console.warn(`User with username '${formattedUsername}' not found`);
+			return null; // Return null instead of throwing an error
+		}
 
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
-		console.error(error);
+		console.error("Error fetching user:", error);
 		return { error: "An unexpected error occurred" };
 	}
 }

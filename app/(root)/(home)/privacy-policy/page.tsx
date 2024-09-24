@@ -1,6 +1,8 @@
 import React from "react";
-import { policies } from "../../../../constants/services/PrivacyPolicy.json";
+import policyData from "../../../../constants/services/PrivacyPolicy.json";
 const PrivacyPolicy = () => {
+	const { policies } = policyData;
+
 	const welcome = policies.welcomeMessage;
 	const infoProvidedByYou = policies.informationProvideByYou;
 	const clients = policies.clients;

@@ -26,7 +26,6 @@ const OTPVerification = ({
 	isVerifyingOTP,
 	errors,
 	changeError,
-	setToken,
 }: {
 	phoneNumber: string;
 	onEditNumber: () => void;
@@ -36,7 +35,6 @@ const OTPVerification = ({
 	isVerifyingOTP: boolean;
 	errors: any;
 	changeError: React.Dispatch<React.SetStateAction<{}>>;
-	setToken: React.Dispatch<React.SetStateAction<string | null>>;
 }) => {
 	const [resendTime, setResendTime] = useState(30);
 	const [resending, setResending] = useState(false);
@@ -53,7 +51,7 @@ const OTPVerification = ({
 				);
 				setResendTime(30); // Reset timer after resending
 				changeError({});
-				setToken(response.data.token);
+
 				console.log("OTP resent:", response.data.message);
 			} catch (error) {
 				Sentry.captureException(error);

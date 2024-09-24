@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import ReviewSlider from "./ReviewSlider";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
@@ -29,35 +29,39 @@ const UserReviews = ({
 		refetch,
 	} = useGetCreatorFeedbacks(creatorId);
 
-	// Safeguard to ensure creatorFeedbacks is always an array
+	// Ensure creatorFeedbacks is always an array
 	const creatorFeedbacks =
 		feedbackData?.pages?.flatMap((page: any) => page) || [];
 
-	const handleFetchNextPage = async () => {
+	const handleFetchNextPage = useCallback(async () => {
 		if (hasNextPage && !isFetching && !isLoadMoreButtonHidden) {
 			setIsFetchingMore(true);
-			setIsLoadMoreButtonHidden(true); // Hide the button
-			await fetchNextPage();
-			setIsFetchingMore(false);
+			setIsLoadMoreButtonHidden(true);
 
-			// Show the button again after a timeout
-			setTimeout(() => {
-				setIsLoadMoreButtonHidden(false);
-			}, 15000); // 15 seconds timeout
+			try {
+				await fetchNextPage();
+			} finally {
+				setIsFetchingMore(false);
+				setTimeout(() => {
+					setIsLoadMoreButtonHidden(false);
+				}, 15000);
+			}
 		}
-	};
+	}, []);
 
-	const handleRefetch = async () => {
+	const handleRefetch = useCallback(async () => {
 		if (!isFetching && !isRefetchButtonHidden) {
-			setIsRefetchButtonHidden(true); // Hide the button
-			await refetch();
+			setIsRefetchButtonHidden(true);
 
-			// Show the button again after a timeout
-			setTimeout(() => {
-				setIsRefetchButtonHidden(false);
-			}, 10000); // 10 seconds timeout
+			try {
+				await refetch();
+			} finally {
+				setTimeout(() => {
+					setIsRefetchButtonHidden(false);
+				}, 10000);
+			}
 		}
-	};
+	}, []);
 
 	const useScreenSize = () => {
 		const [isMobile, setIsMobile] = useState(false);
@@ -67,7 +71,7 @@ const UserReviews = ({
 		};
 
 		useEffect(() => {
-			handleResize(); // Set initial value
+			handleResize();
 			window.addEventListener("resize", handleResize);
 			return () => window.removeEventListener("resize", handleResize);
 		}, []);
@@ -117,7 +121,6 @@ const UserReviews = ({
 				>
 					<h2 className="text-2xl font-semibold">Happy Client&apos;s</h2>
 
-					{/* main section */}
 					<ReviewSlider
 						creatorFeedbacks={creatorFeedbacks}
 						getClampedText={getClampedText}
@@ -126,7 +129,6 @@ const UserReviews = ({
 						toggleReadMore={toggleReadMore}
 					/>
 
-					{/* Fetch More Button */}
 					<Tooltip>
 						<TooltipTrigger asChild>
 							{hasNextPage &&

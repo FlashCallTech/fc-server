@@ -10,7 +10,8 @@ export async function POST(request: Request) {
 		if (user) {
 			return NextResponse.json(user);
 		} else {
-			return NextResponse.json({}, { status: 200 });
+			console.warn(`User not found: ${username}`);
+			return NextResponse.json({ error: "User not found" }, { status: 404 });
 		}
 	} catch (error) {
 		Sentry.captureException(error);

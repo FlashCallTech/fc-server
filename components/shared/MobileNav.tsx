@@ -163,7 +163,7 @@ const MobileNav = () => {
 						<div className="w-full border border-gray-500 my-7" />
 						<SheetClose asChild>
 							<section className="flex size-full items-start flex-col">
-								<section className="flex flex-1 flex-col gap-4 w-full max-h-[92%] overflow-y-scroll no-scrollbar text-white">
+								<section className="flex flex-1 flex-col gap-3.5 w-full max-h-[92%] overflow-y-scroll no-scrollbar text-white">
 									{sidebarItems.map((item) => {
 										const isActive = pathname === item.route;
 

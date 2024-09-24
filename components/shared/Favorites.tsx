@@ -3,6 +3,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Image from "next/image";
 import { creatorUser } from "@/types";
 import * as Sentry from "@sentry/nextjs";
+import axios from "axios";
 
 interface FavoriteItem {
 	creatorId: creatorUser;
@@ -32,19 +33,13 @@ const Favorites = ({
 	useEffect(() => {
 		const fetchFavorites = async () => {
 			try {
-				const response = await fetch("/api/v1/favorites/getFavorites", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						clientId: user?._id,
-					}),
-				});
+				const response = await axios.get(
+					`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/favorites/${user?._id}`
+				);
 
-				if (response.ok) {
-					const data = await response.json();
-					const favorites: FavoriteItem[] = data.favorites;
+				// Check if response data is available
+				if (response.data && response.data.favorites) {
+					const favorites: FavoriteItem[] = response.data.favorites;
 
 					// Check if the current creator is in the favorites
 					const isFavorite = favorites.some(
@@ -52,7 +47,10 @@ const Favorites = ({
 					);
 					setMarkedFavorite(isFavorite);
 				} else {
-					console.error("Failed to fetch favorites");
+					console.error(
+						"Favorites data is missing or not structured correctly:",
+						response.data
+					);
 				}
 			} catch (error) {
 				Sentry.captureException(error);

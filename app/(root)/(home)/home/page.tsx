@@ -38,7 +38,7 @@ const HomePage = () => {
 	}, [inView]);
 
 	useEffect(() => {
-		if (pathname === "/home" || pathname === "/") {
+		if (pathname === "/home") {
 			localStorage.removeItem("creatorURL");
 		}
 	}, [router, pathname]);
@@ -95,7 +95,7 @@ const HomePage = () => {
 								WebkitTransform: "translateZ(0)",
 							}}
 						>
-							{creators?.pages?.map((page, pageIndex) =>
+							{creators?.pages?.map((page: any, pageIndex: any) =>
 								page.map((creator: creatorUser, index: number) => (
 									<section
 										key={creator._id}

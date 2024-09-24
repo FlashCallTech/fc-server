@@ -8,64 +8,23 @@ import { logEvent } from "firebase/analytics";
 import { analytics, db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
+import {
+	stopMediaStreams,
+	updateExpertStatus,
+	updateFirestoreSessions,
+} from "@/lib/utils";
 
 const MyCallUI = () => {
 	const router = useRouter();
 	const calls = useCalls();
 	const pathname = usePathname();
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 
 	const { toast } = useToast();
 	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
 	const [hasRedirected, setHasRedirected] = useState(false);
 	const [showCallUI, setShowCallUI] = useState(false);
-
-	const updateFirestoreSessions = async (
-		userId: string,
-		callId: string,
-		status: string
-	) => {
-		try {
-			const SessionDocRef = doc(db, "sessions", userId);
-			const SessionDoc = await getDoc(SessionDocRef);
-			if (SessionDoc.exists()) {
-				await updateDoc(SessionDocRef, {
-					ongoingCall: { id: callId, status: status },
-				});
-			} else {
-				await setDoc(SessionDocRef, {
-					ongoingCall: { id: callId, status: status },
-				});
-			}
-		} catch (error) {
-			Sentry.captureException(error);
-			console.error("Error updating Firestore Sessions: ", error);
-		}
-	};
-
-	// Function to update expert's status
-	const updateExpertStatus = async (phone: string, status: string) => {
-		try {
-			const response = await fetch("/api/set-status", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ phone, status }),
-			});
-
-			const data = await response.json();
-			if (!response.ok) {
-				throw new Error(data.message || "Failed to update status");
-			}
-
-			console.log("Expert status updated to:", status);
-		} catch (error) {
-			Sentry.captureException(error);
-			console.error("Error updating expert status:", error);
-		}
-	};
 
 	useEffect(() => {
 		const checkFirestoreSession = async (userId: string) => {
@@ -116,8 +75,8 @@ const MyCallUI = () => {
 				(member) => member.custom.type === "expert"
 			);
 			const handleCallEnded = async () => {
-				call.camera.disable();
-				call.microphone.disable();
+				stopMediaStreams();
+
 				if (!isMeetingOwner) {
 					localStorage.removeItem("activeCallId");
 				}
@@ -125,6 +84,12 @@ const MyCallUI = () => {
 				if (expertPhone) {
 					await updateExpertStatus(expertPhone, "Online");
 				}
+
+				await updateExpertStatus(
+					call.state.createdBy?.name as string,
+					"Offline"
+				);
+
 				setShowCallUI(false); // Hide call UI
 			};
 
@@ -152,6 +117,14 @@ const MyCallUI = () => {
 					headers: { "Content-Type": "application/json" },
 				});
 
+				isMeetingOwner &&
+					(await updateFirestoreSessions(
+						currentUser?._id,
+						call.id,
+						"ended",
+						[]
+					));
+
 				router.replace(`${creatorURL ? creatorURL : "/home"}`);
 			};
 
@@ -169,12 +142,12 @@ const MyCallUI = () => {
 					keepalive: true,
 				});
 
-				isMeetingOwner &&
-					(await updateFirestoreSessions(currentUser?._id, call.id, "ongoing"));
-
 				logEvent(analytics, "call_accepted", {
 					callId: call.id,
 				});
+
+				isMeetingOwner &&
+					(await updateExpertStatus(currentUser?.phone as string, "Busy"));
 
 				// Check the calling state before attempting to leave
 				if (
