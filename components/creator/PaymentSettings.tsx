@@ -93,10 +93,6 @@ const PaymentSettings = () => {
 		[]
 	);
 
-	const generateVerificationId = () => {
-		return `${currentUser?._id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-	};
-
 	const handleSave = async () => {
 		let hasError = false;
 		const newErrors = {
@@ -152,21 +148,6 @@ const PaymentSettings = () => {
 			};
 
 			try {
-				// const verification_id = generateVerificationId();
-				// const reversePennyDrop = await fetch('/api/v1/reverse-penny-drop', {
-				// 	method: 'POST',
-				// 	headers: {
-				// 		'Content-Type': 'application/json'
-				// 	},
-				// 	body: JSON.stringify({
-				// 		verification_id,
-				// 		name: currentUser?.firstName + ' ' + currentUser?.lastName
-				// 	})
-				// })
-
-				// const result  = await reversePennyDrop.json();
-
-				const verification_id = generateVerificationId();
 				if (paymentData.paymentMode === 'UPI') {
 					const response = await fetch('/api/v1/creator/verifyUpi', {
 						method: 'POST',
@@ -175,7 +156,6 @@ const PaymentSettings = () => {
 						},
 						body: JSON.stringify({
 							userId: currentUser?._id,
-							verification_id,
 							vpa: paymentData.upiId,
 						})
 					})
