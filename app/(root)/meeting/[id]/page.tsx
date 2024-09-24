@@ -20,7 +20,7 @@ import ContentLoading from "@/components/shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
-import { stopMediaStreams } from "@/lib/utils";
+import { backendBaseUrl, stopMediaStreams } from "@/lib/utils";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -127,7 +127,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			navigator.sendBeacon(
-				`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/calls/transaction/handleTransaction`,
+				`${backendBaseUrl}/calls/transaction/handleTransaction`,
 				JSON.stringify({
 					expertId,
 					clientId,
@@ -158,7 +158,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 
 			// Trigger transaction in backend
 			const transactionResponse = await fetch(
-				`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/calls/transaction/handleTransaction`,
+				`${backendBaseUrl}/calls/transaction/handleTransaction`,
 				{
 					method: "POST",
 					body: JSON.stringify({

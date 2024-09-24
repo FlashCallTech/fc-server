@@ -9,6 +9,7 @@ import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 import { getUsersPaginated } from "../actions/creator.actions";
 
 import axios from "axios";
+import { backendBaseUrl } from "../utils";
 
 // Updating (post or put or delete) = Mutation and Fetching (get) = Query
 
@@ -48,7 +49,7 @@ export const useGetCreatorFeedbacks = (creatorId: string) => {
 		queryKey: [QUERY_KEYS.GET_CREATOR_FEEDBACKS, creatorId],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
-				`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/feedback/creator/selected`,
+				`${backendBaseUrl}/feedback/creator/selected`,
 				{
 					params: {
 						creatorId,

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { creatorUser } from "@/types";
 import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
+import { backendBaseUrl } from "@/lib/utils";
 
 interface FavoriteItem {
 	creatorId: creatorUser;
@@ -34,7 +35,7 @@ const Favorites = ({
 		const fetchFavorites = async () => {
 			try {
 				const response = await axios.get(
-					`${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/favorites/${user?._id}`
+					`${backendBaseUrl}/favorites/${user?._id}`
 				);
 
 				// Check if response data is available

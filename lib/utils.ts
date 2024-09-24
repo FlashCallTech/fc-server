@@ -24,6 +24,11 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
+// Base URL's
+
+export const frontendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+export const backendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL_BACKEND;
+
 export const handleError = (error: unknown) => {
 	console.error(error);
 	throw new Error(typeof error === "string" ? error : JSON.stringify(error));
