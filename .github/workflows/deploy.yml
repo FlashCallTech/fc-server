@@ -2,14 +2,12 @@ name: Deploy to EC2
 
 # Trigger this workflow on push to the main branch or when the "Build and Push Docker Images" workflow completes
 on:
-  push:
-    branches:
-      - main
   workflow_run:
     workflows: ["Build and Push Docker Images"]
     types:
       - completed
 
+# Jobs responsible for the execution of script in instance
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -30,7 +28,7 @@ jobs:
         run: |
           IMAGE_TAG=$(git rev-parse --short HEAD)
           PREVIOUS_TAG=previous  
-          ssh -o StrictHostKeyChecking=no ubuntu@ec2-13-50-65-12.eu-north-1.compute.amazonaws.com "bash /home/ubuntu/deployRestart.sh $IMAGE_TAG $PREVIOUS_TAG"
+          ssh -o StrictHostKeyChecking=no ubuntu@ec2-13-50-65-12.eu-north-1.compute.amazonaws.com "bash /home/ubuntu/deploy.sh $IMAGE_TAG $PREVIOUS_TAG"
 
       # Connect to the EC2 instance and execute the deploy.sh script located at /home/ubuntu
 
