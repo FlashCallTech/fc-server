@@ -7,7 +7,7 @@ on:
     types:
       - completed
 
-# Jobs to go through the defined flow of script execution on instance
+# Jobs responsible for the execution of script in instance
 jobs:
   deploy:
     runs-on: ubuntu-latest
