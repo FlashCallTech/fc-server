@@ -1,8 +1,9 @@
+import { createPaymentSettings } from "@/lib/actions/paymentSettings.actions";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST (request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { verification_id, vpa } = await request.json();
+    const { userId, verification_id, vpa } = await request.json();
     const payload = {
       verification_id,
       vpa,
@@ -17,17 +18,24 @@ export async function POST (request: NextRequest) {
       },
       body: JSON.stringify(payload)
     })
-    
+
     const result = await response.json();
 
     if (!response.ok) {
       return NextResponse.json({ success: false, error: result.message || 'Validation error' });
     }
 
-    if(result.status === 'VALID'){
-      return NextResponse.json({success: true, data: result});
+    if (result.status === 'VALID') {
+      const details = {
+        userId,
+        method: 'upi',
+        upiId: result.vpa
+      }
+      await createPaymentSettings(details);
+
+      return NextResponse.json({ success: true, data: result });
     } else {
-      return NextResponse.json({success: false, data: result.status})
+      return NextResponse.json({ success: false, data: result.status })
     }
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message });
