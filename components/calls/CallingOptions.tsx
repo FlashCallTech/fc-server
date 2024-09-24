@@ -567,7 +567,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		return priority[a.type] - priority[b.type];
 	});
 
-	console.log(onlineStatus, isClientBusy);
 	return (
 		<>
 			<div className="flex flex-col w-full items-center justify-center gap-4">
