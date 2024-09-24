@@ -7,7 +7,7 @@ on:
     types:
       - completed
 
-# Jobs to go through the defined flow
+# Jobs to go through the defined flow of script execution on instance
 jobs:
   deploy:
     runs-on: ubuntu-latest
