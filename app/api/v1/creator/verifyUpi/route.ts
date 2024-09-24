@@ -2,18 +2,18 @@ import { createPaymentSettings } from "@/lib/actions/paymentSettings.actions";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-	try {
-		const { userId, vpa } = await request.json();
-		const generateVerificationId = () => {
-			return `${userId}_${Date.now()}_${Math.random()
-				.toString(36)
-				.substr(2, 9)}`;
-		};
-		const verification_id = generateVerificationId();
-		const payload = {
-			verification_id,
-			vpa,
-		};
+  try {
+    const { userId, vpa } = await request.json();
+    const generateVerificationId = () => {
+      return `${userId}_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+    };
+    const verification_id = generateVerificationId();
+    const payload = {
+      verification_id,
+      vpa,
+    }
 
 		const response = await fetch("https://api.cashfree.com/verification/upi", {
 			method: "POST",

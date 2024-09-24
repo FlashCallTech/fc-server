@@ -1,11 +1,11 @@
 import { createUserKyc } from "@/lib/actions/userkyc.actions";
+import { db } from "@/lib/firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
 	const formData = await request.formData();
 
-	// const aadhaarFile = formData.get('aadhaar') as File;
-	// const verificationId = formData.get('verification_id') as string;
 	const userId = formData.get("userId") as string;
 	const img_url = formData.get("img_url") as string;
 
@@ -30,29 +30,164 @@ export async function POST(request: NextRequest) {
 			console.error("Cashfree error response:", result);
 			return NextResponse.json({
 				success: false,
-				error: result.message || "Validation error",
+				kycStatus: false,
+				message: result.message || "Validation error",
 			});
 		}
 
-		const kyc = {
-			userId: userId,
-			liveliness: {
-				reference_id: result.reference_id,
-				verification_id: result.verification_id,
-				status: result.status,
-				liveliness: result.liveliness,
-				img_url: img_url,
-			},
-		};
+		if (result.liveliness) {
+			const kyc = {
+				userId: userId,
+				liveliness: {
+					reference_id: result.reference_id,
+					verification_id: result.verification_id,
+					img_url,
+					status: result.status,
+					liveliness: result.liveliness,
+				},
+			};
 
-		await createUserKyc(kyc, "liveliness");
+			await createUserKyc(kyc, "liveliness");
 
-		return NextResponse.json({ success: true, data: result });
+			const kycResponse = await fetch(`http://localhost:3000/api/v1/userkyc/getKyc?userId=${userId}`, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+			})
+
+			const kycResult = await kycResponse.json();
+			if (kycResult.success) {
+				if (kycResult.data.aadhaar && kycResult.data.pan) {
+					if (kycResult.data.aadhaar.status === 'VALID' && kycResult.data.pan.valid) {
+						const generateVerificationId = () => {
+							return `${userId}_${Date.now()}_${Math.random()
+								.toString(36)
+								.substr(2, 9)}`;
+						};
+						const verificationId = generateVerificationId();
+
+						const nameMatchResponse = await fetch('http://localhost:3000/api/v1/userkyc/nameMatch', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({
+								userId: userId,
+								name1: kycResult.data.pan.registered_name,
+								name2: kycResult.data.aadhaar.name,
+								verificationId,
+							})
+						});
+
+						const nameMatchResult = await nameMatchResponse.json();
+
+						const faceMatchResponse = await fetch('http://localhost:3000/api/v1/userkyc/faceMatch', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({
+								userId: userId,
+								first_img: kycResult.data.liveliness.img_url,
+								second_img: kycResult.data.aadhaar.img_link,
+								verificationId,
+							})
+						});
+
+						const faceMatchResult = await faceMatchResponse.json();
+
+						if (faceMatchResult.success && nameMatchResult.success) {
+							const user = {
+								kyc_status: "COMPLETED",
+							};
+							const userResponse = await fetch("http://localhost:3000/api/v1/creator/updateUser", {
+								method: "PUT",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									userId: userId,
+									user,
+								}),
+							});
+
+							const kyc = {
+								userId: userId,
+								kyc_status: user.kyc_status
+							}
+
+							await createUserKyc(kyc, 'status');
+
+							return NextResponse.json({ success: true, kycStatus: true, message: 'Kyc Completed' })
+						} else {
+							const user = {
+								kyc_status: "FAILED",
+							};
+							const userResponse = await fetch("http://localhost:3000/api/v1/creator/updateUser", {
+								method: "PUT",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									userId: userId,
+									user,
+								}),
+							});
+
+							const kyc = {
+								userId: userId,
+								kyc_status: user.kyc_status
+							}
+
+							await createUserKyc(kyc, 'status');
+
+							return NextResponse.json({ success: false, kycStatus: false, message: 'Our team will verify the details you have submitted. This usually takes 24 hours.' });
+						}
+					} else {
+						const user = {
+							kyc_status: "PENDING",
+						};
+						const userResponse = await fetch("http://localhost:3000/api/v1/creator/updateUser", {
+							method: "PUT",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								userId: userId,
+								user,
+							}),
+						});
+
+						const kyc = {
+							userId: userId,
+							kyc_status: user.kyc_status
+						}
+
+						const dbResponse = await createUserKyc(kyc, 'status');
+						const dbResult = await dbResponse.json();
+
+						return NextResponse.json({ success: true, kycStatus: false, message: 'Kyc Pending' });
+					}
+				}
+				else {
+					return NextResponse.json({ success: true, kycStatus: false, message: 'Kyc Pending' })
+				}
+			}
+			else {
+				return NextResponse.json({ success: true, kycStatus: false, message: 'Kyc Pending' });
+			}
+		}
+		else {
+			return NextResponse.json({ success: false, kycStatus: false, message: result.message })
+		}
+
 	} catch (error) {
 		console.error("Unexpected error:", error);
 		return NextResponse.json({
 			success: false,
-			error: (error as Error).message,
+			kycStatus: false,
+			message: (error as Error).message,
 		});
 	}
 }
