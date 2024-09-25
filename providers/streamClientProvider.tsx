@@ -28,7 +28,8 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 				const token = await tokenProvider(
 					userId,
 					currentUser.username,
-					currentUser.photo
+					currentUser.photo,
+					currentUser.phone
 				);
 
 				const client = new StreamVideoClient({
@@ -37,6 +38,9 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 						id: userId,
 						name: currentUser?.username || userId,
 						image: currentUser?.photo as string,
+						custom: {
+							phone: currentUser?.phone as string,
+						},
 					},
 					tokenProvider: async () => token,
 					options: {

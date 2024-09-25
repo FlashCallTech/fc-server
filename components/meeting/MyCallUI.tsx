@@ -14,6 +14,7 @@ import {
 	updateExpertStatus,
 	updateFirestoreSessions,
 } from "@/lib/utils";
+import axios from "axios";
 
 const MyCallUI = () => {
 	const router = useRouter();
@@ -95,9 +96,13 @@ const MyCallUI = () => {
 		calls.forEach((call) => {
 			const isMeetingOwner =
 				currentUser && currentUser?._id === call?.state?.createdBy?.id;
+
 			const expert = call?.state?.members?.find(
 				(member) => member.custom.type === "expert"
 			);
+
+			const callCreator = call?.state?.createdBy;
+
 			const handleCallEnded = async () => {
 				stopMediaStreams();
 
@@ -110,7 +115,10 @@ const MyCallUI = () => {
 				}
 
 				isMeetingOwner &&
-					(await updateExpertStatus(currentUser?.phone as string, "Offline"));
+					(await updateExpertStatus(
+						callCreator?.custom?.phone as string,
+						"Idle"
+					));
 
 				setShowCallUI(false); // Hide call UI
 			};
@@ -119,18 +127,24 @@ const MyCallUI = () => {
 				toast({
 					variant: "destructive",
 					title: "Call Rejected",
-					description: "The call was rejected. Redirecting to HomePage...",
+					description: "The call was rejected",
 				});
 
 				setShowCallUI(false); // Hide call UI
-
-				isMeetingOwner &&
-					(await updateExpertStatus(currentUser?.phone as string, "Offline"));
 
 				const expertPhone = expert?.custom?.phone;
 				if (expertPhone) {
 					await updateExpertStatus(expertPhone, "Online");
 				}
+
+				await updateExpertStatus(callCreator?.custom?.phone as string, "Idle");
+
+				await updateFirestoreSessions(
+					callCreator?.id as string,
+					call.id,
+					"ended",
+					[]
+				);
 
 				logEvent(analytics, "call_rejected", {
 					callId: call.id,
@@ -138,22 +152,10 @@ const MyCallUI = () => {
 
 				const creatorURL = localStorage.getItem("creatorURL");
 
-				await fetch(`${backendBaseUrl}/calls/updateCall`, {
-					method: "POST",
-					body: JSON.stringify({
-						callId: call.id,
-						call: { status: "Rejected" },
-					}),
-					headers: { "Content-Type": "application/json" },
+				await axios.post(`${backendBaseUrl}/calls/updateCall`, {
+					callId: call.id,
+					call: { status: "Rejected" },
 				});
-
-				isMeetingOwner &&
-					(await updateFirestoreSessions(
-						currentUser?._id,
-						call.id,
-						"ended",
-						[]
-					));
 
 				router.replace(`${creatorURL ? creatorURL : "/home"}`);
 			};
@@ -162,22 +164,16 @@ const MyCallUI = () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
 				setShowCallUI(false); // Hide call UI
 
-				await fetch(`${backendBaseUrl}/calls/updateCall`, {
-					method: "POST",
-					body: JSON.stringify({
-						callId: call.id,
-						call: { status: "Accepted" },
-					}),
-					headers: { "Content-Type": "application/json" },
-					keepalive: true,
-				});
-
 				logEvent(analytics, "call_accepted", {
 					callId: call.id,
 				});
 
-				// isMeetingOwner &&
-				// 	(await updateExpertStatus(currentUser?.phone as string, "Busy"));
+				await updateExpertStatus(callCreator?.custom?.phone as string, "Busy");
+
+				await axios.post(`${backendBaseUrl}/calls/updateCall`, {
+					callId: call.id,
+					call: { status: "Accepted" },
+				});
 
 				// Check the calling state before attempting to leave
 				if (
