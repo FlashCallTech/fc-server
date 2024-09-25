@@ -86,8 +86,12 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 						transition="zoom"
 						readOnly
 					/>
-					<span className="text-ellipsis overflow-hidden w-full max-w-[200px] whitespace-nowrap pr-2 text-sm text-end">
-						{userFeedbacks[0].feedback || "No Feedback Provided"}
+					<span
+						className={`text-ellipsis overflow-hidden w-full max-w-[200px] whitespace-nowrap pr-2 text-sm text-end ${
+							!userFeedbacks[0].feedback && "text-gray-400 text-xs"
+						}`}
+					>
+						{userFeedbacks[0].feedback || "No Feedback"}
 					</span>
 				</DialogTrigger>
 				<DialogContent className="bg-white rounded-lg max-h-[500px] overflow-y-scroll no-scrollbar">

@@ -23,7 +23,7 @@ const UserProfilePage = () => {
 		profession: currentUser?.profession || "",
 		themeSelected: currentUser?.themeSelected || "#50A65C",
 		phone: currentUser?.phone || "",
-		photo: currentUser?.photo || "/images/defaultProfile.png",
+		photo: currentUser?.photo || "",
 		bio: currentUser?.bio || "",
 		role: userType || "client",
 		gender: currentUser?.gender || "",

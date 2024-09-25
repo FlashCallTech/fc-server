@@ -149,7 +149,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				toast({
 					variant: "destructive",
 					title: "Unauthorized access",
-					description: `Logging Out`,
+					description: `Authentication Required`,
 				});
 				handleSignout();
 			} else {

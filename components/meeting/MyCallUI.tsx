@@ -9,6 +9,7 @@ import { analytics, db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import {
+	backendBaseUrl,
 	stopMediaStreams,
 	updateExpertStatus,
 	updateFirestoreSessions,
@@ -122,13 +123,21 @@ const MyCallUI = () => {
 
 				setShowCallUI(false); // Hide call UI
 
+				isMeetingOwner &&
+					(await updateExpertStatus(currentUser?.phone as string, "Offline"));
+
+				const expertPhone = expert?.custom?.phone;
+				if (expertPhone) {
+					await updateExpertStatus(expertPhone, "Online");
+				}
+
 				logEvent(analytics, "call_rejected", {
 					callId: call.id,
 				});
 
 				const creatorURL = localStorage.getItem("creatorURL");
 
-				await fetch("/api/v1/calls/updateCall", {
+				await fetch(`${backendBaseUrl}/api/v1/calls/updateCall`, {
 					method: "POST",
 					body: JSON.stringify({
 						callId: call.id,
@@ -152,7 +161,7 @@ const MyCallUI = () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
 				setShowCallUI(false); // Hide call UI
 
-				await fetch("/api/v1/calls/updateCall", {
+				await fetch(`${backendBaseUrl}/api/v1/calls/updateCall`, {
 					method: "POST",
 					body: JSON.stringify({
 						callId: call.id,
