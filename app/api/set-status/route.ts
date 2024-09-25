@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 		}
 
 		// Validate the status (if there are specific statuses allowed)
-		const validStatuses = ["Online", "Offline", "Busy"];
+		const validStatuses = ["Online", "Offline", "Busy", "Idle"];
 		if (!validStatuses.includes(status)) {
 			return NextResponse.json({ message: "Invalid status" }, { status: 400 });
 		}

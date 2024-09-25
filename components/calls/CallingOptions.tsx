@@ -388,8 +388,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			await updateExpertStatus(clientUser?.phone as string, "Busy");
-
 			await updateFirestoreSessions(
 				clientUser?._id as string,
 				call.id,
@@ -534,7 +532,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			label: "Book Video Call",
 			icon: video,
 			onClick: () => {
-				if (clientUser || onlineStatus !== "Busy") {
+				if (clientUser && onlineStatus !== "Busy") {
 					handleClickOption("video");
 				} else {
 					setIsAuthSheetOpen(true);
@@ -551,7 +549,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			label: "Book Audio Call",
 			icon: audio,
 			onClick: () => {
-				if (clientUser || onlineStatus !== "Busy") {
+				if (clientUser && onlineStatus !== "Busy") {
 					handleClickOption("audio");
 				} else {
 					setIsAuthSheetOpen(true);
