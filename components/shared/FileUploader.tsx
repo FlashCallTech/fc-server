@@ -157,10 +157,8 @@ const FileUploader = ({
 								src={fileUrl}
 								alt="Current image"
 								className={`${
-									pathname === "/updateDetails"
-										? "file_uploader-img"
-										: "w-20 h-20"
-								}  rounded-full border-2 border-white`}
+									newFileUrl ? "w-20 h-20" : "w-44 h-44"
+								} rounded-full border-2 border-white`}
 							/>
 						)}
 

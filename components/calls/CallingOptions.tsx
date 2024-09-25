@@ -14,7 +14,11 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
 import { trackEvent } from "@/lib/mixpanel";
-import { isValidHexColor, updateFirestoreSessions } from "@/lib/utils";
+import {
+	isValidHexColor,
+	updateExpertStatus,
+	updateFirestoreSessions,
+} from "@/lib/utils";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -374,6 +378,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				}),
 				headers: { "Content-Type": "application/json" },
 			});
+
+			await updateExpertStatus(clientUser?.phone as string, "Busy");
 
 			await updateFirestoreSessions(
 				clientUser?._id as string,
