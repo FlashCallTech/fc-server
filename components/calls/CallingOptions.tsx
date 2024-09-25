@@ -229,17 +229,25 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		const formattedDate = createdAtDate.toISOString().split("T")[0];
 
 		if (callType === "audio") {
-			trackEvent("BookCall_Audio_Connected", {
-				Client_ID: clientUser?._id,
-				User_First_Seen: formattedDate,
-				Creator_ID: creator._id,
-			});
+			try {
+				trackEvent("BookCall_Audio_Connected", {
+					Client_ID: clientUser?._id,
+					User_First_Seen: formattedDate,
+					Creator_ID: creator._id,
+				});
+			} catch (error) {
+				console.log(error);
+			}
 		} else {
-			trackEvent("BookCall_Video_Connected", {
-				Client_ID: clientUser?._id,
-				User_First_Seen: formattedDate,
-				Creator_ID: creator._id,
-			});
+			try {
+				trackEvent("BookCall_Video_Connected", {
+					Client_ID: clientUser?._id,
+					User_First_Seen: formattedDate,
+					Creator_ID: creator._id,
+				});
+			} catch (error) {
+				console.log(error);
+			}
 		}
 
 		// router.replace(`/meeting/${call.id}`);
