@@ -56,7 +56,7 @@ const MyCallUI = () => {
 								// Call is still pending, redirect the user back to the meeting
 								toast({
 									variant: "destructive",
-									title: "Pending Call Session",
+									title: "Ongoing Call or Session Pending",
 									description: "Redirecting you back ...",
 								});
 								router.replace(`/meeting/${ongoingCall.id}`);
@@ -137,7 +137,7 @@ const MyCallUI = () => {
 
 				const creatorURL = localStorage.getItem("creatorURL");
 
-				await fetch(`${backendBaseUrl}/api/v1/calls/updateCall`, {
+				await fetch(`${backendBaseUrl}/calls/updateCall`, {
 					method: "POST",
 					body: JSON.stringify({
 						callId: call.id,
@@ -161,7 +161,7 @@ const MyCallUI = () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
 				setShowCallUI(false); // Hide call UI
 
-				await fetch(`${backendBaseUrl}/api/v1/calls/updateCall`, {
+				await fetch(`${backendBaseUrl}/calls/updateCall`, {
 					method: "POST",
 					body: JSON.stringify({
 						callId: call.id,
