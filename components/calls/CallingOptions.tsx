@@ -15,6 +15,7 @@ import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
 import { trackEvent } from "@/lib/mixpanel";
 import {
+	backendBaseUrl,
 	isValidHexColor,
 	updateExpertStatus,
 	updateFirestoreSessions,
@@ -367,7 +368,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				creatorId: creator._id,
 			});
 
-			fetch("/api/v1/calls/registerCall", {
+			fetch(`${backendBaseUrl}/calls/registerCall`, {
 				method: "POST",
 				body: JSON.stringify({
 					callId: id as string,

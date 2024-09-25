@@ -87,7 +87,7 @@ const CopyToClipboard = ({
 					alt="link"
 					className="w-5 h-5"
 				/>
-				<div className="grid items-start justify-start overflow-x-hidden w-full group-hover:hoverScaleDownEffect group-hover:text-green-1">
+				<div className="grid items-start justify-start overflow-x-hidden w-full group-hover:text-green-1">
 					<p className="text-ellipsis whitespace-nowrap min-w-0 overflow-hidden">
 						{link}
 					</p>
