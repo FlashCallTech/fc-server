@@ -19,7 +19,7 @@ const MyCallUI = () => {
 	const router = useRouter();
 	const calls = useCalls();
 	const pathname = usePathname();
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 
 	const { toast } = useToast();
 	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
@@ -52,13 +52,14 @@ const MyCallUI = () => {
 
 						if (sessionDoc.exists()) {
 							const { ongoingCall } = sessionDoc.data();
-							if (ongoingCall && ongoingCall.status !== "ended") {
+							if (ongoingCall && ongoingCall.status !== "ended" && !hide) {
 								// Call is still pending, redirect the user back to the meeting
-								toast({
-									variant: "destructive",
-									title: "Ongoing Call or Session Pending",
-									description: "Redirecting you back ...",
-								});
+								userType === "client" &&
+									toast({
+										variant: "destructive",
+										title: "Ongoing Call or Session Pending",
+										description: "Redirecting you back ...",
+									});
 								router.replace(`/meeting/${ongoingCall.id}`);
 								setHasRedirected(true);
 							}
