@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Sheet, SheetContent } from "../ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "../ui/sheet";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { createFeedback } from "@/lib/actions/feedback.actions";
@@ -67,13 +67,13 @@ const ChatFeedback = ({
 	}, []);
 
 	useEffect(() => {
-		trackEvent('Feedback_bottomsheet_impression', {
+		trackEvent("Feedback_bottomsheet_impression", {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 			Creator_ID: creator?._id,
 			Walletbalace_Available: clientUser?.walletBalance,
-		})
-	}, [])
+		});
+	}, []);
 
 	const handleSliderChange = (value: any) => {
 		setRating(value);
@@ -98,14 +98,14 @@ const ChatFeedback = ({
 	const handleSubmitFeedback = async () => {
 		if (!currentUser || !chat) return;
 		try {
-			trackEvent('Feedback_bottomsheet_submitted', {
+			trackEvent("Feedback_bottomsheet_submitted", {
 				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 				Creator_ID: creator?._id,
 				Feedback_Value: rating,
 				Walletbalace_Available: clientUser?.walletBalance,
 				Text: feedbackMessage,
-			})
+			});
 
 			const userId = currentUser?._id as string;
 
@@ -165,16 +165,18 @@ const ChatFeedback = ({
 			open={isOpen}
 			onOpenChange={(open) => {
 				if (!open) {
-					trackEvent('Feedback_bottomsheet_closed', {
+					trackEvent("Feedback_bottomsheet_closed", {
 						Client_ID: clientUser?._id,
-						User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+						User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 						Creator_ID: creator?._id,
 						Walletbalace_Available: clientUser?.walletBalance,
-				});
+					});
 					onOpenChange(false); // Trigger the closing function only when the sheet is closed
 				}
 			}}
 		>
+			<SheetTitle className="hidden"></SheetTitle>
+			<SheetDescription className="hidden"></SheetDescription>
 			<SheetContent
 				side="bottom"
 				className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto"

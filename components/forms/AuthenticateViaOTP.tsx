@@ -27,6 +27,7 @@ import usePlatform from "@/hooks/usePlatform";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
 import { backendBaseUrl } from "@/lib/utils";
+import GetRandomImage from "@/utils/GetRandomImage";
 
 const formSchema = z.object({
 	phone: z
@@ -191,7 +192,7 @@ const AuthenticateViaOTP = ({
 						firstName: "",
 						lastName: "",
 						username: formattedPhone as string,
-						photo: "",
+						photo: GetRandomImage() || "",
 						phone: formattedPhone,
 						role: "client",
 						bio: "",

@@ -76,31 +76,31 @@ export const authSliderContent = [
 		heading: "Welcome to the Platform",
 		description:
 			"Start your journey with us. Explore, connect, and grow with our vibrant community.",
-		imageURL: "/users/1.png",
+		imageURL: "/images/M_preview.png",
 	},
 	{
 		heading: "Discover New Horizons",
 		description:
 			"Find new opportunities and take your skills to the next level with our resources.",
-		imageURL: "/users/2.png",
+		imageURL: "/images/F_preview.png",
 	},
 	{
 		heading: "Engage and Collaborate",
 		description:
 			"Join conversations, share ideas, and collaborate on exciting projects worldwide.",
-		imageURL: "/users/3.png",
+		imageURL: "/images/M_preview.png",
 	},
 	{
 		heading: "Learn and Grow",
 		description:
 			"Access a vast library of knowledge to grow both personally and professionally.",
-		imageURL: "/users/4.png",
+		imageURL: "/images/F_preview.png",
 	},
 	{
 		heading: "Join Our Community",
 		description:
 			"Become a part of our ever-growing community and make connections that matter.",
-		imageURL: "/users/5.png",
+		imageURL: "/images/M_preview.png",
 	},
 ];
 
