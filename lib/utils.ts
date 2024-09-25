@@ -28,6 +28,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const frontendBaseUrl = "https://flashcall.me";
 export const backendBaseUrl = "https://backend.flashcall.me/api/v1";
+// export const backendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL_BACKEND;
 
 export const handleError = (error: unknown) => {
 	console.error(error);

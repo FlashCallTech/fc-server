@@ -59,11 +59,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	useEffect(() => {
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);
-		const clientStatusDocRef = doc(
-			db,
-			"userStatus",
-			clientUser?.phone as string
-		);
+		// Only create clientStatusDocRef if clientUser is not null
+		let clientStatusDocRef: any;
+		if (clientUser) {
+			clientStatusDocRef = doc(db, "userStatus", clientUser.phone);
+		}
 
 		const unsubscribe = onSnapshot(creatorRef, (doc) => {
 			const data = doc.data();
@@ -102,19 +102,23 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}
 				});
 
-				// Listen for the client's status
-				const unsubscribeClientStatus = onSnapshot(
-					clientStatusDocRef,
-					(clientStatusDoc) => {
-						const clientStatusData = clientStatusDoc.data();
+				// Listen for the client's status only if clientUser is not null
+				let unsubscribeClientStatus: any;
+				if (clientUser) {
+					// Listen for the client's status
+					unsubscribeClientStatus = onSnapshot(
+						clientStatusDocRef,
+						(clientStatusDoc: any) => {
+							const clientStatusData = clientStatusDoc.data();
 
-						if (clientStatusData) {
-							setIsClientBusy(clientStatusData.status === "Busy");
-						} else {
-							setIsClientBusy(false);
+							if (clientStatusData) {
+								setIsClientBusy(clientStatusData.status === "Busy");
+							} else {
+								setIsClientBusy(false);
+							}
 						}
-					}
-				);
+					);
+				}
 
 				// Clean up both status listeners
 				return () => {
