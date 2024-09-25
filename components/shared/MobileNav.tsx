@@ -64,17 +64,7 @@ const MobileNav = () => {
 			Walletbalace_Available: clientUser?.walletBalance,
 		});
 		setAuthenticationSheetOpen(false);
-		if (currentUser) {
-			const statusDocRef = doc(db, "userStatus", currentUser.phone);
-			setDoc(statusDocRef, { status: "Offline" }, { merge: true })
-				.then(() => {
-					console.log("User status set to Offline");
-				})
-				.catch((error: any) => {
-					Sentry.captureException(error);
-					console.error("Error updating user status: ", error);
-				});
-		}
+
 		handleSignout();
 	};
 

@@ -114,6 +114,7 @@ const CreatorHome = () => {
 			);
 			const fetchedTransactions = response.data.transactions;
 			const totalEarnings = calculateTotalEarnings(fetchedTransactions);
+
 			setTodaysEarning(totalEarnings.toFixed(2));
 		} catch (error) {
 			Sentry.captureException(error);
@@ -316,7 +317,6 @@ const CreatorHome = () => {
 						chatAllowed: services.chat,
 					},
 				} as UpdateCreatorParams);
-
 				refreshCurrentUser();
 			} catch (error) {
 				Sentry.captureException(error);

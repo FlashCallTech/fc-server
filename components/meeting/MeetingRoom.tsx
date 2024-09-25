@@ -131,11 +131,8 @@ const MeetingRoom = () => {
 								title: "Unauthorized Access",
 								description: "You are already in the call.",
 							});
-							setTimeout(() => {
-								router.replace("/home"); // Redirect after a short delay
-							}, 1000);
-
 							stopMediaStreams();
+							router.replace("/home");
 						} else {
 							// Update the member's status to "joined"
 							const updatedMembers = ongoingCall.members.map((member: any) =>
@@ -154,6 +151,8 @@ const MeetingRoom = () => {
 							});
 
 							await call?.join();
+							if (isVideoCall) call?.camera?.enable();
+							call?.microphone?.enable();
 							setHasJoined(true);
 							logEvent(analytics, "call_connected", { userId: currentUserId });
 						}
@@ -163,7 +162,7 @@ const MeetingRoom = () => {
 							title: "Unauthorized Access",
 							description: "You are not allowed to join this meeting.",
 						});
-
+						stopMediaStreams();
 						router.replace("/home");
 					}
 				} else {
@@ -181,8 +180,6 @@ const MeetingRoom = () => {
 		};
 
 		if (call) {
-			if (isVideoCall) call.camera.enable();
-			call.microphone.enable();
 			joinCall();
 		}
 	}, [call, hasJoined, callHasEnded, participantCount]);
