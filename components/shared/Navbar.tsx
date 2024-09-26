@@ -40,12 +40,14 @@ const Navbar = () => {
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
 	const pathname = usePathname();
 	const creatorURL = localStorage.getItem("creatorURL");
-	const currentCreatorUsername = creatorURL
-		? creatorURL.split("/home").filter((url) => url)[0]
-		: pathname.split("/home")[1];
 
-	// const isCreatorOrExpertPath = pathname.includes(`/${currentCreatorUsername}`);
+	const isCreatorOrExpertPath = pathname.includes(`${creatorURL}`);
 
+	console.log(
+		isCreatorOrExpertPath,
+		currentTheme,
+		pathname.includes(creatorURL as string)
+	);
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
@@ -103,9 +105,9 @@ const Navbar = () => {
 
 	const AppLink = () => (
 		<Button
-			className="flex items-center gap-2 bg-green-1 py-2 px-4 lg:ml-2 text-white rounded-[4px] hoverScaleDownEffect"
+			className="flex items-center gap-2 bg-green-1 py-2 px-4 lg:ml-2 text-white rounded-[4px] hoverScaleDownEffect border border-black"
 			style={{
-				boxShadow: `5px 5px 0px 0px ${userTheme}`,
+				boxShadow: `4px 4px 0px 0px #000000`,
 			}}
 			onClick={handleAppRedirect}
 		>
@@ -133,9 +135,10 @@ const Navbar = () => {
 
 	return (
 		<nav
-			className="justify-between items-center fixed z-40 top-0 left-0 w-full px-2 sm:px-4 py-4 bg-white shadow-sm"
+			className={`justify-between items-center fixed z-40 top-0 left-0 w-full px-2 sm:px-4 py-4 shadow-sm`}
 			style={{
 				display: `${authenticationSheetOpen && !currentUser ? "none" : "flex"}`,
+				backgroundColor: `${isCreatorOrExpertPath ? userTheme : "#ffffff"}`,
 			}}
 		>
 			{currentUser ? (
@@ -149,9 +152,9 @@ const Navbar = () => {
 							width={1000}
 							height={1000}
 							alt="flashcall logo"
-							className="w-[130px] md:w-[144px] h-[40px] p-2 bg-green-1 rounded-[4px] hoverScaleDownEffect"
+							className="w-[130px] md:w-[144px] h-[40px] p-2 bg-green-1 rounded-[4px] hoverScaleDownEffect border border-black"
 							style={{
-								boxShadow: `5px 5px 0px 0px ${userTheme}`,
+								boxShadow: `4px 4px 0px 0px #000000`,
 							}}
 						/>
 					</Link>
@@ -167,11 +170,11 @@ const Navbar = () => {
 					{walletBalance >= 0 ? (
 						<Link
 							href="/payment"
-							className={`w-fit flex items-center justify-center gap-2 text-black p-3 border border-black rounded-[4px] hover:bg-green-1 ${
+							className={`w-fit flex items-center justify-center gap-2 bg-black text-white p-3 border border-white rounded-[4px] hover:bg-green-1 ${
 								pathname.includes("/payment") && "bg-green-1 text-white"
 							} group`}
 							style={{
-								boxShadow: `5px 5px 0px 0px ${userTheme}`,
+								boxShadow: `3px 3px 0px 0px #ffffff`,
 							}}
 						>
 							<Image
@@ -179,7 +182,7 @@ const Navbar = () => {
 								width={100}
 								height={100}
 								alt="wallet"
-								className={`w-4 h-4 group-hover:text-white group-hover:invert ${
+								className={`w-4 h-4 text-white invert group-hover:text-white group-hover:invert ${
 									pathname.includes("/payment") && "invert"
 								}`}
 							/>
@@ -200,7 +203,7 @@ const Navbar = () => {
 					size="lg"
 					onClick={handleRouting}
 					style={{
-						boxShadow: `5px 5px 0px 0px ${userTheme}`,
+						boxShadow: `3px 3px 0px 0px ${userTheme}`,
 						color: userTheme,
 						border: `2px solid ${userTheme}`,
 					}}

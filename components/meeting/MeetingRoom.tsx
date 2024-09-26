@@ -31,7 +31,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { stopMediaStreams } from "@/lib/utils";
+import { stopMediaStreams, updateExpertStatus } from "@/lib/utils";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -132,6 +132,7 @@ const MeetingRoom = () => {
 								description: "You are already in the call.",
 							});
 							stopMediaStreams();
+							await updateExpertStatus(currentUser?.phone as string, "Busy");
 							router.replace("/home");
 						} else {
 							// Update the member's status to "joined"
