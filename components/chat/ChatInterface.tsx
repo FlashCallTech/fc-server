@@ -23,6 +23,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import CreatorChatTimer from "../creator/CreatorChatTimer";
 import Recharge from "./Recharge";
 import Tip from "./Tip";
+import useMarkAsSeen from "@/hooks/useMarkAsSeen";
 
 const ChatInterface: React.FC = () => {
 	const [text, setText] = useState("");
@@ -44,7 +45,8 @@ const ChatInterface: React.FC = () => {
 
 	useUserStatus();
 
-	const { handleEnd, chat, markMessagesAsSeen, loading } = useEndChat();
+	const { handleEnd, chat, loading } = useEndChat();
+	const { markMessagesAsSeen } = useMarkAsSeen();
 	const { currentUser, userType } = useCurrentUsersContext();
 	const { user2, chatId } = useEndChat();
 	const {

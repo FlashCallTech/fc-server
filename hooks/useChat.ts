@@ -45,6 +45,8 @@ const useChat = () => {
 	const [user2, setUser2] = useState<User2 | undefined>();
 	const [flag, setFlag] = useState(true);
 	const [ended, setEnded] = useState<boolean>(false);
+	const [chatRejected, setChatRejected] = useState<boolean>(false);
+	const [chatRequestId, setChatRequestId] = useState<string>();
 	const { chatId } = useParams();
 	
 	useEffect(() => {
@@ -65,6 +67,7 @@ const useChat = () => {
 		}
 		const userType = localStorage.getItem('userType');
 		if(userType === 'client') {
+			console.log('client')
 			const clientId = localStorage.getItem('currentUserID');
 			const getClient = async() => {
 				const response = await getUserById(clientId as string);
@@ -111,6 +114,28 @@ const useChat = () => {
 	}, [chatId]);
 
 	useEffect(() => {
+		const handleChatRequestIdUpdate = () => {
+			const storedChatRequestId = localStorage.getItem("chatRequestId");
+			if (storedChatRequestId) {
+				setChatRequestId(storedChatRequestId);
+			}
+		};
+	
+		// Listen for the custom event
+		window.addEventListener("chatRequestIdUpdated", handleChatRequestIdUpdate);
+	
+		// Optionally, check on initial mount as well
+		const storedChatRequestId = localStorage.getItem("chatRequestId");
+		if (storedChatRequestId) {
+			setChatRequestId(storedChatRequestId);
+		}
+	
+		return () => {
+			window.removeEventListener("chatRequestIdUpdated", handleChatRequestIdUpdate);
+		};
+	}, []);
+
+	useEffect(() => {
 		if (chatId) {
 			const unSub = onSnapshot(
 				doc(db, "chats", chatId as string),
@@ -126,6 +151,18 @@ const useChat = () => {
 			return () => unSub();
 		}
 	}, [chatId]);
+
+	// useEffect(() => {
+	// 	if (chatRequestId) {
+	// 		const unSub = onSnapshot(
+	// 			doc(db, "chatRequests", chatRequestId as string),
+	// 			(res: any) => {	
+	// 				setChatRejected(res.data()?.status === "rejected");
+	// 			}
+	// 		);
+	// 		return () => unSub();
+	// 	}
+	// }, [chatRequestId]);
 
 	useEffect(() => {
 		if (chatEnded && startedAt && endedAt) {
@@ -201,6 +238,9 @@ const useChat = () => {
 			}
 		}
 	};
+
+	console.log(client)
+	console.log(chatRejected);
 
 	if (
 		duration &&
