@@ -9,6 +9,7 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import * as Sentry from "@sentry/nextjs";
 import usePayout from "@/hooks/usePayout";
+import Verify from "../shared/Verify";
 
 interface Transaction {
 	_id: string;
@@ -27,7 +28,7 @@ const Withdraw: React.FC = () => {
 		new Map()
 	);
 	const [isSticky, setIsSticky] = useState(false);
-	const { initiateWithdraw } = usePayout();
+	const { initiateWithdraw, loadingTransfer } = usePayout();
 	const stickyRef = useRef<HTMLDivElement>(null);
 
 	const handleScroll = () => {
@@ -86,6 +87,12 @@ const Withdraw: React.FC = () => {
 			fetchTransactions();
 		}
 	}, [btn, creatorUser]);
+
+	if(loadingTransfer) {
+		return (
+			<Verify message={'Initiating Tranfer'} />
+		)
+	}
 
 	if (!creatorUser?._id)
 		return (

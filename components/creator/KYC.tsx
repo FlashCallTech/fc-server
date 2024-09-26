@@ -353,10 +353,6 @@ const KYC: React.FC = () => {
 		}
 	};
 
-	if (verifying) {
-		return <Verify />;
-	}
-
 	if (loading) {
 		return <Loader />;
 	}
@@ -426,7 +422,7 @@ const KYC: React.FC = () => {
 						{isPanInputVisible && !panVerified && (
 							<div className="flex w-full items-center mt-2">
 								<button
-									className="p-2 w-full rounded-md bg-[#50A65C]"
+									className="p-2 text-white w-full rounded-md bg-[#50A65C]"
 									onClick={handlePanVerification}
 									disabled={verifyingPan}
 								>
@@ -550,7 +546,7 @@ const KYC: React.FC = () => {
 						{isAadhaarInputVisible && !aadhaarVerified && (
 							<div className="flex w-full items-center mt-2">
 								<button
-									className="p-2 w-full rounded-md bg-[#50A65C]"
+									className="p-2 w-full text-white rounded-md bg-[#50A65C]"
 									onClick={handleAadhaarVerification}
 								>
 									{otpGenerated
@@ -625,7 +621,7 @@ const KYC: React.FC = () => {
 						{isLivelinessCheckInputVisible && !livelinessCheckVerified && (
 							<div className="flex w-full items-center mt-2">
 								<button
-									className="p-2 w-full rounded-md bg-[#50A65C]"
+									className="p-2 text-white w-full rounded-md bg-[#50A65C]"
 									onClick={handleLivelinessVerification}
 									disabled={verifyingLiveliness}
 								>

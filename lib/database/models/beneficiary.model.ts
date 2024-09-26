@@ -7,13 +7,7 @@ interface BeneficiaryInstrumentDetails {
 }
 
 interface BeneficiaryContactDetails {
-  beneficiary_email: string;
   beneficiary_phone: string;
-  beneficiary_country_code: string;
-  beneficiary_address: string;
-  beneficiary_city: string;
-  beneficiary_state: string;
-  beneficiary_postal_code: string;
 }
 
 interface BeneficiaryDocument extends Document {
@@ -27,20 +21,14 @@ interface BeneficiaryDocument extends Document {
 }
 
 const BeneficiaryInstrumentDetailsSchema = new Schema<BeneficiaryInstrumentDetails>({
-  bank_account_number: { type: String, required: true },
-  bank_ifsc: { type: String, required: true },
-  vpa: { type: String, required: true }
-});
+  bank_account_number: { type: String, unique: true, sparse: true },
+  bank_ifsc: { type: String, unique: true, sparse: true },
+  vpa: { type: String, unique: true, sparse: true }
+}, { _id: false });
 
 const BeneficiaryContactDetailsSchema = new Schema<BeneficiaryContactDetails>({
-  beneficiary_email: { type: String, required: true },
   beneficiary_phone: { type: String, required: true },
-  beneficiary_country_code: { type: String, required: true },
-  beneficiary_address: { type: String, required: true },
-  beneficiary_city: { type: String, required: true },
-  beneficiary_state: { type: String, required: true },
-  beneficiary_postal_code: { type: String, required: true }
-});
+}, { _id: false });
 
 const BeneficiarySchema = new Schema<BeneficiaryDocument>({
   user_id: {type: String, required: true},

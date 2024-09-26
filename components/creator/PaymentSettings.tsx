@@ -4,13 +4,14 @@ import React, { useEffect, useState, useCallback } from "react";
 import Loader from "../shared/Loader";
 import { useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
+import { useToast } from "../ui/use-toast";
 
 const PaymentSettings = () => {
+	const { toast } = useToast();
 	const [paymentMethod, setPaymentMethod] = useState<
 		"UPI" | "BankTransfer" | ""
 	>("");
 	const [bankDetails, setBankDetails] = useState({
-		accountType: "",
 		upiId: "",
 		ifscCode: "",
 		accountNumber: "",
@@ -19,7 +20,6 @@ const PaymentSettings = () => {
 		"UPI" | "BankTransfer" | ""
 	>("");
 	const [initialBankDetails, setInitialBankDetails] = useState({
-		accountType: "",
 		upiId: "",
 		ifscCode: "",
 		accountNumber: "",
@@ -29,7 +29,6 @@ const PaymentSettings = () => {
 		upiId: "",
 		ifscCode: "",
 		accountNumber: "",
-		accountType: "",
 	});
 
 	const { currentUser } = useCurrentUsersContext();
@@ -52,7 +51,6 @@ const PaymentSettings = () => {
 						upiId: result.data.upiId || "",
 						ifscCode: result.data.bankDetails?.ifsc || "",
 						accountNumber: result.data.bankDetails?.accountNumber || "",
-						accountType: result.data.bankDetails?.accountType || "",
 					};
 					setPaymentMethod(method);
 					setBankDetails(details);
@@ -99,7 +97,6 @@ const PaymentSettings = () => {
 			upiId: "",
 			ifscCode: "",
 			accountNumber: "",
-			accountType: "",
 		};
 
 		if (paymentMethod === "UPI") {
@@ -127,10 +124,6 @@ const PaymentSettings = () => {
 				newErrors.accountNumber = "Not a valid Account Number";
 				hasError = true;
 			}
-			if (!bankDetails.accountType) {
-				newErrors.accountType = "Account Type is required";
-				hasError = true;
-			}
 		}
 
 		setErrors(newErrors);
@@ -143,11 +136,11 @@ const PaymentSettings = () => {
 				bankDetails: {
 					ifsc: bankDetails.ifscCode,
 					accountNumber: bankDetails.accountNumber,
-					accountType: bankDetails.accountType,
 				},
 			};
 
 			try {
+				setIsLoading(true);
 				if (paymentData.paymentMode === 'UPI') {
 					const response = await fetch('/api/v1/creator/verifyUpi', {
 						method: 'POST',
@@ -164,15 +157,29 @@ const PaymentSettings = () => {
 					if (result.data.status !== 'VALID') {
 						console.error('UPI ID not valid');
 						alert("Failed to save payment details.");
+						setIsLoading(false);
 						return;
 					}
-					else{
-						alert('Payment Details Saved');
+					else {
+						setInitialPaymentMethod('UPI');
+						const currentDetails = {
+							upiId: result.data.vpa,
+							ifscCode: initialBankDetails.ifscCode,
+							accountNumber: initialBankDetails.accountNumber,
+						}
+						setInitialBankDetails(currentDetails);
+						// setInitialBankDetails()
+						toast({
+							variant: "destructive",
+							title: "Success",
+							description: "Payment Details Saved",
+						});
+						setIsLoading(false);
 					}
 
 				}
-				else if (paymentData.paymentMode === 'BankTransfer') {
-					const response = await fetch('/api/v1/verifyBank', {
+				else if (paymentData.paymentMode === 'BANK_TRANSFER') {
+					const response = await fetch('/api/v1/creator/verifyBank', {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json'
@@ -185,39 +192,33 @@ const PaymentSettings = () => {
 					})
 
 					const result = await response.json();
-					if(result.data.account_status !== 'VALID'){
+					if (result.data.account_status !== 'VALID') {
 						console.error('Something wrong with Bank Details');
 						alert("Failed to save payment details.");
+						setIsLoading(false);
 						return;
 					}
 					else {
-						alert('Saved Payment Details');
+						setInitialPaymentMethod('BankTransfer');
+						const currentDetails = {
+							upiId: initialBankDetails.upiId,
+							ifscCode: result.details.ifsc,
+							accountNumber: result.details.bank_account,
+						}
+						setInitialBankDetails(currentDetails);
+						toast({
+							variant: "destructive",
+							title: "Success",
+							description: "Payment Details Saved",
+						});
+						setIsLoading(false);
 					}
 				}
-
-				// if(result.success){
-				// const response = await fetch("/api/v1/creator/savePayment", {
-				// 	method: "POST",
-				// 	headers: { "Content-Type": "application/json" },
-				// 	body: JSON.stringify(paymentData),
-				// });
-
-				// if (response.ok) {
-				// 	alert("Payment details saved successfully!");
-				// 	// Update initial states to reflect the new saved state
-				// 	setInitialPaymentMethod(paymentMethod);
-				// 	setInitialBankDetails(bankDetails);
-				// } else {
-				// 	alert("Failed to save payment details.");
-				// }
-				// }
-				// else {
-				// 	alert('Penny Drop Failed');
-				// }
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error saving payment details:", error);
 				alert("An error occurred while saving the payment details.");
+				setIsLoading(false);
 			}
 		}
 	};
@@ -228,6 +229,9 @@ const PaymentSettings = () => {
 			JSON.stringify(bankDetails) !== JSON.stringify(initialBankDetails)
 		);
 	};
+
+	console.log(initialBankDetails, initialPaymentMethod);
+	console.log(bankDetails)
 
 	if (isLoading) {
 		return <Loader />;
@@ -344,34 +348,6 @@ const PaymentSettings = () => {
 									</p>
 								)}
 							</div>
-							<div className="mb-4">
-								<label
-									className="block text-sm font-semibold mb-1"
-									htmlFor="accountType"
-								>
-									Account Type
-								</label>
-								<select
-									id="accountType"
-									value={bankDetails.accountType}
-									onChange={(e) =>
-										setBankDetails({
-											...bankDetails,
-											accountType: e.target.value,
-										})
-									}
-									className="w-full border p-2 rounded-lg text-sm"
-								>
-									<option value="">Select Account Type</option>
-									<option value="Savings">Savings</option>
-									<option value="Current">Current</option>
-								</select>
-								{errors.accountType && (
-									<p className="text-red-500 text-sm mt-1">
-										{errors.accountType}
-									</p>
-								)}
-							</div>
 						</>
 					)}
 				</div>
@@ -379,8 +355,8 @@ const PaymentSettings = () => {
 					disabled={!hasChanges()}
 					onClick={handleSave}
 					className={`w-full py-2 px-4 rounded-lg text-white ${hasChanges()
-							? "bg-black hover:bg-gray-900"
-							: "bg-gray-400 cursor-not-allowed"
+						? "bg-black hover:bg-gray-900"
+						: "bg-gray-400 cursor-not-allowed"
 						}`}
 				>
 					Save
