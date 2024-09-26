@@ -6,10 +6,12 @@ const usePayout = () => {
   const { creatorUser } = useCurrentUsersContext();
   const [beneficiary_details, setBeneficiary_details] = useState<any>();
   const [transfer_details, setTransfer_details] = useState<any>();
+  const [loadingTransfer, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
 
   const initiateWithdraw = async (creatorId: string) => {
+    setLoading(true);
     const response = await fetch(`/api/v1/creator/getPayment?userId=${creatorId}`,);
     const result = await response.json();
     if (result.success) {
@@ -32,6 +34,7 @@ const usePayout = () => {
     } else {
       alert('Complete your Payment Settings')
       router.push('/payment-settings');
+      setLoading(false);
       return;
     }
     const kycResponse = await fetch(
@@ -47,81 +50,53 @@ const usePayout = () => {
     if (!kycResult.success) {
       alert('Complete KYC Verification');
       router.push('/kyc');
+      setLoading(false);
       return;
     } else {
       if (kycResult.data.kyc_status === 'FAILED' || kycResult.data.kyc_status === 'PENDING') {
         alert('Complete KYC Verification');
         router.push('/kyc');
+        setLoading(false);
         return;
       }
     }
 
+    console.log('Work in progress');
 
-    const getBeneficiaryResponse = await fetch(`/api/v1/beneficiary/getBeneficiary?user_id=${creatorId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    })
-    const getBeneficiaryResult = await getBeneficiaryResponse.json();
-    if (getBeneficiaryResult.success) {
-      if (getBeneficiaryResult.data.beneficiary_status !== 'VERIFIED') {
-        const beneficiary_id = creatorId + '2';
-        const beneficiaryResponse = await fetch('/api/v1/beneficiary/create-beneficiary', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            beneficiary_id,
-            beneficiary_name: creatorUser?.firstName + ' ' + creatorUser?.lastName,
-            phone: creatorUser?.phone
-          })
-        })
 
-        const beneficiaryResult = await beneficiaryResponse.json();
+    // const getBeneficiaryResponse = await fetch(`/api/v1/beneficiary/getBeneficiary?userId=${creatorId}`, {
+    //   method: 'GET',
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    // })
+    // const getBeneficiaryResult = await getBeneficiaryResponse.json();
+    // if (getBeneficiaryResult.success) {
+    //     setBeneficiary_details(getBeneficiaryResult.data)
+      // setTimeout(() => {
+      //   const transferResponse = fetch('/api/v1/transfer/initiate', {
+      //     method: 'POST',
+      //     headers: {
+      //       'Content-Type': 'application/json'
+      //     },
+      //     body: JSON.stringify({
+      //       transfer_id: 'transfer1',
+      //       transfer_amount: 1,
+      //       beneficiary_details,
+      //     })
+      //   })
 
-        if (beneficiaryResult.success && beneficiaryResult.data.beneficiary_status === 'VERIFIED') {
-          const payload = {
-            user_id: creatorId,
-            beneficiary_id,
-            beneficiary_name: creatorUser?.firstName + ' ' + creatorUser?.lastName,
-            beneficiary_status: beneficiaryResult.data.beneficiary_status,
-            added_on: beneficiaryResult.data.added_on,
-          }
-          const postBeneficiaryResponse = await fetch('/api/v1/beneficiary/post-beneficiary', {
-            method: "POST",
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              payload
-            })
-          })
-        }
-      }
-      else {
-        setBeneficiary_details(getBeneficiaryResult.data)
-      }
-      setTimeout(() => {
-
-        const transferResponse = fetch('/api/v1/transfer/initiate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            transfer_id: 'transfer1',
-            transfer_amount: 1,
-            beneficiary_details,
-          })
-        })
-
-      }, 10);
+      // }, 10);
+      
     }
-  }
+  //   setLoading(false);
+  //   setTimeout(() => {
+  //     console.log(beneficiary_details);
+  //   }, 1000);
+  //   console.log(transfer_details);
+  // }
 
-  return { initiateWithdraw };
+  return { initiateWithdraw, loadingTransfer };
 }
 
 export default usePayout

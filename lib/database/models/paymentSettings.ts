@@ -14,8 +14,8 @@ interface Payment extends Document {
 }
 
 const BankDetailsSchema = new Schema<BankDetails>({
-  ifsc: { type: String, unique: true },
-  accountNumber: { type: String, unique: true},
+  ifsc: { type: String, unique: true, sparse: true },
+  accountNumber: { type: String, unique: true, sparse: true},
   accountType: { type: String }
 }, { _id: false });
 
@@ -29,7 +29,8 @@ const PaymentSchema = new Schema<Payment>({
   upiId: {
     type: String,
     required: false,  // No conditional requirement here
-    unique: true
+    unique: true,
+    sparse: true
   },
   bankDetails: {
     type: BankDetailsSchema,

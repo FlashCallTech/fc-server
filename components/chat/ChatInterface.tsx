@@ -315,19 +315,22 @@ const ChatInterface: React.FC = () => {
 		setShowDialog(false);
 	};
 
+	function maskPhoneNumber(phoneNumber: string) {
+    // Remove the '+91' prefix
+    let cleanedNumber = phoneNumber.replace('+91', '');
+
+    // Mask the next 5 digits, leaving the first 2 digits unmasked
+    let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
+
+    return maskedNumber;
+}
+
 	return (
-		<div
-			className={`relative flex flex-col h-screen z-50`}
-			// style={{ backgroundBlendMode: "luminosity" }}
-		>
+		<div className={`relative flex flex-col h-screen`}>
 			<div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center z-0" />
-
-			{/* <div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center filter brightness-[0.25] blur-sx z-0" /> */}
-			{/* <div className="absolute inset-0 bg-gradient-to-b from-[#232323] via-[#464646] to-[#383c39] opacity-90 z-0" /> */}
-
 			<div className="relative flex flex-col h-full">
 				{/* Sticky Header */}
-				<div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-40">
+				<div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
 					<div className="flex items-center gap-2">
 						<Image
 							src={user2?.photo || "/avatar.svg"}
@@ -338,7 +341,7 @@ const ChatInterface: React.FC = () => {
 						/>
 						<div className="flex flex-col">
 							<div className="text-white font-bold text-xs md:text-lg">
-								{currentUser?.username ?? "Username"}
+								{currentUser?.firstName + " " + currentUser?.lastName || maskPhoneNumber(currentUser?.phone as string)}
 							</div>
 							{userType === "client" && <ChatTimer />}
 							{userType === "creator" && (

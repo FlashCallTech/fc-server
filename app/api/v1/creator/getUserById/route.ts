@@ -1,8 +1,8 @@
 import { getCreatorById } from "@/lib/actions/creator.actions";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
 	try {
 		const { userId } = await request.json();
 		const user = await getCreatorById(userId);

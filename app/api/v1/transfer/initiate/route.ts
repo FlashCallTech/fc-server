@@ -3,14 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest){
   try {
     const { transfer_id, transfer_amount, beneficiary_details } = await request.json();
-    const payload = {
-      transfer_id,
-      transfer_amount,
-      beneficiary_details: {
-        beneficiary_id: beneficiary_details.beneficiary_id,
-        beneficiary_name: beneficiary_details.beneficiary_name
-      }
-    };
+      const payload = {
+        transfer_id,
+        transfer_amount,
+        beneficiary_details: {
+          beneficiary_id: beneficiary_details.beneficiary_id,
+          beneficiary_name: beneficiary_details.beneficiary_name
+        }
+      };
     const response = await fetch('https://api.cashfree.com/payout/transfers', {
       method: 'POST',
       headers: {

@@ -16,7 +16,7 @@ export async function createPaymentSettings(
       if (details.method === 'upi') {
         existingPayment.paymentMode = 'UPI';
         existingPayment.upiId = details.upiId;
-      } else if (details.method === 'banktranfer') {
+      } else if (details.method === 'banktransfer') {
         existingPayment.paymentMode = 'BANK_TRANSFER';
         existingPayment.bankDetails = details.bankDetails;
       }
