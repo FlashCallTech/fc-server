@@ -61,32 +61,7 @@ const usePayout = () => {
       }
     }
 
-    console.log('Work in progress');
-
-
-    // const getBeneficiaryResponse = await fetch(`/api/v1/beneficiary/getBeneficiary?userId=${creatorId}`, {
-    //   method: 'GET',
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   },
-    // })
-    // const getBeneficiaryResult = await getBeneficiaryResponse.json();
-    // if (getBeneficiaryResult.success) {
-    //     setBeneficiary_details(getBeneficiaryResult.data)
-      // setTimeout(() => {
-      //   const transferResponse = fetch('/api/v1/transfer/initiate', {
-      //     method: 'POST',
-      //     headers: {
-      //       'Content-Type': 'application/json'
-      //     },
-      //     body: JSON.stringify({
-      //       transfer_id: 'transfer1',
-      //       transfer_amount: 1,
-      //       beneficiary_details,
-      //     })
-      //   })
-
-      // }, 10);
+    // const getBeneficiary = 
       
     }
   //   setLoading(false);
