@@ -162,107 +162,111 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 		);
 
 	return (
-		<div className="flex flex-col items-center px-5 sm:px-7 justify-center">
-			<div
-				className={`relative flex flex-col items-center w-full max-w-[85%] md:max-w-[70%] xl:max-w-[35%] mx-auto gap-4 p-4 rounded-[24px] z-10`}
-				style={{
-					backgroundColor: themeColor,
-				}}
-			>
-				{!isImageLoaded ? (
-					<div
-						className={`bg-gray-300 opacity-60 animate-pulse rounded-[24px] w-full h-[200px] sm:h-72 xl:h-80 object-cover`}
-					/>
-				) : (
-					<div
-						className={`relative rounded-xl w-full h-[200px] sm:h-72 xl:h-80 bg-center`}
-						style={backgroundImageStyle}
-					>
-						<div className="flex flex-col items-end justify-center gap-2 absolute top-4 right-4">
-							<>
-								<ShareButton
-									username={creator.username ? creator.username : creator.phone}
-									profession={creator.profession ?? "Astrologer"}
-									gender={creator.gender ? creator.gender.toLowerCase() : ""}
-									firstName={creator.firstName}
-									lastName={creator.lastName}
-								/>
-
-								{userType === "client" && (
-									<Favorites
-										setMarkedFavorite={setMarkedFavorite}
-										markedFavorite={markedFavorite}
-										handleToggleFavorite={handleToggleFavorite}
-										addingFavorite={addingFavorite}
-										creator={creator}
-										user={clientUser}
-										isCreatorOrExpertPath={isCreatorOrExpertPath}
-									/>
-								)}
-							</>
-						</div>
-					</div>
-				)}
-
-				<div className="text-white flex flex-col items-start w-full">
-					<p className="font-semibold text-3xl max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
-						{fullName}
-					</p>
-					<div className="flex items-center justify-between w-full mt-2">
-						<span className="text-md h-full">
-							{creator.profession ? creator.profession : "Expert"}
-						</span>
-
-						<div
-							className={`${
-								status === "Online"
-									? "bg-green-500"
-									: status === "Offline"
-									? "bg-red-500"
-									: status === "Busy"
-									? "bg-orange-400"
-									: ""
-							} text-[10px] rounded-[4px] border border-white py-1 px-2 font-semibold`}
-						>
-							<span className="flex">
-								{status === "Online"
-									? "Online"
-									: status === "Offline"
-									? "Offline"
-									: status === "Busy"
-									? "Busy"
-									: "Unknown"}
-							</span>
-						</div>
-					</div>
-				</div>
-
-				<span
-					className="absolute top-1/3 -right-7"
+		<>
+			<div className="flex flex-col items-center px-5 sm:px-7 justify-center">
+				<div
+					className={`relative flex flex-col items-center w-full max-w-[85%] md:max-w-[70%] xl:max-w-[35%] mx-auto gap-4 p-4 rounded-[24px] z-10`}
 					style={{
-						color: themeColor,
+						backgroundColor: themeColor,
 					}}
 				>
-					{sparkles}
-				</span>
-			</div>
+					{!isImageLoaded ? (
+						<div
+							className={`bg-gray-300 opacity-60 animate-pulse rounded-[24px] w-full h-[200px] sm:h-72 xl:h-80 object-cover`}
+						/>
+					) : (
+						<div
+							className={`relative rounded-xl w-full h-[200px] sm:h-72 xl:h-80 bg-center`}
+							style={backgroundImageStyle}
+						>
+							<div className="flex flex-col items-end justify-center gap-2 absolute top-4 right-4">
+								<>
+									<ShareButton
+										username={
+											creator.username ? creator.username : creator.phone
+										}
+										profession={creator.profession ?? "Astrologer"}
+										gender={creator.gender ? creator.gender.toLowerCase() : ""}
+										firstName={creator.firstName}
+										lastName={creator.lastName}
+									/>
 
-			<div
-				className={`border-2 border-gray-200 p-4 -mt-[5.5rem] pt-24 text-center rounded-[24px] rounded-tr-none  h-full w-full relative bg-white 
+									{userType === "client" && (
+										<Favorites
+											setMarkedFavorite={setMarkedFavorite}
+											markedFavorite={markedFavorite}
+											handleToggleFavorite={handleToggleFavorite}
+											addingFavorite={addingFavorite}
+											creator={creator}
+											user={clientUser}
+											isCreatorOrExpertPath={isCreatorOrExpertPath}
+										/>
+									)}
+								</>
+							</div>
+						</div>
+					)}
+
+					<div className="text-white flex flex-col items-start w-full">
+						<p className="font-semibold text-3xl max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
+							{fullName}
+						</p>
+						<div className="flex items-center justify-between w-full mt-2">
+							<span className="text-md h-full">
+								{creator.profession ? creator.profession : "Expert"}
+							</span>
+
+							<div
+								className={`${
+									status === "Online"
+										? "bg-green-500"
+										: status === "Offline"
+										? "bg-red-500"
+										: status === "Busy"
+										? "bg-orange-400"
+										: ""
+								} text-[10px] rounded-[4px] border border-white py-1 px-2 font-semibold`}
+							>
+								<span className="flex">
+									{status === "Online"
+										? "Online"
+										: status === "Offline"
+										? "Offline"
+										: status === "Busy"
+										? "Busy"
+										: "Unknown"}
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<span
+						className="absolute top-1/3 -right-7"
+						style={{
+							color: themeColor,
+						}}
+					>
+						{sparkles}
+					</span>
+				</div>
+
+				<div
+					className={`border-2 border-gray-200 p-4 -mt-[5.5rem] pt-24 text-center rounded-[24px] rounded-tr-none  h-full w-full relative bg-white 
 						text-base lg:max-w-[85%] xl:max-w-[50%]
 							
 					`}
-			>
-				{creator.bio ? <>{creator.bio}</> : "Select the Call Type Below ..."}
-
-				<span
-					className="absolute max-xl:top-7 xl:-bottom-2 -left-4"
-					style={{ color: themeColor }}
 				>
-					{sparkles}
-				</span>
+					{creator.bio ? <>{creator.bio}</> : "Select the Call Type Below ..."}
+
+					<span
+						className="absolute max-xl:top-7 xl:-bottom-2 -left-4"
+						style={{ color: themeColor }}
+					>
+						{sparkles}
+					</span>
+				</div>
 			</div>
-		</div>
+		</>
 	);
 };
 

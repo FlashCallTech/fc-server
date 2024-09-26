@@ -5,16 +5,19 @@ import { CurrentUsersProvider } from "@/lib/context/CurrentUsersContext";
 import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
 import { initMixpanel } from "@/lib/mixpanel";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
+import { resetBodyBackgroundColor, setBodyBackgroundColor } from "@/lib/utils";
 import StreamVideoProvider from "@/providers/streamClientProvider";
 import axios from "axios";
 import { throttle } from "lodash";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import React, { ReactNode, useEffect, useState } from "react";
 import { Cursor, Typewriter } from "react-simple-typewriter";
+
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	const [isOnline, setIsOnline] = useState(true);
 	const [isMounted, setIsMounted] = useState(false);
-
+	const pathname = usePathname();
 	// Handle online/offline status with throttling to prevent excessive updates
 	useEffect(() => {
 		const handleOnline = throttle(() => setIsOnline(true), 500);
@@ -41,6 +44,22 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	useEffect(() => {
 		axios.defaults.withCredentials = true;
 	}, []);
+
+	// Set body background color based on current route
+	useEffect(() => {
+		const creatorURL = localStorage.getItem("creatorURL"); // Replace with dynamic value as needed
+
+		if (pathname === creatorURL) {
+			setBodyBackgroundColor("#FFA500"); // Replace "#FFA500" with dynamic themeColor if necessary
+		} else {
+			resetBodyBackgroundColor();
+		}
+
+		// Clean up when component unmounts or when the route changes
+		return () => {
+			resetBodyBackgroundColor();
+		};
+	}, [pathname]);
 
 	const renderContent = () => {
 		if (!isMounted) {

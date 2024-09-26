@@ -42,12 +42,9 @@ const Navbar = () => {
 	const creatorURL = localStorage.getItem("creatorURL");
 
 	const isCreatorOrExpertPath = pathname.includes(`${creatorURL}`);
+	const followCreatorTheme = isCreatorOrExpertPath ? "#ffffff" : "#000000";
+	const invertCreatorTheme = isCreatorOrExpertPath ? "#000000" : "#ffffff";
 
-	console.log(
-		isCreatorOrExpertPath,
-		currentTheme,
-		pathname.includes(creatorURL as string)
-	);
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
@@ -107,7 +104,7 @@ const Navbar = () => {
 		<Button
 			className="flex items-center gap-2 bg-green-1 py-2 px-4 lg:ml-2 text-white rounded-[4px] hoverScaleDownEffect border border-black"
 			style={{
-				boxShadow: `4px 4px 0px 0px #000000`,
+				boxShadow: `5px 5px 0px 0px #000000`,
 			}}
 			onClick={handleAppRedirect}
 		>
@@ -135,10 +132,10 @@ const Navbar = () => {
 
 	return (
 		<nav
-			className={`justify-between items-center fixed z-40 top-0 left-0 w-full px-2 sm:px-4 py-4 shadow-sm`}
+			className="justify-between items-center fixed z-40 top-0 left-0 w-full px-4 py-4 shadow-sm"
 			style={{
 				display: `${authenticationSheetOpen && !currentUser ? "none" : "flex"}`,
-				backgroundColor: `${isCreatorOrExpertPath ? userTheme : "#ffffff"}`,
+				background: `${isCreatorOrExpertPath ? "transparent" : "#ffffff"} `,
 			}}
 		>
 			{currentUser ? (
@@ -170,11 +167,14 @@ const Navbar = () => {
 					{walletBalance >= 0 ? (
 						<Link
 							href="/payment"
-							className={`w-fit flex items-center justify-center gap-2 bg-black text-white p-3 border border-white rounded-[4px] hover:bg-green-1 ${
-								pathname.includes("/payment") && "bg-green-1 text-white"
-							} group`}
+							className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[4px] hoverScaleDownEffect ${
+								pathname.includes("/payment") && "!bg-green-1 !text-white"
+							}`}
 							style={{
-								boxShadow: `3px 3px 0px 0px #ffffff`,
+								boxShadow: `4px 4px 0px 0px ${followCreatorTheme}`,
+								color: `${followCreatorTheme}`,
+								border: `1px solid ${followCreatorTheme}`,
+								backgroundColor: `${invertCreatorTheme}`,
 							}}
 						>
 							<Image
@@ -182,11 +182,13 @@ const Navbar = () => {
 								width={100}
 								height={100}
 								alt="wallet"
-								className={`w-4 h-4 text-white invert group-hover:text-white group-hover:invert ${
-									pathname.includes("/payment") && "invert"
+								className={`w-4 h-4 ${
+									isCreatorOrExpertPath || pathname.includes("/payment")
+										? "invert"
+										: "invert-0"
 								}`}
 							/>
-							<span className="w-full text-xs whitespace-nowrap font-semibold group-hover:text-white">
+							<span className="w-full text-xs whitespace-nowrap font-semibold">
 								{`Rs. ${Math.round(walletBalance)}`}
 							</span>
 						</Link>
@@ -203,7 +205,7 @@ const Navbar = () => {
 					size="lg"
 					onClick={handleRouting}
 					style={{
-						boxShadow: `3px 3px 0px 0px ${userTheme}`,
+						boxShadow: `5px 5px 0px 0px ${userTheme}`,
 						color: userTheme,
 						border: `2px solid ${userTheme}`,
 					}}

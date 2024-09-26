@@ -30,6 +30,15 @@ export const frontendBaseUrl = "https://flashcall.me";
 // export const backendBaseUrl = "https://backend.flashcall.me/api/v1";
 export const backendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL_BACKEND;
 
+// setBodyBackgroundColor
+export const setBodyBackgroundColor = (color: string) => {
+	document.body.style.backgroundColor = color;
+};
+
+export const resetBodyBackgroundColor = () => {
+	document.body.style.backgroundColor = "";
+};
+
 // default profile images based on
 export const placeholderImages = {
 	male: "https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0",
