@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       const beneficiary = await Beneficiary.findOne({ user_id: userId });
 
       if (beneficiary === null) {
-        const getUserResponse = await fetch('http://localhost:3000/api/v1/creator/getUserById', {
+        const getUserResponse = await fetch('https://flashcall.me/api/v1/creator/getUserById', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -50,7 +50,6 @@ export async function POST(request: NextRequest) {
           })
         });
         const user = await getUserResponse.json();
-        console.log(user);
 
         if (user) {
           const beneficiary_id = userId;
@@ -96,7 +95,7 @@ export async function POST(request: NextRequest) {
               beneficiary_contact_details: beneficiary_contact_details,
               added_on: beneficiaryResult.added_on,
             }
-            const postBeneficiaryResponse = await fetch('http:/localhost:3000/api/v1/beneficiary/postBeneficiary', {
+            const postBeneficiaryResponse = await fetch('https:/flashcall.me/api/v1/beneficiary/postBeneficiary', {
               method: "POST",
               headers: {
                 'Content-Type': 'application/json'
@@ -135,7 +134,7 @@ export async function POST(request: NextRequest) {
             throw new Error(deleteResult.message);
           }
 
-          const getUserResponse = await fetch('http://localhost:3000/api/v1/creator/getUserById', {
+          const getUserResponse = await fetch('https://flashcall.me/api/v1/creator/getUserById', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -194,7 +193,7 @@ export async function POST(request: NextRequest) {
                 beneficiary_contact_details: beneficiary_contact_details,
                 added_on: beneficiaryResult.added_on,
               }
-              const postBeneficiaryResponse = await fetch('http:/localhost:3000/api/v1/beneficiary/postBeneficiary', {
+              const postBeneficiaryResponse = await fetch('https:/flashcall.me/api/v1/beneficiary/postBeneficiary', {
                 method: "POST",
                 headers: {
                   'Content-Type': 'application/json'
@@ -220,7 +219,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, message: 'Cannot update same UPI ID' });
       }
     } else {
-      return NextResponse.json({ success: false, data: result.status });
+      return NextResponse.json({ success: false, message: result.status });
     }
 
   } catch (error) {

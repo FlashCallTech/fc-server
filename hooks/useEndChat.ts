@@ -34,7 +34,7 @@ interface Chat {
 
 const useEndChat = () => {
 	const router = useRouter();
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 	const { chatId } = useParams();
 	const [user2, setUser2] = useState<User2>();
 	const [chat, setChat] = useState<Chat | undefined>();
@@ -70,15 +70,19 @@ const useEndChat = () => {
 	};
 
 	useEffect(() => {
-		const storedCreator = localStorage.getItem("currentCreator");
-		if (storedCreator) {
-			const parsedCreator: creatorUser = JSON.parse(storedCreator);
-			if (parsedCreator.chatRate) {
-				setChatRatePerMinute(parseInt(parsedCreator.chatRate, 10));
-				setCreatorPhone(parsedCreator?.phone);
+		const getCreator = () => {
+			const storedCreator = localStorage.getItem("currentCreator");
+			if (storedCreator) {
+				const parsedCreator: creatorUser = JSON.parse(storedCreator);
+				if (parsedCreator.chatRate) {
+					setChatRatePerMinute(parseInt(parsedCreator.chatRate, 10));
+					setCreatorPhone(parsedCreator?.phone);
+				}
 			}
 		}
-	}, [chatId]);
+
+		if (chatId) getCreator();
+	}, []);
 
 	useEffect(() => {
 		if (chatId) {
@@ -102,8 +106,14 @@ const useEndChat = () => {
 
 		if (chatEnded) {
 			hasChatEnded.current = true;
-			updateExpertStatus(creatorPhone, "Online");
-			router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
+			if (userType === 'client')
+				updateExpertStatus(creatorPhone, "Online");
+			if (userType === 'creator')
+				router.replace(`/home`);
+			else {
+				router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
+
+			}
 		}
 	}, [chatEnded]);
 
@@ -113,25 +123,6 @@ const useEndChat = () => {
 			setUser2(JSON.parse(storedUser));
 		}
 	}, [chatId]);
-
-	const markMessagesAsSeen = async () => {
-		if (!chatId) return;
-		try {
-			const chatRef = doc(db, "chats", chatId as string);
-			const chatSnapshot = await getDoc(chatRef);
-			if (chatSnapshot.exists()) {
-				const chatData = chatSnapshot.data();
-				const updatedMessages = chatData.messages.map((message: any) => ({
-					...message,
-					seen: true,
-				}));
-				await updateDoc(chatRef, { messages: updatedMessages });
-			}
-		} catch (error) {
-			Sentry.captureException(error);
-			console.error("Error marking messages as seen:", error);
-		}
-	};
 
 	const handleEnd = async (
 		chatId: string | string[],
@@ -184,7 +175,6 @@ const useEndChat = () => {
 		startedAt,
 		endedAt,
 		chat,
-		markMessagesAsSeen,
 		chatRatePerMinute,
 		loading,
 	};

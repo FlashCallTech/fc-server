@@ -133,6 +133,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 			// Save chatRequest document ID in local storage
 			localStorage.setItem("chatRequestId", newChatRequestRef.id);
+			window.dispatchEvent(new Event("chatRequestIdUpdated"));
 
 			if (!userChatsDocSnapshot.exists()) {
 				await setDoc(userChatsDocRef, { chats: [] });
