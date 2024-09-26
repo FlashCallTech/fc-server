@@ -39,7 +39,6 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	}, []);
 
 	useEffect(() => {
-		axios.defaults.baseURL = "https://backend.flashcall.me/api/v1";
 		axios.defaults.withCredentials = true;
 	}, []);
 

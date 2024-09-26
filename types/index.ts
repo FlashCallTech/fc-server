@@ -1,3 +1,6 @@
+// Gender
+export type Gender = "male" | "female" | "other";
+
 // User Params
 
 export type CreateUserParams = {

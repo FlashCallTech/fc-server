@@ -36,10 +36,10 @@ const Sidebar = () => {
 							<TooltipTrigger asChild>
 								<Link
 									href={
-										item.label === "Home"
-											? "/home"
-											: item.protected
-											? userType === "creator"
+										item.protected
+											? currentUser
+												? item.route
+												: userType === "creator"
 												? "/authenticate?usertype=creator"
 												: "/authenticate"
 											: item.route

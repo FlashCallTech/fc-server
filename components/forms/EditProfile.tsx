@@ -29,14 +29,15 @@ import { updateUser } from "@/lib/actions/client.actions";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
 import axios from "axios";
-import { debounce } from "@/lib/utils";
+import { debounce, placeholderImages } from "@/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 import Image from "next/image";
+import GetRandomImage from "@/utils/GetRandomImage";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
 	setUserData: any;
-	initialState: UpdateUserParams;
+	initialState: any;
 	setEditData?: React.Dispatch<React.SetStateAction<boolean>>;
 	userType: string | null;
 };
@@ -73,7 +74,7 @@ const EditProfile = ({
 	);
 	const pathname = usePathname();
 
-	const handleColorSelect = (color: string) => {
+	const handleColorSelect: any = (color: string) => {
 		setSelectedColor(color);
 	};
 
@@ -104,22 +105,25 @@ const EditProfile = ({
 	const { errors, isValid } = formState;
 
 	// Watch form values to detect changes
-	const watchedValues = useWatch({ control: form.control });
+	const watchedValues: any = useWatch({ control: form.control });
 
 	useEffect(() => {
-		const hasChanged =
-			watchedValues.firstName !== initialState.firstName ||
-			watchedValues.lastName !== initialState.lastName ||
-			watchedValues.username !== initialState.username ||
-			watchedValues.profession !== initialState.profession ||
-			watchedValues.themeSelected !== initialState.themeSelected ||
-			watchedValues.photo !== initialState.photo ||
-			watchedValues.bio !== initialState.bio ||
-			watchedValues.gender !== initialState.gender ||
-			watchedValues.dob !== initialState.dob;
-
+		const hasChanged = Object.keys(watchedValues).some((key) => {
+			return watchedValues[key] !== initialState[key];
+		});
 		setIsChanged(hasChanged);
 	}, [watchedValues, initialState]);
+
+	useEffect(() => {
+		if (!selectedFile && !watchedValues.photo) {
+			// Use a fallback default value directly
+			const newPhoto =
+				placeholderImages[
+					watchedValues.gender as "male" | "female" | "other"
+				] || GetRandomImage();
+			form.setValue("photo", newPhoto);
+		}
+	}, [watchedValues.gender, selectedFile, form]);
 
 	const checkUsernameAvailability = async (username: string) => {
 		try {
@@ -516,36 +520,6 @@ const EditProfile = ({
 							</FormItem>
 						)}
 					/>
-
-					{/* creator id */}
-					{/* {userData.role === "creator" && (
-						<FormField
-							control={form.control}
-							name="creatorId"
-							render={({ field }) => (
-								<FormItem className="w-full">
-									<FormLabel className="text-sm text-gray-400 ml-1">
-										Creator ID
-									</FormLabel>
-									<FormControl>
-										<Input
-											type="text"
-											placeholder="Create Your ID"
-											{...field}
-											className="input-field"
-											readOnly
-										/>
-									</FormControl>
-									<FormDescription className="text-xs text-gray-400 ml-1">
-										Ex. Nitra123@creator
-									</FormDescription>
-									<FormMessage className="error-message">
-										{errors.creatorId?.message}
-									</FormMessage>
-								</FormItem>
-							)}
-						/>
-					)} */}
 				</div>
 
 				{/* profile theme */}
@@ -611,7 +585,7 @@ const EditProfile = ({
 				{formError && (
 					<div className="text-red-500 text-lg text-center">{formError}</div>
 				)}
-				{isChanged && !formError && !usernameError && (
+				{isChanged && isValid && !formError && !usernameError && (
 					<Button
 						className="bg-green-1 hover:opacity-80 w-3/4 mx-auto text-white"
 						type="submit"

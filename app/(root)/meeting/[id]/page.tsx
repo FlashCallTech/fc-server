@@ -117,6 +117,9 @@ const CallEnded = ({ toast, router, call }: any) => {
 	const isBrowser = () => typeof window !== "undefined";
 
 	useEffect(() => {
+		// Stop media streams every time the effect runs
+		stopMediaStreams();
+
 		// Calculate call duration
 		const callEndedTime = new Date(callEndedAt);
 		const callStartsAtTime = new Date(callStartsAt);
@@ -153,8 +156,6 @@ const CallEnded = ({ toast, router, call }: any) => {
 			}
 
 			setLoading(true);
-
-			stopMediaStreams();
 
 			// Trigger transaction in backend
 			const transactionResponse = await fetch(

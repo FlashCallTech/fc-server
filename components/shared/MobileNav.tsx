@@ -9,6 +9,8 @@ import {
 	Sheet,
 	SheetClose,
 	SheetContent,
+	SheetDescription,
+	SheetTitle,
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { sidebarLinks, sidebarLinksCreator } from "@/constants";
@@ -133,33 +135,36 @@ const MobileNav = () => {
 					className="border-none bg-dark-1 rounded-l-xl size-full max-w-sm "
 				>
 					<div className="flex h-[calc(100vh-72px)] w-full  flex-col justify-between overflow-y-auto no-scrollbar">
-						<SheetClose asChild>
-							<Link
-								href={`/profile/${currentUser?._id}`}
-								className={`w-full flex gap-4 items-center rounded-lg hoverScaleDownEffect lg:px-2 justify-start`}
-							>
-								<Image
-									src={currentUser?.photo || "/images/defaultProfile.png"}
-									alt="Profile"
-									width={1000}
-									height={1000}
-									className="rounded-full w-12 h-12 max-w-[56px] object-cover"
-								/>
-								<div className="flex flex-col w-full items-start justify-center text-white">
-									<span className="text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap">
-										{currentUser?.username ||
-											currentUser?.firstName ||
-											"Hello User"}
-									</span>
-									<span className="text-sm text-green-1">
-										{currentUser?.phone?.replace(
-											/(\+91)(\d+)/,
-											(match, p1, p2) => `${p1} ${p2}`
-										) || `@${currentUser?.username} || "Authenticate"`}
-									</span>
-								</div>
-							</Link>
-						</SheetClose>
+						<SheetTitle>
+							<SheetDescription></SheetDescription>
+							<SheetClose asChild>
+								<Link
+									href={`/profile/${currentUser?._id}`}
+									className={`w-full flex gap-4 items-center rounded-lg hoverScaleDownEffect lg:px-2 justify-start`}
+								>
+									<Image
+										src={currentUser?.photo || "/images/defaultProfile.png"}
+										alt="Profile"
+										width={1000}
+										height={1000}
+										className="rounded-full w-12 h-12 max-w-[56px] object-cover"
+									/>
+									<div className="flex flex-col w-full items-start justify-center text-white">
+										<span className="text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap">
+											{currentUser?.username ||
+												currentUser?.firstName ||
+												"Hello User"}
+										</span>
+										<span className="text-sm text-green-1">
+											{currentUser?.phone?.replace(
+												/(\+91)(\d+)/,
+												(match, p1, p2) => `${p1} ${p2}`
+											) || `@${currentUser?.username} || "Authenticate"`}
+										</span>
+									</div>
+								</Link>
+							</SheetClose>
+						</SheetTitle>
 						<div className="w-full border border-gray-500 my-7" />
 						<SheetClose asChild>
 							<section className="flex size-full items-start flex-col">

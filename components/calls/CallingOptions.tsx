@@ -14,7 +14,12 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
 import { trackEvent } from "@/lib/mixpanel";
-import { isValidHexColor, updateFirestoreSessions } from "@/lib/utils";
+import {
+	backendBaseUrl,
+	isValidHexColor,
+	updateExpertStatus,
+	updateFirestoreSessions,
+} from "@/lib/utils";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -59,11 +64,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	useEffect(() => {
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);
-		const clientStatusDocRef = doc(
-			db,
-			"userStatus",
-			clientUser?.phone as string
-		);
+		// Only create clientStatusDocRef if clientUser is not null
+		let clientStatusDocRef: any;
+		if (clientUser) {
+			clientStatusDocRef = doc(db, "userStatus", clientUser.phone);
+		}
 
 		const unsubscribe = onSnapshot(creatorRef, (doc) => {
 			const data = doc.data();
@@ -102,19 +107,23 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}
 				});
 
-				// Listen for the client's status
-				const unsubscribeClientStatus = onSnapshot(
-					clientStatusDocRef,
-					(clientStatusDoc) => {
-						const clientStatusData = clientStatusDoc.data();
+				// Listen for the client's status only if clientUser is not null
+				let unsubscribeClientStatus: any;
+				if (clientUser) {
+					// Listen for the client's status
+					unsubscribeClientStatus = onSnapshot(
+						clientStatusDocRef,
+						(clientStatusDoc: any) => {
+							const clientStatusData = clientStatusDoc.data();
 
-						if (clientStatusData) {
-							setIsClientBusy(clientStatusData.status === "Busy");
-						} else {
-							setIsClientBusy(false);
+							if (clientStatusData) {
+								setIsClientBusy(clientStatusData.status === "Busy");
+							} else {
+								setIsClientBusy(false);
+							}
 						}
-					}
-				);
+					);
+				}
 
 				// Clean up both status listeners
 				return () => {
@@ -220,17 +229,25 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		const formattedDate = createdAtDate.toISOString().split("T")[0];
 
 		if (callType === "audio") {
-			trackEvent("BookCall_Audio_Connected", {
-				Client_ID: clientUser?._id,
-				User_First_Seen: formattedDate,
-				Creator_ID: creator._id,
-			});
+			try {
+				trackEvent("BookCall_Audio_Connected", {
+					Client_ID: clientUser?._id,
+					User_First_Seen: formattedDate,
+					Creator_ID: creator._id,
+				});
+			} catch (error) {
+				console.log(error);
+			}
 		} else {
-			trackEvent("BookCall_Video_Connected", {
-				Client_ID: clientUser?._id,
-				User_First_Seen: formattedDate,
-				Creator_ID: creator._id,
-			});
+			try {
+				trackEvent("BookCall_Video_Connected", {
+					Client_ID: clientUser?._id,
+					User_First_Seen: formattedDate,
+					Creator_ID: creator._id,
+				});
+			} catch (error) {
+				console.log(error);
+			}
 		}
 
 		// router.replace(`/meeting/${call.id}`);
@@ -359,7 +376,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				creatorId: creator._id,
 			});
 
-			fetch("/api/v1/calls/registerCall", {
+			fetch(`${backendBaseUrl}/calls/registerCall`, {
 				method: "POST",
 				body: JSON.stringify({
 					callId: id as string,
@@ -515,7 +532,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			label: "Book Video Call",
 			icon: video,
 			onClick: () => {
-				if (clientUser || onlineStatus !== "Busy") {
+				if (clientUser && onlineStatus !== "Busy") {
 					handleClickOption("video");
 				} else {
 					setIsAuthSheetOpen(true);
@@ -532,7 +549,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			label: "Book Audio Call",
 			icon: audio,
 			onClick: () => {
-				if (clientUser || onlineStatus !== "Busy") {
+				if (clientUser && onlineStatus !== "Busy") {
 					handleClickOption("audio");
 				} else {
 					setIsAuthSheetOpen(true);

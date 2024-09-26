@@ -7,13 +7,14 @@ import { useToast } from "../ui/use-toast";
 import { logEvent } from "firebase/analytics";
 import { analytics, db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import * as Sentry from "@sentry/nextjs";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import {
+	backendBaseUrl,
 	stopMediaStreams,
 	updateExpertStatus,
 	updateFirestoreSessions,
 } from "@/lib/utils";
+import axios from "axios";
 
 const MyCallUI = () => {
 	const router = useRouter();
@@ -29,34 +30,58 @@ const MyCallUI = () => {
 	useEffect(() => {
 		const checkFirestoreSession = async (userId: string) => {
 			try {
-				const sessionDocRef = doc(db, "sessions", userId);
-				const sessionDoc = await getDoc(sessionDocRef);
+				const clientStatusDocRef = doc(
+					db,
+					"userStatus",
+					currentUser?.phone as string
+				);
 
-				if (sessionDoc.exists()) {
-					const { ongoingCall } = sessionDoc.data();
-					if (ongoingCall && ongoingCall.status !== "ended") {
-						// Call is still pending, redirect the user back to the meeting
-						toast({
-							variant: "destructive",
-							title: "Pending Call Session",
-							description: "Redirecting you back ...",
-						});
-						router.replace(`/meeting/${ongoingCall.id}`);
-						setHasRedirected(true);
+				// Listen for the client's status
+				const unsubscribeClientStatus = onSnapshot(
+					clientStatusDocRef,
+					async (clientStatusDoc: any) => {
+						const clientStatusData = clientStatusDoc.data();
+
+						// If the client status is "Busy", do nothing
+						if (clientStatusData && clientStatusData.status === "Busy") {
+							return;
+						}
+
+						// Otherwise, check for ongoing sessions
+						const sessionDocRef = doc(db, "sessions", userId);
+						const sessionDoc = await getDoc(sessionDocRef);
+
+						if (sessionDoc.exists()) {
+							const { ongoingCall } = sessionDoc.data();
+							if (ongoingCall && ongoingCall.status !== "ended" && !hide) {
+								// Call is still pending, redirect the user back to the meeting
+								userType === "client" &&
+									toast({
+										variant: "destructive",
+										title: "Ongoing Call or Session Pending",
+										description: "Redirecting you back ...",
+									});
+								router.replace(`/meeting/${ongoingCall.id}`);
+								setHasRedirected(true);
+							}
+						} else {
+							// If no ongoing call in Firestore, check local storage
+							const storedCallId = localStorage.getItem("activeCallId");
+							if (storedCallId && !hide && !hasRedirected) {
+								toast({
+									variant: "destructive",
+									title: "Ongoing Call or Session Pending",
+									description: "Redirecting you back ...",
+								});
+								router.replace(`/meeting/${storedCallId}`);
+								setHasRedirected(true);
+							}
+						}
 					}
-				} else {
-					// If no ongoing call in Firestore, check local storage
-					const storedCallId = localStorage.getItem("activeCallId");
-					if (storedCallId && !hide && !hasRedirected) {
-						toast({
-							variant: "destructive",
-							title: "Ongoing Call or Session Pending",
-							description: "Redirecting you back ...",
-						});
-						router.replace(`/meeting/${storedCallId}`);
-						setHasRedirected(true);
-					}
-				}
+				);
+
+				// Clean up subscription
+				return () => unsubscribeClientStatus();
 			} catch (error) {
 				console.error("Error checking Firestore session: ", error);
 			}
@@ -71,9 +96,13 @@ const MyCallUI = () => {
 		calls.forEach((call) => {
 			const isMeetingOwner =
 				currentUser && currentUser?._id === call?.state?.createdBy?.id;
+
 			const expert = call?.state?.members?.find(
 				(member) => member.custom.type === "expert"
 			);
+
+			const callCreator = call?.state?.createdBy;
+
 			const handleCallEnded = async () => {
 				stopMediaStreams();
 
@@ -85,10 +114,11 @@ const MyCallUI = () => {
 					await updateExpertStatus(expertPhone, "Online");
 				}
 
-				await updateExpertStatus(
-					call.state.createdBy?.name as string,
-					"Offline"
-				);
+				isMeetingOwner &&
+					(await updateExpertStatus(
+						callCreator?.custom?.phone as string,
+						"Idle"
+					));
 
 				setShowCallUI(false); // Hide call UI
 			};
@@ -97,10 +127,24 @@ const MyCallUI = () => {
 				toast({
 					variant: "destructive",
 					title: "Call Rejected",
-					description: "The call was rejected. Redirecting to HomePage...",
+					description: "The call was rejected",
 				});
 
 				setShowCallUI(false); // Hide call UI
+
+				const expertPhone = expert?.custom?.phone;
+				if (expertPhone) {
+					await updateExpertStatus(expertPhone, "Online");
+				}
+
+				await updateExpertStatus(callCreator?.custom?.phone as string, "Idle");
+
+				await updateFirestoreSessions(
+					callCreator?.id as string,
+					call.id,
+					"ended",
+					[]
+				);
 
 				logEvent(analytics, "call_rejected", {
 					callId: call.id,
@@ -108,22 +152,10 @@ const MyCallUI = () => {
 
 				const creatorURL = localStorage.getItem("creatorURL");
 
-				await fetch("/api/v1/calls/updateCall", {
-					method: "POST",
-					body: JSON.stringify({
-						callId: call.id,
-						call: { status: "Rejected" },
-					}),
-					headers: { "Content-Type": "application/json" },
+				await axios.post(`${backendBaseUrl}/calls/updateCall`, {
+					callId: call.id,
+					call: { status: "Rejected" },
 				});
-
-				isMeetingOwner &&
-					(await updateFirestoreSessions(
-						currentUser?._id,
-						call.id,
-						"ended",
-						[]
-					));
 
 				router.replace(`${creatorURL ? creatorURL : "/home"}`);
 			};
@@ -132,22 +164,16 @@ const MyCallUI = () => {
 				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
 				setShowCallUI(false); // Hide call UI
 
-				await fetch("/api/v1/calls/updateCall", {
-					method: "POST",
-					body: JSON.stringify({
-						callId: call.id,
-						call: { status: "Accepted" },
-					}),
-					headers: { "Content-Type": "application/json" },
-					keepalive: true,
-				});
-
 				logEvent(analytics, "call_accepted", {
 					callId: call.id,
 				});
 
-				isMeetingOwner &&
-					(await updateExpertStatus(currentUser?.phone as string, "Busy"));
+				await updateExpertStatus(callCreator?.custom?.phone as string, "Busy");
+
+				await axios.post(`${backendBaseUrl}/calls/updateCall`, {
+					callId: call.id,
+					call: { status: "Accepted" },
+				});
 
 				// Check the calling state before attempting to leave
 				if (
