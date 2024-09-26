@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetTitle,
+	SheetTrigger,
+} from "../ui/sheet";
 import { Button } from "../ui/button";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
@@ -135,6 +141,8 @@ const UserFeedback = ({
 					{text}
 				</button>
 			</SheetTrigger>
+			<SheetTitle className="hidden"></SheetTitle>
+			<SheetDescription className="hidden"></SheetDescription>
 			<SheetContent
 				side="bottom"
 				className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto"

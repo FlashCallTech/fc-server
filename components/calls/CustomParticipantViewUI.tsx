@@ -23,7 +23,7 @@ const PoorConnectionNotification = () => {
 		connectionQuality === SfuModels.ConnectionQuality.POOR
 	) {
 		return (
-			<span className="text-center py-5 fixed top-4 left-0 text-white bg-red-600 p-4 rounded-xl z-20">
+			<span className="text-center py-5 fixed top-4 left-2 text-white bg-red-600 p-4 rounded-xl z-20">
 				Poor connection quality
 			</span>
 		);

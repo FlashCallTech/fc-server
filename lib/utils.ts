@@ -28,6 +28,18 @@ export function cn(...inputs: ClassValue[]) {
 
 export const frontendBaseUrl = "https://flashcall.me";
 export const backendBaseUrl = "https://backend.flashcall.me/api/v1";
+// export const backendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL_BACKEND;
+
+// default profile images based on
+export const placeholderImages = {
+	male: "https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0",
+	female:
+		"https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FF_preview.png?alt=media&token=ed601090-05ed-4148-90b7-ea079bc2a245",
+	other:
+		"https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FOthers_preview.png?alt=media&token=846916d0-b031-4eed-830a-ec6e73c33350",
+	generic:
+		"https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2Fgeneric.png?alt=media&token=da7a462f-6461-4cb0-bb2d-b4e6b8a6bae9",
+};
 
 export const handleError = (error: unknown) => {
 	console.error(error);

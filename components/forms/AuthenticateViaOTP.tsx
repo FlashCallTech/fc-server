@@ -27,6 +27,7 @@ import usePlatform from "@/hooks/usePlatform";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
 import { backendBaseUrl } from "@/lib/utils";
+import GetRandomImage from "@/utils/GetRandomImage";
 
 const formSchema = z.object({
 	phone: z
@@ -61,7 +62,8 @@ const AuthenticateViaOTP = ({
 	const [isSendingOTP, setIsSendingOTP] = useState(false);
 	const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
 	const [verificationSuccess, setVerificationSuccess] = useState(false);
-	const [redirecting, setRedirecting] = useState(false);
+
+	const [firstLogin, setFirstLogin] = useState(false);
 	const [error, setError] = useState({});
 	const { toast } = useToast();
 	const { getDevicePlatform } = usePlatform();
@@ -159,7 +161,7 @@ const AuthenticateViaOTP = ({
 			} else {
 				// No user found, proceed as new user
 				console.log("No user found. Proceeding as a new user.");
-
+				setFirstLogin(true);
 				let newUser: CreateCreatorParams | CreateUserParams;
 
 				const formattedPhone = phoneNumber.startsWith("+91")
@@ -190,7 +192,7 @@ const AuthenticateViaOTP = ({
 						firstName: "",
 						lastName: "",
 						username: formattedPhone as string,
-						photo: "",
+						photo: GetRandomImage() || "",
 						phone: formattedPhone,
 						role: "client",
 						bio: "",
@@ -222,16 +224,25 @@ const AuthenticateViaOTP = ({
 				}
 			}
 
-			setRedirecting(true);
 			localStorage.setItem("userType", resolvedUserType);
 			refreshCurrentUser();
 			updateWalletBalance();
 			setAuthenticationSheetOpen(false);
 			const creatorURL = localStorage.getItem("creatorURL");
 
-			router.replace(
-				`${creatorURL && userType !== "creator" ? creatorURL : "/home"}`
-			);
+			if (resolvedUserType === "client") {
+				if (creatorURL) {
+					router.replace(creatorURL);
+				} else {
+					router.replace("/home");
+				}
+			} else if (resolvedUserType === "creator") {
+				if (firstLogin) {
+					router.replace("/updateDetails");
+				} else {
+					router.replace("/home");
+				}
+			}
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);
 			let newErrors = { ...error };
@@ -285,14 +296,6 @@ const AuthenticateViaOTP = ({
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
 	}, []);
-
-	if (redirecting) {
-		return (
-			<section className="w-full h-full flex flex-col items-center justify-center">
-				<ContentLoading />
-			</section>
-		);
-	}
 
 	return (
 		<section

@@ -1,6 +1,4 @@
 import { createUserKyc } from "@/lib/actions/userkyc.actions";
-import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -49,17 +47,23 @@ export async function POST(request: NextRequest) {
 
 			await createUserKyc(kyc, "liveliness");
 
-			const kycResponse = await fetch(`https://flashcall.me/api/v1/userkyc/getKyc?userId=${userId}`, {
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-			})
+			const kycResponse = await fetch(
+				`https://flashcall.me/api/v1/userkyc/getKyc?userId=${userId}`,
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+					},
+				}
+			);
 
 			const kycResult = await kycResponse.json();
 			if (kycResult.success) {
 				if (kycResult.data.aadhaar && kycResult.data.pan) {
-					if (kycResult.data.aadhaar.status === 'VALID' && kycResult.data.pan.valid) {
+					if (
+						kycResult.data.aadhaar.status === "VALID" &&
+						kycResult.data.pan.valid
+					) {
 						const generateVerificationId = () => {
 							return `${userId}_${Date.now()}_${Math.random()
 								.toString(36)
@@ -67,33 +71,39 @@ export async function POST(request: NextRequest) {
 						};
 						const verificationId = generateVerificationId();
 
-						const nameMatchResponse = await fetch('https://flashcall.me/api/v1/userkyc/nameMatch', {
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/json'
-							},
-							body: JSON.stringify({
-								userId: userId,
-								name1: kycResult.data.pan.registered_name,
-								name2: kycResult.data.aadhaar.name,
-								verificationId,
-							})
-						});
+						const nameMatchResponse = await fetch(
+							"https://flashcall.me/api/v1/userkyc/nameMatch",
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									userId: userId,
+									name1: kycResult.data.pan.registered_name,
+									name2: kycResult.data.aadhaar.name,
+									verificationId,
+								}),
+							}
+						);
 
 						const nameMatchResult = await nameMatchResponse.json();
 
-						const faceMatchResponse = await fetch('https://flashcall.me/api/v1/userkyc/faceMatch', {
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/json'
-							},
-							body: JSON.stringify({
-								userId: userId,
-								first_img: kycResult.data.liveliness.img_url,
-								second_img: kycResult.data.aadhaar.img_link,
-								verificationId,
-							})
-						});
+						const faceMatchResponse = await fetch(
+							"https://flashcall.me/api/v1/userkyc/faceMatch",
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									userId: userId,
+									first_img: kycResult.data.liveliness.img_url,
+									second_img: kycResult.data.aadhaar.img_link,
+									verificationId,
+								}),
+							}
+						);
 
 						const faceMatchResult = await faceMatchResponse.json();
 
@@ -101,87 +111,117 @@ export async function POST(request: NextRequest) {
 							const user = {
 								kyc_status: "COMPLETED",
 							};
-							const userResponse = await fetch("https://flashcall.me/api/v1/creator/updateUser", {
-								method: "PUT",
-								headers: {
-									"Content-Type": "application/json",
-								},
-								body: JSON.stringify({
-									userId: userId,
-									user,
-								}),
-							});
+							const userResponse = await fetch(
+								"https://flashcall.me/api/v1/creator/updateUser",
+								{
+									method: "PUT",
+									headers: {
+										"Content-Type": "application/json",
+									},
+									body: JSON.stringify({
+										userId: userId,
+										user,
+									}),
+								}
+							);
 
 							const kyc = {
 								userId: userId,
-								kyc_status: user.kyc_status
-							}
+								kyc_status: user.kyc_status,
+							};
 
-							await createUserKyc(kyc, 'status');
+							await createUserKyc(kyc, "status");
 
-							return NextResponse.json({ success: true, kycStatus: true, message: 'Kyc Completed' })
+							return NextResponse.json({
+								success: true,
+								kycStatus: true,
+								message: "Kyc Completed",
+							});
 						} else {
 							const user = {
 								kyc_status: "FAILED",
 							};
-							const userResponse = await fetch("https://flashcall.me/api/v1/creator/updateUser", {
-								method: "PUT",
-								headers: {
-									"Content-Type": "application/json",
-								},
-								body: JSON.stringify({
-									userId: userId,
-									user,
-								}),
-							});
+							const userResponse = await fetch(
+								"https://flashcall.me/api/v1/creator/updateUser",
+								{
+									method: "PUT",
+									headers: {
+										"Content-Type": "application/json",
+									},
+									body: JSON.stringify({
+										userId: userId,
+										user,
+									}),
+								}
+							);
 
 							const kyc = {
 								userId: userId,
-								kyc_status: user.kyc_status
-							}
+								kyc_status: user.kyc_status,
+							};
 
-							await createUserKyc(kyc, 'status');
+							await createUserKyc(kyc, "status");
 
-							return NextResponse.json({ success: false, kycStatus: false, message: 'Our team will verify the details you have submitted. This usually takes 24 hours.' });
+							return NextResponse.json({
+								success: false,
+								kycStatus: false,
+								message:
+									"Our team will verify the details you have submitted. This usually takes 24 hours.",
+							});
 						}
 					} else {
 						const user = {
 							kyc_status: "PENDING",
 						};
-						const userResponse = await fetch("https://flashcall.me/api/v1/creator/updateUser", {
-							method: "PUT",
-							headers: {
-								"Content-Type": "application/json",
-							},
-							body: JSON.stringify({
-								userId: userId,
-								user,
-							}),
-						});
+						const userResponse = await fetch(
+							"https://flashcall.me/api/v1/creator/updateUser",
+							{
+								method: "PUT",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									userId: userId,
+									user,
+								}),
+							}
+						);
 
 						const kyc = {
 							userId: userId,
-							kyc_status: user.kyc_status
-						}
+							kyc_status: user.kyc_status,
+						};
 
-						const dbResponse = await createUserKyc(kyc, 'status');
+						const dbResponse = await createUserKyc(kyc, "status");
 						const dbResult = await dbResponse.json();
 
-						return NextResponse.json({ success: true, kycStatus: false, message: 'Kyc Pending' });
+						return NextResponse.json({
+							success: true,
+							kycStatus: false,
+							message: "Kyc Pending",
+						});
 					}
+				} else {
+					return NextResponse.json({
+						success: true,
+						kycStatus: false,
+						message: "Kyc Pending",
+					});
 				}
-				else {
-					return NextResponse.json({ success: true, kycStatus: false, message: 'Kyc Pending' })
-				}
+			} else {
+				return NextResponse.json({
+					success: true,
+					kycStatus: false,
+					message: "Kyc Pending",
+				});
 			}
-			else {
-				return NextResponse.json({ success: true, kycStatus: false, message: 'Kyc Pending' });
-			}
+		} else {
+			return NextResponse.json({
+				success: false,
+				kycStatus: false,
+				message: result.message,
+			});
 		}
-		else {
-			return NextResponse.json({ success: false, kycStatus: false, message: result.message })
-		}
-
 	} catch (error) {
 		console.error("Unexpected error:", error);
 		return NextResponse.json({

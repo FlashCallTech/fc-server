@@ -76,7 +76,10 @@ const CopyToClipboard = ({
 
 	return (
 		<div className="flex justify-between items-center w-full gap-2 p-1">
-			<div className="relative flex border w-full rounded-full p-2 bg-white justify-between items-center shadow-sm gap-2">
+			<div
+				className="relative flex border w-full rounded-full p-2 bg-white justify-between items-center shadow-sm gap-2 group cursor-pointer"
+				onClick={() => copyToClipboard(link)}
+			>
 				<Image
 					src={"/link.svg"}
 					width={24}
@@ -84,7 +87,7 @@ const CopyToClipboard = ({
 					alt="link"
 					className="w-5 h-5"
 				/>
-				<div className="grid items-start justify-start overflow-x-hidden w-full ">
+				<div className="grid items-start justify-start overflow-x-hidden w-full group-hover:text-green-1">
 					<p className="text-ellipsis whitespace-nowrap min-w-0 overflow-hidden">
 						{link}
 					</p>
@@ -95,8 +98,7 @@ const CopyToClipboard = ({
 					width={24}
 					height={24}
 					alt="copy"
-					className="w-10 h-10 p-2 rounded-full hover:bg-gray-100 cursor-pointer"
-					onClick={() => copyToClipboard(link)}
+					className="w-10 h-10 p-2 rounded-full hover:bg-gray-100"
 				/>
 			</div>
 			<Image
@@ -104,7 +106,7 @@ const CopyToClipboard = ({
 				width={24}
 				height={24}
 				alt="share"
-				className="w-10 h-10 p-2 bg-gray-800 rounded-full hover:bg-black cursor-pointer"
+				className="w-10 h-10 p-2 bg-gray-800 rounded-full hoverScaleEffect cursor-pointer"
 				onClick={shareLink}
 			/>
 		</div>

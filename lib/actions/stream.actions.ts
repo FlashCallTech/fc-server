@@ -8,7 +8,8 @@ const STREAM_API_SECRET = process.env.STREAM_SECRET_KEY;
 export const tokenProvider = async (
 	userId: string,
 	username: string | undefined,
-	photo: string | undefined
+	photo: string | undefined,
+	phone: string | undefined
 ) => {
 	if (!STREAM_API_KEY) throw new Error("Stream API key secret is missing");
 	if (!STREAM_API_SECRET) throw new Error("Stream API secret is missing");
@@ -20,6 +21,7 @@ export const tokenProvider = async (
 		id: userId,
 		name: username || userId,
 		image: photo,
+		phone: phone,
 		role: "admin",
 	};
 

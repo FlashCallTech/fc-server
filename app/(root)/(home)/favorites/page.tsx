@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { trackEvent } from "@/lib/mixpanel";
+import { backendBaseUrl } from "@/lib/utils";
 type FavoriteItem = {
 	creatorId: creatorUser;
 };
@@ -58,15 +59,9 @@ const Favorites = () => {
 	useEffect(() => {
 		const fetchFavorites = async () => {
 			try {
-				const response = await fetch("/api/v1/favorites/getFavorites", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						clientId: currentUser?._id,
-					}),
-				});
+				const response = await fetch(
+					`${backendBaseUrl}/favorites/${currentUser?._id}`
+				);
 
 				if (response.ok) {
 					const data = await response.json();

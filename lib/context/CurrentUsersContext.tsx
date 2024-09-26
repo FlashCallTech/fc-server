@@ -87,7 +87,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 	// Function to handle user signout
 	const handleSignout = async () => {
-		console.log(currentUser);
 		const phone = currentUser?.phone; // Store phone number before resetting the state
 		if (phone) {
 			const userAuthRef = doc(db, "authToken", phone);
@@ -144,9 +143,18 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			} else {
 				handleSignout();
 			}
-		} catch (error) {
-			console.error("Error fetching current user:", error);
-			handleSignout();
+		} catch (error: any) {
+			if (error.response && error.response.status === 401) {
+				console.warn("Unauthorized access - logging out");
+				toast({
+					variant: "destructive",
+					title: "Unauthorized access",
+					description: `Authentication Required`,
+				});
+				handleSignout();
+			} else {
+				console.error("Error fetching current user:", error);
+			}
 		} finally {
 			setFetchingUser(false);
 		}
@@ -165,7 +173,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 	// Redirect to /updateDetails if username is missing
 	useEffect(() => {
-		if (currentUser && userType === "creator" && !currentUser.username) {
+		if (currentUser && userType === "creator" && !currentUser.firstName) {
 			router.replace("/updateDetails");
 			setTimeout(() => {
 				toast({

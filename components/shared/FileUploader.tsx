@@ -7,6 +7,7 @@ import { useToast } from "../ui/use-toast";
 import Image from "next/image";
 import imageCompression from "browser-image-compression";
 import * as Sentry from "@sentry/nextjs";
+import { usePathname } from "next/navigation";
 
 type FileUploaderProps = {
 	fieldChange: (url: string) => void;
@@ -19,6 +20,7 @@ const FileUploader = ({
 	mediaUrl,
 	onFileSelect,
 }: FileUploaderProps) => {
+	const pathname = usePathname(); // Get the current pathname
 	const [fileUrl, setFileUrl] = useState(mediaUrl); // Old image
 	const [newFileUrl, setNewFileUrl] = useState<string | null>(null); // New image preview
 	const [uploadProgress, setUploadProgress] = useState(0);
@@ -66,9 +68,14 @@ const FileUploader = ({
 					},
 					() => {
 						getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-							setNewFileUrl(downloadURL); // Show new image preview
+							if (pathname === "/updateDetails") {
+								setFileUrl(downloadURL); // Set fileUrl with the new image URL
+							} else {
+								setFileUrl(mediaUrl);
+								setNewFileUrl(downloadURL); // Show new image preview
+								fieldChange(downloadURL); // Pass only new image URL to parent form state
+							}
 							console.log("File available at", downloadURL);
-							fieldChange(downloadURL); // Pass only new image URL to parent form state
 							setLoading(false); // Set loading state to false once upload completes
 						});
 					}
@@ -83,7 +90,7 @@ const FileUploader = ({
 				setLoading(false); // Set loading state to false if upload fails
 			}
 		},
-		[fieldChange, onFileSelect, toast]
+		[fieldChange, onFileSelect, toast, pathname] // Include pathname in dependencies
 	);
 
 	const { getRootProps, getInputProps } = useDropzone({
@@ -118,8 +125,6 @@ const FileUploader = ({
 			</div>
 		);
 
-	console.log(fileUrl, newFileUrl);
-
 	return (
 		<div
 			{...getRootProps()}
@@ -151,7 +156,9 @@ const FileUploader = ({
 							<img
 								src={fileUrl}
 								alt="Current image"
-								className={`w-20 h-20 rounded-full border-2 border-white`}
+								className={`${
+									newFileUrl ? "w-20 h-20" : "w-44 h-44"
+								} rounded-full border-2 border-white`}
 							/>
 						)}
 

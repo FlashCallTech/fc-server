@@ -8,7 +8,7 @@ import { addMoney } from "./wallet.actions";
 import { MongoServerError } from "mongodb";
 
 // Regular expression to validate username
-const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+const usernameRegex = /^[a-zA-Z0-9_+-]+$/;
 
 // Function to validate username
 export const validateUsername = (username: string) => {
