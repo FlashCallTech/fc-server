@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
-import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { Timestamp } from "firebase/firestore";
 import { MemberRequest, clientUser, creatorUser } from "@/types";
-import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { getCreatorById } from "@/lib/actions/creator.actions";
-import { getDefaultLocale } from "react-datepicker";
 import { getUserById } from "@/lib/actions/client.actions";
 
 interface Chat {
@@ -47,8 +45,9 @@ const useChat = () => {
 	const [ended, setEnded] = useState<boolean>(false);
 	const [chatRejected, setChatRejected] = useState<boolean>(false);
 	const [chatRequestId, setChatRequestId] = useState<string>();
+	const [localChatId, setLocalChatId] = useState<string>('');
 	const { chatId } = useParams();
-	
+
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
@@ -59,31 +58,30 @@ const useChat = () => {
 			}
 		} else {
 			const creatorId = localStorage.getItem('currentUserID');
-			const getCreator = async() => {
+			const getCreator = async () => {
 				const response = await getCreatorById(creatorId as string);
 				setCreator(response);
 			}
 			getCreator();
 		}
 		const userType = localStorage.getItem('userType');
-		if(userType === 'client') {
-			console.log('client')
+		if (userType === 'client') {
 			const clientId = localStorage.getItem('currentUserID');
-			const getClient = async() => {
+			const getClient = async () => {
 				const response = await getUserById(clientId as string);
 				setClient(response);
 			}
 			getClient();
-		} else if(userType === 'creator' && rejected === true) {
+		} else if (userType === 'creator' && rejected === true) {
 			const clientId = user2?.clientId;
-			const getClient = async() => {
+			const getClient = async () => {
 				const response = await getUserById(clientId as string);
 				setClient(response);
 			}
 			getClient();
 		}
 	}, [chatId, rejected]);
-	
+
 	const members: MemberRequest[] = [
 		{
 			user_id: user2?.creatorId!,
@@ -119,17 +117,19 @@ const useChat = () => {
 			if (storedChatRequestId) {
 				setChatRequestId(storedChatRequestId);
 			}
+			const storedchatId = localStorage.getItem('chatId');
+			if (storedchatId) setLocalChatId(storedchatId);
 		};
-	
+
 		// Listen for the custom event
 		window.addEventListener("chatRequestIdUpdated", handleChatRequestIdUpdate);
-	
+
 		// Optionally, check on initial mount as well
 		const storedChatRequestId = localStorage.getItem("chatRequestId");
 		if (storedChatRequestId) {
 			setChatRequestId(storedChatRequestId);
 		}
-	
+
 		return () => {
 			window.removeEventListener("chatRequestIdUpdated", handleChatRequestIdUpdate);
 		};
@@ -152,17 +152,17 @@ const useChat = () => {
 		}
 	}, [chatId]);
 
-	// useEffect(() => {
-	// 	if (chatRequestId) {
-	// 		const unSub = onSnapshot(
-	// 			doc(db, "chatRequests", chatRequestId as string),
-	// 			(res: any) => {	
-	// 				setChatRejected(res.data()?.status === "rejected");
-	// 			}
-	// 		);
-	// 		return () => unSub();
-	// 	}
-	// }, [chatRequestId]);
+	useEffect(() => {
+		if (chatRequestId) {
+			const unSub = onSnapshot(
+				doc(db, "chatRequests", chatRequestId as string),
+				(res: any) => {
+					setChatRejected(res.data()?.status === "rejected");
+				}
+			);
+			return () => unSub();
+		}
+	}, [chatRequestId]);
 
 	useEffect(() => {
 		if (chatEnded && startedAt && endedAt) {
@@ -237,10 +237,14 @@ const useChat = () => {
 				}
 			}
 		}
+		localStorage.removeItem('chatId');
+		localStorage.removeItem('chatRequestId');
 	};
 
-	console.log(client)
-	console.log(chatRejected);
+	if (flag && chatRejected) {
+		setFlag(false);
+		createChat(localChatId as string, 'rejected', client?._id);
+	}
 
 	if (
 		duration &&
@@ -253,7 +257,7 @@ const useChat = () => {
 		setFlag(false);
 		createChat(chatId as string, "ended", user2?.clientId);
 	}
-	
+
 	return { duration, amount, createChat };
 };
 
