@@ -529,7 +529,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				updatedCreator.videoAllowed &&
 				parseInt(updatedCreator.videoRate, 10) > 0,
 			rate: updatedCreator.videoRate,
-			label: "Book Video Call",
+			label: "Video Call",
 			icon: video,
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
@@ -546,7 +546,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				updatedCreator.audioAllowed &&
 				parseInt(updatedCreator.audioRate, 10) > 0,
 			rate: updatedCreator.audioRate,
-			label: "Book Audio Call",
+			label: "Audio Call",
 			icon: audio,
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
@@ -592,25 +592,29 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						disabled={!service.enabled}
 						key={service.type}
 						className={`callOptionContainer ${
-							isProcessing || !service.enabled || onlineStatus === "Busy"
-								? "opacity-50 !cursor-not-allowed"
-								: ""
+							(isProcessing || !service.enabled || onlineStatus === "Busy") &&
+							"cursor-not-allowed"
 						}`}
-						style={{
-							boxShadow: theme,
-						}}
 						onClick={service.onClick}
 					>
-						<div
-							className={`flex gap-4 items-center font-semibold`}
-							style={{ color: themeColor }}
-						>
+						<div className={`flex gap-4 items-center font-bold text-white`}>
 							{service.icon}
 							{service.label}
 						</div>
-						<span className="text-sm tracking-widest">
-							Rs. {service.rate}/Min
-						</span>
+						<p
+							className={`font-medium tracking-widest rounded-[18px] px-4 h-[36px] text-black flex items-center justify-center ${
+								(isProcessing || !service.enabled || onlineStatus === "Busy") &&
+								"border border-white/50 text-white"
+							}`}
+							style={{
+								backgroundColor:
+									isProcessing || !service.enabled || onlineStatus === "Busy"
+										? "transparent"
+										: themeColor,
+							}}
+						>
+							Rs.<span className="ml-1">{service.rate}</span>/min
+						</p>
 					</button>
 				))}
 

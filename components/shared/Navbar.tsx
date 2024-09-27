@@ -38,12 +38,37 @@ const Navbar = () => {
 	const [userTheme, setUserTheme] = useState("#000000");
 	const [creator, setCreator] = useState<creatorUser>();
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
+	const [isVisible, setIsVisible] = useState(true);
+	const [lastScrollY, setLastScrollY] = useState(0);
 	const pathname = usePathname();
 	const creatorURL = localStorage.getItem("creatorURL");
 
 	const isCreatorOrExpertPath = pathname.includes(`${creatorURL}`);
 	const followCreatorTheme = isCreatorOrExpertPath ? "#ffffff" : "#000000";
 	const invertCreatorTheme = isCreatorOrExpertPath ? "#000000" : "#ffffff";
+
+	const handleScroll = () => {
+		if (typeof window !== "undefined") {
+			if (window.scrollY > lastScrollY) {
+				// If scrolling down
+				setIsVisible(false);
+			} else {
+				// If scrolling up
+				setIsVisible(true);
+			}
+			setLastScrollY(window.scrollY);
+		}
+	};
+
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			window.addEventListener("scroll", handleScroll);
+
+			return () => {
+				window.removeEventListener("scroll", handleScroll);
+			};
+		}
+	}, [lastScrollY]);
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -132,7 +157,9 @@ const Navbar = () => {
 
 	return (
 		<nav
-			className="justify-between items-center fixed z-40 top-0 left-0 w-full px-4 py-4 shadow-sm"
+			className={`justify-between items-center fixed z-40 top-0 left-0 w-full px-4 py-4 shadow-sm blurEffect transition-transform duration-300 ${
+				isVisible ? "translate-y-0" : "-translate-y-full"
+			}`}
 			style={{
 				display: `${authenticationSheetOpen && !currentUser ? "none" : "flex"}`,
 				background: `${isCreatorOrExpertPath ? "transparent" : "#ffffff"} `,
@@ -205,9 +232,10 @@ const Navbar = () => {
 					size="lg"
 					onClick={handleRouting}
 					style={{
-						boxShadow: `5px 5px 0px 0px ${userTheme}`,
-						color: userTheme,
-						border: `2px solid ${userTheme}`,
+						boxShadow: `4px 4px 0px 0px ${followCreatorTheme}`,
+						color: `${followCreatorTheme}`,
+						border: `1px solid ${followCreatorTheme}`,
+						backgroundColor: `${invertCreatorTheme}`,
 					}}
 				>
 					Login

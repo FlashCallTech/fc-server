@@ -23,7 +23,7 @@ const config = {
 				"3xl": "1780px",
 			},
 			fontFamily: {
-				default: ["Helvetica", "sans-serif"],
+				default: ["Roboto"],
 			},
 			colors: {
 				secondary: "#232323",

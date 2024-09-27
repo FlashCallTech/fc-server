@@ -66,19 +66,19 @@ const Favorites = ({
 		}
 	}, [user, creator._id]);
 
-	console.log(markedFavorite);
-
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<button
 					className={`border ${
 						isFavoritesPath
-							? "p-2 rounded-full  border-white"
-							: "p-3 rounded-[6px] border-black"
-					}  transition-all duration-300  hover:scale-105   ${
-						markedFavorite ? "bg-green-1" : "bg-transparent"
-					} hover:bg-green-1 flex gap-2 items-center`}
+							? "p-2 rounded-full border-white transition-all duration-300 hover:bg-green-1 hover:scale-105 "
+							: "h-[36px] w-full rounded-[6px] border-black hoverScaleDownEffect"
+					}  ${
+						markedFavorite
+							? isFavoritesPath && "bg-green-1 text-white"
+							: "bg-transparent"
+					} flex gap-2 items-center`}
 					onClick={handleToggleFavorite}
 				>
 					{!addingFavorite || !loading ? (
@@ -120,7 +120,7 @@ const Favorites = ({
 							</svg>
 						) : (
 							<span className="text-center w-full font-bold text-sm">
-								UnFollow
+								Following
 							</span>
 						)
 					) : (
