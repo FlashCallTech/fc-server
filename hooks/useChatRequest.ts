@@ -111,6 +111,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			}
 
 			const chatId = existingChatId || doc(chatRef).id;
+			localStorage.setItem('chatId', chatId);
 			const newChatRequestRef = doc(chatRequestsRef);
 			const createdAtDate = clientUser?.createdAt
 				? new Date(clientUser.createdAt)
@@ -344,7 +345,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				status: status,
 			});
 
-			await createChat(chatRequest.chatId, status, chatRequest.clientId);
+			// await createChat(chatRequest.chatId, status, chatRequest.clientId);
 
 			if (onChatRequestUpdate) {
 				onChatRequestUpdate(null);
