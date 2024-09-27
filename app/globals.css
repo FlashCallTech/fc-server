@@ -62,18 +62,6 @@
 	border-radius: 9999px;
 }
 
-/* clerk custom styles */
-
-.cl-internal-1j7ahlv {
-	width: 2.2rem;
-	height: 2.2rem;
-}
-
-.cl-logoImage {
-	height: 2rem;
-	border-radius: 10px;
-}
-
 /* tip modal custom styles */
 .sheetContent {
 	height: calc(var(--vh, 1vh) * 100);
@@ -295,7 +283,7 @@ input[type="number"] {
 	}
 
 	.callOptionContainer {
-		@apply flex flex-col gap-2 border bg-white border-gray-300 rounded-xl py-3 px-4 justify-center items-center w-[85%] xl:w-[50%] transition-all duration-300 hover:scale-105 cursor-pointer;
+		@apply flex px-4 border border-white/20 bg-[#4E515C4D] rounded-[24px] h-[52px]  justify-between items-center w-full hoverScaleDownEffect cursor-pointer;
 	}
 
 	.text-balance {

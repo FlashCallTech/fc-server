@@ -17,6 +17,8 @@ import { db } from "@/lib/firebase";
 import Favorites from "./Favorites";
 import ShareButton from "./ShareButton";
 import { usePathname } from "next/navigation";
+import CallingOptions from "../calls/CallingOptions";
+import UserReviews from "../creator/UserReviews";
 
 const ExperimentComponent = ({ creator }: { creator: creatorUser }) => {
 	const { clientUser, setAuthenticationSheetOpen, userType, setCurrentTheme } =
@@ -143,9 +145,9 @@ const ExperimentComponent = ({ creator }: { creator: creatorUser }) => {
 
 	return (
 		// Wrapper Section
-		<section>
+		<section className="grid items-center gap-4">
 			{/* Creator Details */}
-			<section className="flex flex-col gap-4 items-start justify-center">
+			<section className="h-fit px-4 w-full flex flex-col gap-4 items-start justify-center">
 				{/* Creator Info */}
 				<section className="w-full h-fit flex items-center justify-start gap-4 ">
 					{/* 1. Creator Status and Image */}
@@ -178,7 +180,7 @@ const ExperimentComponent = ({ creator }: { creator: creatorUser }) => {
 											? "bg-red-500"
 											: status === "Busy"
 											? "bg-orange-400"
-											: ""
+											: "bg-black/35"
 									} 
 									rounded-full p-1
 									`}
@@ -235,6 +237,28 @@ const ExperimentComponent = ({ creator }: { creator: creatorUser }) => {
 						firstName={creator.firstName}
 						lastName={creator.lastName}
 					/>
+				</section>
+			</section>
+
+			{/* About, Services and Reviews */}
+			<section className="size-full rounded-t-[12px] flex flex-col items-start justify-start bg-black text-white p-4 gap-5">
+				{/* About Creator */}
+				<section className="flex flex-col items-start justify-start gap-2">
+					{/* Heading */}
+					<h2 className="text-base font-bold">About Me</h2>
+					{/* Content */}
+					<p className="text-sm">{creator.bio}</p>
+				</section>
+				{/* Divider */}
+				<div className="w-full border border-white" />
+				{/* Call Buttons */}
+				<CallingOptions creator={creator} />
+				{/* User Reviews */}
+				<section className="grid grid-cols-1 items-start justify-start gap-2 pb-4">
+					{/* Heading */}
+					<h2 className="text-base font-bold">Happy Client&apos;s</h2>
+					{/* Content */}
+					<UserReviews theme={creator.themeSelected} creatorId={creator?._id} />
 				</section>
 			</section>
 		</section>

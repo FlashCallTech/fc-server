@@ -45,20 +45,10 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 		axios.defaults.withCredentials = true;
 	}, []);
 
-	// Set body background color based on current route
+	// Set body background color based on current route and theme
 	useEffect(() => {
-		const creatorURL = localStorage.getItem("creatorURL"); // Replace with dynamic value as needed
-
-		if (pathname === creatorURL) {
-			setBodyBackgroundColor("#FFA500"); // Replace "#FFA500" with dynamic themeColor if necessary
-		} else {
-			resetBodyBackgroundColor();
-		}
-
-		// Clean up when component unmounts or when the route changes
-		return () => {
-			resetBodyBackgroundColor();
-		};
+		const creatorURL = localStorage.getItem("creatorURL");
+		pathname !== creatorURL && resetBodyBackgroundColor();
 	}, [pathname]);
 
 	const renderContent = () => {

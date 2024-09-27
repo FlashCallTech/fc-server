@@ -9,6 +9,7 @@ import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import ExperimentComponent from "../shared/Experiment";
+import CreatorDetails from "./CreatorDetails";
 
 const CreatorCard: React.FC = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
@@ -52,26 +53,8 @@ const CreatorCard: React.FC = () => {
 	}
 
 	return (
-		// <section
-		// 	key={creator._id}
-		// 	className="w-full xl:mx-auto grid grid-cols-1 gap-7 items-start text-center justify-center h-[50%] lg:h-[70%] 3xl:[80%]"
-		// 	style={backgroundImageStyle}
-		// >
-		// 	{/* User Details */}
-		// 	<CreatorDetails creator={creator} />
-
-		// 	{/* Calling Options & User Reviews */}
-		// 	<div className="flex flex-col gap-10 items-center lg:mb-4">
-		// 		{/* Calling Options */}
-		// 		<CallingOptions creator={creator} />
-
-		// 		{/* User Reviews */}
-		// 		<UserReviews theme={creator.themeSelected} creatorId={creator?._id} />
-		// 	</div>
-		// </section>
-
-		<section className="px-4 size-full grid grid-cols-1 items-start">
-			<ExperimentComponent creator={creator} />
+		<section className="size-full grid grid-cols-1 items-start justify-center">
+			<CreatorDetails creator={creator} />
 		</section>
 	);
 };
