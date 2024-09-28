@@ -116,6 +116,7 @@ const AuthenticateViaOTP = ({
 			const response = await axios.post(`${backendBaseUrl}/otp/verify-otp`, {
 				phone: phoneNumber,
 				otp: values.pin,
+				fcmToken,
 			});
 
 			// Extract the session token and user from the response

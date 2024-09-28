@@ -1,4 +1,4 @@
-import { isValidUrl } from "@/lib/utils";
+import { getProfileImagePlaceholder, isValidUrl } from "@/lib/utils";
 import { creatorUser } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
@@ -108,7 +108,7 @@ const FavoritesGrid = ({
 	const imageSrc =
 		creator?.photo && isValidUrl(creator.photo)
 			? creator.photo
-			: "/images/defaultProfileImage.png";
+			: getProfileImagePlaceholder(creator && (creator.gender as string));
 
 	return (
 		<div className="grid grid-cols-[2fr_1fr] h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 border-gray-300 ">

@@ -2,6 +2,7 @@
 
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import {
+	getProfileImagePlaceholder,
 	isValidHexColor,
 	isValidUrl,
 	setBodyBackgroundColor,
@@ -37,7 +38,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const imageSrc =
 		creator?.photo && isValidUrl(creator?.photo)
 			? creator?.photo
-			: "/images/defaultProfileImage.png";
+			: getProfileImagePlaceholder(creator && (creator.gender as string));
 
 	const themeColor = isValidHexColor(creator.themeSelected)
 		? creator.themeSelected
@@ -146,7 +147,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 	return (
 		// Wrapper Section
-		<section className="size-full flex flex-col items-center gap-4">
+		<section className="size-full xl:w-[75%] xl:mx-auto flex flex-col items-center gap-4">
 			{/* Creator Details */}
 			<section className="h-fit px-4 w-full flex flex-col gap-4 items-start justify-center">
 				{/* Creator Info */}
@@ -242,7 +243,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			</section>
 
 			{/* About, Services and Reviews */}
-			<section className="size-full rounded-t-[12px] flex flex-col items-start justify-start bg-black text-white p-4 gap-5">
+			<section className="size-full rounded-t-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5">
 				{/* About Creator */}
 				<section className="flex flex-col items-start justify-start gap-2">
 					{/* Heading */}
@@ -255,7 +256,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				{/* Call Buttons */}
 				<CallingOptions creator={creator} />
 				{/* User Reviews */}
-				<section className="grid grid-cols-1 size-full items-start justify-start gap-2 py-4">
+				<section className="grid grid-cols-1 w-full items-start justify-start gap-2 py-4">
 					{/* Content */}
 					<UserReviews theme={creator.themeSelected} creatorId={creator?._id} />
 				</section>

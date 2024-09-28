@@ -1,5 +1,5 @@
 // Gender
-export type Gender = "male" | "female" | "other";
+export type Gender = "male" | "female" | "other" | undefined;
 
 // User Params
 

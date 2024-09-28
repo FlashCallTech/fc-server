@@ -6,6 +6,11 @@ import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import * as Sentry from "@sentry/nextjs";
 
+import { logEvent } from "firebase/analytics";
+import { analytics } from "@/lib/firebase";
+import { trackEvent } from "./mixpanel";
+import GetRandomImage from "@/utils/GetRandomImage";
+
 const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 const key_secret = process.env.NEXT_PUBLIC_RAZORPAY_SECRET;
 
@@ -46,8 +51,17 @@ export const placeholderImages = {
 		"https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FF_preview.png?alt=media&token=ed601090-05ed-4148-90b7-ea079bc2a245",
 	other:
 		"https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FOthers_preview.png?alt=media&token=846916d0-b031-4eed-830a-ec6e73c33350",
-	generic:
-		"https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2Fgeneric.png?alt=media&token=da7a462f-6461-4cb0-bb2d-b4e6b8a6bae9",
+};
+
+export const getProfileImagePlaceholder = (gender?: string): string => {
+	const normalizedGender = gender?.toLowerCase() as "male" | "female" | "other";
+
+	if (normalizedGender && placeholderImages[normalizedGender]) {
+		return placeholderImages[normalizedGender];
+	}
+
+	// If gender is not provided or invalid, return a random image
+	return GetRandomImage();
 };
 
 export const handleError = (error: unknown) => {
@@ -163,7 +177,10 @@ export const imageSrc = (creator: any) => {
 	if (creator.photo && isValidUrl(creator.photo)) {
 		return creator.photo;
 	} else {
-		return "/images/defaultProfileImage.png";
+		return (
+			getProfileImagePlaceholder(creator.gender) ??
+			"/images/defaultProfileImage.png"
+		);
 	}
 };
 
@@ -258,4 +275,66 @@ export const stopMediaStreams = () => {
 		.catch((error) => {
 			console.error("Error stopping media streams: ", error);
 		});
+};
+
+// calling options helper functions
+
+// Function to fetch the FCM token
+export const fetchFCMToken = async (phone: string) => {
+	const fcmTokenRef = doc(db, "FCMtoken", phone);
+	const fcmTokenDoc = await getDoc(fcmTokenRef);
+	return fcmTokenDoc.exists() ? fcmTokenDoc.data().token : null;
+};
+
+// Function to track events
+export const trackCallEvents = (
+	callType: string,
+	clientUser: any,
+	creator: any
+) => {
+	const createdAtDate = clientUser?.createdAt
+		? new Date(clientUser.createdAt)
+		: new Date();
+	const formattedDate = createdAtDate.toISOString().split("T")[0];
+
+	if (callType === "audio") {
+		trackEvent("BookCall_Audio_Clicked", {
+			Client_ID: clientUser._id,
+			User_First_Seen: formattedDate,
+			Creator_ID: creator._id,
+		});
+	} else {
+		trackEvent("BookCall_Video_initiated", {
+			Client_ID: clientUser._id,
+			User_First_Seen: formattedDate,
+			Creator_ID: creator._id,
+		});
+	}
+
+	logEvent(analytics, "call_initiated", {
+		clientId: clientUser?._id,
+		creatorId: creator._id,
+	});
+};
+
+// Function to send notification
+export const sendNotification = async (
+	token: string,
+	title: string,
+	body: string,
+	link?: string
+) => {
+	try {
+		const response = await fetch("/api/send-notification", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ token, title, message: body, link }),
+		});
+
+		if (!response.ok) {
+			throw new Error("Failed to send notification");
+		}
+	} catch (error) {
+		console.error("Error sending notification:", error);
+	}
 };

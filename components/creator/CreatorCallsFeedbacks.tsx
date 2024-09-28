@@ -12,6 +12,7 @@ import { Switch } from "../ui/switch";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import * as Sentry from "@sentry/nextjs";
+import GetRandomImage from "@/utils/GetRandomImage";
 
 // Function to reorder the array based on the drag result
 const reorder = (
@@ -324,8 +325,7 @@ const CreatorCallsFeedbacks = () => {
 														{feedback?.clientId?.photo && (
 															<Image
 																src={
-																	feedback?.clientId?.photo ||
-																	"/images/defaultProfileImage.png"
+																	feedback?.clientId?.photo || GetRandomImage()
 																}
 																alt={feedback?.clientId?.username}
 																height={1000}
