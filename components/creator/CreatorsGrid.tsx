@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase";
-import { isValidUrl } from "@/lib/utils";
+import { getProfileImagePlaceholder, isValidUrl } from "@/lib/utils";
 import { creatorUser } from "@/types";
 import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
@@ -11,7 +11,7 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 	const imageSrc =
 		creator?.photo && isValidUrl(creator.photo)
 			? creator.photo
-			: "/images/defaultProfileImage.png";
+			: getProfileImagePlaceholder(creator && (creator.gender as string));
 
 	useEffect(() => {
 		const img = new Image();

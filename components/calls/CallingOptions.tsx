@@ -14,11 +14,14 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
 import { trackEvent } from "@/lib/mixpanel";
+
 import {
 	backendBaseUrl,
 	isValidHexColor,
-	updateExpertStatus,
 	updateFirestoreSessions,
+	fetchFCMToken,
+	trackCallEvents,
+	sendNotification,
 } from "@/lib/utils";
 
 interface CallingOptions {
@@ -62,9 +65,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	// logic to show the updated creator services in realtime
 	useEffect(() => {
+		if (!creator?._id || !creator?.phone) return;
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);
-		// Only create clientStatusDocRef if clientUser is not null
+
 		let clientStatusDocRef: any;
 		if (clientUser) {
 			clientStatusDocRef = doc(db, "userStatus", clientUser.phone);
@@ -258,9 +262,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		setSheetOpen(false);
 	};
 
-	// create new meeting
 	const createMeeting = async (callType: string) => {
 		if (!client || !clientUser) return;
+
 		try {
 			const id = crypto.randomUUID();
 			const call =
@@ -271,7 +275,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (!call) throw new Error("Failed to create meeting");
 
 			const members = [
-				// creator
 				{
 					user_id: creator?._id,
 					custom: {
@@ -282,20 +285,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					},
 					role: "admin",
 				},
-				// client
-				// {
-				// 	user_id: String(clientUser?._id),
-				// 	custom: {
-				// 		name: String(
-				// 			clientUser?.username ? clientUser.username : clientUser.phone
-				// 		),
-				// 		type: "client",
-				// 		image: clientUser?.photo,
-				// 		phone: clientUser?.phone,
-				// 	},
-				// 	role: "admin",
-
-				// },
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
@@ -309,11 +298,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				callType === "video"
 					? parseInt(creator?.videoRate, 10)
 					: parseInt(creator?.audioRate, 10);
-			let maxCallDuration = (walletBalance / ratePerMinute) * 60; // in seconds
+			let maxCallDuration = (walletBalance / ratePerMinute) * 60;
 			maxCallDuration =
 				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
-			// Check if maxCallDuration is less than 5 minutes (300 seconds)
 			if (maxCallDuration < 300) {
 				trackEvent("MinimumBalance_NotAvailable", {
 					Client_ID: clientUser?._id,
@@ -352,29 +340,18 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				},
 			});
 
-			const createdAtDate = clientUser?.createdAt
-				? new Date(clientUser.createdAt)
-				: new Date();
-			const formattedDate = createdAtDate.toISOString().split("T")[0];
-
-			if (callType === "audio") {
-				trackEvent("BookCall_Audio_Clicked", {
-					Client_ID: clientUser._id,
-					User_First_Seen: formattedDate,
-					Creator_ID: creator._id,
-				});
-			} else {
-				trackEvent("BookCall_Video_initiated", {
-					Client_ID: clientUser._id,
-					User_First_Seen: formattedDate,
-					Creator_ID: creator._id,
-				});
+			// Utilize helper functions
+			const fcmToken = await fetchFCMToken(creator.phone);
+			if (fcmToken) {
+				sendNotification(
+					fcmToken,
+					`Incoming Call`,
+					`${callType} Call Request from ${clientUser.username}`,
+					`/meeting/${id}`
+				);
 			}
 
-			logEvent(analytics, "call_initiated", {
-				clientId: clientUser?._id,
-				creatorId: creator._id,
-			});
+			trackCallEvents(callType, clientUser, creator);
 
 			fetch(`${backendBaseUrl}/calls/registerCall`, {
 				method: "POST",
@@ -393,13 +370,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				call.id,
 				"ongoing",
 				[
-					// creator
 					{
 						user_id: creator?._id,
 						expert: creator?.username,
 						status: "joining",
 					},
-					// client
 					{
 						user_id: clientUser?._id,
 						client: clientUser?.username,

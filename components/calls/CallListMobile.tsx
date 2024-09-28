@@ -1,6 +1,10 @@
 "use client";
 
-import { formatDateTime, isValidUrl } from "@/lib/utils";
+import {
+	formatDateTime,
+	getProfileImagePlaceholder,
+	isValidUrl,
+} from "@/lib/utils";
 import { RegisterCallParams } from "@/types";
 import React, { useEffect, useState } from "react";
 import ContentLoading from "../shared/ContentLoading";
@@ -82,7 +86,7 @@ const CallListMobile = () => {
 						calls.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
 					} items-center gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-x-hidden no-scrollbar`}
 				>
-					{calls.map((call, index) => {
+					{calls.map((call: any, index: number) => {
 						const formattedDate = formatDateTime(call.startedAt as Date);
 						const creator = call.creatorDetails;
 						return (
@@ -103,7 +107,9 @@ const CallListMobile = () => {
 											src={
 												isValidUrl(creator?.photo as string)
 													? (creator?.photo as string)
-													: "/images/defaultProfileImage.png"
+													: getProfileImagePlaceholder(
+															creator?.gender && creator.gender
+													  )
 											}
 											alt="Expert"
 											height={1000}

@@ -1,4 +1,5 @@
 import { CreatorFeedback } from "@/types";
+import GetRandomImage from "@/utils/GetRandomImage";
 import { Rating } from "@smastrom/react-rating";
 import React, { useState, useRef, useEffect } from "react";
 import Slider from "react-slick";
@@ -32,7 +33,7 @@ const ReviewSlider = ({
 		slidesToShow: 1,
 		speed: 500,
 		slidesToScroll: 1,
-		autoplay: true,
+		autoplay: false,
 		autoplaySpeed: 5000,
 		arrows: false,
 		beforeChange: (oldIndex: number, newIndex: number) => {
@@ -69,20 +70,19 @@ const ReviewSlider = ({
 			<Slider {...settings} ref={sliderRef} className="pt-4 pb-7">
 				{creatorFeedbacks.map((feedback, index) => (
 					<div
-						className="flex flex-col items-center justify-center cursor-grabbing"
+						className="flex flex-col size-full items-center justify-center cursor-grabbing"
 						key={index}
 					>
-						<div className={`flex flex-col items-center justify-center`}>
+						<div
+							className={`size-full flex flex-col items-center justify-center`}
+						>
 							{/* Profile Image */}
 							<div
 								className="flex w-[80px] height-[40px] mx-auto rounded-full items-center justify-center py-1 px-2 z-10"
 								style={{ background: theme ? theme : "#ffffff" }}
 							>
 								<img
-									src={
-										feedback?.clientId?.photo ||
-										"/images/defaultProfileImage.png"
-									}
+									src={feedback?.clientId?.photo || GetRandomImage()}
 									alt={`${feedback?.clientId?.username} profile`}
 									width={100}
 									height={100}
@@ -95,59 +95,60 @@ const ReviewSlider = ({
 							</div>
 
 							{/* feedback section */}
-							<div className="flex flex-col items-start justfy-center gap-4 w-full rounded-[24px] px-5 pb-5 pt-10 -mt-4 bg-black/10 border-x border-b-2 border-white/50">
-								{/* Rating */}
-								<div className="flex gap-1 items-center">
-									<Rating
-										style={{
-											maxWidth: 180,
-											fill: "white",
-											marginLeft: "-10px",
-										}}
-										value={Math.floor(feedback?.rating)}
-										items={5}
-										spaceBetween="medium"
-										transition="zoom"
-										readOnly
-									/>
-								</div>
+							<div className="size-full flex flex-col items-start justify-between gap-4 w-full rounded-[24px] px-5 pb-5 pt-10 -mt-4 bg-black/10 border-x border-b-2 border-white/50">
+								<section className="size-full grid items-center gap-4">
+									{/* Rating */}
+									<div className="flex gap-1 items-center">
+										<Rating
+											style={{
+												maxWidth: 180,
+												fill: "white",
+												marginLeft: "-10px",
+											}}
+											value={Math.floor(feedback?.rating)}
+											items={5}
+											spaceBetween="medium"
+											transition="zoom"
+											readOnly
+										/>
+									</div>
 
-								{/* Feedback */}
+									{/* Feedback */}
 
-								<div className="pl-1 flex flex-col items-start justify-start gap-2 w-full h-full overflow-hidden -ml-1 min-h-[4rem] max-h-[225px]">
-									<span
-										className={`text-start block ${
-											isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
-										} ${
-											isExpanded
-												? "overflow-y-scroll no-scrollbar"
-												: "overflow-hidden"
-										}`}
-										style={{ maxHeight: isExpanded ? "10rem" : "7rem" }}
-									>
-										{getClampedText(feedback?.feedback)}
-										{!isExpanded && feedback?.feedback?.length > 100 && (
-											<span className="text-white">
-												<button
-													onClick={toggleReadMore}
-													className="underline underline-offset-2 hover:opacity-80"
-												>
-													Read more
-												</button>
-											</span>
-										)}
-									</span>
-
-									{isExpanded && (
-										<button
-											onClick={toggleReadMore}
-											className="text-red-400 hover:opacity-80 text-sm font-bold mt-2"
+									<div className="pl-1 flex flex-col items-start justify-start gap-2 w-full h-full overflow-hidden -ml-1 min-h-[4rem] max-h-[225px]">
+										<span
+											className={`text-start block ${
+												isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
+											} ${
+												isExpanded
+													? "overflow-y-scroll no-scrollbar"
+													: "overflow-hidden"
+											}`}
+											style={{ maxHeight: isExpanded ? "10rem" : "7rem" }}
 										>
-											Show Less
-										</button>
-									)}
-								</div>
+											{getClampedText(feedback?.feedback)}
+											{!isExpanded && feedback?.feedback?.length > 100 && (
+												<span className="text-white">
+													<button
+														onClick={toggleReadMore}
+														className="underline underline-offset-2 hover:opacity-80"
+													>
+														Read more
+													</button>
+												</span>
+											)}
+										</span>
 
+										{isExpanded && (
+											<button
+												onClick={toggleReadMore}
+												className="text-red-400 hover:opacity-80 text-sm font-bold mt-2"
+											>
+												Show Less
+											</button>
+										)}
+									</div>
+								</section>
 								{/* User Details */}
 								<div className="flex flex-col items-start justify-center gap-1">
 									{feedback?.clientId?.username ? (
