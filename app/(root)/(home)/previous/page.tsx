@@ -34,13 +34,13 @@ const PreviousPage = () => {
 	}, []);
 
 	useEffect(() => {
-		trackEvent('OrderHistory_Impression', {
+		trackEvent("OrderHistory_Impression", {
 			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 			Creator_ID: creator?._id,
 			Walletbalace_Available: clientUser?.walletBalance,
-		})
-	}, [])
+		});
+	}, []);
 
 	useEffect(() => {
 		window.addEventListener("scroll", handleScroll);
@@ -55,7 +55,7 @@ const PreviousPage = () => {
 			className="flex size-full flex-col gap-2 pb-5 md:pb-14"
 		>
 			<div
-				className={`sticky top-16 bg-white z-30 w-full px-4 ${
+				className={`sticky top-0 bg-white z-30 w-full px-4 ${
 					isSticky ? "pt-7" : "pt-2"
 				} pb-4 flex items-center justify-between transition-all duration-300`}
 			>

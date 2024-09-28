@@ -20,7 +20,11 @@ import ContentLoading from "@/components/shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
-import { backendBaseUrl, stopMediaStreams } from "@/lib/utils";
+import {
+	backendBaseUrl,
+	stopMediaStreams,
+	updateExpertStatus,
+} from "@/lib/utils";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -143,7 +147,10 @@ const CallEnded = ({ toast, router, call }: any) => {
 
 		const handleCallEnd = async () => {
 			if (transactionHandled.current) return;
-
+			await updateExpertStatus(
+				call?.state?.createdBy?.custom?.phone as string,
+				"Idle"
+			);
 			transactionHandled.current = true;
 
 			if (!toastShown) {
@@ -175,7 +182,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 				}
 			);
 
-			await fetch("/api/v1/calls/updateCall", {
+			await fetch(`${backendBaseUrl}/calls/updateCall`, {
 				method: "POST",
 				body: JSON.stringify({
 					callId: call.id,

@@ -6,6 +6,7 @@ import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useToast } from "@/components/ui/use-toast";
 import { useParams, useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
+import { backendBaseUrl } from "@/lib/utils";
 
 const CallFeedbackPage = () => {
 	const { callId } = useParams();
@@ -19,7 +20,7 @@ const CallFeedbackPage = () => {
 		const fetchFeedbacks = async () => {
 			try {
 				const response = await fetch(
-					`/api/v1/feedback/call/getFeedbacks?callId=${callId}`
+					`${backendBaseUrl}/feedback/call/getFeedbacks?callId=${callId}`
 				);
 				const feedbacks = await response.json();
 

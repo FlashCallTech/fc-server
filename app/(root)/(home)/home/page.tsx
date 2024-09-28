@@ -85,9 +85,9 @@ const HomePage = () => {
 							Please try again later.
 						</div>
 					) : creators && creators.pages.length === 0 && !isLoading ? (
-						<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
+						<p className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
 							No creators found.
-						</div>
+						</p>
 					) : (
 						<section
 							className={`grid xs:grid-cols-2  h-auto gap-3.5 px-3.5 lg:gap-5 lg:px-0 items-center overflow-hidden`}

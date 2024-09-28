@@ -63,12 +63,6 @@ const MyCallUI = () => {
 							) {
 								// Call is still pending, redirect the user back to the meeting
 
-								toast({
-									variant: "destructive",
-									title: "Ongoing Call or Session Pending",
-									description: "Redirecting you back ...",
-								});
-
 								router.replace(`/meeting/${ongoingCall.id}`);
 								setHasRedirected(true);
 							}
@@ -76,11 +70,6 @@ const MyCallUI = () => {
 							// If no ongoing call in Firestore, check local storage
 							const storedCallId = localStorage.getItem("activeCallId");
 							if (storedCallId && !hide && !hasRedirected) {
-								toast({
-									variant: "destructive",
-									title: "Ongoing Call or Session Pending",
-									description: "Redirecting you back ...",
-								});
 								router.replace(`/meeting/${storedCallId}`);
 								setHasRedirected(true);
 							}
@@ -122,11 +111,7 @@ const MyCallUI = () => {
 					await updateExpertStatus(expertPhone, "Online");
 				}
 
-				isMeetingOwner &&
-					(await updateExpertStatus(
-						callCreator?.custom?.phone as string,
-						"Idle"
-					));
+				await updateExpertStatus(callCreator?.custom?.phone as string, "Idle");
 
 				setShowCallUI(false); // Hide call UI
 			};
@@ -192,7 +177,7 @@ const MyCallUI = () => {
 					await call?.leave();
 				}
 
-				router.replace(`/meeting/${call.id}`);
+				!hasRedirected && router.replace(`/meeting/${call.id}`);
 			};
 
 			call.on("call.ended", handleCallEnded);

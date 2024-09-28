@@ -8,7 +8,6 @@ import { useParams } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import SinglePostLoader from "../shared/SinglePostLoader";
-import ExperimentComponent from "../shared/Experiment";
 import CreatorDetails from "./CreatorDetails";
 
 const CreatorCard: React.FC = () => {

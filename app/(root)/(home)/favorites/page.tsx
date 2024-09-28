@@ -169,7 +169,7 @@ const Favorites = () => {
 		<section className="flex size-full flex-col gap-2">
 			<div
 				ref={stickyRef}
-				className={`sticky flex w-full items-center justify-between top-16 bg-white z-30 px-2 lg:pl-0.5 ${
+				className={`sticky flex w-full items-center justify-between top-0 bg-white z-30 px-2 lg:pl-0.5 ${
 					isSticky ? "pt-7" : "pt-2"
 				} pb-4 transition-all duration-300`}
 			>
@@ -292,6 +292,10 @@ const Favorites = () => {
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
 				</section>
+			) : favorites && favorites.length === 0 && !loading ? (
+				<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
+					No Favorites Found
+				</div>
 			) : error ? (
 				<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
 					Failed to fetch Favorites <br />

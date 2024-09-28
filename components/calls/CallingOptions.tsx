@@ -592,8 +592,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						disabled={!service.enabled}
 						key={service.type}
 						className={`callOptionContainer ${
-							(isProcessing || !service.enabled || onlineStatus === "Busy") &&
-							"cursor-not-allowed"
+							(isProcessing ||
+								!service.enabled ||
+								onlineStatus === "Busy" ||
+								isClientBusy) &&
+							"!cursor-not-allowed"
 						}`}
 						onClick={service.onClick}
 					>
@@ -603,7 +606,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						</div>
 						<p
 							className={`font-medium tracking-widest rounded-[18px] px-4 h-[36px] text-black flex items-center justify-center ${
-								(isProcessing || !service.enabled || onlineStatus === "Busy") &&
+								(isProcessing ||
+									!service.enabled ||
+									onlineStatus === "Busy" ||
+									isClientBusy) &&
 								"border border-white/50 text-white"
 							}`}
 							style={{

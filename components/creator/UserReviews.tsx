@@ -1,10 +1,10 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReviewSlider from "./ReviewSlider";
 import SinglePostLoader from "../shared/SinglePostLoader";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useToast } from "../ui/use-toast";
 import { useGetCreatorFeedbacks } from "@/lib/react-query/queries";
+import ContentLoading from "../shared/ContentLoading";
 
 const UserReviews = ({
 	theme,
@@ -14,34 +14,15 @@ const UserReviews = ({
 	creatorId: string;
 }) => {
 	const [isExpanded, setIsExpanded] = useState(false);
-	const [isRefetchButtonHidden, setIsRefetchButtonHidden] = useState(false);
 
 	const { toast } = useToast();
 	const {
 		data: feedbackData,
 		isLoading,
 		isError,
-		isFetching,
-		refetch,
+		fetchNextPage,
+		hasNextPage,
 	} = useGetCreatorFeedbacks(creatorId);
-
-	// Ensure creatorFeedbacks is always an array
-	const creatorFeedbacks =
-		feedbackData?.pages?.flatMap((page: any) => page) || [];
-
-	const handleRefetch = useCallback(async () => {
-		if (!isFetching && !isRefetchButtonHidden) {
-			setIsRefetchButtonHidden(true);
-
-			try {
-				await refetch();
-			} finally {
-				setTimeout(() => {
-					setIsRefetchButtonHidden(false);
-				}, 10000);
-			}
-		}
-	}, []);
 
 	const useScreenSize = () => {
 		const [isMobile, setIsMobile] = useState(false);
@@ -92,17 +73,39 @@ const UserReviews = ({
 
 	return (
 		<>
-			{creatorFeedbacks.length > 0 && (
-				<div className={`relative text-white size-full xl:w-[60%] xl:mx-auto`}>
-					<h2 className="text-base font-bold">Happy Client&apos;s</h2>
-					<ReviewSlider
-						creatorFeedbacks={creatorFeedbacks}
-						getClampedText={getClampedText}
-						isExpanded={isExpanded}
-						setIsExpanded={setIsExpanded}
-						toggleReadMore={toggleReadMore}
-						theme={theme}
-					/>
+			{!isLoading ? (
+				isError ? (
+					<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
+						Failed to fetch Transactions <br />
+						Please try again later.
+					</div>
+				) : feedbackData && feedbackData.pages?.length === 0 ? (
+					<p className="flex flex-col items-center justify-center size-full text-xl text-center flex-1 min-h-44 text-red-500 font-semibold">
+						No Feedbacks Found
+					</p>
+				) : (
+					<div
+						className={`relative text-white size-full xl:w-[60%] xl:mx-auto`}
+					>
+						<h2 className="text-base font-bold">Happy Client&apos;s</h2>
+						{feedbackData?.pages?.map((page, index) => (
+							<ReviewSlider
+								key={index}
+								creatorFeedbacks={page.creatorFeedbacks}
+								getClampedText={getClampedText}
+								isExpanded={isExpanded}
+								setIsExpanded={setIsExpanded}
+								toggleReadMore={toggleReadMore}
+								theme={theme}
+								fetchNextPage={fetchNextPage}
+								hasNextPage={hasNextPage}
+							/>
+						))}
+					</div>
+				)
+			) : (
+				<div className="size-full flex flex-col gap-2 items-center justify-center">
+					<ContentLoading />
 				</div>
 			)}
 		</>

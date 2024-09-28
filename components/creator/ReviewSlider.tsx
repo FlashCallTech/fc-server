@@ -10,6 +10,8 @@ const ReviewSlider = ({
 	setIsExpanded,
 	toggleReadMore,
 	theme,
+	fetchNextPage,
+	hasNextPage,
 }: {
 	creatorFeedbacks: CreatorFeedback[];
 	getClampedText: (text: string) => string;
@@ -17,6 +19,8 @@ const ReviewSlider = ({
 	setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
 	toggleReadMore: () => void;
 	theme?: string;
+	fetchNextPage: () => void;
+	hasNextPage: boolean;
 }) => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const sliderRef = useRef<Slider>(null);
@@ -28,20 +32,32 @@ const ReviewSlider = ({
 		slidesToShow: 1,
 		speed: 500,
 		slidesToScroll: 1,
-		autoplay: false,
+		autoplay: true,
 		autoplaySpeed: 5000,
 		arrows: false,
 		beforeChange: (oldIndex: number, newIndex: number) => {
 			setCurrentIndex(newIndex);
 			setIsExpanded(false);
 		},
+
+		afterChange: (current: number) => {
+			// Check if we need to fetch the next page
+			if (hasNextPage && current === creatorFeedbacks.length - 1) {
+				fetchNextPage(); // Trigger fetching the next page
+			}
+		},
 	};
 
 	useEffect(() => {
 		// Find all elements with the .rr--on and .rr--svg classes and apply the theme color
 		const ratingElements = document.querySelectorAll(".rr--on .rr--svg");
+		const ratingOffElements = document.querySelectorAll(".rr--off .rr--svg");
 		ratingElements.forEach((element: any) => {
-			element.style.fill = theme; // Apply the theme color as fill
+			element.style.fill = theme;
+			element.style.stroke = theme;
+		});
+		ratingOffElements.forEach((element: any) => {
+			element.style.stroke = "none";
 		});
 	}, [theme]);
 
@@ -135,9 +151,20 @@ const ReviewSlider = ({
 								{/* User Details */}
 								<div className="flex flex-col items-start justify-center gap-1">
 									{feedback?.clientId?.username ? (
-										<p className="text-sm font-semibold">
-											{feedback?.clientId?.username}
-										</p>
+										// Check if username starts with '+91'
+										feedback.clientId.username.startsWith("+91") ? (
+											<p className="text-sm font-semibold">
+												{feedback.clientId.username.replace(
+													/(\+91)(\d+)/,
+													(match, p1, p2) =>
+														`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+												)}
+											</p>
+										) : (
+											<p className="text-sm font-semibold">
+												{feedback.clientId.username}
+											</p>
+										)
 									) : (
 										<p className="text-sm font-semibold">
 											{feedback?.clientId?.phone?.replace(
