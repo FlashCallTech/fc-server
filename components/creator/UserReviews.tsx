@@ -71,6 +71,8 @@ const UserReviews = ({
 		});
 	}
 
+	console.log(feedbackData);
+
 	return (
 		<>
 			{!isLoading ? (
@@ -79,7 +81,7 @@ const UserReviews = ({
 						Failed to fetch Transactions <br />
 						Please try again later.
 					</div>
-				) : feedbackData && feedbackData.pages?.length === 0 ? (
+				) : feedbackData && feedbackData.pages[0]?.length === 0 ? (
 					<p className="flex flex-col items-center justify-center size-full text-xl text-center flex-1 min-h-44 text-red-500 font-semibold">
 						No Feedbacks Found
 					</p>

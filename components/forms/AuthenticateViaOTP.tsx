@@ -28,6 +28,7 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
 import { backendBaseUrl } from "@/lib/utils";
 import GetRandomImage from "@/utils/GetRandomImage";
+import { getFCMToken } from "@/lib/firebase";
 
 const formSchema = z.object({
 	phone: z
@@ -109,6 +110,9 @@ const AuthenticateViaOTP = ({
 	const handleOTPSubmit = async (values: z.infer<typeof FormSchemaOTP>) => {
 		setIsVerifyingOTP(true);
 		try {
+			// Retrieve the FCM token
+			const fcmToken = await getFCMToken();
+
 			const response = await axios.post(`${backendBaseUrl}/otp/verify-otp`, {
 				phone: phoneNumber,
 				otp: values.pin,
