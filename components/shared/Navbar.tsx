@@ -158,7 +158,7 @@ const Navbar = () => {
 
 	return (
 		<nav
-			className={`justify-between items-center fixed z-40 top-0 left-0 w-full px-4 py-4   transition-transform duration-300  blurEffect
+			className={`justify-between items-center fixed z-40 top-0 left-0 w-full px-4 py-4   transition-transform duration-300 shadow-sm blurEffect
 			 ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
 			style={{
 				display: `${authenticationSheetOpen && !currentUser ? "none" : "flex"}`,
@@ -199,7 +199,7 @@ const Navbar = () => {
 							}`}
 							style={{
 								boxShadow: `4px 4px 0px 0px #000000`,
-								color: `#000000`,
+								color: `${followCreatorTheme}`,
 								border: `1px solid #000000`,
 								backgroundColor: `${invertCreatorTheme}`,
 							}}
@@ -210,10 +210,11 @@ const Navbar = () => {
 								height={100}
 								alt="wallet"
 								className={`w-4 h-4 ${
-									pathname.includes("/payment") && "invert"
+									(pathname.includes("/payment") || isCreatorOrExpertPath) &&
+									"invert"
 								}`}
 							/>
-							<span className="w-full text-xs whitespace-nowrap font-semibold">
+							<span className="w-full mt-[2px] text-center align-middle text-xs font-semibold">
 								{`Rs. ${Math.round(walletBalance)}`}
 							</span>
 						</Link>
@@ -230,9 +231,9 @@ const Navbar = () => {
 					size="lg"
 					onClick={handleRouting}
 					style={{
-						boxShadow: `4px 4px 0px 0px ${followCreatorTheme}`,
+						boxShadow: `4px 4px 0px 0px #000000`,
 						color: `${followCreatorTheme}`,
-						border: `1px solid ${followCreatorTheme}`,
+						border: `1px solid #000000`,
 						backgroundColor: `${invertCreatorTheme}`,
 					}}
 				>

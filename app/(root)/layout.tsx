@@ -5,7 +5,7 @@ import { CurrentUsersProvider } from "@/lib/context/CurrentUsersContext";
 import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
 import { initMixpanel } from "@/lib/mixpanel";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
-import { resetBodyBackgroundColor, setBodyBackgroundColor } from "@/lib/utils";
+import { resetBodyBackgroundColor } from "@/lib/utils";
 import StreamVideoProvider from "@/providers/streamClientProvider";
 import axios from "axios";
 import { throttle } from "lodash";
@@ -35,13 +35,7 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	// Set mounted state once the component is mounted
 	useEffect(() => {
 		setIsMounted(true);
-	}, []);
-
-	useEffect(() => {
-		initMixpanel(); // Initialize Mixpanel when the layout mounts
-	}, []);
-
-	useEffect(() => {
+		initMixpanel(); // Initialize Mixpanel
 		axios.defaults.withCredentials = true;
 	}, []);
 
