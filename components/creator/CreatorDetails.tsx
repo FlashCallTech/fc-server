@@ -255,7 +255,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				{/* Call Buttons */}
 				<CallingOptions creator={creator} />
 				{/* User Reviews */}
-				<section className="grid grid-cols-1 items-start justify-start gap-2 py-4">
+				<section className="grid grid-cols-1 w-full items-start justify-start gap-2 py-4">
 					{/* Content */}
 					<UserReviews theme={creator.themeSelected} creatorId={creator?._id} />
 				</section>

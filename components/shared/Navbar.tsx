@@ -45,18 +45,20 @@ const Navbar = () => {
 
 	const isCreatorOrExpertPath = pathname.includes(`${creatorURL}`);
 	const followCreatorTheme = isCreatorOrExpertPath ? "#ffffff" : "#000000";
-	const invertCreatorTheme = isCreatorOrExpertPath ? "#000000" : "#ffffff";
+	const invertCreatorTheme = isCreatorOrExpertPath ? "transparent" : "#ffffff";
 
 	const handleScroll = () => {
 		if (typeof window !== "undefined") {
-			if (window.scrollY > lastScrollY) {
-				// If scrolling down
-				setIsVisible(false);
-			} else {
-				// If scrolling up
-				setIsVisible(true);
+			if (window.innerWidth <= 768) {
+				if (window.scrollY > lastScrollY) {
+					// If scrolling down
+					setIsVisible(false);
+				} else {
+					// If scrolling up
+					setIsVisible(true);
+				}
+				setLastScrollY(window.scrollY);
 			}
-			setLastScrollY(window.scrollY);
 		}
 	};
 
@@ -97,8 +99,7 @@ const Navbar = () => {
 	useEffect(() => {
 		// Todo theme ko ek jaisa krne ka jugaad krna hai
 		if (currentTheme) {
-			const newTheme = currentTheme === "#50A65C" ? "#000000" : currentTheme;
-			setUserTheme(newTheme);
+			setUserTheme(currentTheme);
 		} else {
 			setUserTheme("#000000");
 		}
@@ -157,9 +158,8 @@ const Navbar = () => {
 
 	return (
 		<nav
-			className={`justify-between items-center fixed z-40 top-0 left-0 w-full px-4 py-4 shadow-sm blurEffect transition-transform duration-300 ${
-				isVisible ? "translate-y-0" : "-translate-y-full"
-			}`}
+			className={`justify-between items-center fixed z-40 top-0 left-0 w-full px-4 py-4   transition-transform duration-300  blurEffect
+			 ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
 			style={{
 				display: `${authenticationSheetOpen && !currentUser ? "none" : "flex"}`,
 				background: `${isCreatorOrExpertPath ? "transparent" : "#ffffff"} `,
@@ -198,9 +198,9 @@ const Navbar = () => {
 								pathname.includes("/payment") && "!bg-green-1 !text-white"
 							}`}
 							style={{
-								boxShadow: `4px 4px 0px 0px ${followCreatorTheme}`,
-								color: `${followCreatorTheme}`,
-								border: `1px solid ${followCreatorTheme}`,
+								boxShadow: `4px 4px 0px 0px #000000`,
+								color: `#000000`,
+								border: `1px solid #000000`,
 								backgroundColor: `${invertCreatorTheme}`,
 							}}
 						>
@@ -210,9 +210,7 @@ const Navbar = () => {
 								height={100}
 								alt="wallet"
 								className={`w-4 h-4 ${
-									isCreatorOrExpertPath || pathname.includes("/payment")
-										? "invert"
-										: "invert-0"
+									pathname.includes("/payment") && "invert"
 								}`}
 							/>
 							<span className="w-full text-xs whitespace-nowrap font-semibold">

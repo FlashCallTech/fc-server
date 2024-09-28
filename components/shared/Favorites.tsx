@@ -110,7 +110,7 @@ const Favorites = ({
 								viewBox="0 0 24 24"
 								strokeWidth={1.5}
 								stroke="currentColor"
-								className={`${isFavoritesPath ? "size-4" : "size-6"} invert`}
+								className={`size-4`}
 							>
 								<path
 									strokeLinecap="round"

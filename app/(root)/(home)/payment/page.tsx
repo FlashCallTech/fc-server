@@ -2,26 +2,12 @@
 
 import Payment from "@/components/client/payment";
 import Withdraw from "@/components/creator/Withdraw";
-import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 const PaymentsPage = () => {
-	const router = useRouter();
-	const { toast } = useToast();
-	const { userType, currentUser } = useCurrentUsersContext();
+	const { userType } = useCurrentUsersContext();
 
-	useEffect(() => {
-		if (!currentUser) {
-			router.push("/home");
-			toast({
-				variant: "destructive",
-				title: "Authentication Required",
-				description: "Redirecting Back...",
-			});
-		}
-	}, [currentUser?._id]);
 	const searchParams = useSearchParams();
 
 	// Retrieve the `callType` query parameter

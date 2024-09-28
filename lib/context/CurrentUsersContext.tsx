@@ -146,11 +146,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		} catch (error: any) {
 			if (error.response && error.response.status === 401) {
 				console.warn("Unauthorized access - logging out");
-				toast({
-					variant: "destructive",
-					title: "Unauthorized access",
-					description: `Authentication Required`,
-				});
 				handleSignout();
 			} else {
 				console.error("Error fetching current user:", error);

@@ -26,6 +26,9 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
 import Link from "next/link";
+import { useInView } from "react-intersection-observer";
+import Image from "next/image";
+import { useGetUserTransactionsByType } from "@/lib/react-query/queries";
 
 interface Transaction {
 	_id: string;
@@ -39,17 +42,30 @@ interface PaymentProps {
 }
 
 const Payment: React.FC<PaymentProps> = ({ callType }) => {
-	const [btn, setBtn] = useState<"All" | "Credit" | "Debit">("All");
+	const [btn, setBtn] = useState<"all" | "credit" | "debit">("all");
 	const [creator, setCreator] = useState<creatorUser>();
 	const { walletBalance } = useWalletBalanceContext();
 	const { currentUser } = useCurrentUsersContext();
-	const [loading, setLoading] = useState(false);
-	const [errorMessage, setErrorMessage] = useState("");
-	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const router = useRouter();
 	const { clientUser } = useCurrentUsersContext();
 	const [isSticky, setIsSticky] = useState(false);
 	const stickyRef = useRef<HTMLDivElement>(null);
+
+	const { ref, inView } = useInView();
+	const {
+		data: transactions,
+		fetchNextPage,
+		hasNextPage,
+		isFetching,
+		isError,
+		isLoading,
+	} = useGetUserTransactionsByType(currentUser?._id as string, btn);
+
+	useEffect(() => {
+		if (inView) {
+			fetchNextPage();
+		}
+	}, [inView]);
 
 	const handleScroll = () => {
 		if (stickyRef.current) {
@@ -160,30 +176,6 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		router.push(`/recharge?amount=${rechargeAmount}`);
 	}
 
-	const fetchTransactions = async () => {
-		try {
-			setLoading(true);
-			const response = await axios.get(
-				`/api/v1/transaction/getUserTransactionsPaginated?userId=${
-					currentUser?._id
-				}&filter=${btn.toLowerCase()}`
-			);
-			setTransactions(response.data.transactions);
-		} catch (error) {
-			Sentry.captureException(error);
-			console.error("Error fetching transactions:", error);
-			setErrorMessage("Unable to fetch transactions");
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		if (currentUser) {
-			fetchTransactions();
-		}
-	}, [btn]);
-
 	useEffect(() => {
 		const amountPattern = /^\d*$/;
 		if (!amountPattern.test(rechargeAmount)) {
@@ -195,8 +187,6 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			form.clearErrors("rechargeAmount");
 		}
 	}, [rechargeAmount, form]);
-
-	console.log(rechargeAmount);
 
 	const creatorURL = localStorage.getItem("creatorURL");
 
@@ -211,12 +201,25 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 					&larr;
 				</Link>
 				<section className="w-full flex flex-col">
-					<span className="w-fit text-2xl leading-7 font-bold">
-						Rs. {walletBalance.toFixed(2)}
-					</span>
-					<h2 className="w-fit text-gray-500 font-normal leading-5">
-						Total Balance
-					</h2>
+					{currentUser ? (
+						<>
+							<span className="w-fit text-2xl leading-7 font-bold">
+								Rs. {walletBalance.toFixed(2)}
+							</span>
+							<h2 className="w-fit text-gray-500 font-normal leading-5">
+								Total Balance
+							</h2>
+						</>
+					) : (
+						<>
+							<span className="w-fit text-2xl leading-7 font-bold">
+								Hey There
+							</span>
+							<h2 className="w-fit text-gray-500 font-normal leading-5">
+								Authenticate To Continue
+							</h2>
+						</>
+					)}
 				</section>
 			</div>
 
@@ -247,6 +250,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 								)}
 							/>
 							<Button
+								disabled={!currentUser}
 								type="submit"
 								className="w-fit px-4 py-3 bg-gray-800 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-black/60"
 							>
@@ -284,25 +288,25 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			{/* Transaction History Section */}
 			<section
 				ref={stickyRef}
-				className={`sticky top-16 bg-white z-30 w-full px-4 ${
+				className={`sticky top-0 bg-white z-30 w-full px-4 ${
 					isSticky ? "pb-7" : "pb-4"
-				} pt-4`}
+				}  pt-4`}
 			>
 				<div className="flex flex-col items-start justify-start gap-4 w-full h-fit">
 					<h2 className=" text-gray-500 text-xl pt-4 font-normal leading-7">
 						Transaction History
 					</h2>
 					<div className="flex space-x-2  text-xs font-bold leading-4 w-fit">
-						{["All", "Credit", "Debit"].map((filter) => (
+						{["all", "credit", "debit"].map((filter) => (
 							<button
 								key={filter}
 								onClick={() => {
-									setBtn(filter as "All" | "Credit" | "Debit");
+									setBtn(filter as "all" | "credit" | "debit");
 								}}
-								className={`px-5 py-1 border-2 border-black rounded-full ${
+								className={`capitalize px-5 py-1 border-2 border-black rounded-full ${
 									filter === btn
 										? "bg-gray-800 text-white"
-										: "bg-white text-black dark:bg-gray-700 dark:text-white"
+										: "bg-white text-black dark:bg-gray-700 dark:text-white hoverScaleDownEffect"
 								}`}
 							>
 								{filter}
@@ -314,40 +318,45 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 			{/* Transaction History List */}
 			<ul className="space-y-4 w-full h-full px-4 pt-2 pb-7">
-				{!loading ? (
-					transactions.length === 0 ? (
-						<p className="flex flex-col items-center justify-center size-full text-xl text-center flex-1 min-h-44 text-red-500 font-semibold">
-							{errorMessage
-								? errorMessage
-								: `No transactions under ${btn} filter`}
+				{!isLoading ? (
+					isError || !currentUser ? (
+						<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
+							Failed to fetch Transactions <br />
+							Please try again later.
+						</div>
+					) : transactions && transactions?.pages?.length === 0 ? (
+						<p className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
+							{`No transactions under ${btn} filter`}
 						</p>
 					) : (
-						transactions.map((transaction) => (
-							<li
-								key={transaction?._id}
-								className="animate-enterFromBottom flex justify-between items-center p-4 bg-white dark:bg-gray-800 border-b-2"
-							>
-								<div className="flex flex-col items-start justify-center gap-2">
-									<p className="font-normal text-sm leading-4">
-										Transaction ID <strong>{transaction?._id}</strong>
-									</p>
-									<p className="text-gray-500 font-normal text-xs leading-4">
-										{new Date(transaction?.createdAt).toLocaleString()}
-									</p>
-								</div>
-								<p
-									className={`font-bold text-sm leading-4 w-fit whitespace-nowrap ${
-										transaction?.type === "credit"
-											? "text-green-500"
-											: "text-red-500"
-									} `}
+						transactions?.pages?.map((page: any) =>
+							page.transactions.map((transaction: Transaction) => (
+								<li
+									key={transaction?._id}
+									className="animate-enterFromBottom flex justify-between items-center p-4 bg-white dark:bg-gray-800 border-b-2"
 								>
-									{transaction?.type === "credit"
-										? `+ ₹${transaction?.amount.toFixed(2)}`
-										: `- ₹${transaction?.amount.toFixed(2)}`}
-								</p>
-							</li>
-						))
+									<div className="flex flex-col items-start justify-center gap-2">
+										<p className="font-normal text-sm leading-4">
+											Transaction ID <strong>{transaction?._id}</strong>
+										</p>
+										<p className="text-gray-500 font-normal text-xs leading-4">
+											{new Date(transaction?.createdAt).toLocaleString()}
+										</p>
+									</div>
+									<p
+										className={`font-bold text-sm leading-4 w-fit whitespace-nowrap ${
+											transaction?.type === "credit"
+												? "text-green-500"
+												: "text-red-500"
+										} `}
+									>
+										{transaction?.type === "credit"
+											? `+ ₹${transaction?.amount?.toFixed(2)}`
+											: `- ₹${transaction?.amount?.toFixed(2)}`}
+									</p>
+								</li>
+							))
+						)
 					)
 				) : (
 					<div className="size-full flex flex-col gap-2 items-center justify-center">
@@ -355,6 +364,24 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 					</div>
 				)}
 			</ul>
+
+			{hasNextPage && isFetching && (
+				<Image
+					src="/icons/loading-circle.svg"
+					alt="Loading..."
+					width={50}
+					height={50}
+					className="mx-auto invert my-5 mt-10 z-20"
+				/>
+			)}
+
+			{!hasNextPage && !isFetching && (
+				<div className="text-center text-gray-500 py-4">
+					You have reached the end of the list.
+				</div>
+			)}
+
+			{hasNextPage && <div ref={ref} className=" pt-10 w-full" />}
 		</div>
 	);
 };

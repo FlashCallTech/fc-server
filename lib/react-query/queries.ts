@@ -68,3 +68,40 @@ export const useGetCreatorFeedbacks = (creatorId: string) => {
 		initialPageParam: 1, // Start with page 1
 	});
 };
+
+// ============================================================
+// TRANSACTION QUERIES
+// ============================================================
+
+export const useGetUserTransactionsByType = (
+	userId: string,
+	type: "debit" | "credit" | "all"
+) => {
+	const limit = 10; // Define the limit per page
+
+	return useInfiniteQuery({
+		queryKey: ["userTransactions", userId, type],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(
+				`${backendBaseUrl}/wallet/transactions/paginated/${userId}/type/${type}`,
+				{
+					params: {
+						page: pageParam,
+						limit,
+					},
+				}
+			);
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Failed to fetch transactions");
+			}
+		},
+		getNextPageParam: (lastPage: any, allPages: any) => {
+			return lastPage.hasNextPage ? allPages.length + 1 : undefined;
+		},
+		enabled: !!userId && !!type, // Only enable the query if userId and type are provided
+		initialPageParam: 1, // Start with page 1
+	});
+};

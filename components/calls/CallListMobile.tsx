@@ -132,22 +132,21 @@ const CallListMobile = () => {
 											{call.status}
 										</span>
 										<span className="text-[12.5px]">
-											{call.duration
-												? (() => {
-														const seconds = parseInt(call.duration, 10);
-														const hours = Math.floor(seconds / 3600);
-														const minutes = Math.floor((seconds % 3600) / 60);
-														const remainingSeconds = seconds % 60;
-														const formattedTime = [
-															hours > 0 ? `${hours}h` : null,
-															minutes > 0 ? `${minutes}m` : null,
-															`${remainingSeconds}s`,
-														]
-															.filter(Boolean)
-															.join(" ");
-														return formattedTime;
-												  })()
-												: call.status === "Accepted" && "Pending Transaction"}
+											{call.duration &&
+												(() => {
+													const seconds = parseInt(call.duration, 10);
+													const hours = Math.floor(seconds / 3600);
+													const minutes = Math.floor((seconds % 3600) / 60);
+													const remainingSeconds = seconds % 60;
+													const formattedTime = [
+														hours > 0 ? `${hours}h` : null,
+														minutes > 0 ? `${minutes}m` : null,
+														`${remainingSeconds}s`,
+													]
+														.filter(Boolean)
+														.join(" ");
+													return formattedTime;
+												})()}
 										</span>
 									</div>
 								</div>
