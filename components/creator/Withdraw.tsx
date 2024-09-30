@@ -90,7 +90,7 @@ const Withdraw: React.FC = () => {
 
 	if(loadingTransfer) {
 		return (
-			<Verify message={'Initiating Tranfer'} />
+			<Verify message={'Initiating Transfer'} />
 		)
 	}
 
