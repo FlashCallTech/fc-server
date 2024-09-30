@@ -78,7 +78,7 @@ const CreatorCard: React.FC = () => {
 				<CallingOptions creator={creator} />
 
 				{/* User Reviews */}
-				<UserReviews theme={creator.themeSelected} creatorId={creator?._id} />
+				{/* <UserReviews theme={creator.themeSelected} creatorId={creator?._id} /> */}
 			</div>
 		</section>
 	);
