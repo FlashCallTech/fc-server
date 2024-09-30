@@ -47,8 +47,9 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	useEffect(() => {
 		localStorage.setItem("currentCreator", JSON.stringify(creator));
 		setBodyBackgroundColor(themeColor ? themeColor : "#50A65C");
-		userType !== "creator" &&
-			localStorage.setItem("creatorURL", `/${creator?.username}`);
+		if (userType !== "creator" && creator?.username) {
+			localStorage.setItem("creatorURL", `/${creator.username}`);
+		}
 		setCurrentTheme(themeColor);
 	}, [creator]);
 
@@ -202,7 +203,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 					{/* 2. Creator Info */}
 					<section className="size-full flex flex-col items-start justify-center">
-						<p className="font-semibold text-2xl max-w-[92%] text-ellipsis whitespace-nowrap overflow-hidden">
+						<p className="font-semibold text-2xl max-w-[92%] text-ellipsis whitespace-nowrap overflow-hidden capitalize">
 							{fullName}
 						</p>
 						<span className="text-sm">
@@ -244,15 +245,19 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 			{/* About, Services and Reviews */}
 			<section className="size-full rounded-t-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5">
-				{/* About Creator */}
-				<section className="flex flex-col items-start justify-start gap-2">
-					{/* Heading */}
-					<h2 className="text-base font-bold">About Me</h2>
-					{/* Content */}
-					<p className="text-sm">{creator.bio}</p>
-				</section>
-				{/* Divider */}
-				<div className="w-full border border-white" />
+				{creator.bio && (
+					<>
+						{/* About Creator */}
+						<section className="flex flex-col items-start justify-start gap-2">
+							{/* Heading */}
+							<h2 className="text-base font-bold">About Me</h2>
+							{/* Content */}
+							<p className="text-sm">{creator.bio}</p>
+						</section>
+						{/* Divider */}
+						<div className="w-full border border-white" />
+					</>
+				)}
 				{/* Call Buttons */}
 				<CallingOptions creator={creator} />
 				{/* User Reviews */}
