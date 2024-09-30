@@ -71,8 +71,6 @@ const UserReviews = ({
 		});
 	}
 
-	console.log(feedbackData);
-
 	return (
 		<>
 			{!isLoading ? (

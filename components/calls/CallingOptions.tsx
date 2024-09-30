@@ -347,7 +347,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					fcmToken,
 					`Incoming Call`,
 					`${callType} Call Request from ${clientUser.username}`,
-					`/meeting/${id}`
+					creator,
+					`https:flashcall.me/meeting/${id}`
 				);
 			}
 

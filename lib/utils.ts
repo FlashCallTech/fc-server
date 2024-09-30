@@ -322,13 +322,14 @@ export const sendNotification = async (
 	token: string,
 	title: string,
 	body: string,
+	data: any,
 	link?: string
 ) => {
 	try {
 		const response = await fetch("/api/send-notification", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ token, title, message: body, link }),
+			body: JSON.stringify({ token, title, message: body, data, link }),
 		});
 
 		if (!response.ok) {
