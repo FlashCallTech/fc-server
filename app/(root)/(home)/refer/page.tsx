@@ -1,17 +1,19 @@
 "use client";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
+import Image from "next/image";
 import React, { useState } from "react";
 
 const ReferralLink: React.FC = () => {
 	const [copied, setCopied] = useState(false);
-	const { currentUser } = useCurrentUsersContext();
+	const { creatorUser } = useCurrentUsersContext();
 
-  const referralLink = `http://flashcall.me/authenticate/?userType=${'creator'}&refId=${currentUser?._id}`;
+  const referralId = creatorUser?.referralId as string;
+  const referralLink = `http://flashcall.me/authenticate/?userType=${'creator'}&refId=${referralId}`;
 
 	const handleCopy = () => {
 		navigator.clipboard
-			.writeText(referralLink)
+			.writeText(referralId)
 			.then(() => {
 				setCopied(true);
 				setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
@@ -49,9 +51,10 @@ const ReferralLink: React.FC = () => {
         <p className="text-lg font-semibold">Invite your friends to try the service</p>
         <button 
           onClick={handleCopy}
-          className={`p-2 rounded-md ml-4 ${copied ? 'bg-green-900' : 'bg-green-800'} text-white cursor-pointer`}
+          className={`flex flex-row gap-1 justify-center p-2 items-center px-4 rounded-full ml-4 text-xs ${copied ? 'bg-green-900' : 'bg-green-800'} text-white cursor-pointer`}
         >
-          {copied ? 'Copied!' : 'Copy'}
+          {referralId} 
+          <Image src={'/copy.svg'} width={0} height={0} alt="copy" className="w-auto h-auto" />
         </button>
       </div>
 
@@ -62,6 +65,10 @@ const ReferralLink: React.FC = () => {
           <h5 className="font-semibold text-lg">Share your Referral Link</h5>
           <p className="text-gray-600 text-sm mt-2">Invite your friends via Whatsapp or a text message.</p>
         </div>
+      </div>
+
+      <div>
+        People Successfully Referred
       </div>
 
       {/* Refer Actions */}

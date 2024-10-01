@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     const beneficiary = await Beneficiary.findOne({ user_id: userId });
-    
+
     if (beneficiary === null) {
       throw new Error('Beneficiary not found');
     }
@@ -27,12 +27,12 @@ export async function GET(request: NextRequest) {
     })
 
     const result = await response.json();
-    
-    if(!response.ok) {
+
+    if (!response.ok) {
       throw new Error(result.message);
     }
 
-    return NextResponse.json({success: true, data: result});
+    return NextResponse.json({ success: true, data: result });
 
   } catch (error) {
     return NextResponse.json({ success: false, message: (error as Error).message });
