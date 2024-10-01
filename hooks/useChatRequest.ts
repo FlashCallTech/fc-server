@@ -29,7 +29,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
 	const router = useRouter();
-	const { createChat } = useChat();
 	const { walletBalance } = useWalletBalanceContext();
 	const { getDevicePlatform } = usePlatform();
 
