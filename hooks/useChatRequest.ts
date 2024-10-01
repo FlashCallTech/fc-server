@@ -203,6 +203,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					status: "active",
 					messages: [],
 					maxChatDuration,
+					timerSet: false,
 					walletBalance: response.walletBalance,
 				});
 
@@ -237,6 +238,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					clientName: chatRequest.clientName,
 					maxChatDuration,
 					clientBalance: response.walletBalance,
+					timerSet: false,
 				});
 			}
 
