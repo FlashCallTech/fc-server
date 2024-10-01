@@ -30,7 +30,7 @@ const Favorites = () => {
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
 	const [sortBy, setSortBy] = useState<string>("");
 	const [groupBy, setGroupBy] = useState<string>("");
-
+	const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
 	const { currentUser, clientUser } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
 	const [isSticky, setIsSticky] = useState(false);
@@ -47,10 +47,19 @@ const Favorites = () => {
 	} = useGetUserFavorites(currentUser?._id as string);
 
 	// Flatten paginated data
-	const favorites =
-		userFavorites?.pages.flatMap(
-			(page) => page.paginatedData?.favorites || []
-		) || [];
+	useEffect(() => {
+		const flatFavorites =
+			userFavorites?.pages.flatMap(
+				(page) => page.paginatedData?.favorites || []
+			) || [];
+		setFavorites(flatFavorites);
+	}, [userFavorites]);
+
+	const removeFavorite = (creatorId: string) => {
+		setFavorites((prevFavorites) =>
+			prevFavorites.filter((favorite) => favorite.creatorId._id !== creatorId)
+		);
+	};
 
 	useEffect(() => {
 		if (inView) {
@@ -89,6 +98,12 @@ const Favorites = () => {
 			window.removeEventListener("scroll", handleScroll);
 		};
 	}, []);
+
+	useEffect(() => {
+		if (favorites.length > 0) {
+			filteredFavorites();
+		}
+	}, [favorites, sortBy, groupBy]);
 
 	const toggleFilterPopup = () => {
 		setIsFilterOpen((prev) => !prev);
@@ -166,7 +181,6 @@ const Favorites = () => {
 					)}
 				</button>
 			</div>
-
 			{/* Filter Popup */}
 			{isFilterOpen && (
 				<div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-40">
@@ -253,12 +267,11 @@ const Favorites = () => {
 					</section>
 				</div>
 			)}
-
 			{isLoading || (currentUser && walletBalance < 0) ? (
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
 				</section>
-			) : userFavorites && userFavorites?.pages?.length === 0 ? (
+			) : favorites.length === 0 ? (
 				<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
 					No Favorites Found
 				</div>
@@ -285,7 +298,9 @@ const Favorites = () => {
 											>
 												<FavoritesGrid
 													creator={favorite.creatorId}
-													onFavoriteToggle={() => console.log("User Removed")}
+													onFavoriteToggle={() =>
+														removeFavorite(favorite.creatorId._id)
+													}
 												/>
 											</section>
 										))}
@@ -295,34 +310,37 @@ const Favorites = () => {
 						: (filteredFavorites() as FavoriteItem[]).map((favorite, index) => (
 								<section
 									className="min-w-full transition-all duration-500"
-									key={favorite.creatorId._id || index}
+									key={favorite.creatorId?._id || index}
 								>
 									<FavoritesGrid
 										creator={favorite.creatorId}
-										onFavoriteToggle={() => console.log("User Removed")}
+										onFavoriteToggle={() =>
+											removeFavorite(favorite.creatorId._id)
+										}
 									/>
 								</section>
 						  ))}
-
-					{hasNextPage && isFetching && (
-						<Image
-							src="/icons/loading-circle.svg"
-							alt="Loading..."
-							width={50}
-							height={50}
-							className="mx-auto invert my-5 mt-10 z-20"
-						/>
-					)}
-
-					{!hasNextPage && !isFetching && (
-						<div className="text-center text-gray-500 ">
-							You have reached the end of the list.
-						</div>
-					)}
-
-					{hasNextPage && <div ref={ref} className=" pt-10 w-full" />}
 				</div>
 			)}
+			{hasNextPage && isFetching && (
+				<Image
+					src="/icons/loading-circle.svg"
+					alt="Loading..."
+					width={50}
+					height={50}
+					className="mx-auto invert my-5 mt-10 z-20"
+				/>
+			)}
+			{currentUser &&
+				walletBalance > 0 &&
+				favorites.length !== 0 &&
+				!hasNextPage &&
+				!isFetching && (
+					<div className="text-center text-gray-500 ">
+						You have reached the end of the list.
+					</div>
+				)}
+			{hasNextPage && <div ref={ref} className=" pt-10 w-full" />}{" "}
 		</section>
 	);
 };

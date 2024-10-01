@@ -66,7 +66,7 @@ const CallListMobile = () => {
 						className={`grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-x-hidden no-scrollbar`}
 					>
 						{userCalls?.pages?.flatMap((page: any) =>
-							page.calls.map((userCall: RegisterCallParams) => {
+							page?.calls?.map((userCall: RegisterCallParams) => {
 								const formattedDate = formatDateTime(
 									userCall.startedAt as Date
 								);
@@ -184,7 +184,7 @@ const CallListMobile = () => {
 
 						{!hasNextPage && !isFetching && (
 							<div className="text-center text-gray-500 py-4">
-								You have reached the end of the list.
+								No more Calls to Load.
 							</div>
 						)}
 

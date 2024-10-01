@@ -45,7 +45,7 @@ const Favorites = ({
 
 					// Check if the current creator is in the favorites
 					const isFavorite = favorites.some(
-						(fav) => fav.creatorId._id === creator._id
+						(fav) => fav.creatorId._id === creator?._id
 					);
 					setMarkedFavorite(isFavorite);
 				} else {
@@ -65,7 +65,7 @@ const Favorites = ({
 		if (user?._id && (isCreatorOrExpertPath || isFavoritesPath)) {
 			fetchFavorites();
 		}
-	}, [user, creator._id]);
+	}, [user, creator?._id]);
 
 	return (
 		<Tooltip>
