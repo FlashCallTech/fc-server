@@ -374,9 +374,9 @@ input[type="number"] {
 
 .creator-card {
 	opacity: 0;
-	animation: fadeInUp 0.5s forwards; /* Animation duration and direction */
+	animation: fadeInUp 0.5s forwards;
 }
 
 .creator-card.entered {
-	animation-delay: var(--delay); /* Each card will have a different delay */
+	animation-delay: var(--delay);
 }

@@ -39,8 +39,9 @@ const Favorites = ({
 				);
 
 				// Check if response data is available
-				if (response.data && response.data.favorites) {
-					const favorites: FavoriteItem[] = response.data.favorites;
+				if (response.data && response.data.paginatedData.favorites) {
+					const favorites: FavoriteItem[] =
+						response.data.paginatedData.favorites;
 
 					// Check if the current creator is in the favorites
 					const isFavorite = favorites.some(

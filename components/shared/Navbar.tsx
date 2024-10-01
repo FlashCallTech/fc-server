@@ -30,14 +30,12 @@ const Navbar = () => {
 		currentUser,
 		fetchingUser,
 		userType,
-		currentTheme,
 		authenticationSheetOpen,
 		setAuthenticationSheetOpen,
 	} = useCurrentUsersContext();
 	const router = useRouter();
-	const [userTheme, setUserTheme] = useState("#000000");
 	const [creator, setCreator] = useState<creatorUser>();
-	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false); // State to manage sheet visibility
+	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [isVisible, setIsVisible] = useState(true);
 	const [lastScrollY, setLastScrollY] = useState(0);
 	const pathname = usePathname();
@@ -58,6 +56,8 @@ const Navbar = () => {
 					setIsVisible(true);
 				}
 				setLastScrollY(window.scrollY);
+			} else {
+				setIsVisible(true);
 			}
 		}
 	};
@@ -95,15 +95,6 @@ const Navbar = () => {
 		}
 	};
 	const { walletBalance } = useWalletBalanceContext();
-
-	useEffect(() => {
-		// Todo theme ko ek jaisa krne ka jugaad krna hai
-		if (currentTheme) {
-			setUserTheme(currentTheme);
-		} else {
-			setUserTheme("#000000");
-		}
-	}, [pathname, currentTheme]);
 
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);

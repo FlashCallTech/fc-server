@@ -3,7 +3,6 @@
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
 import React, { useEffect, useRef, useState } from "react";
-import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import FavoritesGrid from "@/components/creator/FavoritesGrid";
 import {
@@ -15,7 +14,9 @@ import {
 } from "@/components/ui/select";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { trackEvent } from "@/lib/mixpanel";
-import { backendBaseUrl } from "@/lib/utils";
+import { useInView } from "react-intersection-observer";
+import { useGetUserFavorites } from "@/lib/react-query/queries";
+import Image from "next/image";
 type FavoriteItem = {
 	creatorId: creatorUser;
 };
@@ -25,17 +26,37 @@ type GroupedFavorites = {
 };
 
 const Favorites = () => {
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(false);
 	const [creator, setCreator] = useState<creatorUser>();
 	const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
-	const [sortBy, setSortBy] = useState<string>(""); // to manage sorting criteria
-	const [groupBy, setGroupBy] = useState<string>(""); // to manage grouping criteria
-	const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+	const [sortBy, setSortBy] = useState<string>("");
+	const [groupBy, setGroupBy] = useState<string>("");
+
 	const { currentUser, clientUser } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
 	const [isSticky, setIsSticky] = useState(false);
 	const stickyRef = useRef<HTMLDivElement>(null);
+
+	const { ref, inView } = useInView();
+	const {
+		data: userFavorites,
+		fetchNextPage,
+		hasNextPage,
+		isFetching,
+		isError,
+		isLoading,
+	} = useGetUserFavorites(currentUser?._id as string);
+
+	// Flatten paginated data
+	const favorites =
+		userFavorites?.pages.flatMap(
+			(page) => page.paginatedData?.favorites || []
+		) || [];
+
+	useEffect(() => {
+		if (inView) {
+			fetchNextPage();
+		}
+	}, [inView]);
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -56,44 +77,6 @@ const Favorites = () => {
 		});
 	}, []);
 
-	useEffect(() => {
-		const fetchFavorites = async () => {
-			try {
-				const response = await fetch(
-					`${backendBaseUrl}/favorites/${currentUser?._id}`
-				);
-
-				if (response.ok) {
-					const data = await response.json();
-
-					if (data && data.favorites) {
-						setFavorites(
-							data.favorites.map((favorite: any) => ({
-								...favorite,
-								updatedAt: data.updatedAt,
-							}))
-						);
-					} else {
-						setFavorites([]);
-					}
-				} else {
-					console.error("Failed to fetch favorites");
-					setError(true);
-				}
-			} catch (error) {
-				Sentry.captureException(error);
-				console.error("Error fetching favorites:", error);
-				setError(true);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		if (currentUser?._id) {
-			fetchFavorites();
-		}
-	}, [currentUser?._id]);
-
 	const handleScroll = () => {
 		if (stickyRef.current) {
 			setIsSticky(window.scrollY > stickyRef.current.offsetTop);
@@ -106,23 +89,6 @@ const Favorites = () => {
 			window.removeEventListener("scroll", handleScroll);
 		};
 	}, []);
-
-	const handleFavoriteToggle = (
-		updatedCreator: creatorUser,
-		isFavorited: boolean
-	) => {
-		setFavorites((prevFavorites) => {
-			if (isFavorited) {
-				// Add to favorites
-				return [...prevFavorites, { creatorId: updatedCreator }];
-			} else {
-				// Remove from favorites
-				return prevFavorites.filter(
-					(fav) => fav.creatorId._id !== updatedCreator._id
-				);
-			}
-		});
-	};
 
 	const toggleFilterPopup = () => {
 		setIsFilterOpen((prev) => !prev);
@@ -235,7 +201,7 @@ const Favorites = () => {
 										value="updatedAt"
 										className="hover:bg-green-1 hover:text-white cursor-pointer"
 									>
-										Added to List
+										Last Updated
 									</SelectItem>
 								</SelectContent>
 							</Select>
@@ -288,24 +254,22 @@ const Favorites = () => {
 				</div>
 			)}
 
-			{loading || (currentUser && walletBalance < 0) ? (
+			{isLoading || (currentUser && walletBalance < 0) ? (
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
 				</section>
-			) : favorites && favorites.length === 0 && !loading ? (
+			) : userFavorites && userFavorites?.pages?.length === 0 ? (
 				<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
 					No Favorites Found
 				</div>
-			) : error ? (
+			) : isError ? (
 				<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
 					Failed to fetch Favorites <br />
 					Please try again later.
 				</div>
 			) : (
 				<div
-					className={`animate-in grid ${
-						favorites.length > 1 ? "xl:grid-cols-2" : "grid-cols-1"
-					}  px-2.5 gap-5 lg:px-0 items-start pb-8 lg:pb-5 overflow-x-hidden no-scrollbar`}
+					className={`animate-in grid grid-cols-1 xl:grid-cols-2 px-2.5 gap-5 lg:px-0 items-start pb-8 lg:pb-5 overflow-x-hidden no-scrollbar`}
 				>
 					{groupBy === "profession"
 						? Object.entries(filteredFavorites()).map(
@@ -316,12 +280,12 @@ const Favorites = () => {
 										</h2>
 										{group.map((favorite: any, idx: number) => (
 											<section
-												className="min-w-full transition-all duration-500"
+												className="min-w-full transition-all duration-500 xl:mb-4"
 												key={favorite.creatorId._id || idx}
 											>
 												<FavoritesGrid
 													creator={favorite.creatorId}
-													onFavoriteToggle={handleFavoriteToggle}
+													onFavoriteToggle={() => console.log("User Removed")}
 												/>
 											</section>
 										))}
@@ -335,10 +299,28 @@ const Favorites = () => {
 								>
 									<FavoritesGrid
 										creator={favorite.creatorId}
-										onFavoriteToggle={handleFavoriteToggle}
+										onFavoriteToggle={() => console.log("User Removed")}
 									/>
 								</section>
 						  ))}
+
+					{hasNextPage && isFetching && (
+						<Image
+							src="/icons/loading-circle.svg"
+							alt="Loading..."
+							width={50}
+							height={50}
+							className="mx-auto invert my-5 mt-10 z-20"
+						/>
+					)}
+
+					{!hasNextPage && !isFetching && (
+						<div className="text-center text-gray-500 ">
+							You have reached the end of the list.
+						</div>
+					)}
+
+					{hasNextPage && <div ref={ref} className=" pt-10 w-full" />}
 				</div>
 			)}
 		</section>

@@ -91,7 +91,7 @@ const HomePage = () => {
 						</p>
 					) : (
 						<section
-							className={`grid xs:grid-cols-2  h-auto gap-3.5 px-3.5 lg:gap-5 lg:px-0 items-center overflow-hidden`}
+							className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 px-3.5  lg:px-0 items-center overflow-hidden`}
 							style={{
 								WebkitTransform: "translateZ(0)",
 							}}

@@ -2,6 +2,7 @@
 
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import {
+	backendBaseUrl,
 	getProfileImagePlaceholder,
 	isValidHexColor,
 	isValidUrl,
@@ -20,6 +21,7 @@ import UserReviews from "../creator/UserReviews";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import Favorites from "../shared/Favorites";
 import ShareButton from "../shared/ShareButton";
+import axios from "axios";
 
 const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const { clientUser, setAuthenticationSheetOpen, userType, setCurrentTheme } =
@@ -108,12 +110,15 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		const clientId = clientUser?._id;
 		setAddingFavorite(true);
 		try {
-			const response = await toggleFavorite({
-				clientId: clientId as string,
-				creatorId: creator._id,
-			});
+			const response = await axios.post(
+				`${backendBaseUrl}/favorites/upsertFavorite`,
+				{
+					clientId: clientId as string,
+					creatorId: creator._id,
+				}
+			);
 
-			if (response.success) {
+			if (response.status === 200) {
 				setMarkedFavorite((prev) => !prev);
 				toast({
 					variant: "destructive",
@@ -168,10 +173,10 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 									status === "Online"
 										? "bg-[#098D26]"
 										: status === "Offline"
-										? "bg-red-500"
+										? "bg-red-400"
 										: status === "Busy"
 										? "bg-orange-400"
-										: ""
+										: "bg-red-400"
 								} text-[10px] rounded-[2.75px] py-1 px-2 gap-1 font-semibold flex items-center justify-center text-white w-[51px] h-[18px]`}
 							>
 								<div
@@ -180,11 +185,12 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 										status === "Online"
 											? "bg-[#54DA72]"
 											: status === "Offline"
-											? "bg-red-500"
+											? "bg-red-600"
 											: status === "Busy"
-											? "bg-orange-400"
-											: "bg-black/35"
+											? "bg-orange-600"
+											: "bg-red-600"
 									} 
+
 									rounded-full p-1
 									`}
 								/>
