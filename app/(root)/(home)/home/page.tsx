@@ -13,7 +13,6 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useGetCreators } from "@/lib/react-query/queries";
-import Experiment from "@/components/shared/Experiment";
 
 const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
@@ -145,8 +144,6 @@ const HomePage = () => {
 				<CreatorHome />
 			)}
 		</main>
-
-		// <Experiment />
 	);
 };
 
