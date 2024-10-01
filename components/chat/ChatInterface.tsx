@@ -17,11 +17,8 @@ import useMediaRecorder from "@/hooks/useMediaRecorder";
 import ChatTimer from "./ChatTimer";
 import EndCallDecision from "../calls/EndCallDecision";
 import useEndChat from "@/hooks/useEndChat";
-import ContentLoading from "../shared/ContentLoading";
-import RechargeAndTip from "./Tip";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import CreatorChatTimer from "../creator/CreatorChatTimer";
-import Recharge from "./Recharge";
 import Tip from "./Tip";
 import useMarkAsSeen from "@/hooks/useMarkAsSeen";
 
@@ -63,11 +60,38 @@ const ChatInterface: React.FC = () => {
 	// const audioContext = new AudioContext();
 
 	useEffect(() => {
-		updateDoc(doc(db, "chats", chatId as string), {
-			startedAt: Date.now(),
-			endedAt: null,
-		});
-	}, []);
+		const updateChatStartedAt = async () => {
+			if (!chatId) return; // Exit if chatId is not available
+
+			try {
+				// Get the document with the provided chatId
+				const chatDocRef = doc(db, "chats", chatId as string);
+				const chatDocSnap = await getDoc(chatDocRef);
+
+				if (chatDocSnap.exists()) {
+					const chatData = chatDocSnap.data();
+
+					// Check if the status is "active"
+					if (!chatData.timerSet) {
+						// If status is not active, update startedAt
+						await updateDoc(chatDocRef, {
+							startedAt: Date.now(),
+							endedAt: null,
+							timerSet: true,
+						});
+					}
+					// If status is active, do nothing
+				} else {
+					console.error("No such chat document!");
+				}
+			} catch (error) {
+				console.error("Error fetching or updating chat document: ", error);
+			}
+		};
+
+		updateChatStartedAt();
+	}, [chatId]); // Add chatId as a dependency
+
 
 	useEffect(() => {
 		const fetchReceiverId = async () => {

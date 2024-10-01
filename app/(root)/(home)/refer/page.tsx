@@ -48,13 +48,13 @@ const ReferralLink: React.FC = () => {
 
       {/* Invite Card */}
       <div className="bg-green-600 text-white p-4 rounded-lg flex items-center justify-between">
-        <p className="text-lg font-semibold">Invite your friends to try the service</p>
+        <p className="text-md font-semibold">Invite your friends to try the service</p>
         <button 
           onClick={handleCopy}
-          className={`flex flex-row gap-1 justify-center p-2 items-center px-4 rounded-full ml-4 text-xs ${copied ? 'bg-green-900' : 'bg-green-800'} text-white cursor-pointer`}
+          className={`flex flex-row gap-1 justify-center p-1 items-center px-3 rounded-full ml-4 text-xs ${copied ? 'bg-green-900' : 'bg-green-800'} text-white cursor-pointer`}
         >
           {referralId} 
-          <Image src={'/copy.svg'} width={0} height={0} alt="copy" className="w-auto h-auto" />
+          <Image src={'/copy.svg'} width={0} height={0} alt="copy" className="w-[12px] h-[12px]" />
         </button>
       </div>
 
