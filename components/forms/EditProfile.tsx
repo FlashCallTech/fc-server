@@ -44,7 +44,6 @@ export type EditProfileProps = {
 
 const predefinedColors = [
 	"#50A65C", // Default
-	"#000000", // Black
 	"#A5A5A5", // Gray
 	"#00BCD4", // Cyan
 	"#E91E63", // Pink
@@ -115,15 +114,19 @@ const EditProfile = ({
 	}, [watchedValues, initialState]);
 
 	useEffect(() => {
-		if (!selectedFile && !watchedValues.photo) {
-			// Use a fallback default value directly
+		if (!selectedFile) {
+			// Check if gender has changed and update the photo accordingly
 			const newPhoto =
 				placeholderImages[
 					watchedValues.gender as "male" | "female" | "other"
 				] || GetRandomImage();
-			form.setValue("photo", newPhoto);
+
+			// Only update the photo if it hasn't been set by the user or differs from the current value
+			if (watchedValues.photo !== newPhoto) {
+				form.setValue("photo", newPhoto);
+			}
 		}
-	}, [watchedValues.gender, selectedFile, form]);
+	}, [watchedValues.gender, selectedFile, form, placeholderImages]);
 
 	const checkUsernameAvailability = async (username: string) => {
 		try {
