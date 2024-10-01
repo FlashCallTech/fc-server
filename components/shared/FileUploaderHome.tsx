@@ -155,7 +155,7 @@ const FileUploaderHome = ({
 								alt="Current image"
 								className={`${
 									newFileUrl ? "w-20 h-20" : "w-32 h-32"
-								} rounded-full border-2 border-white`}
+								} rounded-full border-2 border-white object-cover`}
 							/>
 						)}
 

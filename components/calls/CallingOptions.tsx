@@ -19,9 +19,9 @@ import {
 	backendBaseUrl,
 	isValidHexColor,
 	updateFirestoreSessions,
-	fetchFCMToken,
 	trackCallEvents,
-	sendNotification,
+	// fetchFCMToken,
+	// sendNotification,
 } from "@/lib/utils";
 
 interface CallingOptions {
@@ -341,16 +341,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			});
 
 			// Utilize helper functions
-			const fcmToken = await fetchFCMToken(creator.phone);
-			if (fcmToken) {
-				sendNotification(
-					fcmToken,
-					`Incoming Call`,
-					`${callType} Call Request from ${clientUser.username}`,
-					creator,
-					`https:flashcall.me/meeting/${id}`
-				);
-			}
+			// const fcmToken = await fetchFCMToken(creator.phone);
+			// if (fcmToken) {
+			// 	sendNotification(
+			// 		fcmToken,
+			// 		`Incoming Call`,
+			// 		`${callType} Call Request from ${clientUser.username}`,
+			// 		creator,
+			// 		`https:flashcall.me/meeting/${id}`
+			// 	);
+			// }
 
 			trackCallEvents(callType, clientUser, creator);
 
