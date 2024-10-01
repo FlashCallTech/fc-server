@@ -142,13 +142,35 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				localStorage.setItem("userType", data.userType);
 			} else {
 				handleSignout();
+				toast({
+					variant: "destructive",
+					title: "Sign-out",
+					description: "You have been signed out. Please log in again.",
+				});
 			}
 		} catch (error: any) {
-			if (error.response && error.response.status === 401) {
-				console.warn("Unauthorized access - logging out");
-				handleSignout();
+			if (error.response) {
+				const {
+					status,
+					data: { message },
+				} = error.response;
+
+				toast({
+					variant: "destructive",
+					title: status === 401 ? "Unauthorized Access" : "Error",
+					description: message || "An unexpected error occurred.",
+				});
+
+				if (status === 401) {
+					handleSignout();
+				}
 			} else {
 				console.error("Error fetching current user:", error);
+				toast({
+					variant: "destructive",
+					title: "Network Error",
+					description: "A network error occurred. Please try again later.",
+				});
 			}
 		} finally {
 			setFetchingUser(false);

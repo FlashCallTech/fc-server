@@ -18,7 +18,6 @@ import {
 	getToken,
 	isSupported as isMessagingSupported,
 } from "firebase/messaging";
-import { useToast } from "@/components/ui/use-toast";
 
 const firebaseConfig = {
 	apiKey: process.env.NEXT_PUBLIC_FIREBASE_KEY,
