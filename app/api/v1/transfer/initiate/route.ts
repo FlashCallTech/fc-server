@@ -1,5 +1,6 @@
 import { getUserByPhone } from "@/lib/actions/creator.actions";
 import { NextRequest, NextResponse } from "next/server";
+import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
       const paymentSettingsResult = await paymentSettingsResponse.json();
 
       if (paymentSettingsResult.success) {
-        const kycResponse = await fetch(`/api/v1/userkyc/getKyc?userId=${userId}`,
+        const kycResponse = await fetch(`https://flashcall.me/api/v1/userKyc/getKyc?userId=${userId}`,
           {
             method: "GET",
             headers: {
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
         const kycResult = await kycResponse.json();
 
         if (kycResult.success) {
-          const getBeneficiary = await fetch(`https://flashcall.e/api/v1/beneficiary/getBeneficiary?userId=${userId}`, {
+          const getBeneficiary = await fetch(`https://flashcall.me/api/v1/beneficiary/getBeneficiary?userId=${userId}`, {
             method: 'GET',
             headers: {
               'Content-type': 'application/json'
@@ -38,9 +39,11 @@ export async function POST(request: NextRequest) {
           const getBeneficiaryResult = await getBeneficiary.json();
 
           if (getBeneficiaryResult.success) {
+            const transfer_id = uuidv4();
+            console.log(transfer_id);
             const payload = {
-              transfer_id: 'flashcall_1',
-              transfer_amount: 2,
+              transfer_id,
+              transfer_amount: 1,
               transfer_mode: paymentSettingsResult.data.paymentMode === 'UPI' ? 'upi' : 'banktransfer',
               beneficiary_details: {
                 beneficiary_id: getBeneficiaryResult.data.beneficiary_id,
@@ -58,7 +61,7 @@ export async function POST(request: NextRequest) {
               fundsource_id: 'CF_WALLET'
             }
 
-            const initiatResponse = await fetch('https://api.cashfree.com/payout/transfers', {
+            const initiateResponse = await fetch('https://api.cashfree.com/payout/transfers', {
               method: 'POST',
               headers: {
                 'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
@@ -69,12 +72,12 @@ export async function POST(request: NextRequest) {
               body: JSON.stringify(payload)
             });
 
-            const initiateResult = await initiatResponse.json();
+            const initiateResult = await initiateResponse.json();
 
-            if (!initiatResponse.ok) {
+            if (!initiateResponse.ok) {
               return NextResponse.json({ success: false, message: initiateResult.message });
             }
-
+            
             const response = await fetch(`https://api.cashfree.com/payout/transfers?transfer_id=${initiateResult.transfer_id}`, {
               method: 'GET',
               headers: {
@@ -93,7 +96,7 @@ export async function POST(request: NextRequest) {
 
             if (result.status === 'SUCCESS') {
               const amountToBePaid = result.transfer_amount;
-              const payout = await fetch("https://backend.flashcall.me/api/v1/wallet/payout", {
+              const payout = await fetch("https://flashcall.me/api/v1/wallet/payout", {
                 method: "POST",
                 body: JSON.stringify({
                   userId: userId,
@@ -105,14 +108,14 @@ export async function POST(request: NextRequest) {
 
               const payoutResult = await payout.json();
 
-              if (!payoutResult.ok) {
+              if (!payout.ok) {
                 throw new Error(payoutResult);
               }
               return NextResponse.json({ success: true, data: result });
             }
             else if (result.status === 'RECEIVED') {
               const amountToBePaid = result.transfer_amount;
-              const payout = await fetch("https://backend.flashcall.me/api/v1/wallet/payout", {
+              const payout = await fetch("https://flashcall.me/api/v1/wallet/payout", {
                 method: "POST",
                 body: JSON.stringify({
                   userId: userId,
@@ -124,7 +127,7 @@ export async function POST(request: NextRequest) {
 
               const payoutResult = await payout.json();
 
-              if (!payoutResult.ok) {
+              if (!payout.ok) {
                 throw new Error(payoutResult);
               }
 
@@ -132,7 +135,7 @@ export async function POST(request: NextRequest) {
             }
             else if (result.status === 'APPROVAL_PENDING') {
               const amountToBePaid = result.transfer_amount;
-              const payout = await fetch("https://backend.flashcall.me/api/v1/wallet/payout", {
+              const payout = await fetch("https://flashcall.me/api/v1/wallet/payout", {
                 method: "POST",
                 body: JSON.stringify({
                   userId: userId,
@@ -144,14 +147,14 @@ export async function POST(request: NextRequest) {
 
               const payoutResult = await payout.json();
 
-              if (!payoutResult.ok) {
+              if (!payout.ok) {
                 throw new Error(payoutResult);
               }
               return NextResponse.json({ success: true, data: result, message: 'APPROVAL_PENDING' });
             }
             else if (result.status === 'PENDING') {
               const amountToBePaid = result.transfer_amount;
-              const payout = await fetch("https://backend.flashcall.me/api/v1/wallet/payout", {
+              const payout = await fetch("https://flashcall.me/api/v1/wallet/payout", {
                 method: "POST",
                 body: JSON.stringify({
                   userId: userId,
@@ -163,7 +166,7 @@ export async function POST(request: NextRequest) {
 
               const payoutResult = await payout.json();
 
-              if (!payoutResult.ok) {
+              if (!payout.ok) {
                 throw new Error(payoutResult);
               }
               return NextResponse.json({ success: true, data: result, message: 'PENDING' });
@@ -187,8 +190,6 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json({ success: false, message: 'Minimum wallet balance required is 500' });
     }
-
-
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message })
   }

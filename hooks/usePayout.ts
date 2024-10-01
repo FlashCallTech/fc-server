@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 const usePayout = () => {
   const [loadingTransfer, setLoading] = useState<boolean>(false);
   const router = useRouter();
+  const { refreshCurrentUser } = useCurrentUsersContext();
   const { toast } = useToast();
 
   const initiateWithdraw = async (creatorId: string, phone: string) => {
@@ -37,6 +38,7 @@ const usePayout = () => {
         title: "Withdraw Initiated Successfully",
         description: result.message,
       });
+      refreshCurrentUser();
     } else {
       if (result.message === 'Minimum wallet balance required is 500')
         toast({

@@ -188,6 +188,11 @@ export async function updateCreatorUser(
 
 		console.log("Trying to update user");
 
+		// Check if links array is empty
+		if (Array.isArray(updateObject.links) && updateObject.links.length === 0) {
+			throw new Error("Links array cannot be empty");
+		}
+
 		const updatedUser = await Creator.findByIdAndUpdate(userId, updateObject, {
 			new: true,
 		});
