@@ -13,6 +13,8 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import * as Sentry from "@sentry/nextjs";
 import GetRandomImage from "@/utils/GetRandomImage";
+import { backendBaseUrl, isValidUrl } from "@/lib/utils";
+import axios from "axios";
 
 // Function to reorder the array based on the drag result
 const reorder = (
@@ -67,15 +69,17 @@ const CreatorCallsFeedbacks = () => {
 	useEffect(() => {
 		const getFeedbacks = async () => {
 			try {
-				const response = await fetch(
-					`/api/v1/feedback/call/getFeedbacks?creatorId=${String(
+				const response = await axios.get(
+					`${backendBaseUrl}/feedback/call/getFeedbacks?creatorId=${String(
 						creatorUser?._id
 					)}`
 				);
 
-				let data = await response.json();
+				let data = await response.data;
 
-				const feedbacksWithCallId = data.feedbacks.map(
+				console.log(data);
+
+				const feedbacksWithCallId = data.map(
 					(item: FeedbackParams, index: number) => ({
 						...item.feedbacks[0],
 						callId: item.callId,
@@ -322,28 +326,50 @@ const CreatorCallsFeedbacks = () => {
 												/>
 												<div className="flex h-full w-full items-start justify-between">
 													<div className="w-full flex items-center justify-start gap-4">
-														{feedback?.clientId?.photo && (
-															<Image
-																src={
-																	feedback?.clientId?.photo || GetRandomImage()
-																}
-																alt={feedback?.clientId?.username}
-																height={1000}
-																width={1000}
-																className="rounded-full w-12 h-12 object-cover"
-																onError={(e) => {
-																	e.currentTarget.src =
-																		"/images/defaultProfileImage.png";
-																}}
-															/>
-														)}
+														<Image
+															src={
+																feedback?.clientId?.photo &&
+																isValidUrl(feedback.clientId.photo)
+																	? feedback.clientId.photo
+																	: GetRandomImage()
+															}
+															alt={
+																feedback?.clientId?.username || "Default User"
+															}
+															height={1000}
+															width={1000}
+															className="rounded-full w-12 h-12 object-cover"
+															onError={(e) => {
+																e.currentTarget.src =
+																	"/images/defaultProfileImage.png";
+															}}
+														/>
+
 														<div className="flex flex-col">
 															<span className="text-base text-green-1">
-																{feedback?.clientId?.phone ||
-																	feedback?.clientId?._id}
+																{feedback?.clientId?.phone.replace(
+																	/(\+91)(\d+)/,
+																	(match, p1, p2) =>
+																		`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+																) || feedback?.clientId?._id}
 															</span>
 															<p className="text-sm tracking-wide">
-																{feedback?.clientId?.username}
+																{feedback?.clientId?.username.startsWith(
+																	"+91"
+																) ? (
+																	<>
+																		{feedback.clientId.username.replace(
+																			/(\+91)(\d+)/,
+																			(match, p1, p2) =>
+																				`${p1} ${p2.replace(
+																					/(\d{5})$/,
+																					"xxxxx"
+																				)}`
+																		)}
+																	</>
+																) : (
+																	<>{feedback.clientId.username}</>
+																)}
 															</p>
 														</div>
 													</div>

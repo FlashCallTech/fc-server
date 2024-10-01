@@ -1,4 +1,8 @@
-import { getProfileImagePlaceholder, isValidUrl } from "@/lib/utils";
+import {
+	backendBaseUrl,
+	getProfileImagePlaceholder,
+	isValidUrl,
+} from "@/lib/utils";
 import { creatorUser } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,6 +16,7 @@ import { usePathname } from "next/navigation";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { trackEvent } from "@/lib/mixpanel";
+import axios from "axios";
 
 const FavoritesGrid = ({
 	creator,
@@ -80,12 +85,15 @@ const FavoritesGrid = ({
 		const clientId = clientUser?._id;
 		setAddingFavorite(true);
 		try {
-			const response = await toggleFavorite({
-				clientId: clientId as string,
-				creatorId: creator._id,
-			});
+			const response = await axios.post(
+				`${backendBaseUrl}/favorites/upsertFavorite`,
+				{
+					clientId: clientId as string,
+					creatorId: creator._id,
+				}
+			);
 
-			if (response.success) {
+			if (response.status === 200) {
 				const isFavorited = !markedFavorite;
 				setMarkedFavorite(isFavorited);
 				onFavoriteToggle(creator, isFavorited);
@@ -138,7 +146,13 @@ const FavoritesGrid = ({
 
 						<div
 							className={`absolute bottom-0 right-0 ${
-								status === "Online" ? "bg-green-500" : "bg-red-500"
+								status === "Online"
+									? "bg-green-1"
+									: status === "Offline"
+									? "bg-red-400"
+									: status === "Busy"
+									? "bg-orange-400"
+									: ""
 							} text-xs rounded-full sm:rounded-xl p-1.5 border-2 border-white`}
 						/>
 					</section>

@@ -199,6 +199,7 @@ export type RegisterCallParams = {
 	type: string;
 	status: string;
 	creator: string;
+	expertDetails?: any;
 	members: MemberRequest[];
 	startedAt?: Date;
 	endedAt?: Date;
