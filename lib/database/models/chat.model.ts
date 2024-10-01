@@ -16,9 +16,9 @@ const ChatSchema = new Schema({
 		{
 			user_id: { type: String, required: true },
 			custom: {
-				name: { type: String, required: true },
-				type: { type: String, required: true },
-				image: { type: String, required: true },
+				name: { type: String},
+				type: { type: String},
+				image: { type: String},
 			},
 			role: { type: String, required: true },
 		},

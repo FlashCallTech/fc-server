@@ -318,19 +318,19 @@ const ChatInterface: React.FC = () => {
 	};
 
 	function maskPhoneNumber(phoneNumber: string) {
-    // Remove the '+91' prefix
-    let cleanedNumber = phoneNumber.replace('+91', '');
+		// Remove the '+91' prefix
+		let cleanedNumber = phoneNumber.replace('+91', '');
 
-    // Mask the next 5 digits, leaving the first 2 digits unmasked
-    let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
+		// Mask the next 5 digits, leaving the first 2 digits unmasked
+		let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
 
-    return maskedNumber;
-}
+		return maskedNumber;
+	}
 
 	return (
 		<div className={`relative flex flex-col h-screen`}>
 			<div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center z-0" />
-			<div className="relative flex flex-col h-full">
+			<div className="relative flex flex-col justify-between h-full">
 				{/* Sticky Header */}
 				<div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
 					<div className="flex items-center gap-2">
@@ -372,30 +372,32 @@ const ChatInterface: React.FC = () => {
 					/>
 				)}
 
-				{/* Chat Messages */}
-				<div className="flex-1 overflow-y-auto scrollbar-none z-30">
-					<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
-				</div>
+				<div>
+					{/* Chat Messages */}
+					<div className="flex-1 overflow-y-auto scrollbar-none z-30">
+						<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
+					</div>
 
-				{/* Sticky Chat Input at the Bottom */}
-				<div className="sticky bottom-0 w-full z-40">
-					<ChatInput
-						isRecording={isRecording}
-						discardAudio={discardAudio}
-						text={text}
-						setText={setText}
-						handleImg={handleImg}
-						handleSend={handleSend}
-						toggleRecording={toggleRecording}
-						img={img}
-						audio={audio}
-						audioStream={audioStream!}
-						// audioContext={audioContext}
-						handleCapturedImg={handleCapturedImg}
-						isImgUploading={isImgUploading}
-						isAudioUploading={isAudioUploading}
-						discardImage={discardImage}
-					/>
+					{/* Sticky Chat Input at the Bottom */}
+					<div className="sticky bottom-0 w-full z-40">
+						<ChatInput
+							isRecording={isRecording}
+							discardAudio={discardAudio}
+							text={text}
+							setText={setText}
+							handleImg={handleImg}
+							handleSend={handleSend}
+							toggleRecording={toggleRecording}
+							img={img}
+							audio={audio}
+							audioStream={audioStream!}
+							// audioContext={audioContext}
+							handleCapturedImg={handleCapturedImg}
+							isImgUploading={isImgUploading}
+							isAudioUploading={isAudioUploading}
+							discardImage={discardImage}
+						/>
+					</div>
 				</div>
 			</div>
 		</div>

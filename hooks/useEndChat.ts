@@ -1,13 +1,11 @@
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { analytics, db } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { creatorUser } from "@/types";
-import { logEvent } from "firebase/analytics";
-import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
-import { set } from "lodash";
 
 interface User2 {
 	_id: string;
