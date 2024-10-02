@@ -56,7 +56,7 @@ const PreviousPage = () => {
 		>
 			<div
 				className={`sticky top-0 bg-white z-30 w-full px-4 ${
-					isSticky ? "pt-7" : "pt-2"
+					isSticky ? "pt-4" : "pt-0"
 				} pb-4 flex items-center justify-between transition-all duration-300`}
 			>
 				<h1 className="text-3xl font-bold">

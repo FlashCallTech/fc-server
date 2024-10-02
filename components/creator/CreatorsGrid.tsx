@@ -122,7 +122,7 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 										? "Offline"
 										: status === "Busy"
 										? "Busy"
-										: "Unknown"}
+										: "Idle"}
 								</span>
 							</div>
 						</div>
