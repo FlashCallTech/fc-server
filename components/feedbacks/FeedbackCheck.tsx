@@ -14,6 +14,7 @@ import Image from "next/image";
 import { formatDateTime } from "@/lib/utils";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
+import GetRandomImage from "@/utils/GetRandomImage";
 
 const FeedbackCheck = ({ callId }: { callId: string }) => {
 	const [feedbackExists, setFeedbackExists] = useState<boolean | null>(null);
@@ -120,10 +121,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 									<div className="flex items-center justify-start w-full gap-2">
 										<div className="flex items-center justify-start gap-2">
 											<Image
-												src={
-													feedback?.clientId?.photo ||
-													"/images/defaultProfileImage.png"
-												}
+												src={feedback?.clientId?.photo || GetRandomImage()}
 												alt={feedback?.clientId?.username}
 												width={44}
 												height={44}

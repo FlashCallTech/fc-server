@@ -1,5 +1,5 @@
 // Gender
-export type Gender = "male" | "female" | "other";
+export type Gender = "male" | "female" | "other" | undefined;
 
 // User Params
 
@@ -199,6 +199,7 @@ export type RegisterCallParams = {
 	type: string;
 	status: string;
 	creator: string;
+	expertDetails?: any;
 	members: MemberRequest[];
 	startedAt?: Date;
 	endedAt?: Date;

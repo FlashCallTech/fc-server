@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import * as Sentry from "@sentry/nextjs";
+import { getProfileImagePlaceholder } from "@/lib/utils";
 
 const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 	const [callState, setCallState] = useState("outgoing");
@@ -43,7 +44,12 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 			<h1 className="font-bold text-xl mb-2">Outgoing Call ...</h1>
 			<div className="flex flex-col items-center justify-center gap-10">
 				<img
-					src={expert?.user?.image || "/images/defaultProfileImage.png"}
+					src={
+						expert?.user?.image ||
+						getProfileImagePlaceholder(
+							expert?.user && (expert?.user?.image as string)
+						)
+					}
 					alt=""
 					className="rounded-full w-28 h-28 object-cover"
 					onError={(e) => {

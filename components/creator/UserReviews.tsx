@@ -1,67 +1,32 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReviewSlider from "./ReviewSlider";
 import SinglePostLoader from "../shared/SinglePostLoader";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useToast } from "../ui/use-toast";
 import { useGetCreatorFeedbacks } from "@/lib/react-query/queries";
+import ContentLoading from "../shared/ContentLoading";
+import Image from "next/image";
+import Link from "next/link";
 
 const UserReviews = ({
 	theme,
 	creatorId,
+	creatorUsername,
 }: {
 	theme: string;
 	creatorId: string;
+	creatorUsername: string;
 }) => {
 	const [isExpanded, setIsExpanded] = useState(false);
-	const [isLoadMoreButtonHidden, setIsLoadMoreButtonHidden] = useState(false);
-	const [isRefetchButtonHidden, setIsRefetchButtonHidden] = useState(false);
-	const [isFetchingMore, setIsFetchingMore] = useState(false);
 
 	const { toast } = useToast();
 	const {
 		data: feedbackData,
 		isLoading,
 		isError,
-		isFetching,
 		fetchNextPage,
 		hasNextPage,
-		refetch,
 	} = useGetCreatorFeedbacks(creatorId);
-
-	// Ensure creatorFeedbacks is always an array
-	const creatorFeedbacks =
-		feedbackData?.pages?.flatMap((page: any) => page) || [];
-
-	const handleFetchNextPage = useCallback(async () => {
-		if (hasNextPage && !isFetching && !isLoadMoreButtonHidden) {
-			setIsFetchingMore(true);
-			setIsLoadMoreButtonHidden(true);
-
-			try {
-				await fetchNextPage();
-			} finally {
-				setIsFetchingMore(false);
-				setTimeout(() => {
-					setIsLoadMoreButtonHidden(false);
-				}, 15000);
-			}
-		}
-	}, []);
-
-	const handleRefetch = useCallback(async () => {
-		if (!isFetching && !isRefetchButtonHidden) {
-			setIsRefetchButtonHidden(true);
-
-			try {
-				await refetch();
-			} finally {
-				setTimeout(() => {
-					setIsRefetchButtonHidden(false);
-				}, 10000);
-			}
-		}
-	}, []);
 
 	const useScreenSize = () => {
 		const [isMobile, setIsMobile] = useState(false);
@@ -112,86 +77,92 @@ const UserReviews = ({
 
 	return (
 		<>
-			{creatorFeedbacks.length > 0 ? (
-				<div
-					className={`relative text-white size-full ${
-						creatorFeedbacks.length > 1 ? "py-10" : "pt-10 pb-4"
-					} rounded-t-[24px] lg:rounded-[24px] xl:w-[60%]`}
-					style={{ backgroundColor: theme }}
-				>
-					<h2 className="text-2xl font-semibold">Happy Client&apos;s</h2>
-
-					<ReviewSlider
-						creatorFeedbacks={creatorFeedbacks}
-						getClampedText={getClampedText}
-						isExpanded={isExpanded}
-						setIsExpanded={setIsExpanded}
-						toggleReadMore={toggleReadMore}
-					/>
-
-					<Tooltip>
-						<TooltipTrigger asChild>
-							{hasNextPage &&
-								!isFetchingMore &&
-								!isLoadMoreButtonHidden &&
-								!isFetching && (
-									<button
-										onClick={handleFetchNextPage}
-										className="absolute top-0 right-16 mt-4 p-2 bg-[#232323]/35 rounded-full text-white hoverScaleDownEffect"
-									>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											fill="none"
-											viewBox="0 0 24 24"
-											strokeWidth={1.5}
-											stroke="currentColor"
-											className="size-5"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-											/>
-										</svg>
-									</button>
-								)}
-						</TooltipTrigger>
-						<TooltipContent className="bg-green-1 border-none text-white">
-							<span>Load More</span>
-						</TooltipContent>
-					</Tooltip>
-
-					<Tooltip>
-						<TooltipTrigger asChild>
-							{!isFetching && !isRefetchButtonHidden && (
-								<button
-									onClick={handleRefetch}
-									className="absolute top-0 right-6 mt-4 p-2 bg-[#232323]/35 rounded-full text-white hoverScaleDownEffect"
-								>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										strokeWidth={1.5}
-										stroke="currentColor"
-										className="size-5"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-										/>
-									</svg>
-								</button>
-							)}
-						</TooltipTrigger>
-						<TooltipContent className="bg-green-1 border-none text-white">
-							<span>Refresh List</span>
-						</TooltipContent>
-					</Tooltip>
-				</div>
+			{!isLoading ? (
+				isError ? (
+					<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
+						Failed to fetch Transactions <br />
+						Please try again later.
+					</div>
+				) : feedbackData && feedbackData?.pages?.length === 0 ? (
+					<section className="size-full grid gap-5 items-center">
+						{/* No Feedback Indication */}
+						<section className="flex flex-col px-4 bg-[#4E515C4D] rounded-[24px] w-full xl:max-w-[400px] mx-auto h-[100px] border border-b-2 border-white/20 justify-center items-center gap-2.5">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								strokeWidth={1.5}
+								stroke="currentColor"
+								className="size-6 text-[#99999980]/50"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"
+								/>
+							</svg>
+							<p className="text-sm">No Feedback Yet</p>
+						</section>
+						{/* External Link */}
+						<Link
+							href="/"
+							className="flex items-center justify-center gap-2 bg-white/20 rounded-3xl mx-auto w-full px-[16px] py-[10px]  min-w-[233px] max-w-fit h-[40px] hoverScaleDownEffect cursor-pointer"
+						>
+							<p className="text-center text-sm">
+								Join <span className="capitalize">{creatorUsername} </span> on
+								flashcall
+							</p>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								strokeWidth={2}
+								stroke="currentColor"
+								className="size-[14px]"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+								/>
+							</svg>
+						</Link>
+						{/* Logo and Info */}
+						<section className="size-full flex items-center justify-center">
+							{/* heading */}
+							<p className="text-xs">Powered By</p>
+							{/* Logo */}
+							<Image
+								src="/icons/logo_new_dark.png"
+								alt="flashcall"
+								width={1000}
+								height={1000}
+								className="w-[100px] h-[40px]"
+							/>
+						</section>
+					</section>
+				) : (
+					<section className={`relative text-white size-full pb-4`}>
+						<h2 className="xl:ml-2 text-base font-bold">Happy Client&apos;s</h2>
+						{feedbackData?.pages?.map((page, index) => (
+							<ReviewSlider
+								key={index}
+								creatorFeedbacks={page.creatorFeedbacks}
+								getClampedText={getClampedText}
+								isExpanded={isExpanded}
+								setIsExpanded={setIsExpanded}
+								toggleReadMore={toggleReadMore}
+								theme={theme}
+								fetchNextPage={fetchNextPage}
+								hasNextPage={hasNextPage}
+							/>
+						))}
+					</section>
+				)
 			) : (
-				<div className="-mt-2.5" />
+				<div className="size-full flex flex-col gap-2 items-center justify-center">
+					<ContentLoading />
+				</div>
 			)}
 		</>
 	);

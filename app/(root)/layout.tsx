@@ -5,16 +5,19 @@ import { CurrentUsersProvider } from "@/lib/context/CurrentUsersContext";
 import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
 import { initMixpanel } from "@/lib/mixpanel";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
+import { resetBodyBackgroundColor } from "@/lib/utils";
 import StreamVideoProvider from "@/providers/streamClientProvider";
 import axios from "axios";
 import { throttle } from "lodash";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import React, { ReactNode, useEffect, useState } from "react";
 import { Cursor, Typewriter } from "react-simple-typewriter";
+
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	const [isOnline, setIsOnline] = useState(true);
 	const [isMounted, setIsMounted] = useState(false);
-
+	const pathname = usePathname();
 	// Handle online/offline status with throttling to prevent excessive updates
 	useEffect(() => {
 		const handleOnline = throttle(() => setIsOnline(true), 500);
@@ -32,15 +35,15 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	// Set mounted state once the component is mounted
 	useEffect(() => {
 		setIsMounted(true);
-	}, []);
-
-	useEffect(() => {
-		initMixpanel(); // Initialize Mixpanel when the layout mounts
-	}, []);
-
-	useEffect(() => {
+		initMixpanel(); // Initialize Mixpanel
 		axios.defaults.withCredentials = true;
 	}, []);
+
+	// Set body background color based on current route and theme
+	useEffect(() => {
+		const creatorURL = localStorage.getItem("creatorURL");
+		pathname !== creatorURL && resetBodyBackgroundColor();
+	}, [pathname]);
 
 	const renderContent = () => {
 		if (!isMounted) {
