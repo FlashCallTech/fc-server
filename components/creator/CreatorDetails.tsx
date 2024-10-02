@@ -12,7 +12,6 @@ import { creatorUser } from "@/types";
 import React, { useEffect, useState } from "react";
 import { useToast } from "../ui/use-toast";
 import * as Sentry from "@sentry/nextjs";
-import { toggleFavorite } from "@/lib/actions/favorites.actions";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { usePathname } from "next/navigation";
@@ -60,6 +59,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	}, [isAuthSheetOpen]);
 
 	useEffect(() => {
+		if (!creator) return;
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);
 
@@ -153,7 +153,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 	return (
 		// Wrapper Section
-		<section className="size-full xl:w-[75%] xl:mx-auto flex flex-col items-center gap-4">
+		<section className="size-full xl:w-[60%] xl:mx-auto flex flex-col items-center gap-4">
 			{/* Creator Details */}
 			<section className="h-fit px-4 w-full flex flex-col gap-4 items-start justify-center">
 				{/* Creator Info */}
@@ -201,7 +201,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 										? "Offline"
 										: status === "Busy"
 										? "Busy"
-										: "Unknown"}
+										: "Idle"}
 								</span>
 							</div>
 						</section>
@@ -267,9 +267,13 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				{/* Call Buttons */}
 				<CallingOptions creator={creator} />
 				{/* User Reviews */}
-				<section className="grid grid-cols-1 w-full items-start justify-start gap-2 py-4">
+				<section className="grid grid-cols-1 w-full items-start justify-start gap-2 pt-4">
 					{/* Content */}
-					<UserReviews theme={creator.themeSelected} creatorId={creator?._id} />
+					<UserReviews
+						theme={creator.themeSelected}
+						creatorUsername={fullName}
+						creatorId={creator?._id}
+					/>
 				</section>
 			</section>
 		</section>

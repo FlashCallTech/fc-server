@@ -151,7 +151,7 @@ const Favorites = () => {
 			<div
 				ref={stickyRef}
 				className={`sticky flex w-full items-center justify-between top-0 bg-white z-30 px-2 lg:pl-0.5 ${
-					isSticky ? "pt-7" : "pt-2"
+					isSticky ? "pt-4" : "pt-0"
 				} pb-4 transition-all duration-300`}
 			>
 				<h1 className="text-3xl font-bold pl-1">Favorites</h1>

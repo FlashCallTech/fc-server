@@ -49,6 +49,8 @@ const CallListMobile = () => {
 		);
 	}
 
+	console.log(userCalls);
+
 	return (
 		<>
 			{userCalls && userCalls?.pages?.length > 0 ? (
@@ -57,10 +59,6 @@ const CallListMobile = () => {
 						Failed to fetch User Calls <br />
 						Please try again later.
 					</div>
-				) : userCalls && userCalls?.pages?.length === 0 ? (
-					<p className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
-						{`No User Calls Found`}
-					</p>
 				) : (
 					<section
 						className={`grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-x-hidden no-scrollbar`}
@@ -152,7 +150,7 @@ const CallListMobile = () => {
 											</div>
 										</div>
 										{/* StartedAt & Feedbacks */}
-										<div className="w-1/2 flex flex-col items-end justify-between h-full gap-2">
+										<div className="relative w-fit flex flex-col items-end justify-between h-full gap-2">
 											<span className="text-sm text-[#A7A8A1] pr-2 pt-1 whitespace-nowrap">
 												{formattedDate.dateTime}
 											</span>
@@ -188,26 +186,17 @@ const CallListMobile = () => {
 							</div>
 						)}
 
-						{hasNextPage && <div ref={ref} className=" pt-10 w-full" />}
+						{hasNextPage && <div ref={ref} className="w-full" />}
 					</section>
 				)
 			) : (
-				<div className="flex flex-col w-full items-center justify-center h-full gap-7">
-					<ContentLoading />
-					<h1 className="text-2xl font-semibold text-black">No Calls Found</h1>
-					<Link
-						href="/home"
-						className={`flex gap-4 items-center p-4 rounded-lg justify-center bg-green-1 hover:opacity-80 mx-auto w-fit`}
-					>
-						<Image
-							src="/icons/Home.svg"
-							alt="Home"
-							width={24}
-							height={24}
-							className="brightness-200"
-						/>
-						<p className="text-lg font-semibold text-white">Return Home</p>
-					</Link>
+				<div className="flex flex-col w-full items-center justify-center h-full">
+					<h1 className="text-2xl font-semibold text-red-500">
+						No Calls Found
+					</h1>
+					<h2 className="text-xl font-semibold text-red-500">
+						Initiate a Call to See them here
+					</h2>
 				</div>
 			)}
 		</>

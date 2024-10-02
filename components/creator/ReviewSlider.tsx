@@ -33,7 +33,7 @@ const ReviewSlider = ({
 		slidesToShow: 1,
 		speed: 500,
 		slidesToScroll: 1,
-		autoplay: false,
+		autoplay: true,
 		autoplaySpeed: 5000,
 		arrows: false,
 		beforeChange: (oldIndex: number, newIndex: number) => {
@@ -95,7 +95,7 @@ const ReviewSlider = ({
 							</div>
 
 							{/* feedback section */}
-							<div className="size-full flex flex-col items-start justify-between gap-4 w-full rounded-[24px] px-5 pb-5 pt-10 -mt-4 bg-black/10 border-x border-b-2 border-white/50">
+							<div className="size-full flex flex-col items-start justify-between gap-4 w-full rounded-[24px] px-5 pb-5 pt-10 -mt-4 bg-black/10 border-b-2 border-white/50">
 								<section className="size-full grid items-center gap-4">
 									{/* Rating */}
 									<div className="flex gap-1 items-center">
