@@ -48,7 +48,7 @@ const useChat = () => {
 	const [chatRejected, setChatRejected] = useState<boolean>(false);
 	const [chatRequestId, setChatRequestId] = useState<string>();
 	const { chatId } = useParams();
-	
+
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
@@ -58,32 +58,31 @@ const useChat = () => {
 				setChatRatePerMinute(parseInt(parsedCreator.chatRate, 10));
 			}
 		} else {
-			const creatorId = localStorage.getItem('currentUserID');
-			const getCreator = async() => {
+			const creatorId = localStorage.getItem("currentUserID");
+			const getCreator = async () => {
 				const response = await getCreatorById(creatorId as string);
 				setCreator(response);
-			}
+			};
 			getCreator();
 		}
-		const userType = localStorage.getItem('userType');
-		if(userType === 'client') {
-			console.log('client')
-			const clientId = localStorage.getItem('currentUserID');
-			const getClient = async() => {
+		const userType = localStorage.getItem("userType");
+		if (userType === "client") {
+			const clientId = localStorage.getItem("currentUserID");
+			const getClient = async () => {
 				const response = await getUserById(clientId as string);
 				setClient(response);
-			}
+			};
 			getClient();
-		} else if(userType === 'creator' && rejected === true) {
+		} else if (userType === "creator" && rejected === true) {
 			const clientId = user2?.clientId;
-			const getClient = async() => {
+			const getClient = async () => {
 				const response = await getUserById(clientId as string);
 				setClient(response);
-			}
+			};
 			getClient();
 		}
 	}, [chatId, rejected]);
-	
+
 	const members: MemberRequest[] = [
 		{
 			user_id: user2?.creatorId!,
@@ -120,18 +119,21 @@ const useChat = () => {
 				setChatRequestId(storedChatRequestId);
 			}
 		};
-	
+
 		// Listen for the custom event
 		window.addEventListener("chatRequestIdUpdated", handleChatRequestIdUpdate);
-	
+
 		// Optionally, check on initial mount as well
 		const storedChatRequestId = localStorage.getItem("chatRequestId");
 		if (storedChatRequestId) {
 			setChatRequestId(storedChatRequestId);
 		}
-	
+
 		return () => {
-			window.removeEventListener("chatRequestIdUpdated", handleChatRequestIdUpdate);
+			window.removeEventListener(
+				"chatRequestIdUpdated",
+				handleChatRequestIdUpdate
+			);
 		};
 	}, []);
 
@@ -156,7 +158,7 @@ const useChat = () => {
 	// 	if (chatRequestId) {
 	// 		const unSub = onSnapshot(
 	// 			doc(db, "chatRequests", chatRequestId as string),
-	// 			(res: any) => {	
+	// 			(res: any) => {
 	// 				setChatRejected(res.data()?.status === "rejected");
 	// 			}
 	// 		);
@@ -171,11 +173,15 @@ const useChat = () => {
 			const chatDurationMinutes = chatDuration / (1000 * 60); // Convert milliseconds to minutes
 			const calculatedAmount = chatDurationMinutes * chatRatePerMinute;
 			setAmount(calculatedAmount);
-			setEnded(true)
+			setEnded(true);
 		}
 	}, [chatEnded, startedAt, endedAt, chatRatePerMinute]);
 
-	const createChat = async (chatId: string, status: string, clientId: string | undefined) => {
+	const createChat = async (
+		chatId: string,
+		status: string,
+		clientId: string | undefined
+	) => {
 		const [existingChat] = await Promise.all([
 			fetch(`/api/v1/calls/getChat?chatId=${chatId}`).then((res) => res.json()),
 		]);
@@ -239,9 +245,6 @@ const useChat = () => {
 		}
 	};
 
-	console.log(client)
-	console.log(chatRejected);
-
 	if (
 		duration &&
 		endedAt &&
@@ -253,7 +256,7 @@ const useChat = () => {
 		setFlag(false);
 		createChat(chatId as string, "ended", user2?.clientId);
 	}
-	
+
 	return { duration, amount, createChat };
 };
 

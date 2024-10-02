@@ -83,7 +83,7 @@ const UserReviews = ({
 						Failed to fetch Transactions <br />
 						Please try again later.
 					</div>
-				) : feedbackData && feedbackData?.pages?.length === 0 ? (
+				) : feedbackData && feedbackData?.pages[0]?.length === 0 ? (
 					<section className="size-full grid gap-5 items-center">
 						{/* No Feedback Indication */}
 						<section className="flex flex-col px-4 bg-[#4E515C4D] rounded-[24px] w-full xl:max-w-[400px] mx-auto h-[100px] border border-b-2 border-white/20 justify-center items-center gap-2.5">

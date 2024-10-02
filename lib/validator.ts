@@ -52,3 +52,10 @@ export const enterTipAmountSchema = z.object({
 		.min(1, "Amount must be at least 1 rupees")
 		.max(6, "Amount must be at most 1,00,000 rupees"),
 });
+
+export const reportSchema = z.object({
+	issue: z
+		.string()
+		.min(10, "Content must be at least 10 characters")
+		.max(500, "Words Limit Exceeded"),
+});

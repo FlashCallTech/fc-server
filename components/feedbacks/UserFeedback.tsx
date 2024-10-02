@@ -35,7 +35,6 @@ const UserFeedback = ({
 	isOpen,
 	onOpenChange,
 	text,
-	buttonColor,
 	submitButtonText,
 	existingFeedback,
 }: FeedbackProps) => {
@@ -45,7 +44,7 @@ const UserFeedback = ({
 	);
 	const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 	const { toast } = useToast();
-	const { call, isCallLoading } = useGetCallById(String(callId));
+	const { call } = useGetCallById(String(callId));
 
 	const ratingItems = ["😒", "😞", "😑", "🙂", "😄"];
 	const { currentUser } = useCurrentUsersContext();

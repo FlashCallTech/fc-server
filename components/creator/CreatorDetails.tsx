@@ -8,7 +8,7 @@ import {
 	isValidUrl,
 	setBodyBackgroundColor,
 } from "@/lib/utils";
-import { creatorUser } from "@/types";
+import { creatorUser, LinkType } from "@/types";
 import React, { useEffect, useState } from "react";
 import { useToast } from "../ui/use-toast";
 import * as Sentry from "@sentry/nextjs";
@@ -21,6 +21,7 @@ import AuthenticationSheet from "../shared/AuthenticationSheet";
 import Favorites from "../shared/Favorites";
 import ShareButton from "../shared/ShareButton";
 import axios from "axios";
+import Link from "next/link";
 
 const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const { clientUser, setAuthenticationSheetOpen, userType, setCurrentTheme } =
@@ -28,6 +29,8 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const [addingFavorite, setAddingFavorite] = useState(false);
 	const [markedFavorite, setMarkedFavorite] = useState(false);
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
+	const [linkHovered, setLinkHovered] = useState(NaN);
+
 	const [status, setStatus] = useState<string>("");
 	const pathname = usePathname();
 	const { toast } = useToast();
@@ -266,6 +269,48 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				)}
 				{/* Call Buttons */}
 				<CallingOptions creator={creator} />
+
+				{/* Creator Links */}
+				{creator?.links && creator?.links?.length > 0 && (
+					<section className="grid grid-cols-1 gap-4 w-full items-center">
+						{creator?.links?.map((link: LinkType, index: number) => (
+							<Link
+								href={link.url}
+								className="flex px-4 border border-white/20 bg-[#4E515C4D] rounded-[24px] h-[52px]  justify-between items-center w-full hoverScaleDownEffect cursor-pointer"
+								key={index + link.title}
+								onMouseEnter={() => setLinkHovered(index)}
+								onMouseLeave={() => setLinkHovered(NaN)}
+							>
+								<p className={`flex gap-4 items-center font-bold text-white`}>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										strokeWidth={1.5}
+										stroke="currentColor"
+										className="size-5"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+										/>
+									</svg>
+
+									{link.title}
+								</p>
+								<p
+									style={{
+										color: linkHovered === index ? themeColor : "#ffffff",
+									}}
+								>
+									{link.url}
+								</p>
+							</Link>
+						))}
+					</section>
+				)}
+
 				{/* User Reviews */}
 				<section className="grid grid-cols-1 w-full items-start justify-start gap-2 pt-4">
 					{/* Content */}

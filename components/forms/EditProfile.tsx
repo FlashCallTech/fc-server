@@ -62,12 +62,11 @@ const EditProfile = ({
 	userType,
 }: EditProfileProps) => {
 	const { toast } = useToast();
-	const [isChanged, setIsChanged] = useState(false); // State to track if any changes are made
-	const [selectedFile, setSelectedFile] = useState<File | null>(null); // State to store the selected file
+	const [isChanged, setIsChanged] = useState(false);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [usernameError, setUsernameError] = useState<string | null>(null);
-
-	const [formError, setFormError] = useState<string | null>(null); // State to store form error
+	const [formError, setFormError] = useState<string | null>(null);
 	const [selectedColor, setSelectedColor] = useState(
 		userData.themeSelected ?? "#50A65C"
 	);
