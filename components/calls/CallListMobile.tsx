@@ -7,8 +7,6 @@ import {
 } from "@/lib/utils";
 import { RegisterCallParams } from "@/types";
 import React, { useEffect } from "react";
-import ContentLoading from "../shared/ContentLoading";
-import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
@@ -18,6 +16,7 @@ import { useInView } from "react-intersection-observer";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useToast } from "../ui/use-toast";
 import { useGetPreviousCalls } from "@/lib/react-query/queries";
+import ReportDialog from "../shared/ReportDialog";
 
 const CallListMobile = () => {
 	const { currentUser } = useCurrentUsersContext();
@@ -49,11 +48,9 @@ const CallListMobile = () => {
 		);
 	}
 
-	console.log(userCalls);
-
 	return (
 		<>
-			{userCalls && userCalls?.pages?.length > 0 ? (
+			{userCalls && userCalls?.pages[0]?.length > 0 ? (
 				isError || !currentUser ? (
 					<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
 						Failed to fetch User Calls <br />
@@ -150,21 +147,25 @@ const CallListMobile = () => {
 											</div>
 										</div>
 										{/* StartedAt & Feedbacks */}
-										<div className="relative w-fit flex flex-col items-end justify-between h-full gap-2">
+										<section className="relative w-fit flex flex-col items-end justify-between h-full gap-2">
 											<span className="text-sm text-[#A7A8A1] pr-2 pt-1 whitespace-nowrap">
 												{formattedDate.dateTime}
 											</span>
-											{userCall.status !== "Rejected" ? (
-												<FeedbackCheck callId={userCall?.callId} />
-											) : (
-												<button
-													onClick={handleRedirect}
-													className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
-												>
-													Visit Again
-												</button>
-											)}
-										</div>
+											<section className="flex w-full items-end justify-end">
+												{userCall.status !== "Rejected" ? (
+													<FeedbackCheck callId={userCall?.callId} />
+												) : (
+													<button
+														onClick={handleRedirect}
+														className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
+													>
+														Visit Again
+													</button>
+												)}
+
+												<ReportDialog />
+											</section>
+										</section>
 									</div>
 								);
 							})

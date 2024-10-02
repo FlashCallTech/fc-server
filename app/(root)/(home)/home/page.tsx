@@ -75,6 +75,8 @@ const HomePage = () => {
 		);
 	}
 
+	console.log(creators);
+
 	return (
 		<main className="flex flex-col size-full">
 			{userType === "client" ? (
@@ -84,7 +86,7 @@ const HomePage = () => {
 							Failed to fetch creators <br />
 							Please try again later.
 						</div>
-					) : creators && creators.pages.length === 0 && !isLoading ? (
+					) : creators && creators.pages[0].length === 0 && !isLoading ? (
 						<p className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
 							No creators found.
 						</p>

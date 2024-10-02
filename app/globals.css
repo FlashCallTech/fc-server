@@ -267,7 +267,7 @@ input[type="number"] {
 	}
 
 	.textarea {
-		@apply bg-gray-50 flex flex-1 placeholder:text-gray-500 px-5 py-3 border-none focus-visible:ring-transparent !important;
+		@apply bg-gray-100 hover:bg-gray-200 flex flex-1 placeholder:text-gray-500 px-5 py-3 border-none focus-visible:ring-transparent !important;
 	}
 
 	.active {
