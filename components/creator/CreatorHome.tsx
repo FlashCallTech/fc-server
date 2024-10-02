@@ -7,7 +7,11 @@ import PriceEditModal from "./Price";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import axios from "axios";
 import { useToast } from "../ui/use-toast";
-import { calculateTotalEarnings, isValidUrl } from "@/lib/utils";
+import {
+	calculateTotalEarnings,
+	getProfileImagePlaceholder,
+	isValidUrl,
+} from "@/lib/utils";
 import ServicesCheckbox from "../shared/ServicesCheckbox";
 import CopyToClipboard from "../shared/CopyToClipboard";
 import { UpdateCreatorParams } from "@/types";
@@ -359,7 +363,9 @@ const CreatorHome = () => {
 	const imageSrc =
 		creatorUser.photo && isValidUrl(creatorUser.photo)
 			? creatorUser.photo
-			: "/images/defaultProfileImage.png";
+			: getProfileImagePlaceholder(
+					creatorUser && (creatorUser.gender as string)
+			  );
 
 	return (
 		<>

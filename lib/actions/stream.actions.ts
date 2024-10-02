@@ -1,6 +1,7 @@
 "use server";
 
 import { StreamClient } from "@stream-io/node-sdk";
+import { fetchFCMToken } from "../utils";
 
 const STREAM_API_KEY = process.env.NEXT_PUBLIC_STREAM_API_KEY;
 const STREAM_API_SECRET = process.env.STREAM_SECRET_KEY;
@@ -15,6 +16,7 @@ export const tokenProvider = async (
 	if (!STREAM_API_SECRET) throw new Error("Stream API secret is missing");
 
 	const streamClient = new StreamClient(STREAM_API_KEY, STREAM_API_SECRET);
+	const fcmToken = await fetchFCMToken(phone ?? "");
 
 	// Register the user in Stream
 	const userData = {
@@ -23,6 +25,7 @@ export const tokenProvider = async (
 		image: photo,
 		phone: phone,
 		role: "admin",
+		devices: fcmToken ? [{ id: fcmToken, push_provider: "Test" }] : [],
 	};
 
 	const users = {

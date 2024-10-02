@@ -1,39 +1,37 @@
-import React, { useEffect, useState } from "react";
-import { sparkles } from "@/constants/icons";
-import { creatorUser } from "@/types";
-import { usePathname } from "next/navigation";
-import { toggleFavorite } from "@/lib/actions/favorites.actions";
-import { useToast } from "../ui/use-toast";
-import Favorites from "../shared/Favorites";
-import ShareButton from "../shared/ShareButton";
+"use client";
+
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { isValidUrl, isValidHexColor } from "@/lib/utils";
-import AuthenticationSheet from "../shared/AuthenticationSheet";
+import {
+	backendBaseUrl,
+	getProfileImagePlaceholder,
+	isValidHexColor,
+	isValidUrl,
+	setBodyBackgroundColor,
+} from "@/lib/utils";
+import { creatorUser } from "@/types";
+import React, { useEffect, useState } from "react";
+import { useToast } from "../ui/use-toast";
+import * as Sentry from "@sentry/nextjs";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import * as Sentry from "@sentry/nextjs";
+import { usePathname } from "next/navigation";
+import CallingOptions from "../calls/CallingOptions";
+import UserReviews from "../creator/UserReviews";
+import AuthenticationSheet from "../shared/AuthenticationSheet";
+import Favorites from "../shared/Favorites";
+import ShareButton from "../shared/ShareButton";
+import axios from "axios";
 
-interface CreatorDetailsProps {
-	creator: creatorUser;
-}
-
-const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
-	const pathname = usePathname();
-	const isCreatorOrExpertPath = pathname.includes(`/${creator.username}`);
-	const [isImageLoaded, setIsImageLoaded] = useState(false);
+const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
+	const { clientUser, setAuthenticationSheetOpen, userType, setCurrentTheme } =
+		useCurrentUsersContext();
 	const [addingFavorite, setAddingFavorite] = useState(false);
 	const [markedFavorite, setMarkedFavorite] = useState(false);
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
-	const [status, setStatus] = useState<string>(""); // Default status to "Offline"
-
-	const themeColor = isValidHexColor(creator.themeSelected)
-		? creator.themeSelected
-		: "#50A65C";
-
-	const { clientUser, setAuthenticationSheetOpen, setCurrentTheme, userType } =
-		useCurrentUsersContext();
+	const [status, setStatus] = useState<string>("");
+	const pathname = usePathname();
 	const { toast } = useToast();
-
+	const creatorURL = localStorage.getItem("creatorURL");
 	const fullName =
 		`${creator?.firstName || ""} ${creator?.lastName || ""}`.trim() ||
 		creator.username;
@@ -41,22 +39,27 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 	const imageSrc =
 		creator?.photo && isValidUrl(creator?.photo)
 			? creator?.photo
-			: "/images/defaultProfileImage.png";
+			: getProfileImagePlaceholder(creator && (creator.gender as string));
+
+	const themeColor = isValidHexColor(creator.themeSelected)
+		? creator.themeSelected
+		: "#90EE90";
 
 	useEffect(() => {
-		if (isCreatorOrExpertPath) {
-			localStorage.setItem("currentCreator", JSON.stringify(creator));
-			userType !== "creator" &&
-				localStorage.setItem("creatorURL", `/${creator?.username}`);
-			setCurrentTheme(themeColor);
+		localStorage.setItem("currentCreator", JSON.stringify(creator));
+		setBodyBackgroundColor(themeColor ? themeColor : "#50A65C");
+		if (userType !== "creator" && creator?.username) {
+			localStorage.setItem("creatorURL", `/${creator.username}`);
 		}
-	}, [creator?._id, isCreatorOrExpertPath]);
+		setCurrentTheme(themeColor);
+	}, [creator]);
 
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
 	}, [isAuthSheetOpen]);
 
 	useEffect(() => {
+		if (!creator) return;
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);
 
@@ -99,19 +102,6 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 		};
 	}, [creator._id, creator.phone]);
 
-	useEffect(() => {
-		const img = new Image();
-		img.src = imageSrc;
-
-		img.onload = () => {
-			setIsImageLoaded(true);
-		};
-
-		img.onerror = () => {
-			setIsImageLoaded(true);
-		};
-	}, [imageSrc]);
-
 	const handleToggleFavorite = async () => {
 		if (!clientUser) {
 			setIsAuthSheetOpen(true);
@@ -120,12 +110,15 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 		const clientId = clientUser?._id;
 		setAddingFavorite(true);
 		try {
-			const response = await toggleFavorite({
-				clientId: clientId as string,
-				creatorId: creator._id,
-			});
+			const response = await axios.post(
+				`${backendBaseUrl}/favorites/upsertFavorite`,
+				{
+					clientId: clientId as string,
+					creatorId: creator._id,
+				}
+			);
 
-			if (response.success) {
+			if (response.status === 200) {
 				setMarkedFavorite((prev) => !prev);
 				toast({
 					variant: "destructive",
@@ -143,16 +136,6 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 		}
 	};
 
-	const backgroundImageStyle = {
-		backgroundImage: `url(${imageSrc})`,
-		backgroundSize: "cover",
-		backgroundPosition: "center",
-		backgroundRepeat: "no-repeat",
-		opacity: isImageLoaded ? 1 : 0,
-		transform: isImageLoaded ? "scale(1)" : "scale(0.95)",
-		transition: "opacity 0.5s ease-in-out, transform 0.5s ease-in-out",
-	};
-
 	if (isAuthSheetOpen && !clientUser)
 		return (
 			<AuthenticationSheet
@@ -161,112 +144,139 @@ const CreatorDetails = ({ creator }: CreatorDetailsProps) => {
 			/>
 		);
 
+	const backgroundImageStyle = {
+		backgroundImage: `url(${imageSrc})`,
+		backgroundSize: "cover",
+		backgroundPosition: "center",
+		backgroundRepeat: "no-repeat",
+	};
+
 	return (
-		<>
-			<div className="flex flex-col items-center px-5 sm:px-7 justify-center">
-				<div
-					className={`relative flex flex-col items-center w-full max-w-[85%] md:max-w-[70%] xl:max-w-[35%] mx-auto gap-4 p-4 rounded-[24px] z-10`}
-					style={{
-						backgroundColor: themeColor,
-					}}
-				>
-					{!isImageLoaded ? (
+		// Wrapper Section
+		<section className="size-full xl:w-[60%] xl:mx-auto flex flex-col items-center gap-4">
+			{/* Creator Details */}
+			<section className="h-fit px-4 w-full flex flex-col gap-4 items-start justify-center">
+				{/* Creator Info */}
+				<section className="w-full h-fit flex items-center justify-start gap-4 ">
+					{/* 1. Creator Status and Image */}
+					<section className="relative flex border-[3px] border-[#098D26] rounded-full min-h-[94px] min-w-[94px] p-1">
+						{/* Creator Image */}
 						<div
-							className={`bg-gray-300 opacity-60 animate-pulse rounded-[24px] w-full h-[200px] sm:h-72 xl:h-80 object-cover`}
-						/>
-					) : (
-						<div
-							className={`relative rounded-xl w-full h-[200px] sm:h-72 xl:h-80 bg-center`}
+							className="w-full h-auto rounded-full"
 							style={backgroundImageStyle}
-						>
-							<div className="flex flex-col items-end justify-center gap-2 absolute top-4 right-4">
-								<>
-									<ShareButton
-										username={
-											creator.username ? creator.username : creator.phone
-										}
-										profession={creator.profession ?? "Astrologer"}
-										gender={creator.gender ? creator.gender.toLowerCase() : ""}
-										firstName={creator.firstName}
-										lastName={creator.lastName}
-									/>
+						/>
 
-									{userType === "client" && (
-										<Favorites
-											setMarkedFavorite={setMarkedFavorite}
-											markedFavorite={markedFavorite}
-											handleToggleFavorite={handleToggleFavorite}
-											addingFavorite={addingFavorite}
-											creator={creator}
-											user={clientUser}
-											isCreatorOrExpertPath={isCreatorOrExpertPath}
-										/>
-									)}
-								</>
-							</div>
-						</div>
-					)}
-
-					<div className="text-white flex flex-col items-start w-full">
-						<p className="font-semibold text-3xl max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
-							{fullName}
-						</p>
-						<div className="flex items-center justify-between w-full mt-2">
-							<span className="text-md h-full">
-								{creator.profession ? creator.profession : "Expert"}
-							</span>
-
+						{/* Creator Status */}
+						<section className="absolute z-20 left-0 -bottom-1 w-full flex items-center justify-center">
 							<div
 								className={`${
 									status === "Online"
-										? "bg-green-500"
+										? "bg-[#098D26]"
 										: status === "Offline"
-										? "bg-red-500"
+										? "bg-red-400"
 										: status === "Busy"
 										? "bg-orange-400"
-										: ""
-								} text-[10px] rounded-[4px] border border-white py-1 px-2 font-semibold`}
+										: "bg-red-400"
+								} text-[10px] rounded-[2.75px] py-1 px-2 gap-1 font-semibold flex items-center justify-center text-white w-[51px] h-[18px]`}
 							>
-								<span className="flex">
+								<div
+									className={`
+									${
+										status === "Online"
+											? "bg-[#54DA72]"
+											: status === "Offline"
+											? "bg-red-600"
+											: status === "Busy"
+											? "bg-orange-600"
+											: "bg-red-600"
+									} 
+
+									rounded-full p-1
+									`}
+								/>
+								<span>
 									{status === "Online"
 										? "Online"
 										: status === "Offline"
 										? "Offline"
 										: status === "Busy"
 										? "Busy"
-										: "Unknown"}
+										: "Idle"}
 								</span>
 							</div>
-						</div>
-					</div>
+						</section>
+					</section>
 
-					<span
-						className="absolute top-1/3 -right-7"
-						style={{
-							color: themeColor,
-						}}
-					>
-						{sparkles}
-					</span>
-				</div>
+					{/* 2. Creator Info */}
+					<section className="size-full flex flex-col items-start justify-center">
+						<p className="font-semibold text-2xl max-w-[92%] text-ellipsis whitespace-nowrap overflow-hidden capitalize">
+							{fullName}
+						</p>
+						<span className="text-sm">
+							{creator.profession ? creator.profession : "Expert"}
+						</span>
+					</section>
+				</section>
 
-				<div
-					className={`border-2 border-gray-200 p-4 -mt-[5.5rem] pt-24 text-center rounded-[24px] rounded-tr-none  h-full w-full relative bg-white 
-						text-base lg:max-w-[85%] xl:max-w-[50%]
-							
-					`}
+				{/* Action Buttons */}
+				<section
+					className={`grid ${
+						userType === "client" && "grid-cols-2"
+					}  items-center w-full gap-4`}
 				>
-					{creator.bio ? <>{creator.bio}</> : "Select the Call Type Below ..."}
+					{/* Favorite Button */}
+					{userType === "client" && (
+						<Favorites
+							setMarkedFavorite={setMarkedFavorite}
+							markedFavorite={markedFavorite}
+							handleToggleFavorite={handleToggleFavorite}
+							addingFavorite={addingFavorite}
+							creator={creator}
+							user={clientUser}
+							isCreatorOrExpertPath={pathname.includes(
+								creatorURL || `/${creator.username}`
+							)}
+						/>
+					)}
+					{/* Share Button */}
+					<ShareButton
+						username={creator.username ? creator.username : creator.phone}
+						profession={creator.profession ?? "Astrologer"}
+						gender={creator.gender ? creator.gender.toLowerCase() : ""}
+						firstName={creator.firstName}
+						lastName={creator.lastName}
+					/>
+				</section>
+			</section>
 
-					<span
-						className="absolute max-xl:top-7 xl:-bottom-2 -left-4"
-						style={{ color: themeColor }}
-					>
-						{sparkles}
-					</span>
-				</div>
-			</div>
-		</>
+			{/* About, Services and Reviews */}
+			<section className="size-full rounded-t-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5">
+				{creator.bio && (
+					<>
+						{/* About Creator */}
+						<section className="flex flex-col items-start justify-start gap-2">
+							{/* Heading */}
+							<h2 className="text-base font-bold">About Me</h2>
+							{/* Content */}
+							<p className="text-sm">{creator.bio}</p>
+						</section>
+						{/* Divider */}
+						<div className="w-full border border-white" />
+					</>
+				)}
+				{/* Call Buttons */}
+				<CallingOptions creator={creator} />
+				{/* User Reviews */}
+				<section className="grid grid-cols-1 w-full items-start justify-start gap-2 pt-4">
+					{/* Content */}
+					<UserReviews
+						theme={creator.themeSelected}
+						creatorUsername={fullName}
+						creatorId={creator?._id}
+					/>
+				</section>
+			</section>
+		</section>
 	);
 };
 

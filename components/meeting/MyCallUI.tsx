@@ -20,9 +20,10 @@ const MyCallUI = () => {
 	const router = useRouter();
 	const calls = useCalls();
 	const pathname = usePathname();
-	const { currentUser, userType } = useCurrentUsersContext();
+	const { currentUser } = useCurrentUsersContext();
 
 	const { toast } = useToast();
+
 	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
 	const [hasRedirected, setHasRedirected] = useState(false);
 	const [showCallUI, setShowCallUI] = useState(false);
@@ -44,7 +45,7 @@ const MyCallUI = () => {
 
 						// If the client status is "Busy", do nothing
 						if (clientStatusData && clientStatusData.status === "Busy") {
-							return;
+							setHasRedirected(true);
 						}
 
 						// Otherwise, check for ongoing sessions
@@ -53,28 +54,23 @@ const MyCallUI = () => {
 
 						if (sessionDoc.exists()) {
 							const { ongoingCall } = sessionDoc.data();
-							if (ongoingCall && ongoingCall.status !== "ended" && !hide) {
+							if (
+								ongoingCall &&
+								ongoingCall.status !== "ended" &&
+								!hide &&
+								!hasRedirected
+							) {
 								// Call is still pending, redirect the user back to the meeting
-								userType === "client" &&
-									toast({
-										variant: "destructive",
-										title: "Ongoing Call or Session Pending",
-										description: "Redirecting you back ...",
-									});
-								router.replace(`/meeting/${ongoingCall.id}`);
+
 								setHasRedirected(true);
+								router.replace(`/meeting/${ongoingCall.id}`);
 							}
 						} else {
 							// If no ongoing call in Firestore, check local storage
 							const storedCallId = localStorage.getItem("activeCallId");
 							if (storedCallId && !hide && !hasRedirected) {
-								toast({
-									variant: "destructive",
-									title: "Ongoing Call or Session Pending",
-									description: "Redirecting you back ...",
-								});
-								router.replace(`/meeting/${storedCallId}`);
 								setHasRedirected(true);
+								router.replace(`/meeting/${storedCallId}`);
 							}
 						}
 					}
@@ -114,11 +110,7 @@ const MyCallUI = () => {
 					await updateExpertStatus(expertPhone, "Online");
 				}
 
-				isMeetingOwner &&
-					(await updateExpertStatus(
-						callCreator?.custom?.phone as string,
-						"Idle"
-					));
+				await updateExpertStatus(callCreator?.custom?.phone as string, "Idle");
 
 				setShowCallUI(false); // Hide call UI
 			};
@@ -183,7 +175,7 @@ const MyCallUI = () => {
 				) {
 					await call?.leave();
 				}
-
+				setHasRedirected(true);
 				router.replace(`/meeting/${call.id}`);
 			};
 

@@ -60,17 +60,17 @@ const ShareButton = ({
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
-				<Button
-					className={`px-3 py-6 rounded-xl transition-all duration-300 hover:scale-105 group bg-[#232323]/35 hover:bg-green-1 flex gap-2 items-center`}
+				<button
+					className={`h-[36px] w-full flex items-center justify-center gap-2 rounded-[6px] bg-transparent border border-black hoverScaleDownEffect text-sm font-bold`}
 					onClick={shareLink}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
 						viewBox="0 0 24 24"
-						strokeWidth={1.5}
-						stroke="white"
-						className="size-6"
+						strokeWidth={2}
+						stroke="currentColor"
+						className="size-[18px]"
 					>
 						<path
 							strokeLinecap="round"
@@ -78,7 +78,8 @@ const ShareButton = ({
 							d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"
 						/>
 					</svg>
-				</Button>
+					Share Profile
+				</button>
 			</TooltipTrigger>
 			<TooltipContent className="bg-green-1 border-none text-white">
 				<p>Share Link</p>
