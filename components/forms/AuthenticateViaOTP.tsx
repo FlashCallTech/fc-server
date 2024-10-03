@@ -339,7 +339,9 @@ const AuthenticateViaOTP = ({
 							alt="flashcall logo"
 							className="w-3/4 h-10 p-2 mb-2 bg-green-1"
 						/>
-						<h2 className="text-lg font-semibold">Login or Signup</h2>
+						<h2 className="text-black text-lg font-semibold">
+							Login or Signup
+						</h2>
 						<p className="text-sm text-[#707070] mb-4">
 							Get start with your first consultation <br /> and start earning
 						</p>
@@ -365,7 +367,7 @@ const AuthenticateViaOTP = ({
 														<Input
 															placeholder="Enter a Valid Number"
 															{...field}
-															className="w-full font-semibold bg-transparent border-none focus-visible:ring-offset-0 placeholder:text-gray-400 placeholder:font-normal rounded-xl pr-4 pl-2 mx-1 py-3 focus-visible:ring-transparent !important"
+															className="w-full font-semibold bg-transparent border-none text-black focus-visible:ring-offset-0 placeholder:text-gray-400 placeholder:font-normal rounded-xl pr-4 pl-2 mx-1 py-3 focus-visible:ring-transparent !important"
 														/>
 													</div>
 
@@ -400,7 +402,9 @@ const AuthenticateViaOTP = ({
 			) : verificationSuccess ? (
 				<div className="flex flex-col items-center justify-center w-full md:min-w-[24rem] md:max-w-[24rem]  gap-4 pt-7 pb-14">
 					{success}
-					<span className="font-semibold text-lg">Login Successfully</span>
+					<span className="text-black font-semibold text-lg">
+						Login Successfully
+					</span>
 				</div>
 			) : (
 				// OTPVerification form
