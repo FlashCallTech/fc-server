@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { CreateCreatorParams } from "@/types";
 import { createCreatorUser } from "@/lib/actions/creator.actions";
+import { createReferralAction } from "@/lib/actions/referral.actions";
+import Creator from "@/lib/database/models/creator.model";
 
 export async function POST(request: Request) {
 	try {
@@ -14,6 +16,18 @@ export async function POST(request: Request) {
 			return new NextResponse(JSON.stringify({ error: result.error }), {
 				status: 400,
 			});
+		}
+
+		if(result.referredBy !== null) {
+			const referral = await Creator.findById({referralId: result.referredBy})
+			
+			const referralData = {
+				referralId: result.referredBy,
+				referredBy: referral._id,
+				referredTo: result._id, 
+			}
+			
+			await createReferralAction(referralData);
 		}
 
 		return NextResponse.json(result);

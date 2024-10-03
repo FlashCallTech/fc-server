@@ -7,6 +7,36 @@ const useMediaRecorder = () => {
 	const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 	const audioChunksRef = useRef<Blob[]>([]);
+	const [mp3Blob, setMp3Blob] = useState<Blob | null>(null);
+
+	const uploadAudioBlob = async (audioBlob: Blob) => {
+		const formData = new FormData();
+		
+		// Create a file from the Blob
+		const audioFile = new File([audioBlob], "audio.webm", {
+			type: "audio/webm",
+		});
+		
+		formData.append("file", audioFile);
+	
+		try {
+			const response = await fetch("http://localhost:5000/api/v1/audio/convert", {
+				method: "POST",
+				body: formData,
+			});
+	
+			if (!response.ok) {
+				throw new Error("Failed to upload audio file");
+			}
+	
+			const convertedAudioBlob: Blob = await response.blob();
+			return convertedAudioBlob; // Handle the result as needed
+		} catch (error) {
+			console.error("Error uploading audio file:", error);
+			throw error; // Re-throw or handle the error as needed
+		}
+	};
+	
 
 	const startRecording = () => {
 		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -41,7 +71,18 @@ const useMediaRecorder = () => {
 		}
 	};
 
-	const stopRecording = () => {
+	const stopRecording = async() => {
+		console.log('stopping recording')
+		console.log(audioBlob);
+		if (audioBlob) {
+			try {
+				const result: Blob = await uploadAudioBlob(audioBlob);
+				setMp3Blob(result);
+				console.log("Conversion result:", result); // Handle the conversion result as needed
+			} catch (error) {
+				console.error("Error during upload:", error);
+			}
+		}
 		if (mediaRecorderRef.current) {
 			mediaRecorderRef.current.stop();
 			setIsRecording(false);
@@ -51,12 +92,13 @@ const useMediaRecorder = () => {
 	return {
 		audioStream,
 		isRecording,
-		audioBlob,
 		startRecording,
 		stopRecording,
 		mediaRecorderRef,
 		setAudioStream,
 		setIsRecording,
+		mp3Blob,
+		setMp3Blob,
 	};
 };
 

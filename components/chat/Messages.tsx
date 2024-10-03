@@ -83,8 +83,8 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 						<React.Fragment key={message?.createdAt}>
 							{showDateSeparator && (
 								<div className="flex justify-center ">
-									<div className="text-center bg-gray-400 opacity-50 w-[30%] rounded-lg p-1 my-2  ">
-										<div className={`text-white font-bold ${textSizeClass} opacity-100`}>
+									<div className="text-center bg-gray-400 opacity-50 rounded-lg py-1 px-2 my-2">
+										<div className={`text-white text-xs font-bold ${textSizeClass} opacity-100`}>
 											{format(new Date(message.createdAt), "d MMM, yyyy")}
 										</div>
 									</div>
