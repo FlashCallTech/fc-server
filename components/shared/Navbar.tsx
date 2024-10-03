@@ -26,24 +26,13 @@ const NavLoader = () => {
 	);
 };
 
-// Custom hook to track screen size
-const useScreenSize = () => {
-	const [isMobile, setIsMobile] = useState(false);
-
-	const handleResize = () => {
-		setIsMobile(window.innerWidth < 1280);
-	};
-
-	useEffect(() => {
-		handleResize(); // Set initial value
-		window.addEventListener("resize", handleResize);
-		return () => window.removeEventListener("resize", handleResize);
-	}, []);
-
-	return isMobile;
-};
-
-const Navbar = () => {
+const Navbar = ({
+	isVisible,
+	isMobile,
+}: {
+	isVisible: boolean;
+	isMobile: boolean;
+}) => {
 	const {
 		currentUser,
 		fetchingUser,
@@ -64,38 +53,6 @@ const Navbar = () => {
 	const invertCreatorTheme = isCreatorOrExpertPath
 		? getDarkHexCode(currentTheme)
 		: "#ffffff";
-
-	const isMobile = useScreenSize();
-
-	const [isVisible, setIsVisible] = useState(true);
-	const [lastScrollY, setLastScrollY] = useState(0);
-
-	const handleScroll = () => {
-		if (typeof window !== "undefined") {
-			if (window.innerWidth <= 768) {
-				if (window.scrollY > lastScrollY) {
-					// If scrolling down
-					setIsVisible(false);
-				} else {
-					// If scrolling up
-					setIsVisible(true);
-				}
-				setLastScrollY(window.scrollY);
-			} else {
-				setIsVisible(true);
-			}
-		}
-	};
-
-	useEffect(() => {
-		if (typeof window !== "undefined") {
-			window.addEventListener("scroll", handleScroll);
-
-			return () => {
-				window.removeEventListener("scroll", handleScroll);
-			};
-		}
-	}, [lastScrollY]);
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -144,7 +101,7 @@ const Navbar = () => {
 
 	const AppLink = () => (
 		<Button
-			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[8px] hoverScaleDownEffect xl:w-[200px] xl:h-[48px]"
+			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[8px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
 			style={{
 				boxShadow: `4px 4px 0px 0px #000000`,
 				color: `${
@@ -166,7 +123,7 @@ const Navbar = () => {
 				width={100}
 				height={100}
 				alt="flashcall logo"
-				className={`size-6 xl:w-[28px] xl:h-[35px] rounded-full`}
+				className={`size-6 xl:w-[28px] xl:h-[40px] rounded-full`}
 			/>
 
 			<span className="w-fit whitespace-nowrap text-xs font-semibold">
@@ -177,7 +134,7 @@ const Navbar = () => {
 
 	return (
 		<nav
-			className={`flex justify-between items-center fixed z-40 top-0 left-0 ${
+			className={`flex justify-between items-center fixed h-[76px] z-40 top-0 left-0 ${
 				isCreatorOrExpertPath && "border-b border-white/20"
 			}  ${
 				isVisible ? "translate-y-0" : "-translate-y-full"
@@ -197,7 +154,7 @@ const Navbar = () => {
 				userType === "creator" ? (
 					<Link
 						href="/home"
-						className="flex items-center justify-center lg:ml-2"
+						className="flex items-center justify-center lg:ml-2 w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
 					>
 						<Image
 							src="/icons/logoMain.png"
@@ -222,7 +179,7 @@ const Navbar = () => {
 					{walletBalance >= 0 ? (
 						<Link
 							href="/payment"
-							className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect ${
+							className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] ${
 								pathname.includes("/payment") && "!bg-green-1 !text-white"
 							}`}
 							style={{
@@ -266,7 +223,7 @@ const Navbar = () => {
 				<NavLoader />
 			) : (
 				<Button
-					className="hoverScaleDownEffect font-semibold w-fit mr-1 rounded-md"
+					className="hoverScaleDownEffect font-semibold w-fit h-[40px] xl:h-[48px]  mr-1 rounded-md"
 					size="lg"
 					onClick={handleRouting}
 					style={{
