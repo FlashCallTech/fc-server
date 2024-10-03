@@ -336,7 +336,7 @@ const Favorites = () => {
 				favorites.length !== 0 &&
 				!hasNextPage &&
 				!isFetching && (
-					<div className="text-center text-gray-500 ">
+					<div className="text-center text-gray-500 xl:hidden">
 						You have reached the end of the list.
 					</div>
 				)}

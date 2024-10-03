@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
+import { backendBaseUrl } from "@/lib/utils";
 
 const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 	const router = useRouter();
@@ -18,7 +19,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 		const fetchFeedbacks = async () => {
 			try {
 				const response = await fetch(
-					`/api/v1/feedback/call/getFeedbacks?callId=${callId}`
+					`${backendBaseUrl}/feedback/call/getFeedbacks?callId=${callId}`
 				);
 				const feedbacks = await response.json();
 

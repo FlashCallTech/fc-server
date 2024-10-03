@@ -50,7 +50,7 @@ const CallListMobile = () => {
 
 	return (
 		<>
-			{userCalls && userCalls?.pages[0]?.length > 0 ? (
+			{userCalls && userCalls?.pages[0].calls?.length > 0 ? (
 				isError || !currentUser ? (
 					<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
 						Failed to fetch User Calls <br />
@@ -182,8 +182,8 @@ const CallListMobile = () => {
 						)}
 
 						{!hasNextPage && !isFetching && (
-							<div className="text-center text-gray-500 py-4">
-								No more Calls to Load.
+							<div className="xl:hidden text-center text-gray-500 py-4">
+								You have reached the end of the list
 							</div>
 						)}
 

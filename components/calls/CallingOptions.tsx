@@ -487,16 +487,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	const theme = `5px 5px 0px 0px ${themeColor}`;
-
-	if (isAuthSheetOpen && !clientUser)
-		return (
-			<AuthenticationSheet
-				isOpen={isAuthSheetOpen}
-				onOpenChange={setIsAuthSheetOpen} // Handle sheet close
-			/>
-		);
-
 	const services = [
 		{
 			type: "video",
@@ -632,6 +622,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					</SheetContent>
 				</Sheet>
 			</div>
+
+			{isAuthSheetOpen && (
+				<AuthenticationSheet
+					isOpen={isAuthSheetOpen}
+					onOpenChange={setIsAuthSheetOpen} // Handle sheet close
+				/>
+			)}
 		</>
 	);
 };

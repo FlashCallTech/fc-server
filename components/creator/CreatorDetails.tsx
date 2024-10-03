@@ -6,7 +6,6 @@ import {
 	getProfileImagePlaceholder,
 	isValidHexColor,
 	isValidUrl,
-	setBodyBackgroundColor,
 } from "@/lib/utils";
 import { creatorUser, LinkType } from "@/types";
 import React, { useEffect, useState } from "react";
@@ -29,12 +28,12 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const [addingFavorite, setAddingFavorite] = useState(false);
 	const [markedFavorite, setMarkedFavorite] = useState(false);
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
-	const [linkHovered, setLinkHovered] = useState(NaN);
 
 	const [status, setStatus] = useState<string>("");
 	const pathname = usePathname();
 	const { toast } = useToast();
 	const creatorURL = localStorage.getItem("creatorURL");
+
 	const fullName =
 		`${creator?.firstName || ""} ${creator?.lastName || ""}`.trim() ||
 		creator.username;
@@ -50,7 +49,6 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 	useEffect(() => {
 		localStorage.setItem("currentCreator", JSON.stringify(creator));
-		setBodyBackgroundColor(themeColor ? themeColor : "#50A65C");
 		if (userType !== "creator" && creator?.username) {
 			localStorage.setItem("creatorURL", `/${creator.username}`);
 		}
@@ -62,7 +60,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	}, [isAuthSheetOpen]);
 
 	useEffect(() => {
-		if (!creator) return;
+		if (!creator || !creator._id || !creator.phone) return;
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);
 
@@ -139,14 +137,6 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		}
 	};
 
-	if (isAuthSheetOpen && !clientUser)
-		return (
-			<AuthenticationSheet
-				isOpen={isAuthSheetOpen}
-				onOpenChange={setIsAuthSheetOpen}
-			/>
-		);
-
 	const backgroundImageStyle = {
 		backgroundImage: `url(${imageSrc})`,
 		backgroundSize: "cover",
@@ -156,9 +146,12 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 	return (
 		// Wrapper Section
-		<section className="size-full xl:w-[60%] xl:mx-auto flex flex-col items-center gap-4">
+		<section className="size-full xl:w-[704px] xl:mx-auto flex flex-col items-center gap-4">
 			{/* Creator Details */}
-			<section className="h-fit px-4 w-full flex flex-col gap-4 items-start justify-center">
+			<section
+				className={`h-fit px-4 w-full flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-center p-5 xl:rounded-[16px]`}
+				style={{ backgroundColor: themeColor }}
+			>
 				{/* Creator Info */}
 				<section className="w-full h-fit flex items-center justify-start gap-4 ">
 					{/* 1. Creator Status and Image */}
@@ -276,36 +269,29 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 						{creator?.links?.map((link: LinkType, index: number) => (
 							<Link
 								href={link.url}
-								className="flex px-4 border border-white/20 bg-[#4E515C4D] rounded-[24px] h-[52px]  justify-between items-center w-full hoverScaleDownEffect cursor-pointer"
+								className="grid grid-cols-3 px-4 border border-white/20 bg-[#4E515C4D] rounded-[24px] h-[52px] justify-between font-semibold items-center text-center w-full hoverScaleDownEffect cursor-pointer capitalize"
 								key={index + link.title}
-								onMouseEnter={() => setLinkHovered(index)}
-								onMouseLeave={() => setLinkHovered(NaN)}
+								title={link.title}
 							>
-								<p className={`flex gap-4 items-center font-bold text-white`}>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										strokeWidth={1.5}
-										stroke="currentColor"
-										className="size-5"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
-										/>
-									</svg>
-
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									strokeWidth={1.5}
+									stroke="currentColor"
+									className="size-5"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+									/>
+								</svg>
+								<p className="text-ellipsis whitespace-nowrap overflow-hidden">
 									{link.title}
 								</p>
-								<p
-									style={{
-										color: linkHovered === index ? themeColor : "#ffffff",
-									}}
-								>
-									{link.url}
-								</p>
+
+								<p />
 							</Link>
 						))}
 					</section>
@@ -321,6 +307,13 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 					/>
 				</section>
 			</section>
+
+			{isAuthSheetOpen && (
+				<AuthenticationSheet
+					isOpen={isAuthSheetOpen}
+					onOpenChange={setIsAuthSheetOpen} // Handle sheet close
+				/>
+			)}
 		</section>
 	);
 };

@@ -318,14 +318,15 @@ const ChatInterface: React.FC = () => {
 	};
 
 	function maskPhoneNumber(phoneNumber: string) {
-    // Remove the '+91' prefix
-    let cleanedNumber = phoneNumber.replace('+91', '');
+		// Remove the '+91' prefix
+		let cleanedNumber = phoneNumber.replace("+91", "");
 
-    // Mask the next 5 digits, leaving the first 2 digits unmasked
-    let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
+		// Mask the next 5 digits, leaving the first 2 digits unmasked
+		let maskedNumber =
+			cleanedNumber.substring(0, 2) + "*****" + cleanedNumber.substring(7);
 
-    return maskedNumber;
-}
+		return maskedNumber;
+	}
 
 	return (
 		<div className={`relative flex flex-col h-screen`}>
@@ -343,7 +344,8 @@ const ChatInterface: React.FC = () => {
 						/>
 						<div className="flex flex-col">
 							<div className="text-white font-bold text-xs md:text-lg">
-								{currentUser?.firstName + " " + currentUser?.lastName || maskPhoneNumber(currentUser?.phone as string)}
+								{currentUser?.firstName + " " + currentUser?.lastName ||
+									maskPhoneNumber(currentUser?.phone as string)}
 							</div>
 							{userType === "client" && <ChatTimer />}
 							{userType === "creator" && (

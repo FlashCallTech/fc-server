@@ -43,15 +43,21 @@ export type EditProfileProps = {
 };
 
 const predefinedColors = [
-	"#50A65C", // Default
-	"#A5A5A5", // Gray
-	"#00BCD4", // Cyan
-	"#E91E63", // Pink
-	"#FF5252", // Red
-	"#4CAF50", // Green
-	"#FF9800", // Orange
-	"#FFEB3B", // Yellow
-	"#9C27B0", // Purple
+	"#88D8C0", // Light Green
+	"#79ADDC", // Light Blue
+	"#FFC09F", // Light Orange
+	"#FFEE93", // Light Yellow
+	"#FCF5C7", // Pale Yellow
+	"#ADF7B6", // Light Green
+	"#AAE9E5", // Light Cyan
+	"#87C7F1", // Light Sky Blue
+	"#FEFEFE", // Light Beige
+	"#FFEDA9", // Light Gold
+	"#EACFFF", // Light Purple
+	"#FFBEBE", // Light Red
+	"#FFBEE9", // Light Pink
+	"#BEF3FF", // Light Blue
+	"#A6FCDF", // Light Mint Green
 ];
 
 const EditProfile = ({

@@ -11,16 +11,17 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { formatDateTime } from "@/lib/utils";
+import { backendBaseUrl, formatDateTime } from "@/lib/utils";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import GetRandomImage from "@/utils/GetRandomImage";
+import axios from "axios";
 
 const FeedbackCheck = ({ callId }: { callId: string }) => {
 	const [feedbackExists, setFeedbackExists] = useState<boolean | null>(null);
 	const { currentUser } = useCurrentUsersContext();
 
-	const [userFeedbacks, setUserFeedbacks] = useState<any[] | null>(null);
+	const [userFeedback, setUserFeedback] = useState<any | null>(null);
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
 
 	const checkFeedback = async () => {
@@ -33,17 +34,13 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 		}
 
 		try {
-			const response = callId && (await getCallFeedbacks(callId));
-			const hasFeedback = response.length > 0;
-
+			const response = await axios.get(
+				`${backendBaseUrl}/feedback/call/getFeedbacks?callId=${callId}`
+			);
+			const hasFeedback = response.data;
+			const data = response.data.feedback;
 			setFeedbackExists(hasFeedback);
-
-			if (currentUser && hasFeedback) {
-				const filteredFeedbacks = response
-					.map((feedback: any) => feedback.feedbacks)
-					.flat();
-				setUserFeedbacks(filteredFeedbacks);
-			}
+			setUserFeedback(data);
 		} catch (error) {
 			Sentry.captureException(error);
 			console.log("Error checking feedback:", error);
@@ -73,15 +70,13 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 		);
 	}
 
-	// console.log(userFeedbacks);
-
-	return feedbackExists && userFeedbacks && userFeedbacks.length > 0 ? (
+	return feedbackExists && userFeedback ? (
 		<div className="animate-enterFromRight lg:animate-enterFromBottom w-fit flex items-center justify-start md:justify-end">
 			<Dialog>
 				<DialogTrigger className="flex flex-col gap-1 items-end justify-center hoverScaleEffect">
 					<Rating
 						style={{ maxWidth: 150, fill: "white" }}
-						value={userFeedbacks[0].rating}
+						value={userFeedback.rating}
 						items={5}
 						spaceBetween="medium"
 						transition="zoom"
@@ -89,10 +84,10 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 					/>
 					<span
 						className={`text-ellipsis overflow-hidden w-full max-w-[200px] whitespace-nowrap pr-2 text-sm text-end ${
-							!userFeedbacks[0].feedback && "text-gray-400 text-xs"
+							!userFeedback.feedback && "text-gray-400 text-xs"
 						}`}
 					>
-						{userFeedbacks[0].feedback || "No Feedback"}
+						{userFeedback.feedback || "No Feedback"}
 					</span>
 				</DialogTrigger>
 				<DialogContent className="bg-white rounded-lg max-h-[500px] overflow-y-scroll no-scrollbar">
@@ -102,49 +97,45 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 							Here are all the feedbacks for this call.
 						</DialogDescription>
 					</DialogHeader>
-					{userFeedbacks.map((feedback, feedbackIndex) => (
-						<div
-							className="flex items-center justify-start w-full"
-							key={feedbackIndex}
-						>
-							<div className="flex flex-col gap-1 items-start justify-center w-full">
-								<Rating
-									style={{ maxWidth: 100, fill: "white" }}
-									value={feedback.rating}
-									items={5}
-									spaceBetween="medium"
-									transition="zoom"
-									readOnly
-								/>
-								<div className="pl-1 flex flex-col items-start justify-center gap-2">
-									<span className="">{feedback.feedback}</span>
-									<div className="flex items-center justify-start w-full gap-2">
-										<div className="flex items-center justify-start gap-2">
-											<Image
-												src={feedback?.clientId?.photo || GetRandomImage()}
-												alt={feedback?.clientId?.username}
-												width={44}
-												height={44}
-												className="w-5 h-5 rounded-full"
-												onError={(e) => {
-													e.currentTarget.src =
-														"/images/defaultProfileImage.png";
-												}}
-											/>
 
-											<span className="text-xs">
-												{feedback?.clientId?.username}
-											</span>
-										</div>
-										<span className="text-xs">|</span>
+					<div className="flex items-center justify-start w-full">
+						<div className="flex flex-col gap-1 items-start justify-center w-full">
+							<Rating
+								style={{ maxWidth: 100, fill: "white" }}
+								value={userFeedback.rating}
+								items={5}
+								spaceBetween="medium"
+								transition="zoom"
+								readOnly
+							/>
+							<div className="pl-1 flex flex-col items-start justify-center gap-2">
+								<span className="">{userFeedback.feedback}</span>
+								<div className="flex items-center justify-start w-full gap-2">
+									<div className="flex items-center justify-start gap-2">
+										<Image
+											src={userFeedback?.clientId?.photo || GetRandomImage()}
+											alt={userFeedback?.clientId?.username}
+											width={44}
+											height={44}
+											className="w-5 h-5 rounded-full"
+											onError={(e) => {
+												e.currentTarget.src = "/images/defaultProfileImage.png";
+											}}
+										/>
+
 										<span className="text-xs">
-											{formatDateTime(feedback?.createdAt).dateTime}
+											{userFeedback?.clientId?.username}
 										</span>
 									</div>
+									<span className="text-xs">|</span>
+									<span className="text-xs">
+										{formatDateTime(userFeedback?.createdAt).dateTime}
+									</span>
 								</div>
 							</div>
 						</div>
-					))}
+					</div>
+
 					<UserFeedback
 						callId={callId}
 						checkFeedback={checkFeedback}
@@ -153,7 +144,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 						text="Edit Review"
 						buttonColor="primary"
 						submitButtonText="Update Feedback"
-						existingFeedback={userFeedbacks[0]}
+						existingFeedback={userFeedback}
 					/>
 				</DialogContent>
 			</Dialog>
