@@ -6,6 +6,7 @@ import {
 	getProfileImagePlaceholder,
 	isValidHexColor,
 	isValidUrl,
+	setBodyBackgroundColor,
 } from "@/lib/utils";
 import { creatorUser, LinkType } from "@/types";
 import React, { useEffect, useState } from "react";
@@ -60,6 +61,8 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	}, [isAuthSheetOpen]);
 
 	useEffect(() => {
+		setBodyBackgroundColor("#000000");
+
 		if (!creator || !creator._id || !creator.phone) return;
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { getDarkHexCode } from "@/lib/utils";
 import React from "react";
 
 const SupportPage = () => {
@@ -13,9 +14,7 @@ const SupportPage = () => {
 				<span
 					style={{
 						color: currentTheme
-							? currentTheme === "#50a65c"
-								? "#000000"
-								: currentTheme
+							? (getDarkHexCode(currentTheme) as string)
 							: "#50a65c",
 					}}
 				>
@@ -36,9 +35,7 @@ const SupportPage = () => {
 					href="mailto:support@Flashcall.me"
 					style={{
 						color: currentTheme
-							? currentTheme === "#50a65c"
-								? "#000000"
-								: currentTheme
+							? (getDarkHexCode(currentTheme) as string)
 							: "#50a65c",
 					}}
 					className="text-sm font-medium transition-transform transform hover:scale-105"

@@ -19,7 +19,6 @@ const CreatorCard: React.FC = () => {
 	const { walletBalance } = useWalletBalanceContext();
 
 	useEffect(() => {
-		setBodyBackgroundColor("#000000");
 		const fetchCreator = async () => {
 			try {
 				const response = await getUserByUsername(String(username));
