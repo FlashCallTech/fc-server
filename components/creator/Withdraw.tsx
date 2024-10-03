@@ -88,10 +88,8 @@ const Withdraw: React.FC = () => {
 		}
 	}, [btn, creatorUser]);
 
-	if(loadingTransfer) {
-		return (
-			<Verify message={'Initiating Tranfer'} />
-		)
+	if (loadingTransfer) {
+		return <Verify message={"Initiating Tranfer"} />;
 	}
 
 	if (!creatorUser?._id)
@@ -108,7 +106,7 @@ const Withdraw: React.FC = () => {
 				<section
 					ref={stickyRef}
 					className={`flex flex-col gap-5 items-center justify-center md:items-start px-4 ${
-						isSticky ? "sticky top-16 z-30 bg-white pt-11 pb-7" : "p-0"
+						isSticky ? "sticky top-0 md:top-16 z-30 bg-white pt-11 pb-7" : "p-0"
 					}`}
 				>
 					{/* Balance Section */}
@@ -186,7 +184,7 @@ const Withdraw: React.FC = () => {
 									onClick={() => {
 										setBtn(filter as "All" | "Credit" | "Debit");
 									}}
-									className={`px-5 py-1 border-2 border-black rounded-full ${
+									className={`px-5 py-1 border-2 border-black rounded-full hoverScaleDownEffect ${
 										filter === btn
 											? "bg-gray-800 text-white"
 											: "bg-white text-black dark:bg-gray-700 dark:text-white"

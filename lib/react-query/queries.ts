@@ -129,6 +129,33 @@ export const useGetCreatorFeedbacks = (creatorId: string) => {
 	});
 };
 
+export const useGetFeedbacks = (creatorId: string) => {
+	const limit = 10;
+
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_CREATOR_FEEDBACKS, creatorId],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(
+				`${backendBaseUrl}/feedback/call/getFeedbacks`,
+				{
+					params: {
+						creatorId,
+						page: pageParam,
+						limit,
+					},
+				}
+			);
+
+			return response.status === 200 ? response.data : [];
+		},
+		getNextPageParam: (lastPage: any, allPages: any) => {
+			return lastPage.hasMore ? allPages.length + 1 : undefined;
+		},
+		enabled: !!creatorId,
+		initialPageParam: 1,
+	});
+};
+
 // ============================================================
 // TRANSACTION QUERIES
 // ============================================================

@@ -136,7 +136,7 @@ const HomePage = () => {
 
 					{!hasNextPage && !isFetching && (
 						<div className="text-center text-gray-500 py-4">
-							You have reached the end of the list.
+							You have reached the end of the list
 						</div>
 					)}
 

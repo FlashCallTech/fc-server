@@ -55,8 +55,8 @@ const PreviousPage = () => {
 			className="flex size-full flex-col gap-2 pb-5 md:pb-14"
 		>
 			<div
-				className={`sticky top-0 bg-white z-30 w-full px-4 ${
-					isSticky ? "pt-4" : "pt-0"
+				className={`sticky top-0 md:top-16 bg-white z-30 w-full px-4 ${
+					isSticky ? "pt-4 md:pt-8" : "pt-0"
 				} pb-4 flex items-center justify-between transition-all duration-300`}
 			>
 				<h1 className="text-3xl font-bold">

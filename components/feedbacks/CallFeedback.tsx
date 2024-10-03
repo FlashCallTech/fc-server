@@ -11,6 +11,8 @@ import { useGetCallById } from "@/hooks/useGetCallById";
 import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { backendBaseUrl } from "@/lib/utils";
+import axios from "axios";
 
 const CallFeedback = ({
 	callId,
@@ -84,7 +86,7 @@ const CallFeedback = ({
 		try {
 			const userId = currentUser?._id as string;
 
-			await createFeedback({
+			await axios.post(`${backendBaseUrl}/feedback/call/create`, {
 				creatorId: expert?.user_id as string,
 				clientId: userId,
 				rating: rating,

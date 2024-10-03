@@ -157,7 +157,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 				toast({
 					variant: "destructive",
-					title: status === 401 ? "Unauthorized Access" : "Error",
+					title: status === 401 ? "User Logged Out" : "Error",
 					description: message || "An unexpected error occurred.",
 				});
 

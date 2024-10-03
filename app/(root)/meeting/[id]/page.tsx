@@ -102,6 +102,8 @@ const CallEnded = ({ toast, router, call }: any) => {
 	const transactionHandled = useRef(false);
 	const { currentUser } = useCurrentUsersContext();
 
+	stopMediaStreams();
+
 	const removeActiveCallId = () => {
 		const activeCallId = localStorage.getItem("activeCallId");
 		if (activeCallId) {
@@ -147,10 +149,13 @@ const CallEnded = ({ toast, router, call }: any) => {
 
 		const handleCallEnd = async () => {
 			if (transactionHandled.current) return;
+
+			setLoading(true);
 			await updateExpertStatus(
 				call?.state?.createdBy?.custom?.phone as string,
 				"Idle"
 			);
+
 			transactionHandled.current = true;
 
 			if (!toastShown) {
@@ -161,8 +166,6 @@ const CallEnded = ({ toast, router, call }: any) => {
 				});
 				setToastShown(true);
 			}
-
-			setLoading(true);
 
 			// Trigger transaction in backend
 			const transactionResponse = await fetch(

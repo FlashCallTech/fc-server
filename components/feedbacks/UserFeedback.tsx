@@ -9,11 +9,12 @@ import {
 import { Button } from "../ui/button";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { createFeedback } from "@/lib/actions/feedback.actions";
 import { useToast } from "../ui/use-toast";
 import { success } from "@/constants/icons";
 import { useGetCallById } from "@/hooks/useGetCallById";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import axios from "axios";
+import { backendBaseUrl } from "@/lib/utils";
 
 interface FeedbackProps {
 	callId: string;
@@ -84,7 +85,7 @@ const UserFeedback = ({
 		try {
 			const userId = currentUser?._id as string;
 
-			await createFeedback({
+			await axios.post(`${backendBaseUrl}/feedback/call/create`, {
 				creatorId: expert?.user_id as string,
 				clientId: userId,
 				rating: rating,
@@ -100,7 +101,7 @@ const UserFeedback = ({
 			});
 			console.error("Error submitting feedback:", error);
 		} finally {
-			setRating(2);
+			setRating(5);
 			setFeedbackMessage("");
 		}
 	};

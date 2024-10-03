@@ -9,6 +9,7 @@ import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import CreatorDetails from "./CreatorDetails";
+import { setBodyBackgroundColor } from "@/lib/utils";
 
 const CreatorCard: React.FC = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
@@ -18,6 +19,7 @@ const CreatorCard: React.FC = () => {
 	const { walletBalance } = useWalletBalanceContext();
 
 	useEffect(() => {
+		setBodyBackgroundColor("#000000");
 		const fetchCreator = async () => {
 			try {
 				const response = await getUserByUsername(String(username));

@@ -29,7 +29,7 @@ const CallFeedbackSchema = new Schema(
 			type: String,
 			required: true,
 		},
-		feedbacks: [FeedbackEntrySchema],
+		feedback: FeedbackEntrySchema,
 	},
 	{
 		timestamps: true,

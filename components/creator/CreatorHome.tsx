@@ -384,10 +384,10 @@ const CreatorHome = () => {
 				<div className="flex flex-col items-center justify-center p-4">
 					<ProfileDialog creator={creatorUser} imageSrc={imageSrc} />
 					<section className="flex flex-col items-center p-2">
-						<p className="text-white text-sm">
+						<p className="font-medium text-base">
 							{creatorUser?.firstName} {creatorUser?.lastName}
 						</p>
-						<p className="text-white text-sm">
+						<p className="font-medium text-sm">
 							{creatorUser?.creatorId?.startsWith("@")
 								? creatorUser.creatorId
 								: `@${creatorUser?.username}`}

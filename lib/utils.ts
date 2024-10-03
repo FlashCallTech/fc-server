@@ -64,6 +64,34 @@ export const getProfileImagePlaceholder = (gender?: string): string => {
 	return GetRandomImage();
 };
 
+export const getDarkHexCode = (lightHex: string): string | null => {
+	// Mapping of light hex codes to corresponding dark hex codes with '#' included
+	const colorMap: { [key: string]: string } = {
+		"#88D8C0": "#369B7D",
+		"#79ADDC": "#006DD0",
+		"#FFC09F": "#F85900",
+		"#FFEE93": "#D0AF00",
+		"#FCF5C7": "#D0AF00",
+		"#ADF7B6": "#288533",
+		"#AAE9E5": "#00958B",
+		"#87C7F1": "#006DD0",
+		"#FEFEFE": "#FEFEFE",
+		"#FFEDA9": "#D0AF00",
+		"#EACFFF": "#5F07A4",
+		"#FFBEBE": "#EB4F4F",
+		"#FFBEE9": "#B30A79",
+		"#BEF3FF": "#0B8FAC",
+		"#A6FCDF": "#1AB17E",
+		"#50A65C": "#50A65C",
+	};
+
+	const formattedLightHex = lightHex.startsWith("#")
+		? lightHex.toUpperCase()
+		: `#${lightHex.toUpperCase()}`;
+
+	return colorMap[formattedLightHex] || "#50A65C";
+};
+
 export const handleError = (error: unknown) => {
 	console.error(error);
 	throw new Error(typeof error === "string" ? error : JSON.stringify(error));

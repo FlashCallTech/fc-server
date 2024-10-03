@@ -286,8 +286,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			{/* Transaction History Section */}
 			<section
 				ref={stickyRef}
-				className={`sticky top-0 bg-white z-30 w-full px-4 ${
-					isSticky ? "pb-7" : "pb-4"
+				className={`sticky top-0 md:top-16 bg-white z-30 w-full px-4 ${
+					isSticky ? "pb-7 md:pt-7" : "pb-4"
 				}  pt-4`}
 			>
 				<div className="flex flex-col items-start justify-start gap-4 w-full h-fit">

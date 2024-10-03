@@ -2,8 +2,6 @@
 
 import { UserFeedback } from "@/types";
 import React, { useEffect, useState } from "react";
-import ContentLoading from "../shared/ContentLoading";
-import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
@@ -15,6 +13,7 @@ import * as Sentry from "@sentry/nextjs";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { backendBaseUrl, isValidUrl } from "@/lib/utils";
 import axios from "axios";
+import { useInView } from "react-intersection-observer";
 
 // Function to reorder the array based on the drag result
 const reorder = (
@@ -32,7 +31,7 @@ const reorder = (
 
 type FeedbackParams = {
 	callId?: string;
-	feedbacks: [UserFeedback];
+	feedback: UserFeedback;
 };
 
 type ExtendedUserFeedback = UserFeedback & {
@@ -49,22 +48,13 @@ const CreatorCallsFeedbacks = () => {
 	);
 
 	const pathname = usePathname();
+	const { ref, inView } = useInView();
 
 	useEffect(() => {
-		const handleScroll = () => {
-			if (
-				window.innerHeight + window.scrollY >=
-				document.body.offsetHeight - 2
-			) {
-				setCallsCount((prevCount) => prevCount + 6);
-			}
-		};
-
-		window.addEventListener("scroll", handleScroll);
-		return () => {
-			window.removeEventListener("scroll", handleScroll);
-		};
-	}, []);
+		if (inView) {
+			setCallsCount((prevCount) => prevCount + 6);
+		}
+	}, [inView]);
 
 	useEffect(() => {
 		const getFeedbacks = async () => {
@@ -77,46 +67,15 @@ const CreatorCallsFeedbacks = () => {
 
 				let data = await response.data;
 
-				console.log(data);
-
 				const feedbacksWithCallId = data.map(
 					(item: FeedbackParams, index: number) => ({
-						...item.feedbacks[0],
+						...item.feedback,
 						callId: item.callId,
 						position:
-							item.feedbacks[0].position !== -1
-								? item.feedbacks[0].position
+							item.feedback.position !== -1
+								? item.feedback.position
 								: index + 1,
 					})
-				);
-
-				// Sort the feedbacks
-				const sortedFeedbacks = feedbacksWithCallId.sort(
-					(a: UserFeedback, b: UserFeedback) => {
-						// Provide default values for position if it's null or undefined
-						const positionA =
-							a.position !== null && a.position !== undefined ? a.position : -1;
-						const positionB =
-							b.position !== null && b.position !== undefined ? b.position : -1;
-
-						// Sort by position first if neither are -1
-						if (positionA !== -1 && positionB !== -1) {
-							return positionA - positionB;
-						}
-
-						// If one position is -1, it goes after the other
-						if (positionA === -1 && positionB !== -1) {
-							return 1; // 'a' should be after 'b'
-						}
-						if (positionB === -1 && positionA !== -1) {
-							return -1; // 'b' should be after 'a'
-						}
-
-						// If both are -1, sort by createdAt
-						return (
-							new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-						);
-					}
 				);
 
 				setFeedbacks(feedbacksWithCallId);
@@ -140,12 +99,9 @@ const CreatorCallsFeedbacks = () => {
 		setLoadingFeedbackId(feedback.callId); // Set loading state
 
 		try {
-			const response = await fetch("/api/v1/feedback/creator/setFeedback", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
+			const response = await axios.post(
+				`${backendBaseUrl}/feedback/creator/setFeedback`,
+				{
 					creatorId: creatorUser?._id,
 					clientId: feedback.clientId._id,
 					rating: feedback.rating,
@@ -153,28 +109,22 @@ const CreatorCallsFeedbacks = () => {
 					showFeedback: showFeedback,
 					createdAt: feedback.createdAt,
 					position: feedback.position,
-				}),
-			});
+				}
+			);
 
-			if (!response.ok) {
+			if (response.status !== 200) {
 				throw new Error("Failed to update feedback visibility");
 			}
 
-			await fetch("/api/v1/feedback/call/create", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					creatorId: creatorUser?._id,
-					callId: feedback.callId,
-					clientId: feedback.clientId._id,
-					rating: feedback.rating,
-					feedbackText: feedback.feedback,
-					showFeedback: showFeedback,
-					createdAt: feedback.createdAt,
-					position: feedback.position,
-				}),
+			await axios.post(`${backendBaseUrl}/feedback/call/create`, {
+				creatorId: creatorUser?._id,
+				callId: feedback.callId,
+				clientId: feedback.clientId._id,
+				rating: feedback.rating,
+				feedbackText: feedback.feedback,
+				showFeedback: showFeedback,
+				createdAt: feedback.createdAt,
+				position: feedback.position,
 			});
 
 			setFeedbacks((prevFeedbacks) =>
@@ -234,39 +184,27 @@ const CreatorCallsFeedbacks = () => {
 			await Promise.all(
 				updatedFeedbacks.map(async (feedback) => {
 					// Update feedback position in call feedbacks
-					await fetch("/api/v1/feedback/call/create", {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({
+					await axios.post(`${backendBaseUrl}/feedback/call/create`, {
+						creatorId: feedback.creatorId,
+						callId: feedback.callId,
+						clientId: feedback.clientId,
+						showFeedback: feedback.showFeedback,
+						rating: feedback.rating,
+						feedbackText: feedback.feedbackText,
+						createdAt: feedback.createdAt,
+						position: feedback.position,
+					});
+
+					// If showFeedback is true, update the position in creator feedbacks
+					if (feedback.showFeedback) {
+						await axios.post(`${backendBaseUrl}/feedback/creator/setFeedback`, {
 							creatorId: feedback.creatorId,
-							callId: feedback.callId,
 							clientId: feedback.clientId,
 							showFeedback: feedback.showFeedback,
 							rating: feedback.rating,
 							feedbackText: feedback.feedbackText,
 							createdAt: feedback.createdAt,
 							position: feedback.position,
-						}),
-					});
-
-					// If showFeedback is true, update the position in creator feedbacks
-					if (feedback.showFeedback) {
-						await fetch("/api/v1/feedback/creator/setFeedback", {
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json",
-							},
-							body: JSON.stringify({
-								creatorId: feedback.creatorId,
-								clientId: feedback.clientId,
-								showFeedback: feedback.showFeedback,
-								rating: feedback.rating,
-								feedbackText: feedback.feedbackText,
-								createdAt: feedback.createdAt,
-								position: feedback.position,
-							}),
 						});
 					}
 				})
@@ -368,7 +306,7 @@ const CreatorCallsFeedbacks = () => {
 																		)}
 																	</>
 																) : (
-																	<>{feedback.clientId.username}</>
+																	<>{feedback?.clientId?.username}</>
 																)}
 															</p>
 														</div>
@@ -411,22 +349,13 @@ const CreatorCallsFeedbacks = () => {
 					</Droppable>
 				</DragDropContext>
 			) : (
-				<div className="flex flex-col w-full items-center justify-center h-full gap-7">
-					<ContentLoading />
-					<h1 className="text-2xl font-semibold text-black">No Orders Yet</h1>
-					<Link
-						href="/home"
-						className={`flex gap-4 items-center p-4 rounded-lg justify-center bg-green-1 hover:opacity-80 mx-auto w-fit`}
-					>
-						<Image
-							src="/icons/Home.svg"
-							alt="Home"
-							width={24}
-							height={24}
-							className="brightness-200"
-						/>
-						<p className="text-lg font-semibold text-white">Return Home</p>
-					</Link>
+				<div className="flex flex-col w-full items-center justify-center h-full">
+					<h1 className="text-2xl font-semibold text-red-500">
+						No Feedbacks Found
+					</h1>
+					<h2 className="text-xl font-semibold text-red-500">
+						User provided feedbacks are shown here
+					</h2>
 				</div>
 			)}
 		</>
