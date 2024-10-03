@@ -29,6 +29,7 @@ const UpdateProfilePage = () => {
 		gender: currentUser?.gender || "",
 		dob: currentUser?.dob || "",
 		creatorId: currentUser?.creatorId || "",
+		referredBy: currentUser?.referredBy || "",
 	});
 
 	const [userData, setUserData] = useState<UpdateUserParams>(getInitialState);
@@ -68,6 +69,7 @@ const UpdateProfilePage = () => {
 					setUserData={handleUpdate}
 					initialState={initialState}
 					userType={userType}
+					firstTime={true}
 				/>
 			</div>
 		</section>

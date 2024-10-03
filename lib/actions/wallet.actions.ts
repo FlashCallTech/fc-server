@@ -6,16 +6,24 @@ import Transaction from "../database/models/transaction.model";
 import Wallet from "../database/models/wallet.models";
 import { handleError } from "../utils";
 import * as Sentry from "@sentry/nextjs";
+import Referral from "../database/models/referral.model";
+import { Flag } from "lucide-react";
 
-export async function addMoney({ userId, userType, amount }: WalletParams) {
+export async function addMoney({ userId, userType, amount, flag }: WalletParams) {
 	try {
 		await connectToDatabase();
-
+		if(flag) {
+			flag= false;
+		} else {
+			flag = true;
+		}
 		let user;
+		let referDetails;
 		if (userType === "Client") {
 			user = await Client.findById(userId);
 		} else if (userType === "Creator") {
 			user = await Creator.findById(userId);
+			referDetails = await Referral.findOne({referredTo: userId})
 		} else {
 			throw new Error("Invalid user type");
 		}
@@ -48,8 +56,8 @@ export async function addMoney({ userId, userType, amount }: WalletParams) {
 				type: "credit",
 			}));
 
-		if (user.referredBy && user.referralAmount > 0) {
-			const referrer = await Creator.findOne({ _id: user.referredBy });
+		if (referDetails && referDetails.amount > 0 && flag) {
+			const referrer = await Creator.findOne({ _id: referDetails.referredBy });
 			if (referrer) {
 				const referralBonus = (5 / 100) * numericAmount;
 				referrer.walletBalance = Number(referrer.walletBalance) + referralBonus;
@@ -59,8 +67,8 @@ export async function addMoney({ userId, userType, amount }: WalletParams) {
 					{ $inc: { balance: referralBonus } },
 					{ new: true, upsert: true }
 				);
-				user.referralAmount = Number(user.referralAmount) - referralBonus;
-				await user.save();
+				referDetails.amount = Number(referDetails.amount) - referralBonus;
+				await referDetails.save();
 
 				referralBonus > 0 &&
 					(await Transaction.create({

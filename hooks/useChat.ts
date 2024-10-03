@@ -47,6 +47,7 @@ const useChat = () => {
 	const [chatRequestId, setChatRequestId] = useState<string>();
 	const [localChatId, setLocalChatId] = useState<string>('');
 	const { chatId } = useParams();
+	const [loading, setLoading] = useState<boolean>(false);
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -84,7 +85,7 @@ const useChat = () => {
 
 	const members: MemberRequest[] = [
 		{
-			user_id: user2?.creatorId!,
+			user_id: creator?._id as string,
 			// user_id: "66681d96436f89b49d8b498b",
 			custom: {
 				name: String(creator?.username),
@@ -109,7 +110,7 @@ const useChat = () => {
 		if (storedUser) {
 			setUser2(JSON.parse(storedUser));
 		}
-	}, [chatId]);
+	}, [localChatId]);
 
 	useEffect(() => {
 		const handleChatRequestIdUpdate = () => {
@@ -176,6 +177,7 @@ const useChat = () => {
 	}, [chatEnded, startedAt, endedAt, chatRatePerMinute]);
 
 	const createChat = async (chatId: string, status: string, clientId: string | undefined) => {
+		setLoading(true);
 		const [existingChat] = await Promise.all([
 			fetch(`/api/v1/calls/getChat?chatId=${chatId}`).then((res) => res.json()),
 		]);
@@ -237,14 +239,19 @@ const useChat = () => {
 				}
 			}
 		}
+		setLoading(false);
 		localStorage.removeItem('chatId');
 		localStorage.removeItem('chatRequestId');
 	};
 
-	if (flag && chatRejected) {
-		setFlag(false);
-		createChat(localChatId as string, 'rejected', client?._id);
-	}
+	useEffect(() => {
+		console.log(chatRejected);
+		if (flag && chatRejected) {
+			console.log('Rejected');
+			setFlag(false);
+			createChat(localChatId as string, 'rejected', client?._id);
+		}
+	}, [chatRejected])
 
 	if (
 		duration &&
@@ -258,7 +265,7 @@ const useChat = () => {
 		createChat(chatId as string, "ended", user2?.clientId);
 	}
 
-	return { duration, amount, createChat };
+	return { duration, amount, createChat, loading };
 };
 
 export default useChat;

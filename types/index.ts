@@ -28,6 +28,7 @@ export type UpdateUserParams = {
 	gender?: string;
 	dob?: string;
 	creatorId?: string;
+	referredBy?: string;
 };
 
 export type clientUser = {
@@ -45,6 +46,7 @@ export type clientUser = {
 	profession?: string;
 	themeSelected?: string;
 	createdAt?: string;
+	referredBy?: string;
 };
 
 // Creator Params
@@ -71,7 +73,7 @@ export type creatorUser = {
 	walletBalance: number;
 	referralId: string;
 	referredBy: string;
-	referralAmount: number;
+	referralAmount?: number;
 	creatorId?: string;
 	links?: LinkType[];
 	updatedAt?: string;
@@ -126,6 +128,8 @@ export type UpdateCreatorParams = {
 	walletBalance?: number;
 	creatorId?: string;
 	link?: LinkType;
+	referredBy: string;
+	referralId: string;
 };
 
 // Feedback Params
@@ -366,6 +370,7 @@ export type WalletParams = {
 	userId: string;
 	userType: string;
 	amount: number;
+	flag?: boolean | undefined;
 };
 
 // Call Transactions

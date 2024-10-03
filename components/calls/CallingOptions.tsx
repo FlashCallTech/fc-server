@@ -20,6 +20,8 @@ import {
 	updateExpertStatus,
 	updateFirestoreSessions,
 } from "@/lib/utils";
+import useChat from "@/hooks/useChat";
+import Loader from "../shared/Loader";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -28,6 +30,7 @@ interface CallingOptions {
 const CallingOptions = ({ creator }: CallingOptions) => {
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
+	const { loading } = useChat();
 	const client = useStreamVideoClient();
 	const { clientUser, userType, setAuthenticationSheetOpen } =
 		useCurrentUsersContext();
@@ -154,7 +157,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							setSheetOpen(false);
 							setChatReqSent(false);
 							setChatState(data.status);
-							localStorage.removeItem("chatRequestId");
+							// localStorage.removeItem("chatRequestId");
 							localStorage.removeItem("user2");
 							unsubscribe();
 						} else if (
@@ -511,6 +514,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
+	
+
 	const theme = `5px 5px 0px 0px ${themeColor}`;
 
 	if (isAuthSheetOpen && !clientUser)
@@ -583,6 +588,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		const priority: any = { video: 1, audio: 2, chat: 3 };
 		return priority[a.type] - priority[b.type];
 	});
+
+	if(loading) {
+		return(
+			<Loader/>
+		)
+	}
 
 	return (
 		<>

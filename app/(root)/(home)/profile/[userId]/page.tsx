@@ -29,6 +29,7 @@ const UserProfilePage = () => {
 		gender: currentUser?.gender || "",
 		dob: currentUser?.dob || "",
 		creatorId: currentUser?.creatorId || "",
+		referredBy: currentUser?.referredBy || "",
 	});
 
 	const pathname = usePathname();
@@ -133,6 +134,7 @@ const UserProfilePage = () => {
 								initialState={initialState}
 								setEditData={setEditData}
 								userType={userType}
+								firstTime={false}
 							/>
 						</div>
 					)}

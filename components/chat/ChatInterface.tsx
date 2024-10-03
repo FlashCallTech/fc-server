@@ -49,7 +49,8 @@ const ChatInterface: React.FC = () => {
 	const {
 		audioStream,
 		isRecording,
-		audioBlob,
+		setMp3Blob,
+		mp3Blob,
 		startRecording,
 		stopRecording,
 		setAudioStream,
@@ -230,15 +231,15 @@ const ChatInterface: React.FC = () => {
 
 	useEffect(() => {
 		let link;
-		if (audioBlob) {
-			link = URL.createObjectURL(audioBlob);
+		if (mp3Blob) {
+			link = URL.createObjectURL(mp3Blob);
 			setAudio({
-				file: audioBlob,
+				file: mp3Blob,
 				url: link,
 			});
 		}
-		handleSendAudio(audioBlob!, link!);
-	}, [audioBlob]);
+		handleSendAudio(mp3Blob!, link!);
+	}, [mp3Blob]);
 
 	const handleSendAudio = async (audioBlob: Blob, audioUrl: string) => {
 		setIsAudioUploading(true);
@@ -283,6 +284,7 @@ const ChatInterface: React.FC = () => {
 				file: null,
 				url: "",
 			});
+			setMp3Blob(null);
 
 			if (audioStream) {
 				audioStream.getTracks().forEach((track) => track.stop());
@@ -352,79 +354,79 @@ const ChatInterface: React.FC = () => {
 	}
 
 	return (
-		<div className={`relative flex flex-col h-screen`}>
-			<div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center z-0" />
-			<div className="relative flex flex-col justify-between h-full">
-				{/* Sticky Header */}
-				<div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
-					<div className="flex items-center gap-2">
-						<Image
-							src={user2?.photo || "/avatar.svg"}
-							alt="profile"
-							width={0}
-							height={0}
-							className="w-10 h-10 rounded-full"
-						/>
-						<div className="flex flex-col">
-							<div className="text-white font-bold text-xs md:text-lg">
-								{currentUser?.firstName + " " + currentUser?.lastName || maskPhoneNumber(currentUser?.phone as string)}
-							</div>
-							{userType === "client" && <ChatTimer />}
-							{userType === "creator" && (
-								<CreatorChatTimer chatId={chatId as string} />
-							)}
-							<p className="text-[10px] md:text-sm text-green-500">
-								Ongoing chat
-							</p>
-						</div>
-					</div>
-					<div className="flex gap-2">
-						<Tip />
-						<button
-							onClick={endCall}
-							className="bg-[rgba(255,81,81,1)] text-white p-2 md:px-4 md:py-2 text-[10px] md:text-lg rounded-lg"
-						>
-							End
-						</button>
-					</div>
-				</div>
+		<div className={`flex flex-col h-screen bg-cover bg-center`} style={{ backgroundImage: 'url(/back.png)' }}>
+    <div className="flex flex-col justify-between h-full overflow-y-auto"> {/* Allow scrolling */}
+        {/* Sticky Header */}
+        <div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
+            <div className="flex items-center gap-2">
+                <Image
+                    src={user2?.photo || "/avatar.svg"}
+                    alt="profile"
+                    width={0}
+                    height={0}
+                    className="w-10 h-10 rounded-full"
+                />
+                <div className="flex flex-col">
+                    <div className="text-white font-bold text-xs md:text-lg">
+                        {currentUser?.firstName + " " + currentUser?.lastName || maskPhoneNumber(currentUser?.phone as string)}
+                    </div>
+                    {userType === "client" && <ChatTimer />}
+                    {userType === "creator" && (
+                        <CreatorChatTimer chatId={chatId as string} />
+                    )}
+                    <p className="text-[10px] md:text-sm text-green-500">
+                        Ongoing chat
+                    </p>
+                </div>
+            </div>
+            <div className="flex gap-2">
+                <Tip />
+                <button
+                    onClick={endCall}
+                    className="bg-[rgba(255,81,81,1)] text-white p-2 md:px-4 md:py-2 text-[10px] md:text-lg rounded-lg"
+                >
+                    End
+                </button>
+            </div>
+        </div>
 
-				{showDialog && (
-					<EndCallDecision
-						handleDecisionDialog={handleDecisionDialog}
-						setShowDialog={handleCloseDialog}
-					/>
-				)}
+        {showDialog && (
+            <EndCallDecision
+                handleDecisionDialog={handleDecisionDialog}
+                setShowDialog={handleCloseDialog}
+            />
+        )}
 
-				<div>
-					{/* Chat Messages */}
-					<div className="flex-1 overflow-y-auto scrollbar-none z-30">
-						<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
-					</div>
+        <div>
+            {/* Chat Messages */}
+            <div className="flex overflow-y-auto scrollbar-none z-30">
+                <Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
+            </div>
 
-					{/* Sticky Chat Input at the Bottom */}
-					<div className="sticky bottom-0 w-full z-40">
-						<ChatInput
-							isRecording={isRecording}
-							discardAudio={discardAudio}
-							text={text}
-							setText={setText}
-							handleImg={handleImg}
-							handleSend={handleSend}
-							toggleRecording={toggleRecording}
-							img={img}
-							audio={audio}
-							audioStream={audioStream!}
-							// audioContext={audioContext}
-							handleCapturedImg={handleCapturedImg}
-							isImgUploading={isImgUploading}
-							isAudioUploading={isAudioUploading}
-							discardImage={discardImage}
-						/>
-					</div>
-				</div>
-			</div>
-		</div>
+            {/* Sticky Chat Input at the Bottom */}
+            <div className="sticky bottom-0 w-full z-40">
+                <ChatInput
+                    isRecording={isRecording}
+                    discardAudio={discardAudio}
+                    text={text}
+                    setText={setText}
+                    handleImg={handleImg}
+                    handleSend={handleSend}
+                    toggleRecording={toggleRecording}
+                    img={img}
+                    audio={audio}
+                    audioStream={audioStream!}
+                    // audioContext={audioContext}
+                    handleCapturedImg={handleCapturedImg}
+                    isImgUploading={isImgUploading}
+                    isAudioUploading={isAudioUploading}
+                    discardImage={discardImage}
+                />
+            </div>
+        </div>
+    </div>
+</div>
+
 	);
 };
 
