@@ -97,9 +97,9 @@ const MeetingRoom = () => {
 				callingState === CallingState.JOINED ||
 				callingState === CallingState.JOINING ||
 				callHasEnded
-			)
+			) {
 				return;
-
+			}
 			try {
 				const localSessionKey = `meeting_${call.id}_${currentUser._id}`;
 
@@ -254,7 +254,7 @@ const MeetingRoom = () => {
 
 			{/* Call Controls */}
 			{showControls && (
-				<section className="fixed bg-dark-1 bottom-0 flex w-full items-center justify-start py-2 px-4 transition-all">
+				<section className="call-controls fixed bg-dark-1 bottom-0 flex w-full items-center justify-start py-2 px-4 transition-all">
 					<div className="flex overflow-x-scroll no-scrollbar w-fit px-4 items-center mx-auto justify-start gap-4">
 						{/* Audio Button */}
 						<SpeakingWhileMutedNotification>

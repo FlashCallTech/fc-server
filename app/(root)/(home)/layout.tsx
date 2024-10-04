@@ -76,9 +76,9 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 					className={`flex min-h-screen flex-1 flex-col  transition-all duration-300 ease-in-out ${
 						!isVisible ? "translate-y-0" : isMobile && ""
 					} ${
-						isTop && isCreatorOrExpertPath
+						isTop && isCreatorOrExpertPath && isMobile
 							? "translate-y-[76px]"
-							: isCreatorOrExpertPath
+							: isCreatorOrExpertPath && isMobile
 							? "pt-0"
 							: "pt-24"
 					} md:px-10`}
