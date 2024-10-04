@@ -134,15 +134,15 @@ const CallEnded = ({ toast, router, call }: any) => {
 			1000
 		).toFixed(2);
 
+		// Clear localStorage session key
+		const localSessionKey = `meeting_${call.id}_${currentUser?._id}`;
+		localStorage.removeItem(localSessionKey);
+
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			navigator.sendBeacon(
-				`${backendBaseUrl}/calls/transaction/handleTransaction`,
+				`${backendBaseUrl}/calls/transaction/handleInterrupted`,
 				JSON.stringify({
-					expertId,
-					clientId,
 					callId: call?.id,
-					duration,
-					isVideoCall: call?.type === "default",
 				})
 			);
 		};
