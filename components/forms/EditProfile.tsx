@@ -80,7 +80,6 @@ const EditProfile = ({
 		}
 	);
 
-	console.log(userData, initialState);
 	const [formError, setFormError] = useState<string | null>(null);
 	const [selectedColor, setSelectedColor] = useState(
 		userData.themeSelected ?? "#50A65C"
@@ -546,6 +545,7 @@ const EditProfile = ({
 						/>
 					</div>
 
+					{/* Referal Field */}
 					{userData.role === "creator" && (
 						<FormField
 							control={form.control}
