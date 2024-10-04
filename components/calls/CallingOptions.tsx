@@ -340,6 +340,19 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				},
 			});
 
+			// Check if the call exists or create it
+			await call.getOrCreate({
+				members_limit: 2,
+				ring: true,
+				data: {
+					starts_at: startsAt,
+					members: members,
+					custom: {
+						description,
+					},
+				},
+			});
+
 			// Utilize helper functions
 			// const fcmToken = await fetchFCMToken(creator.phone);
 			// if (fcmToken) {
@@ -354,7 +367,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			trackCallEvents(callType, clientUser, creator);
 
-			fetch(`${backendBaseUrl}/calls/registerCall`, {
+			await fetch(`${backendBaseUrl}/calls/registerCall`, {
 				method: "POST",
 				body: JSON.stringify({
 					callId: id as string,
@@ -374,18 +387,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					{
 						user_id: creator?._id,
 						expert: creator?.username,
-						status: "joining",
 					},
 					{
 						user_id: clientUser?._id,
 						client: clientUser?.username,
-						status: "joining",
 					},
 				]
 			);
 
-			call.on("call.accepted", () => handleCallAccepted(callType));
-			call.on("call.rejected", handleCallRejected);
+			// call.on("call.accepted", () => handleCallAccepted(callType));
+			// call.on("call.rejected", handleCallRejected);
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);

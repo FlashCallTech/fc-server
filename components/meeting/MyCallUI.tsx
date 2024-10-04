@@ -162,10 +162,11 @@ const MyCallUI = () => {
 
 				await updateExpertStatus(callCreator?.custom?.phone as string, "Busy");
 
-				await axios.post(`${backendBaseUrl}/calls/updateCall`, {
-					callId: call.id,
-					call: { status: "Accepted" },
-				});
+				isMeetingOwner &&
+					(await axios.post(`${backendBaseUrl}/calls/updateCall`, {
+						callId: call.id,
+						call: { status: "Accepted" },
+					}));
 
 				// Check the calling state before attempting to leave
 				if (
@@ -175,6 +176,7 @@ const MyCallUI = () => {
 				) {
 					await call?.leave();
 				}
+
 				setHasRedirected(true);
 				router.replace(`/meeting/${call.id}`);
 			};

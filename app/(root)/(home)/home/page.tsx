@@ -75,8 +75,6 @@ const HomePage = () => {
 		);
 	}
 
-	console.log(creators);
-
 	return (
 		<main className="flex flex-col size-full">
 			{userType === "client" ? (
