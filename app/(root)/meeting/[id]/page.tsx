@@ -134,6 +134,10 @@ const CallEnded = ({ toast, router, call }: any) => {
 			1000
 		).toFixed(2);
 
+		// Clear localStorage session key
+		const localSessionKey = `meeting_${call.id}_${currentUser?._id}`;
+		localStorage.removeItem(localSessionKey);
+
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			navigator.sendBeacon(
 				`${backendBaseUrl}/calls/transaction/handleTransaction`,

@@ -17,7 +17,7 @@ export const AudioToggleButton = () => {
 			className={`cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[${
 				isScaled && "#4c535b"
 			}]  transition-all duration-300 active:scale-75 hover:${
-				isScaled ? "scale-110" : "scale-100"
+				isScaled ? "scale-95" : "scale-100"
 			} flex items-center`}
 		>
 			{!isMute ? (
