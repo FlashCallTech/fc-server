@@ -15,6 +15,7 @@ import {
 	updateFirestoreSessions,
 } from "@/lib/utils";
 import axios from "axios";
+import { trackEvent } from "@/lib/mixpanel";
 
 const MyCallUI = () => {
 	const router = useRouter();
@@ -158,6 +159,40 @@ const MyCallUI = () => {
 				logEvent(analytics, "call_accepted", {
 					callId: call.id,
 				});
+
+				toast({
+					variant: "destructive",
+					title: "Call Accepted",
+					description: "Redirecting to meeting...",
+				});
+
+				if (isMeetingOwner) {
+					const createdAtDate = currentUser?.createdAt
+						? new Date(currentUser.createdAt)
+						: new Date();
+					const formattedDate = createdAtDate.toISOString().split("T")[0];
+					if (call.type === "audio") {
+						try {
+							trackEvent("BookCall_Audio_Connected", {
+								Client_ID: currentUser?._id,
+								User_First_Seen: formattedDate,
+								Creator_ID: expert?.user_id,
+							});
+						} catch (error) {
+							console.log(error);
+						}
+					} else {
+						try {
+							trackEvent("BookCall_Video_Connected", {
+								Client_ID: currentUser?._id,
+								User_First_Seen: formattedDate,
+								Creator_ID: expert?.user_id,
+							});
+						} catch (error) {
+							console.log(error);
+						}
+					}
+				}
 
 				await updateExpertStatus(callCreator?.custom?.phone as string, "Busy");
 
