@@ -119,18 +119,6 @@ const AuthenticateViaOTP = ({
 				fcmToken,
 			});
 
-			// Handle ongoing session error
-			if (response.status === 409) {
-				toast({
-					variant: "destructive",
-					title: "Ongoing Session Detected",
-					description:
-						"You have an active session. Please finish it before proceeding.",
-				});
-				router.replace("/home");
-				return;
-			}
-
 			// Extract the session token and user from the response
 			const { sessionToken, message } = response.data;
 
@@ -300,7 +288,7 @@ const AuthenticateViaOTP = ({
 	return (
 		<section
 			ref={sectionRef}
-			className="relative bg-[#F8F8F8] rounded-t-3xl md:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-8 pb-2 shadow-lg w-screen h-fit md:w-full md:min-w-[24rem] md:max-w-sm mx-auto animate-enterFromBottom"
+			className="relative bg-[#F8F8F8] rounded-t-3xl sm:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-8 pb-2 shadow-lg w-screen h-fit sm:w-full sm:min-w-[24rem] sm:max-w-sm mx-auto"
 		>
 			{!showOTP ? (
 				// SignUp form
@@ -374,7 +362,7 @@ const AuthenticateViaOTP = ({
 					</Form>
 				</>
 			) : verificationSuccess ? (
-				<div className="flex flex-col items-center justify-center w-full md:min-w-[24rem] md:max-w-[24rem]  gap-4 pt-7 pb-14">
+				<div className="flex flex-col items-center justify-center w-full sm:min-w-[24rem] sm:max-w-[24rem]  gap-4 pt-7 pb-14">
 					{success}
 					<span className="text-black font-semibold text-lg">
 						Login Successfully

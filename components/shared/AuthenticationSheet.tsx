@@ -1,12 +1,19 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	Sheet,
 	SheetContent,
 	SheetDescription,
 	SheetHeader,
 	SheetTitle,
-	SheetTrigger,
 } from "@/components/ui/sheet"; // Update the import path as needed
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog"; // Update this import as necessary
 import AuthenticateViaOTP from "../forms/AuthenticateViaOTP";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
@@ -19,6 +26,7 @@ const AuthenticationSheet = ({
 	onOpenChange: (isOpen: boolean) => void;
 }) => {
 	const { getDevicePlatform } = usePlatform();
+	const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 584);
 
 	// Track sheet impression when opened
 	useEffect(() => {
@@ -32,6 +40,7 @@ const AuthenticationSheet = ({
 	// Handle resizing to adjust height for mobile viewports
 	useEffect(() => {
 		const handleResize = () => {
+			setIsMobileView(window.innerWidth <= 584);
 			const height = window.innerHeight;
 			document.documentElement.style.setProperty("--vh", `${height * 0.01}px`);
 		};
@@ -44,25 +53,45 @@ const AuthenticationSheet = ({
 		};
 	}, []);
 
+	if (isMobileView) {
+		return (
+			<Sheet open={isOpen} onOpenChange={onOpenChange}>
+				<SheetContent
+					side="bottom"
+					className="flex items-center justify-center w-full !p-0 border-none"
+				>
+					<SheetHeader className="sr-only">
+						<SheetTitle className="sr-only">Authentication</SheetTitle>
+						<SheetDescription className="sr-only">
+							Authenticate via OTP to continue.
+						</SheetDescription>
+					</SheetHeader>
+					<AuthenticateViaOTP
+						userType={"client"}
+						refId={null}
+						onOpenChange={onOpenChange}
+					/>
+				</SheetContent>
+			</Sheet>
+		);
+	}
+
 	return (
-		<Sheet open={isOpen} onOpenChange={onOpenChange}>
-			<SheetContent
-				side="bottom"
-				className="flex items-center justify-center md:h-screen w-full !p-0 border-none"
-			>
-				<SheetHeader className="sr-only">
-					<SheetTitle className="sr-only">Authentication</SheetTitle>
-					<SheetDescription className="sr-only">
+		<Dialog open={isOpen} onOpenChange={onOpenChange}>
+			<DialogContent className="flex flex-col items-center justify-center w-fit !p-0 border-none">
+				<DialogHeader className="sr-only">
+					<DialogTitle className="sr-only">Authentication</DialogTitle>
+					<DialogDescription className="sr-only">
 						Authenticate via OTP to continue.
-					</SheetDescription>
-				</SheetHeader>
+					</DialogDescription>
+				</DialogHeader>
 				<AuthenticateViaOTP
 					userType={"client"}
 					refId={null}
 					onOpenChange={onOpenChange}
 				/>
-			</SheetContent>
-		</Sheet>
+			</DialogContent>
+		</Dialog>
 	);
 };
 
