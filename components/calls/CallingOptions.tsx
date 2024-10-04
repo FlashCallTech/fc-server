@@ -298,18 +298,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				Walletbalance_Available: clientUser?.walletBalance,
 			});
 
-			await call.getOrCreate({
-				members_limit: 2,
-				ring: true,
-				data: {
-					starts_at: startsAt,
-					members: members,
-					custom: {
-						description,
-					},
-				},
-			});
-
 			// Check if the call exists or create it
 			await call.getOrCreate({
 				members_limit: 2,
