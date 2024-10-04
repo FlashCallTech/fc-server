@@ -134,8 +134,7 @@ const MyCallUI = () => {
 				await updateFirestoreSessions(
 					callCreator?.id as string,
 					call.id,
-					"ended",
-					[]
+					"ended"
 				);
 
 				logEvent(analytics, "call_rejected", {

@@ -382,17 +382,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			await updateFirestoreSessions(
 				clientUser?._id as string,
 				call.id,
-				"ongoing",
-				[
-					{
-						user_id: creator?._id,
-						expert: creator?.username,
-					},
-					{
-						user_id: clientUser?._id,
-						client: clientUser?.username,
-					},
-				]
+				"ongoing"
 			);
 
 			// call.on("call.accepted", () => handleCallAccepted(callType));

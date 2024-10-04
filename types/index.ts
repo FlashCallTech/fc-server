@@ -124,6 +124,9 @@ export type UpdateCreatorParams = {
 	bio?: string;
 	kyc_status?: string;
 	walletBalance?: number;
+	referralId?: string;
+	referredBy?: string | null;
+	referralAmount?: number | null;
 	creatorId?: string;
 	link?: LinkType;
 };
