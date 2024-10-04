@@ -376,7 +376,7 @@ export type WalletParams = {
 	userId: string;
 	userType: string;
 	amount: number;
-	flag: any;
+	flag?: any;
 };
 
 // Call Transactions
