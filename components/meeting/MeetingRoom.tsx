@@ -24,14 +24,10 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import SwitchCameraType from "../calls/SwitchCameraType";
 import AudioDeviceList from "../calls/AudioDeviceList";
 import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
-import { logEvent } from "firebase/analytics";
-import { analytics, db } from "@/lib/firebase";
 import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { stopMediaStreams, updateExpertStatus } from "@/lib/utils";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
