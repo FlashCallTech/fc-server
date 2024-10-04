@@ -29,7 +29,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
 	const router = useRouter();
-	const { createChat } = useChat();
 	const { walletBalance } = useWalletBalanceContext();
 	const { getDevicePlatform } = usePlatform();
 
@@ -111,6 +110,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			}
 
 			const chatId = existingChatId || doc(chatRef).id;
+			localStorage.setItem('chatId', chatId);
 			const newChatRequestRef = doc(chatRequestsRef);
 			const createdAtDate = clientUser?.createdAt
 				? new Date(clientUser.createdAt)
@@ -203,6 +203,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					status: "active",
 					messages: [],
 					maxChatDuration,
+					timerSet: false,
 					walletBalance: response.walletBalance,
 				});
 
@@ -237,6 +238,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					clientName: chatRequest.clientName,
 					maxChatDuration,
 					clientBalance: response.walletBalance,
+					timerSet: false,
 				});
 			}
 
@@ -344,7 +346,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				status: status,
 			});
 
-			await createChat(chatRequest.chatId, status, chatRequest.clientId);
+			// await createChat(chatRequest.chatId, status, chatRequest.clientId);
 
 			if (onChatRequestUpdate) {
 				onChatRequestUpdate(null);

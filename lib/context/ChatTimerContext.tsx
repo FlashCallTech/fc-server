@@ -17,7 +17,6 @@ import { useWalletBalanceContext } from "./WalletBalanceContext";
 interface ChatTimerContextProps {
 	timeLeft: string;
 	hasLowBalance: boolean;
-	endChat: () => void;
 	pauseTimer: () => void;
 	resumeTimer: () => void;
 	anyModalOpen: boolean;
@@ -68,13 +67,6 @@ export const ChatTimerProvider = ({
 	const router = useRouter();
 	const lowBalanceThreshold = 300; // Threshold in seconds
 
-	const endChat = async () => {
-		toast({
-			title: "Chat Ended",
-			description: "Wallet is Empty. Redirecting ...",
-		});
-		router.push("/home");
-	};
 	const pauseTimer = () => setIsTimerRunning(false);
 	const resumeTimer = () => setIsTimerRunning(true);
 	useEffect(() => {
@@ -171,7 +163,6 @@ export const ChatTimerProvider = ({
 		chatRatePerMinute,
 		lowBalanceNotified,
 		lowBalanceThreshold,
-		endChat,
 		toast,
 		startedAt,
 	]);
@@ -181,7 +172,6 @@ export const ChatTimerProvider = ({
 			value={{
 				timeLeft: formatTimeLeft(timeLeft),
 				hasLowBalance,
-				endChat,
 				pauseTimer,
 				resumeTimer,
 				anyModalOpen,

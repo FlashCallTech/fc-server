@@ -6,6 +6,7 @@ import Creator from "../database/models/creator.model";
 import * as Sentry from "@sentry/nextjs";
 import { addMoney } from "./wallet.actions";
 import { MongoServerError } from "mongodb";
+import { createReferralAction } from "./referral.actions";
 
 // Regular expression to validate username
 const usernameRegex = /^[a-zA-Z0-9_+-]+$/;
@@ -45,6 +46,7 @@ export async function createCreatorUser(user: CreateCreatorParams) {
 		}
 
 		const newUser = await Creator.create(user);
+
 		await addMoney({
 			userId: newUser._id,
 			userType: "Creator",
@@ -168,6 +170,8 @@ export async function updateCreatorUser(
 ) {
 	try {
 		await connectToDatabase();
+		const user = await Creator.findById({ _id: userId });
+		console.log(user);
 
 		// Validate the username
 		if (updates.username && !validateUsername(updates.username)) {
@@ -188,6 +192,11 @@ export async function updateCreatorUser(
 
 		console.log("Trying to update user");
 
+		// Check if links array is empty
+		if (Array.isArray(updateObject.links) && updateObject.links.length === 0) {
+			throw new Error("Links array cannot be empty");
+		}
+
 		const updatedUser = await Creator.findByIdAndUpdate(userId, updateObject, {
 			new: true,
 		});
@@ -196,6 +205,18 @@ export async function updateCreatorUser(
 			throw new Error("User not found"); // Throw error if user is not found
 		}
 
+		if (updates.referredBy && user.referredBy !== updates.referredBy && updates.referredBy !== null) {
+			const referral = await Creator.findOne({ referralId: updates.referredBy })
+			const referralData = {
+				referralId: updates.referredBy,
+				name: updatedUser.fullName,
+				img: updatedUser.photo,
+				creatorId: updatedUser.creatorId,
+				referredBy: referral._id,
+				referredTo: userId,
+			}
+			await createReferralAction(referralData);
+		}
 		return JSON.parse(JSON.stringify({ updatedUser }));
 	} catch (error) {
 		Sentry.captureException(error);

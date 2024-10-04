@@ -17,6 +17,7 @@ export const UpdateProfileFormSchema = z.object({
 	bio: z.string().optional(),
 	gender: z.string().min(3, "This field is Required"),
 	dob: z.string().min(6, "This field is Required"),
+	referredBy: z.string().min(5, 'This field must be at least 5 characters').optional(),
 });
 
 export const UpdateProfileFormSchemaClient = z.object({
@@ -30,6 +31,7 @@ export const UpdateProfileFormSchemaClient = z.object({
 			"Username can only contain letters, numbers, underscores, and hyphens"
 		),
 	profession: z.string().optional(),
+	referredBy: z.string().optional(),
 	themeSelected: z.string().optional(),
 	photo: z.string().optional(),
 	bio: z.string().optional(),

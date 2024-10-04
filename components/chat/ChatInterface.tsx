@@ -17,11 +17,8 @@ import useMediaRecorder from "@/hooks/useMediaRecorder";
 import ChatTimer from "./ChatTimer";
 import EndCallDecision from "../calls/EndCallDecision";
 import useEndChat from "@/hooks/useEndChat";
-import ContentLoading from "../shared/ContentLoading";
-import RechargeAndTip from "./Tip";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import CreatorChatTimer from "../creator/CreatorChatTimer";
-import Recharge from "./Recharge";
 import Tip from "./Tip";
 import useMarkAsSeen from "@/hooks/useMarkAsSeen";
 
@@ -52,7 +49,8 @@ const ChatInterface: React.FC = () => {
 	const {
 		audioStream,
 		isRecording,
-		audioBlob,
+		setMp3Blob,
+		mp3Blob,
 		startRecording,
 		stopRecording,
 		setAudioStream,
@@ -63,11 +61,37 @@ const ChatInterface: React.FC = () => {
 	// const audioContext = new AudioContext();
 
 	useEffect(() => {
-		updateDoc(doc(db, "chats", chatId as string), {
-			startedAt: Date.now(),
-			endedAt: null,
-		});
-	}, []);
+		const updateChatStartedAt = async () => {
+			if (!chatId) return; // Exit if chatId is not available
+
+			try {
+				// Get the document with the provided chatId
+				const chatDocRef = doc(db, "chats", chatId as string);
+				const chatDocSnap = await getDoc(chatDocRef);
+
+				if (chatDocSnap.exists()) {
+					const chatData = chatDocSnap.data();
+
+					// Check if the status is "active"
+					if (!chatData.timerSet) {
+						// If status is not active, update startedAt
+						await updateDoc(chatDocRef, {
+							startedAt: Date.now(),
+							endedAt: null,
+							timerSet: true,
+						});
+					}
+					// If status is active, do nothing
+				} else {
+					console.error("No such chat document!");
+				}
+			} catch (error) {
+				console.error("Error fetching or updating chat document: ", error);
+			}
+		};
+
+		updateChatStartedAt();
+	}, [chatId]); // Add chatId as a dependency
 
 	useEffect(() => {
 		const fetchReceiverId = async () => {
@@ -206,15 +230,15 @@ const ChatInterface: React.FC = () => {
 
 	useEffect(() => {
 		let link;
-		if (audioBlob) {
-			link = URL.createObjectURL(audioBlob);
+		if (mp3Blob) {
+			link = URL.createObjectURL(mp3Blob);
 			setAudio({
-				file: audioBlob,
+				file: mp3Blob,
 				url: link,
 			});
 		}
-		handleSendAudio(audioBlob!, link!);
-	}, [audioBlob]);
+		handleSendAudio(mp3Blob!, link!);
+	}, [mp3Blob]);
 
 	const handleSendAudio = async (audioBlob: Blob, audioUrl: string) => {
 		setIsAudioUploading(true);
@@ -259,6 +283,7 @@ const ChatInterface: React.FC = () => {
 				file: null,
 				url: "",
 			});
+			setMp3Blob(null);
 
 			if (audioStream) {
 				audioStream.getTracks().forEach((track) => track.stop());
@@ -329,9 +354,13 @@ const ChatInterface: React.FC = () => {
 	}
 
 	return (
-		<div className={`relative flex flex-col h-screen`}>
-			<div className="absolute inset-0 bg-[url('/back.png')] bg-cover bg-center z-0" />
-			<div className="relative flex flex-col h-full">
+		<div
+			className={`flex flex-col h-screen bg-cover bg-center`}
+			style={{ backgroundImage: "url(/back.png)" }}
+		>
+			<div className="flex flex-col justify-between h-full overflow-y-auto">
+				{" "}
+				{/* Allow scrolling */}
 				{/* Sticky Header */}
 				<div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
 					<div className="flex items-center gap-2">
@@ -366,38 +395,38 @@ const ChatInterface: React.FC = () => {
 						</button>
 					</div>
 				</div>
-
 				{showDialog && (
 					<EndCallDecision
 						handleDecisionDialog={handleDecisionDialog}
 						setShowDialog={handleCloseDialog}
 					/>
 				)}
+				<div>
+					{/* Chat Messages */}
+					<div className="flex overflow-y-auto scrollbar-none z-30">
+						<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
+					</div>
 
-				{/* Chat Messages */}
-				<div className="flex-1 overflow-y-auto scrollbar-none z-30">
-					<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
-				</div>
-
-				{/* Sticky Chat Input at the Bottom */}
-				<div className="sticky bottom-0 w-full z-40">
-					<ChatInput
-						isRecording={isRecording}
-						discardAudio={discardAudio}
-						text={text}
-						setText={setText}
-						handleImg={handleImg}
-						handleSend={handleSend}
-						toggleRecording={toggleRecording}
-						img={img}
-						audio={audio}
-						audioStream={audioStream!}
-						// audioContext={audioContext}
-						handleCapturedImg={handleCapturedImg}
-						isImgUploading={isImgUploading}
-						isAudioUploading={isAudioUploading}
-						discardImage={discardImage}
-					/>
+					{/* Sticky Chat Input at the Bottom */}
+					<div className="sticky bottom-0 w-full z-40">
+						<ChatInput
+							isRecording={isRecording}
+							discardAudio={discardAudio}
+							text={text}
+							setText={setText}
+							handleImg={handleImg}
+							handleSend={handleSend}
+							toggleRecording={toggleRecording}
+							img={img}
+							audio={audio}
+							audioStream={audioStream!}
+							// audioContext={audioContext}
+							handleCapturedImg={handleCapturedImg}
+							isImgUploading={isImgUploading}
+							isAudioUploading={isAudioUploading}
+							discardImage={discardImage}
+						/>
+					</div>
 				</div>
 			</div>
 		</div>

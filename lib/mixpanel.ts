@@ -12,6 +12,7 @@ export const initMixpanel = (): void => {
     debug: true,
     track_pageview: true,
     autotrack: false,
+    ignore_dnt: true,
     persistence: "localStorage",
   });
 };

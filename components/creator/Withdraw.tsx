@@ -89,7 +89,7 @@ const Withdraw: React.FC = () => {
 	}, [btn, creatorUser]);
 
 	if (loadingTransfer) {
-		return <Verify message={"Initiating Tranfer"} />;
+		return <Verify message={"Initiating Transfer"} />;
 	}
 
 	if (!creatorUser?._id)
@@ -152,7 +152,9 @@ const Withdraw: React.FC = () => {
 							{isSticky && (
 								<Button
 									type="submit"
-									onClick={() => initiateWithdraw(creatorUser._id)}
+									onClick={() =>
+										initiateWithdraw(creatorUser._id, creatorUser.phone)
+									}
 									className="right-0 w-auto px-4 py-3 shadow bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
 								>
 									Withdraw
@@ -162,7 +164,9 @@ const Withdraw: React.FC = () => {
 						{!isSticky && (
 							<Button
 								type="submit"
-								onClick={() => initiateWithdraw(creatorUser._id)}
+								onClick={() =>
+									initiateWithdraw(creatorUser._id, creatorUser.phone)
+								}
 								className="w-full px-4 bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
 							>
 								Withdraw
