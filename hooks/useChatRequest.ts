@@ -258,7 +258,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					User_First_Seen: chatRequest.client_first_seen,
 					chatId: chatRequest.chatId,
 					requestId: chatRequest.id,
-					fullName: response.firstName + " " + response.lastname,
+					fullName: response.firstName? response.firstName + " " + response.lastname: undefined,
+					phone: response.phone,
 					photo: response.photo,
 				})
 			);
