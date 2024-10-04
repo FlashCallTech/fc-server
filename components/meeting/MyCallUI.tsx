@@ -69,11 +69,7 @@ const MyCallUI = () => {
 						const storedCallId = localStorage.getItem("activeCallId");
 						if (storedCallId && !hide && !hasRedirected) {
 							setHasRedirected(true);
-							toast({
-								variant: "destructive",
-								title: "Pending Session",
-								description: "Redirecting You Back ...",
-							});
+
 							router.replace(`/meeting/${storedCallId}`);
 							return;
 						}
