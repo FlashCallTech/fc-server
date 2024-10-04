@@ -3,10 +3,40 @@ import * as Sentry from "@sentry/nextjs";
 
 const useMediaRecorder = () => {
 	const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
-	const [isRecording, setIsRecording] = useState(false);
 	const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+	const [isRecording, setIsRecording] = useState(false);
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 	const audioChunksRef = useRef<Blob[]>([]);
+	const [mp3Blob, setMp3Blob] = useState<Blob | null>(null);
+
+	const uploadAudioBlob = async (audioBlob: Blob) => {
+		const formData = new FormData();
+
+		// Create a file from the Blob
+		const audioFile = new File([audioBlob], "audio.webm", {
+			type: "audio/webm",
+		});
+
+		formData.append("file", audioFile);
+
+		try {
+			const response = await fetch("http://localhost:5000/api/v1/audio/convert", {
+				method: "POST",
+				body: formData,
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to upload audio file");
+			}
+
+			const convertedAudioBlob: Blob = await response.blob();
+			return convertedAudioBlob; // Handle the result as needed
+		} catch (error) {
+			console.error("Error uploading audio file:", error);
+			throw error; // Re-throw or handle the error as needed
+		}
+	};
+
 
 	const startRecording = () => {
 		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -20,10 +50,19 @@ const useMediaRecorder = () => {
 					mediaRecorderRef.current.ondataavailable = (e: BlobEvent) => {
 						audioChunksRef.current.push(e.data);
 					};
-					mediaRecorderRef.current.onstop = () => {
-						const audioBlob = new Blob(audioChunksRef.current, {
+					mediaRecorderRef.current.onstop = async() => {
+						const AudioBlob = new Blob(audioChunksRef.current, {
 							type: "audio/webm", // Ensure consistent type here
 						});
+						if (AudioBlob) {
+							try {
+								const result: Blob = await uploadAudioBlob(AudioBlob);
+								setMp3Blob(result);
+								console.log("Conversion result:", result); // Handle the conversion result as needed
+							} catch (error) {
+								console.error("Error during upload:", error);
+							}
+						}
 						setAudioBlob(audioBlob);
 						audioChunksRef.current = [];
 						stream.getTracks().forEach((track) => track.stop());
@@ -51,12 +90,13 @@ const useMediaRecorder = () => {
 	return {
 		audioStream,
 		isRecording,
-		audioBlob,
 		startRecording,
 		stopRecording,
 		mediaRecorderRef,
 		setAudioStream,
 		setIsRecording,
+		mp3Blob,
+		setMp3Blob,
 	};
 };
 
