@@ -205,7 +205,9 @@ const MyCallUI = () => {
 				if (
 					call.state.callingState !== CallingState.LEFT &&
 					(call.state.callingState === CallingState.JOINED ||
-						call.state.callingState === CallingState.JOINING)
+						call.state.callingState === CallingState.JOINING ||
+						call.state.callingState === CallingState.IDLE ||
+						call.state.callingState === CallingState.RINGING)
 				) {
 					await call?.leave();
 				}
