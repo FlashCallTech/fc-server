@@ -345,12 +345,15 @@ const ChatInterface: React.FC = () => {
 
 	function maskPhoneNumber(phoneNumber: string) {
 		// Remove the '+91' prefix
-		let cleanedNumber = phoneNumber.replace('+91', '');
+		if(phoneNumber){
 
-		// Mask the next 5 digits, leaving the first 2 digits unmasked
-		let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
-
-		return maskedNumber;
+			let cleanedNumber = phoneNumber.replace('+91', '');
+			
+			// Mask the next 5 digits, leaving the first 2 digits unmasked
+			let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
+			
+			return maskedNumber;
+		}
 	}
 
 	return (
@@ -360,15 +363,15 @@ const ChatInterface: React.FC = () => {
         <div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
             <div className="flex items-center gap-2">
                 <Image
-                    src={user2?.photo || "/avatar.svg"}
+                    src={`${user2?.photo? user2?.photo: 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'}`}
                     alt="profile"
-                    width={0}
-                    height={0}
-                    className="w-10 h-10 rounded-full"
+                    width={1000}
+                    height={1000}
+                    className="size-10 min-w-10 rounded-full object-cover"
                 />
                 <div className="flex flex-col">
                     <div className="text-white font-bold text-xs md:text-lg">
-                        {currentUser?.firstName + " " + currentUser?.lastName || maskPhoneNumber(currentUser?.phone as string)}
+                        {user2?.fullName? user2?.fullName : maskPhoneNumber(user2?.phone as string)}
                     </div>
                     {userType === "client" && <ChatTimer />}
                     {userType === "creator" && (
@@ -404,7 +407,7 @@ const ChatInterface: React.FC = () => {
             </div>
 
             {/* Sticky Chat Input at the Bottom */}
-            <div className="sticky bottom-0 w-full z-40">
+            <div className="sticky bottom-0 w-full z-40 bg-cover bg-center " style={{ backgroundImage: 'url(/back.png)' }}>
                 <ChatInput
                     isRecording={isRecording}
                     discardAudio={discardAudio}
