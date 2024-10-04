@@ -1,8 +1,6 @@
 import usePlatform from "@/hooks/usePlatform";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { db } from "@/lib/firebase";
 import { trackEvent } from "@/lib/mixpanel";
-import { doc } from "firebase/firestore";
 import Image from "next/image";
 import React from "react";
 
@@ -16,15 +14,15 @@ const ServicesCheckbox = ({
 	const { getDevicePlatform } = usePlatform();
 
 	// console.log(services)
-	if(services.videoCall){
-		trackEvent('Creator_Video_Online', {
+	if (services.videoCall) {
+		trackEvent("Creator_Video_Online", {
 			Creator_ID: creatorUser?._id,
-			creator_First_Seen: creatorUser?.createdAt?.toString().split('T')[0],
+			creator_First_Seen: creatorUser?.createdAt?.toString().split("T")[0],
 			Platform: getDevicePlatform(),
-			Status: 'Online',
-		})
+			Status: "Online",
+		});
 	}
-	
+
 	return (
 		<div className="flex flex-col gap-2 mt-2">
 			{Object.keys(services).map((service) => (

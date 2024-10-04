@@ -111,13 +111,25 @@ const AuthenticateViaOTP = ({
 		setIsVerifyingOTP(true);
 		try {
 			// Retrieve the FCM token
-			const fcmToken = await getFCMToken();
+			const fcmToken: any = await getFCMToken();
 
 			const response = await axios.post(`${backendBaseUrl}/otp/verify-otp`, {
 				phone: phoneNumber,
 				otp: values.pin,
 				fcmToken,
 			});
+
+			// Handle ongoing session error
+			if (response.status === 409) {
+				toast({
+					variant: "destructive",
+					title: "Ongoing Session Detected",
+					description:
+						"You have an active session. Please finish it before proceeding.",
+				});
+				router.replace("/home");
+				return;
+			}
 
 			// Extract the session token and user from the response
 			const { sessionToken, message } = response.data;
@@ -135,9 +147,7 @@ const AuthenticateViaOTP = ({
 
 			const decodedToken = jwt.decode(sessionToken) as { user?: any };
 
-			// Save the auth token (with 1 days expiry) in localStorage
-			// localStorage.setItem("authToken", sessionToken);
-			// console.log("OTP verified and token saved:");
+			console.log("OTP verified and token saved:");
 
 			setVerificationSuccess(true);
 
@@ -287,47 +297,11 @@ const AuthenticateViaOTP = ({
 
 	const sectionRef = useRef<HTMLElement>(null);
 
-	const handleClickOutside = (event: any) => {
-		if (sectionRef.current && !sectionRef.current.contains(event.target)) {
-			// Trigger your function here
-			console.log("Clicked outside the section");
-			onOpenChange && onOpenChange(false);
-		}
-	};
-
-	useEffect(() => {
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, []);
-
 	return (
 		<section
 			ref={sectionRef}
-			className="relative bg-[#F8F8F8] rounded-t-3xl md:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-8 pb-2 shadow-lg w-screen h-fit md:w-full md:min-w-[24rem] md:max-w-sm mx-auto animate-enterFromBottom z-50 overflow-y-scroll no-scrollbar"
+			className="relative bg-[#F8F8F8] rounded-t-3xl md:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-8 pb-2 shadow-lg w-screen h-fit md:w-full md:min-w-[24rem] md:max-w-sm mx-auto animate-enterFromBottom"
 		>
-			{onOpenChange && (
-				<Button
-					className="absolute top-2 right-2 z-10"
-					onClick={() => onOpenChange(false)}
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						strokeWidth={1.5}
-						stroke="currentColor"
-						className="size-7 text-green-1 hover:text-black"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-						/>
-					</svg>
-				</Button>
-			)}
 			{!showOTP ? (
 				// SignUp form
 				<>

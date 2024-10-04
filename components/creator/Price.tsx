@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
+import { useToast } from "../ui/use-toast";
 
 interface PriceEditModalProps {
 	onClose: () => void;
@@ -17,16 +18,51 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 	currentPrices,
 }) => {
 	const [prices, setPrices] = useState(currentPrices);
+	const [notSaved, setNotSaved] = useState(true); // Initially disabled until valid values are entered
+	const { toast } = useToast();
+
+	// Validate if any price is empty, NaN, or below 5
+	const validatePrices = (updatedPrices: {
+		videoCall: string;
+		audioCall: string;
+		chat: string;
+	}) => {
+		const videoCallPrice = parseFloat(updatedPrices.videoCall);
+		const audioCallPrice = parseFloat(updatedPrices.audioCall);
+		const chatPrice = parseFloat(updatedPrices.chat);
+
+		// Check for empty values or NaN
+		if (
+			!updatedPrices.videoCall ||
+			isNaN(videoCallPrice) ||
+			!updatedPrices.audioCall ||
+			isNaN(audioCallPrice) ||
+			!updatedPrices.chat ||
+			isNaN(chatPrice) ||
+			videoCallPrice < 5 ||
+			audioCallPrice < 5 ||
+			chatPrice < 5
+		) {
+			setNotSaved(true);
+		} else {
+			setNotSaved(false);
+		}
+	};
 
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.target;
-		setPrices({
+		const updatedPrices = {
 			...prices,
-			[name]: String(value),
-		});
+			[name]: value,
+		};
+
+		setPrices(updatedPrices);
+		validatePrices(updatedPrices); // Revalidate prices on input change
 	};
 
 	const handleSave = () => {
+		if (notSaved) return;
+		// Save prices if valid
 		onSave(prices);
 		onClose();
 	};
@@ -46,7 +82,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							<input
 								type="number"
 								name="videoCall"
-								min={0}
+								min={5}
 								value={prices.videoCall}
 								onChange={handleChange}
 								className="border rounded p-1 w-16 text-right bg-gray-200"
@@ -63,7 +99,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							<input
 								type="number"
 								name="audioCall"
-								min={0}
+								min={5}
 								value={prices.audioCall}
 								onChange={handleChange}
 								className="border rounded p-1 w-16 text-right bg-gray-200"
@@ -80,7 +116,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							<input
 								type="number"
 								name="chat"
-								min={0}
+								min={5}
 								value={prices.chat}
 								onChange={handleChange}
 								className="border rounded p-1 w-16 text-right bg-gray-200"
@@ -97,8 +133,13 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							Cancel
 						</Button>
 						<Button
+							disabled={notSaved}
 							onClick={handleSave}
-							className="bg-green-600 text-white rounded-xl px-8 hover:bg-green-700"
+							className={`${
+								notSaved
+									? "bg-black/20 !cursor-not-allowed"
+									: "bg-green-600 text-white hoverScaleDownEffect"
+							}  rounded-xl px-8 `}
 						>
 							Save
 						</Button>

@@ -222,40 +222,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleCallAccepted = async (callType: string) => {
 		setIsProcessing(false); // Reset processing state
 
-		toast({
-			variant: "destructive",
-			title: "Call Accepted",
-			description: "The call has been accepted. Redirecting to meeting...",
-		});
-
 		setSheetOpen(false);
-
-		const createdAtDate = clientUser?.createdAt
-			? new Date(clientUser.createdAt)
-			: new Date();
-		const formattedDate = createdAtDate.toISOString().split("T")[0];
-
-		if (callType === "audio") {
-			try {
-				trackEvent("BookCall_Audio_Connected", {
-					Client_ID: clientUser?._id,
-					User_First_Seen: formattedDate,
-					Creator_ID: creator._id,
-				});
-			} catch (error) {
-				console.log(error);
-			}
-		} else {
-			try {
-				trackEvent("BookCall_Video_Connected", {
-					Client_ID: clientUser?._id,
-					User_First_Seen: formattedDate,
-					Creator_ID: creator._id,
-				});
-			} catch (error) {
-				console.log(error);
-			}
-		}
 
 		// router.replace(`/meeting/${call.id}`);
 	};
@@ -343,6 +310,19 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				},
 			});
 
+			// Check if the call exists or create it
+			await call.getOrCreate({
+				members_limit: 2,
+				ring: true,
+				data: {
+					starts_at: startsAt,
+					members: members,
+					custom: {
+						description,
+					},
+				},
+			});
+
 			// Utilize helper functions
 			// const fcmToken = await fetchFCMToken(creator.phone);
 			// if (fcmToken) {
@@ -357,7 +337,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			trackCallEvents(callType, clientUser, creator);
 
-			fetch(`${backendBaseUrl}/calls/registerCall`, {
+			await fetch(`${backendBaseUrl}/calls/registerCall`, {
 				method: "POST",
 				body: JSON.stringify({
 					callId: id as string,
@@ -372,23 +352,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			await updateFirestoreSessions(
 				clientUser?._id as string,
 				call.id,
-				"ongoing",
-				[
-					{
-						user_id: creator?._id,
-						expert: creator?.username,
-						status: "joining",
-					},
-					{
-						user_id: clientUser?._id,
-						client: clientUser?.username,
-						status: "joining",
-					},
-				]
+				"ongoing"
 			);
 
-			call.on("call.accepted", () => handleCallAccepted(callType));
-			call.on("call.rejected", handleCallRejected);
+			// call.on("call.accepted", () => handleCallAccepted(callType));
+			// call.on("call.rejected", handleCallRejected);
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
