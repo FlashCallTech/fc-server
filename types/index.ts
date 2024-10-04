@@ -28,6 +28,9 @@ export type UpdateUserParams = {
 	gender?: string;
 	dob?: string;
 	creatorId?: string;
+	referralId?: string;
+	referredBy?: string | null;
+	referralAmount?: number | null;
 };
 
 export type clientUser = {
@@ -45,6 +48,9 @@ export type clientUser = {
 	profession?: string;
 	themeSelected?: string;
 	createdAt?: string;
+	referralId?: string;
+	referredBy?: string | null;
+	referralAmount?: number | null;
 };
 
 // Creator Params
