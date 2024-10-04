@@ -140,13 +140,9 @@ const CallEnded = ({ toast, router, call }: any) => {
 
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			navigator.sendBeacon(
-				`${backendBaseUrl}/calls/transaction/handleTransaction`,
+				`${backendBaseUrl}/calls/transaction/handleInterrupted`,
 				JSON.stringify({
-					expertId,
-					clientId,
 					callId: call?.id,
-					duration,
-					isVideoCall: call?.type === "default",
 				})
 			);
 		};
