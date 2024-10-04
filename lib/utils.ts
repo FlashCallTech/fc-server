@@ -244,7 +244,7 @@ export const updateFirestoreSessions = async (
 	userId: string,
 	callId: string,
 	status: string,
-	members: any[]
+	members?: any[]
 ) => {
 	try {
 		const SessionDocRef = doc(db, "sessions", userId);
