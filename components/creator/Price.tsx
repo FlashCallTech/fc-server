@@ -46,7 +46,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							<input
 								type="number"
 								name="videoCall"
-								min={0}
+								min={5}
 								value={prices.videoCall}
 								onChange={handleChange}
 								className="border rounded p-1 w-16 text-right bg-gray-200"
@@ -63,7 +63,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							<input
 								type="number"
 								name="audioCall"
-								min={0}
+								min={5}
 								value={prices.audioCall}
 								onChange={handleChange}
 								className="border rounded p-1 w-16 text-right bg-gray-200"
@@ -80,7 +80,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							<input
 								type="number"
 								name="chat"
-								min={0}
+								min={5}
 								value={prices.chat}
 								onChange={handleChange}
 								className="border rounded p-1 w-16 text-right bg-gray-200"
