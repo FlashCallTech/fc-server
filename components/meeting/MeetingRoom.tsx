@@ -112,13 +112,17 @@ const MeetingRoom = () => {
 					router.replace("/home");
 					return;
 				}
+				if (
+					callingState === CallingState.IDLE ||
+					callingState === CallingState.RINGING
+				) {
+					await call?.join();
+					localStorage.setItem(localSessionKey, "joined");
 
-				await call?.join();
-				localStorage.setItem(localSessionKey, "joined");
-
-				if (isVideoCall) call?.camera?.enable();
-				call?.microphone?.enable();
-				setHasJoined(true);
+					if (isVideoCall) call?.camera?.enable();
+					call?.microphone?.enable();
+					setHasJoined(true);
+				}
 			} catch (error) {
 				console.warn("Error Joining Call ", error);
 			}
