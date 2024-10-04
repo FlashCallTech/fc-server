@@ -44,12 +44,11 @@ const MyCallUI = () => {
 					async (clientStatusDoc: any) => {
 						const clientStatusData = clientStatusDoc.data();
 
-						// If the client status is "Busy", do nothing
 						if (clientStatusData && clientStatusData.status === "Busy") {
 							setHasRedirected(true);
+							return; // Exit early if busy
 						}
 
-						// Otherwise, check for ongoing sessions
 						const sessionDocRef = doc(db, "sessions", userId);
 						const sessionDoc = await getDoc(sessionDocRef);
 
@@ -61,18 +60,22 @@ const MyCallUI = () => {
 								!hide &&
 								!hasRedirected
 							) {
-								// Call is still pending, redirect the user back to the meeting
-
 								setHasRedirected(true);
 								router.replace(`/meeting/${ongoingCall.id}`);
+								return;
 							}
-						} else {
-							// If no ongoing call in Firestore, check local storage
-							const storedCallId = localStorage.getItem("activeCallId");
-							if (storedCallId && !hide && !hasRedirected) {
-								setHasRedirected(true);
-								router.replace(`/meeting/${storedCallId}`);
-							}
+						}
+
+						const storedCallId = localStorage.getItem("activeCallId");
+						if (storedCallId && !hide && !hasRedirected) {
+							setHasRedirected(true);
+							toast({
+								variant: "destructive",
+								title: "Pending Session",
+								description: "Redirecting You Back ...",
+							});
+							router.replace(`/meeting/${storedCallId}`);
+							return;
 						}
 					}
 				);
@@ -211,7 +214,7 @@ const MyCallUI = () => {
 					await call?.leave();
 				}
 
-				setHasRedirected(true);
+				// setHasRedirected(true);
 				router.replace(`/meeting/${call.id}`);
 			};
 
