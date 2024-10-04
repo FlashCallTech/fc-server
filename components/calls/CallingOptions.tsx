@@ -219,40 +219,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleCallAccepted = async (callType: string) => {
 		setIsProcessing(false); // Reset processing state
 
-		toast({
-			variant: "destructive",
-			title: "Call Accepted",
-			description: "The call has been accepted. Redirecting to meeting...",
-		});
-
 		setSheetOpen(false);
-
-		const createdAtDate = clientUser?.createdAt
-			? new Date(clientUser.createdAt)
-			: new Date();
-		const formattedDate = createdAtDate.toISOString().split("T")[0];
-
-		if (callType === "audio") {
-			try {
-				trackEvent("BookCall_Audio_Connected", {
-					Client_ID: clientUser?._id,
-					User_First_Seen: formattedDate,
-					Creator_ID: creator._id,
-				});
-			} catch (error) {
-				console.log(error);
-			}
-		} else {
-			try {
-				trackEvent("BookCall_Video_Connected", {
-					Client_ID: clientUser?._id,
-					User_First_Seen: formattedDate,
-					Creator_ID: creator._id,
-				});
-			} catch (error) {
-				console.log(error);
-			}
-		}
 
 		// router.replace(`/meeting/${call.id}`);
 	};

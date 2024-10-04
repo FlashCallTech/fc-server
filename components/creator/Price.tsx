@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
+import { useToast } from "../ui/use-toast";
 
 interface PriceEditModalProps {
 	onClose: () => void;
@@ -17,7 +18,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 	currentPrices,
 }) => {
 	const [prices, setPrices] = useState(currentPrices);
-
+	const { toast } = useToast();
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.target;
 		setPrices({
@@ -27,6 +28,21 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 	};
 
 	const handleSave = () => {
+		const videoCallPrice = parseFloat(prices.videoCall);
+		const audioCallPrice = parseFloat(prices.audioCall);
+		const chatPrice = parseFloat(prices.chat);
+		if (
+			(videoCallPrice > 0 && videoCallPrice < 5) ||
+			(audioCallPrice > 0 && audioCallPrice < 5) ||
+			(chatPrice > 0 && chatPrice < 5)
+		) {
+			toast({
+				variant: "destructive",
+				title: "Invalid Price",
+				description: "The minimum price must be Rs. 5 or higher.",
+			});
+			return;
+		}
 		onSave(prices);
 		onClose();
 	};

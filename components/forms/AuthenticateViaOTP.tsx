@@ -198,8 +198,8 @@ const AuthenticateViaOTP = ({
 						audioRate: "0",
 						chatRate: "0",
 						walletBalance: 0,
-						referredBy: refId ? refId : null,
-						referralAmount: refId ? 5000 : null,
+						referredBy: refId ? refId : "",
+						referralAmount: refId ? 5000 : 0,
 						creatorId: `@${formattedPhone as string}`,
 					};
 				} else {
