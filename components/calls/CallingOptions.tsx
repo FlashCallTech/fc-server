@@ -14,11 +14,14 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
 import useChatRequest from "@/hooks/useChatRequest";
 import { trackEvent } from "@/lib/mixpanel";
+
 import {
 	backendBaseUrl,
 	isValidHexColor,
-	updateExpertStatus,
 	updateFirestoreSessions,
+	trackCallEvents,
+	// fetchFCMToken,
+	// sendNotification,
 } from "@/lib/utils";
 import useChat from "@/hooks/useChat";
 import Loader from "../shared/Loader";
@@ -65,9 +68,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	// logic to show the updated creator services in realtime
 	useEffect(() => {
+		if (!creator?._id || !creator?.phone) return;
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);
-		// Only create clientStatusDocRef if clientUser is not null
+
 		let clientStatusDocRef: any;
 		if (clientUser) {
 			clientStatusDocRef = doc(db, "userStatus", clientUser.phone);
@@ -218,40 +222,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleCallAccepted = async (callType: string) => {
 		setIsProcessing(false); // Reset processing state
 
-		toast({
-			variant: "destructive",
-			title: "Call Accepted",
-			description: "The call has been accepted. Redirecting to meeting...",
-		});
-
 		setSheetOpen(false);
-
-		const createdAtDate = clientUser?.createdAt
-			? new Date(clientUser.createdAt)
-			: new Date();
-		const formattedDate = createdAtDate.toISOString().split("T")[0];
-
-		if (callType === "audio") {
-			try {
-				trackEvent("BookCall_Audio_Connected", {
-					Client_ID: clientUser?._id,
-					User_First_Seen: formattedDate,
-					Creator_ID: creator._id,
-				});
-			} catch (error) {
-				console.log(error);
-			}
-		} else {
-			try {
-				trackEvent("BookCall_Video_Connected", {
-					Client_ID: clientUser?._id,
-					User_First_Seen: formattedDate,
-					Creator_ID: creator._id,
-				});
-			} catch (error) {
-				console.log(error);
-			}
-		}
 
 		// router.replace(`/meeting/${call.id}`);
 	};
@@ -261,9 +232,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		setSheetOpen(false);
 	};
 
-	// create new meeting
 	const createMeeting = async (callType: string) => {
 		if (!client || !clientUser) return;
+
 		try {
 			const id = crypto.randomUUID();
 			const call =
@@ -274,7 +245,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (!call) throw new Error("Failed to create meeting");
 
 			const members = [
-				// creator
 				{
 					user_id: creator?._id,
 					custom: {
@@ -285,20 +255,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					},
 					role: "admin",
 				},
-				// client
-				// {
-				// 	user_id: String(clientUser?._id),
-				// 	custom: {
-				// 		name: String(
-				// 			clientUser?.username ? clientUser.username : clientUser.phone
-				// 		),
-				// 		type: "client",
-				// 		image: clientUser?.photo,
-				// 		phone: clientUser?.phone,
-				// 	},
-				// 	role: "admin",
-
-				// },
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
@@ -312,11 +268,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				callType === "video"
 					? parseInt(creator?.videoRate, 10)
 					: parseInt(creator?.audioRate, 10);
-			let maxCallDuration = (walletBalance / ratePerMinute) * 60; // in seconds
+			let maxCallDuration = (walletBalance / ratePerMinute) * 60;
 			maxCallDuration =
 				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
-			// Check if maxCallDuration is less than 5 minutes (300 seconds)
 			if (maxCallDuration < 300) {
 				trackEvent("MinimumBalance_NotAvailable", {
 					Client_ID: clientUser?._id,
@@ -343,6 +298,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				Walletbalance_Available: clientUser?.walletBalance,
 			});
 
+			// Check if the call exists or create it
 			await call.getOrCreate({
 				members_limit: 2,
 				ring: true,
@@ -355,31 +311,21 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				},
 			});
 
-			const createdAtDate = clientUser?.createdAt
-				? new Date(clientUser.createdAt)
-				: new Date();
-			const formattedDate = createdAtDate.toISOString().split("T")[0];
+			// Utilize helper functions
+			// const fcmToken = await fetchFCMToken(creator.phone);
+			// if (fcmToken) {
+			// 	sendNotification(
+			// 		fcmToken,
+			// 		`Incoming Call`,
+			// 		`${callType} Call Request from ${clientUser.username}`,
+			// 		creator,
+			// 		`https:flashcall.me/meeting/${id}`
+			// 	);
+			// }
 
-			if (callType === "audio") {
-				trackEvent("BookCall_Audio_Clicked", {
-					Client_ID: clientUser._id,
-					User_First_Seen: formattedDate,
-					Creator_ID: creator._id,
-				});
-			} else {
-				trackEvent("BookCall_Video_initiated", {
-					Client_ID: clientUser._id,
-					User_First_Seen: formattedDate,
-					Creator_ID: creator._id,
-				});
-			}
+			trackCallEvents(callType, clientUser, creator);
 
-			logEvent(analytics, "call_initiated", {
-				clientId: clientUser?._id,
-				creatorId: creator._id,
-			});
-
-			fetch(`${backendBaseUrl}/calls/registerCall`, {
+			await fetch(`${backendBaseUrl}/calls/registerCall`, {
 				method: "POST",
 				body: JSON.stringify({
 					callId: id as string,
@@ -394,25 +340,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			await updateFirestoreSessions(
 				clientUser?._id as string,
 				call.id,
-				"ongoing",
-				[
-					// creator
-					{
-						user_id: creator?._id,
-						expert: creator?.username,
-						status: "joining",
-					},
-					// client
-					{
-						user_id: clientUser?._id,
-						client: clientUser?.username,
-						status: "joining",
-					},
-				]
+				"ongoing"
 			);
 
-			call.on("call.accepted", () => handleCallAccepted(callType));
-			call.on("call.rejected", handleCallRejected);
+			// call.on("call.accepted", () => handleCallAccepted(callType));
+			// call.on("call.rejected", handleCallRejected);
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
@@ -514,18 +446,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	
-
-	const theme = `5px 5px 0px 0px ${themeColor}`;
-
-	if (isAuthSheetOpen && !clientUser)
-		return (
-			<AuthenticationSheet
-				isOpen={isAuthSheetOpen}
-				onOpenChange={setIsAuthSheetOpen} // Handle sheet close
-			/>
-		);
-
 	const services = [
 		{
 			type: "video",
@@ -534,7 +454,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				updatedCreator.videoAllowed &&
 				parseInt(updatedCreator.videoRate, 10) > 0,
 			rate: updatedCreator.videoRate,
-			label: "Book Video Call",
+			label: "Video Call",
 			icon: video,
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
@@ -551,7 +471,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				updatedCreator.audioAllowed &&
 				parseInt(updatedCreator.audioRate, 10) > 0,
 			rate: updatedCreator.audioRate,
-			label: "Book Audio Call",
+			label: "Audio Call",
 			icon: audio,
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
@@ -589,10 +509,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		return priority[a.type] - priority[b.type];
 	});
 
-	if(loading) {
-		return(
-			<Loader/>
-		)
+	if (loading) {
+		return <Loader />;
 	}
 
 	return (
@@ -603,25 +521,35 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						disabled={!service.enabled}
 						key={service.type}
 						className={`callOptionContainer ${
-							isProcessing || !service.enabled || onlineStatus === "Busy"
-								? "opacity-50 !cursor-not-allowed"
-								: ""
+							(isProcessing ||
+								!service.enabled ||
+								onlineStatus === "Busy" ||
+								isClientBusy) &&
+							"!cursor-not-allowed"
 						}`}
-						style={{
-							boxShadow: theme,
-						}}
 						onClick={service.onClick}
 					>
-						<div
-							className={`flex gap-4 items-center font-semibold`}
-							style={{ color: themeColor }}
-						>
+						<div className={`flex gap-4 items-center font-bold text-white`}>
 							{service.icon}
 							{service.label}
 						</div>
-						<span className="text-sm tracking-widest">
-							Rs. {service.rate}/Min
-						</span>
+						<p
+							className={`font-medium tracking-widest rounded-[18px] px-4 h-[36px] text-black flex items-center justify-center ${
+								(isProcessing ||
+									!service.enabled ||
+									onlineStatus === "Busy" ||
+									isClientBusy) &&
+								"border border-white/50 text-white"
+							}`}
+							style={{
+								backgroundColor:
+									isProcessing || !service.enabled || onlineStatus === "Busy"
+										? "transparent"
+										: themeColor,
+							}}
+						>
+							Rs.<span className="ml-1">{service.rate}</span>/min
+						</p>
 					</button>
 				))}
 
@@ -660,6 +588,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					</SheetContent>
 				</Sheet>
 			</div>
+
+			{isAuthSheetOpen && (
+				<AuthenticationSheet
+					isOpen={isAuthSheetOpen}
+					onOpenChange={setIsAuthSheetOpen} // Handle sheet close
+				/>
+			)}
 		</>
 	);
 };

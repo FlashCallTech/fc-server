@@ -45,7 +45,7 @@ const useChat = () => {
 	const [ended, setEnded] = useState<boolean>(false);
 	const [chatRejected, setChatRejected] = useState<boolean>(false);
 	const [chatRequestId, setChatRequestId] = useState<string>();
-	const [localChatId, setLocalChatId] = useState<string>('');
+	const [localChatId, setLocalChatId] = useState<string>("");
 	const { chatId } = useParams();
 	const [loading, setLoading] = useState<boolean>(false);
 
@@ -58,27 +58,27 @@ const useChat = () => {
 				setChatRatePerMinute(parseInt(parsedCreator.chatRate, 10));
 			}
 		} else {
-			const creatorId = localStorage.getItem('currentUserID');
+			const creatorId = localStorage.getItem("currentUserID");
 			const getCreator = async () => {
 				const response = await getCreatorById(creatorId as string);
 				setCreator(response);
-			}
+			};
 			getCreator();
 		}
-		const userType = localStorage.getItem('userType');
-		if (userType === 'client') {
-			const clientId = localStorage.getItem('currentUserID');
+		const userType = localStorage.getItem("userType");
+		if (userType === "client") {
+			const clientId = localStorage.getItem("currentUserID");
 			const getClient = async () => {
 				const response = await getUserById(clientId as string);
 				setClient(response);
-			}
+			};
 			getClient();
-		} else if (userType === 'creator' && rejected === true) {
+		} else if (userType === "creator" && rejected === true) {
 			const clientId = user2?.clientId;
 			const getClient = async () => {
 				const response = await getUserById(clientId as string);
 				setClient(response);
-			}
+			};
 			getClient();
 		}
 	}, [chatId, rejected]);
@@ -118,7 +118,7 @@ const useChat = () => {
 			if (storedChatRequestId) {
 				setChatRequestId(storedChatRequestId);
 			}
-			const storedchatId = localStorage.getItem('chatId');
+			const storedchatId = localStorage.getItem("chatId");
 			if (storedchatId) setLocalChatId(storedchatId);
 		};
 
@@ -132,7 +132,10 @@ const useChat = () => {
 		}
 
 		return () => {
-			window.removeEventListener("chatRequestIdUpdated", handleChatRequestIdUpdate);
+			window.removeEventListener(
+				"chatRequestIdUpdated",
+				handleChatRequestIdUpdate
+			);
 		};
 	}, []);
 
@@ -172,11 +175,15 @@ const useChat = () => {
 			const chatDurationMinutes = chatDuration / (1000 * 60); // Convert milliseconds to minutes
 			const calculatedAmount = chatDurationMinutes * chatRatePerMinute;
 			setAmount(calculatedAmount);
-			setEnded(true)
+			setEnded(true);
 		}
 	}, [chatEnded, startedAt, endedAt, chatRatePerMinute]);
 
-	const createChat = async (chatId: string, status: string, clientId: string | undefined) => {
+	const createChat = async (
+		chatId: string,
+		status: string,
+		clientId: string | undefined
+	) => {
 		setLoading(true);
 		const [existingChat] = await Promise.all([
 			fetch(`/api/v1/calls/getChat?chatId=${chatId}`).then((res) => res.json()),
@@ -240,16 +247,16 @@ const useChat = () => {
 			}
 		}
 		setLoading(false);
-		localStorage.removeItem('chatId');
-		localStorage.removeItem('chatRequestId');
+		localStorage.removeItem("chatId");
+		localStorage.removeItem("chatRequestId");
 	};
 
 	useEffect(() => {
 		if (flag && chatRejected) {
 			setFlag(false);
-			createChat(localChatId as string, 'rejected', client?._id);
+			createChat(localChatId as string, "rejected", client?._id);
 		}
-	}, [chatRejected])
+	}, [chatRejected]);
 
 	if (
 		duration &&

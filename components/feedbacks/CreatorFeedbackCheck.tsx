@@ -5,6 +5,7 @@ import { formatDateTime } from "@/lib/utils";
 import { UserFeedback } from "@/types";
 import { Rating } from "@smastrom/react-rating";
 import Image from "next/image";
+import GetRandomImage from "@/utils/GetRandomImage";
 
 const CreatorFeedbackCheck = ({ feedback }: { feedback: UserFeedback }) => {
 	const [isExpanded, setIsExpanded] = useState(false);
@@ -50,9 +51,7 @@ const CreatorFeedbackCheck = ({ feedback }: { feedback: UserFeedback }) => {
 					<div className="flex items-center justify-start w-full gap-2 pt-2">
 						<div className="flex items-center justify-start gap-2">
 							<Image
-								src={
-									feedback?.clientId?.photo || "/images/defaultProfileImage.png"
-								}
+								src={feedback?.clientId?.photo || GetRandomImage()}
 								alt={feedback?.clientId?.username}
 								width={44}
 								height={44}

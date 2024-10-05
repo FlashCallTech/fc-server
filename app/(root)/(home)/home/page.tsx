@@ -84,13 +84,13 @@ const HomePage = () => {
 							Failed to fetch creators <br />
 							Please try again later.
 						</div>
-					) : creators && creators.pages.length === 0 && !isLoading ? (
-						<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
+					) : creators && creators.pages[0].length === 0 && !isLoading ? (
+						<p className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
 							No creators found.
-						</div>
+						</p>
 					) : (
 						<section
-							className={`grid xs:grid-cols-2  h-auto gap-3.5 px-3.5 lg:gap-5 lg:px-0 items-center overflow-hidden`}
+							className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 px-3.5  lg:px-0 items-center overflow-hidden`}
 							style={{
 								WebkitTransform: "translateZ(0)",
 							}}
@@ -134,11 +134,11 @@ const HomePage = () => {
 
 					{!hasNextPage && !isFetching && (
 						<div className="text-center text-gray-500 py-4">
-							You have reached the end of the list.
+							You have reached the end of the list
 						</div>
 					)}
 
-					{hasNextPage && <div ref={ref} className=" pt-10 w-full" />}
+					{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
 				</Suspense>
 			) : (
 				<CreatorHome />

@@ -78,7 +78,9 @@ const OTPVerification = ({
 	return (
 		<>
 			<div className="flex flex-col items-center justify-enter gap-2">
-				<h2 className="text-lg font-semibold">Enter verification code</h2>
+				<h2 className="text-black text-lg font-semibold">
+					Enter verification code
+				</h2>
 				<p className="text-xs text-gray-500 mb-4">
 					We sent a 6-digit code to +91 {phoneNumber}.{" "}
 					<span
@@ -106,7 +108,7 @@ const OTPVerification = ({
 												<InputOTPSlot
 													key={index}
 													index={index}
-													className={`w-10 h-10 rounded-xl shadow-sm bg-[#F3F4F6] border ${
+													className={`w-10 h-10 rounded-xl shadow-sm text-black bg-[#F3F4F6] border ${
 														errors.otpVerificationError
 															? "border-red-500"
 															: "border-gray-200"

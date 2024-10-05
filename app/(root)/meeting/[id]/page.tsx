@@ -20,7 +20,11 @@ import ContentLoading from "@/components/shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
-import { backendBaseUrl, stopMediaStreams } from "@/lib/utils";
+import {
+	backendBaseUrl,
+	stopMediaStreams,
+	updateExpertStatus,
+} from "@/lib/utils";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -98,6 +102,8 @@ const CallEnded = ({ toast, router, call }: any) => {
 	const transactionHandled = useRef(false);
 	const { currentUser } = useCurrentUsersContext();
 
+	stopMediaStreams();
+
 	const removeActiveCallId = () => {
 		const activeCallId = localStorage.getItem("activeCallId");
 		if (activeCallId) {
@@ -128,21 +134,27 @@ const CallEnded = ({ toast, router, call }: any) => {
 			1000
 		).toFixed(2);
 
+		// Clear localStorage session key
+		const localSessionKey = `meeting_${call.id}_${currentUser?._id}`;
+		localStorage.removeItem(localSessionKey);
+
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			navigator.sendBeacon(
-				`${backendBaseUrl}/calls/transaction/handleTransaction`,
+				`${backendBaseUrl}/calls/transaction/handleInterrupted`,
 				JSON.stringify({
-					expertId,
-					clientId,
 					callId: call?.id,
-					duration,
-					isVideoCall: call?.type === "default",
 				})
 			);
 		};
 
 		const handleCallEnd = async () => {
 			if (transactionHandled.current) return;
+
+			setLoading(true);
+			await updateExpertStatus(
+				call?.state?.createdBy?.custom?.phone as string,
+				"Idle"
+			);
 
 			transactionHandled.current = true;
 
@@ -154,8 +166,6 @@ const CallEnded = ({ toast, router, call }: any) => {
 				});
 				setToastShown(true);
 			}
-
-			setLoading(true);
 
 			// Trigger transaction in backend
 			const transactionResponse = await fetch(
@@ -175,7 +185,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 				}
 			);
 
-			await fetch("/api/v1/calls/updateCall", {
+			await fetch(`${backendBaseUrl}/calls/updateCall`, {
 				method: "POST",
 				body: JSON.stringify({
 					callId: call.id,

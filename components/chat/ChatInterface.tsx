@@ -93,7 +93,6 @@ const ChatInterface: React.FC = () => {
 		updateChatStartedAt();
 	}, [chatId]); // Add chatId as a dependency
 
-
 	useEffect(() => {
 		const fetchReceiverId = async () => {
 			try {

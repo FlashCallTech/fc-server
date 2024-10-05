@@ -9,11 +9,12 @@ import {
 import { Button } from "../ui/button";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { createFeedback } from "@/lib/actions/feedback.actions";
 import { useToast } from "../ui/use-toast";
 import { success } from "@/constants/icons";
 import { useGetCallById } from "@/hooks/useGetCallById";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import axios from "axios";
+import { backendBaseUrl } from "@/lib/utils";
 
 interface FeedbackProps {
 	callId: string;
@@ -35,7 +36,6 @@ const UserFeedback = ({
 	isOpen,
 	onOpenChange,
 	text,
-	buttonColor,
 	submitButtonText,
 	existingFeedback,
 }: FeedbackProps) => {
@@ -45,7 +45,7 @@ const UserFeedback = ({
 	);
 	const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 	const { toast } = useToast();
-	const { call, isCallLoading } = useGetCallById(String(callId));
+	const { call } = useGetCallById(String(callId));
 
 	const ratingItems = ["😒", "😞", "😑", "🙂", "😄"];
 	const { currentUser } = useCurrentUsersContext();
@@ -85,7 +85,7 @@ const UserFeedback = ({
 		try {
 			const userId = currentUser?._id as string;
 
-			await createFeedback({
+			await axios.post(`${backendBaseUrl}/feedback/call/create`, {
 				creatorId: expert?.user_id as string,
 				clientId: userId,
 				rating: rating,
@@ -101,7 +101,7 @@ const UserFeedback = ({
 			});
 			console.error("Error submitting feedback:", error);
 		} finally {
-			setRating(2);
+			setRating(5);
 			setFeedbackMessage("");
 		}
 	};
@@ -136,7 +136,7 @@ const UserFeedback = ({
 			<SheetTrigger asChild>
 				<button
 					onClick={() => onOpenChange(true)}
-					className={`animate-enterFromRight lg:animate-enterFromBottom bg-green-1 transition-all duration-300 hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs`}
+					className={`animate-enterFromRight lg:animate-enterFromBottom bg-green-1 transition-all duration-300 hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs whitespace-nowrap`}
 				>
 					{text}
 				</button>

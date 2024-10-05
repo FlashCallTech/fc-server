@@ -44,7 +44,7 @@ export const transactionHandler = async ({
 	if (existingTransaction) {
 		console.log("Transaction for this callId has already been completed.");
 		await updateFirestoreTransactionStatus(callId);
-		await updateFirestoreSessions(clientId, callId, "ended", []);
+		await updateFirestoreSessions(clientId, callId, "ended");
 		return;
 	}
 
@@ -97,7 +97,7 @@ export const transactionHandler = async ({
 		]);
 
 		await updateFirestoreTransactionStatus(callId);
-		await updateFirestoreSessions(clientId, callId, "ended", []);
+		await updateFirestoreSessions(clientId, callId, "ended");
 	} catch (error) {
 		Sentry.captureException(error);
 		console.error("Error handling wallet changes:", error);

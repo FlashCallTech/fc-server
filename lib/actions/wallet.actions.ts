@@ -7,13 +7,17 @@ import Wallet from "../database/models/wallet.models";
 import { handleError } from "../utils";
 import * as Sentry from "@sentry/nextjs";
 import Referral from "../database/models/referral.model";
-import { Flag } from "lucide-react";
 
-export async function addMoney({ userId, userType, amount, flag }: WalletParams) {
+export async function addMoney({
+	userId,
+	userType,
+	amount,
+	flag,
+}: WalletParams) {
 	try {
 		await connectToDatabase();
-		if(flag) {
-			flag= false;
+		if (flag) {
+			flag = false;
 		} else {
 			flag = true;
 		}
@@ -23,7 +27,7 @@ export async function addMoney({ userId, userType, amount, flag }: WalletParams)
 			user = await Client.findById(userId);
 		} else if (userType === "Creator") {
 			user = await Creator.findById(userId);
-			referDetails = await Referral.findOne({referredTo: userId})
+			referDetails = await Referral.findOne({ referredTo: userId });
 		} else {
 			throw new Error("Invalid user type");
 		}

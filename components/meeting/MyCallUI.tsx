@@ -15,14 +15,16 @@ import {
 	updateFirestoreSessions,
 } from "@/lib/utils";
 import axios from "axios";
+import { trackEvent } from "@/lib/mixpanel";
 
 const MyCallUI = () => {
 	const router = useRouter();
 	const calls = useCalls();
 	const pathname = usePathname();
-	const { currentUser, userType } = useCurrentUsersContext();
+	const { currentUser } = useCurrentUsersContext();
 
 	const { toast } = useToast();
+
 	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
 	const [hasRedirected, setHasRedirected] = useState(false);
 	const [showCallUI, setShowCallUI] = useState(false);
@@ -42,40 +44,34 @@ const MyCallUI = () => {
 					async (clientStatusDoc: any) => {
 						const clientStatusData = clientStatusDoc.data();
 
-						// If the client status is "Busy", do nothing
 						if (clientStatusData && clientStatusData.status === "Busy") {
-							return;
+							setHasRedirected(true);
+							return; // Exit early if busy
 						}
 
-						// Otherwise, check for ongoing sessions
 						const sessionDocRef = doc(db, "sessions", userId);
 						const sessionDoc = await getDoc(sessionDocRef);
 
 						if (sessionDoc.exists()) {
 							const { ongoingCall } = sessionDoc.data();
-							if (ongoingCall && ongoingCall.status !== "ended" && !hide) {
-								// Call is still pending, redirect the user back to the meeting
-								userType === "client" &&
-									toast({
-										variant: "destructive",
-										title: "Ongoing Call or Session Pending",
-										description: "Redirecting you back ...",
-									});
+							if (
+								ongoingCall &&
+								ongoingCall.status !== "ended" &&
+								!hide &&
+								!hasRedirected
+							) {
+								setHasRedirected(true);
 								router.replace(`/meeting/${ongoingCall.id}`);
-								setHasRedirected(true);
+								return;
 							}
-						} else {
-							// If no ongoing call in Firestore, check local storage
-							const storedCallId = localStorage.getItem("activeCallId");
-							if (storedCallId && !hide && !hasRedirected) {
-								toast({
-									variant: "destructive",
-									title: "Ongoing Call or Session Pending",
-									description: "Redirecting you back ...",
-								});
-								router.replace(`/meeting/${storedCallId}`);
-								setHasRedirected(true);
-							}
+						}
+
+						const storedCallId = localStorage.getItem("activeCallId");
+						if (storedCallId && !hide && !hasRedirected) {
+							setHasRedirected(true);
+
+							router.replace(`/meeting/${storedCallId}`);
+							return;
 						}
 					}
 				);
@@ -114,11 +110,7 @@ const MyCallUI = () => {
 					await updateExpertStatus(expertPhone, "Online");
 				}
 
-				isMeetingOwner &&
-					(await updateExpertStatus(
-						callCreator?.custom?.phone as string,
-						"Idle"
-					));
+				await updateExpertStatus(callCreator?.custom?.phone as string, "Idle");
 
 				setShowCallUI(false); // Hide call UI
 			};
@@ -142,8 +134,7 @@ const MyCallUI = () => {
 				await updateFirestoreSessions(
 					callCreator?.id as string,
 					call.id,
-					"ended",
-					[]
+					"ended"
 				);
 
 				logEvent(analytics, "call_rejected", {
@@ -168,22 +159,60 @@ const MyCallUI = () => {
 					callId: call.id,
 				});
 
+				toast({
+					variant: "destructive",
+					title: "Call Accepted",
+					description: "Redirecting to meeting...",
+				});
+
+				if (isMeetingOwner) {
+					const createdAtDate = currentUser?.createdAt
+						? new Date(currentUser.createdAt)
+						: new Date();
+					const formattedDate = createdAtDate.toISOString().split("T")[0];
+					if (call.type === "audio") {
+						try {
+							trackEvent("BookCall_Audio_Connected", {
+								Client_ID: currentUser?._id,
+								User_First_Seen: formattedDate,
+								Creator_ID: expert?.user_id,
+							});
+						} catch (error) {
+							console.log(error);
+						}
+					} else {
+						try {
+							trackEvent("BookCall_Video_Connected", {
+								Client_ID: currentUser?._id,
+								User_First_Seen: formattedDate,
+								Creator_ID: expert?.user_id,
+							});
+						} catch (error) {
+							console.log(error);
+						}
+					}
+				}
+
 				await updateExpertStatus(callCreator?.custom?.phone as string, "Busy");
 
-				await axios.post(`${backendBaseUrl}/calls/updateCall`, {
-					callId: call.id,
-					call: { status: "Accepted" },
-				});
+				isMeetingOwner &&
+					(await axios.post(`${backendBaseUrl}/calls/updateCall`, {
+						callId: call.id,
+						call: { status: "Accepted" },
+					}));
 
 				// Check the calling state before attempting to leave
 				if (
 					call.state.callingState !== CallingState.LEFT &&
 					(call.state.callingState === CallingState.JOINED ||
-						call.state.callingState === CallingState.JOINING)
+						call.state.callingState === CallingState.JOINING ||
+						call.state.callingState === CallingState.IDLE ||
+						call.state.callingState === CallingState.RINGING)
 				) {
 					await call?.leave();
 				}
 
+				// setHasRedirected(true);
 				router.replace(`/meeting/${call.id}`);
 			};
 

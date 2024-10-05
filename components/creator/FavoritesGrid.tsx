@@ -1,4 +1,8 @@
-import { isValidUrl } from "@/lib/utils";
+import {
+	backendBaseUrl,
+	getProfileImagePlaceholder,
+	isValidUrl,
+} from "@/lib/utils";
 import { creatorUser } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,12 +10,12 @@ import React, { useEffect, useState } from "react";
 import Favorites from "../shared/Favorites";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useToast } from "../ui/use-toast";
-import { toggleFavorite } from "@/lib/actions/favorites.actions";
 import * as Sentry from "@sentry/nextjs";
 import { usePathname } from "next/navigation";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { trackEvent } from "@/lib/mixpanel";
+import axios from "axios";
 
 const FavoritesGrid = ({
 	creator,
@@ -31,11 +35,12 @@ const FavoritesGrid = ({
 
 	const fullName =
 		`${creator?.firstName || ""} ${creator?.lastName || ""}`.trim() ||
-		creator.username;
+		creator?.username;
 
 	useEffect(() => {
-		const creatorRef = doc(db, "services", creator._id);
-		const statusDocRef = doc(db, "userStatus", creator.phone);
+		if (!creator) return;
+		const creatorRef = doc(db, "services", creator._id as string);
+		const statusDocRef = doc(db, "userStatus", creator.phone as string);
 
 		const unsubscribeServices = onSnapshot(creatorRef, (doc) => {
 			const data = doc.data();
@@ -74,18 +79,21 @@ const FavoritesGrid = ({
 		return () => {
 			unsubscribeServices();
 		};
-	}, [creator._id, creator.phone]);
+	}, [creator?._id, creator?.phone]);
 
 	const handleToggleFavorite = async () => {
 		const clientId = clientUser?._id;
 		setAddingFavorite(true);
 		try {
-			const response = await toggleFavorite({
-				clientId: clientId as string,
-				creatorId: creator._id,
-			});
+			const response = await axios.post(
+				`${backendBaseUrl}/favorites/upsertFavorite`,
+				{
+					clientId: clientId as string,
+					creatorId: creator?._id,
+				}
+			);
 
-			if (response.success) {
+			if (response.status === 200) {
 				const isFavorited = !markedFavorite;
 				setMarkedFavorite(isFavorited);
 				onFavoriteToggle(creator, isFavorited);
@@ -106,9 +114,9 @@ const FavoritesGrid = ({
 	};
 
 	const imageSrc =
-		creator?.photo && isValidUrl(creator.photo)
-			? creator.photo
-			: "/images/defaultProfileImage.png";
+		creator?.photo && isValidUrl(creator?.photo)
+			? creator?.photo
+			: getProfileImagePlaceholder(creator && (creator?.gender as string));
 
 	return (
 		<div className="grid grid-cols-[2fr_1fr] h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 border-gray-300 ">
@@ -123,7 +131,7 @@ const FavoritesGrid = ({
 							Walletbalace_Available: clientUser?.walletBalance,
 						})
 					}
-					href={`/${creator.username}`}
+					href={`/${creator?.username}`}
 					className="w-full flex items-center justify-start gap-4 cursor-pointer hoverScaleDownEffect"
 				>
 					{/* creator image */}
@@ -138,7 +146,13 @@ const FavoritesGrid = ({
 
 						<div
 							className={`absolute bottom-0 right-0 ${
-								status === "Online" ? "bg-green-500" : "bg-red-500"
+								status === "Online"
+									? "bg-green-1"
+									: status === "Offline"
+									? "bg-red-400"
+									: status === "Busy"
+									? "bg-orange-400"
+									: ""
 							} text-xs rounded-full sm:rounded-xl p-1.5 border-2 border-white`}
 						/>
 					</section>
@@ -148,13 +162,13 @@ const FavoritesGrid = ({
 							{fullName}
 						</p>
 						<span className="text-sm text-green-1 whitespace-nowrap">
-							{creator.profession}
+							{creator?.profession}
 						</span>
 					</div>
 				</Link>
 
 				<span className="text-sm text-[#A7A8A1] pl-1 whitespace-nowrap">
-					{creator.phone?.replace(
+					{creator?.phone?.replace(
 						/(\+91)(\d+)/,
 						(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
 					)}
@@ -179,7 +193,7 @@ const FavoritesGrid = ({
 					</button>
 				) : (
 					<Link
-						href={`/${creator.username}`}
+						href={`/${creator?.username}`}
 						className="bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
 					>
 						Talk Now

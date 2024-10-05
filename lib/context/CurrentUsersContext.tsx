@@ -102,15 +102,19 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				});
 		}
 
-		// Clear user data and local storage
-		await axios.post(`${backendBaseUrl}/user/endSession`);
-
 		localStorage.removeItem("currentUserID");
 		localStorage.removeItem("authToken");
 		localStorage.removeItem("notifyList");
+
+		// Clear user data and local storage
+		await axios.post(`${backendBaseUrl}/user/endSession`);
+
 		if (pathname === "/home") {
 			localStorage.removeItem("creatorURL");
 		}
+
+		const creatorURL = localStorage.getItem("creatorURL");
+		creatorURL ? router.replace(creatorURL) : router.replace("/home");
 
 		setClientUser(null);
 		setCreatorUser(null);
@@ -142,18 +146,35 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				localStorage.setItem("userType", data.userType);
 			} else {
 				handleSignout();
-			}
-		} catch (error: any) {
-			if (error.response && error.response.status === 401) {
-				console.warn("Unauthorized access - logging out");
 				toast({
 					variant: "destructive",
-					title: "Unauthorized access",
-					description: `Authentication Required`,
+					title: "Sign-out",
+					description: "You have been signed out. Please log in again.",
 				});
-				handleSignout();
+			}
+		} catch (error: any) {
+			if (error.response) {
+				const {
+					status,
+					data: { message },
+				} = error.response;
+
+				toast({
+					variant: "destructive",
+					title: status === 401 ? "User Logged Out" : "Error",
+					description: message || "An unexpected error occurred.",
+				});
+
+				if (status === 401) {
+					handleSignout();
+				}
 			} else {
 				console.error("Error fetching current user:", error);
+				toast({
+					variant: "destructive",
+					title: "Network Error",
+					description: "A network error occurred. Please try again later.",
+				});
 			}
 		} finally {
 			setFetchingUser(false);

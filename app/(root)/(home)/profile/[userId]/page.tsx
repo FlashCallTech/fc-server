@@ -14,22 +14,22 @@ const UserProfilePage = () => {
 	const { currentUser, userType, refreshCurrentUser } =
 		useCurrentUsersContext();
 	const getInitialState = (): UpdateUserParams => ({
-		id: currentUser?._id || "",
+		id: currentUser?._id ?? "",
 		fullName:
-			(currentUser?.firstName || "") + " " + (currentUser?.lastName || ""),
-		firstName: currentUser?.firstName || "",
-		lastName: currentUser?.lastName || "",
-		username: currentUser?.username || "",
-		profession: currentUser?.profession || "",
-		themeSelected: currentUser?.themeSelected || "#50A65C",
-		phone: currentUser?.phone || "",
-		photo: currentUser?.photo || "",
-		bio: currentUser?.bio || "",
-		role: userType || "client",
-		gender: currentUser?.gender || "",
-		dob: currentUser?.dob || "",
-		creatorId: currentUser?.creatorId || "",
-		referredBy: currentUser?.referredBy || "",
+			(currentUser?.firstName ?? "") + " " + (currentUser?.lastName ?? ""),
+		firstName: currentUser?.firstName ?? "",
+		lastName: currentUser?.lastName ?? "",
+		username: currentUser?.username ?? "",
+		profession: currentUser?.profession ?? "",
+		themeSelected: currentUser?.themeSelected ?? "#50A65C",
+		phone: currentUser?.phone ?? "",
+		photo: currentUser?.photo ?? "",
+		bio: currentUser?.bio ?? "",
+		role: userType ?? "client",
+		gender: currentUser?.gender ?? "",
+		dob: currentUser?.dob ?? "",
+		creatorId: currentUser?.creatorId ?? "",
+		referredBy: currentUser?.referredBy ?? "",
 	});
 
 	const pathname = usePathname();
