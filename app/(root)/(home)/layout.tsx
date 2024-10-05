@@ -36,6 +36,12 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 	const isMobile = useScreenSize();
 
 	useEffect(() => {
+		if (!isMobile) {
+			setIsVisible(true);
+		}
+	}, [isMobile]);
+
+	useEffect(() => {
 		if (typeof window !== "undefined") {
 			window.addEventListener("scroll", handleScroll);
 
@@ -102,7 +108,7 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 			<div className="flex">
 				<Sidebar isCreatorOrExpertPath={isCreatorOrExpertPath} />
 				<section
-					className={`flex min-h-full flex-1 flex-col  transition-all duration-300 ease-in-out ${
+					className={`flex min-h-[calc(100vh-100px)] flex-1 flex-col  transition-all duration-300 ease-in-out ${
 						!isVisible
 							? pathname !== "/home"
 								? "translate-y-0"
@@ -114,7 +120,7 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 							: "pt-24"
 					}  md:px-10`}
 				>
-					{children}
+					<div className="size-full">{children}</div>
 				</section>
 			</div>
 		</main>

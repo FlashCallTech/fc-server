@@ -28,16 +28,16 @@ const NavbarWeb = ({
 	const theme = `5px 5px 5px 0px #232323`;
 
 	return (
-		<nav className="sticky top-0 bg-white md:bg-transparent blurEffect w-full md:px-14 lg:px-24 z-40 py-2">
+		<nav className="sticky top-0 bg-white md:bg-transparent blurEffect w-full md:px-14 lg:px-24 z-40 pb-1 md:py-2">
 			<section className="flex items-center justify-between px-3 xs:px-5 md:px-10 py-2 md:bg-green-1 rounded-full border border-white">
 				{/* logo */}
 				<Link href="/home" className="hidden md:block">
 					<Image
-						src="/web/icons/logoFooter.png"
+						src="/icons/logo_new_light.png"
 						alt="logo"
 						width={1000}
 						height={1000}
-						className="rounded-[4px] w-full h-10 hoverScaleEffect p-2 border border-black"
+						className="bg-white flex items-center justify-center gap-2 px-4 border border-black rounded-[6px] hoverScaleDownEffect  w-[175px] h-[48px]"
 						style={{
 							boxShadow: theme,
 						}}
@@ -46,11 +46,11 @@ const NavbarWeb = ({
 
 				<Link href="/home" className="md:hidden">
 					<Image
-						src="/web/icons/logoMobile.png"
+						src="/icons/logo_icon.png"
 						alt="logo"
 						width={1000}
 						height={1000}
-						className="rounded-[4px] w-12 h-12 border border-black hoverScaleEffect"
+						className="rounded-[6px] p-1 object-contain size-12 border border-black hoverScaleEffect"
 						style={{
 							boxShadow: theme,
 						}}
@@ -67,7 +67,7 @@ const NavbarWeb = ({
 								{/* Home Button */}
 								<Link href="/home">
 									<Button
-										className="uppercase bg-green-1 text-white rounded-[4px] hoverScaleDownEffect text-xs border border-black md:!px-7"
+										className="uppercase bg-green-1 text-white rounded-[6px] hoverScaleDownEffect text-xs border border-black md:!px-7"
 										style={{
 											boxShadow: theme,
 										}}
@@ -77,7 +77,7 @@ const NavbarWeb = ({
 								</Link>
 								{/* Sign Out Button */}
 								<Button
-									className="uppercase bg-white hover:bg-white rounded-[4px] hoverScaleDownEffect text-xs border border-black md:!px-7"
+									className="uppercase bg-white hover:bg-white rounded-[6px] hoverScaleDownEffect text-xs border border-black md:!px-7"
 									onClick={handleSignout}
 									style={{
 										boxShadow: theme,
@@ -91,7 +91,7 @@ const NavbarWeb = ({
 								{/* Sign Up Button */}
 								<Link href="/authenticate?usertype=creator">
 									<Button
-										className="uppercase bg-green-1 text-white rounded-[4px] hoverScaleDownEffect text-xs border border-black md:!px-7"
+										className="uppercase bg-green-1 text-white rounded-[6px] hoverScaleDownEffect text-xs border border-black md:!px-7"
 										style={{
 											boxShadow: theme,
 										}}
@@ -102,7 +102,7 @@ const NavbarWeb = ({
 								{/* Login Button */}
 								<Link href="/authenticate">
 									<Button
-										className="uppercase bg-white hover:bg-white rounded-[4px] hoverScaleDownEffect text-xs border border-black md:!px-7"
+										className="uppercase bg-white hover:bg-white rounded-[6px] hoverScaleDownEffect text-xs border border-black md:!px-7"
 										style={{
 											boxShadow: theme,
 										}}

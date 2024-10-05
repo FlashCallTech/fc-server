@@ -13,15 +13,8 @@ import { trackEvent } from "@/lib/mixpanel";
 const PreviousPage = () => {
 	const [historyType, setHistoryType] = useState<"Calls" | "Chats">("Calls");
 	const [creator, setCreator] = useState<creatorUser>();
-	const [isSticky, setIsSticky] = useState(false);
 	const options: ("Calls" | "Chats")[] = ["Calls", "Chats"];
-	const stickyRef = useRef<HTMLDivElement>(null);
 	const { userType, clientUser } = useCurrentUsersContext();
-	const handleScroll = () => {
-		if (stickyRef.current) {
-			setIsSticky(window.scrollY > stickyRef.current.offsetTop);
-		}
-	};
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -42,22 +35,10 @@ const PreviousPage = () => {
 		});
 	}, []);
 
-	useEffect(() => {
-		window.addEventListener("scroll", handleScroll);
-		return () => {
-			window.removeEventListener("scroll", handleScroll);
-		};
-	}, []);
-
 	return (
-		<section
-			ref={stickyRef}
-			className="flex size-full flex-col gap-2 pb-5 md:pb-14"
-		>
-			<div
-				className={`sticky top-0 md:top-16 bg-white z-30 w-full p-4 ${
-					isSticky && "md:pt-8"
-				} pb-4 flex items-center justify-between transition-all duration-300`}
+		<section className=" flex size-full flex-col gap-2 pb-5 md:pb-14">
+			<section
+				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4  pb-4 flex items-center justify-between transition-all duration-300`}
 			>
 				<h1 className="text-3xl font-bold">
 					{userType === "creator" ? "User's Feedbacks" : "Order History"}
@@ -77,7 +58,7 @@ const PreviousPage = () => {
 						))}
 					</div>
 				)}
-			</div>
+			</section>
 			{userType !== "creator" && (
 				<div className="flex xl:hidden items-center justify-start w-full gap-2 px-4 pb-2">
 					{options.map((option) => (

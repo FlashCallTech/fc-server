@@ -46,8 +46,6 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const { currentUser } = useCurrentUsersContext();
 	const router = useRouter();
 	const { clientUser } = useCurrentUsersContext();
-	const [isSticky, setIsSticky] = useState(false);
-	const stickyRef = useRef<HTMLDivElement>(null);
 
 	const { ref, inView } = useInView();
 	const {
@@ -64,19 +62,6 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			fetchNextPage();
 		}
 	}, [inView]);
-
-	const handleScroll = () => {
-		if (stickyRef.current) {
-			setIsSticky(window.scrollY > stickyRef.current.offsetTop);
-		}
-	};
-
-	useEffect(() => {
-		window.addEventListener("scroll", handleScroll);
-		return () => {
-			window.removeEventListener("scroll", handleScroll);
-		};
-	}, []);
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -285,13 +270,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 			{/* Transaction History Section */}
 			<section
-				ref={stickyRef}
-				className={`sticky top-0 md:top-16 bg-white z-30 w-full px-4 ${
-					isSticky ? "pb-7 md:pt-7" : "pb-4"
-				}  pt-4`}
+				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4`}
 			>
 				<div className="flex flex-col items-start justify-start gap-4 w-full h-fit">
-					<h2 className=" text-gray-500 text-xl pt-4 font-normal leading-7">
+					<h2 className=" text-gray-500 text-xl font-normal leading-7">
 						Transaction History
 					</h2>
 					<div className="flex space-x-2  text-xs font-bold leading-4 w-fit">

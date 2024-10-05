@@ -154,16 +154,29 @@ const Navbar = ({
 				userType === "creator" ? (
 					<Link
 						href="/home"
-						className="flex items-center justify-center lg:ml-2 w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
+						className="flex items-center justify-center size-fit"
 					>
 						<Image
-							src="/icons/logoMain.png"
+							src="/icons/logo_new_light.png"
 							width={1000}
 							height={1000}
 							alt="flashcall logo"
-							className="w-[130px] md:w-[144px] h-[40px] p-2 bg-green-1 rounded-[4px] hoverScaleDownEffect border border-black"
+							className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[175px] xl:h-[48px]"
 							style={{
 								boxShadow: `4px 4px 0px 0px #000000`,
+								color: `${
+									isMobile && followCreatorTheme
+										? "#000000"
+										: followCreatorTheme
+								}`,
+								border: `1px solid #000000`,
+								backgroundColor: `${
+									isCreatorOrExpertPath
+										? isMobile
+											? currentTheme
+											: "#333333"
+										: "#ffffff"
+								}`,
 							}}
 						/>
 					</Link>

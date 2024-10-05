@@ -135,7 +135,7 @@ const Favorites = () => {
 	return (
 		<section ref={stickyRef} className="flex size-full flex-col gap-2">
 			<div
-				className={`sticky flex w-full items-center justify-between top-0 bg-white z-30 px-2 lg:pl-0.5 p-4 transition-all duration-300`}
+				className={`sticky flex w-full items-center justify-between top-0 md:top-[76px] bg-white z-30 px-2 lg:pl-0.5 p-4 transition-all duration-300`}
 			>
 				<h1 className="text-3xl font-bold pl-1">Favorites</h1>
 				<button
