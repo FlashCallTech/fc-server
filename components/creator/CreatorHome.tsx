@@ -316,7 +316,7 @@ const CreatorHome = () => {
 						audioAllowed: services.audioCall,
 						chatAllowed: services.chat,
 					},
-				} as UpdateCreatorParams);
+				});
 				refreshCurrentUser();
 			} catch (error) {
 				Sentry.captureException(error);

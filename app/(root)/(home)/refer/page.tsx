@@ -111,9 +111,9 @@ const ReferralLink: React.FC = () => {
                 {referralId}
                 <Image src={'/copy.svg'} width={0} height={0} alt="copy" className="w-[12px] h-[12px]" />
               </button>
-              <div className="bg-green-800 size-7 flex items-center p-2 rounded-full justify-center">
+              <div className="bg-green-800 size-6 min-w-10 flex items-center p-2 rounded-full justify-center">
                 <button onClick={handleShare}>
-                  <Image src={'/send.svg'} width={1000} height={1000} alt="share" className="size-5" />
+                  <Image src={'/share.svg'} width={1000} height={1000} alt="share" className="size-3" />
                 </button>
               </div>
             </div>
