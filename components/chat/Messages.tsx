@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import ImageModal from "@/lib/imageModal";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -34,6 +34,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 	const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
 	const { getDevicePlatform } = usePlatform();
 	const textSizeClass = getDevicePlatform() === 'iOS' ? 'text-base' : 'text-sm';
+	const [hasScrolled, setHasScrolled] = useState<boolean>(false);
 
 	const endRef = useRef<HTMLDivElement | null>(null);
 	const handleImageClick = (imageUrl: string) => {
@@ -44,13 +45,13 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 		setFullImageUrl(null);
 	};
 
-	useEffect(() => {
-		endRef.current?.scrollIntoView({ behavior: "smooth" });
+	// Use useLayoutEffect for immediate DOM interaction on mount
+	useLayoutEffect(() => {
+		if (!hasScrolled && chat) {
+			endRef.current?.scrollIntoView({ behavior: "smooth" });
+			setHasScrolled(true); // Set flag to true after first scroll
+		}
 	}, [chat]);
-
-	const formatDate = (timestamp: number) => {
-		return format(new Date(timestamp), "dd MMM yyyy");
-	};
 
 	const formatTime = (timestamp: number) => {
 		const date = new Date(timestamp);
@@ -159,7 +160,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 						</React.Fragment>
 					);
 				})}
-				{/* <div ref={endRef}></div> */}
+				<div ref={endRef}></div>
 			</div>
 		</div>
 	);

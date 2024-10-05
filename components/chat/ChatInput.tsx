@@ -75,7 +75,7 @@ const ChatInput: React.FC<Props> = ({
                             >
                                 &times;
                             </button>
-                            {isImgUploading && <p>Sending Image...</p>}
+                           
                         </div>
                     </div>
                     <div className='flex flex-row w-[99%] items-center justify-center px-3 py-2 bg-gray-300 rounded-xl text-black'>
@@ -87,8 +87,8 @@ const ChatInput: React.FC<Props> = ({
                             className={`px-2 ${textSizeClass} font-normal flex-auto bg-transparent outline-none`}
                         />
                         <button onClick={handleSend} onContextMenu={(e) => e.preventDefault()}>
-                            <div className='flex justify-center items-center bg-green-500 rounded-full px-2 py-2'>
-                                <Image src="/send.svg" width={0} height={0} alt="Send" className="w-5 h-5" />
+                            <div className='bg-[#25D366] p-1 rounded-full size-10 flex items-center justify-center'>
+                                <Image src="/send.svg" width={1000} height={1000} alt="Send" className="size-5" />
                             </div>
                         </button>
                     </div>
