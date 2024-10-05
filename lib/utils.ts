@@ -282,8 +282,6 @@ export const updateExpertStatus = async (
 		if (!response.ok) {
 			throw new Error(data.message || "Failed to update status");
 		}
-
-		console.log("Expert status updated to:", status);
 	} catch (error) {
 		Sentry.captureException(error);
 		console.error("Error updating expert status:", error);

@@ -20,6 +20,8 @@ import {
 	isValidHexColor,
 	updateFirestoreSessions,
 	trackCallEvents,
+	fetchFCMToken,
+	sendNotification,
 	// fetchFCMToken,
 	// sendNotification,
 } from "@/lib/utils";
@@ -218,20 +220,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		};
 	}, [chatState]);
 
-	// defining the actions for call accept and call reject
-	const handleCallAccepted = async (callType: string) => {
-		setIsProcessing(false); // Reset processing state
-
-		setSheetOpen(false);
-
-		// router.replace(`/meeting/${call.id}`);
-	};
-
-	const handleCallRejected = () => {
-		setIsProcessing(false); // Reset processing state
-		setSheetOpen(false);
-	};
-
 	const createMeeting = async (callType: string) => {
 		if (!client || !clientUser) return;
 
@@ -311,18 +299,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				},
 			});
 
-			// Utilize helper functions
-			// const fcmToken = await fetchFCMToken(creator.phone);
-			// if (fcmToken) {
-			// 	sendNotification(
-			// 		fcmToken,
-			// 		`Incoming Call`,
-			// 		`${callType} Call Request from ${clientUser.username}`,
-			// 		creator,
-			// 		`https:flashcall.me/meeting/${id}`
-			// 	);
-			// }
-
 			trackCallEvents(callType, clientUser, creator);
 
 			await fetch(`${backendBaseUrl}/calls/registerCall`, {
@@ -342,6 +318,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				call.id,
 				"ongoing"
 			);
+
+			// call.on("call.session_participant_joined", () =>
+			// 	router.replace(`/meeting/${call.id}`)
+			// );
 
 			// call.on("call.accepted", () => handleCallAccepted(callType));
 			// call.on("call.rejected", handleCallRejected);
@@ -413,7 +393,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	const handleChatClick = () => {
+	const handleChatClick = async () => {
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",
@@ -430,6 +410,17 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				status: onlineStatus,
 			});
 			setChatReqSent(true);
+			// Utilize helper functions
+			const fcmToken = await fetchFCMToken(creator.phone);
+			if (fcmToken) {
+				sendNotification(
+					fcmToken,
+					`Incoming Call`,
+					`Chat Request from ${clientUser.username}`,
+					creator,
+					`https:flashcall.me/`
+				);
+			}
 			handleChat(creator, clientUser);
 			let maxCallDuration =
 				(walletBalance / parseInt(creator.chatRate, 10)) * 60;

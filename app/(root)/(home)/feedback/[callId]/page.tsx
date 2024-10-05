@@ -2,53 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import CallFeedback from "@/components/feedbacks/CallFeedback";
-import SinglePostLoader from "@/components/shared/SinglePostLoader";
-import { useToast } from "@/components/ui/use-toast";
 import { useParams, useRouter } from "next/navigation";
-import * as Sentry from "@sentry/nextjs";
-import { backendBaseUrl } from "@/lib/utils";
 
 const CallFeedbackPage = () => {
 	const { callId } = useParams();
 	const router = useRouter();
-	const { toast } = useToast();
-	const [loadingFeedback, setLoadingFeedback] = useState(true);
-	const [showFeedback, setShowFeedback] = useState(false);
+	const [showFeedback, setShowFeedback] = useState(true);
 	const creatorURL = localStorage.getItem("creatorURL");
-
-	useEffect(() => {
-		const fetchFeedbacks = async () => {
-			try {
-				const response = await fetch(
-					`${backendBaseUrl}/feedback/call/getFeedbacks?callId=${callId}`
-				);
-				const feedbacks = await response.json();
-
-				if (feedbacks.length > 0) {
-					toast({
-						variant: "destructive",
-						title: "Feedback Already Exists",
-						description: "Returning to HomePage ...",
-					});
-					router.push(`${creatorURL ? creatorURL : "/home"}`);
-				} else {
-					setShowFeedback(true);
-				}
-			} catch (error) {
-				Sentry.captureException(error);
-				console.error("Error fetching feedbacks:", error);
-				toast({
-					variant: "destructive",
-					title: "Error",
-					description: "An error occurred while fetching feedbacks",
-				});
-			} finally {
-				setLoadingFeedback(false);
-			}
-		};
-
-		fetchFeedbacks();
-	}, [callId, router, toast]);
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -66,21 +26,9 @@ const CallFeedbackPage = () => {
 
 	const handleFeedbackClose = async () => {
 		setShowFeedback(false);
-		toast({
-			variant: "destructive",
-			title: "Thanks For The Feedback",
-			description: "Hope to See You Again ...",
-		});
-		router.push(`${creatorURL ? creatorURL : "/home"}`);
-	};
 
-	if (loadingFeedback) {
-		return (
-			<section className="w-full h-full flex items-center justify-center">
-				<SinglePostLoader />
-			</section>
-		);
-	}
+		router.replace(`${creatorURL ? creatorURL : "/home"}`);
+	};
 
 	return (
 		<section

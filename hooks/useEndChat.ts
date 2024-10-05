@@ -59,8 +59,6 @@ const useEndChat = () => {
 			if (!response.ok) {
 				throw new Error(data.message || "Failed to update status");
 			}
-
-			console.log("Expert status updated to:", status);
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error updating expert status:", error);
@@ -77,7 +75,7 @@ const useEndChat = () => {
 					setCreatorPhone(parsedCreator?.phone);
 				}
 			}
-		}
+		};
 
 		if (chatId) getCreator();
 	}, []);
@@ -104,13 +102,10 @@ const useEndChat = () => {
 
 		if (chatEnded) {
 			hasChatEnded.current = true;
-			if (userType === 'client')
-				updateExpertStatus(creatorPhone, "Online");
-			if (userType === 'creator')
-				router.replace(`/home`);
+			if (userType === "client") updateExpertStatus(creatorPhone, "Online");
+			if (userType === "creator") router.replace(`/home`);
 			else {
 				router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
-
 			}
 		}
 	}, [chatEnded]);

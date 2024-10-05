@@ -61,8 +61,6 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	}, [isAuthSheetOpen]);
 
 	useEffect(() => {
-		setBodyBackgroundColor("#000000");
-
 		if (!creator || !creator._id || !creator.phone) return;
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);
@@ -149,10 +147,10 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 	return (
 		// Wrapper Section
-		<section className="size-full xl:w-[704px] xl:mx-auto flex flex-col items-center gap-4">
+		<section className="size-full xl:w-[704px] md:mx-auto flex flex-col items-center gap-4">
 			{/* Creator Details */}
 			<section
-				className={`h-fit px-4 w-full flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-center p-5 xl:rounded-[16px]`}
+				className={`h-fit px-4 w-full flex flex-col md:flex-row gap-4 items-start md:items-center justify-center p-5 md:rounded-[16px]`}
 				style={{ backgroundColor: themeColor }}
 			>
 				{/* Creator Info */}
