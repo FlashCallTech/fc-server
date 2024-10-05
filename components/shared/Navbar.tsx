@@ -101,7 +101,7 @@ const Navbar = ({
 
 	const AppLink = () => (
 		<Button
-			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[8px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
+			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
 			style={{
 				boxShadow: `4px 4px 0px 0px #000000`,
 				color: `${
@@ -123,7 +123,7 @@ const Navbar = ({
 				width={100}
 				height={100}
 				alt="flashcall logo"
-				className={`size-6 xl:w-[28px] xl:h-[40px] rounded-full`}
+				className={`size-6 xl:w-[28px] xl:h-[36px] rounded-full`}
 			/>
 
 			<span className="w-fit whitespace-nowrap text-xs font-semibold">

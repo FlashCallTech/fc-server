@@ -45,27 +45,56 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 		}
 	}, [lastScrollY]);
 
+	const SCROLL_THRESHOLD = 50;
+
+	useEffect(() => {
+		setIsVisible(true); // Ensure navbar is visible on page change
+	}, [pathname]);
+
+	// Handle scroll event
 	const handleScroll = () => {
 		if (typeof window !== "undefined") {
 			const scrollY = window.scrollY;
+			const maxScrollY =
+				document.documentElement.scrollHeight - window.innerHeight;
 
 			// Detect if the user is at the top of the page
 			setIsTop(scrollY === 0);
 
+			// Check if the user is at the bottom
+			const isAtBottom = scrollY >= maxScrollY;
+
+			// Only apply navbar visibility changes on mobile
 			if (window.innerWidth <= 768) {
-				if (scrollY > lastScrollY) {
-					// If scrolling down
+				if (isAtBottom) {
+					// Hide the navbar when at the bottom
 					setIsVisible(false);
-				} else {
-					// If scrolling up
-					setIsVisible(true);
+				} else if (Math.abs(scrollY - lastScrollY) > SCROLL_THRESHOLD) {
+					// Only toggle visibility if scroll change exceeds the threshold
+					if (scrollY > lastScrollY) {
+						// Scrolling down
+						setIsVisible(false);
+					} else {
+						// Scrolling up
+						setIsVisible(true);
+					}
+					setLastScrollY(scrollY);
 				}
-				setLastScrollY(scrollY);
 			} else {
 				setIsVisible(true);
 			}
 		}
 	};
+
+	// Add scroll listener
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			window.addEventListener("scroll", handleScroll);
+			return () => {
+				window.removeEventListener("scroll", handleScroll);
+			};
+		}
+	}, [lastScrollY]);
 
 	return (
 		<main className="relative">
@@ -73,17 +102,19 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 			<div className="flex">
 				<Sidebar isCreatorOrExpertPath={isCreatorOrExpertPath} />
 				<section
-					className={`flex min-h-screen flex-1 flex-col  transition-all duration-300 ease-in-out ${
-						!isVisible ? "translate-y-0" : isMobile && ""
-					} ${
-						isTop && isCreatorOrExpertPath && isMobile
-							? "translate-y-[76px]"
-							: isCreatorOrExpertPath && isMobile
-							? "pt-0"
+					className={`flex min-h-full flex-1 flex-col  transition-all duration-300 ease-in-out ${
+						!isVisible
+							? pathname !== "/home"
+								? "translate-y-0"
+								: "translate-y-7"
+							: isMobile
+							? isTop && isVisible && isCreatorOrExpertPath
+								? "translate-y-[72px]"
+								: "translate-y-[76px]"
 							: "pt-24"
-					} md:px-10`}
+					}  md:px-10`}
 				>
-					<div className={`w-full h-full relative`}>{children}</div>
+					{children}
 				</section>
 			</div>
 		</main>

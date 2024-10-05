@@ -51,14 +51,14 @@ const CallListMobile = () => {
 	return (
 		<>
 			{userCalls && userCalls?.pages[0].calls?.length > 0 ? (
-				isError || !currentUser ? (
+				(!isLoading && isError) || !currentUser ? (
 					<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
 						Failed to fetch User Calls <br />
 						Please try again later.
 					</div>
 				) : (
 					<section
-						className={`grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-x-hidden no-scrollbar`}
+						className={`w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 xl:gap-10 text-black px-4`}
 					>
 						{userCalls?.pages?.flatMap((page: any) =>
 							page?.calls?.map((userCall: RegisterCallParams) => {

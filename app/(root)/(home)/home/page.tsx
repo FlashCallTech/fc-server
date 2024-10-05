@@ -76,7 +76,7 @@ const HomePage = () => {
 	}
 
 	return (
-		<main className="flex flex-col size-full">
+		<main className="flex flex-col pt-4 size-full">
 			{userType === "client" ? (
 				<Suspense fallback={<PostLoader count={6} />}>
 					{isError ? (
