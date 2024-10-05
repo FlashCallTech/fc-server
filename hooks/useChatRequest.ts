@@ -110,7 +110,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			}
 
 			const chatId = existingChatId || doc(chatRef).id;
-			localStorage.setItem('chatId', chatId);
+			localStorage.setItem("chatId", chatId);
 			const newChatRequestRef = doc(chatRequestsRef);
 			const createdAtDate = clientUser?.createdAt
 				? new Date(clientUser.createdAt)

@@ -21,7 +21,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 	const [notSaved, setNotSaved] = useState(true); // Initially disabled until valid values are entered
 	const { toast } = useToast();
 
-	// Validate if any price is empty, NaN, or below 5
+	// Validate if any price is empty, NaN, or below 10
 	const validatePrices = (updatedPrices: {
 		videoCall: string;
 		audioCall: string;
@@ -39,9 +39,9 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 			isNaN(audioCallPrice) ||
 			!updatedPrices.chat ||
 			isNaN(chatPrice) ||
-			videoCallPrice < 5 ||
-			audioCallPrice < 5 ||
-			chatPrice < 5
+			videoCallPrice < 10 ||
+			audioCallPrice < 10 ||
+			chatPrice < 10
 		) {
 			setNotSaved(true);
 		} else {
@@ -82,7 +82,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							<input
 								type="number"
 								name="videoCall"
-								min={5}
+								min={10}
 								value={prices.videoCall}
 								onChange={handleChange}
 								className="border rounded p-1 w-16 text-right bg-gray-200"
@@ -99,7 +99,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							<input
 								type="number"
 								name="audioCall"
-								min={5}
+								min={10}
 								value={prices.audioCall}
 								onChange={handleChange}
 								className="border rounded p-1 w-16 text-right bg-gray-200"
@@ -116,7 +116,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							<input
 								type="number"
 								name="chat"
-								min={5}
+								min={10}
 								value={prices.chat}
 								onChange={handleChange}
 								className="border rounded p-1 w-16 text-right bg-gray-200"

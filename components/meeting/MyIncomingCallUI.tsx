@@ -4,6 +4,7 @@ import { useToast } from "../ui/use-toast";
 import * as Sentry from "@sentry/nextjs";
 import { updateExpertStatus } from "@/lib/utils";
 import GetRandomImage from "@/utils/GetRandomImage";
+import { useRouter } from "next/navigation";
 
 const MyIncomingCallUI = ({ call }: { call: Call }) => {
 	const { toast } = useToast();
@@ -12,6 +13,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"
 	);
+	const router = useRouter();
 
 	useEffect(() => {
 		const registerServiceWorker = async () => {
@@ -98,8 +100,9 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 			if (expertPhone) {
 				await updateExpertStatus(expertPhone, "Busy");
 			}
-			await call.accept();
+			// await call.accept();
 			setCallState("accepted");
+			router.replace(`/meeting/${call?.id}`);
 		} else if (action === "ended") {
 			setCallState("ended");
 		}

@@ -9,15 +9,15 @@ import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import CreatorDetails from "./CreatorDetails";
-import { setBodyBackgroundColor } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const CreatorCard: React.FC = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
 	const [loading, setLoading] = useState(true);
 	const { username } = useParams();
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
-
+	const router = useRouter();
 	useEffect(() => {
 		const fetchCreator = async () => {
 			try {
@@ -31,8 +31,10 @@ const CreatorCard: React.FC = () => {
 			}
 		};
 
-		if (username) {
+		if (username && userType === "client") {
 			fetchCreator();
+		} else {
+			router.replace("/home");
 		}
 	}, [username]);
 

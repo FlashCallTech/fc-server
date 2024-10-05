@@ -2,7 +2,13 @@ import {
 	DeviceSelectorAudioInput,
 	DeviceSelectorAudioOutput,
 } from "@stream-io/video-react-sdk";
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, {
+	Dispatch,
+	SetStateAction,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 const AudioDeviceList = ({
 	showAudioDeviceList,
@@ -12,18 +18,46 @@ const AudioDeviceList = ({
 	setShowAudioDeviceList: Dispatch<SetStateAction<boolean>>;
 }) => {
 	const [isScaled, setIsScaled] = useState(false);
+	const deviceListRef = useRef<HTMLDivElement>(null);
+	const buttonRef = useRef<HTMLButtonElement>(null); // Add ref for button
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			// Ignore clicks on the button itself
+			if (
+				deviceListRef.current &&
+				!deviceListRef.current.contains(event.target as Node) &&
+				buttonRef.current &&
+				!buttonRef.current.contains(event.target as Node) // Check if clicked outside button
+			) {
+				setShowAudioDeviceList(false);
+			}
+		};
+
+		if (showAudioDeviceList) {
+			document.addEventListener("mousedown", handleClickOutside);
+		}
+
+		// Cleanup event listener on unmount
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, [showAudioDeviceList, setShowAudioDeviceList]);
+
 	const handleClick = () => {
 		setShowAudioDeviceList((prev) => !prev);
 		setIsScaled((prev) => !prev);
 	};
+
 	return (
 		<>
 			<button
+				ref={buttonRef} // Attach the ref to the button
 				onClick={handleClick}
 				className={`cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[${
 					isScaled && "#4c535b"
 				}]  transition-all duration-300 active:scale-75  hover:${
-					isScaled ? "scale-110" : "scale-100"
+					isScaled ? "scale-95" : "scale-100"
 				} flex items-center`}
 			>
 				<svg
@@ -44,6 +78,7 @@ const AudioDeviceList = ({
 
 			{showAudioDeviceList && (
 				<div
+					ref={deviceListRef}
 					className="absolute bottom-16 left-0 bg-dark-1 rounded-t-xl w-full z-40"
 					onChange={() => setShowAudioDeviceList(false)}
 				>

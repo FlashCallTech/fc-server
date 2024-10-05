@@ -54,6 +54,8 @@ export const CallTimerProvider = ({
 	const [videoRatePerMinute, setVideoRatePerMinute] = useState(0);
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
 	const { useCallStartsAt } = useCallStateHooks();
+	const { useParticipantCount } = useCallStateHooks();
+	const participantCount = useParticipantCount();
 
 	const [timeLeft, setTimeLeft] = useState(NaN);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);

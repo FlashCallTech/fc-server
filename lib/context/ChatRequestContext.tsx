@@ -80,8 +80,6 @@ export const ChatRequestProvider = ({
 		return () => unsubscribe(); // Cleanup subscription on component unmount or when dependencies change
 	}, []); // Dependencies
 
-	console.log(chatRequest)
-
 	return (
 		<ChatRequestContext.Provider value={{ chatRequest, setChatRequest }}>
 			{currentCreatorId === creatorUser?._id && chatRequest ? (

@@ -151,13 +151,9 @@ const CallEnded = ({ toast, router, call }: any) => {
 			if (transactionHandled.current) return;
 
 			setLoading(true);
-			await updateExpertStatus(
-				call?.state?.createdBy?.custom?.phone as string,
-				"Idle"
-			);
-
 			transactionHandled.current = true;
 
+			// Show toast notification
 			if (!toastShown) {
 				toast({
 					variant: "destructive",
@@ -167,54 +163,87 @@ const CallEnded = ({ toast, router, call }: any) => {
 				setToastShown(true);
 			}
 
-			// Trigger transaction in backend
-			const transactionResponse = await fetch(
-				`${backendBaseUrl}/calls/transaction/handleTransaction`,
-				{
-					method: "POST",
-					body: JSON.stringify({
-						expertId,
-						clientId,
+			stopMediaStreams();
+
+			// Calculate call duration
+			const callEndedTime = new Date(callEndedAt);
+			const callStartsAtTime = new Date(callStartsAt);
+			const duration = (
+				(callEndedTime.getTime() - callStartsAtTime.getTime()) /
+				1000
+			).toFixed(2);
+
+			const localSessionKey = `meeting_${call.id}_${currentUser?._id}`;
+			localStorage.removeItem(localSessionKey);
+
+			const transactionPayload = {
+				expertId,
+				clientId,
+				callId: call.id,
+				duration,
+				isVideoCall: call.type === "default",
+			};
+			const callUpdatePayload = {
+				callId: call.id,
+				call: {
+					status: "Ended",
+					startedAt: callStartsAtTime,
+					endedAt: callEndedTime,
+					duration: duration,
+				},
+			};
+
+			try {
+				const [transactionResponse, callUpdateResponse] = await Promise.all([
+					fetch(`${backendBaseUrl}/calls/transaction/handleTransaction`, {
+						method: "POST",
+						body: JSON.stringify(transactionPayload),
+						headers: {
+							"Content-Type": "application/json",
+						},
+					}),
+					fetch(`${backendBaseUrl}/calls/updateCall`, {
+						method: "POST",
+						body: JSON.stringify(callUpdatePayload),
+						headers: { "Content-Type": "application/json" },
+					}),
+				]);
+
+				if (transactionResponse.ok && callUpdateResponse.ok) {
+					// Update expert status
+					await updateExpertStatus(
+						call?.state?.createdBy?.custom?.phone as string,
+						"Idle"
+					);
+
+					if (expert) {
+						await updateExpertStatus(expert?.custom?.phone, "Online");
+					}
+					// Execute the logic after successful transaction
+					removeActiveCallId();
+					logEvent(analytics, "call_ended", {
 						callId: call.id,
 						duration,
-						isVideoCall: call.type === "default",
-					}),
-					headers: {
-						"Content-Type": "application/json",
-					},
+						type: call.type === "default" ? "video" : "audio",
+					});
+
+					// Update wallet balance asynchronously
+					updateWalletBalance();
+
+					// Redirect to feedback page immediately
+					router.replace(`/feedback/${call.id}`);
+				} else {
+					// Handle failure gracefully
+					console.error("Failed to process transaction or update call status");
+					const creatorURL = localStorage.getItem("creatorURL");
+					router.replace(`${creatorURL ? creatorURL : "/home"}`);
 				}
-			);
-
-			await fetch(`${backendBaseUrl}/calls/updateCall`, {
-				method: "POST",
-				body: JSON.stringify({
-					callId: call.id,
-					call: {
-						status: "Ended",
-						startedAt: callStartsAtTime,
-						endedAt: callEndedAt,
-						duration: duration,
-					},
-				}),
-				headers: { "Content-Type": "application/json" },
-			});
-
-			if (transactionResponse.ok) {
-				// Execute the logic after successful transaction
-				removeActiveCallId();
-				logEvent(analytics, "call_ended", {
-					callId: call.id,
-					duration,
-					type: call.type === "default" ? "video" : "audio", // Assuming you want to log type as "video" or "audio"
-				});
-
-				setLoading(false);
-				updateWalletBalance();
-				router.replace(`/feedback/${call.id}`);
-			} else {
-				console.error("Failed to process transaction");
+			} catch (error) {
+				console.error("Error handling call end", error);
 				const creatorURL = localStorage.getItem("creatorURL");
 				router.replace(`${creatorURL ? creatorURL : "/home"}`);
+			} finally {
+				setLoading(false);
 			}
 		};
 
@@ -266,7 +295,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 	}
 
 	return (
-		<div className="flex flex-col w-full items-center justify-center h-screen gap-7">
+		<div className="flex flex-col w-full items-center justify-center h-screen">
 			<SinglePostLoader />
 		</div>
 	);
