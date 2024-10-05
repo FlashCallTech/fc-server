@@ -2,8 +2,6 @@
 
 import { UserFeedback } from "@/types";
 import React, { useEffect, useState } from "react";
-import ContentLoading from "../shared/ContentLoading";
-import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
@@ -12,6 +10,10 @@ import { Switch } from "../ui/switch";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import * as Sentry from "@sentry/nextjs";
+import GetRandomImage from "@/utils/GetRandomImage";
+import { backendBaseUrl, isValidUrl } from "@/lib/utils";
+import axios from "axios";
+import { useInView } from "react-intersection-observer";
 
 // Function to reorder the array based on the drag result
 const reorder = (
@@ -29,7 +31,7 @@ const reorder = (
 
 type FeedbackParams = {
 	callId?: string;
-	feedbacks: [UserFeedback];
+	feedback: UserFeedback;
 };
 
 type ExtendedUserFeedback = UserFeedback & {
@@ -46,72 +48,34 @@ const CreatorCallsFeedbacks = () => {
 	);
 
 	const pathname = usePathname();
+	const { ref, inView } = useInView();
 
 	useEffect(() => {
-		const handleScroll = () => {
-			if (
-				window.innerHeight + window.scrollY >=
-				document.body.offsetHeight - 2
-			) {
-				setCallsCount((prevCount) => prevCount + 6);
-			}
-		};
-
-		window.addEventListener("scroll", handleScroll);
-		return () => {
-			window.removeEventListener("scroll", handleScroll);
-		};
-	}, []);
+		if (inView) {
+			setCallsCount((prevCount) => prevCount + 6);
+		}
+	}, [inView]);
 
 	useEffect(() => {
 		const getFeedbacks = async () => {
 			try {
-				const response = await fetch(
-					`/api/v1/feedback/call/getFeedbacks?creatorId=${String(
+				const response = await axios.get(
+					`${backendBaseUrl}/feedback/call/getFeedbacks?creatorId=${String(
 						creatorUser?._id
 					)}`
 				);
 
-				let data = await response.json();
+				let data = await response.data;
 
-				const feedbacksWithCallId = data.feedbacks.map(
+				const feedbacksWithCallId = data.map(
 					(item: FeedbackParams, index: number) => ({
-						...item.feedbacks[0],
+						...item.feedback,
 						callId: item.callId,
 						position:
-							item.feedbacks[0].position !== -1
-								? item.feedbacks[0].position
+							item.feedback.position !== -1
+								? item.feedback.position
 								: index + 1,
 					})
-				);
-
-				// Sort the feedbacks
-				const sortedFeedbacks = feedbacksWithCallId.sort(
-					(a: UserFeedback, b: UserFeedback) => {
-						// Provide default values for position if it's null or undefined
-						const positionA =
-							a.position !== null && a.position !== undefined ? a.position : -1;
-						const positionB =
-							b.position !== null && b.position !== undefined ? b.position : -1;
-
-						// Sort by position first if neither are -1
-						if (positionA !== -1 && positionB !== -1) {
-							return positionA - positionB;
-						}
-
-						// If one position is -1, it goes after the other
-						if (positionA === -1 && positionB !== -1) {
-							return 1; // 'a' should be after 'b'
-						}
-						if (positionB === -1 && positionA !== -1) {
-							return -1; // 'b' should be after 'a'
-						}
-
-						// If both are -1, sort by createdAt
-						return (
-							new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-						);
-					}
 				);
 
 				setFeedbacks(feedbacksWithCallId);
@@ -135,12 +99,9 @@ const CreatorCallsFeedbacks = () => {
 		setLoadingFeedbackId(feedback.callId); // Set loading state
 
 		try {
-			const response = await fetch("/api/v1/feedback/creator/setFeedback", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
+			const response = await axios.post(
+				`${backendBaseUrl}/feedback/creator/setFeedback`,
+				{
 					creatorId: creatorUser?._id,
 					clientId: feedback.clientId._id,
 					rating: feedback.rating,
@@ -148,28 +109,22 @@ const CreatorCallsFeedbacks = () => {
 					showFeedback: showFeedback,
 					createdAt: feedback.createdAt,
 					position: feedback.position,
-				}),
-			});
+				}
+			);
 
-			if (!response.ok) {
+			if (response.status !== 200) {
 				throw new Error("Failed to update feedback visibility");
 			}
 
-			await fetch("/api/v1/feedback/call/create", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					creatorId: creatorUser?._id,
-					callId: feedback.callId,
-					clientId: feedback.clientId._id,
-					rating: feedback.rating,
-					feedbackText: feedback.feedback,
-					showFeedback: showFeedback,
-					createdAt: feedback.createdAt,
-					position: feedback.position,
-				}),
+			await axios.post(`${backendBaseUrl}/feedback/call/create`, {
+				creatorId: creatorUser?._id,
+				callId: feedback.callId,
+				clientId: feedback.clientId._id,
+				rating: feedback.rating,
+				feedbackText: feedback.feedback,
+				showFeedback: showFeedback,
+				createdAt: feedback.createdAt,
+				position: feedback.position,
 			});
 
 			setFeedbacks((prevFeedbacks) =>
@@ -229,39 +184,27 @@ const CreatorCallsFeedbacks = () => {
 			await Promise.all(
 				updatedFeedbacks.map(async (feedback) => {
 					// Update feedback position in call feedbacks
-					await fetch("/api/v1/feedback/call/create", {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({
+					await axios.post(`${backendBaseUrl}/feedback/call/create`, {
+						creatorId: feedback.creatorId,
+						callId: feedback.callId,
+						clientId: feedback.clientId,
+						showFeedback: feedback.showFeedback,
+						rating: feedback.rating,
+						feedbackText: feedback.feedbackText,
+						createdAt: feedback.createdAt,
+						position: feedback.position,
+					});
+
+					// If showFeedback is true, update the position in creator feedbacks
+					if (feedback.showFeedback) {
+						await axios.post(`${backendBaseUrl}/feedback/creator/setFeedback`, {
 							creatorId: feedback.creatorId,
-							callId: feedback.callId,
 							clientId: feedback.clientId,
 							showFeedback: feedback.showFeedback,
 							rating: feedback.rating,
 							feedbackText: feedback.feedbackText,
 							createdAt: feedback.createdAt,
 							position: feedback.position,
-						}),
-					});
-
-					// If showFeedback is true, update the position in creator feedbacks
-					if (feedback.showFeedback) {
-						await fetch("/api/v1/feedback/creator/setFeedback", {
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json",
-							},
-							body: JSON.stringify({
-								creatorId: feedback.creatorId,
-								clientId: feedback.clientId,
-								showFeedback: feedback.showFeedback,
-								rating: feedback.rating,
-								feedbackText: feedback.feedbackText,
-								createdAt: feedback.createdAt,
-								position: feedback.position,
-							}),
 						});
 					}
 				})
@@ -321,29 +264,50 @@ const CreatorCallsFeedbacks = () => {
 												/>
 												<div className="flex h-full w-full items-start justify-between">
 													<div className="w-full flex items-center justify-start gap-4">
-														{feedback?.clientId?.photo && (
-															<Image
-																src={
-																	feedback?.clientId?.photo ||
-																	"/images/defaultProfileImage.png"
-																}
-																alt={feedback?.clientId?.username}
-																height={1000}
-																width={1000}
-																className="rounded-full w-12 h-12 object-cover"
-																onError={(e) => {
-																	e.currentTarget.src =
-																		"/images/defaultProfileImage.png";
-																}}
-															/>
-														)}
+														<Image
+															src={
+																feedback?.clientId?.photo &&
+																isValidUrl(feedback.clientId.photo)
+																	? feedback.clientId.photo
+																	: GetRandomImage()
+															}
+															alt={
+																feedback?.clientId?.username || "Default User"
+															}
+															height={1000}
+															width={1000}
+															className="rounded-full w-12 h-12 object-cover"
+															onError={(e) => {
+																e.currentTarget.src =
+																	"/images/defaultProfileImage.png";
+															}}
+														/>
+
 														<div className="flex flex-col">
 															<span className="text-base text-green-1">
-																{feedback?.clientId?.phone ||
-																	feedback?.clientId?._id}
+																{feedback?.clientId?.phone.replace(
+																	/(\+91)(\d+)/,
+																	(match, p1, p2) =>
+																		`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+																) || feedback?.clientId?._id}
 															</span>
 															<p className="text-sm tracking-wide">
-																{feedback?.clientId?.username}
+																{feedback?.clientId?.username.startsWith(
+																	"+91"
+																) ? (
+																	<>
+																		{feedback.clientId.username.replace(
+																			/(\+91)(\d+)/,
+																			(match, p1, p2) =>
+																				`${p1} ${p2.replace(
+																					/(\d{5})$/,
+																					"xxxxx"
+																				)}`
+																		)}
+																	</>
+																) : (
+																	<>{feedback?.clientId?.username}</>
+																)}
 															</p>
 														</div>
 													</div>
@@ -385,22 +349,13 @@ const CreatorCallsFeedbacks = () => {
 					</Droppable>
 				</DragDropContext>
 			) : (
-				<div className="flex flex-col w-full items-center justify-center h-full gap-7">
-					<ContentLoading />
-					<h1 className="text-2xl font-semibold text-black">No Orders Yet</h1>
-					<Link
-						href="/home"
-						className={`flex gap-4 items-center p-4 rounded-lg justify-center bg-green-1 hover:opacity-80 mx-auto w-fit`}
-					>
-						<Image
-							src="/icons/Home.svg"
-							alt="Home"
-							width={24}
-							height={24}
-							className="brightness-200"
-						/>
-						<p className="text-lg font-semibold text-white">Return Home</p>
-					</Link>
+				<div className="flex flex-col w-full items-center justify-center h-full">
+					<h1 className="text-2xl font-semibold text-red-500">
+						No Feedbacks Found
+					</h1>
+					<h2 className="text-xl font-semibold text-red-500">
+						User provided feedbacks are shown here
+					</h2>
 				</div>
 			)}
 		</>

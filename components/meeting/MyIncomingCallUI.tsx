@@ -3,6 +3,7 @@ import { Call } from "@stream-io/video-react-sdk";
 import { useToast } from "../ui/use-toast";
 import * as Sentry from "@sentry/nextjs";
 import { updateExpertStatus } from "@/lib/utils";
+import GetRandomImage from "@/utils/GetRandomImage";
 
 const MyIncomingCallUI = ({ call }: { call: Call }) => {
 	const { toast } = useToast();
@@ -33,8 +34,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 			navigator.serviceWorker.ready.then((registration) => {
 				registration.showNotification("Incoming Call", {
 					body: `Call from ${call.state.createdBy?.name}`,
-					icon:
-						call?.state?.createdBy?.image || "/images/defaultProfileImage.png",
+					icon: call?.state?.createdBy?.image || GetRandomImage(),
 					tag: "incoming-call",
 					data: { url: `https://www.flashcall.me/meeting/${call.id}` },
 				});
@@ -45,9 +45,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 					navigator.serviceWorker.ready.then((registration) => {
 						registration.showNotification("Incoming Call", {
 							body: `Call from ${call.state.createdBy?.name}`,
-							icon:
-								call?.state?.createdBy?.image ||
-								"/images/defaultProfileImage.png",
+							icon: call?.state?.createdBy?.image || GetRandomImage(),
 							tag: "incoming-call",
 							data: { url: `https://www.flashcall.me/meeting/${call.id}` },
 						});
@@ -122,9 +120,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 			<h1 className="font-bold text-xl mb-2">Incoming Call ...</h1>
 			<div className="flex flex-col items-center justify-center gap-10">
 				<img
-					src={
-						call?.state?.createdBy?.image || "/images/defaultProfileImage.png"
-					}
+					src={call?.state?.createdBy?.image || GetRandomImage()}
 					alt=""
 					className="rounded-full w-28 h-28 object-cover"
 					onError={(e) => {

@@ -44,16 +44,21 @@ export type EditProfileProps = {
 };
 
 const predefinedColors = [
-	"#50A65C", // Default
-	"#000000", // Black
-	"#A5A5A5", // Gray
-	"#00BCD4", // Cyan
-	"#E91E63", // Pink
-	"#FF5252", // Red
-	"#4CAF50", // Green
-	"#FF9800", // Orange
-	"#FFEB3B", // Yellow
-	"#9C27B0", // Purple
+	"#88D8C0", // Light Green
+	"#79ADDC", // Light Blue
+	"#FFC09F", // Light Orange
+	"#FFEE93", // Light Yellow
+	"#FCF5C7", // Pale Yellow
+	"#ADF7B6", // Light Green
+	"#AAE9E5", // Light Cyan
+	"#87C7F1", // Light Sky Blue
+	"#FEFEFE", // Light Beige
+	"#FFEDA9", // Light Gold
+	"#EACFFF", // Light Purple
+	"#FFBEBE", // Light Red
+	"#FFBEE9", // Light Pink
+	"#BEF3FF", // Light Blue
+	"#A6FCDF", // Light Mint Green
 ];
 
 const EditProfile = ({
@@ -65,17 +70,17 @@ const EditProfile = ({
 	firstTime,
 }: EditProfileProps) => {
 	const { toast } = useToast();
-	const [isChanged, setIsChanged] = useState(false); // State to track if any changes are made
-	const [selectedFile, setSelectedFile] = useState<File | null>(null); // State to store the selected file
+	const [isChanged, setIsChanged] = useState(false);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [usernameError, setUsernameError] = useState<string | null>(null);
-	const [initialReferralValue, setInitialReferralValue] = useState<boolean>(() => {
-		return Boolean(!userData.referredBy);
-});
+	const [initialReferralValue, setInitialReferralValue] = useState<boolean>(
+		() => {
+			return Boolean(!userData.referredBy);
+		}
+	);
 
-console.log(userData, initialState);
-
-	const [formError, setFormError] = useState<string | null>(null); // State to store form error
+	const [formError, setFormError] = useState<string | null>(null);
 	const [selectedColor, setSelectedColor] = useState(
 		userData.themeSelected ?? "#50A65C"
 	);
@@ -123,15 +128,19 @@ console.log(userData, initialState);
 	}, [watchedValues, initialState]);
 
 	useEffect(() => {
-		if (!selectedFile && !watchedValues.photo) {
-			// Use a fallback default value directly
+		if (!selectedFile) {
+			// Check if gender has changed and update the photo accordingly
 			const newPhoto =
 				placeholderImages[
-				watchedValues.gender as "male" | "female" | "other"
+					watchedValues.gender as "male" | "female" | "other"
 				] || GetRandomImage();
-			form.setValue("photo", newPhoto);
+
+			// Only update the photo if it hasn't been set by the user or differs from the current value
+			if (watchedValues.photo !== newPhoto) {
+				form.setValue("photo", newPhoto);
+			}
 		}
-	}, [watchedValues.gender, selectedFile, form]);
+	}, [watchedValues.gender, selectedFile, form, placeholderImages]);
 
 	const checkUsernameAvailability = async (username: string) => {
 		try {
@@ -215,8 +224,8 @@ console.log(userData, initialState);
 				referredBy: getUpdatedValue(
 					values.referredBy as string,
 					initialState.referredBy as string,
-					userData.referredBy as string,
-				)
+					userData.referredBy as string
+				),
 			};
 
 			for (const [key, value] of Object.entries(commonValues)) {
@@ -290,682 +299,692 @@ console.log(userData, initialState);
 	if (loading)
 		return (
 			<section
-				className={`w-full ${pathname.includes("/updateDetails") ? "w-screen" : "w-full"
-					} flex items-center justify-center`}
+				className={`w-full ${
+					pathname.includes("/updateDetails") ? "w-screen" : "w-full"
+				} flex items-center justify-center`}
 			>
 				<SinglePostLoader />
 			</section>
 		);
-	if(firstTime) {
-	return (
-		<Form {...form}>
-			<span className="text-2xl font-semibold">Edit User Details</span>
+	if (firstTime) {
+		return (
+			<Form {...form}>
+				<span className="text-2xl font-semibold">Edit User Details</span>
 
-			<form
-				onSubmit={form.handleSubmit(onSubmit)}
-				className="space-y-8 w-full flex flex-col items-center"
-			>
-				<FormField
-					control={form.control}
-					name="photo"
-					render={({ field }) => (
-						<FormItem className="w-full">
-							<FormControl>
-								<FileUploader
-									fieldChange={field.onChange}
-									mediaUrl={userData?.photo as string}
-									onFileSelect={setSelectedFile}
-								/>
-							</FormControl>
-							<FormMessage className="error-message">
-								{errors.photo?.message}
-							</FormMessage>
-						</FormItem>
-					)}
-				/>
-
-				{/* username */}
-
-				<FormField
-					control={form.control}
-					name="username"
-					render={({ field }) => (
-						<FormItem className="w-full">
-							<FormLabel className="text-sm text-gray-400 ml-1">
-								Username
-							</FormLabel>
-							<FormControl>
-								<div
-									className={`relative flex items-center  ${userType === "creator" ? " w-fit gap-2.5" : "w-full"
-										}`}
-								>
-									{userType === "creator" && (
-										<span className="text-gray-400 pl-2">
-											https://flashcall.me/
-										</span>
-									)}
-									<Input
-										type="text"
-										placeholder="Enter your username"
-										{...field}
-										className="input-field"
-										onChange={(e) => {
-											field.onChange(e);
-											debouncedCheckUsernameAvailability(e.target.value);
-										}}
+				<form
+					onSubmit={form.handleSubmit(onSubmit)}
+					className="space-y-8 w-full flex flex-col items-center"
+				>
+					<FormField
+						control={form.control}
+						name="photo"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormControl>
+									<FileUploader
+										fieldChange={field.onChange}
+										mediaUrl={userData?.photo as string}
+										onFileSelect={setSelectedFile}
 									/>
-								</div>
-							</FormControl>
-							{usernameError && (
-								<p className="error-message">{usernameError}</p>
-							)}
-							<FormMessage className="error-message">
-								{errors.username?.message}
-							</FormMessage>
-						</FormItem>
-					)}
-				/>
+								</FormControl>
+								<FormMessage className="error-message">
+									{errors.photo?.message}
+								</FormMessage>
+							</FormItem>
+						)}
+					/>
 
-				{/* Container for firstName and lastName */}
-				<div className="flex gap-4 w-full">
-					{(["firstName", "lastName"] as const).map((field, index) => (
+					{/* username */}
+
+					<FormField
+						control={form.control}
+						name="username"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormLabel className="text-sm text-gray-400 ml-1">
+									Username
+								</FormLabel>
+								<FormControl>
+									<div
+										className={`relative flex items-center  ${
+											userType === "creator" ? " w-fit gap-2.5" : "w-full"
+										}`}
+									>
+										{userType === "creator" && (
+											<span className="text-gray-400 pl-2">
+												https://flashcall.me/
+											</span>
+										)}
+										<Input
+											type="text"
+											placeholder="Enter your username"
+											{...field}
+											className="input-field"
+											onChange={(e) => {
+												field.onChange(e);
+												debouncedCheckUsernameAvailability(e.target.value);
+											}}
+										/>
+									</div>
+								</FormControl>
+								{usernameError && (
+									<p className="error-message">{usernameError}</p>
+								)}
+								<FormMessage className="error-message">
+									{errors.username?.message}
+								</FormMessage>
+							</FormItem>
+						)}
+					/>
+
+					{/* Container for firstName and lastName */}
+					<div className="flex gap-4 w-full">
+						{(["firstName", "lastName"] as const).map((field, index) => (
+							<FormField
+								key={index}
+								control={form.control}
+								name={field}
+								render={({ field }) => (
+									<FormItem className="flex-1">
+										<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+											{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder={`Enter ${
+													field.name.charAt(0).toUpperCase() +
+													field.name.slice(1)
+												}`}
+												{...field}
+												className="input-field"
+											/>
+										</FormControl>
+										<FormMessage className="error-message">
+											{errors[field.name]?.message}
+										</FormMessage>
+									</FormItem>
+								)}
+							/>
+						))}
+					</div>
+
+					{/* Container for bio */}
+					<FormField
+						control={form.control}
+						name="bio"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+									{userData?.bio?.length === 0 ? "Add" : "Edit"} Bio
+								</FormLabel>
+								<FormControl>
+									<Textarea
+										className="textarea max-h-32"
+										placeholder="Tell us a little bit about yourself"
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage className="error-message">
+									{errors.bio?.message}
+								</FormMessage>
+							</FormItem>
+						)}
+					/>
+
+					{/* profession */}
+					{userData.role === "creator" && (
 						<FormField
-							key={index}
 							control={form.control}
-							name={field}
+							name="profession"
 							render={({ field }) => (
-								<FormItem className="flex-1">
-									<FormLabel className="font-medium text-sm text-gray-400 ml-1">
-										{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
+								<FormItem className="w-full">
+									<FormLabel className="text-sm text-gray-400 ml-1">
+										Profession
 									</FormLabel>
 									<FormControl>
 										<Input
-											placeholder={`Enter ${field.name.charAt(0).toUpperCase() + field.name.slice(1)
-												}`}
+											type="text"
+											placeholder={`Enter your profession`}
 											{...field}
 											className="input-field"
 										/>
 									</FormControl>
+
 									<FormMessage className="error-message">
-										{errors[field.name]?.message}
+										{errors.profession?.message}
 									</FormMessage>
 								</FormItem>
 							)}
 						/>
-					))}
-				</div>
-
-				{/* Container for bio */}
-				<FormField
-					control={form.control}
-					name="bio"
-					render={({ field }) => (
-						<FormItem className="w-full">
-							<FormLabel className="font-medium text-sm text-gray-400 ml-1">
-								{userData?.bio?.length === 0 ? "Add" : "Edit"} Bio
-							</FormLabel>
-							<FormControl>
-								<Textarea
-									className="textarea max-h-32"
-									placeholder="Tell us a little bit about yourself"
-									{...field}
-								/>
-							</FormControl>
-							<FormMessage className="error-message">
-								{errors.bio?.message}
-							</FormMessage>
-						</FormItem>
 					)}
-				/>
 
-				{/* profession */}
-				{userData.role === "creator" && (
-					<FormField
-						control={form.control}
-						name="profession"
-						render={({ field }) => (
-							<FormItem className="w-full">
-								<FormLabel className="text-sm text-gray-400 ml-1">
-									Profession
-								</FormLabel>
-								<FormControl>
-									<Input
-										type="text"
-										placeholder={`Enter your profession`}
-										{...field}
-										className="input-field"
-									/>
-								</FormControl>
-
-								<FormMessage className="error-message">
-									{errors.profession?.message}
-								</FormMessage>
-							</FormItem>
-						)}
-					/>
-				)}
-
-				<div
-					className={`w-full grid grid-cols-2  items-center justify-between gap-8`}
-				>
-					{/* gender */}
-					<FormField
-						control={form.control}
-						name="gender"
-						render={({ field }) => (
-							<FormItem className="w-full ">
-								<FormLabel className="text-sm text-gray-400 ml-1">
-									{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
-								</FormLabel>
-								<FormControl>
-									<div className="flex items-center justify-start gap-4">
-										<button
-											type="button"
-											onClick={() => field.onChange("male")}
-											className={
-												field.value === "male"
-													? "bg-green-1 text-white rounded-xl px-4 py-3"
-													: "input-field text-sm px-4 !py-2"
-											}
-										>
-											Male
-										</button>
-										<button
-											type="button"
-											onClick={() => field.onChange("female")}
-											className={
-												field.value === "female"
-													? "bg-green-1 text-white rounded-xl px-4 py-3"
-													: "input-field text-sm px-4 !py-2"
-											}
-										>
-											Female
-										</button>
-										<button
-											type="button"
-											onClick={() => field.onChange("other")}
-											className={
-												field.value === "other"
-													? "bg-green-1 text-white rounded-xl px-4 py-3"
-													: "input-field text-sm px-4 !py-2"
-											}
-										>
-											Other
-										</button>
-									</div>
-								</FormControl>
-								<FormDescription className="text-xs text-gray-400 ml-1">
-									Choose any one from the above
-								</FormDescription>
-								<FormMessage className="error-message">
-									{errors.gender?.message}
-								</FormMessage>
-							</FormItem>
-						)}
-					/>
-
-					{/* dob */}
-					<FormField
-						control={form.control}
-						name="dob"
-						render={({ field }) => (
-							<FormItem className="w-full">
-								<FormLabel className="text-sm text-gray-400 ml-1">
-									Date of Birth
-								</FormLabel>
-								<FormControl>
-									<Input
-										type="date"
-										placeholder={`Enter DOB`}
-										{...field}
-										className="input-field"
-									/>
-								</FormControl>
-								<FormDescription className="text-xs text-gray-400 ml-1">
-									Tap the icon to select date
-								</FormDescription>
-								<FormMessage className="error-message">
-									{errors.dob?.message}
-								</FormMessage>
-							</FormItem>
-						)}
-					/>
-				</div>
-
-				{userData.role === "creator" && (
-					<FormField
-						control={form.control}
-						name="referredBy" 
-						render={({ field }) => (
-							<FormItem className="w-full">
-								<FormLabel className="text-sm text-gray-400 ml-1">
-									Referred By Someone?
-								</FormLabel>
-								<FormControl>
-									<Input
-										type="text"
-										placeholder={`Enter their referral ID`}
-										{...field}
-										readOnly={!initialReferralValue}
-										className="input-field"
-									/>
-								</FormControl>
-
-								<FormMessage className="error-message">
-									{errors.referredBy?.message} 
-								</FormMessage>
-							</FormItem>
-						)}
-					/>
-				)}
-
-				{/* profile theme */}
-				{userData.role === "creator" && (
-					<FormField
-						control={form.control}
-						name="themeSelected"
-						render={({ field }) => (
-							<FormItem className="w-full">
-								<FormLabel className="text-sm text-gray-400 ml-1">
-									Profile Theme
-								</FormLabel>
-								<FormControl>
-									{/* Predefined Colors */}
-									<div className="flex flex-wrap mt-2">
-										{predefinedColors.map((color, index) => (
-											<div
-												key={index}
-												className={`w-8 h-8 m-1 rounded-full cursor-pointer ${selectedColor === color
-														? "ring-2 ring-offset-2 ring-blue-500"
-														: ""
-													}`}
-												style={{ backgroundColor: color }}
-												onClick={() => {
-													handleColorSelect(color);
-													field.onChange(color);
-												}}
-											>
-												{selectedColor === color && (
-													<div className="w-full h-full flex items-center justify-center">
-														<svg
-															xmlns="http://www.w3.org/2000/svg"
-															className="h-4 w-4 text-white"
-															fill="none"
-															viewBox="0 0 24 24"
-															stroke="currentColor"
-														>
-															<path
-																strokeLinecap="round"
-																strokeLinejoin="round"
-																strokeWidth={2}
-																d="M5 13l4 4L19 7"
-															/>
-														</svg>
-													</div>
-												)}
-											</div>
-										))}
-									</div>
-								</FormControl>
-								<FormDescription className="text-xs text-gray-400 ml-1">
-									Select your theme color
-								</FormDescription>
-								<FormMessage className="error-message">
-									{errors.themeSelected?.message}
-								</FormMessage>
-							</FormItem>
-						)}
-					/>
-				)}
-
-				{formError && (
-					<div className="text-red-500 text-lg text-center">{formError}</div>
-				)}
-				{isChanged && isValid && !formError && !usernameError && (
-					<Button
-						className="bg-green-1 hover:opacity-80 w-3/4 mx-auto text-white"
-						type="submit"
-						disabled={!isValid || form.formState.isSubmitting}
+					<div
+						className={`w-full grid grid-cols-2  items-center justify-between gap-8`}
 					>
-						{form.formState.isSubmitting ? (
-							<Image
-								src="/icons/loading-circle.svg"
-								alt="Loading..."
-								width={24}
-								height={24}
-								className=""
-								priority
-							/>
-						) : (
-							"Update Details"
-						)}
-					</Button>
-				)}
-			</form>
-		</Form>
-	);
-} else {
-	return (
-		<Form {...form}>
-			<span className="text-2xl font-semibold">Edit User Details</span>
-
-			<form
-				onSubmit={form.handleSubmit(onSubmit)}
-				className="space-y-8 w-full flex flex-col items-center"
-			>
-				<FormField
-					control={form.control}
-					name="photo"
-					render={({ field }) => (
-						<FormItem className="w-full">
-							<FormControl>
-								<FileUploader
-									fieldChange={field.onChange}
-									mediaUrl={userData?.photo as string}
-									onFileSelect={setSelectedFile}
-								/>
-							</FormControl>
-							<FormMessage className="error-message">
-								{errors.photo?.message}
-							</FormMessage>
-						</FormItem>
-					)}
-				/>
-
-				{/* username */}
-
-				<FormField
-					control={form.control}
-					name="username"
-					render={({ field }) => (
-						<FormItem className="w-full">
-							<FormLabel className="text-sm text-gray-400 ml-1">
-								Username
-							</FormLabel>
-							<FormControl>
-								<div
-									className={`relative flex items-center  ${userType === "creator" ? " w-fit gap-2.5" : "w-full"
-										}`}
-								>
-									{userType === "creator" && (
-										<span className="text-gray-400 pl-2">
-											https://flashcall.me/
-										</span>
-									)}
-									<Input
-										type="text"
-										placeholder="Enter your username"
-										{...field}
-										className="input-field"
-										onChange={(e) => {
-											field.onChange(e);
-											debouncedCheckUsernameAvailability(e.target.value);
-										}}
-									/>
-								</div>
-							</FormControl>
-							{usernameError && (
-								<p className="error-message">{usernameError}</p>
-							)}
-							<FormMessage className="error-message">
-								{errors.username?.message}
-							</FormMessage>
-						</FormItem>
-					)}
-				/>
-
-				{/* Container for firstName and lastName */}
-				<div className="flex gap-4 w-full">
-					{(["firstName", "lastName"] as const).map((field, index) => (
+						{/* gender */}
 						<FormField
-							key={index}
 							control={form.control}
-							name={field}
+							name="gender"
 							render={({ field }) => (
-								<FormItem className="flex-1">
-									<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+								<FormItem className="w-full ">
+									<FormLabel className="text-sm text-gray-400 ml-1">
 										{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
 									</FormLabel>
 									<FormControl>
+										<div className="flex items-center justify-start gap-4">
+											<button
+												type="button"
+												onClick={() => field.onChange("male")}
+												className={
+													field.value === "male"
+														? "bg-green-1 text-white rounded-xl px-4 py-3"
+														: "input-field text-sm px-4 !py-2"
+												}
+											>
+												Male
+											</button>
+											<button
+												type="button"
+												onClick={() => field.onChange("female")}
+												className={
+													field.value === "female"
+														? "bg-green-1 text-white rounded-xl px-4 py-3"
+														: "input-field text-sm px-4 !py-2"
+												}
+											>
+												Female
+											</button>
+											<button
+												type="button"
+												onClick={() => field.onChange("other")}
+												className={
+													field.value === "other"
+														? "bg-green-1 text-white rounded-xl px-4 py-3"
+														: "input-field text-sm px-4 !py-2"
+												}
+											>
+												Other
+											</button>
+										</div>
+									</FormControl>
+									<FormDescription className="text-xs text-gray-400 ml-1">
+										Choose any one from the above
+									</FormDescription>
+									<FormMessage className="error-message">
+										{errors.gender?.message}
+									</FormMessage>
+								</FormItem>
+							)}
+						/>
+
+						{/* dob */}
+						<FormField
+							control={form.control}
+							name="dob"
+							render={({ field }) => (
+								<FormItem className="w-full">
+									<FormLabel className="text-sm text-gray-400 ml-1">
+										Date of Birth
+									</FormLabel>
+									<FormControl>
 										<Input
-											placeholder={`Enter ${field.name.charAt(0).toUpperCase() + field.name.slice(1)
-												}`}
+											type="date"
+											placeholder={`Enter DOB`}
 											{...field}
 											className="input-field"
 										/>
 									</FormControl>
+									<FormDescription className="text-xs text-gray-400 ml-1">
+										Tap the icon to select date
+									</FormDescription>
 									<FormMessage className="error-message">
-										{errors[field.name]?.message}
+										{errors.dob?.message}
 									</FormMessage>
 								</FormItem>
 							)}
 						/>
-					))}
-				</div>
+					</div>
 
-				{/* Container for bio */}
-				<FormField
-					control={form.control}
-					name="bio"
-					render={({ field }) => (
-						<FormItem className="w-full">
-							<FormLabel className="font-medium text-sm text-gray-400 ml-1">
-								{userData?.bio?.length === 0 ? "Add" : "Edit"} Bio
-							</FormLabel>
-							<FormControl>
-								<Textarea
-									className="textarea max-h-32"
-									placeholder="Tell us a little bit about yourself"
-									{...field}
-								/>
-							</FormControl>
-							<FormMessage className="error-message">
-								{errors.bio?.message}
-							</FormMessage>
-						</FormItem>
+					{/* Referal Field */}
+					{userData.role === "creator" && (
+						<FormField
+							control={form.control}
+							name="referredBy"
+							render={({ field }) => (
+								<FormItem className="w-full">
+									<FormLabel className="text-sm text-gray-400 ml-1">
+										Referred By Someone?
+									</FormLabel>
+									<FormControl>
+										<Input
+											type="text"
+											placeholder={`Enter their referral ID`}
+											{...field}
+											readOnly={!initialReferralValue}
+											className="input-field"
+										/>
+									</FormControl>
+
+									<FormMessage className="error-message">
+										{errors.referredBy?.message}
+									</FormMessage>
+								</FormItem>
+							)}
+						/>
 					)}
-				/>
 
-				{/* profession */}
-				{userData.role === "creator" && (
-					<FormField
-						control={form.control}
-						name="profession"
-						render={({ field }) => (
-							<FormItem className="w-full">
-								<FormLabel className="text-sm text-gray-400 ml-1">
-									Profession
-								</FormLabel>
-								<FormControl>
-									<Input
-										type="text"
-										placeholder={`Enter your profession`}
-										{...field}
-										className="input-field"
-									/>
-								</FormControl>
-
-								<FormMessage className="error-message">
-									{errors.profession?.message}
-								</FormMessage>
-							</FormItem>
-						)}
-					/>
-				)}
-
-				<div
-					className={`w-full grid grid-cols-2  items-center justify-between gap-8`}
-				>
-					{/* gender */}
-					<FormField
-						control={form.control}
-						name="gender"
-						render={({ field }) => (
-							<FormItem className="w-full ">
-								<FormLabel className="text-sm text-gray-400 ml-1">
-									{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
-								</FormLabel>
-								<FormControl>
-									<div className="flex items-center justify-start gap-4">
-										<button
-											type="button"
-											onClick={() => field.onChange("male")}
-											className={
-												field.value === "male"
-													? "bg-green-1 text-white rounded-xl px-4 py-3"
-													: "input-field text-sm px-4 !py-2"
-											}
-										>
-											Male
-										</button>
-										<button
-											type="button"
-											onClick={() => field.onChange("female")}
-											className={
-												field.value === "female"
-													? "bg-green-1 text-white rounded-xl px-4 py-3"
-													: "input-field text-sm px-4 !py-2"
-											}
-										>
-											Female
-										</button>
-										<button
-											type="button"
-											onClick={() => field.onChange("other")}
-											className={
-												field.value === "other"
-													? "bg-green-1 text-white rounded-xl px-4 py-3"
-													: "input-field text-sm px-4 !py-2"
-											}
-										>
-											Other
-										</button>
-									</div>
-								</FormControl>
-								<FormDescription className="text-xs text-gray-400 ml-1">
-									Choose any one from the above
-								</FormDescription>
-								<FormMessage className="error-message">
-									{errors.gender?.message}
-								</FormMessage>
-							</FormItem>
-						)}
-					/>
-
-					{/* dob */}
-					<FormField
-						control={form.control}
-						name="dob"
-						render={({ field }) => (
-							<FormItem className="w-full">
-								<FormLabel className="text-sm text-gray-400 ml-1">
-									Date of Birth
-								</FormLabel>
-								<FormControl>
-									<Input
-										type="date"
-										placeholder={`Enter DOB`}
-										{...field}
-										className="input-field"
-									/>
-								</FormControl>
-								<FormDescription className="text-xs text-gray-400 ml-1">
-									Tap the icon to select date
-								</FormDescription>
-								<FormMessage className="error-message">
-									{errors.dob?.message}
-								</FormMessage>
-							</FormItem>
-						)}
-					/>
-				</div>
-
-				{/* profile theme */}
-				{userData.role === "creator" && (
-					<FormField
-						control={form.control}
-						name="themeSelected"
-						render={({ field }) => (
-							<FormItem className="w-full">
-								<FormLabel className="text-sm text-gray-400 ml-1">
-									Profile Theme
-								</FormLabel>
-								<FormControl>
-									{/* Predefined Colors */}
-									<div className="flex flex-wrap mt-2">
-										{predefinedColors.map((color, index) => (
-											<div
-												key={index}
-												className={`w-8 h-8 m-1 rounded-full cursor-pointer ${selectedColor === color
-														? "ring-2 ring-offset-2 ring-blue-500"
-														: ""
+					{/* profile theme */}
+					{userData.role === "creator" && (
+						<FormField
+							control={form.control}
+							name="themeSelected"
+							render={({ field }) => (
+								<FormItem className="w-full">
+									<FormLabel className="text-sm text-gray-400 ml-1">
+										Profile Theme
+									</FormLabel>
+									<FormControl>
+										{/* Predefined Colors */}
+										<div className="flex flex-wrap mt-2">
+											{predefinedColors.map((color, index) => (
+												<div
+													key={index}
+													className={`w-8 h-8 m-1 rounded-full cursor-pointer ${
+														selectedColor === color
+															? "ring-2 ring-offset-2 ring-blue-500"
+															: ""
 													}`}
-												style={{ backgroundColor: color }}
-												onClick={() => {
-													handleColorSelect(color);
-													field.onChange(color);
-												}}
-											>
-												{selectedColor === color && (
-													<div className="w-full h-full flex items-center justify-center">
-														<svg
-															xmlns="http://www.w3.org/2000/svg"
-															className="h-4 w-4 text-white"
-															fill="none"
-															viewBox="0 0 24 24"
-															stroke="currentColor"
-														>
-															<path
-																strokeLinecap="round"
-																strokeLinejoin="round"
-																strokeWidth={2}
-																d="M5 13l4 4L19 7"
-															/>
-														</svg>
-													</div>
-												)}
-											</div>
-										))}
-									</div>
+													style={{ backgroundColor: color }}
+													onClick={() => {
+														handleColorSelect(color);
+														field.onChange(color);
+													}}
+												>
+													{selectedColor === color && (
+														<div className="w-full h-full flex items-center justify-center">
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																className="h-4 w-4 text-white"
+																fill="none"
+																viewBox="0 0 24 24"
+																stroke="currentColor"
+															>
+																<path
+																	strokeLinecap="round"
+																	strokeLinejoin="round"
+																	strokeWidth={2}
+																	d="M5 13l4 4L19 7"
+																/>
+															</svg>
+														</div>
+													)}
+												</div>
+											))}
+										</div>
+									</FormControl>
+									<FormDescription className="text-xs text-gray-400 ml-1">
+										Select your theme color
+									</FormDescription>
+									<FormMessage className="error-message">
+										{errors.themeSelected?.message}
+									</FormMessage>
+								</FormItem>
+							)}
+						/>
+					)}
+
+					{formError && (
+						<div className="text-red-500 text-lg text-center">{formError}</div>
+					)}
+					{isChanged && isValid && !formError && !usernameError && (
+						<Button
+							className="bg-green-1 hover:opacity-80 w-3/4 mx-auto text-white"
+							type="submit"
+							disabled={!isValid || form.formState.isSubmitting}
+						>
+							{form.formState.isSubmitting ? (
+								<Image
+									src="/icons/loading-circle.svg"
+									alt="Loading..."
+									width={24}
+									height={24}
+									className=""
+									priority
+								/>
+							) : (
+								"Update Details"
+							)}
+						</Button>
+					)}
+				</form>
+			</Form>
+		);
+	} else {
+		return (
+			<Form {...form}>
+				<span className="text-2xl font-semibold">Edit User Details</span>
+
+				<form
+					onSubmit={form.handleSubmit(onSubmit)}
+					className="space-y-8 w-full flex flex-col items-center"
+				>
+					<FormField
+						control={form.control}
+						name="photo"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormControl>
+									<FileUploader
+										fieldChange={field.onChange}
+										mediaUrl={userData?.photo as string}
+										onFileSelect={setSelectedFile}
+									/>
 								</FormControl>
-								<FormDescription className="text-xs text-gray-400 ml-1">
-									Select your theme color
-								</FormDescription>
 								<FormMessage className="error-message">
-									{errors.themeSelected?.message}
+									{errors.photo?.message}
 								</FormMessage>
 							</FormItem>
 						)}
 					/>
-				)}
 
-				{formError && (
-					<div className="text-red-500 text-lg text-center">{formError}</div>
-				)}
-				{isChanged && isValid && !formError && !usernameError && (
-					<Button
-						className="bg-green-1 hover:opacity-80 w-3/4 mx-auto text-white"
-						type="submit"
-						disabled={!isValid || form.formState.isSubmitting}
-					>
-						{form.formState.isSubmitting ? (
-							<Image
-								src="/icons/loading-circle.svg"
-								alt="Loading..."
-								width={24}
-								height={24}
-								className=""
-								priority
-							/>
-						) : (
-							"Update Details"
+					{/* username */}
+
+					<FormField
+						control={form.control}
+						name="username"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormLabel className="text-sm text-gray-400 ml-1">
+									Username
+								</FormLabel>
+								<FormControl>
+									<div
+										className={`relative flex items-center  ${
+											userType === "creator" ? " w-fit gap-2.5" : "w-full"
+										}`}
+									>
+										{userType === "creator" && (
+											<span className="text-gray-400 pl-2">
+												https://flashcall.me/
+											</span>
+										)}
+										<Input
+											type="text"
+											placeholder="Enter your username"
+											{...field}
+											className="input-field"
+											onChange={(e) => {
+												field.onChange(e);
+												debouncedCheckUsernameAvailability(e.target.value);
+											}}
+										/>
+									</div>
+								</FormControl>
+								{usernameError && (
+									<p className="error-message">{usernameError}</p>
+								)}
+								<FormMessage className="error-message">
+									{errors.username?.message}
+								</FormMessage>
+							</FormItem>
 						)}
-					</Button>
-				)}
-			</form>
-		</Form>
-	)
-}
+					/>
+
+					{/* Container for firstName and lastName */}
+					<div className="flex gap-4 w-full">
+						{(["firstName", "lastName"] as const).map((field, index) => (
+							<FormField
+								key={index}
+								control={form.control}
+								name={field}
+								render={({ field }) => (
+									<FormItem className="flex-1">
+										<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+											{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder={`Enter ${
+													field.name.charAt(0).toUpperCase() +
+													field.name.slice(1)
+												}`}
+												{...field}
+												className="input-field"
+											/>
+										</FormControl>
+										<FormMessage className="error-message">
+											{errors[field.name]?.message}
+										</FormMessage>
+									</FormItem>
+								)}
+							/>
+						))}
+					</div>
+
+					{/* Container for bio */}
+					<FormField
+						control={form.control}
+						name="bio"
+						render={({ field }) => (
+							<FormItem className="w-full">
+								<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+									{userData?.bio?.length === 0 ? "Add" : "Edit"} Bio
+								</FormLabel>
+								<FormControl>
+									<Textarea
+										className="textarea max-h-32"
+										placeholder="Tell us a little bit about yourself"
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage className="error-message">
+									{errors.bio?.message}
+								</FormMessage>
+							</FormItem>
+						)}
+					/>
+
+					{/* profession */}
+					{userData.role === "creator" && (
+						<FormField
+							control={form.control}
+							name="profession"
+							render={({ field }) => (
+								<FormItem className="w-full">
+									<FormLabel className="text-sm text-gray-400 ml-1">
+										Profession
+									</FormLabel>
+									<FormControl>
+										<Input
+											type="text"
+											placeholder={`Enter your profession`}
+											{...field}
+											className="input-field"
+										/>
+									</FormControl>
+
+									<FormMessage className="error-message">
+										{errors.profession?.message}
+									</FormMessage>
+								</FormItem>
+							)}
+						/>
+					)}
+
+					<div
+						className={`w-full grid grid-cols-2  items-center justify-between gap-8`}
+					>
+						{/* gender */}
+						<FormField
+							control={form.control}
+							name="gender"
+							render={({ field }) => (
+								<FormItem className="w-full ">
+									<FormLabel className="text-sm text-gray-400 ml-1">
+										{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
+									</FormLabel>
+									<FormControl>
+										<div className="flex items-center justify-start gap-4">
+											<button
+												type="button"
+												onClick={() => field.onChange("male")}
+												className={
+													field.value === "male"
+														? "bg-green-1 text-white rounded-xl px-4 py-3"
+														: "input-field text-sm px-4 !py-2"
+												}
+											>
+												Male
+											</button>
+											<button
+												type="button"
+												onClick={() => field.onChange("female")}
+												className={
+													field.value === "female"
+														? "bg-green-1 text-white rounded-xl px-4 py-3"
+														: "input-field text-sm px-4 !py-2"
+												}
+											>
+												Female
+											</button>
+											<button
+												type="button"
+												onClick={() => field.onChange("other")}
+												className={
+													field.value === "other"
+														? "bg-green-1 text-white rounded-xl px-4 py-3"
+														: "input-field text-sm px-4 !py-2"
+												}
+											>
+												Other
+											</button>
+										</div>
+									</FormControl>
+									<FormDescription className="text-xs text-gray-400 ml-1">
+										Choose any one from the above
+									</FormDescription>
+									<FormMessage className="error-message">
+										{errors.gender?.message}
+									</FormMessage>
+								</FormItem>
+							)}
+						/>
+
+						{/* dob */}
+						<FormField
+							control={form.control}
+							name="dob"
+							render={({ field }) => (
+								<FormItem className="w-full">
+									<FormLabel className="text-sm text-gray-400 ml-1">
+										Date of Birth
+									</FormLabel>
+									<FormControl>
+										<Input
+											type="date"
+											placeholder={`Enter DOB`}
+											{...field}
+											className="input-field"
+										/>
+									</FormControl>
+									<FormDescription className="text-xs text-gray-400 ml-1">
+										Tap the icon to select date
+									</FormDescription>
+									<FormMessage className="error-message">
+										{errors.dob?.message}
+									</FormMessage>
+								</FormItem>
+							)}
+						/>
+					</div>
+
+					{/* profile theme */}
+					{userData.role === "creator" && (
+						<FormField
+							control={form.control}
+							name="themeSelected"
+							render={({ field }) => (
+								<FormItem className="w-full">
+									<FormLabel className="text-sm text-gray-400 ml-1">
+										Profile Theme
+									</FormLabel>
+									<FormControl>
+										{/* Predefined Colors */}
+										<div className="flex flex-wrap mt-2">
+											{predefinedColors.map((color, index) => (
+												<div
+													key={index}
+													className={`w-8 h-8 m-1 rounded-full cursor-pointer ${
+														selectedColor === color
+															? "ring-2 ring-offset-2 ring-blue-500"
+															: ""
+													}`}
+													style={{ backgroundColor: color }}
+													onClick={() => {
+														handleColorSelect(color);
+														field.onChange(color);
+													}}
+												>
+													{selectedColor === color && (
+														<div className="w-full h-full flex items-center justify-center">
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																className="h-4 w-4 text-white"
+																fill="none"
+																viewBox="0 0 24 24"
+																stroke="currentColor"
+															>
+																<path
+																	strokeLinecap="round"
+																	strokeLinejoin="round"
+																	strokeWidth={2}
+																	d="M5 13l4 4L19 7"
+																/>
+															</svg>
+														</div>
+													)}
+												</div>
+											))}
+										</div>
+									</FormControl>
+									<FormDescription className="text-xs text-gray-400 ml-1">
+										Select your theme color
+									</FormDescription>
+									<FormMessage className="error-message">
+										{errors.themeSelected?.message}
+									</FormMessage>
+								</FormItem>
+							)}
+						/>
+					)}
+
+					{formError && (
+						<div className="text-red-500 text-lg text-center">{formError}</div>
+					)}
+					{isChanged && isValid && !formError && !usernameError && (
+						<Button
+							className="bg-green-1 hover:opacity-80 w-3/4 mx-auto text-white"
+							type="submit"
+							disabled={!isValid || form.formState.isSubmitting}
+						>
+							{form.formState.isSubmitting ? (
+								<Image
+									src="/icons/loading-circle.svg"
+									alt="Loading..."
+									width={24}
+									height={24}
+									className=""
+									priority
+								/>
+							) : (
+								"Update Details"
+							)}
+						</Button>
+					)}
+				</form>
+			</Form>
+		);
+	}
 };
 
 export default EditProfile;

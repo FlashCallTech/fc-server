@@ -28,6 +28,7 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
 import { backendBaseUrl } from "@/lib/utils";
 import GetRandomImage from "@/utils/GetRandomImage";
+import { getFCMToken } from "@/lib/firebase";
 
 const formSchema = z.object({
 	phone: z
@@ -109,9 +110,13 @@ const AuthenticateViaOTP = ({
 	const handleOTPSubmit = async (values: z.infer<typeof FormSchemaOTP>) => {
 		setIsVerifyingOTP(true);
 		try {
+			// Retrieve the FCM token
+			const fcmToken: any = await getFCMToken();
+
 			const response = await axios.post(`${backendBaseUrl}/otp/verify-otp`, {
 				phone: phoneNumber,
 				otp: values.pin,
+				fcmToken,
 			});
 
 			// Extract the session token and user from the response
@@ -130,9 +135,7 @@ const AuthenticateViaOTP = ({
 
 			const decodedToken = jwt.decode(sessionToken) as { user?: any };
 
-			// Save the auth token (with 1 days expiry) in localStorage
-			// localStorage.setItem("authToken", sessionToken);
-			// console.log("OTP verified and token saved:");
+			console.log("OTP verified and token saved:");
 
 			setVerificationSuccess(true);
 
@@ -183,7 +186,8 @@ const AuthenticateViaOTP = ({
 						audioRate: "0",
 						chatRate: "0",
 						walletBalance: 0,
-						referredBy: refId ? refId : null,
+						referredBy: refId ? refId : "",
+						referralAmount: refId ? 5000 : 0,
 						creatorId: `@${formattedPhone as string}`,
 					};
 				} else {
@@ -281,47 +285,11 @@ const AuthenticateViaOTP = ({
 
 	const sectionRef = useRef<HTMLElement>(null);
 
-	const handleClickOutside = (event: any) => {
-		if (sectionRef.current && !sectionRef.current.contains(event.target)) {
-			// Trigger your function here
-			console.log("Clicked outside the section");
-			onOpenChange && onOpenChange(false);
-		}
-	};
-
-	useEffect(() => {
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, []);
-
 	return (
 		<section
 			ref={sectionRef}
-			className="relative bg-[#F8F8F8] rounded-t-3xl md:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-8 pb-2 shadow-lg w-screen h-fit md:w-full md:min-w-[24rem] md:max-w-sm mx-auto animate-enterFromBottom z-50 overflow-y-scroll no-scrollbar"
+			className="relative bg-[#F8F8F8] rounded-t-3xl sm:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-8 pb-2 shadow-lg w-screen h-fit sm:w-full sm:min-w-[24rem] sm:max-w-sm mx-auto"
 		>
-			{onOpenChange && (
-				<Button
-					className="absolute top-2 right-2 z-10"
-					onClick={() => onOpenChange(false)}
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						strokeWidth={1.5}
-						stroke="currentColor"
-						className="size-7 text-green-1 hover:text-black"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-						/>
-					</svg>
-				</Button>
-			)}
 			{!showOTP ? (
 				// SignUp form
 				<>
@@ -333,7 +301,9 @@ const AuthenticateViaOTP = ({
 							alt="flashcall logo"
 							className="w-3/4 h-10 p-2 mb-2 bg-green-1"
 						/>
-						<h2 className="text-lg font-semibold">Login or Signup</h2>
+						<h2 className="text-black text-lg font-semibold">
+							Login or Signup
+						</h2>
 						<p className="text-sm text-[#707070] mb-4">
 							Get start with your first consultation <br /> and start earning
 						</p>
@@ -359,7 +329,7 @@ const AuthenticateViaOTP = ({
 														<Input
 															placeholder="Enter a Valid Number"
 															{...field}
-															className="w-full font-semibold bg-transparent border-none focus-visible:ring-offset-0 placeholder:text-gray-400 placeholder:font-normal rounded-xl pr-4 pl-2 mx-1 py-3 focus-visible:ring-transparent !important"
+															className="w-full font-semibold bg-transparent border-none text-black focus-visible:ring-offset-0 placeholder:text-gray-400 placeholder:font-normal rounded-xl pr-4 pl-2 mx-1 py-3 focus-visible:ring-transparent !important"
 														/>
 													</div>
 
@@ -392,9 +362,11 @@ const AuthenticateViaOTP = ({
 					</Form>
 				</>
 			) : verificationSuccess ? (
-				<div className="flex flex-col items-center justify-center w-full md:min-w-[24rem] md:max-w-[24rem]  gap-4 pt-7 pb-14">
+				<div className="flex flex-col items-center justify-center w-full sm:min-w-[24rem] sm:max-w-[24rem]  gap-4 pt-7 pb-14">
 					{success}
-					<span className="font-semibold text-lg">Login Successfully</span>
+					<span className="text-black font-semibold text-lg">
+						Login Successfully
+					</span>
 				</div>
 			) : (
 				// OTPVerification form

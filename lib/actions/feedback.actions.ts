@@ -6,6 +6,17 @@ import mongoose from "mongoose";
 import Client from "../database/models/client.model";
 import * as Sentry from "@sentry/nextjs";
 
+interface FeedbackProps {
+	creatorId: string;
+	clientId: string;
+	rating: number;
+	feedbackText: string;
+	callId: string;
+	createdAt: Date;
+	showFeedback?: boolean;
+	position?: number;
+}
+
 export async function createFeedback({
 	creatorId,
 	clientId,
@@ -15,65 +26,35 @@ export async function createFeedback({
 	createdAt,
 	showFeedback,
 	position,
-}: {
-	creatorId: string;
-	clientId: string;
-	rating: number;
-	feedbackText: string;
-	callId: string;
-	createdAt: Date;
-	showFeedback?: boolean;
-	position?: number;
-}) {
+}: FeedbackProps) {
 	try {
 		await connectToDatabase();
-
 		if (callId && creatorId) {
 			const feedbackEntry = {
 				clientId,
 				rating,
 				feedback: feedbackText,
-				createdAt: createdAt,
-				showFeedback: showFeedback,
+				createdAt,
+				showFeedback,
 				position: position || -1,
 			};
 
-			const existingCallFeedback = await CallFeedbacks.findOne({
-				callId,
-			}).exec();
-
-			if (existingCallFeedback) {
-				const existingFeedbackIndex = existingCallFeedback.feedbacks.findIndex(
-					(feedback: any) => feedback.clientId.toString() === clientId
-				);
-
-				if (existingFeedbackIndex > -1) {
-					// Update existing feedback
-					existingCallFeedback.feedbacks[existingFeedbackIndex] = feedbackEntry;
-				} else {
-					// Add new feedback entry
-					existingCallFeedback.feedbacks.push(feedbackEntry);
-				}
-
-				await existingCallFeedback.save();
-			} else {
-				const newCallFeedback = new CallFeedbacks({
-					callId,
+			// Use findOneAndUpdate to create or update the feedback
+			const result = await CallFeedbacks.findOneAndUpdate(
+				{ callId },
+				{
 					creatorId,
-					feedbacks: [feedbackEntry],
-				});
+					feedback: feedbackEntry, // Update or set the feedback object
+				},
+				{ new: true, upsert: true } // Create if not exists
+			).exec();
 
-				await newCallFeedback.save();
-			}
+			return { success: true, feedback: result };
 		}
 
-		// revalidatePath("/home");
-
-		return { success: true };
+		return { success: false, message: "Invalid callId or creatorId." };
 	} catch (error: any) {
-		Sentry.captureException(error);
-		console.log("Error Creating Feedback ... ", error);
-		return { success: false, error: error.message };
+		throw new Error(error.message);
 	}
 }
 
@@ -102,34 +83,29 @@ export async function getCallFeedbacks(callId?: string, creatorId?: string) {
 
 		const feedbacks = await CallFeedbacks.find(query, {
 			callId: 1,
-			feedbacks: 1,
+			feedback: 1,
 		})
 			.populate("creatorId")
 			.populate("feedbacks.clientId")
 			.lean();
 
-		console.log(feedbacks);
+		if (feedbacks.length === 0) {
+			return [];
+		}
 
-		feedbacks.forEach((feedback: any) => {
-			feedback.feedbacks.sort((a: any, b: any) => {
-				// First, sort by position if neither are -1
-				if (a.position !== -1 && b.position !== -1) {
-					return a.position - b.position;
-				}
-
-				// If one of the positions is -1, sort that one after the other
-				if (a.position === -1 && b.position !== -1) {
-					return 1; // 'a' should be after 'b'
-				}
-				if (b.position === -1 && a.position !== -1) {
-					return -1; // 'b' should be after 'a'
-				}
-
-				// If both have position -1, sort by createdAt
+		feedbacks.sort((a: any, b: any) => {
+			if (a.position !== -1 && b.position !== -1) {
+				return a.position - b.position;
+			}
+			if (a.position === -1 && b.position !== -1) {
+				return 1;
+			}
+			if (a.position === -1 && b.position === -1) {
 				return (
 					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
 				);
-			});
+			}
+			return 0;
 		});
 
 		// Return the feedbacks as JSON

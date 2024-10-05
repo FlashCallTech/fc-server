@@ -1,5 +1,5 @@
 // Gender
-export type Gender = "male" | "female" | "other";
+export type Gender = "male" | "female" | "other" | undefined;
 
 // User Params
 
@@ -28,7 +28,9 @@ export type UpdateUserParams = {
 	gender?: string;
 	dob?: string;
 	creatorId?: string;
+	referralId?: string;
 	referredBy?: string;
+	referralAmount?: number;
 };
 
 export type clientUser = {
@@ -46,7 +48,9 @@ export type clientUser = {
 	profession?: string;
 	themeSelected?: string;
 	createdAt?: string;
+	referralId?: string;
 	referredBy?: string;
+	referralAmount?: number;
 };
 
 // Creator Params
@@ -73,7 +77,7 @@ export type creatorUser = {
 	walletBalance: number;
 	referralId: string;
 	referredBy: string;
-	referralAmount?: number;
+	referralAmount: number;
 	creatorId?: string;
 	links?: LinkType[];
 	updatedAt?: string;
@@ -99,8 +103,8 @@ export type CreateCreatorParams = {
 	kyc_status?: string;
 	walletBalance: number;
 	referralId?: string;
-	referredBy?: string | null;
-	referralAmount?: number | null;
+	referredBy?: string;
+	referralAmount?: number;
 	creatorId?: string;
 };
 
@@ -126,10 +130,11 @@ export type UpdateCreatorParams = {
 	bio?: string;
 	kyc_status?: string;
 	walletBalance?: number;
+	referralId?: string;
+	referredBy?: string;
+	referralAmount?: number;
 	creatorId?: string;
 	link?: LinkType;
-	referredBy: string;
-	referralId: string;
 };
 
 // Feedback Params
@@ -203,6 +208,7 @@ export type RegisterCallParams = {
 	type: string;
 	status: string;
 	creator: string;
+	expertDetails?: any;
 	members: MemberRequest[];
 	startedAt?: Date;
 	endedAt?: Date;
@@ -300,21 +306,21 @@ export interface PaymentFailedResponse {
 			payment_id: string;
 		};
 		data?: {
-			poa_front_dob?: string | null;
+			poa_front_dob?: string;
 			poi_imagePath?: string;
 			face_imagePath?: string;
-			digilocker_address?: string | null;
+			digilocker_address?: string;
 			poa_backImagePath?: string;
 			poa_front_name?: string;
 			poi_name?: string;
-			poa_back_name?: string | null;
+			poa_back_name?: string;
 			poa_front_idNumber?: string;
 			poa_back_idNumber?: string;
 			poa_back_dob?: string;
-			digilocker_idPhoto?: string | null;
+			digilocker_idPhoto?: string;
 			poi_dob?: string;
 			poa_frontImagePath?: string;
-			digilocker_dob?: string | null;
+			digilocker_dob?: string;
 		};
 	};
 }
@@ -325,42 +331,42 @@ export type RegisterUserKycParams = {
 	transactionId: string;
 	status: "auto_approved" | "auto_declined" | "needs_review";
 	data?: {
-		poa_front_dob: string | null;
+		poa_front_dob: string;
 		poi_imagePath: string;
 		face_imagePath: string;
-		digilocker_address: string | null;
+		digilocker_address: string;
 		poa_backImagePath: string;
 		poa_front_name: string;
 		poi_name: string;
-		poa_back_name: string | null;
+		poa_back_name: string;
 		poa_front_idNumber: string;
 		poa_back_idNumber: string;
 		poa_back_dob: string;
-		digilocker_idPhoto: string | null;
+		digilocker_idPhoto: string;
 		poi_dob: string;
 		poa_frontImagePath: string;
-		digilocker_dob: string | null;
+		digilocker_dob: string;
 	};
 };
 
 export type UpdateUserKycParams = {
 	status?: "auto_approved" | "auto_declined" | "needs_review";
 	data?: {
-		poa_front_dob?: string | null;
+		poa_front_dob?: string;
 		poi_imagePath?: string;
 		face_imagePath?: string;
-		digilocker_address?: string | null;
+		digilocker_address?: string;
 		poa_backImagePath?: string;
 		poa_front_name?: string;
 		poi_name?: string;
-		poa_back_name?: string | null;
+		poa_back_name?: string;
 		poa_front_idNumber?: string;
 		poa_back_idNumber?: string;
 		poa_back_dob?: string;
-		digilocker_idPhoto?: string | null;
+		digilocker_idPhoto?: string;
 		poi_dob?: string;
 		poa_frontImagePath?: string;
-		digilocker_dob?: string | null;
+		digilocker_dob?: string;
 	};
 };
 
@@ -370,7 +376,7 @@ export type WalletParams = {
 	userId: string;
 	userType: string;
 	amount: number;
-	flag?: boolean | undefined;
+	flag?: any;
 };
 
 // Call Transactions

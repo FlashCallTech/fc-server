@@ -24,14 +24,10 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import SwitchCameraType from "../calls/SwitchCameraType";
 import AudioDeviceList from "../calls/AudioDeviceList";
 import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
-import { logEvent } from "firebase/analytics";
-import { analytics, db } from "@/lib/firebase";
 import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { stopMediaStreams } from "@/lib/utils";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -94,88 +90,41 @@ const MeetingRoom = () => {
 
 	useEffect(() => {
 		const joinCall = async () => {
-			if (hasJoined || callingState === CallingState.JOINED || callHasEnded)
+			if (
+				!call ||
+				!currentUser ||
+				hasJoined ||
+				callingState === CallingState.JOINED ||
+				callingState === CallingState.JOINING ||
+				callHasEnded
+			) {
 				return;
-
+			}
 			try {
-				const SessionDocRef = doc(
-					db,
-					"sessions",
-					call?.state?.createdBy?.id as string
-				);
-				const SessionDoc = await getDoc(SessionDocRef);
-				const sessionData = SessionDoc.data();
+				const localSessionKey = `meeting_${call.id}_${currentUser._id}`;
 
-				// Check if the session data and ongoingCall are available
-				if (sessionData && Array.isArray(sessionData.ongoingCall.members)) {
-					const ongoingCall = sessionData.ongoingCall;
-					const currentUserId = currentUser?._id;
-
-					// Check if the current user is a member and their join status
-					const isMember = ongoingCall.members.some(
-						(member: any) => member.user_id === currentUserId
-					);
-					const isAlreadyJoined = ongoingCall.members.some(
-						(member: any) =>
-							member.user_id === currentUserId && member.status === "joined"
-					);
-
-					console.log(ongoingCall);
-					console.log(isMember, isAlreadyJoined);
-
-					if (isMember) {
-						if (isAlreadyJoined) {
-							// Current user is already joined
-							toast({
-								variant: "destructive",
-								title: "Unauthorized Access",
-								description: "You are already in the call.",
-							});
-							stopMediaStreams();
-							router.replace("/home");
-						} else {
-							// Update the member's status to "joined"
-							const updatedMembers = ongoingCall.members.map((member: any) =>
-								member.user_id === currentUserId
-									? { ...member, status: "joined" }
-									: member
-							);
-
-							// Update Firestore with the new members array
-							await updateDoc(SessionDocRef, {
-								ongoingCall: {
-									id: call?.id,
-									status: "ongoing",
-									members: updatedMembers,
-								},
-							});
-
-							await call?.join();
-							if (isVideoCall) call?.camera?.enable();
-							call?.microphone?.enable();
-							setHasJoined(true);
-							logEvent(analytics, "call_connected", { userId: currentUserId });
-						}
-					} else {
-						toast({
-							variant: "destructive",
-							title: "Unauthorized Access",
-							description: "You are not allowed to join this meeting.",
-						});
-						stopMediaStreams();
-						router.replace("/home");
-					}
-				} else {
-					console.warn("Something went wrong with Firebase");
-
+				if (localStorage.getItem(localSessionKey)) {
+					toast({
+						variant: "destructive",
+						title: "Already in Call",
+						description: "You are already in this meeting in another tab.",
+					});
 					router.replace("/home");
+					return;
+				}
+				if (
+					callingState === CallingState.IDLE ||
+					callingState === CallingState.RINGING
+				) {
+					await call?.join();
+					localStorage.setItem(localSessionKey, "joined");
+
+					if (isVideoCall) call?.camera?.enable();
+					call?.microphone?.enable();
+					setHasJoined(true);
 				}
 			} catch (error) {
 				console.warn("Error Joining Call ", error);
-				// Redirect on error
-				setTimeout(() => {
-					router.replace("/home");
-				}, 1000);
 			}
 		};
 
@@ -305,8 +254,8 @@ const MeetingRoom = () => {
 
 			{/* Call Controls */}
 			{showControls && (
-				<section className="fixed bg-dark-1 bottom-0 flex w-full items-center justify-start py-2 px-4 transition-all">
-					<div className="flex overflow-x-scroll no-scrollbar w-fit items-center mx-auto justify-start gap-4">
+				<section className="call-controls fixed bg-dark-1 bottom-0 flex w-full items-center justify-start py-2 px-4 transition-all">
+					<div className="flex overflow-x-scroll no-scrollbar w-fit px-4 items-center mx-auto justify-start gap-4">
 						{/* Audio Button */}
 						<SpeakingWhileMutedNotification>
 							{isMobile ? (

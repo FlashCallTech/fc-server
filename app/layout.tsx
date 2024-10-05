@@ -25,6 +25,7 @@ export const metadata: Metadata = {
 	icons: {
 		icon: "/icons/logoDarkCircle.png",
 	},
+
 	openGraph: {
 		type: "website",
 		url: "https://flashcall.me",
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
 		description: "Book your first consultation",
 		images: [
 			{
-				url: "https://flashcall.me/icons/metadataBg.png",
+				url: "/icons/metadataBg.png",
 				width: 800,
 				height: 600,
 				alt: "FlashCall Logo",
@@ -42,7 +43,10 @@ export const metadata: Metadata = {
 		locale: "en_US",
 	},
 
-	metadataBase: new URL("https://flashcall.me"),
+	metadataBase:
+		process.env.NODE_ENV === "production"
+			? new URL("https://flashcall.me")
+			: new URL("http://localhost:3000"),
 };
 
 export default function RootLayout({

@@ -65,40 +65,6 @@ const Recharge: React.FC = () => {
 		});
 	}, []);
 
-	// const PaymentHandler = async () => {
-	// 	const totalPayableInPaise: number = totalPayable! * 100;
-	// 	const rechargeAmount: number = parseInt(totalPayableInPaise.toFixed(2));
-	// 	const currency: string = "INR";
-	// 	const order_id = "1a";
-	// 	const customer_id = currentUser?._id;
-	// 	const customer_phone = currentUser?.phone;
-
-	// 	try {
-	// 		const response: any = await fetch("/api/v1/order_cashfree", {
-	// 			method: "POST",
-	// 			body: JSON.stringify({ rechargeAmount, currency, order_id, customer_id, customer_phone }),
-	// 			headers: { "Content-Type": "application/json" },
-	// 		}
-	// 		);
-
-	// 		const options = {
-	// 			appId: process.env.CASHFREE_APP_ID,
-	// 			orderId: response.orderId,
-	// 			orderAmount: response.amount,
-	// 			orderCurrency: 'INR',
-	// 			customerPhone: response.phone,
-	// 			customerEmail: response.email,
-	// 		};
-
-	// 		window.Cashfree.paySeamless(options, function (response : any) {
-	// 			console.log('Payment response:', response);
-	// 		});
-	// 	} catch (error) {
-	// 		console.log(error);
-	// 	}
-
-	// }
-
 	const PaymentHandler = async (
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>
 	): Promise<void> => {

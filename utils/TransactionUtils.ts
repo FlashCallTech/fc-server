@@ -74,7 +74,7 @@ export const handleTransaction = async ({
 			});
 
 			removeActiveCallId();
-			await updateFirestoreSessions(clientId, callId, "ended", []);
+			await updateFirestoreSessions(clientId, callId, "ended");
 			await updateFirestoreTransactionStatus(callId);
 			logEvent(analytics, "call_ended", {
 				callId: callId,
@@ -125,7 +125,7 @@ export const handleTransaction = async ({
 		]);
 
 		removeActiveCallId();
-		await updateFirestoreSessions(clientId, callId, "ended", []);
+		await updateFirestoreSessions(clientId, callId, "ended");
 		await updateFirestoreTransactionStatus(callId);
 
 		logEvent(analytics, "call_ended", {
