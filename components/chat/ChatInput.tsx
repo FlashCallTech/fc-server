@@ -75,7 +75,7 @@ const ChatInput: React.FC<Props> = ({
                             >
                                 &times;
                             </button>
-                            {isImgUploading && <p>Sending Image...</p>}
+                           
                         </div>
                     </div>
                     <div className='flex flex-row w-[99%] items-center justify-center px-3 py-2 bg-gray-300 rounded-xl text-black'>
@@ -87,8 +87,8 @@ const ChatInput: React.FC<Props> = ({
                             className={`px-2 ${textSizeClass} font-normal flex-auto bg-transparent outline-none`}
                         />
                         <button onClick={handleSend} onContextMenu={(e) => e.preventDefault()}>
-                            <div className='flex justify-center items-center bg-green-500 rounded-full px-2 py-2'>
-                                <Image src="/send.svg" width={0} height={0} alt="Send" className="w-5 h-5" />
+                            <div className='bg-[#25D366] p-1 rounded-full size-10 flex items-center justify-center'>
+                                <Image src="/send.svg" width={1000} height={1000} alt="Send" className="size-5" />
                             </div>
                         </button>
                     </div>
@@ -106,15 +106,14 @@ const ChatInput: React.FC<Props> = ({
                     <button onClick={discardAudio}>
                         <Image src='/delete.svg' width={20} height={20} alt='discard' />
                     </button>
-                    <AudioVisualizer 
-                    // audioContext={audioContext} 
-                    audioStream={audioStream} />
+                    <AudioVisualizer
+                        audioStream={audioStream} />
                 </div>
             ) : (
                 <div className="sticky flex flex-1 flex-row px-3 py-2 bg-white rounded-full text-black mr-2 ">
                     <input
                         type="text"
-                        placeholder={isAudioUploading? 'Sending...' : "Message"}
+                        placeholder={isAudioUploading ? 'Sending...' : "Message"}
                         value={isImgUploading ? 'Sending Image' : text}
                         onChange={e => setText(e.target.value)}
                         className={`px-2 ${textSizeClass} font-normal flex-auto bg-transparent outline-none`}
@@ -122,19 +121,19 @@ const ChatInput: React.FC<Props> = ({
                     />
                     <div className="flex flex-row gap-3 px-2 ml-auto">
                         <label htmlFor="file" onContextMenu={(e) => e.preventDefault()}>
-                            <Image src='/file.svg' width={15} height={15} alt='file' className='w-7 h-7' />
+                            <Image src='/file.svg' width={15} height={15} alt='file' className='size-6 cursor-pointer' />
                         </label>
                         <input
                             type="file"
                             id="file"
-                            accept=".jpg,.jpeg,.png" 
+                            accept=".jpg,.jpeg,.png"
                             style={{ display: "none" }}
                             onChange={handleImg}
-                            
+
                         />
                         {!text.trim() && getDevicePlatform() !== 'Windows' && (
                             <label htmlFor="capture" onContextMenu={(e) => e.preventDefault()}>
-                                <Image src='/cam.svg' width={25} height={25} alt='cam' className='w-7 h-7 cursor-pointer' />
+                                <Image src='/cam.svg' width={25} height={25} alt='cam' className='size-6 cursor-pointer' />
                                 <input
                                     type="file"
                                     id="capture"
@@ -149,15 +148,17 @@ const ChatInput: React.FC<Props> = ({
                 </div>
             )}
 
-            {text.trim() || img.file || audio.file ? (
-                <button onClick={handleSend} onContextMenu={(e) => e.preventDefault()}>
-                    <Image src="/send.svg" width={0} height={0} alt="Send" className="w-11 h-11 bg-green-500 px-[14px] rounded-full" />
-                </button>
-            ) : (
-                <button onClick={toggleRecording} onContextMenu={(e) => e.preventDefault()} >
-                    <Image src={isRecording ? '/send.svg' : "/mic.svg"} width={30} height={30} alt="Mic" className="w-11 h-11 bg-green-500 rounded-full p-3" />
-                </button>
-            )}
+            <div className='bg-[#25D366] p-1 rounded-full size-10 flex items-center justify-center'>
+                {text.trim() || img.file || audio.file ? (
+                    <button onClick={handleSend} onContextMenu={(e) => e.preventDefault()}>
+                        <Image src="/send.svg" width={1000} height={1000} alt="Send" className="size-5" />
+                    </button>
+                ) : (
+                    <button onClick={toggleRecording} onContextMenu={(e) => e.preventDefault()} >
+                        <Image src={isRecording ? '/send.svg' : "/mic.svg"} width={1000} height={1000} alt="Mic" className="size-5" />
+                    </button>
+                )}
+            </div>
         </div>
     );
 };

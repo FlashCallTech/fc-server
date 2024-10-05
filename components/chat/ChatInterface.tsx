@@ -344,92 +344,91 @@ const ChatInterface: React.FC = () => {
 
 	function maskPhoneNumber(phoneNumber: string) {
 		// Remove the '+91' prefix
-		let cleanedNumber = phoneNumber.replace("+91", "");
+		if(phoneNumber){
 
-		// Mask the next 5 digits, leaving the first 2 digits unmasked
-		let maskedNumber =
-			cleanedNumber.substring(0, 2) + "*****" + cleanedNumber.substring(7);
-
-		return maskedNumber;
+			let cleanedNumber = phoneNumber.replace('+91', '');
+			
+			// Mask the next 5 digits, leaving the first 2 digits unmasked
+			let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
+			
+			return maskedNumber;
+		}
 	}
 
 	return (
-		<div
-			className={`flex flex-col h-screen bg-cover bg-center`}
-			style={{ backgroundImage: "url(/back.png)" }}
-		>
-			<div className="flex flex-col justify-between h-full overflow-y-auto">
-				{" "}
-				{/* Allow scrolling */}
-				{/* Sticky Header */}
-				<div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
-					<div className="flex items-center gap-2">
-						<Image
-							src={user2?.photo || "/avatar.svg"}
-							alt="profile"
-							width={0}
-							height={0}
-							className="w-10 h-10 rounded-full"
-						/>
-						<div className="flex flex-col">
-							<div className="text-white font-bold text-xs md:text-lg">
-								{currentUser?.firstName + " " + currentUser?.lastName ||
-									maskPhoneNumber(currentUser?.phone as string)}
-							</div>
-							{userType === "client" && <ChatTimer />}
-							{userType === "creator" && (
-								<CreatorChatTimer chatId={chatId as string} />
-							)}
-							<p className="text-[10px] md:text-sm text-green-500">
-								Ongoing chat
-							</p>
-						</div>
-					</div>
-					<div className="flex gap-2">
-						<Tip />
-						<button
-							onClick={endCall}
-							className="bg-[rgba(255,81,81,1)] text-white p-2 md:px-4 md:py-2 text-[10px] md:text-lg rounded-lg"
-						>
-							End
-						</button>
-					</div>
-				</div>
-				{showDialog && (
-					<EndCallDecision
-						handleDecisionDialog={handleDecisionDialog}
-						setShowDialog={handleCloseDialog}
-					/>
-				)}
-				<div>
-					{/* Chat Messages */}
-					<div className="flex overflow-y-auto scrollbar-none z-30">
-						<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
-					</div>
+		<div className={`flex flex-col h-screen bg-cover bg-center`} style={{ backgroundImage: 'url(/back.png)' }}>
+    <div className="flex flex-col justify-between h-full overflow-y-auto"> {/* Allow scrolling */}
+        {/* Sticky Header */}
+        <div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
+            <div className="flex items-center gap-2">
+                <Image
+                    src={`${user2?.photo? user2?.photo: 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'}`}
+                    alt="profile"
+                    width={1000}
+                    height={1000}
+                    className="size-10 min-w-10 rounded-full object-cover"
+                />
+                <div className="flex flex-col">
+                    <div className="text-white font-bold text-xs md:text-lg">
+                        {user2?.fullName? user2?.fullName : maskPhoneNumber(user2?.phone as string)}
+                    </div>
+                    {userType === "client" && <ChatTimer />}
+                    {userType === "creator" && (
+                        <CreatorChatTimer chatId={chatId as string} />
+                    )}
+                    <p className="text-[10px] md:text-sm text-green-500">
+                        Ongoing chat
+                    </p>
+                </div>
+            </div>
+            <div className="flex gap-2">
+                <Tip />
+                <button
+                    onClick={endCall}
+                    className="bg-[rgba(255,81,81,1)] text-white p-2 md:px-4 md:py-2 text-[10px] md:text-lg rounded-lg"
+                >
+                    End
+                </button>
+            </div>
+        </div>
 
-					{/* Sticky Chat Input at the Bottom */}
-					<div className="sticky bottom-0 w-full z-40">
-						<ChatInput
-							isRecording={isRecording}
-							discardAudio={discardAudio}
-							text={text}
-							setText={setText}
-							handleImg={handleImg}
-							handleSend={handleSend}
-							toggleRecording={toggleRecording}
-							img={img}
-							audio={audio}
-							audioStream={audioStream!}
-							// audioContext={audioContext}
-							handleCapturedImg={handleCapturedImg}
-							isImgUploading={isImgUploading}
-							isAudioUploading={isAudioUploading}
-							discardImage={discardImage}
-						/>
-					</div>
-				</div>
-			</div>
-		</div>
+        {showDialog && (
+            <EndCallDecision
+                handleDecisionDialog={handleDecisionDialog}
+                setShowDialog={handleCloseDialog}
+            />
+        )}
+
+        <div>
+            {/* Chat Messages */}
+            <div className="flex overflow-y-auto scrollbar-none z-30">
+                <Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
+            </div>
+
+            {/* Sticky Chat Input at the Bottom */}
+            <div className="sticky bottom-0 w-full z-40 bg-cover bg-center " style={{ backgroundImage: 'url(/back.png)' }}>
+                <ChatInput
+                    isRecording={isRecording}
+                    discardAudio={discardAudio}
+                    text={text}
+                    setText={setText}
+                    handleImg={handleImg}
+                    handleSend={handleSend}
+                    toggleRecording={toggleRecording}
+                    img={img}
+                    audio={audio}
+                    audioStream={audioStream!}
+                    // audioContext={audioContext}
+                    handleCapturedImg={handleCapturedImg}
+                    isImgUploading={isImgUploading}
+                    isAudioUploading={isAudioUploading}
+                    discardImage={discardImage}
+                />
+            </div>
+        </div>
+    </div>
+</div>
+
 	);
 };
 

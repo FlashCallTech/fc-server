@@ -609,6 +609,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						} catch (error) {
 							Sentry.captureException(error);
 							console.error(error);
+						} finally {
+							localStorage.removeItem('chatRequestId');
+							localStorage.removeItem('chatId');
 						}
 					}}
 				>

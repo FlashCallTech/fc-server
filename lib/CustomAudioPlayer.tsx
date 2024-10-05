@@ -1,15 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FaPlay, FaPause } from 'react-icons/fa'; // Using FontAwesome icons for play/pause
+import { useCurrentUsersContext } from './context/CurrentUsersContext';
 
 interface CustomAudioPlayer {
+  senderId: string;
   audioSrc: string;
 }
 
-const CustomAudioPlayer: React.FC<CustomAudioPlayer> = ({ audioSrc }) => {
+const CustomAudioPlayer: React.FC<CustomAudioPlayer> = ({ audioSrc, senderId }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<string>('00:00');
   const [duration, setDuration] = useState<string>('00:00');
+  const { currentUser } = useCurrentUsersContext();
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -68,11 +71,11 @@ const CustomAudioPlayer: React.FC<CustomAudioPlayer> = ({ audioSrc }) => {
   };
 
   return (
-    <div className="flex items-center space-x-4 p-3 bg-green-600 rounded-md">
+    <div className={`flex items-center space-x-4 p-3 ${senderId === (currentUser?._id as string)? 'bg-[#DCF8C6]' : 'bg-white'}  rounded-md`}>
       {/* Play/Pause Button */}
       <button
         onClick={togglePlayPause}
-        className="w-10 h-8 flex justify-center items-center bg-white text-green-600 rounded-full focus:outline-none"
+        className={`w-10 h-8 flex justify-center items-center text-green-600 rounded-full focus:outline-none`}
       >
         {isPlaying ? <FaPause className="w-4 h-4" /> : <FaPlay className="w-4 h-4" />}
       </button>
@@ -92,7 +95,7 @@ const CustomAudioPlayer: React.FC<CustomAudioPlayer> = ({ audioSrc }) => {
           }}
           className="w-full h-1 rounded-lg appearance-none bg-gray-300"
         />
-        <div className="flex text-xs text-white mt-1">
+        <div className={`flex text-xs text-black  mt-1`}>
           {isPlaying ? (
             <span>{currentTime}</span>
           ) : (
