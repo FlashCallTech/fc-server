@@ -40,23 +40,28 @@ const CallListMobile = () => {
 		}
 	}, [inView]);
 
-	if (isLoading || (currentUser && walletBalance < 0)) {
-		return (
-			<section className="w-full h-full flex items-center justify-center">
-				<SinglePostLoader />
-			</section>
-		);
-	}
-
 	return (
 		<>
-			{userCalls && userCalls?.pages[0].calls?.length > 0 ? (
-				(!isLoading && isError) || !currentUser ? (
-					<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
-						Failed to fetch User Calls <br />
-						Please try again later.
-					</div>
-				) : (
+			{isLoading || (currentUser && walletBalance < 0) ? (
+				<section className={`w-full h-full flex items-center justify-center`}>
+					<SinglePostLoader />
+				</section>
+			) : userCalls && userCalls?.pages[0].calls?.length === 0 ? (
+				<div className="flex flex-col w-full items-center justify-center h-full">
+					<h1 className="text-2xl font-semibold text-red-500">
+						No Calls Found
+					</h1>
+					<h2 className="text-xl font-semibold text-red-500">
+						Initiate a Call to See them here
+					</h2>
+				</div>
+			) : isError ? (
+				<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
+					Failed to fetch User Calls <br />
+					Please try again later.
+				</div>
+			) : (
+				<>
 					<section
 						className={`w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 xl:gap-10 text-black px-4`}
 					>
@@ -170,35 +175,25 @@ const CallListMobile = () => {
 								);
 							})
 						)}
-
-						{hasNextPage && isFetching && (
-							<Image
-								src="/icons/loading-circle.svg"
-								alt="Loading..."
-								width={50}
-								height={50}
-								className="mx-auto invert my-5 mt-10 z-20"
-							/>
-						)}
-
-						{!hasNextPage && !isFetching && (
-							<div className="xl:hidden text-center text-gray-500 py-4">
-								You have reached the end of the list
-							</div>
-						)}
-
-						{hasNextPage && <div ref={ref} className="w-full" />}
 					</section>
-				)
-			) : (
-				<div className="flex flex-col w-full items-center justify-center h-full">
-					<h1 className="text-2xl font-semibold text-red-500">
-						No Calls Found
-					</h1>
-					<h2 className="text-xl font-semibold text-red-500">
-						Initiate a Call to See them here
-					</h2>
-				</div>
+					{hasNextPage && isFetching && (
+						<Image
+							src="/icons/loading-circle.svg"
+							alt="Loading..."
+							width={50}
+							height={50}
+							className="mx-auto invert my-5 mt-10 z-20"
+						/>
+					)}
+
+					{!hasNextPage && !isFetching && (
+						<div className="xl:hidden text-center text-gray-500 py-4">
+							You have reached the end of the list
+						</div>
+					)}
+
+					{hasNextPage && <div ref={ref} className="w-full" />}
+				</>
 			)}
 		</>
 	);

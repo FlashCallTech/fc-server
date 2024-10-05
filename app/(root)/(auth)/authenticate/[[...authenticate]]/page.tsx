@@ -9,11 +9,27 @@ import Slider from "react-slick";
 import { authSliderContent } from "@/constants";
 import Image from "next/image";
 
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
+
 export default function AuthenticationPage() {
 	const searchParams = useSearchParams();
 	const userType = searchParams.get("usertype");
 	const refId = searchParams.get("refId");
-
+	const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 584);
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const sliderRef = useRef<Slider>(null);
 
@@ -51,6 +67,22 @@ export default function AuthenticationPage() {
 		};
 	}, []);
 
+	// Handle resizing to adjust height for mobile viewports
+	useEffect(() => {
+		const handleResize = () => {
+			setIsMobileView(window.innerWidth <= 584);
+			const height = window.innerHeight;
+			document.documentElement.style.setProperty("--vh", `${height * 0.01}px`);
+		};
+
+		window.addEventListener("resize", handleResize);
+		handleResize(); // Call once on mount
+
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
+
 	return (
 		<main
 			className="fixed w-full h-screen z-50 inset-0 bg-green-1 top-0 flex flex-col justify-between md:justify-center"
@@ -59,7 +91,7 @@ export default function AuthenticationPage() {
 			<Head>
 				<title>Authentication</title>
 				<meta name="description" content="Authentication Form" />
-				<link rel="icon" href="/icons/logoDarkCircle.png" />
+				<link rel="icon" href="/icons/logo_icon.png" />
 			</Head>
 
 			{/* Slider Section */}
@@ -116,10 +148,46 @@ export default function AuthenticationPage() {
 
 			{/* Authentication Form Section */}
 
-			<AuthenticateViaOTP
+			{/* <AuthenticateViaOTP
 				userType={userType as string}
 				refId={refId as string}
-			/>
+			/> */}
+
+			{isMobileView ? (
+				<Sheet open={true}>
+					<SheetContent
+						onOpenAutoFocus={(e) => e.preventDefault()}
+						side="bottom"
+						className="flex items-center justify-center w-full !p-0 !border-none"
+					>
+						<SheetHeader className="sr-only">
+							<SheetTitle className="sr-only">Authentication</SheetTitle>
+							<SheetDescription className="sr-only">
+								Authenticate via OTP to continue.
+							</SheetDescription>
+						</SheetHeader>
+						<AuthenticateViaOTP
+							userType={userType as string}
+							refId={refId as string}
+						/>
+					</SheetContent>
+				</Sheet>
+			) : (
+				<Dialog open={true}>
+					<DialogContent className="flex flex-col items-center justify-center w-fit !p-0 border-none">
+						<DialogHeader className="sr-only">
+							<DialogTitle className="sr-only">Authentication</DialogTitle>
+							<DialogDescription className="sr-only">
+								Authenticate via OTP to continue.
+							</DialogDescription>
+						</DialogHeader>
+						<AuthenticateViaOTP
+							userType={userType as string}
+							refId={refId as string}
+						/>
+					</DialogContent>
+				</Dialog>
+			)}
 		</main>
 	);
 }

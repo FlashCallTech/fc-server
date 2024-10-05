@@ -34,7 +34,7 @@ const OwnApp = () => {
 							}}
 						>
 							<Image
-								src="/web/icons/logoDarkCircle.png"
+								src="/icons/logo_icon.png"
 								alt="logo"
 								width={100}
 								height={100}
@@ -60,7 +60,7 @@ const OwnApp = () => {
 					}}
 				>
 					<Image
-						src="/web/icons/logoDarkCircle.png"
+						src="/icons/logo_icon.png"
 						alt="logo"
 						width={200}
 						height={200}

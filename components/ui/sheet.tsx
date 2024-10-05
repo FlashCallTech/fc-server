@@ -6,28 +6,34 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 const Sheet = SheetPrimitive.Root;
-
 const SheetTrigger = SheetPrimitive.Trigger;
-
 const SheetClose = SheetPrimitive.Close;
-
 const SheetPortal = SheetPrimitive.Portal;
 
 const SheetOverlay = React.forwardRef<
 	React.ElementRef<typeof SheetPrimitive.Overlay>,
 	React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-	<SheetPrimitive.Overlay
-		className={cn(
-			"fixed size-full inset-0 z-50 bg-black/40  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-			className
-		)}
-		{...props}
-		ref={ref}
-	/>
-));
+>(({ className, ...props }, ref) => {
+	const pathname = usePathname();
+
+	return (
+		<SheetPrimitive.Overlay
+			className={cn(
+				`fixed size-full inset-0 z-50 ${
+					pathname.includes("/authenticate")
+						? "bg-transparent "
+						: "bg-black/40 "
+				}  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0`,
+				className
+			)}
+			{...props}
+			ref={ref}
+		/>
+	);
+});
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
 const sheetVariants = cva(
@@ -56,22 +62,29 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
 	React.ElementRef<typeof SheetPrimitive.Content>,
 	SheetContentProps
->(({ side = "right", className, children, ...props }, ref) => (
-	<SheetPortal>
-		<SheetOverlay />
-		<SheetPrimitive.Content
-			ref={ref}
-			className={cn(sheetVariants({ side }), className)}
-			{...props}
-		>
-			{children}
-			<SheetPrimitive.Close className="absolute right-4 top-4 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary rounded-full">
-				<X className="h-7 w-7 text-green-1 outline-none rounded-xl p-1" />
-				<span className="sr-only">Close</span>
-			</SheetPrimitive.Close>
-		</SheetPrimitive.Content>
-	</SheetPortal>
-));
+>(({ side = "right", className, children, ...props }, ref) => {
+	const pathname = usePathname();
+	return (
+		<SheetPortal>
+			<SheetOverlay />
+			<SheetPrimitive.Content
+				ref={ref}
+				className={cn(sheetVariants({ side }), className)}
+				{...props}
+			>
+				{children}
+				<SheetPrimitive.Close
+					className={`${
+						pathname.includes("/authenticate") && "hidden"
+					} absolute right-4 top-4 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary rounded-full`}
+				>
+					<X className="h-7 w-7 text-green-1 outline-none rounded-xl p-1" />
+					<span className="sr-only">Close</span>
+				</SheetPrimitive.Close>
+			</SheetPrimitive.Content>
+		</SheetPortal>
+	);
+});
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 
 const SheetHeader = ({
