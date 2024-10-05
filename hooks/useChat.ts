@@ -252,9 +252,7 @@ const useChat = () => {
 	};
 
 	useEffect(() => {
-		console.log(chatRejected);
 		if (flag && chatRejected) {
-			console.log("Rejected");
 			setFlag(false);
 			createChat(localChatId as string, "rejected", client?._id);
 		}

@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import ImageModal from "@/lib/imageModal";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { format, isSameDay } from "date-fns";
-import ChatInterface from "./ChatInterface";
 import CustomAudioPlayer from "@/lib/CustomAudioPlayer";
 import usePlatform from "@/hooks/usePlatform";
 
@@ -35,8 +34,9 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 	const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
 	const { getDevicePlatform } = usePlatform();
 	const textSizeClass = getDevicePlatform() === 'iOS' ? 'text-base' : 'text-sm';
+	const [hasScrolled, setHasScrolled] = useState<boolean>(false);
 
-	// const endRef = useRef<HTMLDivElement | null>(null);
+	const endRef = useRef<HTMLDivElement | null>(null);
 	const handleImageClick = (imageUrl: string) => {
 		setFullImageUrl(imageUrl);
 	};
@@ -45,13 +45,13 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 		setFullImageUrl(null);
 	};
 
-	// useEffect(() => {
-	// 	endRef.current?.scrollIntoView({ behavior: "smooth" });
-	// }, [chat]);
-
-	const formatDate = (timestamp: number) => {
-		return format(new Date(timestamp), "dd MMM yyyy");
-	};
+	// Use useLayoutEffect for immediate DOM interaction on mount
+	useLayoutEffect(() => {
+		if (!hasScrolled && chat) {
+			endRef.current?.scrollIntoView({ behavior: "smooth" });
+			setHasScrolled(true); // Set flag to true after first scroll
+		}
+	}, [chat]);
 
 	const formatTime = (timestamp: number) => {
 		const date = new Date(timestamp);
@@ -93,8 +93,8 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 
 							<div
 								className={`${isCurrentUserMessage
-									? "bg-[rgba(255,255,255,1)] p-[5px] max-w-[60%] min-w-[40%] lg:min-w-[10%] lg:max-w-[40%] w-fit rounded-lg rounded-tr-none ml-auto text-black text-sm relative"
-									: "bg-green-500 p-[5px] max-w-[60%] min-w-[40%] lg:min-w-[10%] lg:max-w-[40%] w-fit rounded-lg rounded-tl-none text-white font-normal leading-5 relative"
+									? "bg-[#DCF8C6] p-[5px] max-w-[60%] min-w-[40%] lg:min-w-[10%] lg:max-w-[40%] w-fit rounded-lg rounded-tr-none ml-auto text-black text-sm relative"
+									: "bg-white p-[5px] max-w-[60%] min-w-[40%] lg:min-w-[10%] lg:max-w-[40%] w-fit rounded-lg rounded-tl-none text-black text-sm leading-5 relative"
 									} ${marginBottom}`}
 								style={{ wordBreak: "break-word", justifyContent: "center" }}
 							>
@@ -120,6 +120,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 								{message.audio && (
 									<div className="w-full items-center justify-center mb-1">
 										<CustomAudioPlayer
+											senderId = {message.senderId}
 											audioSrc={message.audio}
 										/>
 									</div>
@@ -134,8 +135,8 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 								<div
 									className={
 										message.senderId === (currentUser?._id as string)
-											? "rotate-90 absolute right-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] border-l-white border-r-0 border-solid border-transparent"
-											: "rotate-90 absolute left-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] border-l-green-500 border-r-0 border-solid border-transparent"
+											? "rotate-90 absolute right-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] border-l-[#DCF8C6] border-r-0 border-solid border-transparent"
+											: "rotate-90 absolute left-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] border-l-white border-r-0 border-solid border-transparent"
 									}
 								></div>
 
@@ -159,7 +160,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 						</React.Fragment>
 					);
 				})}
-				{/* <div ref={endRef}></div> */}
+				<div ref={endRef}></div>
 			</div>
 		</div>
 	);

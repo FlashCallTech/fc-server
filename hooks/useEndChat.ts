@@ -15,6 +15,7 @@ interface User2 {
 	fullName: string;
 	photo: string;
 	User_First_Seen: string;
+	phone: string;
 }
 
 interface Chat {
