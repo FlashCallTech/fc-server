@@ -33,7 +33,6 @@ const Favorites = () => {
 	const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
 	const { currentUser, clientUser } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
-	const [isSticky, setIsSticky] = useState(false);
 	const stickyRef = useRef<HTMLDivElement>(null);
 
 	const { ref, inView } = useInView();
@@ -62,7 +61,7 @@ const Favorites = () => {
 	};
 
 	useEffect(() => {
-		if (inView) {
+		if (inView && hasNextPage && !isFetching) {
 			fetchNextPage();
 		}
 	}, [inView]);
@@ -84,19 +83,6 @@ const Favorites = () => {
 			Creator_ID: creator?._id,
 			Walletbalace_Available: clientUser?.walletBalance,
 		});
-	}, []);
-
-	const handleScroll = () => {
-		if (stickyRef.current) {
-			setIsSticky(window.scrollY > stickyRef.current.offsetTop);
-		}
-	};
-
-	useEffect(() => {
-		window.addEventListener("scroll", handleScroll);
-		return () => {
-			window.removeEventListener("scroll", handleScroll);
-		};
 	}, []);
 
 	useEffect(() => {
@@ -147,12 +133,9 @@ const Favorites = () => {
 	const activeFiltersCount = [sortBy, groupBy].filter(Boolean).length;
 
 	return (
-		<section className="flex size-full flex-col gap-2">
+		<section ref={stickyRef} className="flex size-full flex-col gap-2">
 			<div
-				ref={stickyRef}
-				className={`sticky flex w-full items-center justify-between top-0 bg-white z-30 px-2 lg:pl-0.5 ${
-					isSticky ? "pt-4" : "pt-0"
-				} pb-4 transition-all duration-300`}
+				className={`sticky flex w-full items-center justify-between top-0 bg-white z-30 px-2 lg:pl-0.5 p-4 transition-all duration-300`}
 			>
 				<h1 className="text-3xl font-bold pl-1">Favorites</h1>
 				<button
@@ -282,7 +265,7 @@ const Favorites = () => {
 				</div>
 			) : (
 				<div
-					className={`animate-in grid grid-cols-1 xl:grid-cols-2 px-2.5 gap-5 lg:px-0 items-start pb-8 lg:pb-5 overflow-x-hidden no-scrollbar`}
+					className={`grid grid-cols-1 xl:grid-cols-2 px-2.5 gap-5 lg:px-0 items-start pb-8 lg:pb-5`}
 				>
 					{groupBy === "profession"
 						? Object.entries(filteredFavorites()).map(
