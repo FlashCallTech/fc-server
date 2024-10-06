@@ -335,7 +335,7 @@ const CreatorHome = () => {
 
 	if (!creatorUser || loading || walletBalance < 0)
 		return (
-			<section className="w-full h-full -mt-10 flex flex-col items-center justify-center">
+			<section className="w-full h-full flex flex-col items-center justify-center">
 				<ContentLoading />
 
 				{!creatorUser && !loading && (
@@ -370,7 +370,7 @@ const CreatorHome = () => {
 	return (
 		<>
 			<div
-				className={`relative min-h-full w-full 2xl:w-[90%] mx-auto flex flex-col pt-4 rounded-t-xl`}
+				className={`relative size-full 2xl:w-[90%] mx-auto flex flex-col md:pt-4 md:rounded-t-xl`}
 				style={{ backgroundColor: theme }}
 			>
 				<div className="flex justify-end p-2 absolute top-2 right-2">
