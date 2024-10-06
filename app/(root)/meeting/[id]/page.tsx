@@ -102,8 +102,6 @@ const CallEnded = ({ toast, router, call }: any) => {
 	const transactionHandled = useRef(false);
 	const { currentUser } = useCurrentUsersContext();
 
-	stopMediaStreams();
-
 	const removeActiveCallId = () => {
 		const activeCallId = localStorage.getItem("activeCallId");
 		if (activeCallId) {
@@ -123,7 +121,6 @@ const CallEnded = ({ toast, router, call }: any) => {
 	const isBrowser = () => typeof window !== "undefined";
 
 	useEffect(() => {
-		// Clear localStorage session key
 		const localSessionKey = `meeting_${call.id}_${currentUser?._id}`;
 		localStorage.removeItem(localSessionKey);
 
@@ -142,6 +139,8 @@ const CallEnded = ({ toast, router, call }: any) => {
 			setLoading(true);
 			transactionHandled.current = true;
 
+			stopMediaStreams();
+
 			// Show toast notification
 			if (!toastShown) {
 				toast({
@@ -151,8 +150,6 @@ const CallEnded = ({ toast, router, call }: any) => {
 				});
 				setToastShown(true);
 			}
-
-			stopMediaStreams();
 
 			// Calculate call duration
 			const callEndedTime = new Date(callEndedAt);
@@ -222,7 +219,6 @@ const CallEnded = ({ toast, router, call }: any) => {
 					// Redirect to feedback page immediately
 					router.replace(`/feedback/${call.id}`);
 				} else {
-					// Handle failure gracefully
 					console.error("Failed to process transaction or update call status");
 					const creatorURL = localStorage.getItem("creatorURL");
 					router.replace(`${creatorURL ? creatorURL : "/home"}`);
@@ -243,6 +239,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 		if (isMeetingOwner && !transactionHandled.current) {
 			handleCallEnd();
 		} else if (!isMeetingOwner) {
+			stopMediaStreams();
 			router.push(`/home`);
 		}
 

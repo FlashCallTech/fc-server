@@ -53,7 +53,6 @@ const MeetingRoom = () => {
 	const [showParticipants, setShowParticipants] = useState(false);
 	const { useCallCallingState, useCallEndedAt, useParticipantCount } =
 		useCallStateHooks();
-	const [hasJoined, setHasJoined] = useState(false);
 	const hasAlreadyJoined = useRef(false);
 
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
@@ -121,13 +120,11 @@ const MeetingRoom = () => {
 					return;
 				}
 				if (callingState === CallingState.IDLE) {
-					console.log("Joining The Call Inside useEffect");
 					await call?.join();
 					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
-					// if (isVideoCall) call?.camera?.enable();
-					// call?.microphone?.enable();
-					setHasJoined(true);
+					if (isVideoCall) call?.camera?.enable();
+					call?.microphone?.enable();
 				}
 			} catch (error) {
 				console.warn("Error Joining Call ", error);

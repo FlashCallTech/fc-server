@@ -9,12 +9,10 @@ import { analytics, db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import {
-	backendBaseUrl,
 	stopMediaStreams,
 	updateExpertStatus,
 	updateFirestoreSessions,
 } from "@/lib/utils";
-import axios from "axios";
 import { trackEvent } from "@/lib/mixpanel";
 
 const MyCallUI = () => {

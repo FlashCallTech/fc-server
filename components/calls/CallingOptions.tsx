@@ -27,6 +27,7 @@ import {
 } from "@/lib/utils";
 import useChat from "@/hooks/useChat";
 import Loader from "../shared/Loader";
+import { ReturnDocument } from "mongodb";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -450,6 +451,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
 					handleClickOption("video");
+				} else if (clientUser && onlineStatus === "Busy") {
+					toast({
+						variant: "destructive",
+						title: "Creator is Busy",
+						description: "Can't Initiate the Call",
+					});
+					return;
 				} else {
 					setIsAuthSheetOpen(true);
 				}
@@ -467,6 +475,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
 					handleClickOption("audio");
+				} else if (clientUser && onlineStatus === "Busy") {
+					toast({
+						variant: "destructive",
+						title: "Creator is Busy",
+						description: "Can't Initiate the Call",
+					});
+					return;
 				} else {
 					setIsAuthSheetOpen(true);
 				}
@@ -484,6 +499,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
 					handleChatClick();
+				} else if (clientUser && onlineStatus === "Busy") {
+					toast({
+						variant: "destructive",
+						title: "Creator is Busy",
+						description: "Can't Initiate the Call",
+					});
+					return;
 				} else {
 					setIsAuthSheetOpen(true);
 				}
