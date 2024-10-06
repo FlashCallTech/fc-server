@@ -123,17 +123,6 @@ const CallEnded = ({ toast, router, call }: any) => {
 	const isBrowser = () => typeof window !== "undefined";
 
 	useEffect(() => {
-		// Stop media streams every time the effect runs
-		stopMediaStreams();
-
-		// Calculate call duration
-		const callEndedTime = new Date(callEndedAt);
-		const callStartsAtTime = new Date(callStartsAt);
-		const duration = (
-			(callEndedTime.getTime() - callStartsAtTime.getTime()) /
-			1000
-		).toFixed(2);
-
 		// Clear localStorage session key
 		const localSessionKey = `meeting_${call.id}_${currentUser?._id}`;
 		localStorage.removeItem(localSessionKey);

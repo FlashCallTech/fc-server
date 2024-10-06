@@ -215,6 +215,7 @@ export type RegisterCallParams = {
 	duration?: string;
 	feedbacks?: CreatorFeedback[];
 	creatorDetails?: creatorUser;
+	amount?: number;
 };
 
 export type RegisterChatParams = {

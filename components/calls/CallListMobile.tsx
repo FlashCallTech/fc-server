@@ -130,7 +130,9 @@ const CallListMobile = () => {
 															: "text-red-500"
 													}`}
 												>
-													{userCall.status}
+													{userCall.status === "Ended"
+														? "Completed"
+														: userCall.status}
 												</span>
 												<span className="text-[12.5px]">
 													{userCall.duration &&
@@ -149,6 +151,15 @@ const CallListMobile = () => {
 															return formattedTime;
 														})()}
 												</span>
+												{/* User Amount */}
+												{userCall.amount && (
+													<span className="text-[12.5px] text-gray-600 flex items-center gap-1">
+														{/* Separator */}
+														<span className="text-gray-400">•</span>
+														{/* Amount */}
+														Rs. {userCall.amount}
+													</span>
+												)}
 											</div>
 										</div>
 										{/* StartedAt & Feedbacks */}

@@ -60,6 +60,11 @@ const MyCallUI = () => {
 								!hasRedirected
 							) {
 								setHasRedirected(true);
+								toast({
+									variant: "destructive",
+									title: "Ongoing / Pending Session",
+									description: "Redirecting you to the meeting ...",
+								});
 								router.replace(`/meeting/${ongoingCall.id}`);
 								return;
 							}
@@ -68,6 +73,11 @@ const MyCallUI = () => {
 						const storedCallId = localStorage.getItem("activeCallId");
 						if (storedCallId && !hide && !hasRedirected) {
 							setHasRedirected(true);
+							toast({
+								variant: "destructive",
+								title: "Ongoing / Pending Session",
+								description: "Redirecting you to the meeting ...",
+							});
 							router.replace(`/meeting/${storedCallId}`);
 							return;
 						}
