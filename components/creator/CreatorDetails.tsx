@@ -24,8 +24,13 @@ import axios from "axios";
 import Link from "next/link";
 
 const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
-	const { clientUser, setAuthenticationSheetOpen, userType, setCurrentTheme } =
-		useCurrentUsersContext();
+	const {
+		clientUser,
+		setAuthenticationSheetOpen,
+		userType,
+		setCurrentTheme,
+		updateCreatorURL,
+	} = useCurrentUsersContext();
 	const [addingFavorite, setAddingFavorite] = useState(false);
 	const [markedFavorite, setMarkedFavorite] = useState(false);
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
@@ -33,11 +38,16 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const [status, setStatus] = useState<string>("");
 	const pathname = usePathname();
 	const { toast } = useToast();
-	const creatorURL = localStorage.getItem("creatorURL");
+	const creatorURL = pathname || localStorage.getItem("creatorURL");
 
 	const fullName =
 		`${creator?.firstName || ""} ${creator?.lastName || ""}`.trim() ||
-		creator.username;
+		creator.username.startsWith("+91")
+			? creator.username.replace(
+					/(\+91)(\d+)/,
+					(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+			  )
+			: creator.username;
 
 	const imageSrc =
 		creator?.photo && isValidUrl(creator?.photo)
@@ -54,6 +64,8 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			localStorage.setItem("creatorURL", `/${creator.username}`);
 		}
 		setCurrentTheme(themeColor);
+		updateCreatorURL(creatorURL);
+		setBodyBackgroundColor("#121319");
 	}, [creator]);
 
 	useEffect(() => {

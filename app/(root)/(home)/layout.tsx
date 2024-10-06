@@ -2,6 +2,8 @@
 
 import Navbar from "@/components/shared/Navbar";
 import Sidebar from "@/components/shared/Sidebar";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { resetBodyBackgroundColor, setBodyBackgroundColor } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import React, { ReactNode, useEffect, useState } from "react";
 
@@ -22,39 +24,43 @@ const useScreenSize = () => {
 	return isMobile;
 };
 
+// Throttle function to limit the rate at which scroll handler is triggered
+const throttle = (func: () => void, limit: number) => {
+	let lastFunc: NodeJS.Timeout;
+	let lastRan: number;
+
+	return function (this: any, ...args: []) {
+		if (!lastRan) {
+			func.apply(this, args);
+			lastRan = Date.now();
+		} else {
+			clearTimeout(lastFunc);
+			lastFunc = setTimeout(() => {
+				if (Date.now() - lastRan >= limit) {
+					func.apply(this, args);
+					lastRan = Date.now();
+				}
+			}, limit - (Date.now() - lastRan));
+		}
+	};
+};
+
 const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 	const pathname = usePathname();
-
-	const creatorURL = localStorage.getItem("creatorURL");
-
-	const isCreatorOrExpertPath = pathname.includes(`${creatorURL}`);
-
+	const { creatorURL } = useCurrentUsersContext();
 	const [isVisible, setIsVisible] = useState(true);
 	const [lastScrollY, setLastScrollY] = useState(0);
 	const [isTop, setIsTop] = useState(true);
-
 	const isMobile = useScreenSize();
-
-	useEffect(() => {
-		if (!isMobile) {
-			setIsVisible(true);
-		}
-	}, [isMobile]);
-
-	useEffect(() => {
-		if (typeof window !== "undefined") {
-			window.addEventListener("scroll", handleScroll);
-
-			return () => {
-				window.removeEventListener("scroll", handleScroll);
-			};
-		}
-	}, [lastScrollY]);
-
 	const SCROLL_THRESHOLD = 50;
 
+	// Ensure the navbar is visible after every pathname change
 	useEffect(() => {
-		setIsVisible(true); // Ensure navbar is visible on page change
+		pathname !== creatorURL
+			? resetBodyBackgroundColor()
+			: setBodyBackgroundColor("#121319");
+		setIsVisible(true);
+		setLastScrollY(0);
 	}, [pathname]);
 
 	// Handle scroll event
@@ -92,21 +98,31 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 		}
 	};
 
-	// Add scroll listener
+	// Add scroll listener with throttle to improve performance and ensure frequent checks
 	useEffect(() => {
 		if (typeof window !== "undefined") {
-			window.addEventListener("scroll", handleScroll);
+			const throttledHandleScroll = throttle(handleScroll, 200); // Throttle by 200ms
+
+			window.addEventListener("scroll", throttledHandleScroll);
+
 			return () => {
-				window.removeEventListener("scroll", handleScroll);
+				window.removeEventListener("scroll", throttledHandleScroll);
 			};
 		}
 	}, [lastScrollY]);
+
+	// If the device is not mobile, the navbar should always be visible
+	useEffect(() => {
+		if (!isMobile) {
+			setIsVisible(true);
+		}
+	}, [isMobile]);
 
 	return (
 		<main className="relative">
 			<Navbar isVisible={isVisible} isMobile={isMobile} />
 			<div className="flex">
-				<Sidebar isCreatorOrExpertPath={isCreatorOrExpertPath} />
+				<Sidebar />
 				<section
 					className={`flex min-h-[calc(100vh-100px)] flex-1 flex-col  transition-all duration-300 ease-in-out ${
 						!isVisible
@@ -114,9 +130,7 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 								? "translate-y-0"
 								: "translate-y-7"
 							: isMobile
-							? isTop && isVisible && isCreatorOrExpertPath
-								? "translate-y-[72px]"
-								: "translate-y-[76px]"
+							? isTop && isVisible && "translate-y-[75px]"
 							: "pt-24"
 					}  md:px-10`}
 				>

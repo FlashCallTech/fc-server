@@ -37,7 +37,7 @@ const NavbarWeb = ({
 						alt="logo"
 						width={1000}
 						height={1000}
-						className="bg-white flex items-center justify-center gap-2 px-4 border border-black rounded-[6px] hoverScaleDownEffect  w-[175px] h-[48px]"
+						className="bg-white flex items-center justify-center gap-2 px-4 border border-black rounded-[6px] hoverScaleDownEffect  w-[150px] h-[48px]"
 						style={{
 							boxShadow: theme,
 						}}

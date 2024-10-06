@@ -33,6 +33,8 @@ interface CurrentUsersContextValue {
 	authenticationSheetOpen: boolean;
 	setAuthenticationSheetOpen: any;
 	fetchingUser: boolean;
+	creatorURL: string;
+	updateCreatorURL: (url: any) => void;
 }
 
 // Create the context with a default value of null
@@ -63,6 +65,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const [fetchingUser, setFetchingUser] = useState(false);
 	const [userType, setUserType] = useState<string | null>(null);
 	const [authToken, setAuthToken] = useState<string | null>(null);
+	const [creatorURL, setCreatorURL] = useState("");
 	const pathname = usePathname();
 
 	const { toast } = useToast();
@@ -73,6 +76,34 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		() => creatorUser || clientUser,
 		[creatorUser, clientUser]
 	);
+
+	// Function to update both localStorage and context
+	const updateCreatorURL = (url: any) => {
+		setCreatorURL(url);
+		localStorage.setItem("creatorURL", url);
+	};
+
+	useEffect(() => {
+		// Initialize the creatorURL from localStorage on component mount
+		const storedURL = localStorage.getItem("creatorURL");
+		if (storedURL) {
+			setCreatorURL(storedURL);
+		}
+
+		// Add event listener for localStorage changes
+		const handleStorageChange = (event: any) => {
+			if (event.key === "creatorURL") {
+				setCreatorURL(event.newValue);
+			}
+		};
+
+		window.addEventListener("storage", handleStorageChange);
+
+		// Clean up the event listener when the component unmounts
+		return () => {
+			window.removeEventListener("storage", handleStorageChange);
+		};
+	}, []);
 
 	useEffect(() => {
 		if (isBrowser()) {
@@ -261,6 +292,8 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				authenticationSheetOpen,
 				setAuthenticationSheetOpen,
 				fetchingUser,
+				creatorURL,
+				updateCreatorURL,
 			}}
 		>
 			{children}
