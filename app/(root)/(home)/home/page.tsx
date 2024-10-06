@@ -18,7 +18,8 @@ const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
 const HomePage = () => {
 	const [loadingCard, setLoadingCard] = useState(false);
-	const { clientUser, userType, setCurrentTheme } = useCurrentUsersContext();
+	const { clientUser, userType, setCurrentTheme, updateCreatorURL } =
+		useCurrentUsersContext();
 	const router = useRouter();
 	const pathname = usePathname();
 	const { ref, inView } = useInView();
@@ -50,6 +51,7 @@ const HomePage = () => {
 		id: string
 	) => {
 		setLoadingCard(true);
+		updateCreatorURL(`/${username}`);
 		localStorage.setItem("creatorURL", `/${username}`);
 		setCurrentTheme(theme);
 

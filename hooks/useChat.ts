@@ -252,7 +252,6 @@ const useChat = () => {
 	};
 
 	useEffect(() => {
-		console.log(chatRejected);
 		if (flag && chatRejected) {
 			console.log("Rejected");
 			setFlag(false);

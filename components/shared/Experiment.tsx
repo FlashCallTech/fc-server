@@ -63,7 +63,11 @@ const Experiment = () => {
 				</div>
 			)}
 
-			<img className="w-44 h-44" src={`/images/M_preview.png`} alt="logo" />
+			<img
+				className="w-44 h-44 rounded-full object-cover"
+				src={`/icons/logo_icon_dark.png`}
+				alt="logo"
+			/>
 			<div>
 				<button
 					className="bg-green-1 text-white px-7 py-5 rounded-xl hoverScaleDownEffect"

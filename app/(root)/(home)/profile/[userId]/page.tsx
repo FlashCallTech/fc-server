@@ -9,6 +9,7 @@ import EditProfile from "@/components/forms/EditProfile";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
+import { getProfileImagePlaceholder, isValidUrl } from "@/lib/utils";
 
 const UserProfilePage = () => {
 	const { currentUser, userType, refreshCurrentUser } =
@@ -53,6 +54,11 @@ const UserProfilePage = () => {
 
 	const isInitialState = userData.id === "";
 
+	const imageSrc =
+		currentUser?.photo && isValidUrl(currentUser?.photo)
+			? currentUser?.photo
+			: getProfileImagePlaceholder((currentUser?.gender as string) ?? "");
+
 	return (
 		<div className="flex justify-start items-center size-full flex-col gap-7 text-black">
 			{isInitialState ? (
@@ -72,7 +78,7 @@ const UserProfilePage = () => {
 						{!editData && (
 							<div className="flex items-center justify-center md:w-1/3 pt-2 ">
 								<Image
-									src={userData?.photo || "/images/defaultProfile.png"}
+									src={imageSrc}
 									alt="profile picture"
 									width={1000}
 									height={1000}

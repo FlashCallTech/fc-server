@@ -36,7 +36,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 			navigator.serviceWorker.ready.then((registration) => {
 				registration.showNotification("Incoming Call", {
 					body: `Call from ${call.state.createdBy?.name}`,
-					icon: call?.state?.createdBy?.image || GetRandomImage(),
+					icon: call?.state?.createdBy?.image || "/icons/logo_icon_dark.png",
 					tag: "incoming-call",
 					data: { url: `https://www.flashcall.me/meeting/${call.id}` },
 				});
@@ -47,7 +47,8 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 					navigator.serviceWorker.ready.then((registration) => {
 						registration.showNotification("Incoming Call", {
 							body: `Call from ${call.state.createdBy?.name}`,
-							icon: call?.state?.createdBy?.image || GetRandomImage(),
+							icon:
+								call?.state?.createdBy?.image || "/icons/logo_icon_dark.png",
 							tag: "incoming-call",
 							data: { url: `https://www.flashcall.me/meeting/${call.id}` },
 						});
@@ -123,7 +124,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 			<h1 className="font-bold text-xl mb-2">Incoming Call ...</h1>
 			<div className="flex flex-col items-center justify-center gap-10">
 				<img
-					src={call?.state?.createdBy?.image || GetRandomImage()}
+					src={call?.state?.createdBy?.image || "/icons/logo_icon_dark.png"}
 					alt=""
 					className="rounded-full w-28 h-28 object-cover"
 					onError={(e) => {
@@ -133,7 +134,14 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 
 				<div className="flex flex-col items-center justify-center gap-2">
 					<p className="text-xs">Call From </p>
-					<p className="font-semibold text-xl">{call.state.createdBy?.name}</p>
+					<p className="font-semibold text-xl">
+						{call.state.createdBy?.name?.startsWith("+91")
+							? call?.state?.createdBy?.name?.replace(
+									/(\+91)(\d+)/,
+									(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+							  )
+							: call?.state?.createdBy?.name}
+					</p>
 				</div>
 			</div>
 			<div className="flex items-center justify-evenly w-full">

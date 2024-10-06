@@ -37,18 +37,19 @@ const Navbar = ({
 		currentUser,
 		fetchingUser,
 		userType,
-		authenticationSheetOpen,
 		setAuthenticationSheetOpen,
 		currentTheme,
+		creatorURL,
 	} = useCurrentUsersContext();
 	const router = useRouter();
 	const [creator, setCreator] = useState<creatorUser>();
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 
 	const pathname = usePathname();
-	const creatorURL = localStorage.getItem("creatorURL");
+	// const creatorURL = localStorage.getItem("creatorURL");
 
-	const isCreatorOrExpertPath = pathname.includes(`${creatorURL}`);
+	const isCreatorOrExpertPath =
+		creatorURL && creatorURL !== "" && pathname.includes(`${creatorURL}`);
 	const followCreatorTheme = isCreatorOrExpertPath ? "#ffffff" : "#000000";
 	const invertCreatorTheme = isCreatorOrExpertPath
 		? getDarkHexCode(currentTheme)
@@ -99,13 +100,19 @@ const Navbar = ({
 		window.open(url, "_blank");
 	};
 
+	// console.log(isCreatorOrExpertPath, isMobile, currentTheme);
+
 	const AppLink = () => (
 		<Button
 			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
 			style={{
 				boxShadow: `4px 4px 0px 0px #000000`,
 				color: `${
-					isMobile && followCreatorTheme ? "#000000" : followCreatorTheme
+					isMobile && isCreatorOrExpertPath
+						? currentTheme
+							? "#000000"
+							: "#ffffff"
+						: followCreatorTheme
 				}`,
 				border: `1px solid #000000`,
 				backgroundColor: `${
@@ -145,7 +152,7 @@ const Navbar = ({
 					isCreatorOrExpertPath
 						? isMobile
 							? currentTheme
-							: "#000000"
+							: "#121319"
 						: "#ffffff"
 				} `,
 			}}

@@ -318,7 +318,7 @@ const AuthenticateViaOTP = ({
 								name="phone"
 								render={({ field }) => (
 									<FormItem>
-										<div className="flex items-center border pl-2 pr-1 py-1 rounded bg-gray-100">
+										<div className="flex items-center border-none pl-2 pr-1 py-1 rounded bg-gray-100">
 											<FormControl>
 												<div className="w-full flex justify-between items-center">
 													<div className="flex w-full items-center jusitfy-center">
