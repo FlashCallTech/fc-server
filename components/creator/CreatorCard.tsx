@@ -40,7 +40,7 @@ const CreatorCard: React.FC = () => {
 
 	if (loading || (currentUser && walletBalance < 0)) {
 		return (
-			<div className="size-full flex flex-col gap-2 items-center justify-center -mt-10">
+			<div className="size-full flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
 			</div>
 		);

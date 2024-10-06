@@ -71,14 +71,18 @@ const HomePage = () => {
 
 	if (isLoading || loadingCard) {
 		return (
-			<div className="size-full flex flex-col gap-2 items-center justify-center -mt-10">
+			<div className="size-full flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
 			</div>
 		);
 	}
 
 	return (
-		<main className="flex flex-col pt-5 size-full">
+		<main
+			className={`flex flex-col ${
+				userType === "creator" ? "pt-0 md:pt-5" : "pt-5"
+			}  size-full`}
+		>
 			{userType === "client" ? (
 				<Suspense fallback={<PostLoader count={6} />}>
 					{isError ? (
