@@ -22,6 +22,7 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import {
 	backendBaseUrl,
+	getDarkHexCode,
 	stopMediaStreams,
 	updateExpertStatus,
 } from "@/lib/utils";
@@ -100,7 +101,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 	const [loading, setLoading] = useState(false);
 	const [toastShown, setToastShown] = useState(false);
 	const transactionHandled = useRef(false);
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, currentTheme } = useCurrentUsersContext();
 
 	const removeActiveCallId = () => {
 		const activeCallId = localStorage.getItem("activeCallId");
@@ -274,7 +275,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 						deleteSpeed={50}
 						delaySpeed={2000}
 					/>
-					<Cursor cursorColor="#50A65C" />
+					<Cursor cursorColor={getDarkHexCode(currentTheme) as string} />
 				</h1>
 			</section>
 		);
