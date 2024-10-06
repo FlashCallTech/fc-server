@@ -151,14 +151,16 @@ const CallListMobile = () => {
 															return formattedTime;
 														})()}
 												</span>
-												{/* User Amount */}
 												{userCall.amount && (
-													<span className="text-[12.5px] text-gray-600 flex items-center gap-1">
+													<>
 														{/* Separator */}
 														<span className="text-gray-400">•</span>
-														{/* Amount */}
-														Rs. {userCall.amount}
-													</span>
+														{/* User Amount */}
+														<span className="text-[12.5px] text-gray-600 flex items-center gap-1">
+															{/* Amount */}
+															Rs. {userCall.amount}
+														</span>
+													</>
 												)}
 											</div>
 										</div>
