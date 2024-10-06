@@ -362,7 +362,7 @@ const ChatInterface: React.FC = () => {
 				{" "}
 				{/* Allow scrolling */}
 				{/* Sticky Header */}
-				<div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
+				<div className="sticky top-0  left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
 					<div className="flex items-center gap-2">
 						<Image
 							src={user2?.photo || "/avatar.svg"}

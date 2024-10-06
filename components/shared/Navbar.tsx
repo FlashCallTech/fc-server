@@ -168,7 +168,7 @@ const Navbar = ({
 							width={1000}
 							height={1000}
 							alt="flashcall logo"
-							className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[175px] xl:h-[48px]"
+							className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[150px] xl:h-[48px]"
 							style={{
 								boxShadow: `4px 4px 0px 0px #000000`,
 								color: `${

@@ -24,23 +24,16 @@ const useScreenSize = () => {
 	return isMobile;
 };
 
-// Throttle function to limit the rate at which scroll handler is triggered
-const throttle = (func: () => void, limit: number) => {
-	let lastFunc: NodeJS.Timeout;
-	let lastRan: number;
-
+// Throttle function with requestAnimationFrame for better scroll performance
+const throttleWithRaf = (func: () => void) => {
+	let isRunning = false;
 	return function (this: any, ...args: []) {
-		if (!lastRan) {
-			func.apply(this, args);
-			lastRan = Date.now();
-		} else {
-			clearTimeout(lastFunc);
-			lastFunc = setTimeout(() => {
-				if (Date.now() - lastRan >= limit) {
-					func.apply(this, args);
-					lastRan = Date.now();
-				}
-			}, limit - (Date.now() - lastRan));
+		if (!isRunning) {
+			isRunning = true;
+			window.requestAnimationFrame(() => {
+				func.apply(this, args);
+				isRunning = false;
+			});
 		}
 	};
 };
@@ -50,7 +43,6 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 	const { creatorURL } = useCurrentUsersContext();
 	const [isVisible, setIsVisible] = useState(true);
 	const [lastScrollY, setLastScrollY] = useState(0);
-	const [isTop, setIsTop] = useState(true);
 	const isMobile = useScreenSize();
 	const SCROLL_THRESHOLD = 50;
 
@@ -61,57 +53,46 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 			: setBodyBackgroundColor("#121319");
 		setIsVisible(true);
 		setLastScrollY(0);
-	}, [pathname]);
+	}, [pathname, creatorURL]);
 
-	// Handle scroll event
+	// Handle scroll event with optimized logic
 	const handleScroll = () => {
 		if (typeof window !== "undefined") {
 			const scrollY = window.scrollY;
 			const maxScrollY =
 				document.documentElement.scrollHeight - window.innerHeight;
 
-			// Detect if the user is at the top of the page
-			setIsTop(scrollY === 0);
-
 			// Check if the user is at the bottom
 			const isAtBottom = scrollY >= maxScrollY;
 
 			// Only apply navbar visibility changes on mobile
-			if (window.innerWidth <= 768) {
+			if (isMobile) {
 				if (isAtBottom) {
 					// Hide the navbar when at the bottom
 					setIsVisible(false);
 				} else if (Math.abs(scrollY - lastScrollY) > SCROLL_THRESHOLD) {
-					// Only toggle visibility if scroll change exceeds the threshold
-					if (scrollY > lastScrollY) {
-						// Scrolling down
-						setIsVisible(false);
-					} else {
-						// Scrolling up
-						setIsVisible(true);
-					}
+					// Toggle visibility based on scroll direction and threshold
+					setIsVisible(scrollY < lastScrollY);
 					setLastScrollY(scrollY);
 				}
 			} else {
+				// On non-mobile, always show the navbar
 				setIsVisible(true);
 			}
 		}
 	};
 
-	// Add scroll listener with throttle to improve performance and ensure frequent checks
+	// Add scroll listener with throttling using requestAnimationFrame
 	useEffect(() => {
-		if (typeof window !== "undefined") {
-			const throttledHandleScroll = throttle(handleScroll, 200); // Throttle by 200ms
+		const throttledHandleScroll = throttleWithRaf(handleScroll);
+		window.addEventListener("scroll", throttledHandleScroll, { passive: true });
 
-			window.addEventListener("scroll", throttledHandleScroll);
+		return () => {
+			window.removeEventListener("scroll", throttledHandleScroll);
+		};
+	}, [isMobile, lastScrollY]);
 
-			return () => {
-				window.removeEventListener("scroll", throttledHandleScroll);
-			};
-		}
-	}, [lastScrollY]);
-
-	// If the device is not mobile, the navbar should always be visible
+	// Always make the navbar visible when not on mobile
 	useEffect(() => {
 		if (!isMobile) {
 			setIsVisible(true);
@@ -124,15 +105,13 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 			<div className="flex">
 				<Sidebar />
 				<section
-					className={`flex min-h-[calc(100vh-100px)] flex-1 flex-col  transition-all duration-300 ease-in-out ${
-						!isVisible
-							? pathname !== "/home"
-								? "translate-y-0"
-								: "translate-y-7"
-							: isMobile
-							? isTop && isVisible && "translate-y-[75px]"
-							: "pt-24"
-					}  md:px-10`}
+					className={`flex min-h-[calc(100vh-100px)] flex-1 flex-col transition-all duration-300 ease-in-out ${
+						isMobile
+							? isVisible
+								? "translate-y-[76px]"
+								: "translate-y-0"
+							: "pt-[76px]"
+					} md:px-10`}
 				>
 					<div className="size-full">{children}</div>
 				</section>
