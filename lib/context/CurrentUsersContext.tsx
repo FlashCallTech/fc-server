@@ -113,6 +113,9 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			localStorage.removeItem("creatorURL");
 		}
 
+		const creatorURL = localStorage.getItem("creatorURL");
+		creatorURL ? router.replace(creatorURL) : router.replace("/home");
+
 		setClientUser(null);
 		setCreatorUser(null);
 	};
