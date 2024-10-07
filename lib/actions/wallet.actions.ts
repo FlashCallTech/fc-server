@@ -63,24 +63,26 @@ export async function addMoney({
 		if (referDetails && referDetails.amount > 0 && flag) {
 			const referrer = await Creator.findOne({ _id: referDetails.referredBy });
 			if (referrer) {
-				const referralBonus = (5 / 100) * numericAmount;
-				referrer.walletBalance = Number(referrer.walletBalance) + referralBonus;
-				await referrer.save();
-				await Wallet.findOneAndUpdate(
-					{ userId: referrer._id, userType: "Creator" },
-					{ $inc: { balance: referralBonus } },
-					{ new: true, upsert: true }
-				);
-				referDetails.amount = Number(referDetails.amount) - referralBonus;
-				await referDetails.save();
+				const referralBonus = Math.round((5 / 100) * numericAmount);
+				if (referralBonus > 0) {
+					referrer.walletBalance = Number(referrer.walletBalance) + referralBonus;
+					await referrer.save();
+					await Wallet.findOneAndUpdate(
+						{ userId: referrer._id, userType: "Creator" },
+						{ $inc: { balance: referralBonus } },
+						{ new: true, upsert: true }
+					);
+					referDetails.amount = Number(referDetails.amount) - referralBonus;
+					await referDetails.save();
 
-				referralBonus > 0 &&
-					(await Transaction.create({
-						userId: referrer._id,
-						userType,
-						amount: referralBonus,
-						type: "credit",
-					}));
+					referralBonus > 0 &&
+						(await Transaction.create({
+							userId: referrer._id,
+							userType,
+							amount: referralBonus,
+							type: "credit",
+						}));
+				}
 			}
 		}
 

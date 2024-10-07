@@ -204,6 +204,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					messages: [],
 					maxChatDuration,
 					timerSet: false,
+					chatRate: chatRequest.rate,
 					walletBalance: response.walletBalance,
 				});
 

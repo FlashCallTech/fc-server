@@ -48,7 +48,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 	// Use useLayoutEffect for immediate DOM interaction on mount
 	useLayoutEffect(() => {
 		if (!hasScrolled && chat) {
-			endRef.current?.scrollIntoView({ behavior: "smooth" });
+			endRef.current?.scrollIntoView();
 			setHasScrolled(true); // Set flag to true after first scroll
 		}
 	}, [chat]);
