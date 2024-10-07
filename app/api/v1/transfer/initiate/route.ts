@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const { userId, phone } = await request.json();
 
     const userResponse = await getUserByPhone(phone);
-    if (userResponse.walletBalance >= 500) {
+    if (userResponse[0].walletBalance >= 500) {
       const paymentSettingsResponse = await fetch(`https://flashcall.me/api/v1/creator/getPayment?userId=${userId}`,
         {
           method: 'GET',
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       const paymentSettingsResult = await paymentSettingsResponse.json();
 
       if (paymentSettingsResult.success) {
-        const kycResponse = await fetch(`https://flashcall.me/api/v1/userKyc/getKyc?userId=${userId}`,
+        const kycResponse = await fetch(`https://flashcall.me/api/v1/userkyc/getKyc?userId=${userId}`,
           {
             method: "GET",
             headers: {

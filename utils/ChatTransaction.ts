@@ -2,6 +2,7 @@ import { getCreatorById } from "@/lib/actions/creator.actions";
 import { analytics } from "@/lib/firebase";
 import { logEvent } from "firebase/analytics";
 import * as Sentry from "@sentry/nextjs";
+import { backendBaseUrl } from "@/lib/utils";
 
 export const handleTransaction = async ({
 	duration,
@@ -86,7 +87,7 @@ export const handleTransaction = async ({
 					}),
 					headers: { "Content-Type": "application/json" },
 				}),
-				fetch("/api/v1/wallet/addMoney", {
+				fetch(`${backendBaseUrl}/wallet/addMoney`, {
 					method: "POST",
 					body: JSON.stringify({
 						userId: creatorId,

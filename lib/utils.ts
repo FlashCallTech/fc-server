@@ -243,19 +243,18 @@ export const validateUsername = (username: string) => {
 export const updateFirestoreSessions = async (
 	userId: string,
 	callId: string,
-	status: string,
-	members: any[]
+	status: string
 ) => {
 	try {
 		const SessionDocRef = doc(db, "sessions", userId);
 		const SessionDoc = await getDoc(SessionDocRef);
 		if (SessionDoc.exists()) {
 			await updateDoc(SessionDocRef, {
-				ongoingCall: { id: callId, status: status, members },
+				ongoingCall: { id: callId, status: status },
 			});
 		} else {
 			await setDoc(SessionDocRef, {
-				ongoingCall: { id: callId, status: status, members },
+				ongoingCall: { id: callId, status: status },
 			});
 		}
 	} catch (error) {

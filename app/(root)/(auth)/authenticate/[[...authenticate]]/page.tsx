@@ -63,7 +63,7 @@ export default function AuthenticationPage() {
 			</Head>
 
 			{/* Slider Section */}
-			<div className="flex flex-col gap-2 h-1/2 w-full justify-center items-end relative md:hidden">
+			<div className="flex flex-col gap-2 h-1/2 w-full justify-center items-end relative sm:hidden">
 				<Slider
 					{...settings}
 					ref={sliderRef}
