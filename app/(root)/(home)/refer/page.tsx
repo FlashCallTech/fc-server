@@ -143,7 +143,7 @@ const ReferralLink: React.FC = () => {
                           <Image src={"https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0"} width={1000} height={1000} alt="image" className="size-10 min-w-10 rounded-full" />
                         </div>
                         <div className="flex flex-col w-full gap-1">
-                          <div className="text-xs">{`${referral.name || 'Username'}`}</div>
+                          <div className="text-xs font-bold">{`${referral.name || 'Username'}`}</div>
                           <div className="text-xs">{`${referral.creatorId || 'CreatorId'}`}</div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             {/* Progress Bar */}
