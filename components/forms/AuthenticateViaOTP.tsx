@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Image from "next/image";
 import { success } from "@/constants/icons";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
 import { CreateCreatorParams, CreateUserParams } from "@/types";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -67,6 +67,8 @@ const AuthenticateViaOTP = ({
 	const [error, setError] = useState({});
 	const { toast } = useToast();
 	const { getDevicePlatform } = usePlatform();
+
+	const pathname = usePathname();
 
 	// SignUp form
 	const signUpForm = useForm<z.infer<typeof formSchema>>({
@@ -294,13 +296,15 @@ const AuthenticateViaOTP = ({
 				// SignUp form
 				<>
 					<div className="flex flex-col items-center justify-enter gap-2 text-center">
-						<Image
-							src="/icons/logo_new_light.png"
-							width={1000}
-							height={1000}
-							alt="flashcall logo"
-							className="flex items-center justify-center w-40 h-16 -ml-2"
-						/>
+						{!pathname.includes("/authenticate") && (
+							<Image
+								src="/icons/logo_new_light.png"
+								width={1000}
+								height={1000}
+								alt="flashcall logo"
+								className="flex items-center justify-center w-40 h-16 -ml-2"
+							/>
+						)}
 						<h2 className="text-black text-lg font-semibold">
 							Login or Signup
 						</h2>

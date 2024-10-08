@@ -95,7 +95,7 @@ export default function AuthenticationPage() {
 			</Head>
 
 			{/* Slider Section */}
-			<section className="relative flex flex-col gap-2 h-1/2 w-full justify-start items-start sm:hidden">
+			<section className="relative flex flex-col gap-2 w-full justify-start items-start sm:hidden">
 				<Slider
 					{...settings}
 					ref={sliderRef}
@@ -111,7 +111,7 @@ export default function AuthenticationPage() {
 								alt={`${item.heading}`}
 								width={1000}
 								height={1000}
-								className="size-full max-h-[235px] xm:max-h-full rounded-xl object-contain mx-auto"
+								className="size-full max-h-[300px] rounded-xl object-contain mx-auto"
 								onError={(e) => {
 									e.currentTarget.src = "/images/defaultProfileImage.png";
 								}}
@@ -144,44 +144,48 @@ export default function AuthenticationPage() {
 					</div>
 				)}
 			</section>
-			<section className="size-full">
-				{/* Authentication Form Section */}
-				{isMobileView ? (
-					<Sheet open={true}>
-						<SheetContent
-							onOpenAutoFocus={(e) => e.preventDefault()}
-							side="bottom"
-							className="flex items-center justify-center w-full h-fit !p-0 !border-none"
-						>
-							<SheetHeader className="sr-only">
-								<SheetTitle className="sr-only">Authentication</SheetTitle>
-								<SheetDescription className="sr-only">
-									Authenticate via OTP to continue.
-								</SheetDescription>
-							</SheetHeader>
-							<AuthenticateViaOTP
-								userType={userType as string}
-								refId={refId as string}
-							/>
-						</SheetContent>
-					</Sheet>
-				) : (
-					<Dialog open={true}>
-						<DialogContent className="flex flex-col items-center justify-center w-fit !p-0 border-none">
-							<DialogHeader className="sr-only">
-								<DialogTitle className="sr-only">Authentication</DialogTitle>
-								<DialogDescription className="sr-only">
-									Authenticate via OTP to continue.
-								</DialogDescription>
-							</DialogHeader>
-							<AuthenticateViaOTP
-								userType={userType as string}
-								refId={refId as string}
-							/>
-						</DialogContent>
-					</Dialog>
-				)}
-			</section>
+
+			<AuthenticateViaOTP
+				userType={userType as string}
+				refId={refId as string}
+			/>
+
+			{/* Authentication Form Section */}
+			{/* {isMobileView ? (
+				<Sheet open={true}>
+					<SheetContent
+						onOpenAutoFocus={(e) => e.preventDefault()}
+						side="bottom"
+						className="flex items-center justify-center w-full h-fit !p-0 !border-none"
+					>
+						<SheetHeader className="sr-only">
+							<SheetTitle className="sr-only">Authentication</SheetTitle>
+							<SheetDescription className="sr-only">
+								Authenticate via OTP to continue.
+							</SheetDescription>
+						</SheetHeader>
+						<AuthenticateViaOTP
+							userType={userType as string}
+							refId={refId as string}
+						/>
+					</SheetContent>
+				</Sheet>
+			) : (
+				<Dialog open={true}>
+					<DialogContent className="flex flex-col items-center justify-center w-fit !p-0 border-none">
+						<DialogHeader className="sr-only">
+							<DialogTitle className="sr-only">Authentication</DialogTitle>
+							<DialogDescription className="sr-only">
+								Authenticate via OTP to continue.
+							</DialogDescription>
+						</DialogHeader>
+						<AuthenticateViaOTP
+							userType={userType as string}
+							refId={refId as string}
+						/>
+					</DialogContent>
+				</Dialog>
+			)} */}
 		</main>
 	);
 }
