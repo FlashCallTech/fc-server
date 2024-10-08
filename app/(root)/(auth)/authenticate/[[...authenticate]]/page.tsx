@@ -85,7 +85,7 @@ export default function AuthenticationPage() {
 
 	return (
 		<main
-			className="size-full inset-0 bg-[#111111] md:bg-green-1 top-0 flex flex-col justify-between md:justify-center"
+			className="size-full h-screen inset-0 bg-[#111111] md:bg-green-1 top-0 flex flex-col justify-between md:justify-center"
 			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
 		>
 			<Head>
@@ -145,13 +145,8 @@ export default function AuthenticationPage() {
 				)}
 			</section>
 
-			<AuthenticateViaOTP
-				userType={userType as string}
-				refId={refId as string}
-			/>
-
 			{/* Authentication Form Section */}
-			{/* {isMobileView ? (
+			{isMobileView ? (
 				<Sheet open={true}>
 					<SheetContent
 						onOpenAutoFocus={(e) => e.preventDefault()}
@@ -185,7 +180,7 @@ export default function AuthenticationPage() {
 						/>
 					</DialogContent>
 				</Dialog>
-			)} */}
+			)}
 		</main>
 	);
 }
