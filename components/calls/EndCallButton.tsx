@@ -12,6 +12,7 @@ import { trackEvent } from "@/lib/mixpanel";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import { updateFirestoreSessions } from "@/lib/utils";
 
 const EndCallButton = () => {
 	const call = useCall();
@@ -33,6 +34,10 @@ const EndCallButton = () => {
 	const handleDecisionDialog = async () => {
 		const callDocRef = doc(db, "calls", call.id);
 		const docSnap = await getDoc(callDocRef);
+
+		await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
+			status: "ended",
+		});
 
 		trackEvent("BookCall_Chat_Ended", {
 			Client_ID: call.state.createdBy?.id,
