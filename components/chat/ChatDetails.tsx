@@ -45,14 +45,17 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({ creatorId }) => {
 				setLoading(false);
 			}
 		};
-
-		getChats();
+		if(currentUser) getChats();
 	}, [currentUser, creatorId]);
 
+	console.log(chats);
+
 	const formatDuration = (duration: number | undefined) => {
-		const minutes = Math.floor(duration! / 60000);
-		const seconds = Math.floor((duration! % 60000) / 1000);
-		return `${minutes}m ${seconds}s`;
+		if(duration){
+			const minutes = Math.floor(duration / 60); // Get the minutes
+			const seconds = Math.floor(duration % 60); // Get the remainder for seconds
+			return `${minutes}m ${seconds}s`;
+		}
 	};
 
 	if (loading) {
@@ -89,6 +92,9 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({ creatorId }) => {
 								}`}
 							>
 								{chat.status}
+							</span>
+							<span>
+								hehe
 							</span>
 						</div>
 						{chat.status === "ended" && (
