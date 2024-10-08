@@ -45,7 +45,13 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 export let messaging: any;
 if (typeof window !== "undefined") {
-	messaging = getMessaging(app);
+	isMessagingSupported().then((supported) => {
+		if (supported) {
+			messaging = getMessaging(app);
+		} else {
+			console.warn("Firebase Messaging is not supported in this environment.");
+		}
+	});
 }
 // Function to get FCM token, only in the browser
 export const getFCMToken = async () => {

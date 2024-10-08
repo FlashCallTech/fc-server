@@ -4,7 +4,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
-const page = () => {
+const UserFeedbacks = () => {
 	const { userType, creatorURL } = useCurrentUsersContext();
 	const router = useRouter();
 	useEffect(() => {
@@ -31,4 +31,4 @@ const page = () => {
 	);
 };
 
-export default page;
+export default UserFeedbacks;
