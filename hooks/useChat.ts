@@ -251,24 +251,12 @@ const useChat = () => {
 		localStorage.removeItem("chatRequestId");
 	};
 
-	useEffect(() => {
-		if (flag && chatRejected) {
-			setFlag(false);
-			createChat(localChatId as string, "rejected", client?._id);
-		}
-	}, [chatRejected]);
-
-	if (
-		duration &&
-		endedAt &&
-		amount &&
-		flag &&
-		ended &&
-		user2?.clientId === client?._id
-	) {
-		setFlag(false);
-		createChat(chatId as string, "ended", user2?.clientId);
-	}
+	// useEffect(() => {
+	// 	if (flag && chatRejected) {
+	// 		setFlag(false);
+	// 		createChat(localChatId as string, "rejected", client?._id);
+	// 	}
+	// }, [chatRejected]);
 
 	return { duration, amount, createChat, loading };
 };
