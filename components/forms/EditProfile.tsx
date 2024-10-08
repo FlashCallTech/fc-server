@@ -306,6 +306,8 @@ const EditProfile = ({
 				<SinglePostLoader />
 			</section>
 		);
+
+	console.log(isChanged, isValid, !formError, !usernameError);
 	if (firstTime) {
 		return (
 			<Form {...form}>
@@ -812,7 +814,7 @@ const EditProfile = ({
 					)}
 
 					<div
-						className={`w-full grid grid-cols-2  items-center justify-between gap-8`}
+						className={`w-full grid md:grid-cols-2 items-center justify-between gap-8`}
 					>
 						{/* gender */}
 						<FormField

@@ -54,9 +54,6 @@ export const CallTimerProvider = ({
 	const [videoRatePerMinute, setVideoRatePerMinute] = useState(0);
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
 	const { useCallStartsAt } = useCallStateHooks();
-	const { useParticipantCount } = useCallStateHooks();
-	const participantCount = useParticipantCount();
-
 	const [timeLeft, setTimeLeft] = useState(NaN);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
 	const [hasLowBalance, setHasLowBalance] = useState(false);
@@ -97,8 +94,6 @@ export const CallTimerProvider = ({
 		}
 
 		const callStartedTime = new Date(callStartedAt);
-		let lastFirestoreUpdateTime = 0; // Track the last update time
-
 		const updateFirestoreTimer = async (
 			timeLeft: number,
 			timeUtilized: number
