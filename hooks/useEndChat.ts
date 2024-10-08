@@ -46,27 +46,27 @@ const useEndChat = () => {
 	const [creatorPhone, setCreatorPhone] = useState("");
 
 	// Function to update expert's status
-	const updateExpertStatus = async (phone: string, status: string) => {
-		try {
-			const response = await fetch("/api/set-status", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ phone, status }),
-			});
+	// const updateExpertStatus = async (phone: string, status: string) => {
+	// 	try {
+	// 		const response = await fetch("/api/set-status", {
+	// 			method: "POST",
+	// 			headers: {
+	// 				"Content-Type": "application/json",
+	// 			},
+	// 			body: JSON.stringify({ phone, status }),
+	// 		});
 
-			const data = await response.json();
-			if (!response.ok) {
-				throw new Error(data.message || "Failed to update status");
-			}
+	// 		const data = await response.json();
+	// 		if (!response.ok) {
+	// 			throw new Error(data.message || "Failed to update status");
+	// 		}
 
-			console.log("Expert status updated to:", status);
-		} catch (error) {
-			Sentry.captureException(error);
-			console.error("Error updating expert status:", error);
-		}
-	};
+	// 		console.log("Expert status updated to:", status);
+	// 	} catch (error) {
+	// 		Sentry.captureException(error);
+	// 		console.error("Error updating expert status:", error);
+	// 	}
+	// };
 
 	useEffect(() => {
 		const getCreator = () => {
@@ -105,8 +105,8 @@ const useEndChat = () => {
 
 		if (chatEnded) {
 			hasChatEnded.current = true;
-			if (userType === 'client')
-				updateExpertStatus(creatorPhone, "Online");
+			// if (userType === 'client')
+				// updateExpertStatus(creatorPhone, "Online");
 			if (userType === 'creator')
 				router.replace(`/home`);
 			else {
