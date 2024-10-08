@@ -31,6 +31,8 @@ export type UpdateUserParams = {
 	referralId?: string;
 	referredBy?: string;
 	referralAmount?: number;
+	restricted?: boolean;
+	blocked?: any[];
 };
 
 export type clientUser = {
@@ -51,6 +53,8 @@ export type clientUser = {
 	referralId?: string;
 	referredBy?: string;
 	referralAmount?: number;
+	restricted?: boolean;
+	blocked?: any[];
 };
 
 // Creator Params
@@ -82,6 +86,8 @@ export type creatorUser = {
 	links?: LinkType[];
 	updatedAt?: string;
 	createdAt?: string;
+	restricted?: boolean;
+	blocked?: any[];
 };
 
 export type CreateCreatorParams = {
@@ -106,6 +112,8 @@ export type CreateCreatorParams = {
 	referredBy?: string;
 	referralAmount?: number;
 	creatorId?: string;
+	restricted?: boolean;
+	blocked?: any[];
 };
 
 export type UpdateCreatorParams = {
@@ -135,6 +143,8 @@ export type UpdateCreatorParams = {
 	referralAmount?: number;
 	creatorId?: string;
 	link?: LinkType;
+	restricted?: boolean;
+	blocked?: any[];
 };
 
 // Feedback Params

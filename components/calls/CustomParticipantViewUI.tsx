@@ -125,7 +125,7 @@ const CustomParticipantViewUI = () => {
 				)} */}
 
 			<span
-				className={`absolute   w-full text-sm text-ellipsis overflow-hidden ${
+				className={`absolute w-full text-sm text-ellipsis overflow-hidden ${
 					expert?.user_id !== participant.userId
 						? "max-w-[85%] pb-2 bottom-0 left-3"
 						: "max-w-[55%] sm:max-w-[65%] bottom-1.5 left-2.5"

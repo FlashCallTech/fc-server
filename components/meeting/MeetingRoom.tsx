@@ -27,7 +27,6 @@ import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
 import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
-import { backendBaseUrl } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 type CallLayoutType = "grid" | "speaker-bottom";
@@ -71,13 +70,9 @@ const MeetingRoom = () => {
 
 	const router = useRouter();
 
+	console.log("3 ... ", callingState);
+
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
-		navigator.sendBeacon(
-			`${backendBaseUrl}/calls/transaction/handleInterrupted`,
-			JSON.stringify({
-				callId: call?.id,
-			})
-		);
 		call?.endCall();
 	});
 
@@ -97,6 +92,7 @@ const MeetingRoom = () => {
 
 	useEffect(() => {
 		const joinCall = async () => {
+			console.log("4 ... ", callingState);
 			if (
 				!call ||
 				!currentUser ||
@@ -134,8 +130,6 @@ const MeetingRoom = () => {
 		if (call) {
 			joinCall();
 		}
-
-		console.log("Meeting Room mein CallState ... ", callingState);
 	}, [call, callingState, currentUser, callHasEnded, participantCount]);
 
 	useEffect(() => {
@@ -155,9 +149,9 @@ const MeetingRoom = () => {
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout;
 
-		if (participantCount === 2) {
-			call?.on("call.session_participant_left", handleCallRejected);
-		}
+		// if (participantCount === 2) {
+		// 	call?.on("call.session_participant_left", handleCallRejected);
+		// }
 
 		if (participantCount < 2 || anyModalOpen) {
 			timeoutId = setTimeout(async () => {
@@ -229,15 +223,14 @@ const MeetingRoom = () => {
 				)}
 			</div>
 
-			{participantCount > 1 &&
-				(!callHasEnded && isMeetingOwner ? (
-					<CallTimer
-						handleCallRejected={handleCallRejected}
-						isVideoCall={isVideoCall}
-					/>
-				) : (
-					call && <CreatorCallTimer callId={call.id} />
-				))}
+			{!callHasEnded && isMeetingOwner ? (
+				<CallTimer
+					handleCallRejected={handleCallRejected}
+					isVideoCall={isVideoCall}
+				/>
+			) : (
+				call && <CreatorCallTimer callId={call.id} />
+			)}
 
 			{/* Call Controls */}
 

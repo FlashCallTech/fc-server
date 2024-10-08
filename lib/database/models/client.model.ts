@@ -14,6 +14,7 @@ const ClientSchema = new Schema(
 		walletBalance: { type: Number, default: 0 },
 		gender: { type: String },
 		dob: { type: String },
+		restricted: { type: Boolean, default: false },
 	},
 	{
 		timestamps: true,

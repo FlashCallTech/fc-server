@@ -10,6 +10,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
 import { getProfileImagePlaceholder, isValidUrl } from "@/lib/utils";
+import DeleteAlert from "@/components/shared/DeleteAlert";
 
 const UserProfilePage = () => {
 	const { currentUser, userType, refreshCurrentUser } =
@@ -89,7 +90,7 @@ const UserProfilePage = () => {
 
 						<div className="flex flex-col w-full items-start justify-center gap-2">
 							{/* userDetails */}
-							<div className="grid grid-cols-[2fr_1fr] items-center w-full">
+							<section className="grid grid-cols-[2fr_1fr] items-center w-full">
 								<div className="flex flex-col items-start justify-center">
 									<span className="text-lg font-semibold capitalize">
 										{userData.fullName
@@ -109,25 +110,68 @@ const UserProfilePage = () => {
 											: "@guest"}
 									</span>
 								</div>
+								<section className="flex items-center justify-end size-full gap-2">
+									<Button
+										className="bg-green-1 text-white hoverScaleDownEffect"
+										onClick={() => setEditData((prev) => !prev)}
+									>
+										{editData ? (
+											<section className="flex items-center justify-center gap-2">
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													fill="none"
+													viewBox="0 0 24 24"
+													strokeWidth={2}
+													stroke="currentColor"
+													className="size-4"
+												>
+													<path
+														strokeLinecap="round"
+														strokeLinejoin="round"
+														d="M6 18 18 6M6 6l12 12"
+													/>
+												</svg>
 
-								<Button
-									className="bg-green-1 text-white"
-									onClick={() => setEditData((prev) => !prev)}
-								>
-									{editData ? "Close Details" : "Edit Details"}
-								</Button>
-							</div>
+												<span>Close</span>
+											</section>
+										) : (
+											<section className="flex items-center justify-center gap-2">
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													fill="none"
+													viewBox="0 0 24 24"
+													strokeWidth={2}
+													stroke="currentColor"
+													className="size-4"
+												>
+													<path
+														strokeLinecap="round"
+														strokeLinejoin="round"
+														d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+													/>
+												</svg>
+
+												<span>Edit</span>
+											</section>
+										)}
+									</Button>
+									<DeleteAlert />
+								</section>
+							</section>
 
 							{/* user bio */}
-							<p
-								className={`font-semibold pt-4 cursor-pointe w-full text-sm no-scrollbar cursor-pointer text-start  text-ellipsis overflow-hidden whitespace-wrap md:whitespace-nowrap max-w-full
-								`}
-								onClick={() => setEditData((prev) => !prev)}
-							>
-								{userData?.bio?.length === 0 || userData?.bio === "undefined"
-									? "Add Description for your Profile and Account"
-									: userData?.bio}
-							</p>
+							<section className="w-full flex flex-col items-start justify-center gap-2 mt-4 overflow-hidden">
+								<h2 className=" text-sm text-gray-400">About</h2>
+								<p
+									className={`cursor-pointe w-full text-sm no-scrollbar cursor-pointer text-start whitespace-wrap
+									`}
+									onClick={() => setEditData((prev) => !prev)}
+								>
+									{userData?.bio?.length === 0 || userData?.bio === "undefined"
+										? "Add Description for your Profile and Account"
+										: userData?.bio}
+								</p>
+							</section>
 						</div>
 					</div>
 
@@ -146,7 +190,7 @@ const UserProfilePage = () => {
 					)}
 
 					{/* typewriter effect */}
-					<h1 className="text-3xl lg:text-4xl font-semibold my-7 text-center">
+					<h1 className="text-xl md:text-3xl lg:text-4xl font-semibold my-7 text-center">
 						<Typewriter
 							words={[
 								`Hi There ${userData.username}`,

@@ -213,7 +213,6 @@ const CreatorHome = () => {
 		audioCall: string;
 		chat: string;
 	}) => {
-		console.log(newPrices);
 		try {
 			await axios.put("/api/v1/creator/updateUser", {
 				userId: creatorUser?._id,

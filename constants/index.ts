@@ -35,6 +35,12 @@ export const sidebarLinksCreator = [
 	{
 		imgURL: "/icons/orderHistory.png",
 		route: "/previous",
+		label: "Order History",
+		protected: true,
+	},
+	{
+		imgURL: "/icons/favorites.png",
+		route: "/userFeedbacks",
 		label: "User Feedback's",
 		protected: true,
 	},
@@ -50,13 +56,6 @@ export const sidebarLinksCreator = [
 		label: "Refer and Earn",
 		protected: true,
 	},
-
-	{
-		imgURL: "/icons/support.png",
-		route: "/support",
-		label: "Support",
-		protected: false,
-	},
 	{
 		imgURL: "/icons/paymentSettings.png",
 		route: "/payment-settings",
@@ -67,6 +66,12 @@ export const sidebarLinksCreator = [
 		imgURL: "/icons/termsConditions.png",
 		route: "/terms-and-conditions",
 		label: "Terms & Conditions",
+		protected: false,
+	},
+	{
+		imgURL: "/icons/support.png",
+		route: "/support",
+		label: "Support",
 		protected: false,
 	},
 ];
