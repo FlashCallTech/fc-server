@@ -10,6 +10,8 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import * as Sentry from "@sentry/nextjs";
 import usePayout from "@/hooks/usePayout";
 import Verify from "../shared/Verify";
+import { useInView } from "react-intersection-observer";
+import { backendBaseUrl } from "@/lib/utils";
 
 interface Transaction {
 	_id: string;
@@ -27,31 +29,21 @@ const Withdraw: React.FC = () => {
 	const [transactions, setTransactions] = useState<Map<string, Transaction[]>>(
 		new Map()
 	);
-	const [isSticky, setIsSticky] = useState(false);
 	const { initiateWithdraw, loadingTransfer } = usePayout();
-	const stickyRef = useRef<HTMLDivElement>(null);
-
-	const handleScroll = () => {
-		if (stickyRef.current) {
-			setIsSticky(window.scrollY > stickyRef.current.offsetTop);
-		}
-	};
-
-	useEffect(() => {
-		window.addEventListener("scroll", handleScroll);
-		return () => {
-			window.removeEventListener("scroll", handleScroll);
-		};
-	}, []);
+	const { ref: stickyRef, inView: isStickyVisible } = useInView({
+		threshold: 1,
+		rootMargin: "-100px 0px 0px 0px",
+	});
 
 	const fetchTransactions = async () => {
 		try {
 			setLoading(true);
 			const response = await axios.get(
-				`/api/v1/transaction/getCreatorTransactionByIdAndType?userId=${
+				`${backendBaseUrl}/wallet/transactions/user/${
 					creatorUser?._id
-				}&filter=${btn.toLowerCase()}`
+				}/type/${btn.toLowerCase()}`
 			);
+
 			const transactionsByDate = response.data.transactions.reduce(
 				(acc: Map<string, Transaction[]>, transaction: Transaction) => {
 					const date = new Date(transaction.createdAt).toLocaleDateString(
@@ -99,108 +91,113 @@ const Withdraw: React.FC = () => {
 			</section>
 		);
 
+	console.log(isStickyVisible);
+
 	return (
 		<>
-			<div className="flex flex-col pt-3  text-gray-800 w-full h-full rounded-xl ">
-				{/* Sticky Balance and Recharge Section */}
-				<section
-					ref={stickyRef}
-					className={`flex flex-col gap-5 items-center justify-center md:items-start px-4 ${
-						isSticky ? "sticky top-0 md:top-16 z-30 bg-white pt-11 pb-7" : "p-0"
-					}`}
-				>
-					{/* Balance Section */}
-					<div className="w-full flex flex-col items-center justify-center">
-						<p>
-							Welcome,
-							<br />
-						</p>
-						<p className="font-bold">
-							{creatorUser?.firstName} {creatorUser?.lastName}
-						</p>
-					</div>
-
-					{/* Recharge Section */}
-					<div className="flex flex-col gap-5 w-full items-center justify-center md:items-start">
-						<div
-							className={`w-[100%] flex justify-between items-center font-normal leading-5 border-[1px] rounded-lg p-3 bg-white shadow ${
-								isSticky ? "flex-row" : "flex-col"
-							} relative`}
-						>
-							<div
-								className={
-									isSticky
-										? "flex flex-col items-start pl-1"
-										: "flex flex-col items-center"
-								}
-							>
-								<span
-									className={`${isSticky ? "text-[13px]" : "text-[13px]"} `}
-								>
-									Wallet Balance
-								</span>
-								<p
-									className={`text-green-600 ${
-										isSticky
-											? "text-[20px] font-bold"
-											: "text-[25px] font-extrabold"
-									} ${isSticky ? "p-0" : "p-2"} `}
-								>
-									₹ {walletBalance.toFixed(2)}
+			<section className="flex flex-col pt-3  text-gray-800 w-full h-full rounded-xl ">
+				<section className="grid grid-cols-1 items-center sticky top-0 md:top-[76px] z-30 bg-white p-4 ">
+					{/* Sticky Balance and Recharge Section */}
+					<section
+						ref={stickyRef}
+						className={`flex flex-col gap-5 items-center justify-center md:items-start`}
+					>
+						{/* Balance Section */}
+						{isStickyVisible && (
+							<div className="w-full flex flex-col items-center justify-center">
+								<p>
+									Welcome,
+									<br />
+								</p>
+								<p className="font-bold">
+									{creatorUser?.firstName} {creatorUser?.lastName}
 								</p>
 							</div>
-							{isSticky && (
+						)}
+
+						{/* Recharge Section */}
+						<div className="flex flex-col gap-5 w-full items-center justify-center md:items-start">
+							<div
+								className={`w-[100%] flex justify-between items-center font-normal leading-5 border-[1px] rounded-lg p-3 bg-white shadow ${
+									!isStickyVisible ? "flex-row" : "flex-col"
+								} relative`}
+							>
+								<div
+									className={
+										!isStickyVisible
+											? "flex flex-col items-start pl-1"
+											: "flex flex-col items-center"
+									}
+								>
+									<span className={`text-[13px] `}>Wallet Balance</span>
+									<p
+										className={`text-green-600 ${
+											!isStickyVisible
+												? "text-[20px] font-bold"
+												: "text-[25px] font-extrabold"
+										} ${!isStickyVisible ? "p-0" : "p-2"} `}
+									>
+										₹ {walletBalance.toFixed(2)}
+									</p>
+								</div>
+								{!isStickyVisible && (
+									<Button
+										type="submit"
+										onClick={() =>
+											initiateWithdraw(creatorUser._id, creatorUser.phone)
+										}
+										className="right-0 w-auto px-4 py-3 shadow bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
+									>
+										Withdraw
+									</Button>
+								)}
+							</div>
+							{isStickyVisible && (
 								<Button
 									type="submit"
 									onClick={() =>
 										initiateWithdraw(creatorUser._id, creatorUser.phone)
 									}
-									className="right-0 w-auto px-4 py-3 shadow bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
+									className="w-full px-4 bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
 								>
 									Withdraw
 								</Button>
 							)}
 						</div>
-						{!isSticky && (
-							<Button
-								type="submit"
-								onClick={() =>
-									initiateWithdraw(creatorUser._id, creatorUser.phone)
-								}
-								className="w-full px-4 bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
+					</section>
+
+					{/* Transaction History Section */}
+					<section
+						className={`w-full ${!isStickyVisible ? "py-4" : "py-2.5 px-4"}`}
+					>
+						<div className="flex flex-col items-start justify-start gap-2 w-full h-fit">
+							{isStickyVisible && (
+								<h2 className="text-gray-500 text-xl pt-5 font-normal leading-7">
+									Transaction History
+								</h2>
+							)}
+							<div
+								className={`flex space-x-2 text-xs font-bold leading-4 w-fit`}
 							>
-								Withdraw
-							</Button>
-						)}
-					</div>
-				</section>
-
-				{/* Transaction History Section */}
-				<section className="w-full px-4 pb-5">
-					<div className="flex flex-col items-start justify-start gap-2 w-full h-fit">
-						<h2 className="text-gray-500 text-xl pt-7 pb-2 font-normal leading-7">
-							Transaction History
-						</h2>
-						<div className="flex space-x-2 text-xs font-bold leading-4 w-fit">
-							{["All", "Credit", "Debit"].map((filter) => (
-								<button
-									key={filter}
-									onClick={() => {
-										setBtn(filter as "All" | "Credit" | "Debit");
-									}}
-									className={`px-5 py-1 border-2 border-black rounded-full hoverScaleDownEffect ${
-										filter === btn
-											? "bg-gray-800 text-white"
-											: "bg-white text-black dark:bg-gray-700 dark:text-white"
-									}`}
-								>
-									{filter}
-								</button>
-							))}
+								{["All", "Credit", "Debit"].map((filter) => (
+									<button
+										key={filter}
+										onClick={() => {
+											setBtn(filter as "All" | "Credit" | "Debit");
+										}}
+										className={`px-5 py-1 border-2 border-black rounded-full hoverScaleDownEffect ${
+											filter === btn
+												? "bg-gray-800 text-white"
+												: "bg-white text-black dark:bg-gray-700 dark:text-white"
+										}`}
+									>
+										{filter}
+									</button>
+								))}
+							</div>
 						</div>
-					</div>
+					</section>
 				</section>
-
 				{/* Transaction History List */}
 				<ul className="flex flex-col items-center justify-start space-y-4 w-full h-full px-4 py-5 ">
 					{!loading ? (
@@ -259,7 +256,7 @@ const Withdraw: React.FC = () => {
 						</div>
 					)}
 				</ul>
-			</div>
+			</section>
 		</>
 	);
 };

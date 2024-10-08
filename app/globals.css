@@ -8,6 +8,10 @@
 	box-sizing: border-box;
 }
 
+html {
+	scroll-behavior: smooth;
+}
+
 :root {
 	--default-color: #50a65c;
 	--secondary-color: #03a8f477;

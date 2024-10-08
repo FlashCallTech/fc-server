@@ -45,7 +45,7 @@ const ShareLink = () => {
 							}}
 						>
 							<Image
-								src="/web/icons/logoDarkCircle.png"
+								src="/icons/logo_icon.png"
 								alt="logo"
 								width={200}
 								height={200}

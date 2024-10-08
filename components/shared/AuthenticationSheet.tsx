@@ -5,7 +5,7 @@ import {
 	SheetDescription,
 	SheetHeader,
 	SheetTitle,
-} from "@/components/ui/sheet"; // Update the import path as needed
+} from "@/components/ui/sheet";
 import {
 	Dialog,
 	DialogContent,
@@ -13,7 +13,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-} from "@/components/ui/dialog"; // Update this import as necessary
+} from "@/components/ui/dialog";
 import AuthenticateViaOTP from "../forms/AuthenticateViaOTP";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
@@ -57,8 +57,9 @@ const AuthenticationSheet = ({
 		return (
 			<Sheet open={isOpen} onOpenChange={onOpenChange}>
 				<SheetContent
+					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className="flex items-center justify-center w-full !p-0 border-none"
+					className="flex items-center justify-center w-full outline-none !p-0 border-none"
 				>
 					<SheetHeader className="sr-only">
 						<SheetTitle className="sr-only">Authentication</SheetTitle>

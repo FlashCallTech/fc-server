@@ -14,7 +14,7 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { sidebarLinks, sidebarLinksCreator } from "@/constants";
-import { cn } from "@/lib/utils";
+import { cn, getProfileImagePlaceholder, isValidUrl } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, setDoc } from "firebase/firestore";
@@ -77,6 +77,9 @@ const MobileNav = () => {
 					console.error("Error updating user status: ", error);
 				});
 		}
+
+		localStorage.setItem("userType", "client");
+
 		handleSignout();
 	};
 
@@ -118,12 +121,17 @@ const MobileNav = () => {
 		}
 	};
 
+	const imageSrc =
+		currentUser?.photo && isValidUrl(currentUser?.photo)
+			? currentUser?.photo
+			: getProfileImagePlaceholder((currentUser?.gender as string) ?? "");
+
 	return (
 		<section className="flex items-center justify-center w-fit relative">
 			<Sheet onOpenChange={handleSheetOpenChange}>
 				<SheetTrigger asChild>
 					<Image
-						src={currentUser?.photo || "/images/defaultProfile.png"}
+						src={imageSrc}
 						alt="Profile"
 						width={1000}
 						height={1000}
@@ -143,11 +151,11 @@ const MobileNav = () => {
 									className={`w-full flex gap-4 items-center rounded-lg hoverScaleDownEffect lg:px-2 justify-start`}
 								>
 									<Image
-										src={currentUser?.photo || "/images/defaultProfile.png"}
+										src={imageSrc}
 										alt="Profile"
 										width={1000}
 										height={1000}
-										className="rounded-full w-12 h-12 max-w-[56px] object-cover"
+										className="rounded-full w-12 h-12 min-w-12 max-w-12 object-cover"
 									/>
 									<div className="flex flex-col w-full items-start justify-center text-white">
 										<span className="text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap">

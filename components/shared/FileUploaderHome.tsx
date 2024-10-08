@@ -129,7 +129,7 @@ const FileUploaderHome = ({
 		>
 			<input {...getInputProps()} className="cursor-pointer" />
 
-			{!fileUrl && !loading ? (
+			{!fileUrl && !loading && !newFileUrl ? (
 				<div className="file_uploader-box">
 					<img
 						src="/icons/file-upload.svg"
