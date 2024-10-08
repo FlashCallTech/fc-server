@@ -78,34 +78,19 @@ export const sidebarLinksCreator = [
 
 export const authSliderContent = [
 	{
-		heading: "Welcome to the Platform",
-		description:
-			"Start your journey with us. Explore, connect, and grow with our vibrant community.",
-		imageURL: "/images/M_preview.png",
+		heading: "Build your own app for free and offer Pay-Per-Min Chats",
+
+		imageURL: "/images/Slider_1.png",
 	},
 	{
-		heading: "Discover New Horizons",
-		description:
-			"Find new opportunities and take your skills to the next level with our resources.",
-		imageURL: "/images/F_preview.png",
+		heading: "Share your app link to your social media bio and start earning",
+
+		imageURL: "/images/Slider_2.png",
 	},
 	{
-		heading: "Engage and Collaborate",
-		description:
-			"Join conversations, share ideas, and collaborate on exciting projects worldwide.",
-		imageURL: "/images/M_preview.png",
-	},
-	{
-		heading: "Learn and Grow",
-		description:
-			"Access a vast library of knowledge to grow both personally and professionally.",
-		imageURL: "/images/F_preview.png",
-	},
-	{
-		heading: "Join Our Community",
-		description:
-			"Become a part of our ever-growing community and make connections that matter.",
-		imageURL: "/images/M_preview.png",
+		heading: "Withdraw your earnings instantly to your bank account",
+
+		imageURL: "/images/Slider_3.png",
 	},
 ];
 
