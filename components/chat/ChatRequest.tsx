@@ -1,27 +1,67 @@
 'use client'
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import useChatRequest from '@/hooks/useChatRequest';
 import Image from 'next/image';
 import { trackEvent } from '@/lib/mixpanel';
 import { useCurrentUsersContext } from '@/lib/context/CurrentUsersContext';
 import usePlatform from '@/hooks/usePlatform';
+import * as Sentry from "@sentry/nextjs";
 
 const ChatRequest = ({ chatRequest }: { chatRequest: any }) => {
   const { handleAcceptChat, handleRejectChat } = useChatRequest();
   const { creatorUser } = useCurrentUsersContext();
   const { getDevicePlatform } = usePlatform();
+  const [status, setStatus] = useState<string>("pending");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    if(!chatRequest) {
-      return
-    }
+    if (!chatRequest) return;
+    
     trackEvent('Creator_Chat_Initiated', {
       Creator_ID: chatRequest.creatorId,
       Creator_First_Seen: creatorUser?.createdAt?.toString().split('T')[0],
       Platform: getDevicePlatform(),
       Client_ID: chatRequest.clientId
-    })
-  }, [])
+    });
+  }, []);
+
+  useEffect(() => {
+    // Initialize audio element only once
+    if (!audioRef.current) {
+      audioRef.current = new Audio("/sounds/notification.mp3");
+      audioRef.current.loop = true;
+    }
+    
+    if (status === "pending") {
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log("Audio autoplay started!");
+          })
+          .catch((error) => {
+            Sentry.captureException(error);
+            console.error("Audio autoplay was prevented:", error);
+          });
+      }
+    }
+
+    return () => {
+      // Clean up audio on component unmount or when status changes
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
+  }, [status]);
+
+  function maskPhoneNumber(phoneNumber: string) {
+    if (phoneNumber && phoneNumber.startsWith("+91")) {
+      let cleanedNumber = phoneNumber.replace('+91', '');
+      let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
+      return maskedNumber;
+    }
+  }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -34,13 +74,16 @@ const ChatRequest = ({ chatRequest }: { chatRequest: any }) => {
           </div>
           <p className="text-xs mb-6 text-center">
             Chat from <br />
-            <strong className="text-lg">{chatRequest.clientName}</strong>
+            <strong className="text-lg">{maskPhoneNumber(chatRequest.clientName)}</strong>
           </p>
         </div>
         <div className="flex justify-between p-8">
           <div className='flex flex-col gap-2'>
             <button
-              onClick={() => handleRejectChat(chatRequest)}
+              onClick={() => {
+                setStatus("accepted");
+                handleRejectChat(chatRequest);
+              }}
               className="bg-red-500 text-white p-4 rounded-full hover:bg-red-600 transition"
             >
               <Image src={'/reject.svg'} width={0} height={0} alt='reject' className='w-auto h-auto' />
@@ -49,7 +92,10 @@ const ChatRequest = ({ chatRequest }: { chatRequest: any }) => {
           </div>
           <div className='flex flex-col gap-1'>
             <button
-              onClick={() => handleAcceptChat(chatRequest)}
+              onClick={() => {
+                setStatus("rejected");
+                handleAcceptChat(chatRequest);
+              }}
               className="bg-green-500 text-white p-4 rounded-full hover:bg-green-600 transition"
             >
               <Image src={'/accept.svg'} width={0} height={0} alt='reject' className='w-auto h-auto' />

@@ -42,10 +42,9 @@ const ChatInterface: React.FC = () => {
 
 	useUserStatus();
 
-	const { handleEnd, chat, loading } = useEndChat();
+	const { handleEnd, chat, user2, chatId } = useEndChat();
 	const { markMessagesAsSeen } = useMarkAsSeen();
 	const { currentUser, userType } = useCurrentUsersContext();
-	const { user2, chatId } = useEndChat();
 	const {
 		audioStream,
 		isRecording,
@@ -57,8 +56,6 @@ const ChatInterface: React.FC = () => {
 		mediaRecorderRef,
 		setIsRecording,
 	} = useMediaRecorder();
-
-	// const audioContext = new AudioContext();
 
 	useEffect(() => {
 		const updateChatStartedAt = async () => {
@@ -344,90 +341,90 @@ const ChatInterface: React.FC = () => {
 
 	function maskPhoneNumber(phoneNumber: string) {
 		// Remove the '+91' prefix
-		if(phoneNumber){
+		if (phoneNumber) {
 
 			let cleanedNumber = phoneNumber.replace('+91', '');
-			
+
 			// Mask the next 5 digits, leaving the first 2 digits unmasked
 			let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
-			
+
 			return maskedNumber;
 		}
 	}
 
 	return (
 		<div className={`flex flex-col h-screen bg-cover bg-center`} style={{ backgroundImage: 'url(/back.png)' }}>
-    <div className="flex flex-col justify-between h-full overflow-y-auto"> {/* Allow scrolling */}
-        {/* Sticky Header */}
-        <div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
-            <div className="flex items-center gap-2">
-                <Image
-                    src={`${user2?.photo? user2?.photo: 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'}`}
-                    alt="profile"
-                    width={1000}
-                    height={1000}
-                    className="size-10 min-w-10 rounded-full object-cover"
-                />
-                <div className="flex flex-col">
-                    <div className="text-white font-bold text-xs md:text-lg">
-                        {user2?.fullName? user2?.fullName : maskPhoneNumber(user2?.phone as string)}
-                    </div>
-                    {userType === "client" && <ChatTimer />}
-                    {userType === "creator" && (
-                        <CreatorChatTimer chatId={chatId as string} />
-                    )}
-                    <p className="text-[10px] md:text-sm text-green-500">
-                        Ongoing chat
-                    </p>
-                </div>
-            </div>
-            <div className="flex gap-2">
-                <Tip />
-                <button
-                    onClick={endCall}
-                    className="bg-[rgba(255,81,81,1)] text-white p-2 md:px-4 md:py-2 text-[10px] md:text-lg rounded-lg"
-                >
-                    End
-                </button>
-            </div>
-        </div>
+			<div className="flex flex-col justify-between h-full overflow-y-auto"> {/* Allow scrolling */}
+				{/* Sticky Header */}
+				<div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
+					<div className="flex items-center gap-2">
+						<Image
+							src={`${user2?.photo ? user2?.photo : 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'}`}
+							alt="profile"
+							width={1000}
+							height={1000}
+							className="size-10 min-w-10 rounded-full object-cover"
+						/>
+						<div className="flex flex-col">
+							<div className="text-white font-bold text-xs md:text-lg">
+								{user2?.fullName ? user2?.fullName : maskPhoneNumber(user2?.phone as string)}
+							</div>
+							{userType === "client" && <ChatTimer />}
+							{userType === "creator" && (
+								<CreatorChatTimer chatId={chatId as string} />
+							)}
+							<p className="text-[10px] md:text-sm text-green-500">
+								Ongoing chat
+							</p>
+						</div>
+					</div>
+					<div className="flex gap-2">
+						<Tip />
+						<button
+							onClick={endCall}
+							className="bg-[rgba(255,81,81,1)] text-white p-2 md:px-4 md:py-2 text-[10px] md:text-lg rounded-lg"
+						>
+							End
+						</button>
+					</div>
+				</div>
 
-        {showDialog && (
-            <EndCallDecision
-                handleDecisionDialog={handleDecisionDialog}
-                setShowDialog={handleCloseDialog}
-            />
-        )}
+				{showDialog && (
+					<EndCallDecision
+						handleDecisionDialog={handleDecisionDialog}
+						setShowDialog={handleCloseDialog}
+					/>
+				)}
 
-        <div>
-            {/* Chat Messages */}
-            <div className="flex overflow-y-auto scrollbar-none z-30">
-                <Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
-            </div>
+				<div>
+					{/* Chat Messages */}
+					<div className="flex overflow-y-auto scrollbar-none z-30">
+						<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
+					</div>
 
-            {/* Sticky Chat Input at the Bottom */}
-            <div className="sticky bottom-0 w-full z-40 bg-cover bg-center " style={{ backgroundImage: 'url(/back.png)' }}>
-                <ChatInput
-                    isRecording={isRecording}
-                    discardAudio={discardAudio}
-                    text={text}
-                    setText={setText}
-                    handleImg={handleImg}
-                    handleSend={handleSend}
-                    toggleRecording={toggleRecording}
-                    img={img}
-                    audio={audio}
-                    audioStream={audioStream!}
-                    // audioContext={audioContext}
-                    handleCapturedImg={handleCapturedImg}
-                    isImgUploading={isImgUploading}
-                    isAudioUploading={isAudioUploading}
-                    discardImage={discardImage}
-                />
-            </div>
-        </div>
-    </div>
-</div>
+					{/* Sticky Chat Input at the Bottom */}
+					<div className="sticky bottom-0 w-full z-40 bg-cover bg-center " style={{ backgroundImage: 'url(/back.png)' }}>
+						<ChatInput
+							isRecording={isRecording}
+							discardAudio={discardAudio}
+							text={text}
+							setText={setText}
+							handleImg={handleImg}
+							handleSend={handleSend}
+							toggleRecording={toggleRecording}
+							img={img}
+							audio={audio}
+							audioStream={audioStream!}
+							// audioContext={audioContext}
+							handleCapturedImg={handleCapturedImg}
+							isImgUploading={isImgUploading}
+							isAudioUploading={isAudioUploading}
+							discardImage={discardImage}
+						/>
+					</div>
+				</div>
+			</div>
+		</div>
 
 	);
 };

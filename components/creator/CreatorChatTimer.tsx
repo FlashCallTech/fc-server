@@ -17,7 +17,7 @@ const CreatorChatTimer = ({ chatId }: { chatId: string }) => {
 			return;
 		}
 
-		const chatDocRef = doc(db, "chats", chatId);
+		const chatDocRef = doc(db, "callTimer", chatId);
 
 		const unsubscribe = onSnapshot(
 			chatDocRef,

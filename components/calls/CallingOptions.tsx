@@ -62,6 +62,20 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		chatAllowed: creator.chatAllowed,
 	});
 
+	const handleTabClose = () => {
+		const chatRequestId = localStorage.getItem("chatRequestId");
+		const data = chatRequestId
+		const url = `http://localhost:5000/api/v1/endChat/rejectChat`; // Example endpoint
+		navigator.sendBeacon(url, data);
+	}
+
+	useEffect(() => {
+		window.addEventListener("unload", handleTabClose);
+		return () => {
+			window.removeEventListener("unload", handleTabClose);
+		};
+	}, []);
+
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
 	}, [isAuthSheetOpen, setAuthenticationSheetOpen]);
@@ -258,11 +272,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
+			const description = `${callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-			}`;
+				}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -520,13 +533,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					<button
 						disabled={!service.enabled}
 						key={service.type}
-						className={`callOptionContainer ${
-							(isProcessing ||
+						className={`callOptionContainer ${(isProcessing ||
 								!service.enabled ||
 								onlineStatus === "Busy" ||
 								isClientBusy) &&
 							"!cursor-not-allowed"
-						}`}
+							}`}
 						onClick={service.onClick}
 					>
 						<div className={`flex gap-4 items-center font-bold text-white`}>
@@ -534,13 +546,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							{service.label}
 						</div>
 						<p
-							className={`font-medium tracking-widest rounded-[18px] px-4 h-[36px] text-black flex items-center justify-center ${
-								(isProcessing ||
+							className={`font-medium tracking-widest rounded-[18px] px-4 h-[36px] text-black flex items-center justify-center ${(isProcessing ||
 									!service.enabled ||
 									onlineStatus === "Busy" ||
 									isClientBusy) &&
 								"border border-white/50 text-white"
-							}`}
+								}`}
 							style={{
 								backgroundColor:
 									isProcessing || !service.enabled || onlineStatus === "Busy"
