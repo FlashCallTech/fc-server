@@ -10,6 +10,7 @@ interface CallDocument extends Document {
 	startedAt: Date;
 	endedAt: Date;
 	duration: string;
+	amount: number;
 }
 
 const CallSchema = new Schema<CallDocument>({
@@ -31,6 +32,7 @@ const CallSchema = new Schema<CallDocument>({
 	startedAt: { type: Date, default: Date.now },
 	endedAt: { type: Date, default: Date.now },
 	duration: { type: String },
+	amount: { type: Number },
 });
 
 const Call = models.Call || model<CallDocument>("Call", CallSchema);

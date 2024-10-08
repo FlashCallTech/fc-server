@@ -12,11 +12,11 @@ const Footer = () => {
 			<div className="flex flex-col items-center justify-center w-full pt-7 pb-5 gap-7">
 				{/* logo */}
 				<Image
-					src="/web/icons/logoFooter.png"
+					src="/icons/logo_new_dark.png"
 					alt="logo"
 					width={500}
 					height={100}
-					className="rounded-xl w-[333px] h-auto"
+					className="rounded-xl w-[333px] h-24 -ml-2 object-cover"
 				/>
 				{/* get link button5*/}
 				<Link href="https://forms.gle/bo42SCVG6T4YjJzg8">
@@ -27,7 +27,7 @@ const Footer = () => {
 						}}
 					>
 						<Image
-							src="/web/icons/logo.png"
+							src="/icons/logo_icon.png"
 							alt="logo"
 							width={100}
 							height={100}

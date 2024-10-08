@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useCalls, CallingState } from "@stream-io/video-react-sdk";
+import { useCalls, CallingState, Call } from "@stream-io/video-react-sdk";
 import MyIncomingCallUI from "./MyIncomingCallUI";
 import MyOutgoingCallUI from "./MyOutgoingCallUI";
 import { useToast } from "../ui/use-toast";
@@ -10,24 +10,60 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import {
 	backendBaseUrl,
+	handleInterruptedCall,
 	stopMediaStreams,
 	updateExpertStatus,
 	updateFirestoreSessions,
 } from "@/lib/utils";
-import axios from "axios";
 import { trackEvent } from "@/lib/mixpanel";
+import { useGetCallById } from "@/hooks/useGetCallById";
 
 const MyCallUI = () => {
 	const router = useRouter();
 	const calls = useCalls();
 	const pathname = usePathname();
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType, refreshCurrentUser } =
+		useCurrentUsersContext();
 
 	const { toast } = useToast();
+
+	// Call ID state to use in hook
+	const [callId, setCallId] = useState<string | null>("");
+
+	// Use the custom hook at the top level with the callId
+	const { call, isCallLoading } = useGetCallById(callId || "");
 
 	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
 	const [hasRedirected, setHasRedirected] = useState(false);
 	const [showCallUI, setShowCallUI] = useState(false);
+
+	// Add a separate effect to monitor call loading
+	useEffect(() => {
+		const handleInterruptedCallOnceLoaded = async () => {
+			if (isCallLoading) return;
+
+			if (!call || hasRedirected) return;
+
+			try {
+				setHasRedirected(true);
+				await handleInterruptedCall(
+					currentUser?._id as string,
+					call.id,
+					call as Call,
+					currentUser?.phone as string,
+					userType as "client" | "expert",
+					backendBaseUrl as string
+				);
+				refreshCurrentUser();
+			} catch (error) {
+				console.error("Error handling interrupted call:", error);
+			}
+		};
+
+		if (callId && !isCallLoading) {
+			handleInterruptedCallOnceLoaded();
+		}
+	}, [callId, isCallLoading, call, hasRedirected, currentUser?._id, userType]);
 
 	useEffect(() => {
 		const checkFirestoreSession = async (userId: string) => {
@@ -38,7 +74,6 @@ const MyCallUI = () => {
 					currentUser?.phone as string
 				);
 
-				// Listen for the client's status
 				const unsubscribeClientStatus = onSnapshot(
 					clientStatusDocRef,
 					async (clientStatusDoc: any) => {
@@ -46,7 +81,7 @@ const MyCallUI = () => {
 
 						if (clientStatusData && clientStatusData.status === "Busy") {
 							setHasRedirected(true);
-							return; // Exit early if busy
+							return;
 						}
 
 						const sessionDocRef = doc(db, "sessions", userId);
@@ -60,23 +95,18 @@ const MyCallUI = () => {
 								!hide &&
 								!hasRedirected
 							) {
-								setHasRedirected(true);
-								router.replace(`/meeting/${ongoingCall.id}`);
-								return;
+								setCallId(ongoingCall.id);
 							}
 						}
 
+						// Check for stored call in localStorage
 						const storedCallId = localStorage.getItem("activeCallId");
 						if (storedCallId && !hide && !hasRedirected) {
-							setHasRedirected(true);
-
-							router.replace(`/meeting/${storedCallId}`);
-							return;
+							setCallId(storedCallId);
 						}
 					}
 				);
 
-				// Clean up subscription
 				return () => unsubscribeClientStatus();
 			} catch (error) {
 				console.error("Error checking Firestore session: ", error);
@@ -86,183 +116,142 @@ const MyCallUI = () => {
 		if (!hide && !hasRedirected && currentUser?._id) {
 			checkFirestoreSession(currentUser._id);
 		}
-	}, [router, hide, toast, hasRedirected, currentUser?._id]);
+	}, [hide, hasRedirected, currentUser?._id]);
 
-	useEffect(() => {
-		calls.forEach((call) => {
-			const isMeetingOwner =
-				currentUser && currentUser?._id === call?.state?.createdBy?.id;
-
-			const expert = call?.state?.members?.find(
-				(member) => member.custom.type === "expert"
-			);
-
-			const callCreator = call?.state?.createdBy;
-
-			const handleCallEnded = async () => {
-				stopMediaStreams();
-
-				if (!isMeetingOwner) {
-					localStorage.removeItem("activeCallId");
-				}
-				const expertPhone = expert?.custom?.phone;
-				if (expertPhone) {
-					await updateExpertStatus(expertPhone, "Online");
-				}
-
-				await updateExpertStatus(callCreator?.custom?.phone as string, "Idle");
-
-				setShowCallUI(false); // Hide call UI
-			};
-
-			const handleCallRejected = async () => {
-				toast({
-					variant: "destructive",
-					title: "Call Rejected",
-					description: "The call was rejected",
-				});
-
-				setShowCallUI(false); // Hide call UI
-
-				const expertPhone = expert?.custom?.phone;
-				if (expertPhone) {
-					await updateExpertStatus(expertPhone, "Online");
-				}
-
-				await updateExpertStatus(callCreator?.custom?.phone as string, "Idle");
-
-				await updateFirestoreSessions(
-					callCreator?.id as string,
-					call.id,
-					"ended"
-				);
-
-				logEvent(analytics, "call_rejected", {
-					callId: call.id,
-				});
-
-				const creatorURL = localStorage.getItem("creatorURL");
-
-				await axios.post(`${backendBaseUrl}/calls/updateCall`, {
-					callId: call.id,
-					call: { status: "Rejected" },
-				});
-
-				router.replace(`${creatorURL ? creatorURL : "/home"}`);
-			};
-
-			const handleCallStarted = async () => {
-				isMeetingOwner && localStorage.setItem("activeCallId", call.id);
-				setShowCallUI(false); // Hide call UI
-
-				logEvent(analytics, "call_accepted", {
-					callId: call.id,
-				});
-
-				toast({
-					variant: "destructive",
-					title: "Call Accepted",
-					description: "Redirecting to meeting...",
-				});
-
-				if (isMeetingOwner) {
-					const createdAtDate = currentUser?.createdAt
-						? new Date(currentUser.createdAt)
-						: new Date();
-					const formattedDate = createdAtDate.toISOString().split("T")[0];
-					if (call.type === "audio") {
-						try {
-							trackEvent("BookCall_Audio_Connected", {
-								Client_ID: currentUser?._id,
-								User_First_Seen: formattedDate,
-								Creator_ID: expert?.user_id,
-							});
-						} catch (error) {
-							console.log(error);
-						}
-					} else {
-						try {
-							trackEvent("BookCall_Video_Connected", {
-								Client_ID: currentUser?._id,
-								User_First_Seen: formattedDate,
-								Creator_ID: expert?.user_id,
-							});
-						} catch (error) {
-							console.log(error);
-						}
-					}
-				}
-
-				await updateExpertStatus(callCreator?.custom?.phone as string, "Busy");
-
-				isMeetingOwner &&
-					(await axios.post(`${backendBaseUrl}/calls/updateCall`, {
-						callId: call.id,
-						call: { status: "Accepted" },
-					}));
-
-				// Check the calling state before attempting to leave
-				if (
-					call.state.callingState !== CallingState.LEFT &&
-					(call.state.callingState === CallingState.JOINED ||
-						call.state.callingState === CallingState.JOINING ||
-						call.state.callingState === CallingState.IDLE ||
-						call.state.callingState === CallingState.RINGING)
-				) {
-					await call?.leave();
-				}
-
-				// setHasRedirected(true);
-				router.replace(`/meeting/${call.id}`);
-			};
-
-			call.on("call.ended", handleCallEnded);
-			call.on("call.rejected", handleCallRejected);
-			call.on("call.accepted", handleCallStarted);
-
-			// Cleanup listeners on component unmount
-			return () => {
-				call.off("call.ended", handleCallEnded);
-				call.off("call.rejected", handleCallRejected);
-				call.off("call.accepted", handleCallStarted);
-			};
-		});
-	}, [calls, router, currentUser?._id, toast]);
-
-	// Filter incoming ringing calls
+	// Filter incoming and outgoing calls once
 	const incomingCalls = calls.filter(
 		(call) =>
 			call.isCreatedByMe === false &&
 			call.state.callingState === CallingState.RINGING
 	);
-
-	// Filter outgoing ringing calls
 	const outgoingCalls = calls.filter(
 		(call) =>
 			call.isCreatedByMe === true &&
 			call.state.callingState === CallingState.RINGING
 	);
 
-	// Set showCallUI state if there are any incoming or outgoing calls
+	// Handle incoming call actions
+	useEffect(() => {
+		if (incomingCalls.length === 0) return;
+		const [incomingCall] = incomingCalls;
+
+		const handleCallEnded = async () => {
+			stopMediaStreams();
+			const expertPhone = incomingCall?.state?.members?.find(
+				(member) => member.custom.type === "expert"
+			)?.custom?.phone;
+			if (expertPhone) {
+				await updateExpertStatus(expertPhone, "Online");
+			}
+
+			console.log(incomingCall.state.createdBy?.custom?.phone);
+			await updateExpertStatus(
+				incomingCall.state.createdBy?.custom?.phone as string,
+				"Payment Pending"
+			);
+			setShowCallUI(false);
+		};
+
+		const handleCallRejected = async () => {
+			toast({
+				variant: "destructive",
+				title: "Call Rejected",
+				description: "The call was rejected",
+			});
+			setShowCallUI(false);
+			await updateFirestoreSessions(
+				incomingCall?.state?.createdBy?.id as string,
+				incomingCall?.id,
+				"ended"
+			);
+			logEvent(analytics, "call_rejected", { callId: incomingCall.id });
+		};
+
+		incomingCall.on("call.ended", handleCallEnded);
+		incomingCall.on("call.rejected", handleCallRejected);
+
+		return () => {
+			incomingCall.off("call.ended", handleCallEnded);
+			incomingCall.off("call.rejected", handleCallRejected);
+		};
+	}, [incomingCalls, toast]);
+
+	// Handle outgoing call actions
+	useEffect(() => {
+		if (outgoingCalls.length === 0) return;
+		const [outgoingCall] = outgoingCalls;
+		let hasRedirected = false;
+		const handleCallAccepted = async () => {
+			setShowCallUI(false);
+			logEvent(analytics, "call_accepted", { callId: outgoingCall.id });
+
+			await updateExpertStatus(
+				outgoingCall.state.createdBy?.custom?.phone as string,
+				"Busy"
+			);
+
+			const expert = outgoingCall?.state?.members?.find(
+				(member) => member.custom.type === "expert"
+			);
+
+			trackEvent("BookCall_Connected", {
+				Client_ID: currentUser?._id,
+				Creator_ID: expert?.user_id,
+			});
+			if (
+				outgoingCall.state.callingState === CallingState.JOINING ||
+				outgoingCall.state.callingState === CallingState.JOINED
+			) {
+				console.log("1 ... ", outgoingCall.state.callingState);
+				console.log("hello leaving the call");
+				await outgoingCall.leave();
+				console.log("2 ... ", outgoingCall.state.callingState);
+			}
+			hasRedirected = true;
+			router.replace(`/meeting/${outgoingCall.id}`);
+		};
+
+		const handleCallRejected = async () => {
+			toast({
+				variant: "destructive",
+				title: "Call Rejected",
+				description: "The call was rejected",
+			});
+			setShowCallUI(false);
+			await updateFirestoreSessions(
+				outgoingCall?.state?.createdBy?.id as string,
+				outgoingCall?.id,
+				"ended"
+			);
+			logEvent(analytics, "call_rejected", { callId: outgoingCall.id });
+		};
+
+		outgoingCall.on("call.accepted", handleCallAccepted);
+		outgoingCall.off("call.rejected", handleCallRejected);
+
+		return () => {
+			outgoingCall.off("call.accepted", handleCallAccepted);
+			outgoingCall.off("call.rejected", handleCallRejected);
+		};
+	}, [outgoingCalls, router, currentUser]);
+
+	// Handle displaying the call UI
 	useEffect(() => {
 		if (incomingCalls.length > 0 || outgoingCalls.length > 0) {
 			setShowCallUI(true);
 		}
 	}, [incomingCalls, outgoingCalls]);
 
-	// Handle incoming call UI
-	const [incomingCall] = incomingCalls;
-	if (incomingCall && !hide && showCallUI) {
-		return <MyIncomingCallUI call={incomingCall} />;
+	// Display UI components based on call state
+	if (incomingCalls.length > 0 && showCallUI && !hide) {
+		return <MyIncomingCallUI call={incomingCalls[0]} />;
 	}
 
-	// Handle outgoing call UI
-	const [outgoingCall] = outgoingCalls;
-	if (outgoingCall && showCallUI && !hide) {
-		return <MyOutgoingCallUI call={outgoingCall} />;
+	if (outgoingCalls.length > 0 && showCallUI && !hide) {
+		return <MyOutgoingCallUI call={outgoingCalls[0]} />;
 	}
 
-	return null; // No ringing calls
+	return null; // No calls to handle
 };
 
 export default MyCallUI;

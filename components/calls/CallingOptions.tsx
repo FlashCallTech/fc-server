@@ -20,11 +20,14 @@ import {
 	isValidHexColor,
 	updateFirestoreSessions,
 	trackCallEvents,
+	fetchFCMToken,
+	sendNotification,
 	// fetchFCMToken,
 	// sendNotification,
 } from "@/lib/utils";
 import useChat from "@/hooks/useChat";
 import Loader from "../shared/Loader";
+import { ReturnDocument } from "mongodb";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -232,20 +235,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		};
 	}, [chatState]);
 
-	// defining the actions for call accept and call reject
-	const handleCallAccepted = async (callType: string) => {
-		setIsProcessing(false); // Reset processing state
-
-		setSheetOpen(false);
-
-		// router.replace(`/meeting/${call.id}`);
-	};
-
-	const handleCallRejected = () => {
-		setIsProcessing(false); // Reset processing state
-		setSheetOpen(false);
-	};
-
 	const createMeeting = async (callType: string) => {
 		if (!client || !clientUser) return;
 
@@ -324,18 +313,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				},
 			});
 
-			// Utilize helper functions
-			// const fcmToken = await fetchFCMToken(creator.phone);
-			// if (fcmToken) {
-			// 	sendNotification(
-			// 		fcmToken,
-			// 		`Incoming Call`,
-			// 		`${callType} Call Request from ${clientUser.username}`,
-			// 		creator,
-			// 		`https:flashcall.me/meeting/${id}`
-			// 	);
-			// }
-
 			trackCallEvents(callType, clientUser, creator);
 
 			await fetch(`${backendBaseUrl}/calls/registerCall`, {
@@ -355,6 +332,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				call.id,
 				"ongoing"
 			);
+
+			// call.on("call.session_participant_joined", () =>
+			// 	router.replace(`/meeting/${call.id}`)
+			// );
 
 			// call.on("call.accepted", () => handleCallAccepted(callType));
 			// call.on("call.rejected", handleCallRejected);
@@ -426,7 +407,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	const handleChatClick = () => {
+	const handleChatClick = async () => {
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",
@@ -443,6 +424,17 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				status: onlineStatus,
 			});
 			setChatReqSent(true);
+			// Utilize helper functions
+			const fcmToken = await fetchFCMToken(creator.phone);
+			if (fcmToken) {
+				sendNotification(
+					fcmToken,
+					`Incoming Call`,
+					`Chat Request from ${clientUser.username}`,
+					`Gauri ne mera code barbaad krdia`,
+					`https:flashcall.me/`
+				);
+			}
 			handleChat(creator, clientUser);
 			let maxCallDuration =
 				(walletBalance / parseInt(creator.chatRate, 10)) * 60;
@@ -463,15 +455,26 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		{
 			type: "video",
 			enabled:
-				!isClientBusy &&
-				updatedCreator.videoAllowed &&
-				parseInt(updatedCreator.videoRate, 10) > 0,
+				!clientUser ||
+				(!updatedCreator?.blocked?.some(
+					(clientId) => clientId === clientUser?._id
+				) &&
+					!isClientBusy &&
+					updatedCreator.videoAllowed &&
+					parseInt(updatedCreator.videoRate, 10) > 0),
 			rate: updatedCreator.videoRate,
 			label: "Video Call",
 			icon: video,
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
 					handleClickOption("video");
+				} else if (clientUser && onlineStatus === "Busy") {
+					toast({
+						variant: "destructive",
+						title: "Creator is Busy",
+						description: "Can't Initiate the Call",
+					});
+					return;
 				} else {
 					setIsAuthSheetOpen(true);
 				}
@@ -480,15 +483,26 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		{
 			type: "audio",
 			enabled:
-				!isClientBusy &&
-				updatedCreator.audioAllowed &&
-				parseInt(updatedCreator.audioRate, 10) > 0,
+				!clientUser ||
+				(!updatedCreator?.blocked?.some(
+					(clientId) => clientId === clientUser?._id
+				) &&
+					!isClientBusy &&
+					updatedCreator.audioAllowed &&
+					parseInt(updatedCreator.audioRate, 10) > 0),
 			rate: updatedCreator.audioRate,
 			label: "Audio Call",
 			icon: audio,
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
 					handleClickOption("audio");
+				} else if (clientUser && onlineStatus === "Busy") {
+					toast({
+						variant: "destructive",
+						title: "Creator is Busy",
+						description: "Can't Initiate the Call",
+					});
+					return;
 				} else {
 					setIsAuthSheetOpen(true);
 				}
@@ -497,15 +511,26 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		{
 			type: "chat",
 			enabled:
-				!isClientBusy &&
-				updatedCreator.chatAllowed &&
-				parseInt(updatedCreator.chatRate, 10) > 0,
+				!clientUser ||
+				(!updatedCreator?.blocked?.some(
+					(clientId) => clientId === clientUser?._id
+				) &&
+					!isClientBusy &&
+					updatedCreator.chatAllowed &&
+					parseInt(updatedCreator.chatRate, 10) > 0),
 			rate: updatedCreator.chatRate,
 			label: "Chat Now",
 			icon: chat,
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
 					handleChatClick();
+				} else if (clientUser && onlineStatus === "Busy") {
+					toast({
+						variant: "destructive",
+						title: "Creator is Busy",
+						description: "Can't Initiate the Call",
+					});
+					return;
 				} else {
 					setIsAuthSheetOpen(true);
 				}

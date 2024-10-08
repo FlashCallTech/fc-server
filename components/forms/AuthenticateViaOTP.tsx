@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Image from "next/image";
 import { success } from "@/constants/icons";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
 import { CreateCreatorParams, CreateUserParams } from "@/types";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -25,7 +25,6 @@ import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import ContentLoading from "../shared/ContentLoading";
 import { backendBaseUrl } from "@/lib/utils";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { getFCMToken } from "@/lib/firebase";
@@ -68,6 +67,8 @@ const AuthenticateViaOTP = ({
 	const [error, setError] = useState({});
 	const { toast } = useToast();
 	const { getDevicePlatform } = usePlatform();
+
+	const pathname = usePathname();
 
 	// SignUp form
 	const signUpForm = useForm<z.infer<typeof formSchema>>({
@@ -182,9 +183,9 @@ const AuthenticateViaOTP = ({
 						phone: formattedPhone,
 						profession: "Astrologer",
 						themeSelected: "#50A65C",
-						videoRate: "0",
-						audioRate: "0",
-						chatRate: "0",
+						videoRate: "10",
+						audioRate: "10",
+						chatRate: "10",
 						walletBalance: 0,
 						referredBy: refId ? refId : "",
 						referralAmount: refId ? 5000 : 0,
@@ -231,6 +232,7 @@ const AuthenticateViaOTP = ({
 			refreshCurrentUser();
 			updateWalletBalance();
 			setAuthenticationSheetOpen(false);
+			onOpenChange && onOpenChange(false);
 			const creatorURL = localStorage.getItem("creatorURL");
 
 			if (resolvedUserType === "client") {
@@ -288,23 +290,25 @@ const AuthenticateViaOTP = ({
 	return (
 		<section
 			ref={sectionRef}
-			className="relative bg-[#F8F8F8] rounded-t-3xl sm:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-8 pb-2 shadow-lg w-screen h-fit sm:w-full sm:min-w-[24rem] sm:max-w-sm mx-auto"
+			className="relative bg-[#F8F8F8] rounded-t-3xl sm:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-4 pb-2 shadow-lg w-screen h-fit sm:w-full sm:min-w-[24rem] sm:max-w-sm mx-auto"
 		>
 			{!showOTP ? (
 				// SignUp form
 				<>
 					<div className="flex flex-col items-center justify-enter gap-2 text-center">
-						<Image
-							src="/icons/logoMain.png"
-							width={1000}
-							height={1000}
-							alt="flashcall logo"
-							className="w-3/4 h-10 p-2 mb-2 bg-green-1"
-						/>
+						{!pathname.includes("/authenticate") && (
+							<Image
+								src="/icons/logo_new_light.png"
+								width={1000}
+								height={1000}
+								alt="flashcall logo"
+								className="flex items-center justify-center w-40 h-16 -ml-2"
+							/>
+						)}
 						<h2 className="text-black text-lg font-semibold">
 							Login or Signup
 						</h2>
-						<p className="text-sm text-[#707070] mb-4">
+						<p className="text-sm text-[#707070] mb-2.5">
 							Get start with your first consultation <br /> and start earning
 						</p>
 					</div>
@@ -318,7 +322,7 @@ const AuthenticateViaOTP = ({
 								name="phone"
 								render={({ field }) => (
 									<FormItem>
-										<div className="flex items-center border pl-2 pr-1 py-1 rounded bg-gray-100">
+										<div className="flex items-center border-none pl-2 pr-1 py-1 rounded bg-gray-100">
 											<FormControl>
 												<div className="w-full flex justify-between items-center">
 													<div className="flex w-full items-center jusitfy-center">
@@ -383,7 +387,7 @@ const AuthenticateViaOTP = ({
 			)}
 
 			{!verificationSuccess && (
-				<p className="text-xs text-gray-400 text-center mt-7 pb-2 w-3/4 leading-loose">
+				<p className="text-xs text-gray-400 text-center pb-2 w-3/4 leading-loose">
 					By signing up you agree to our <br />
 					<Link
 						href="https://flashcall.me/terms-and-conditions"

@@ -17,15 +17,16 @@ import { backendBaseUrl } from "../utils";
 // PREVIOUS CALLS QUERIES
 // ============================================================
 
-export const useGetPreviousCalls = (userId: string) => {
+export const useGetPreviousCalls = (userId: string, userType: string) => {
 	const limit = 10; // Define the limit per page
 
 	return useInfiniteQuery({
-		queryKey: [QUERY_KEYS.GET_USER_CALLS, userId],
+		queryKey: [QUERY_KEYS.GET_USER_CALLS, userId, userType],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(`${backendBaseUrl}/calls/getUserCalls`, {
 				params: {
 					userId,
+					userType,
 					page: pageParam,
 					limit,
 				},
