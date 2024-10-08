@@ -11,13 +11,14 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { trackEvent } from "@/lib/mixpanel";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
 
 const EndCallButton = () => {
 	const call = useCall();
 	const [showDialog, setShowDialog] = useState(false);
 	const { setAnyModalOpen } = useCallTimerContext();
 	const { currentUser } = useCurrentUsersContext();
-
+	const router = useRouter();
 	if (!call) {
 		throw new Error(
 			"useStreamCall must be used within a StreamCall component."
@@ -43,7 +44,7 @@ const EndCallButton = () => {
 			Walletbalace_Available: currentUser?.walletBalance,
 			Endedby: call.state.endedBy?.role === "admin" ? "Client" : "Creator",
 		});
-		await call?.endCall();
+		await call?.endCall().catch((err) => console.warn(err));
 		setShowDialog(false);
 	};
 

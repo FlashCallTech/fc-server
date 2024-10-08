@@ -390,21 +390,44 @@ export const validateUsername = (username: string) => {
 	return true;
 };
 
+type UpdateSessionParams = {
+	callId?: string;
+	status?: string;
+	clientId?: string;
+	expertId?: string;
+	isVideoCall?: string;
+	creatorPhone?: string;
+	clientPhone?: string;
+};
+
 export const updateFirestoreSessions = async (
 	userId: string,
-	callId: string,
-	status: string
+	params: UpdateSessionParams
 ) => {
 	try {
 		const SessionDocRef = doc(db, "sessions", userId);
 		const SessionDoc = await getDoc(SessionDocRef);
+		const ongoingCallUpdate: { [key: string]: any } = {};
+
+		if (params.callId) ongoingCallUpdate.callId = params.callId;
+		if (params.status) ongoingCallUpdate.status = params.status;
+		if (params.clientId) ongoingCallUpdate.clientId = params.clientId;
+		if (params.expertId) ongoingCallUpdate.expertId = params.expertId;
+		if (params.isVideoCall) ongoingCallUpdate.isVideoCall = params.isVideoCall;
+		if (params.creatorPhone)
+			ongoingCallUpdate.creatorPhone = params.creatorPhone;
+		if (params.clientPhone) ongoingCallUpdate.clientPhone = params.clientPhone;
+
 		if (SessionDoc.exists()) {
 			await updateDoc(SessionDocRef, {
-				ongoingCall: { id: callId, status: status },
+				ongoingCall: {
+					...SessionDoc.data()?.ongoingCall,
+					...ongoingCallUpdate,
+				},
 			});
 		} else {
 			await setDoc(SessionDocRef, {
-				ongoingCall: { id: callId, status: status },
+				ongoingCall: ongoingCallUpdate,
 			});
 		}
 	} catch (error) {
@@ -414,11 +437,7 @@ export const updateFirestoreSessions = async (
 };
 
 // Function to update expert's status
-export const updateExpertStatus = async (
-	phone: string,
-	status: string,
-	flag?: string
-) => {
+export const updateExpertStatus = async (phone: string, status: string) => {
 	try {
 		const response = await fetch("/api/set-status", {
 			method: "POST",

@@ -161,8 +161,9 @@ const MyCallUI = () => {
 			setShowCallUI(false);
 			await updateFirestoreSessions(
 				incomingCall?.state?.createdBy?.id as string,
-				incomingCall?.id,
-				"ended"
+				{
+					status: "ended",
+				}
 			);
 			logEvent(analytics, "call_rejected", { callId: incomingCall.id });
 		};
@@ -180,7 +181,7 @@ const MyCallUI = () => {
 	useEffect(() => {
 		if (outgoingCalls.length === 0) return;
 		const [outgoingCall] = outgoingCalls;
-		let hasRedirected = false;
+
 		const handleCallAccepted = async () => {
 			setShowCallUI(false);
 			logEvent(analytics, "call_accepted", { callId: outgoingCall.id });
@@ -207,7 +208,7 @@ const MyCallUI = () => {
 				await outgoingCall.leave();
 				console.log("2 ... ", outgoingCall.state.callingState);
 			}
-			hasRedirected = true;
+
 			router.replace(`/meeting/${outgoingCall.id}`);
 		};
 
@@ -220,17 +221,22 @@ const MyCallUI = () => {
 			setShowCallUI(false);
 			await updateFirestoreSessions(
 				outgoingCall?.state?.createdBy?.id as string,
-				outgoingCall?.id,
-				"ended"
+				{
+					status: "ended",
+				}
 			);
 			logEvent(analytics, "call_rejected", { callId: outgoingCall.id });
 		};
 
+		// Registering event handlers for both events
 		outgoingCall.on("call.accepted", handleCallAccepted);
+		// outgoingCall.on("call.session_participant_joined", handleCallAccepted);
 		outgoingCall.off("call.rejected", handleCallRejected);
 
+		// Cleanup function
 		return () => {
 			outgoingCall.off("call.accepted", handleCallAccepted);
+			// outgoingCall.off("call.session_participant_joined", handleCallAccepted);
 			outgoingCall.off("call.rejected", handleCallRejected);
 		};
 	}, [outgoingCalls, router, currentUser]);

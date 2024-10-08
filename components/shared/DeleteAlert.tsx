@@ -18,9 +18,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
 
 const DeleteAlert = () => {
-	const { currentUser, refreshCurrentUser, handleSignout } =
-		useCurrentUsersContext();
-	const [editData, setEditData] = useState(false);
+	const { currentUser, handleSignout } = useCurrentUsersContext();
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const [deleteReason, setDeleteReason] = useState("");
 	const [loading, setLoading] = useState(false);

@@ -50,7 +50,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [isClientBusy, setIsClientBusy] = useState(false);
 	const [onlineStatus, setOnlineStatus] = useState<String>("");
-
+	const [callType, setCallType] = useState("");
 	const themeColor = isValidHexColor(creator.themeSelected)
 		? creator.themeSelected
 		: "#50A65C";
@@ -314,18 +314,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			await updateFirestoreSessions(
-				clientUser?._id as string,
-				call.id,
-				"ongoing"
-			);
-
-			// call.on("call.session_participant_joined", () =>
-			// 	router.replace(`/meeting/${call.id}`)
-			// );
-
-			// call.on("call.accepted", () => handleCallAccepted(callType));
-			// call.on("call.rejected", handleCallRejected);
+			await updateFirestoreSessions(clientUser?._id as string, {
+				callId: call.id,
+				status: "ongoing",
+				clientId: clientUser?._id as string,
+				expertId: creator._id,
+				isVideoCall: callType,
+				creatorPhone: creator.phone,
+				clientPhone: clientUser?.phone,
+			});
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
@@ -454,6 +451,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			icon: video,
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
+					setCallType("video");
 					handleClickOption("video");
 				} else if (clientUser && onlineStatus === "Busy") {
 					toast({
@@ -482,6 +480,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			icon: audio,
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
+					setCallType("audio");
 					handleClickOption("audio");
 				} else if (clientUser && onlineStatus === "Busy") {
 					toast({
@@ -510,6 +509,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			icon: chat,
 			onClick: () => {
 				if (clientUser && onlineStatus !== "Busy") {
+					setCallType("chat");
 					handleChatClick();
 				} else if (clientUser && onlineStatus === "Busy") {
 					toast({
