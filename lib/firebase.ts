@@ -19,25 +19,25 @@ import {
 	isSupported as isMessagingSupported,
 } from "firebase/messaging";
 
-// const firebaseConfig = {
-//   apiKey: "AIzaSyD7bSGVr3DJL2Yho2X9ATXuST1NgITRNoU",
-//   authDomain: "flashcall-e4f30.firebaseapp.com",
-//   projectId: "flashcall-e4f30",
-//   storageBucket: "flashcall-e4f30.appspot.com",
-//   messagingSenderId: "244115322004",
-//   appId: "1:244115322004:web:8f2a7bc4c1e6477d1d7081",
-//   measurementId: "G-GKP7RQ4YG8"
-// };`
-
 const firebaseConfig = {
-	apiKey: process.env.NEXT_PUBLIC_FIREBASE_KEY,
-	authDomain: "flashcallchat.firebaseapp.com",
-	projectId: "flashcallchat",
-	storageBucket: "flashcallchat.appspot.com",
-	messagingSenderId: "789413051138",
-	appId: "1:789413051138:web:6f9c2dbc4b48a5f1d4e01b",
-	measurementId: "G-KE1QPLVC2Z",
+  apiKey: "AIzaSyD7bSGVr3DJL2Yho2X9ATXuST1NgITRNoU",
+  authDomain: "flashcall-e4f30.firebaseapp.com",
+  projectId: "flashcall-e4f30",
+  storageBucket: "flashcall-e4f30.appspot.com",
+  messagingSenderId: "244115322004",
+  appId: "1:244115322004:web:8f2a7bc4c1e6477d1d7081",
+  measurementId: "G-GKP7RQ4YG8"
 };
+
+// const firebaseConfig = {
+// 	apiKey: process.env.NEXT_PUBLIC_FIREBASE_KEY,
+// 	authDomain: "flashcallchat.firebaseapp.com",
+// 	projectId: "flashcallchat",
+// 	storageBucket: "flashcallchat.appspot.com",
+// 	messagingSenderId: "789413051138",
+// 	appId: "1:789413051138:web:6f9c2dbc4b48a5f1d4e01b",
+// 	measurementId: "G-KE1QPLVC2Z",
+// };
 
 // const firebaseConfig = {
 // 	apiKey: "AIzaSyDTkeSEeQO6TEsk-66OCZz-lmwgSIJJx2U",
