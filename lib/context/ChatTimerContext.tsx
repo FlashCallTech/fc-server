@@ -99,7 +99,7 @@ export const ChatTimerProvider = ({
 				timeUtilized: number
 			) => {
 				try {
-					const chatDocRef = doc(db, "chats", chatId as string);
+					const chatDocRef = doc(db, "callTimer", chatId as string);
 					const callDoc = await getDoc(chatDocRef);
 					if (callDoc.exists()) {
 						await updateDoc(chatDocRef, {
