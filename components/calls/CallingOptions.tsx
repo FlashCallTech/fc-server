@@ -413,12 +413,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			setChatReqSent(true);
 			// Utilize helper functions
 			const fcmToken = await fetchFCMToken(creator.phone);
+			console.log("token ", fcmToken);
 			if (fcmToken) {
 				sendNotification(
 					fcmToken,
 					`Incoming Call`,
 					`Chat Request from ${clientUser.username}`,
-					creator,
+					`Gauri ne mera code barbaad krdia`,
 					`https:flashcall.me/`
 				);
 			}
@@ -438,10 +439,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
+	console.log(updatedCreator);
+
 	const services = [
 		{
 			type: "video",
 			enabled:
+				updatedCreator?.blocked?.some(
+					(client) => client._id === clientUser?._id
+				) &&
 				!isClientBusy &&
 				updatedCreator.videoAllowed &&
 				parseInt(updatedCreator.videoRate, 10) > 0,
@@ -466,6 +472,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		{
 			type: "audio",
 			enabled:
+				updatedCreator?.blocked?.some(
+					(client) => client._id === clientUser?._id
+				) &&
 				!isClientBusy &&
 				updatedCreator.audioAllowed &&
 				parseInt(updatedCreator.audioRate, 10) > 0,
@@ -490,6 +499,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		{
 			type: "chat",
 			enabled:
+				updatedCreator?.blocked?.some(
+					(client) => client._id === clientUser?._id
+				) &&
 				!isClientBusy &&
 				updatedCreator.chatAllowed &&
 				parseInt(updatedCreator.chatRate, 10) > 0,

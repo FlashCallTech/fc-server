@@ -58,6 +58,7 @@ export const getFCMToken = async () => {
 					vapidKey:
 						"BDcwFwphQVuj2pWTzGaNuOQ7dSPEojABdZHwn19xKJfg3Uba5-tFJ1ObHfoJam5XPgED2N6eLeend7gSwwTrEuI",
 				});
+
 				if (fcmToken) {
 					return fcmToken;
 				} else {
@@ -102,14 +103,11 @@ export const getFirebaseToken = async () => {
 	try {
 		const messagingResolve = await messaging;
 		if (messagingResolve) {
-			return getOrRegisterServiceWorker().then((serviceWorkerRegistration) => {
-				return Promise.resolve(
-					getToken(messagingResolve, {
-						vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
-						serviceWorkerRegistration,
-					})
-				);
-			});
+			return Promise.resolve(
+				getToken(messagingResolve, {
+					vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+				})
+			);
 		}
 	} catch (error) {
 		console.log("An error occurred while retrieving token. ", error);

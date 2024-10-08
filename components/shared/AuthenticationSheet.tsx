@@ -59,7 +59,7 @@ const AuthenticationSheet = ({
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className="flex items-center justify-center w-full !p-0 border-none"
+					className="flex items-center justify-center w-full outline-none !p-0 border-none"
 				>
 					<SheetHeader className="sr-only">
 						<SheetTitle className="sr-only">Authentication</SheetTitle>

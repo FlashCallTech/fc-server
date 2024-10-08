@@ -101,7 +101,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 			if (expertPhone) {
 				await updateExpertStatus(expertPhone, "Busy");
 			}
-			// await call.accept();
+			await call.accept();
 			setCallState("accepted");
 			router.replace(`/meeting/${call?.id}`);
 		} else if (action === "ended") {

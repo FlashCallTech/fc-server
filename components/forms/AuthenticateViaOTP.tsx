@@ -231,6 +231,7 @@ const AuthenticateViaOTP = ({
 			refreshCurrentUser();
 			updateWalletBalance();
 			setAuthenticationSheetOpen(false);
+			onOpenChange && onOpenChange(false);
 			const creatorURL = localStorage.getItem("creatorURL");
 
 			if (resolvedUserType === "client") {
@@ -288,7 +289,7 @@ const AuthenticateViaOTP = ({
 	return (
 		<section
 			ref={sectionRef}
-			className="relative bg-[#F8F8F8] rounded-t-3xl sm:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-8 pb-2 shadow-lg w-screen h-fit sm:w-full sm:min-w-[24rem] sm:max-w-sm mx-auto"
+			className="relative bg-[#F8F8F8] rounded-t-3xl sm:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-4 pb-2 shadow-lg w-screen h-fit sm:w-full sm:min-w-[24rem] sm:max-w-sm mx-auto"
 		>
 			{!showOTP ? (
 				// SignUp form

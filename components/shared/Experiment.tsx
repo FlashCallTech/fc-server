@@ -21,23 +21,26 @@ const Experiment = () => {
 	>([]);
 
 	// This is self invoking function that listen of the notification
-	const onMessageListener = (async () => {
+	const onMessageListener = async () => {
 		const messagingResolve = await messaging;
 		if (messagingResolve) {
 			onMessage(messagingResolve, (payload: MessagePayload) => {
+				console.log("Message received. ", payload); // Log the payload to see its structure
 				setNotificationPayload([{ data: payload, open: true }]);
 				setTimeout(() => setNotificationPayload([{ open: false }]), 6000);
 			});
 		}
-	})();
+	};
 
 	const handleGetFirebaseToken = () => {
-		getFirebaseToken().then((firebaseToken: string | undefined) => {
-			if (firebaseToken) {
-				udpateFCMtoken(currentUser?.phone as string, firebaseToken);
-				console.log(firebaseToken);
-			}
-		});
+		getFirebaseToken()
+			.then((firebaseToken: string | undefined) => {
+				if (firebaseToken) {
+					udpateFCMtoken(currentUser?.phone as string, firebaseToken);
+					console.log(firebaseToken);
+				}
+			})
+			.catch((error) => console.log(error));
 	};
 
 	// Need this handle FCM token generation when a user manually blocks or allows notification
@@ -45,6 +48,11 @@ const Experiment = () => {
 		if (window.Notification?.permission === "granted") {
 			handleGetFirebaseToken();
 		}
+	}, []);
+
+	useEffect(() => {
+		// Call the listener when the component mounts
+		onMessageListener();
 	}, []);
 
 	return (

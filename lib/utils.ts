@@ -10,6 +10,7 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import { trackEvent } from "./mixpanel";
 import GetRandomImage from "@/utils/GetRandomImage";
+import { Call } from "@stream-io/video-react-sdk";
 
 const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 const key_secret = process.env.NEXT_PUBLIC_RAZORPAY_SECRET;
@@ -34,6 +35,155 @@ export function cn(...inputs: ClassValue[]) {
 export const frontendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 export const backendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL_BACKEND;
 // export const backendBaseUrl = "https://backend.flashcall.me/api/v1";
+
+// Function to handle interrupted calls and update the user's status
+export const handleInterruptedCall = async (
+	currentUserId: string,
+	callId: string | null,
+	call: Call,
+	currentUserPhone: string,
+	userType: "client" | "expert",
+	backendBaseUrl: string
+) => {
+	if (!callId || !currentUserPhone) {
+		console.error("Invalid callId or user phone");
+		return;
+	}
+
+	// Extract relevant fields from the call object
+	const callData = {
+		id: call.id,
+		endedAt: call.state.endedAt,
+		startedAt: call.state.startsAt,
+		isVideoCall: call.type === "default",
+		expertId: call.state.members.find(
+			(member) => member.custom.type === "expert"
+		)?.user_id,
+		clientId: call.state.createdBy?.id,
+	};
+
+	try {
+		// Send the backend request
+		await fetch(`${backendBaseUrl}/calls/transaction/handleInterrupted`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				call: callData,
+			}),
+		});
+
+		// Update the user's status based on the type
+		if (userType === "client") {
+			await updateExpertStatus(currentUserPhone, "Idle");
+		} else {
+			await updateExpertStatus(currentUserPhone, "Online");
+		}
+
+		const localSessionKey = `meeting_${callId}_${currentUserId}`;
+
+		localStorage.removeItem("activeCallId");
+		localStorage.removeItem(localSessionKey);
+
+		console.log("Call Transaction done and status updated");
+	} catch (error) {
+		console.error("Error handling interrupted call:", error);
+	}
+};
+
+// Function to handle interrupted calls and update the user's status
+export const handlePendingTransaction = async (
+	currentUserId: string,
+	call: Call,
+	callId: string | null,
+	currentUserPhone: string,
+	userType: "client" | "expert",
+	backendBaseUrl: string
+) => {
+	if (!callId || !currentUserPhone) {
+		console.error("Invalid callId or user phone");
+		return;
+	}
+
+	const callEndedAt = call?.state?.endedAt;
+	const callStartsAt = call?.state?.startsAt;
+	const isVideoCall = call?.type === "default";
+
+	const expert = call?.state?.members?.find(
+		(member: any) => member.custom.type === "expert"
+	);
+	const expertId = expert?.user_id;
+	const clientId = call?.state?.createdBy?.id;
+
+	// Calculate call duration
+	// Check if both callEndedAt and callStartsAt are defined
+	let duration = "N/A"; // Default value for duration
+
+	if (callEndedAt && callStartsAt) {
+		const callEndedTime = new Date(callEndedAt);
+		const callStartsAtTime = new Date(callStartsAt);
+
+		// Calculate call duration in seconds
+		duration = (
+			(callEndedTime.getTime() - callStartsAtTime.getTime()) /
+			1000
+		).toFixed(2);
+
+		const transactionPayload = {
+			expertId,
+			clientId,
+			callId: call?.id,
+			duration,
+			isVideoCall: isVideoCall,
+		};
+		const callUpdatePayload = {
+			callId: call?.id,
+			call: {
+				status: "Ended",
+				startedAt: callStartsAtTime,
+				endedAt: callEndedTime,
+				duration: duration,
+			},
+		};
+
+		try {
+			// Send the backend request
+			const [transactionResponse, callUpdateResponse] = await Promise.all([
+				fetch(`${backendBaseUrl}/calls/transaction/handleTransaction`, {
+					method: "POST",
+					body: JSON.stringify(transactionPayload),
+					headers: {
+						"Content-Type": "application/json",
+					},
+				}),
+				fetch(`${backendBaseUrl}/calls/updateCall`, {
+					method: "POST",
+					body: JSON.stringify(callUpdatePayload),
+					headers: { "Content-Type": "application/json" },
+				}),
+			]);
+
+			if (transactionResponse.ok && callUpdateResponse.ok) {
+				// Update the user's status based on the type
+				if (userType === "client") {
+					await updateExpertStatus(currentUserPhone, "Idle");
+				} else {
+					await updateExpertStatus(currentUserPhone, "Online");
+				}
+
+				const localSessionKey = `meeting_${callId}_${currentUserId}`;
+
+				localStorage.removeItem("activeCallId");
+				localStorage.removeItem(localSessionKey);
+
+				console.log("Call Transaction done and status updated");
+			}
+		} catch (error) {
+			console.error("Error handling interrupted call:", error);
+		}
+	}
+};
 
 // setBodyBackgroundColor
 export const setBodyBackgroundColor = (color: string) => {
@@ -308,6 +458,7 @@ export const stopMediaStreams = () => {
 export const fetchFCMToken = async (phone: string) => {
 	const fcmTokenRef = doc(db, "FCMtoken", phone);
 	const fcmTokenDoc = await getDoc(fcmTokenRef);
+	console.log("Doc ", fcmTokenDoc);
 	return fcmTokenDoc.exists() ? fcmTokenDoc.data().token : null;
 };
 
@@ -347,14 +498,20 @@ export const sendNotification = async (
 	token: string,
 	title: string,
 	body: string,
-	data: any,
+	data: string,
 	link?: string
 ) => {
 	try {
 		const response = await fetch("/api/send-notification", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ token, title, message: body, data, link }),
+			body: JSON.stringify({
+				token,
+				title,
+				message: body,
+				data: { message: "Hi", whatever_key: "value" },
+				link,
+			}),
 		});
 
 		if (!response.ok) {
