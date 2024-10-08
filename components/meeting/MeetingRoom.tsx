@@ -50,10 +50,13 @@ const useScreenSize = () => {
 
 const MeetingRoom = () => {
 	const [showParticipants, setShowParticipants] = useState(false);
-	const { useCallCallingState, useCallEndedAt, useParticipantCount } =
-		useCallStateHooks();
+	const {
+		useCallCallingState,
+		useCallEndedAt,
+		useParticipantCount,
+		useParticipants,
+	} = useCallStateHooks();
 	const hasAlreadyJoined = useRef(false);
-
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
 	const { currentUser } = useCurrentUsersContext();
 	const call = useCall();
@@ -61,16 +64,15 @@ const MeetingRoom = () => {
 	const callHasEnded = !!callEndedAt;
 	const { toast } = useToast();
 	const isVideoCall = useMemo(() => call?.type === "default", [call]);
-
+	const [endCallTimeoutId, setEndCallTimeoutId] =
+		useState<NodeJS.Timeout | null>(null);
 	const callingState = useCallCallingState();
 	const participantCount = useParticipantCount();
-
+	const participants = useParticipants();
 	const { anyModalOpen } = useCallTimerContext();
 	const [layout, setLayout] = useState<CallLayoutType>("grid");
 
 	const router = useRouter();
-
-	console.log("3 ... ", callingState);
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
 		call?.endCall();
@@ -79,7 +81,12 @@ const MeetingRoom = () => {
 	const isMobile = useScreenSize();
 
 	const handleCallRejected = async () => {
-		await call?.endCall();
+		// await call?.endCall().catch((err) => console.warn(err));
+		toast({
+			variant: "destructive",
+			title: "Call Ended",
+			description: "Less than 2 Participants",
+		});
 	};
 
 	useEffect(() => {
@@ -91,6 +98,7 @@ const MeetingRoom = () => {
 	}, [isMobile]);
 
 	useEffect(() => {
+		console.log("3 ... ", callingState);
 		const joinCall = async () => {
 			console.log("4 ... ", callingState);
 			if (
@@ -116,6 +124,7 @@ const MeetingRoom = () => {
 					return;
 				}
 				if (callingState === CallingState.IDLE) {
+					await call?.accept();
 					await call?.join();
 					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
@@ -149,16 +158,17 @@ const MeetingRoom = () => {
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout;
 
-		// if (participantCount === 2) {
-		// 	call?.on("call.session_participant_left", handleCallRejected);
-		// }
+		if (participants.length < 2) {
+			// handleGracePeriodForCallEnd();
+			call?.on("call.session_participant_left", handleCallRejected);
+		}
 
-		if (participantCount < 2 || anyModalOpen) {
+		if (participants.length < 2 || anyModalOpen) {
 			timeoutId = setTimeout(async () => {
 				toast({
 					variant: "destructive",
-					title: "Call Ended ...",
-					description: "Less than 2 Participants or Due to Inactivity",
+					title: "Call Ended",
+					description: "Less than 2 Participants",
 				});
 				await call?.endCall();
 			}, 60000); // 1 minute

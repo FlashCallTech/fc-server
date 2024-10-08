@@ -117,7 +117,7 @@ export default function AuthenticationPage() {
 								}}
 							/>
 							<section className="w-[85%] m-auto flex flex-col items-center justify-center gap-2">
-								<h1 className="text-sm xm:text-lg md:text-2xl font-medium mt-4">
+								<h1 className="text-md xm:text-lg md:text-2xl font-medium mt-4">
 									{item.heading}
 								</h1>
 							</section>
