@@ -58,14 +58,12 @@ const MeetingRoom = () => {
 	} = useCallStateHooks();
 	const hasAlreadyJoined = useRef(false);
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 	const call = useCall();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
 	const { toast } = useToast();
 	const isVideoCall = useMemo(() => call?.type === "default", [call]);
-	const [endCallTimeoutId, setEndCallTimeoutId] =
-		useState<NodeJS.Timeout | null>(null);
 	const callingState = useCallCallingState();
 	const participantCount = useParticipantCount();
 	const participants = useParticipants();
@@ -82,6 +80,7 @@ const MeetingRoom = () => {
 
 	const handleCallRejected = async () => {
 		// await call?.endCall().catch((err) => console.warn(err));
+		console.log("Nice ", participants);
 		toast({
 			variant: "destructive",
 			title: "Call Ended",
@@ -124,7 +123,8 @@ const MeetingRoom = () => {
 					return;
 				}
 				if (callingState === CallingState.IDLE) {
-					await call?.accept();
+					userType === "creator" && (await call?.accept());
+
 					await call?.join();
 					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
@@ -157,13 +157,21 @@ const MeetingRoom = () => {
 
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout;
+		const [firstCheck, setFirstCheck] = useState(true);
+		console.log(participants);
+		// Skip the first check
+		if (firstCheck) {
+			setFirstCheck(false);
+			return;
+		}
 
-		if (participants.length < 2) {
+		console.log(participants);
+		if (participants.length > 0 && participants.length < 2) {
 			// handleGracePeriodForCallEnd();
 			call?.on("call.session_participant_left", handleCallRejected);
 		}
 
-		if (participants.length < 2 || anyModalOpen) {
+		if (participants.length < 2 && anyModalOpen) {
 			timeoutId = setTimeout(async () => {
 				toast({
 					variant: "destructive",

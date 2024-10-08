@@ -10,6 +10,8 @@ import { getUserById } from "../actions/client.actions";
 import { getCreatorById } from "../actions/creator.actions";
 import { useCurrentUsersContext } from "./CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase";
 
 interface WalletBalanceContextProps {
 	walletBalance: number;
@@ -71,6 +73,33 @@ export const WalletBalanceProvider = ({
 	useEffect(() => {
 		fetchAndSetWalletBalance();
 	}, [userType, authenticationSheetOpen, isCreator]);
+
+	useEffect(() => {
+		if (currentUser) {
+			try {
+				const creatorRef = doc(db, "transactions", currentUser?._id);
+				const unsubscribe = onSnapshot(
+					creatorRef,
+					(doc) => {
+						const data = doc.data();
+
+						if (data) {
+							updateWalletBalance();
+						}
+					},
+					(error) => {
+						console.error("Error fetching snapshot: ", error);
+						// Optional: Retry or fallback logic when Firebase is down
+						updateWalletBalance();
+					}
+				);
+
+				return () => unsubscribe();
+			} catch (error) {
+				console.error("Error connecting to Firebase: ", error);
+			}
+		}
+	}, [currentUser?._id]);
 
 	const updateWalletBalance = async () => {
 		await updateAndSetWalletBalance();
