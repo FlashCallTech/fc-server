@@ -19,6 +19,16 @@ import {
 	isSupported as isMessagingSupported,
 } from "firebase/messaging";
 
+// const firebaseConfig = {
+//   apiKey: "AIzaSyD7bSGVr3DJL2Yho2X9ATXuST1NgITRNoU",
+//   authDomain: "flashcall-e4f30.firebaseapp.com",
+//   projectId: "flashcall-e4f30",
+//   storageBucket: "flashcall-e4f30.appspot.com",
+//   messagingSenderId: "244115322004",
+//   appId: "1:244115322004:web:8f2a7bc4c1e6477d1d7081",
+//   measurementId: "G-GKP7RQ4YG8"
+// };`
+
 const firebaseConfig = {
 	apiKey: process.env.NEXT_PUBLIC_FIREBASE_KEY,
 	authDomain: "flashcallchat.firebaseapp.com",

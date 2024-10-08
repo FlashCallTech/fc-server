@@ -55,6 +55,19 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	};
 
+	function maskPhoneNumber(phoneNumber: string) {
+		// Remove the '+91' prefix
+		if(phoneNumber){
+
+			let cleanedNumber = phoneNumber.replace('+91', '');
+			
+			// Mask the next 5 digits, leaving the first 2 digits unmasked
+			let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
+			
+			return maskedNumber;
+		}
+	}
+
 	const handleChat = async (creator: any, clientUser: any) => {
 		logEvent(analytics, "chat_now_click", {
 			clientId: clientUser?._id,
@@ -119,12 +132,17 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 			await setDoc(newChatRequestRef, {
 				creatorId: creator?._id,
+				creatorName: creator.fullName? creator.fullName: maskPhoneNumber(creator.phone),
+				creatorPhone: creator.phone,
+				creatorImg: creator.photo,
 				clientId: clientUser?._id,
+				clientPhone: clientUser?.phone,
+				clientName: clientUser?.username,
+				clientImg: clientUser?.photo,
 				client_first_seen: formattedDate,
 				creator_first_seen: creator.createdAt.toString().split("T")[0],
 				client_balance: clientUser.walletBalance,
 				rate: creator.chatRate,
-				clientName: clientUser?.username,
 				status: "pending",
 				chatId: chatId,
 				chatRate: creator.chatRate,
@@ -199,7 +217,12 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					// endedAt: null,
 					clientId: chatRequest.clientId,
 					clientName: chatRequest.clientName,
+					clientPhone: response.phone,
+					clientImg: response.photo,
 					creatorId: chatRequest.creatorId,
+					creatorName: chatRequest.creatorName,
+					creatorPhone: chatRequest.creatorPhone,
+					creatorImg: chatRequest.creatorImg,
 					status: "active",
 					messages: [],
 					maxChatDuration,

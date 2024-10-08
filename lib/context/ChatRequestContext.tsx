@@ -4,7 +4,6 @@ import useChatRequest from "@/hooks/useChatRequest";
 import { useCurrentUsersContext } from "./CurrentUsersContext";
 import { creatorUser } from "@/types";
 import ChatRequest from "@/components/chat/ChatRequest";
-import { trackEvent } from "../mixpanel";
 
 const ChatRequestContext = createContext<any>(null);
 
