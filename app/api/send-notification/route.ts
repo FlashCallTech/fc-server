@@ -34,26 +34,23 @@ if (!admin.apps.length) {
 }
 
 export async function POST(request: NextRequest) {
-	const { token, title, message, link } = await request.json();
-
+	const { token, title, message, link, data } = await request.json();
+	console.log(data);
 	try {
 		const payload: Message = {
 			token,
-			notification: {
+			data: {
 				title: title,
 				body: message,
-			},
-			webpush: link && {
-				fcmOptions: {
-					link,
-				},
+				...(link && { link }),
+				...data,
 			},
 		};
 
 		await admin.messaging().send(payload);
-		return NextResponse.json({ success: true, message: "Notification sent!" });
+		return NextResponse.json({ success: true, message: "Data message sent!" });
 	} catch (error: any) {
-		console.error("Error sending notification:", error);
+		console.error("Error sending data message:", error);
 		return NextResponse.json({
 			success: false,
 			error: error.message || "Unknown error",

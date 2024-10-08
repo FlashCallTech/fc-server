@@ -78,7 +78,7 @@ const useEndChat = () => {
 					setCreatorPhone(parsedCreator?.phone);
 				}
 			}
-		}
+		};
 
 		if (chatId) getCreator();
 	}, []);
@@ -106,12 +106,10 @@ const useEndChat = () => {
 		if (chatEnded) {
 			hasChatEnded.current = true;
 			// if (userType === 'client')
-				// updateExpertStatus(creatorPhone, "Online");
-			if (userType === 'creator')
-				router.replace(`/home`);
+			// updateExpertStatus(creatorPhone, "Online");
+			if (userType === "creator") router.replace(`/home`);
 			else {
 				router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
-
 			}
 		}
 	}, [chatEnded]);

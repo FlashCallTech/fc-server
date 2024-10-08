@@ -10,7 +10,7 @@ import PostLoader from "@/components/shared/PostLoader";
 import Image from "next/image";
 import { trackEvent } from "@/lib/mixpanel";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, getFCMToken } from "@/lib/firebase";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useGetCreators } from "@/lib/react-query/queries";
 
@@ -18,7 +18,8 @@ const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
 const HomePage = () => {
 	const [loadingCard, setLoadingCard] = useState(false);
-	const { clientUser, userType, setCurrentTheme } = useCurrentUsersContext();
+	const { clientUser, userType, setCurrentTheme, updateCreatorURL } =
+		useCurrentUsersContext();
 	const router = useRouter();
 	const pathname = usePathname();
 	const { ref, inView } = useInView();
@@ -50,6 +51,7 @@ const HomePage = () => {
 		id: string
 	) => {
 		setLoadingCard(true);
+		updateCreatorURL(`/${username}`);
 		localStorage.setItem("creatorURL", `/${username}`);
 		setCurrentTheme(theme);
 
@@ -69,14 +71,18 @@ const HomePage = () => {
 
 	if (isLoading || loadingCard) {
 		return (
-			<div className="size-full flex flex-col gap-2 items-center justify-center -mt-10">
+			<div className="size-full flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
 			</div>
 		);
 	}
 
 	return (
-		<main className="flex flex-col size-full">
+		<main
+			className={`flex flex-col ${
+				userType === "creator" ? "pt-0 md:pt-5" : "pt-5"
+			}  size-full`}
+		>
 			{userType === "client" ? (
 				<Suspense fallback={<PostLoader count={6} />}>
 					{isError ? (

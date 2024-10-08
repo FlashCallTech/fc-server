@@ -22,6 +22,7 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import {
 	backendBaseUrl,
+	getDarkHexCode,
 	stopMediaStreams,
 	updateExpertStatus,
 } from "@/lib/utils";
@@ -100,9 +101,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 	const [loading, setLoading] = useState(false);
 	const [toastShown, setToastShown] = useState(false);
 	const transactionHandled = useRef(false);
-	const { currentUser } = useCurrentUsersContext();
-
-	stopMediaStreams();
+	const { currentUser, currentTheme } = useCurrentUsersContext();
 
 	const removeActiveCallId = () => {
 		const activeCallId = localStorage.getItem("activeCallId");
@@ -123,18 +122,6 @@ const CallEnded = ({ toast, router, call }: any) => {
 	const isBrowser = () => typeof window !== "undefined";
 
 	useEffect(() => {
-		// Stop media streams every time the effect runs
-		stopMediaStreams();
-
-		// Calculate call duration
-		const callEndedTime = new Date(callEndedAt);
-		const callStartsAtTime = new Date(callStartsAt);
-		const duration = (
-			(callEndedTime.getTime() - callStartsAtTime.getTime()) /
-			1000
-		).toFixed(2);
-
-		// Clear localStorage session key
 		const localSessionKey = `meeting_${call.id}_${currentUser?._id}`;
 		localStorage.removeItem(localSessionKey);
 
@@ -151,13 +138,11 @@ const CallEnded = ({ toast, router, call }: any) => {
 			if (transactionHandled.current) return;
 
 			setLoading(true);
-			await updateExpertStatus(
-				call?.state?.createdBy?.custom?.phone as string,
-				"Idle"
-			);
-
 			transactionHandled.current = true;
 
+			stopMediaStreams();
+
+			// Show toast notification
 			if (!toastShown) {
 				toast({
 					variant: "destructive",
@@ -167,54 +152,84 @@ const CallEnded = ({ toast, router, call }: any) => {
 				setToastShown(true);
 			}
 
-			// Trigger transaction in backend
-			const transactionResponse = await fetch(
-				`${backendBaseUrl}/calls/transaction/handleTransaction`,
-				{
-					method: "POST",
-					body: JSON.stringify({
-						expertId,
-						clientId,
+			// Calculate call duration
+			const callEndedTime = new Date(callEndedAt);
+			const callStartsAtTime = new Date(callStartsAt);
+			const duration = (
+				(callEndedTime.getTime() - callStartsAtTime.getTime()) /
+				1000
+			).toFixed(2);
+
+			const localSessionKey = `meeting_${call.id}_${currentUser?._id}`;
+			localStorage.removeItem(localSessionKey);
+
+			const transactionPayload = {
+				expertId,
+				clientId,
+				callId: call.id,
+				duration,
+				isVideoCall: call.type === "default",
+			};
+			const callUpdatePayload = {
+				callId: call.id,
+				call: {
+					status: "Ended",
+					startedAt: callStartsAtTime,
+					endedAt: callEndedTime,
+					duration: duration,
+				},
+			};
+
+			try {
+				const [transactionResponse, callUpdateResponse] = await Promise.all([
+					fetch(`${backendBaseUrl}/calls/transaction/handleTransaction`, {
+						method: "POST",
+						body: JSON.stringify(transactionPayload),
+						headers: {
+							"Content-Type": "application/json",
+						},
+					}),
+					fetch(`${backendBaseUrl}/calls/updateCall`, {
+						method: "POST",
+						body: JSON.stringify(callUpdatePayload),
+						headers: { "Content-Type": "application/json" },
+					}),
+				]);
+
+				if (transactionResponse.ok && callUpdateResponse.ok) {
+					// Update expert status
+					await updateExpertStatus(
+						call?.state?.createdBy?.custom?.phone as string,
+						"Idle"
+					);
+
+					if (expert) {
+						await updateExpertStatus(expert?.custom?.phone, "Online");
+					}
+					// Execute the logic after successful transaction
+					removeActiveCallId();
+					logEvent(analytics, "call_ended", {
 						callId: call.id,
 						duration,
-						isVideoCall: call.type === "default",
-					}),
-					headers: {
-						"Content-Type": "application/json",
-					},
+						type: call.type === "default" ? "video" : "audio",
+					});
+
+					// Update wallet balance asynchronously
+					updateWalletBalance();
+
+					// Redirect to feedback page immediately
+					router.replace(`/feedback/${call.id}`);
+				} else {
+					console.error("Failed to process transaction or update call status");
+					const creatorURL = localStorage.getItem("creatorURL");
+					router.replace(`${creatorURL ? creatorURL : "/home"}`);
 				}
-			);
-
-			await fetch(`${backendBaseUrl}/calls/updateCall`, {
-				method: "POST",
-				body: JSON.stringify({
-					callId: call.id,
-					call: {
-						status: "Ended",
-						startedAt: callStartsAtTime,
-						endedAt: callEndedAt,
-						duration: duration,
-					},
-				}),
-				headers: { "Content-Type": "application/json" },
-			});
-
-			if (transactionResponse.ok) {
-				// Execute the logic after successful transaction
-				removeActiveCallId();
-				logEvent(analytics, "call_ended", {
-					callId: call.id,
-					duration,
-					type: call.type === "default" ? "video" : "audio", // Assuming you want to log type as "video" or "audio"
-				});
-
-				setLoading(false);
-				updateWalletBalance();
-				router.replace(`/feedback/${call.id}`);
-			} else {
-				console.error("Failed to process transaction");
+			} catch (error) {
+				console.error("Error handling call end", error);
 				const creatorURL = localStorage.getItem("creatorURL");
 				router.replace(`${creatorURL ? creatorURL : "/home"}`);
+			} finally {
+				setLoading(false);
 			}
 		};
 
@@ -225,6 +240,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 		if (isMeetingOwner && !transactionHandled.current) {
 			handleCallEnd();
 		} else if (!isMeetingOwner) {
+			stopMediaStreams();
 			router.push(`/home`);
 		}
 
@@ -249,7 +265,10 @@ const CallEnded = ({ toast, router, call }: any) => {
 		return (
 			<section className="w-full h-screen flex flex-col items-center justify-center gap-4">
 				<ContentLoading />
-				<h1 className="text-xl md:text-2xl font-semibold">
+				<h1
+					className="text-xl md:text-2xl font-semibold"
+					style={{ color: getDarkHexCode(currentTheme) as string }}
+				>
 					<Typewriter
 						words={["Checking Pending Transactions", "Please Wait ..."]}
 						loop={true}
@@ -259,14 +278,14 @@ const CallEnded = ({ toast, router, call }: any) => {
 						deleteSpeed={50}
 						delaySpeed={2000}
 					/>
-					<Cursor cursorColor="#50A65C" />
+					<Cursor cursorColor={getDarkHexCode(currentTheme) as string} />
 				</h1>
 			</section>
 		);
 	}
 
 	return (
-		<div className="flex flex-col w-full items-center justify-center h-screen gap-7">
+		<div className="flex flex-col w-full items-center justify-center h-screen">
 			<SinglePostLoader />
 		</div>
 	);

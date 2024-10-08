@@ -55,7 +55,13 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 export let messaging: any;
 if (typeof window !== "undefined") {
-	messaging = getMessaging(app);
+	isMessagingSupported().then((supported) => {
+		if (supported) {
+			messaging = getMessaging(app);
+		} else {
+			console.warn("Firebase Messaging is not supported in this environment.");
+		}
+	});
 }
 // Function to get FCM token, only in the browser
 export const getFCMToken = async () => {
@@ -68,6 +74,7 @@ export const getFCMToken = async () => {
 					vapidKey:
 						"BDcwFwphQVuj2pWTzGaNuOQ7dSPEojABdZHwn19xKJfg3Uba5-tFJ1ObHfoJam5XPgED2N6eLeend7gSwwTrEuI",
 				});
+
 				if (fcmToken) {
 					return fcmToken;
 				} else {
@@ -87,7 +94,7 @@ export const getFCMToken = async () => {
 };
 
 // getOrRegisterServiceWorker function is used to try and get the service worker if it exists, otherwise it will register a new one.
-export const getOrRegisterServiceWorker = () => {
+export const getOrRegisterServiceWorker = async () => {
 	if (
 		"serviceWorker" in navigator &&
 		typeof window.navigator.serviceWorker !== "undefined"
@@ -112,14 +119,11 @@ export const getFirebaseToken = async () => {
 	try {
 		const messagingResolve = await messaging;
 		if (messagingResolve) {
-			return getOrRegisterServiceWorker().then((serviceWorkerRegistration) => {
-				return Promise.resolve(
-					getToken(messagingResolve, {
-						vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
-						serviceWorkerRegistration,
-					})
-				);
-			});
+			return Promise.resolve(
+				getToken(messagingResolve, {
+					vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+				})
+			);
 		}
 	} catch (error) {
 		console.log("An error occurred while retrieving token. ", error);

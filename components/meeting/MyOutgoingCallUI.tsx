@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import * as Sentry from "@sentry/nextjs";
-import { getProfileImagePlaceholder } from "@/lib/utils";
 
 const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 	const [callState, setCallState] = useState("outgoing");
@@ -44,12 +43,7 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 			<h1 className="font-bold text-xl mb-2">Outgoing Call ...</h1>
 			<div className="flex flex-col items-center justify-center gap-10">
 				<img
-					src={
-						expert?.user?.image ||
-						getProfileImagePlaceholder(
-							expert?.user && (expert?.user?.image as string)
-						)
-					}
+					src={expert?.user?.image || "/icons/logo_icon_dark.png"}
 					alt=""
 					className="rounded-full w-28 h-28 object-cover"
 					onError={(e) => {
@@ -58,7 +52,14 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 				/>
 				<div className="flex flex-col items-center justify-center gap-2">
 					<p className="text-xs">Connecting Call With </p>
-					<p className="font-semibold text-xl">{expert?.user?.name}</p>
+					<p className="font-semibold text-xl">
+						{expert?.user?.name?.startsWith("+91")
+							? expert?.user?.name?.replace(
+									/(\+91)(\d+)/,
+									(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+							  )
+							: expert?.user?.name}
+					</p>
 				</div>
 			</div>
 			<div className="flex items-center justify-center w-full">

@@ -37,18 +37,19 @@ const Navbar = ({
 		currentUser,
 		fetchingUser,
 		userType,
-		authenticationSheetOpen,
 		setAuthenticationSheetOpen,
 		currentTheme,
+		creatorURL,
 	} = useCurrentUsersContext();
 	const router = useRouter();
 	const [creator, setCreator] = useState<creatorUser>();
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 
 	const pathname = usePathname();
-	const creatorURL = localStorage.getItem("creatorURL");
+	// const creatorURL = localStorage.getItem("creatorURL");
 
-	const isCreatorOrExpertPath = pathname.includes(`${creatorURL}`);
+	const isCreatorOrExpertPath =
+		creatorURL && creatorURL !== "" && pathname.includes(`${creatorURL}`);
 	const followCreatorTheme = isCreatorOrExpertPath ? "#ffffff" : "#000000";
 	const invertCreatorTheme = isCreatorOrExpertPath
 		? getDarkHexCode(currentTheme)
@@ -99,20 +100,28 @@ const Navbar = ({
 		window.open(url, "_blank");
 	};
 
+	// console.log(isCreatorOrExpertPath, isMobile, currentTheme);
+
 	const AppLink = () => (
 		<Button
-			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[8px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
+			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
 			style={{
 				boxShadow: `4px 4px 0px 0px #000000`,
-				color: `${isMobile && followCreatorTheme ? "#000000" : followCreatorTheme
-					}`,
+				color: `${
+					isMobile && isCreatorOrExpertPath
+						? currentTheme
+							? "#000000"
+							: "#ffffff"
+						: followCreatorTheme
+				}`,
 				border: `1px solid #000000`,
-				backgroundColor: `${isCreatorOrExpertPath
+				backgroundColor: `${
+					isCreatorOrExpertPath
 						? isMobile
 							? currentTheme
 							: "#333333"
 						: "#ffffff"
-					}`,
+				}`,
 			}}
 			onClick={handleAppRedirect}
 		>
@@ -121,7 +130,7 @@ const Navbar = ({
 				width={100}
 				height={100}
 				alt="flashcall logo"
-				className={`size-6 xl:w-[28px] xl:h-[40px] rounded-full`}
+				className={`size-6 xl:w-[28px] xl:h-[36px] rounded-full`}
 			/>
 
 			<span className="w-fit whitespace-nowrap text-xs font-semibold">
@@ -132,35 +141,50 @@ const Navbar = ({
 
 	return (
 		<nav
-			className={`flex justify-between items-center fixed h-[76px] z-40 top-0 left-0 ${isCreatorOrExpertPath && "border-b border-white/20"
-				}  ${isVisible ? "translate-y-0" : "-translate-y-full"
-				} w-full px-4 py-4 transition-transform duration-300 shadow-sm blurEffect
+			className={`flex justify-between items-center fixed h-[76px] z-40 top-0 left-0 ${
+				isCreatorOrExpertPath && "border-b border-white/20"
+			}  ${
+				isVisible ? "translate-y-0" : "-translate-y-full"
+			} w-full px-4 py-4 transition-transform duration-300 shadow-sm blurEffect
 			 `}
 			style={{
-				background: `${isCreatorOrExpertPath
+				background: `${
+					isCreatorOrExpertPath
 						? isMobile
 							? currentTheme
-							: "#000000"
+							: "#121319"
 						: "#ffffff"
-					} `,
+				} `,
 			}}
 		>
 			{currentUser ? (
 				userType === "creator" ? (
 					<Link
 						href="/home"
-						className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[8px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
-						style={{
-							boxShadow: `4px 4px 0px 0px #000000`,
-							border: `1px solid #000000`,
-						}}
+						className="flex items-center justify-center size-fit"
 					>
 						<Image
 							src="/icons/logo_new_light.png"
 							width={1000}
 							height={1000}
 							alt="flashcall logo"
-							className="w-[125px] md:w-[100px] h-[40px] rounded-[4px] hoverScaleDownEffect"
+							className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[150px] xl:h-[48px]"
+							style={{
+								boxShadow: `4px 4px 0px 0px #000000`,
+								color: `${
+									isMobile && followCreatorTheme
+										? "#000000"
+										: followCreatorTheme
+								}`,
+								border: `1px solid #000000`,
+								backgroundColor: `${
+									isCreatorOrExpertPath
+										? isMobile
+											? currentTheme
+											: "#333333"
+										: "#ffffff"
+								}`,
+							}}
 						/>
 					</Link>
 				) : (
@@ -175,21 +199,24 @@ const Navbar = ({
 					{walletBalance >= 0 ? (
 						<Link
 							href="/payment"
-							className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] ${pathname.includes("/payment") && "!bg-green-1 !text-white"
-								}`}
+							className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] ${
+								pathname.includes("/payment") && "!bg-green-1 !text-white"
+							}`}
 							style={{
 								boxShadow: `4px 4px 0px 0px #000000`,
-								color: `${isMobile && followCreatorTheme
+								color: `${
+									isMobile && followCreatorTheme
 										? "#000000"
 										: followCreatorTheme
-									}`,
+								}`,
 								border: `1px solid #000000`,
-								backgroundColor: `${isCreatorOrExpertPath
+								backgroundColor: `${
+									isCreatorOrExpertPath
 										? isMobile
 											? currentTheme
 											: invertCreatorTheme
 										: "#ffffff"
-									}`,
+								}`,
 							}}
 						>
 							<Image
@@ -197,10 +224,11 @@ const Navbar = ({
 								width={100}
 								height={100}
 								alt="wallet"
-								className={`w-4 h-4 ${(pathname.includes("/payment") ||
+								className={`w-4 h-4 ${
+									(pathname.includes("/payment") ||
 										(isCreatorOrExpertPath && !isMobile)) &&
 									"invert"
-									}`}
+								}`}
 							/>
 							<span className="w-full mt-[2px] text-center align-middle text-xs font-semibold">
 								{`Rs. ${Math.round(walletBalance)}`}

@@ -93,6 +93,7 @@ export async function getUsersPaginated(offset = 0, limit = 2) {
 				{ audioRate: { $ne: "0" } },
 				{ videoRate: { $ne: "0" } },
 				{ chatRate: { $ne: "0" } },
+				{ restricted: false },
 			],
 		};
 
@@ -171,7 +172,6 @@ export async function updateCreatorUser(
 	try {
 		await connectToDatabase();
 		const user = await Creator.findById({ _id: userId });
-		console.log(user);
 
 		// Validate the username
 		if (updates.username && !validateUsername(updates.username)) {
@@ -187,7 +187,7 @@ export async function updateCreatorUser(
 		// If the updates object contains a link to add, use $push to add it to the links array
 		if (updates.link) {
 			updateObject.$push = { links: updates.link };
-			delete updateObject.links; // Remove the links field from direct updates to avoid overwriting the array
+			delete updateObject.links;
 		}
 
 		console.log("Trying to update user");
@@ -205,8 +205,14 @@ export async function updateCreatorUser(
 			throw new Error("User not found"); // Throw error if user is not found
 		}
 
-		if (updates.referredBy && user.referredBy !== updates.referredBy && updates.referredBy !== null) {
-			const referral = await Creator.findOne({ referralId: updates.referredBy })
+		if (
+			updates.referredBy &&
+			user.referredBy !== updates.referredBy &&
+			updates.referredBy !== null
+		) {
+			const referral = await Creator.findOne({
+				referralId: updates.referredBy,
+			});
 			const referralData = {
 				referralId: updates.referredBy,
 				name: updatedUser.fullName,
@@ -214,7 +220,7 @@ export async function updateCreatorUser(
 				creatorId: updatedUser.creatorId,
 				referredBy: referral._id,
 				referredTo: userId,
-			}
+			};
 			await createReferralAction(referralData);
 		}
 		return JSON.parse(JSON.stringify({ updatedUser }));

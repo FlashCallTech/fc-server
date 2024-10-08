@@ -1,14 +1,11 @@
 "use client";
-
-import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { getDarkHexCode } from "@/lib/utils";
 import React from "react";
 
 const SupportPage = () => {
 	return (
 		<section className="w-full h-fit flex flex-col gap-6 items-start justify-start p-4 lg:p-8">
 			<h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-[#50a65c]">
-				Hey There We&apos;re Here to Help
+				Hey we&apos;re here to help
 			</h2>
 			<p className="text-base text-gray-700">
 				If you have any questions or need assistance, don&apos;t hesitate to
