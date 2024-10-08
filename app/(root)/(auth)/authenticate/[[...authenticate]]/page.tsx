@@ -85,7 +85,7 @@ export default function AuthenticationPage() {
 
 	return (
 		<main
-			className="fixed w-full h-screen z-50 inset-0 bg-green-1 top-0 flex flex-col justify-between md:justify-center"
+			className="size-full inset-0 bg-[#111111] md:bg-green-1 top-0 flex flex-col justify-between md:justify-center"
 			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
 		>
 			<Head>
@@ -95,15 +95,15 @@ export default function AuthenticationPage() {
 			</Head>
 
 			{/* Slider Section */}
-			<div className="flex flex-col gap-2 h-1/2 w-full justify-center items-end relative sm:hidden">
+			<section className="relative flex flex-col gap-2 h-1/2 w-full justify-start items-start sm:hidden">
 				<Slider
 					{...settings}
 					ref={sliderRef}
-					className="w-full h-fit flex items-center justify-center"
+					className="size-full flex items-center justify-center"
 				>
 					{authSliderContent.map((item, index) => (
 						<section
-							className="flex flex-col h-full text-center gap-4 items-end justify-center px-4 py-2.5 xm:py-5 text-white"
+							className="flex flex-col h-full text-center gap-4 items-end justify-center px-4 pt-4 pb-2 text-white"
 							key={index}
 						>
 							<Image
@@ -111,16 +111,15 @@ export default function AuthenticationPage() {
 								alt={`${item.heading}`}
 								width={1000}
 								height={1000}
-								className="w-40 h-40 xm:w-52 xm:h-52 rounded-xl object-cover mx-auto"
+								className="size-full max-h-[235px] xm:max-h-full rounded-xl object-contain mx-auto"
 								onError={(e) => {
 									e.currentTarget.src = "/images/defaultProfileImage.png";
 								}}
 							/>
-							<section className="flex flex-col items-center justify-center gap-2">
-								<h1 className="text-xl xm:text-2xl font-medium mt-4">
+							<section className="w-[85%] m-auto flex flex-col items-center justify-center gap-2">
+								<h1 className="text-sm xm:text-lg md:text-2xl font-medium mt-4">
 									{item.heading}
 								</h1>
-								{/* <h2 className="text-sm">{item.description}</h2> */}
 							</section>
 						</section>
 					))}
@@ -128,13 +127,13 @@ export default function AuthenticationPage() {
 
 				{/* Navigation Dots */}
 				{authSliderContent?.length > 1 && (
-					<div className="flex items-center justify-center w-full">
+					<div className=" flex items-center justify-center w-full">
 						<div className="flex gap-2 items-center">
 							{authSliderContent?.map((_, index) => (
 								<button
 									key={index}
 									className={`${
-										index === currentIndex ? "bg-white" : "bg-black/20"
+										index === currentIndex ? "bg-white" : "bg-white/40"
 									} w-2 h-2 rounded-full`}
 									onClick={() => {
 										sliderRef.current?.slickGoTo(index);
@@ -144,50 +143,45 @@ export default function AuthenticationPage() {
 						</div>
 					</div>
 				)}
-			</div>
-
-			{/* Authentication Form Section */}
-
-			{/* <AuthenticateViaOTP
-				userType={userType as string}
-				refId={refId as string}
-			/> */}
-
-			{isMobileView ? (
-				<Sheet open={true}>
-					<SheetContent
-						onOpenAutoFocus={(e) => e.preventDefault()}
-						side="bottom"
-						className="flex items-center justify-center w-full !p-0 !border-none"
-					>
-						<SheetHeader className="sr-only">
-							<SheetTitle className="sr-only">Authentication</SheetTitle>
-							<SheetDescription className="sr-only">
-								Authenticate via OTP to continue.
-							</SheetDescription>
-						</SheetHeader>
-						<AuthenticateViaOTP
-							userType={userType as string}
-							refId={refId as string}
-						/>
-					</SheetContent>
-				</Sheet>
-			) : (
-				<Dialog open={true}>
-					<DialogContent className="flex flex-col items-center justify-center w-fit !p-0 border-none">
-						<DialogHeader className="sr-only">
-							<DialogTitle className="sr-only">Authentication</DialogTitle>
-							<DialogDescription className="sr-only">
-								Authenticate via OTP to continue.
-							</DialogDescription>
-						</DialogHeader>
-						<AuthenticateViaOTP
-							userType={userType as string}
-							refId={refId as string}
-						/>
-					</DialogContent>
-				</Dialog>
-			)}
+			</section>
+			<section className="size-full">
+				{/* Authentication Form Section */}
+				{isMobileView ? (
+					<Sheet open={true}>
+						<SheetContent
+							onOpenAutoFocus={(e) => e.preventDefault()}
+							side="bottom"
+							className="flex items-center justify-center w-full h-fit !p-0 !border-none"
+						>
+							<SheetHeader className="sr-only">
+								<SheetTitle className="sr-only">Authentication</SheetTitle>
+								<SheetDescription className="sr-only">
+									Authenticate via OTP to continue.
+								</SheetDescription>
+							</SheetHeader>
+							<AuthenticateViaOTP
+								userType={userType as string}
+								refId={refId as string}
+							/>
+						</SheetContent>
+					</Sheet>
+				) : (
+					<Dialog open={true}>
+						<DialogContent className="flex flex-col items-center justify-center w-fit !p-0 border-none">
+							<DialogHeader className="sr-only">
+								<DialogTitle className="sr-only">Authentication</DialogTitle>
+								<DialogDescription className="sr-only">
+									Authenticate via OTP to continue.
+								</DialogDescription>
+							</DialogHeader>
+							<AuthenticateViaOTP
+								userType={userType as string}
+								refId={refId as string}
+							/>
+						</DialogContent>
+					</Dialog>
+				)}
+			</section>
 		</main>
 	);
 }

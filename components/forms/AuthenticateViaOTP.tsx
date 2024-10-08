@@ -25,7 +25,6 @@ import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import ContentLoading from "../shared/ContentLoading";
 import { backendBaseUrl } from "@/lib/utils";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { getFCMToken } from "@/lib/firebase";
@@ -305,7 +304,7 @@ const AuthenticateViaOTP = ({
 						<h2 className="text-black text-lg font-semibold">
 							Login or Signup
 						</h2>
-						<p className="text-sm text-[#707070] mb-4">
+						<p className="text-sm text-[#707070] mb-2.5">
 							Get start with your first consultation <br /> and start earning
 						</p>
 					</div>
@@ -384,7 +383,7 @@ const AuthenticateViaOTP = ({
 			)}
 
 			{!verificationSuccess && (
-				<p className="text-xs text-gray-400 text-center mt-7 pb-2 w-3/4 leading-loose">
+				<p className="text-xs text-gray-400 text-center pb-2 w-3/4 leading-loose">
 					By signing up you agree to our <br />
 					<Link
 						href="https://flashcall.me/terms-and-conditions"

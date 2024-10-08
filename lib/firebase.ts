@@ -78,7 +78,7 @@ export const getFCMToken = async () => {
 };
 
 // getOrRegisterServiceWorker function is used to try and get the service worker if it exists, otherwise it will register a new one.
-export const getOrRegisterServiceWorker = () => {
+export const getOrRegisterServiceWorker = async () => {
 	if (
 		"serviceWorker" in navigator &&
 		typeof window.navigator.serviceWorker !== "undefined"
