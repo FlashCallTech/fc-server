@@ -132,7 +132,7 @@ const FileUploader = ({
 		>
 			<input {...getInputProps()} className="cursor-pointer" />
 
-			{!fileUrl && !loading ? (
+			{!fileUrl && !loading && !newFileUrl ? (
 				<div className="file_uploader-box">
 					<img
 						src="/icons/file-upload.svg"
@@ -158,7 +158,7 @@ const FileUploader = ({
 								alt="Current image"
 								className={`${
 									newFileUrl ? "w-20 h-20" : "w-44 h-44"
-								} rounded-full border-2 border-white`}
+								} rounded-full border-2 border-white object-cover`}
 							/>
 						)}
 

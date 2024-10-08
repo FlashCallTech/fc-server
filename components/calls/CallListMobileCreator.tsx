@@ -1,31 +1,25 @@
 "use client";
 
 import {
-	backendBaseUrl,
 	formatDateTime,
 	getProfileImagePlaceholder,
 	isValidUrl,
 } from "@/lib/utils";
 import { RegisterCallParams } from "@/types";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
-import FeedbackCheck from "../feedbacks/FeedbackCheck";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useInView } from "react-intersection-observer";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import { useToast } from "../ui/use-toast";
 import { useGetPreviousCalls } from "@/lib/react-query/queries";
-import ReportDialog from "../client/ReportDialog";
-import axios from "axios";
+import OptionsList from "../shared/OptionsList";
 
-const CallListMobile = () => {
+const CallListMobileclient = () => {
 	const { currentUser, userType } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
 	const pathname = usePathname();
-	const router = useRouter();
-	const { toast } = useToast();
 	const { ref, inView } = useInView();
 	const {
 		data: userCalls,
@@ -35,49 +29,12 @@ const CallListMobile = () => {
 		isError,
 		isLoading,
 	} = useGetPreviousCalls(currentUser?._id as string, userType as string);
-	const [reportSubmitted, setReportSubmitted] = useState<{
-		[key: string]: boolean;
-	}>({});
 
 	useEffect(() => {
 		if (inView) {
 			fetchNextPage();
 		}
 	}, [inView]);
-
-	useEffect(() => {
-		const fetchReportStatus = async (callId: string, creatorId: string) => {
-			try {
-				const response = await axios.get(
-					`${backendBaseUrl}/reports/call/${callId}`
-				);
-				const reports = response.data;
-				const isReportSubmitted = reports.some(
-					(report: any) => report.submittedBy.userId === currentUser?._id
-				);
-				setReportSubmitted((prev) => ({
-					...prev,
-					[callId]: isReportSubmitted,
-				}));
-			} catch (error) {
-				console.error("Error fetching report status:", error);
-			}
-		};
-
-		// Fetch the report status for each user call
-		userCalls?.pages.forEach((page) => {
-			page.calls.forEach((userCall: RegisterCallParams) => {
-				fetchReportStatus(userCall.callId, userCall.expertDetails?._id);
-			});
-		});
-	}, [userCalls]);
-
-	const handleReportSubmitted = (callId: string) => {
-		setReportSubmitted((prev) => ({
-			...prev,
-			[callId]: true,
-		}));
-	};
 
 	return (
 		<>
@@ -109,20 +66,8 @@ const CallListMobile = () => {
 								const formattedDate = formatDateTime(
 									userCall.startedAt as Date
 								);
-								const creator = userCall.expertDetails;
+								const client = userCall.expertDetails;
 
-								const handleRedirect = () => {
-									if (creator?.username) {
-										router.push(`/${creator.username}`);
-									} else {
-										toast({
-											variant: "destructive",
-											title: "Invalid Username",
-											description: "Missing Creator Info",
-										});
-										console.error("Invalid creator username");
-									}
-								};
 								return (
 									<div
 										key={userCall.callId}
@@ -132,17 +77,14 @@ const CallListMobile = () => {
 									>
 										<div className="flex  flex-col items-start justify-start w-full gap-2">
 											{/* Expert's Details */}
-											<button
-												onClick={handleRedirect}
-												className="w-1/2 flex items-center justify-start gap-4 hoverScaleDownEffect"
-											>
-												{/* creator image */}
+											<section className="w-1/2 flex items-center justify-start gap-4 hoverScaleDownEffect">
+												{/* client image */}
 												<Image
 													src={
-														isValidUrl(creator?.photo as string)
-															? (creator?.photo as string)
+														isValidUrl(client?.photo as string)
+															? (client?.photo as string)
 															: getProfileImagePlaceholder(
-																	creator?.gender && creator.gender
+																	client?.gender && client.gender
 															  )
 													}
 													alt="Expert"
@@ -150,16 +92,16 @@ const CallListMobile = () => {
 													width={1000}
 													className="rounded-full max-w-12 min-w-12 h-12 object-cover"
 												/>
-												{/* creator details */}
+												{/* client details */}
 												<div className="flex flex-col items-start justify-start">
 													<p className="text-base tracking-wide whitespace-nowrap">
-														{creator?.username || "Creator"}
+														{client?.username || "client"}
 													</p>
-													<span className="text-xs whitespace-nowrap">
-														{creator?.profession || "Expert"}
+													<span className="text-xs  whitespace-nowrap">
+														{"Client"}
 													</span>
 												</div>
-											</button>
+											</section>
 											{/* call details */}
 											<div className="flex flex-wrap-reverse items-center justify-start gap-2 pl-16">
 												<span
@@ -200,7 +142,7 @@ const CallListMobile = () => {
 															{/* User Amount */}
 															<span className="text-[12.5px] text-gray-600 flex items-center gap-1">
 																{/* Amount */}
-																Rs. {userCall.amount.toFixed(0)}
+																Rs. {(userCall.amount * 0.8).toFixed(0)}
 															</span>
 														</>
 													)}
@@ -212,28 +154,14 @@ const CallListMobile = () => {
 											<span className="text-sm text-[#A7A8A1] pr-2 pt-1 whitespace-nowrap">
 												{formattedDate.dateTime}
 											</span>
-											<section className="flex w-full items-end justify-end">
-												{userCall.status !== "Rejected" ? (
-													<FeedbackCheck callId={userCall?.callId} />
-												) : (
-													<button
-														onClick={handleRedirect}
-														className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
-													>
-														Visit Again
-													</button>
-												)}
 
-												{!reportSubmitted[userCall.callId] && (
-													<ReportDialog
-														callId={userCall.callId}
-														clientId={currentUser?._id as string}
-														creatorId={creator?._id as string}
-														onReportSubmitted={() =>
-															handleReportSubmitted(userCall.callId)
-														}
-													/>
-												)}
+											<section>
+												<OptionsList
+													callId={userCall.callId}
+													currentCreator={currentUser}
+													creatorId={currentUser?._id as string}
+													clientId={client?._id as string}
+												/>
 											</section>
 										</section>
 									</div>
@@ -264,4 +192,4 @@ const CallListMobile = () => {
 	);
 };
 
-export default CallListMobile;
+export default CallListMobileclient;

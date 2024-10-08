@@ -43,7 +43,7 @@ const EndCallButton = () => {
 			Walletbalace_Available: currentUser?.walletBalance,
 			Endedby: call.state.endedBy?.role === "admin" ? "Client" : "Creator",
 		});
-		await call.endCall();
+		await call?.endCall();
 		setShowDialog(false);
 	};
 

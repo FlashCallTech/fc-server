@@ -356,7 +356,7 @@ const ChatInterface: React.FC = () => {
 		<div className={`flex flex-col h-screen bg-cover bg-center`} style={{ backgroundImage: 'url(/back.png)' }}>
 			<div className="flex flex-col justify-between h-full overflow-y-auto"> {/* Allow scrolling */}
 				{/* Sticky Header */}
-				<div className="sticky top-0 left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
+				<div className="sticky top-0  left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
 					<div className="flex items-center gap-2">
 						<Image
 							src={`${user2?.photo ? user2?.photo : 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'}`}

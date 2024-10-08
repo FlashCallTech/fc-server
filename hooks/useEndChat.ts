@@ -78,7 +78,7 @@ const useEndChat = () => {
 					setCreatorPhone(parsedCreator?.phone);
 				}
 			}
-		}
+		};
 
 		if (chatId) getCreator();
 	}, []);
@@ -111,7 +111,6 @@ const useEndChat = () => {
 				router.replace(`/home`);
 			else {
 				router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
-
 			}
 		}
 	}, [chatEnded]);

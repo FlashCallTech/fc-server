@@ -36,7 +36,12 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 					apiKey: API_KEY,
 					user: {
 						id: userId,
-						name: currentUser?.username || userId,
+						name: currentUser?.username.startsWith("+91")
+							? currentUser.username.replace(
+									/(\+91)(\d+)/,
+									(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+							  )
+							: currentUser.username,
 						image: currentUser?.photo as string,
 						custom: {
 							phone: currentUser?.phone as string,
