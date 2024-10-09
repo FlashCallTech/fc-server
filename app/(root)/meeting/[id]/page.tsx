@@ -17,7 +17,11 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { getDarkHexCode, stopMediaStreams } from "@/lib/utils";
+import {
+	getDarkHexCode,
+	stopMediaStreams,
+	updateExpertStatus,
+} from "@/lib/utils";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -120,13 +124,12 @@ const CallEnded = ({ toast, router, call }: any) => {
 		const handleCallEnd = async () => {
 			if (transactionHandled.current) return;
 
-			setLoading(true);
 			transactionHandled.current = true;
-
-			stopMediaStreams();
+			setLoading(true);
 
 			// Show toast notification
 			if (!toastShown) {
+				stopMediaStreams();
 				toast({
 					variant: "destructive",
 					title: "Session Has Ended",
@@ -139,21 +142,18 @@ const CallEnded = ({ toast, router, call }: any) => {
 			localStorage.removeItem(localSessionKey);
 
 			try {
-				// await updateExpertStatus(
-				// 	call?.state?.createdBy?.custom?.phone as string,
-				// 	"Idle"
-				// );
+				await updateExpertStatus(
+					call?.state?.createdBy?.custom?.phone as string,
+					"Idle"
+				);
 
-				// if (expert) {
-				// 	await updateExpertStatus(expert?.custom?.phone, "Online");
-				// }
+				if (expert) {
+					await updateExpertStatus(expert?.custom?.phone, "Online");
+				}
 
 				removeActiveCallId();
-
-				// Update wallet balance asynchronously
 				updateWalletBalance();
 
-				// Redirect to feedback page immediately
 				router.replace(`/feedback/${call.id}`);
 			} catch (error) {
 				console.error("Error handling call end", error);

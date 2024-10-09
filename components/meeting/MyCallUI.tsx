@@ -15,8 +15,8 @@ import {
 	updateExpertStatus,
 	updateFirestoreSessions,
 } from "@/lib/utils";
-import { trackEvent } from "@/lib/mixpanel";
 import { useGetCallById } from "@/hooks/useGetCallById";
+import axios from "axios";
 
 const MyCallUI = () => {
 	const router = useRouter();
@@ -144,7 +144,6 @@ const MyCallUI = () => {
 				await updateExpertStatus(expertPhone, "Online");
 			}
 
-			console.log(incomingCall.state.createdBy?.custom?.phone);
 			await updateExpertStatus(
 				incomingCall.state.createdBy?.custom?.phone as string,
 				"Payment Pending"
@@ -191,14 +190,13 @@ const MyCallUI = () => {
 				"Busy"
 			);
 
-			const expert = outgoingCall?.state?.members?.find(
-				(member) => member.custom.type === "expert"
-			);
-
-			trackEvent("BookCall_Connected", {
-				Client_ID: currentUser?._id,
-				Creator_ID: expert?.user_id,
+			await axios.post(`${backendBaseUrl}/calls/updateCall`, {
+				callId: outgoingCall?.id,
+				call: {
+					status: "Payment Pending",
+				},
 			});
+
 			if (
 				outgoingCall.state.callingState === CallingState.JOINING ||
 				outgoingCall.state.callingState === CallingState.JOINED
