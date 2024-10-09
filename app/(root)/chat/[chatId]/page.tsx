@@ -4,6 +4,7 @@ import { ChatTimerProvider } from "@/lib/context/ChatTimerContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import ChatInterface from "@/components/chat/ChatInterface";
 import useEndChat from "@/hooks/useEndChat";
+import { backendBaseUrl } from "@/lib/utils";
 
 const Page = () => {
 	const [queryParams, setQueryParams] = useState<{
@@ -23,7 +24,7 @@ const Page = () => {
 	const handleTabClose = () => {
 		if (isTabClosing) {
 			const data = chatId;
-			const url = `http://localhost:5000/api/v1/endChat/endChat`; // Example endpoint
+			const url = `${backendBaseUrl}/endChat/endChat`; // Example endpoint
 			navigator.sendBeacon(url, data as string);
 			// handleEnd(chatId as string, user2, userType!);
 		}
