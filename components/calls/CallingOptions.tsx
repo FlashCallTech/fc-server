@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { audio, chat, video } from "@/constants/icons";
-import { creatorUser, MemberRequest } from "@/types";
+import { creatorUser } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
-import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
+import { useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { logEvent } from "firebase/analytics";
-import { doc, updateDoc, onSnapshot, getDoc, setDoc } from "firebase/firestore";
+import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { analytics, db } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
@@ -22,12 +22,9 @@ import {
 	trackCallEvents,
 	fetchFCMToken,
 	sendNotification,
-	// fetchFCMToken,
-	// sendNotification,
 } from "@/lib/utils";
 import useChat from "@/hooks/useChat";
 import Loader from "../shared/Loader";
-import { ReturnDocument } from "mongodb";
 
 interface CallingOptions {
 	creator: creatorUser;
