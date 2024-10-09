@@ -146,7 +146,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 			</div>
 			<div className="flex items-center justify-evenly w-full">
 				<button
-					className="bg-green-500 text-white p-4 rounded-full hoverScaleEffect"
+					className="bg-green-500 text-white p-4 rounded-full hoverScaleDownEffect"
 					onClick={() => {
 						handleCallState("accepted");
 					}}

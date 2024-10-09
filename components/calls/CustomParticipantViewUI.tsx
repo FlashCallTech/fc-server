@@ -7,12 +7,7 @@ import {
 	useCallStateHooks,
 	useParticipantViewContext,
 } from "@stream-io/video-react-sdk";
-import {
-	LucidePictureInPicture2,
-	Mic,
-	PictureInPicture,
-	Video,
-} from "lucide-react";
+import { Mic, Video } from "lucide-react";
 
 const PoorConnectionNotification = () => {
 	const { participant } = useParticipantViewContext();
@@ -23,7 +18,7 @@ const PoorConnectionNotification = () => {
 		connectionQuality === SfuModels.ConnectionQuality.POOR
 	) {
 		return (
-			<span className="text-center py-5 fixed top-4 left-2 text-white bg-red-600 p-4 rounded-xl z-20">
+			<span className="fixed top-4 left-4 z-20 w-fit rounded-md px-4 py-2 h-10 bg-red-500 text-white flex items-center justify-center">
 				Poor connection quality
 			</span>
 		);
@@ -38,7 +33,6 @@ const CustomParticipantViewUI = () => {
 		document.pictureInPictureElement
 	);
 	const call = useCall();
-	const [isScaled, setIsScaled] = useState(false);
 
 	const { useMicrophoneState, useCameraState } = useCallStateHooks();
 	const { isMute } = useMicrophoneState();
@@ -100,30 +94,10 @@ const CustomParticipantViewUI = () => {
 
 	const handleClick = () => {
 		togglePictureInPicture();
-		setIsScaled((prev) => !prev);
 	};
 
 	return (
 		<>
-			{/* {call?.camera?.state?.status === "enabled" &&
-				expert?.user_id !== participant.userId && (
-					<button
-						disabled={!document.pictureInPictureEnabled}
-						onClick={handleClick}
-						className={`lg:hidden cursor-pointer rounded-xl bg-[#ffffff14] p-2 hover:bg-[${
-							isScaled && "#4c535b"
-						}]  transition-all duration-300 active:scale-75 hover:${
-							isScaled ? "scale-110" : "scale-100"
-						} flex items-center absolute top-0 left-0`}
-					>
-						{pictureInPictureElement === videoElement ? (
-							<LucidePictureInPicture2 />
-						) : (
-							<PictureInPicture />
-						)}
-					</button>
-				)} */}
-
 			<span
 				className={`absolute w-full text-sm text-ellipsis overflow-hidden ${
 					expert?.user_id !== participant.userId
