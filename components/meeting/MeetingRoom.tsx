@@ -63,7 +63,6 @@ const MeetingRoom = () => {
 	const isVideoCall = useMemo(() => call?.type === "default", [call]);
 	const callingState = useCallCallingState();
 	const participants = useParticipants();
-	const { anyModalOpen } = useCallTimerContext();
 	const [layout, setLayout] = useState<CallLayoutType>("grid");
 	const router = useRouter();
 
@@ -163,7 +162,7 @@ const MeetingRoom = () => {
 			return;
 		}
 
-		if ((participants.length > 0 && participants.length < 2) || anyModalOpen) {
+		if (participants.length === 1) {
 			setShowCountdown(true);
 			setCountdown(countdownDuration);
 
@@ -195,7 +194,7 @@ const MeetingRoom = () => {
 			if (timeoutId) clearTimeout(timeoutId);
 			if (countdownInterval) clearInterval(countdownInterval);
 		};
-	}, [participants, anyModalOpen, call]);
+	}, [participants, call]);
 
 	const toggleCamera = async () => {
 		if (call && call.camera) {
@@ -274,12 +273,18 @@ const MeetingRoom = () => {
 			<section className="call-controls fixed bg-dark-1 bottom-0 flex w-full items-center justify-start py-2 px-4 transition-all">
 				<div className="flex overflow-x-scroll no-scrollbar w-fit px-4 items-center mx-auto justify-start gap-4">
 					{/* Audio Button */}
-					<SpeakingWhileMutedNotification>
-						{isMobile ? <AudioToggleButton /> : <ToggleAudioPublishingButton />}
-					</SpeakingWhileMutedNotification>
+					{!showCountdown && (
+						<SpeakingWhileMutedNotification>
+							{isMobile ? (
+								<AudioToggleButton />
+							) : (
+								<ToggleAudioPublishingButton />
+							)}
+						</SpeakingWhileMutedNotification>
+					)}
 
 					{/* Audio Device List */}
-					{isMobile && (
+					{isMobile && !showCountdown && (
 						<AudioDeviceList
 							showAudioDeviceList={showAudioDeviceList}
 							setShowAudioDeviceList={setShowAudioDeviceList}
@@ -288,6 +293,7 @@ const MeetingRoom = () => {
 
 					{/* Video Button */}
 					{isVideoCall &&
+						!showCountdown &&
 						(isMobile ? (
 							<VideoToggleButton />
 						) : (
@@ -299,18 +305,20 @@ const MeetingRoom = () => {
 						<SwitchCameraType toggleCamera={toggleCamera} />
 					)}
 
-					<Tooltip>
-						<TooltipTrigger className="hidden md:block">
-							<section onClick={() => setShowParticipants((prev) => !prev)}>
-								<section className="cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[#4c535b] flex items-center">
-									<Users size={20} className="text-white" />
+					{!showCountdown && (
+						<Tooltip>
+							<TooltipTrigger className="hidden md:block">
+								<section onClick={() => setShowParticipants((prev) => !prev)}>
+									<section className="cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[#4c535b] flex items-center">
+										<Users size={20} className="text-white" />
+									</section>
 								</section>
-							</section>
-						</TooltipTrigger>
-						<TooltipContent className="mb-2 bg-gray-700  border-none">
-							<p className="!text-white">Participants</p>
-						</TooltipContent>
-					</Tooltip>
+							</TooltipTrigger>
+							<TooltipContent className="mb-2 bg-gray-700  border-none">
+								<p className="!text-white">Participants</p>
+							</TooltipContent>
+						</Tooltip>
+					)}
 
 					{/* End Call Button */}
 					<Tooltip>
@@ -322,7 +330,7 @@ const MeetingRoom = () => {
 						</TooltipContent>
 					</Tooltip>
 
-					{isVideoCall && (
+					{isVideoCall && !showCountdown && (
 						<div className="absolute bottom-3 right-4 z-20 w-fit hidden md:flex items-center gap-2">
 							<DeviceSettings />
 						</div>
