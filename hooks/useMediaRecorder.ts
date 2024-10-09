@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import * as Sentry from "@sentry/nextjs";
+import { backendBaseUrl } from "@/lib/utils";
 
 const useMediaRecorder = () => {
 	const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
@@ -20,7 +21,7 @@ const useMediaRecorder = () => {
 		formData.append("file", audioFile);
 
 		try {
-			const response = await fetch("http://localhost:5000/api/v1/audio/convert", {
+			const response = await fetch(`${backendBaseUrl}/audio/convert`, {
 				method: "POST",
 				body: formData,
 			});
