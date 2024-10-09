@@ -184,7 +184,6 @@ const UserProfilePage = () => {
 								initialState={initialState}
 								setEditData={setEditData}
 								userType={userType}
-								firstTime={false}
 							/>
 						</div>
 					)}

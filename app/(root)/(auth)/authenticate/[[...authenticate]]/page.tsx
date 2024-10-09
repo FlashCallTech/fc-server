@@ -85,7 +85,7 @@ export default function AuthenticationPage() {
 
 	return (
 		<main
-			className="size-full h-screen inset-0 bg-[#111111] md:bg-green-1 top-0 flex flex-col justify-between md:justify-center"
+			className="size-full h-screen inset-0 bg-[#111111] sm:bg-green-1 top-0 flex flex-col justify-between md:justify-center"
 			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
 		>
 			<Head>
@@ -116,8 +116,8 @@ export default function AuthenticationPage() {
 									e.currentTarget.src = "/images/defaultProfileImage.png";
 								}}
 							/>
-							<section className="w-[85%] m-auto flex flex-col items-center justify-center gap-2">
-								<h1 className="text-md xm:text-lg md:text-2xl font-medium mt-4">
+							<section className="w-[75%] m-auto flex flex-col items-center justify-center gap-2">
+								<h1 className="text-base sm:text-lg md:text-2xl font-medium mt-4">
 									{item.heading}
 								</h1>
 							</section>

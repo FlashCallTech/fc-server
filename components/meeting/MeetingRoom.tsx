@@ -49,27 +49,22 @@ const useScreenSize = () => {
 };
 
 const MeetingRoom = () => {
-	const [showParticipants, setShowParticipants] = useState(false);
-	const {
-		useCallCallingState,
-		useCallEndedAt,
-		useParticipantCount,
-		useParticipants,
-	} = useCallStateHooks();
-	const hasAlreadyJoined = useRef(false);
-	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
+	const { useCallCallingState, useCallEndedAt, useParticipants } =
+		useCallStateHooks();
 	const { currentUser, userType } = useCurrentUsersContext();
+	const hasAlreadyJoined = useRef(false);
+	const [showParticipants, setShowParticipants] = useState(false);
+	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
+	const [firstCheck, setFirstCheck] = useState(true);
 	const call = useCall();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
 	const { toast } = useToast();
 	const isVideoCall = useMemo(() => call?.type === "default", [call]);
 	const callingState = useCallCallingState();
-	const participantCount = useParticipantCount();
 	const participants = useParticipants();
 	const { anyModalOpen } = useCallTimerContext();
 	const [layout, setLayout] = useState<CallLayoutType>("grid");
-
 	const router = useRouter();
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
@@ -139,7 +134,7 @@ const MeetingRoom = () => {
 		if (call) {
 			joinCall();
 		}
-	}, [call, callingState, currentUser, callHasEnded, participantCount]);
+	}, [call, callingState, currentUser, callHasEnded]);
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -157,19 +152,17 @@ const MeetingRoom = () => {
 
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout;
-		const [firstCheck, setFirstCheck] = useState(true);
-		console.log(participants);
+		console.log(participants, firstCheck);
 		// Skip the first check
-		if (firstCheck) {
-			setFirstCheck(false);
-			return;
-		}
+		// if (firstCheck) {
+		// 	setFirstCheck(false);
+		// 	return;
+		// }
 
-		console.log(participants);
-		if (participants.length > 0 && participants.length < 2) {
-			// handleGracePeriodForCallEnd();
-			call?.on("call.session_participant_left", handleCallRejected);
-		}
+		// console.log(participants, firstCheck);
+		// if (participants.length > 0 && participants.length < 2) {
+		// 	call?.on("call.session_participant_left", handleCallRejected);
+		// }
 
 		if (participants.length < 2 && anyModalOpen) {
 			timeoutId = setTimeout(async () => {
@@ -183,7 +176,7 @@ const MeetingRoom = () => {
 		}
 
 		return () => clearTimeout(timeoutId);
-	}, [participantCount, anyModalOpen, call]);
+	}, [participants, anyModalOpen, call]);
 
 	const toggleCamera = async () => {
 		if (call && call.camera) {

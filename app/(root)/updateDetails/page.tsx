@@ -69,7 +69,6 @@ const UpdateProfilePage = () => {
 					setUserData={handleUpdate}
 					initialState={initialState}
 					userType={userType}
-					firstTime={true}
 				/>
 			</div>
 		</section>
