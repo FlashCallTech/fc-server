@@ -20,13 +20,13 @@ import {
 } from "firebase/messaging";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD7bSGVr3DJL2Yho2X9ATXuST1NgITRNoU",
-  authDomain: "flashcall-e4f30.firebaseapp.com",
-  projectId: "flashcall-e4f30",
-  storageBucket: "flashcall-e4f30.appspot.com",
-  messagingSenderId: "244115322004",
-  appId: "1:244115322004:web:8f2a7bc4c1e6477d1d7081",
-  measurementId: "G-GKP7RQ4YG8"
+	apiKey: "AIzaSyAii_j3Trh7dU5doDvHJjVCCzP69Tqp6Hs",
+	authDomain: "flashcall-1d5e2.firebaseapp.com",
+	projectId: "flashcall-1d5e2",
+	storageBucket: "flashcall-1d5e2.appspot.com",
+	messagingSenderId: "835526009066",
+	appId: "1:835526009066:web:5d7ad8e958e65cc7707793",
+	measurementId: "G-DV1570MFZK"
 };
 
 // const firebaseConfig = {
@@ -72,7 +72,7 @@ export const getFCMToken = async () => {
 				const messaging = getMessaging(app);
 				const fcmToken = await getToken(messaging, {
 					vapidKey:
-						"BDcwFwphQVuj2pWTzGaNuOQ7dSPEojABdZHwn19xKJfg3Uba5-tFJ1ObHfoJam5XPgED2N6eLeend7gSwwTrEuI",
+						"BLFyNBff7-gu9oSHeZMvwRLzBbPX9McEseh9rIknZEkAWy6THjUlm59aj6GZevx8dP4g4sM7BVxQXBoyrqPsapA",
 				});
 
 				if (fcmToken) {

@@ -27,7 +27,6 @@ import {
 } from "@/lib/utils";
 import useChat from "@/hooks/useChat";
 import Loader from "../shared/Loader";
-import { ReturnDocument } from "mongodb";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -261,11 +260,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
+			const description = `${callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-			}`;
+				}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -562,13 +560,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					<button
 						disabled={!service.enabled}
 						key={service.type}
-						className={`callOptionContainer ${
-							(isProcessing ||
+						className={`callOptionContainer ${(isProcessing ||
 								!service.enabled ||
 								onlineStatus === "Busy" ||
 								isClientBusy) &&
 							"!cursor-not-allowed"
-						}`}
+							}`}
 						onClick={service.onClick}
 					>
 						<div className={`flex gap-4 items-center font-bold text-white`}>
@@ -576,13 +573,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							{service.label}
 						</div>
 						<p
-							className={`font-medium tracking-widest rounded-[18px] px-4 h-[36px] text-black flex items-center justify-center ${
-								(isProcessing ||
+							className={`font-medium tracking-widest rounded-[18px] px-4 h-[36px] text-black flex items-center justify-center ${(isProcessing ||
 									!service.enabled ||
 									onlineStatus === "Busy" ||
 									isClientBusy) &&
 								"border border-white/50 text-white"
-							}`}
+								}`}
 							style={{
 								backgroundColor:
 									isProcessing || !service.enabled || onlineStatus === "Busy"
@@ -612,12 +608,17 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							localStorage.removeItem("chatId");
 						}
 					}}
+					modal={true}
 				>
 					<SheetTrigger asChild>
 						<div className="hidden"></div>
 					</SheetTrigger>
 					<SheetContent
 						side="bottom"
+						onInteractOutside={(event) => {
+							// Prevent sheet from closing when clicking outside
+							event.preventDefault();
+						}}
 						className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[200px] max-h-fit w-full sm:max-w-[444px] mx-auto"
 					>
 						<div className="relative flex flex-col items-center gap-7">
