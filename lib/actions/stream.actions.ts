@@ -25,7 +25,7 @@ export const tokenProvider = async (
 		image: photo,
 		phone: phone,
 		role: "admin",
-		devices: fcmToken ? [{ id: fcmToken, push_provider: "Test" }] : [],
+		devices: fcmToken ? [{ id: fcmToken, push_provider: "Flash" }] : [],
 	};
 
 	const users = {
