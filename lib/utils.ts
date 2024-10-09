@@ -196,11 +196,11 @@ export const resetBodyBackgroundColor = () => {
 
 // default profile images based on
 export const placeholderImages = {
-	male: "https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=33e4f14e-2e14-4c8a-a785-60c762c9ce50",
+	male: "https://firebasestorage.googleapis.com/v0/b/flashcall-e4f30.appspot.com/o/M_preview.png?alt=media&token=6e813a32-ccb2-461e-8982-b1524337930a",
 	female:
-		"https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FF_preview.png?alt=media&token=63a66328-04ea-4800-8b5f-4ee8f3c6ea67",
+		"https://firebasestorage.googleapis.com/v0/b/flashcall-e4f30.appspot.com/o/F_preview.png?alt=media&token=47162f25-f5e8-4903-9d87-f2981f5c59aa",
 	other:
-		"https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FOthers_preview.png?alt=media&token=07e9bb20-d4fd-45d4-b997-991715464805",
+		"https://firebasestorage.googleapis.com/v0/b/flashcall-e4f30.appspot.com/o/Others_preview.png?alt=media&token=c6b03739-c4b1-4f76-bd43-cc4cbcf2075b",
 };
 
 export const getProfileImagePlaceholder = (gender?: string): string => {
