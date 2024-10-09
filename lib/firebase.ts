@@ -20,7 +20,7 @@ import {
 } from "firebase/messaging";
 
 const firebaseConfig = {
-	apiKey: "AIzaSyAii_j3Trh7dU5doDvHJjVCCzP69Tqp6Hs",
+	apiKey: process.env.NEXT_PUBLIC_FIREBASE_KEY,
 	authDomain: "flashcall-1d5e2.firebaseapp.com",
 	projectId: "flashcall-1d5e2",
 	storageBucket: "flashcall-1d5e2.appspot.com",

@@ -65,7 +65,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleTabClose = () => {
 		const chatRequestId = localStorage.getItem("chatRequestId");
 		const data = chatRequestId;
-		const url = `http://localhost:5000/api/v1/endChat/rejectChat`; // Example endpoint
+		const url = `${backendBaseUrl}/api/v1/endChat/rejectChat`; // Example endpoint
 		navigator.sendBeacon(url, data);
 	};
 
