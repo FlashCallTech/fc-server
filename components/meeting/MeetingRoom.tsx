@@ -28,6 +28,7 @@ import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
+import { backendBaseUrl } from "@/lib/utils";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -55,7 +56,6 @@ const MeetingRoom = () => {
 	const hasAlreadyJoined = useRef(false);
 	const [showParticipants, setShowParticipants] = useState(false);
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
-	const [firstCheck, setFirstCheck] = useState(true);
 	const call = useCall();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
@@ -67,20 +67,25 @@ const MeetingRoom = () => {
 	const [layout, setLayout] = useState<CallLayoutType>("grid");
 	const router = useRouter();
 
+	const [showCountdown, setShowCountdown] = useState(false);
+	const [countdown, setCountdown] = useState<number | null>(null);
+	const [hasVisited, setHasVisited] = useState(false);
+
+	const countdownDuration = 15;
+
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
+		if (currentUser?._id) {
+			navigator.sendBeacon(
+				`${backendBaseUrl}/user/setCallStatus/${currentUser._id}`
+			);
+		}
 		call?.endCall();
 	});
 
 	const isMobile = useScreenSize();
 
 	const handleCallRejected = async () => {
-		// await call?.endCall().catch((err) => console.warn(err));
-		console.log("Nice ", participants);
-		toast({
-			variant: "destructive",
-			title: "Call Ended",
-			description: "Less than 2 Participants",
-		});
+		await call?.endCall().catch((err) => console.warn(err));
 	};
 
 	useEffect(() => {
@@ -92,9 +97,7 @@ const MeetingRoom = () => {
 	}, [isMobile]);
 
 	useEffect(() => {
-		console.log("3 ... ", callingState);
 		const joinCall = async () => {
-			console.log("4 ... ", callingState);
 			if (
 				!call ||
 				!currentUser ||
@@ -108,7 +111,7 @@ const MeetingRoom = () => {
 			try {
 				const localSessionKey = `meeting_${call.id}_${currentUser._id}`;
 
-				if (localStorage.getItem(localSessionKey)) {
+				if (localStorage.getItem(localSessionKey) && participants.length > 1) {
 					toast({
 						variant: "destructive",
 						title: "Already in Call",
@@ -151,31 +154,47 @@ const MeetingRoom = () => {
 	}, []);
 
 	useEffect(() => {
-		let timeoutId: NodeJS.Timeout;
-		console.log(participants, firstCheck);
-		// Skip the first check
-		// if (firstCheck) {
-		// 	setFirstCheck(false);
-		// 	return;
-		// }
+		let timeoutId: NodeJS.Timeout | null = null;
 
-		// console.log(participants, firstCheck);
-		// if (participants.length > 0 && participants.length < 2) {
-		// 	call?.on("call.session_participant_left", handleCallRejected);
-		// }
+		let countdownInterval: NodeJS.Timeout | null = null;
 
-		if (participants.length < 2 && anyModalOpen) {
-			timeoutId = setTimeout(async () => {
-				toast({
-					variant: "destructive",
-					title: "Call Ended",
-					description: "Less than 2 Participants",
-				});
-				await call?.endCall();
-			}, 60000); // 1 minute
+		if (!hasVisited) {
+			setHasVisited(true);
+			return;
 		}
 
-		return () => clearTimeout(timeoutId);
+		if ((participants.length > 0 && participants.length < 2) || anyModalOpen) {
+			setShowCountdown(true);
+			setCountdown(countdownDuration);
+
+			countdownInterval = setInterval(() => {
+				setCountdown((prevCountdown) => {
+					if (prevCountdown && prevCountdown > 1) {
+						return prevCountdown - 1;
+					} else {
+						return null;
+					}
+				});
+			}, 1000);
+
+			timeoutId = setTimeout(async () => {
+				await call?.endCall();
+			}, countdownDuration * 1000);
+		} else {
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
+			if (countdownInterval) {
+				clearInterval(countdownInterval);
+			}
+			setShowCountdown(false);
+			setCountdown(null);
+		}
+
+		return () => {
+			if (timeoutId) clearTimeout(timeoutId);
+			if (countdownInterval) clearInterval(countdownInterval);
+		};
 	}, [participants, anyModalOpen, call]);
 
 	const toggleCamera = async () => {
@@ -208,20 +227,25 @@ const MeetingRoom = () => {
 
 	if (callingState !== CallingState.JOINED) {
 		return (
-			<section
-				className="w-full h-screen flex items-center justify-center"
-				style={{ height: "calc(var(--vh, 1vh) * 100)" }}
-			>
+			<section className="w-full h-screen flex items-center justify-center">
 				<SinglePostLoader />
 			</section>
 		);
 	}
+
+	// Display countdown notification or modal to the user
+	const CountdownDisplay = () => (
+		<div className="absolute top-4 left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-red-500 text-white flex items-center justify-center">
+			<p>Ending call in {countdown}s</p>
+		</div>
+	);
 
 	return (
 		<section
 			className="relative w-full overflow-hidden pt-4 text-white bg-dark-2"
 			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
 		>
+			{showCountdown && countdown && <CountdownDisplay />}
 			<div className="relative flex size-full items-center justify-center transition-all">
 				<div className="flex size-full max-w-[95%] md:max-w-[1000px] items-center transition-all">
 					{CallLayout}
@@ -234,13 +258,15 @@ const MeetingRoom = () => {
 				)}
 			</div>
 
-			{!callHasEnded && isMeetingOwner ? (
+			{!callHasEnded && isMeetingOwner && !showCountdown ? (
 				<CallTimer
 					handleCallRejected={handleCallRejected}
 					isVideoCall={isVideoCall}
 				/>
 			) : (
-				call && <CreatorCallTimer callId={call.id} />
+				!showCountdown &&
+				call &&
+				participants.length > 1 && <CreatorCallTimer callId={call.id} />
 			)}
 
 			{/* Call Controls */}
@@ -275,11 +301,11 @@ const MeetingRoom = () => {
 
 					<Tooltip>
 						<TooltipTrigger className="hidden md:block">
-							<button onClick={() => setShowParticipants((prev) => !prev)}>
-								<div className="cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[#4c535b] flex items-center">
+							<section onClick={() => setShowParticipants((prev) => !prev)}>
+								<section className="cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[#4c535b] flex items-center">
 									<Users size={20} className="text-white" />
-								</div>
-							</button>
+								</section>
+							</section>
 						</TooltipTrigger>
 						<TooltipContent className="mb-2 bg-gray-700  border-none">
 							<p className="!text-white">Participants</p>

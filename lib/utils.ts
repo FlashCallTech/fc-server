@@ -43,7 +43,9 @@ export const handleInterruptedCall = async (
 	call: Call,
 	currentUserPhone: string,
 	userType: "client" | "expert",
-	backendBaseUrl: string
+	backendBaseUrl: string,
+	expertPhone: string,
+	clientPhone: string
 ) => {
 	if (!callId || !currentUserPhone) {
 		console.error("Invalid callId or user phone");
@@ -60,6 +62,8 @@ export const handleInterruptedCall = async (
 			(member) => member.custom.type === "expert"
 		)?.user_id,
 		clientId: call.state.createdBy?.id,
+		expertPhone,
+		clientPhone,
 	};
 
 	try {
@@ -196,11 +200,11 @@ export const resetBodyBackgroundColor = () => {
 
 // default profile images based on
 export const placeholderImages = {
-	male: "https://firebasestorage.googleapis.com/v0/b/flashcall-e4f30.appspot.com/o/M_preview.png?alt=media&token=6e813a32-ccb2-461e-8982-b1524337930a",
+	male: "https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/M_preview.png?alt=media&token=e27edf60-220b-4151-a523-11b8719a4f8e",
 	female:
 		"https://firebasestorage.googleapis.com/v0/b/flashcall-e4f30.appspot.com/o/F_preview.png?alt=media&token=47162f25-f5e8-4903-9d87-f2981f5c59aa",
 	other:
-		"https://firebasestorage.googleapis.com/v0/b/flashcall-e4f30.appspot.com/o/Others_preview.png?alt=media&token=c6b03739-c4b1-4f76-bd43-cc4cbcf2075b",
+		"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/Others_preview.png?alt=media&token=fa694039-e9fb-47c9-93c9-b702f5c72ab4",
 };
 
 export const getProfileImagePlaceholder = (gender?: string): string => {
