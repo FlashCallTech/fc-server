@@ -21,6 +21,7 @@ import {
 	getDarkHexCode,
 	stopMediaStreams,
 	updateExpertStatus,
+	updateFirestoreSessions,
 } from "@/lib/utils";
 
 const MeetingPage = () => {
@@ -91,68 +92,36 @@ const MeetingRoomWrapper = ({ toast, router, call }: any) => {
 };
 
 const CallEnded = ({ toast, router, call }: any) => {
-	const callEndedAt = call?.state?.endedAt;
-	const callStartsAt = call?.state?.startsAt;
-	const { updateWalletBalance } = useWalletBalanceContext();
 	const [loading, setLoading] = useState(false);
 	const [toastShown, setToastShown] = useState(false);
 	const transactionHandled = useRef(false);
 	const { currentUser, currentTheme } = useCurrentUsersContext();
 
-	const removeActiveCallId = () => {
-		const activeCallId = localStorage.getItem("activeCallId");
-		if (activeCallId) {
-			localStorage.removeItem("activeCallId");
-			console.log("activeCallId removed successfully");
-		} else {
-			console.warn("activeCallId was not found in localStorage");
-		}
-	};
-
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
-	const expert = call?.state?.members?.find(
-		(member: any) => member.custom.type === "expert"
-	);
-	const expertId = expert?.user_id;
-	const clientId = call?.state?.createdBy?.id;
-	const isBrowser = () => typeof window !== "undefined";
 
 	useEffect(() => {
-		const localSessionKey = `meeting_${call.id}_${currentUser?._id}`;
-		localStorage.removeItem(localSessionKey);
-
 		const handleCallEnd = async () => {
 			if (transactionHandled.current) return;
-
 			transactionHandled.current = true;
-			setLoading(true);
-
-			// Show toast notification
-			if (!toastShown) {
-				stopMediaStreams();
-				toast({
-					variant: "destructive",
-					title: "Session Has Ended",
-					description: "Checking for Pending Transactions ...",
-				});
-				setToastShown(true);
-			}
-
-			const localSessionKey = `meeting_${call.id}_${currentUser?._id}`;
-			localStorage.removeItem(localSessionKey);
-
 			try {
+				setLoading(true);
+				await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
+					status: "payment pending",
+				});
 				await updateExpertStatus(
-					call?.state?.createdBy?.custom?.phone as string,
-					"Idle"
+					call.state.createdBy?.custom?.phone as string,
+					"Payment Pending"
 				);
-
-				if (expert) {
-					await updateExpertStatus(expert?.custom?.phone, "Online");
+				// Show toast notification
+				if (!toastShown) {
+					stopMediaStreams();
+					toast({
+						variant: "destructive",
+						title: "Session Has Ended",
+						description: "Checking for Pending Transactions ...",
+					});
+					setToastShown(true);
 				}
-
-				removeActiveCallId();
-				updateWalletBalance();
 
 				router.replace(`/feedback/${call.id}`);
 			} catch (error) {
@@ -170,17 +139,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 			stopMediaStreams();
 			router.push(`/home`);
 		}
-	}, [
-		isMeetingOwner,
-		callEndedAt,
-		callStartsAt,
-		call?.id,
-		toast,
-		router,
-		updateWalletBalance,
-		toastShown,
-		currentUser?.phone,
-	]);
+	}, [call?.id, currentUser?._id]);
 
 	if (loading) {
 		return (

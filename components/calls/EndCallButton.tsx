@@ -19,7 +19,6 @@ const EndCallButton = () => {
 	const [showDialog, setShowDialog] = useState(false);
 	const { setAnyModalOpen } = useCallTimerContext();
 	const { currentUser } = useCurrentUsersContext();
-	const router = useRouter();
 	if (!call) {
 		throw new Error(
 			"useStreamCall must be used within a StreamCall component."
@@ -36,7 +35,7 @@ const EndCallButton = () => {
 		const docSnap = await getDoc(callDocRef);
 
 		await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
-			status: "ended",
+			status: "payment pending",
 		});
 
 		trackEvent("BookCall_Chat_Ended", {
