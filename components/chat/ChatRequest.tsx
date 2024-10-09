@@ -74,7 +74,7 @@ const ChatRequest = ({ chatRequest }: { chatRequest: any }) => {
           </div>
           <p className="text-xs mb-6 text-center">
             Chat from <br />
-            <strong className="text-lg">{maskPhoneNumber(chatRequest.clientName)}</strong>
+            <strong className="text-lg">{chatRequest.clientName}</strong>
           </p>
         </div>
         <div className="flex justify-between p-8">

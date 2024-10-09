@@ -21,6 +21,7 @@ import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "./usePlatform";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { fetchFCMToken, sendNotification } from "@/lib/utils";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
@@ -57,13 +58,13 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 	function maskPhoneNumber(phoneNumber: string) {
 		// Remove the '+91' prefix
-		if(phoneNumber){
+		if (phoneNumber) {
 
 			let cleanedNumber = phoneNumber.replace('+91', '');
-			
+
 			// Mask the next 5 digits, leaving the first 2 digits unmasked
 			let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
-			
+
 			return maskedNumber;
 		}
 	}
@@ -131,13 +132,14 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			const formattedDate = createdAtDate.toISOString().split("T")[0];
 
 			await setDoc(newChatRequestRef, {
+				id: newChatRequestRef.id,
 				creatorId: creator?._id,
-				creatorName: creator.fullName? creator.fullName: maskPhoneNumber(creator.phone),
+				creatorName: creator.fullName ? creator.fullName : maskPhoneNumber(creator.phone),
 				creatorPhone: creator.phone,
 				creatorImg: creator.photo,
 				clientId: clientUser?._id,
 				clientPhone: clientUser?.phone,
-				clientName: clientUser?.username,
+				clientName: clientUser?.fullName ? clientUser.fullName : maskPhoneNumber(clientUser.phone),
 				clientImg: clientUser?.photo,
 				client_first_seen: formattedDate,
 				creator_first_seen: creator.createdAt.toString().split("T")[0],
@@ -148,6 +150,42 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				chatRate: creator.chatRate,
 				createdAt: Date.now(),
 			});
+
+			const docSnap = await getDoc(newChatRequestRef);
+
+			if (docSnap.exists()) {
+				const chatRequestData = docSnap.data();
+				const fcmToken = await fetchFCMToken(creator.phone);
+			if (fcmToken) {
+				sendNotification(
+					fcmToken,
+					`Incoming Call`,
+					`Chat Request from ${clientUser.username}`,
+					{
+						chatRequestData
+					},
+					`https:flashcall.me/`
+				);
+			}
+				console.log("Document data:", chatRequestData);
+			} else {
+				console.log("No such document!");
+			}
+
+			const timer = setTimeout(async () => {
+				// Fetch the current status after 60 seconds
+				const latestDocSnap = await getDoc(chatRequestDoc);
+	
+				if (latestDocSnap.exists()) {
+					const data = latestDocSnap.data();
+					if (data?.status === "pending") {
+						// If the status is still "pending", update it to "ended"
+						await setDoc(chatRequestDoc, { status: "ended" }, { merge: true });
+						console.log("Chat request status updated to 'ended' due to timeout");
+					}
+				}
+			}, 30000);  // 60 seconds
+	
 
 			// Save chatRequest document ID in local storage
 			localStorage.setItem("chatRequestId", newChatRequestRef.id);
@@ -170,6 +208,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
 				const data = doc.data();
 				if (data && data.status === "accepted") {
+					clearTimeout(timer);
 					unsubscribe();
 					localStorage.setItem(
 						"user2",
@@ -225,10 +264,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					creatorImg: chatRequest.creatorImg,
 					status: "active",
 					messages: [],
-					maxChatDuration,
 					timerSet: false,
 					chatRate: chatRequest.rate,
-					walletBalance: response.walletBalance,
 				});
 
 				const creatorChatUpdate = updateDoc(
@@ -282,7 +319,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					User_First_Seen: chatRequest.client_first_seen,
 					chatId: chatRequest.chatId,
 					requestId: chatRequest.id,
-					fullName: response.firstName? response.firstName + " " + response.lastname: undefined,
+					fullName: response.firstName ? response.firstName + " " + response.lastname : undefined,
 					phone: response.phone,
 					photo: response.photo,
 				})

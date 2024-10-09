@@ -60,6 +60,15 @@ const ChatList = () => {
 		router.push(`/chatDetails?creatorId=${chat.creator}`); // Redirect to chat details page
 	};
 
+	const findOpposite = (members: any) => {
+		if(
+			members[0].role === "admin"
+		) {
+			return 1;
+		}
+		return 0;
+	}
+
 	if (loading) {
 		return (
 			<section className="w-full h-full flex items-center justify-center">
@@ -68,13 +77,15 @@ const ChatList = () => {
 		);
 	}
 
+	console.log(chats);
+
 	return (
 		<>
 			{chats && chats.length > 0 ? (
 				<section
 					className={`grid grid-cols-1 ${
 						chats.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
-					} items-center gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-hidden`}
+					} flex items-center gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-hidden`}
 				>
 					{visibleChats.map((chat, index) => {
 						const formattedDate = formatDateTime(chat.startedAt as Date);
@@ -98,20 +109,20 @@ const ChatList = () => {
 										<Image
 											src={
 												isValidUrl(chat.members[0].custom.image)
-													? chat.members[0].custom.image
+													? chat.members[findOpposite(chat.members)].custom.image
 													: "/images/defaultProfileImage.png"
 											}
 											alt="Expert"
 											height={1000}
 											width={1000}
-											className="rounded-full w-12 h-12 object-cover"
+											className="rounded-full min-w-12 h-12 object-cover"
 										/>
 										{/* creator details */}
 										<div className="flex flex-col">
 											<p className="text-base tracking-wide">
-												{chat.members[0].custom.name}
+												{chat.members[findOpposite(chat.members)].custom.name}
 											</p>
-											<span className="text-sm text-green-1">Astrologer</span>
+											<span className="text-xs text-gray-400">Astrologer</span>
 										</div>
 									</Link>
 								</div>
@@ -130,6 +141,9 @@ const ChatList = () => {
 											Visit Again
 										</Link>
 									)}
+								</div>
+								<div>
+									
 								</div>
 							</div>
 						);

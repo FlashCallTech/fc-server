@@ -247,6 +247,7 @@ export interface UpdateChatParams {
 }
 
 export interface ChatDetails {
+	price: number;
 	status: string;
 	startedAt: Date;
 	endedAt?: Date;
@@ -262,6 +263,7 @@ export interface SelectedChat {
 	startedAt?: Date;
 	endedAt?: Date;
 	duration?: number;
+	price?: number;
 }
 
 export type UpdateCallParams = {
