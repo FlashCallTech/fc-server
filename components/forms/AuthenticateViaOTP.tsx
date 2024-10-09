@@ -70,6 +70,24 @@ const AuthenticateViaOTP = ({
 
 	const pathname = usePathname();
 
+	const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 584);
+
+	// Handle resizing to adjust height for mobile viewports
+	useEffect(() => {
+		const handleResize = () => {
+			setIsMobileView(window.innerWidth <= 584);
+			const height = window.innerHeight;
+			document.documentElement.style.setProperty("--vh", `${height * 0.01}px`);
+		};
+
+		window.addEventListener("resize", handleResize);
+		handleResize(); // Call once on mount
+
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
+
 	// SignUp form
 	const signUpForm = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -296,15 +314,18 @@ const AuthenticateViaOTP = ({
 				// SignUp form
 				<>
 					<div className="flex flex-col items-center justify-enter gap-2 text-center">
-						{!pathname.includes("/authenticate") && (
-							<Image
-								src="/icons/logo_new_light.png"
-								width={1000}
-								height={1000}
-								alt="flashcall logo"
-								className="flex items-center justify-center w-40 h-16 -ml-2"
-							/>
-						)}
+						<Image
+							src="/icons/logo_new_light.png"
+							width={1000}
+							height={1000}
+							alt="flashcall logo"
+							className={`${
+								pathname.includes("/authenticate") && isMobileView
+									? "hidden"
+									: "flex items-center justify-center w-40 h-16 -ml-2"
+							} `}
+						/>
+
 						<h2 className="text-black text-lg font-semibold">
 							Login or Signup
 						</h2>
