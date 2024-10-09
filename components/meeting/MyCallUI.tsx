@@ -7,7 +7,7 @@ import { useToast } from "../ui/use-toast";
 import { logEvent } from "firebase/analytics";
 import { analytics, db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import {
 	backendBaseUrl,
 	handleInterruptedCall,
@@ -24,99 +24,80 @@ const MyCallUI = () => {
 	const pathname = usePathname();
 	const { currentUser, userType, refreshCurrentUser } =
 		useCurrentUsersContext();
-
 	const { toast } = useToast();
-
-	// Call ID state to use in hook
 	const [callId, setCallId] = useState<string | null>("");
-
-	// Use the custom hook at the top level with the callId
 	const { call, isCallLoading } = useGetCallById(callId || "");
-
 	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
-	const [hasRedirected, setHasRedirected] = useState(false);
 	const [showCallUI, setShowCallUI] = useState(false);
 
-	// Add a separate effect to monitor call loading
-	useEffect(() => {
-		const handleInterruptedCallOnceLoaded = async () => {
-			if (isCallLoading) return;
+	// Function to handle the interrupted call logic
+	const handleInterruptedCallOnceLoaded = async (updatedCall: Call | null) => {
+		console.log("1. Nice", isCallLoading);
+		if (isCallLoading) return;
+		console.log("2. Nice", updatedCall);
+		if (!updatedCall) return;
+		console.log("3. Nice");
 
-			if (!call || hasRedirected) return;
-
-			try {
-				setHasRedirected(true);
-				await handleInterruptedCall(
-					currentUser?._id as string,
-					call.id,
-					call as Call,
-					currentUser?.phone as string,
-					userType as "client" | "expert",
-					backendBaseUrl as string
-				);
-				refreshCurrentUser();
-			} catch (error) {
-				console.error("Error handling interrupted call:", error);
-			}
-		};
-
-		if (callId && !isCallLoading) {
-			handleInterruptedCallOnceLoaded();
+		try {
+			const expertPhone = updatedCall.state?.members?.find(
+				(member) => member.custom.type === "expert"
+			)?.custom?.phone;
+			await handleInterruptedCall(
+				currentUser?._id as string,
+				updatedCall.id,
+				updatedCall as Call,
+				currentUser?.phone as string,
+				userType as "client" | "expert",
+				backendBaseUrl as string,
+				expertPhone,
+				currentUser?.phone as string
+			);
+			console.log("4. Nice - Done");
+			refreshCurrentUser();
+		} catch (error) {
+			console.error("Error handling interrupted call:", error);
 		}
-	}, [callId, isCallLoading, call, hasRedirected, currentUser?._id, userType]);
+	};
 
+	// Firestore session listener
 	useEffect(() => {
-		const checkFirestoreSession = async (userId: string) => {
-			try {
-				const clientStatusDocRef = doc(
-					db,
-					"userStatus",
-					currentUser?.phone as string
-				);
-
-				const unsubscribeClientStatus = onSnapshot(
-					clientStatusDocRef,
-					async (clientStatusDoc: any) => {
-						const clientStatusData = clientStatusDoc.data();
-
-						if (clientStatusData && clientStatusData.status === "Busy") {
-							setHasRedirected(true);
-							return;
-						}
-
-						const sessionDocRef = doc(db, "sessions", userId);
-						const sessionDoc = await getDoc(sessionDocRef);
-
-						if (sessionDoc.exists()) {
-							const { ongoingCall } = sessionDoc.data();
-							if (
-								ongoingCall &&
-								ongoingCall.status !== "ended" &&
-								!hide &&
-								!hasRedirected
-							) {
-								setCallId(ongoingCall.id);
-							}
-						}
-
-						// Check for stored call in localStorage
-						const storedCallId = localStorage.getItem("activeCallId");
-						if (storedCallId && !hide && !hasRedirected) {
-							setCallId(storedCallId);
-						}
+		const checkFirestoreSession = (userId: string) => {
+			const sessionDocRef = doc(db, "sessions", userId);
+			const unsubscribe = onSnapshot(sessionDocRef, (sessionDoc) => {
+				if (sessionDoc.exists()) {
+					const { ongoingCall } = sessionDoc.data();
+					console.log("1. Hello, ongoingCall");
+					if (
+						ongoingCall &&
+						ongoingCall.status === "payment pending" &&
+						!hide
+					) {
+						setCallId(ongoingCall.callId);
 					}
-				);
+				}
+				// Check for stored call in localStorage
+				const storedCallId = localStorage.getItem("activeCallId");
+				if (storedCallId && !hide) {
+					setCallId(storedCallId);
+				}
+			});
 
-				return () => unsubscribeClientStatus();
-			} catch (error) {
-				console.error("Error checking Firestore session: ", error);
-			}
+			return unsubscribe;
 		};
 
-		if (!hide && !hasRedirected && currentUser?._id) {
-			checkFirestoreSession(currentUser._id);
+		if (currentUser?._id && !hide) {
+			const unsubscribe = checkFirestoreSession(currentUser._id);
+			return () => {
+				unsubscribe(); // Cleanup listener on unmount
+			};
 		}
-	}, [hide, hasRedirected, currentUser?._id]);
+	}, [hide, currentUser?._id]);
+
+	useEffect(() => {
+		if (callId && !isCallLoading && call && !hide) {
+			handleInterruptedCallOnceLoaded(call);
+		}
+	}, [callId, isCallLoading, call, currentUser?._id, userType]);
 
 	// Filter incoming and outgoing calls once
 	const incomingCalls = calls.filter(
@@ -144,10 +125,6 @@ const MyCallUI = () => {
 				await updateExpertStatus(expertPhone, "Online");
 			}
 
-			await updateExpertStatus(
-				incomingCall.state.createdBy?.custom?.phone as string,
-				"Payment Pending"
-			);
 			setShowCallUI(false);
 		};
 
@@ -190,6 +167,10 @@ const MyCallUI = () => {
 				"Busy"
 			);
 
+			await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
+				status: "ongoing",
+			});
+
 			await axios.post(`${backendBaseUrl}/calls/updateCall`, {
 				callId: outgoingCall?.id,
 				call: {
@@ -204,7 +185,6 @@ const MyCallUI = () => {
 				console.log("1 ... ", outgoingCall.state.callingState);
 				console.log("hello leaving the call");
 				await outgoingCall.leave();
-				console.log("2 ... ", outgoingCall.state.callingState);
 			}
 
 			router.replace(`/meeting/${outgoingCall.id}`);
