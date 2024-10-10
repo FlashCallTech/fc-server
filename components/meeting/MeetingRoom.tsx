@@ -237,6 +237,16 @@ const MeetingRoom = () => {
 
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 
+	const NoParticipantsView = () => (
+		<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+			<p className="text-white text-xl">No other participants in the call</p>
+			{/* You can add visual effects or animations here */}
+			<div className="mt-4">
+				<div className="h-16 w-16 border-4 border-dashed rounded-full animate-spin border-white"></div>
+			</div>
+		</div>
+	);
+
 	if (callingState !== CallingState.JOINED) {
 		return (
 			<section className="w-full h-screen flex items-center justify-center ">
@@ -260,7 +270,7 @@ const MeetingRoom = () => {
 			{showCountdown && countdown && <CountdownDisplay />}
 			<div className="relative flex size-full items-center justify-center transition-all">
 				<div className="flex size-full max-w-[95%] md:max-w-[1000px] items-center transition-all">
-					{CallLayout}
+					{participants.length > 1 ? CallLayout : <NoParticipantsView />}
 				</div>
 
 				{showParticipants && (
