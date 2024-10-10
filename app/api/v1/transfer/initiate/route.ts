@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         );
         const kycResult = await kycResponse.json();
 
-        if (kycResult.success) {
+        if (kycResult.data.kyc_status === 'COMPLETED') {
           const getBeneficiary = await fetch(`https://flashcall.me/api/v1/beneficiary/getBeneficiary?userId=${userId}`, {
             method: 'GET',
             headers: {
