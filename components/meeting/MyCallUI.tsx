@@ -32,11 +32,8 @@ const MyCallUI = () => {
 
 	// Function to handle the interrupted call logic
 	const handleInterruptedCallOnceLoaded = async (updatedCall: Call | null) => {
-		console.log("1. Nice", isCallLoading);
 		if (isCallLoading) return;
-		console.log("2. Nice", updatedCall);
 		if (!updatedCall) return;
-		console.log("3. Nice");
 
 		try {
 			const expertPhone = updatedCall.state?.members?.find(
@@ -52,7 +49,6 @@ const MyCallUI = () => {
 				expertPhone,
 				currentUser?.phone as string
 			);
-			console.log("4. Nice - Done");
 			refreshCurrentUser();
 		} catch (error) {
 			console.error("Error handling interrupted call:", error);
@@ -66,7 +62,7 @@ const MyCallUI = () => {
 			const unsubscribe = onSnapshot(sessionDocRef, (sessionDoc) => {
 				if (sessionDoc.exists()) {
 					const { ongoingCall } = sessionDoc.data();
-					console.log("1. Hello, ongoingCall");
+
 					if (
 						ongoingCall &&
 						ongoingCall.status === "payment pending" &&
@@ -182,8 +178,7 @@ const MyCallUI = () => {
 				outgoingCall.state.callingState === CallingState.JOINING ||
 				outgoingCall.state.callingState === CallingState.JOINED
 			) {
-				console.log("1 ... ", outgoingCall.state.callingState);
-				console.log("hello leaving the call");
+				console.log("leaving the call");
 				await outgoingCall.leave();
 			}
 
