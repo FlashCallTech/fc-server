@@ -64,7 +64,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleTabClose = () => {
 		const chatRequestId = localStorage.getItem("chatRequestId");
 		const data = chatRequestId;
-		const url = `http://localhost:5000/api/v1/endChat/rejectChat`; // Example endpoint
+		const url = `${backendBaseUrl}endChat/rejectChat`; // Example endpoint
 		navigator.sendBeacon(url, data);
 	};
 
@@ -615,6 +615,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						</SheetTrigger>
 						<SheetContent
 							side="bottom"
+							onInteractOutside={(event) => {
+								// Prevent sheet from closing when clicking outside
+								event.preventDefault();
+							}}
 							className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[200px] max-h-fit w-full sm:max-w-[444px] mx-auto"
 						>
 							<div className="relative flex flex-col items-center gap-7">
