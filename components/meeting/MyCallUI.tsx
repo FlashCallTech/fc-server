@@ -131,6 +131,12 @@ const MyCallUI = () => {
 				description: "The call was rejected",
 			});
 			setShowCallUI(false);
+			await axios.post(`${backendBaseUrl}/calls/updateCall`, {
+				callId: incomingCall?.id,
+				call: {
+					status: "Rejected",
+				},
+			});
 			await updateFirestoreSessions(
 				incomingCall?.state?.createdBy?.id as string,
 				{
@@ -192,6 +198,12 @@ const MyCallUI = () => {
 				description: "The call was rejected",
 			});
 			setShowCallUI(false);
+			await axios.post(`${backendBaseUrl}/calls/updateCall`, {
+				callId: outgoingCall?.id,
+				call: {
+					status: "Rejected",
+				},
+			});
 			await updateFirestoreSessions(
 				outgoingCall?.state?.createdBy?.id as string,
 				{
