@@ -96,7 +96,6 @@ const CallEnded = ({ toast, router, call }: any) => {
 	const [toastShown, setToastShown] = useState(false);
 	const transactionHandled = useRef(false);
 	const { currentUser, currentTheme } = useCurrentUsersContext();
-
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 
 	useEffect(() => {

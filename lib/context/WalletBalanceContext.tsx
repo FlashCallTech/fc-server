@@ -72,7 +72,7 @@ export const WalletBalanceProvider = ({
 
 	useEffect(() => {
 		fetchAndSetWalletBalance();
-	}, [userType, authenticationSheetOpen, isCreator]);
+	}, [userType, authenticationSheetOpen, isCreator, currentUser?._id]);
 
 	useEffect(() => {
 		if (currentUser) {
