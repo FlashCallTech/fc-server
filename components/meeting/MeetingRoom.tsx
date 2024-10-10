@@ -166,6 +166,9 @@ const MeetingRoom = () => {
 			setShowCountdown(true);
 			setCountdown(countdownDuration);
 
+			if (isVideoCall) call?.camera?.disable();
+			call?.microphone?.disable();
+
 			countdownInterval = setInterval(() => {
 				setCountdown((prevCountdown) => {
 					if (prevCountdown && prevCountdown > 1) {
