@@ -131,6 +131,7 @@ html {
 
 .str-video__participant-view {
 	min-height: 172px !important;
+	aspect-ratio: 16 / 9 !important;
 }
 
 .str-video__speaker-layout
