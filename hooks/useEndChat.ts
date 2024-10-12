@@ -144,6 +144,8 @@ const useEndChat = () => {
 			});
 
 			localStorage.removeItem("chatRequestId");
+			localStorage.removeItem("chatId");
+			localStorage.removeItem("user2");
 
 			trackEvent("BookCall_Chat_Ended", {
 				Client_ID: user2?.clientId,

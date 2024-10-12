@@ -64,7 +64,6 @@ export const ChatTimerProvider = ({
 	const { walletBalance } = useWalletBalanceContext();
 	const { clientUser, userType } = useCurrentUsersContext();
 	const { toast } = useToast();
-	const router = useRouter();
 	const lowBalanceThreshold = 300; // Threshold in seconds
 
 	const pauseTimer = () => setIsTimerRunning(false);
@@ -84,6 +83,7 @@ export const ChatTimerProvider = ({
 			return; // Exit early if not the meeting owner or callId is undefined
 		}
 		if (userType === "client") {
+			console.log("Client wallet balance: ", walletBalance);
 			const ratePerMinute = chatRatePerMinute;
 			let maxChatDuration = (walletBalance / ratePerMinute) * 60; // in seconds
 			maxChatDuration = maxChatDuration > 3600 ? 3600 : maxChatDuration; // Limit to 60 minutes (3600 seconds)
@@ -93,6 +93,7 @@ export const ChatTimerProvider = ({
 			}
 
 			const chatStartedTime = new Date(startedAt);
+			console.log("StartedAt received from creator: ", chatStartedTime);
 
 			const updateFirestoreTimer = async (
 				timeLeft: number,
@@ -120,8 +121,10 @@ export const ChatTimerProvider = ({
 			const intervalId = setInterval(() => {
 				if (isTimerRunning) {
 					const now = new Date();
+					console.log("Current time: ", now);
 					const timeUtilized =
 						(now.getTime() - chatStartedTime.getTime()) / 1000; // Time in seconds
+					console.log("TimeUtilized: ", timeUtilized);
 					const newTimeLeft = maxChatDuration - timeUtilized;
 					const clampedTimeLeft = newTimeLeft > 0 ? newTimeLeft : 0;
 
@@ -165,6 +168,7 @@ export const ChatTimerProvider = ({
 		lowBalanceThreshold,
 		toast,
 		startedAt,
+		walletBalance,
 	]);
 
 	return (
