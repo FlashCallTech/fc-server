@@ -22,6 +22,7 @@ import {
 	trackCallEvents,
 	fetchFCMToken,
 	sendNotification,
+	updateExpertStatus,
 } from "@/lib/utils";
 import useChat from "@/hooks/useChat";
 import Loader from "../shared/Loader";
@@ -62,6 +63,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	});
 
 	const handleTabClose = () => {
+		console.log("Tab Closed");
 		const chatRequestId = localStorage.getItem("chatRequestId");
 		const data = chatRequestId;
 		const url = `${backendBaseUrl}endChat/rejectChat`; // Example endpoint
@@ -160,12 +162,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	}, [creator._id, isAuthSheetOpen]);
 
 	useEffect(() => {
-		if (!chatReqSent) return;
+		if (!chatReqSent) {
+			console.log("Chat request not sent");
+			return;
+		} 
 
 		const intervalId = setInterval(() => {
 			const chatRequestId = localStorage.getItem("chatRequestId");
 
-			if (chatRequestId) {
+			if (chatRequestId && chatReqSent) {
 				clearInterval(intervalId); // Clear the interval once the ID is found
 
 				const chatRequestDoc = doc(db, "chatRequests", chatRequestId);
@@ -173,12 +178,17 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
 					const data = docSnapshot.data();
 					if (data) {
+						console.log(data);
 						if (data.status === "ended" || data.status === "rejected") {
+							console.log(data.status);
 							setSheetOpen(false);
+							console.log("Chat Request Ended or Rejected");
 							setChatReqSent(false);
 							setChatState(data.status);
-							// localStorage.removeItem("chatRequestId");
 							localStorage.removeItem("user2");
+							localStorage.removeItem("chatRequestId");
+							localStorage.removeItem('chatId');
+							// updateExpertStatus(creator.phone as string, "Online");
 							unsubscribe();
 						} else if (
 							data.status === "accepted" &&
@@ -190,12 +200,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 								clientId: clientUser?._id,
 								creatorId: data.creatorId,
 							});
-							setChatReqSent(false);
+							console.log('Chat Accepted')
+							updateExpertStatus(data.creatorPhone as string, "Busy");
 							setTimeout(() => {
-								router.push(
+								router.replace(
 									`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`
 								);
 							}, 2000);
+							setChatReqSent(false);
 						} else {
 							setChatState(data.status);
 						}
@@ -206,6 +218,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		return () => clearInterval(intervalId);
 	}, [clientUser?._id, router, chatReqSent]);
+
+	console.log(chatReqSent);
 
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
@@ -403,6 +417,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChatClick = async () => {
+		console.log("Chat now clicked")
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",
@@ -413,6 +428,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			return;
 		}
 		if (clientUser) {
+			console.log(clientUser);
+			// updateExpertStatus(creator.phone as string, "Busy");
 			trackEvent("BookCall_Chat_Clicked", {
 				utm_source: "google",
 				creator_id: creator._id,
@@ -599,7 +616,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							try {
 								const chatRequestId = localStorage.getItem("chatRequestId");
 								await updateDoc(doc(chatRequestsRef, chatRequestId as string), {
-									status: "payment pending",
+									status: "ended",
 								});
 							} catch (error) {
 								Sentry.captureException(error);

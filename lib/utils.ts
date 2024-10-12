@@ -481,7 +481,6 @@ export const stopMediaStreams = () => {
 export const fetchFCMToken = async (phone: string) => {
 	const fcmTokenRef = doc(db, "FCMtoken", phone);
 	const fcmTokenDoc = await getDoc(fcmTokenRef);
-	console.log("Doc ", fcmTokenDoc);
 	return fcmTokenDoc.exists() ? fcmTokenDoc.data().token : null;
 };
 
