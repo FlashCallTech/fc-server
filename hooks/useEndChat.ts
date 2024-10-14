@@ -109,6 +109,9 @@ const useEndChat = () => {
 			// updateExpertStatus(creatorPhone, "Online");
 			if (userType === "creator") router.replace(`/home`);
 			else {
+				localStorage.removeItem("chatRequestId");
+				localStorage.removeItem("chatId");
+				localStorage.removeItem("user2");
 				router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
 			}
 		}
