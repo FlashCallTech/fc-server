@@ -185,17 +185,21 @@ const EditProfile = ({
 
 		try {
 			const formData = new FormData();
+			const firstName = getUpdatedValue(
+				values.firstName,
+				initialState.firstName,
+				userData.firstName
+			);
+
+			const lastName = getUpdatedValue(
+				values.lastName,
+				initialState.lastName,
+				userData.lastName
+			);
 			const commonValues = {
-				firstName: getUpdatedValue(
-					values.firstName,
-					initialState.firstName,
-					userData.firstName
-				),
-				lastName: getUpdatedValue(
-					values.lastName,
-					initialState.lastName,
-					userData.lastName
-				),
+				fullName: `${firstName} ${lastName}`,
+				firstName: firstName,
+				lastName: lastName,
 				username: getUpdatedValue(
 					values.username,
 					initialState.username,
@@ -297,18 +301,12 @@ const EditProfile = ({
 		return (
 			<section
 				className={`w-full ${
-					pathname.includes("/updateDetails") ? "w-screen" : "w-full"
+					pathname.includes("/updateDetails") ? "h-screen" : "h-full"
 				} flex items-center justify-center`}
 			>
 				<SinglePostLoader />
 			</section>
 		);
-
-	console.log(
-		Object.keys(watchedValues).some((key) => {
-			return watchedValues[key] !== initialState[key];
-		})
-	);
 
 	return (
 		<Form {...form}>
@@ -318,6 +316,7 @@ const EditProfile = ({
 				onSubmit={form.handleSubmit(onSubmit)}
 				className="space-y-8 w-full flex flex-col items-center"
 			>
+				{/* User Profile Image */}
 				<FormField
 					control={form.control}
 					name="photo"
