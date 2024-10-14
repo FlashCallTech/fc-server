@@ -41,6 +41,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const creatorURL = pathname || localStorage.getItem("creatorURL");
 
 	const fullName =
+		creator?.fullName?.trim() ||
 		`${creator?.firstName || ""} ${creator?.lastName || ""}`.trim() ||
 		creator.username.startsWith("+91")
 			? creator.username.replace(

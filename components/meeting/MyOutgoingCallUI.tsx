@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import * as Sentry from "@sentry/nextjs";
+import { useToast } from "../ui/use-toast";
 
 const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 	const [callState, setCallState] = useState("outgoing");
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"
 	);
+	const { toast } = useToast();
 
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
@@ -65,7 +67,17 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 			<div className="flex items-center justify-center w-full">
 				<button
 					className="bg-red-500 text-white p-4 rounded-full hoverScaleDownEffect"
-					onClick={async () => await call.leave({ reject: true })}
+					onClick={async () => {
+						await call.leave({ reject: true });
+
+						toast({
+							variant: "destructive",
+							title: `${"Call Declined"}`,
+							description: `${"Redirecting Back ..."}`,
+						});
+
+						return;
+					}}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
