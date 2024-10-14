@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { query, where, onSnapshot, QuerySnapshot } from "firebase/firestore";
+import { doc, query, where, onSnapshot, QuerySnapshot } from "firebase/firestore";
 import useChatRequest from "@/hooks/useChatRequest";
 import { useCurrentUsersContext } from "./CurrentUsersContext";
 import { creatorUser } from "@/types";
@@ -27,6 +27,8 @@ export const ChatRequestProvider = ({
 	const [currentCreator, setCurrentCreator] = useState<creatorUser>();
 	const [currentCreatorId, setCurrentCreatorId] = useState<string>();
 	const { creatorUser, currentUser } = useCurrentUsersContext();
+	let collectionUnsubscribe: (() => void) | undefined;
+	let docUnsubscribe: (() => void) | undefined;
 
 	// Load the current creator from localStorage
 	useEffect(() => {
@@ -44,9 +46,9 @@ export const ChatRequestProvider = ({
 		}
 	}, []);
 
-	// Listen for chat requests
+	// Collection-level listener to find a pending chat request
 	useEffect(() => {
-		if (!currentCreator && !creatorUser) return; // Only subscribe if currentCreator is available
+		if ((!currentCreator && !creatorUser) || chatRequest) return;
 
 		const q = query(
 			chatRequestsRef,
@@ -54,7 +56,7 @@ export const ChatRequestProvider = ({
 			where("status", "==", "pending")
 		);
 
-		const unsubscribe = onSnapshot(
+		collectionUnsubscribe = onSnapshot(
 			q,
 			(snapshot: QuerySnapshot) => {
 				const chatRequests = snapshot.docs.map((doc) => ({
@@ -63,21 +65,33 @@ export const ChatRequestProvider = ({
 				}));
 				if (chatRequests.length > 0) {
 					setChatRequest(chatRequests[0]);
-					// trackEvent('Creator_Chat_Initiated', {
-					// 	Creator_ID: chatRequests[0].creatorId,
-					// })
+					if (collectionUnsubscribe) collectionUnsubscribe(); // Stop the collection listener
+
+					// Start listening to changes in this specific document
+					const chatRequestDoc = doc(chatRequestsRef, chatRequests[0].id);
+					docUnsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
+						if (docSnapshot.exists()) {
+							const updatedRequest: any = { id: docSnapshot.id, ...docSnapshot.data() };
+							// setChatRequest(updatedRequest);
+
+							// Stop the listener if the status is now "accepted"
+							if (updatedRequest.status !== "pending" && docUnsubscribe) {
+								docUnsubscribe();
+								setChatRequest(null); // Clear the state
+							}
+						}
+					});
 				} else {
 					setChatRequest(null); // Clear chatRequest if no data
 				}
 			},
 			(error) => {
 				console.error("Snapshot listener error: ", error);
-				// Optionally, handle error cases
 			}
 		);
 
-		return () => unsubscribe(); // Cleanup subscription on component unmount or when dependencies change
-	}, []); // Dependencies
+		return () => collectionUnsubscribe && collectionUnsubscribe(); // Cleanup collection listener
+	}, [currentCreator, creatorUser, chatRequest]);
 
 	return (
 		<ChatRequestContext.Provider value={{ chatRequest, setChatRequest }}>

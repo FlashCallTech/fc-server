@@ -16,6 +16,8 @@ import { analytics } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { trackEvent } from "@/lib/mixpanel";
 import { creatorUser } from "@/types";
+import axios from "axios";
+import { backendBaseUrl } from "@/lib/utils";
 
 const ChatFeedback = ({
 	chatId,
@@ -98,6 +100,7 @@ const ChatFeedback = ({
 	const handleSubmitFeedback = async () => {
 		if (!currentUser || !chat) return;
 		try {
+			console.log("Inside try block");
 			trackEvent("Feedback_bottomsheet_submitted", {
 				Client_ID: clientUser?._id,
 				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
@@ -108,8 +111,8 @@ const ChatFeedback = ({
 			});
 
 			const userId = currentUser?._id as string;
-
-			await createFeedback({
+			
+			await axios.post(`${backendBaseUrl}/feedback/call/create`, {
 				creatorId: chat.creatorId as string,
 				clientId: userId,
 				rating: rating,

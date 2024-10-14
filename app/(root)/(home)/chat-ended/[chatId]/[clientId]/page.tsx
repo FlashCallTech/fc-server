@@ -9,7 +9,7 @@ import * as Sentry from "@sentry/nextjs";
 import ChatFeedback from "@/components/feedbacks/ChatFeedback";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
-const CallFeedbackPage = () => {
+const ChatFeedbackPage = () => {
 	const router = useRouter();
 	const { toast } = useToast();
 	const [loadingFeedback, setLoadingFeedback] = useState(false);
@@ -66,4 +66,4 @@ const CallFeedbackPage = () => {
 	);
 };
 
-export default CallFeedbackPage;
+export default ChatFeedbackPage;
