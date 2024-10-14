@@ -56,11 +56,19 @@ export async function generateMetadata({
 	const imageURL = creatorProfile
 		? imageSrc(creatorProfile)
 		: getProfileImagePlaceholder();
-	const fullName = creatorProfile
-		? `${creatorProfile.firstName || ""} ${
-				creatorProfile.lastName || ""
-		  }`.trim()
-		: formattedUsername;
+
+	const fullName =
+		creatorProfile?.fullName?.trim() ||
+		`${creatorProfile?.firstName || ""} ${
+			creatorProfile?.lastName || ""
+		}`.trim() ||
+		creatorProfile.username.startsWith("+91")
+			? creatorProfile.username.replace(
+					/(\+91)(\d+)/,
+					(match: any, p1: any, p2: any) =>
+						`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+			  )
+			: creatorProfile.username;
 
 	try {
 		return {

@@ -22,8 +22,7 @@ const MyCallUI = () => {
 	const router = useRouter();
 	const calls = useCalls();
 	const pathname = usePathname();
-	const { currentUser, userType, refreshCurrentUser } =
-		useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 	const { toast } = useToast();
 	const [callId, setCallId] = useState<string | null>("");
 	const { call, isCallLoading } = useGetCallById(callId || "");
@@ -49,7 +48,6 @@ const MyCallUI = () => {
 				expertPhone,
 				currentUser?.phone as string
 			);
-			refreshCurrentUser();
 		} catch (error) {
 			console.error("Error handling interrupted call:", error);
 		}
@@ -163,7 +161,11 @@ const MyCallUI = () => {
 		const handleCallAccepted = async () => {
 			setShowCallUI(false);
 			logEvent(analytics, "call_accepted", { callId: outgoingCall.id });
-
+			toast({
+				variant: "destructive",
+				title: `${"Call Accepted"}`,
+				description: `${"Redirecting ..."}`,
+			});
 			await updateExpertStatus(
 				outgoingCall.state.createdBy?.custom?.phone as string,
 				"Busy"
@@ -184,11 +186,18 @@ const MyCallUI = () => {
 				outgoingCall.state.callingState === CallingState.JOINING ||
 				outgoingCall.state.callingState === CallingState.JOINED
 			) {
-				console.log("leaving the call");
-				await outgoingCall.leave();
+				try {
+					console.log("leaving the call");
+					await outgoingCall
+						.leave()
+						.then(() => router.replace(`/meeting/${outgoingCall.id}`))
+						.catch((err) => console.log("redirection mein error ", err));
+				} catch (err) {
+					console.warn("unable to leave client user ... ", err);
+				}
+			} else {
+				router.replace(`/meeting/${outgoingCall.id}`);
 			}
-
-			router.replace(`/meeting/${outgoingCall.id}`);
 		};
 
 		const handleCallRejected = async () => {

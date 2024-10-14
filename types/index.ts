@@ -61,6 +61,7 @@ export type clientUser = {
 
 export type creatorUser = {
 	_id: string;
+	fullName?: string;
 	firstName: string;
 	lastName: string;
 	username: string;

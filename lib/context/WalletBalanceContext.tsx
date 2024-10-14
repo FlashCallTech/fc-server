@@ -12,6 +12,7 @@ import { useCurrentUsersContext } from "./CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
+import { creatorUser } from "@/types";
 
 interface WalletBalanceContextProps {
 	walletBalance: number;
@@ -61,45 +62,46 @@ export const WalletBalanceProvider = ({
 	};
 
 	const fetchAndSetWalletBalance = async () => {
-		try {
-			currentUser && setWalletBalance(currentUser?.walletBalance ?? 0);
-		} catch (error) {
-			Sentry.captureException(error);
-			console.error("Error fetching current user:", error);
-			setWalletBalance(0);
+		if (currentUser) {
+			setWalletBalance(currentUser.walletBalance ?? 0);
 		}
 	};
 
 	useEffect(() => {
 		fetchAndSetWalletBalance();
-	}, [userType, authenticationSheetOpen, isCreator, currentUser?._id]);
+	}, [userType, authenticationSheetOpen, isCreator]);
 
 	useEffect(() => {
-		if (currentUser) {
-			try {
-				const creatorRef = doc(db, "transactions", currentUser?._id);
-				const unsubscribe = onSnapshot(
-					creatorRef,
-					(doc) => {
-						const data = doc.data();
+		if (!currentUser) return;
+		const storedCreator = localStorage.getItem("currentCreator");
 
-						if (data) {
-							updateWalletBalance();
-						}
-					},
-					(error) => {
-						console.error("Error fetching snapshot: ", error);
-						// Optional: Retry or fallback logic when Firebase is down
-						updateWalletBalance();
-					}
-				);
+		const parsedCreator: creatorUser | null = storedCreator
+			? JSON.parse(storedCreator)
+			: null;
 
-				return () => unsubscribe();
-			} catch (error) {
-				console.error("Error connecting to Firebase: ", error);
+		const creatorRef = doc(
+			db,
+			"transactions",
+			(parsedCreator?._id as string) ?? currentUser._id
+		);
+		const unsubscribe = onSnapshot(
+			creatorRef,
+			(snapshot) => {
+				if (snapshot.exists()) {
+					console.log("Updating Wallet");
+					updateWalletBalance();
+				} else {
+					console.warn("Document does not exist");
+				}
+			},
+			(error) => {
+				console.error("Error fetching transactions: ", error);
+				updateWalletBalance();
 			}
-		}
-	}, [currentUser?._id]);
+		);
+
+		return () => unsubscribe();
+	}, [currentUser]);
 
 	const updateWalletBalance = async () => {
 		await updateAndSetWalletBalance();
