@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 						},
 						body: JSON.stringify({
 							beneficiary_id,
-							beneficiary_name: user.firstName + ' ' + user.lastName,
+							beneficiary_name: user.fullName,
 							beneficiary_instrument_details: {
 								vpa: paymentDetails.upiId
 							},
