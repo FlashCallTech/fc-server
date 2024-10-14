@@ -13,7 +13,7 @@ const SwitchCameraType = ({
 	};
 
 	return (
-		<button
+		<section
 			onClick={handleClick}
 			className={`cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[${
 				isScaled && "#4c535b"
@@ -22,7 +22,7 @@ const SwitchCameraType = ({
 			} flex items-center`}
 		>
 			<SwitchCamera size={24} className="text-white" />
-		</button>
+		</section>
 	);
 };
 

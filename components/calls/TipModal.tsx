@@ -17,6 +17,7 @@ import { creatorUser } from "@/types";
 import { success } from "@/constants/icons";
 import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { backendBaseUrl } from "@/lib/utils";
 
 // Custom hook to track screen size
 const useScreenSize = () => {
@@ -71,7 +72,6 @@ const TipModal = ({
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
 	const { totalTimeUtilized, hasLowBalance } = useCallTimerContext();
-
 	const isMobile = useScreenSize() && isMobileDevice();
 
 	useEffect(() => {
@@ -94,7 +94,10 @@ const TipModal = ({
 	useEffect(() => {
 		const ratePerMinute = isVideoCall ? videoRatePerMinute : audioRatePerMinute;
 		const costOfTimeUtilized = (totalTimeUtilized / 60) * ratePerMinute;
-		const adjustedWalletBalance = walletBalance - costOfTimeUtilized;
+
+		const reservedBalanceForCall = costOfTimeUtilized;
+		const adjustedWalletBalance = walletBalance - reservedBalanceForCall * 2;
+
 		setAdjustedWalletBalance(adjustedWalletBalance);
 
 		const options = [10, 49, 99, 149, 199, 249, 299, 499, 999, 2999]
@@ -112,19 +115,12 @@ const TipModal = ({
 
 	useEffect(() => {
 		const handleResize = () => {
-			// Get the viewport height and calculate the 1% vh unit
 			const vh = window.innerHeight * 0.01;
-			// Set the --vh custom property to the root of the document
 			document.documentElement.style.setProperty("--vh", `${vh}px`);
 		};
-
-		// Initial calculation
 		handleResize();
 
-		// Add event listener for resize event to handle keyboard open/close
 		window.addEventListener("resize", handleResize);
-
-		// Cleanup the event listener
 		return () => {
 			window.removeEventListener("resize", handleResize);
 		};
@@ -136,50 +132,53 @@ const TipModal = ({
 	};
 
 	const handleTransaction = async () => {
+		// Check if the user is trying to tip more than the available balance
 		if (parseInt(rechargeAmount) > adjustedWalletBalance) {
 			toast({
 				variant: "destructive",
 				title: "Insufficient Wallet Balance",
-				description: "Try considering Lower Value.",
+				description: `Your tip amount exceeds the available balance } for the call. Try a smaller amount.`,
 			});
-		} else {
-			try {
-				setLoading(true);
-				await Promise.all([
-					fetch("/api/v1/wallet/payout", {
-						method: "POST",
-						body: JSON.stringify({
-							userId: clientId,
-							userType: "Client",
-							amount: rechargeAmount,
-						}),
-						headers: { "Content-Type": "application/json" },
+			setErrorMessage("Insufficient Wallet Balance for this tip.");
+			return;
+		}
+
+		try {
+			setLoading(true);
+			await Promise.all([
+				fetch(`${backendBaseUrl}/wallet/payout`, {
+					method: "POST",
+					body: JSON.stringify({
+						userId: clientId,
+						userType: "Client",
+						amount: rechargeAmount,
 					}),
-					fetch("/api/v1/wallet/addMoney", {
-						method: "POST",
-						body: JSON.stringify({
-							userId: creatorId,
-							userType: "Creator",
-							amount: (parseInt(rechargeAmount) * 0.8).toFixed(2),
-						}),
-						headers: { "Content-Type": "application/json" },
+					headers: { "Content-Type": "application/json" },
+				}),
+				fetch(`${backendBaseUrl}/wallet/addMoney`, {
+					method: "POST",
+					body: JSON.stringify({
+						userId: creatorId,
+						userType: "Creator",
+						amount: (parseInt(rechargeAmount) * 0.8).toFixed(2),
 					}),
-				]);
-				setWalletBalance((prev) => prev + parseInt(rechargeAmount));
-				setTipPaid(true);
-			} catch (error) {
-				Sentry.captureException(error);
-				console.error("Error handling wallet changes:", error);
-				toast({
-					variant: "destructive",
-					title: "Error",
-					description: "An error occurred while processing the Transactions",
-				});
-			} finally {
-				// Update wallet balance after transaction
-				setLoading(false);
-				updateWalletBalance();
-			}
+					headers: { "Content-Type": "application/json" },
+				}),
+			]);
+			setWalletBalance((prev) => prev + parseInt(rechargeAmount));
+			setTipPaid(true);
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error handling wallet changes:", error);
+			toast({
+				variant: "destructive",
+				title: "Error",
+				description: "An error occurred while processing the Transactions",
+			});
+		} finally {
+			// Update wallet balance after transaction
+			setLoading(false);
+			updateWalletBalance();
 		}
 	};
 
@@ -226,7 +225,7 @@ const TipModal = ({
 					className={`flex flex-col items-center justify-center ${
 						!loading ? "px-7 py-4" : "px-4"
 					}  border-none rounded-t-xl bg-white w-full mx-auto overflow-scroll no-scrollbar sm:max-w-[444px] ${
-						!isMobile
+						!isMobile && !tipPaid
 							? predefinedOptions.length > 8
 								? "max-h-[450px] min-h-[420px]"
 								: "max-h-[400px] min-h-[380px]"
@@ -265,6 +264,7 @@ const TipModal = ({
 										type="number"
 										placeholder="Enter recharge amount"
 										value={rechargeAmount}
+										max={adjustedWalletBalance}
 										onChange={handleAmountChange}
 										className="input-field-modal"
 									/>

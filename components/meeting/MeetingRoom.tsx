@@ -15,7 +15,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
 import CallTimer from "../calls/CallTimer";
-import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 import { useToast } from "../ui/use-toast";
 import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
@@ -213,13 +212,24 @@ const MeetingRoom = () => {
 	const CallLayout = useMemo(() => {
 		switch (layout) {
 			case "grid":
-				return <PaginatedGridLayout />;
+				return isVideoCall ? (
+					<PaginatedGridLayout />
+				) : (
+					<PaginatedGridLayout excludeLocalParticipant={true} />
+				);
 			default:
-				return (
+				return isVideoCall ? (
 					<SpeakerLayout
 						participantsBarPosition="bottom"
 						ParticipantViewUIBar={<CustomParticipantViewUI />}
 						ParticipantViewUISpotlight={<CustomParticipantViewUI />}
+					/>
+				) : (
+					<SpeakerLayout
+						participantsBarPosition="bottom"
+						ParticipantViewUIBar={<CustomParticipantViewUI />}
+						ParticipantViewUISpotlight={<CustomParticipantViewUI />}
+						excludeLocalParticipant={true}
 					/>
 				);
 		}
@@ -229,7 +239,7 @@ const MeetingRoom = () => {
 
 	if (callingState !== CallingState.JOINED) {
 		return (
-			<section className="w-full h-screen flex items-center justify-center">
+			<section className="w-full h-screen flex items-center justify-center ">
 				<SinglePostLoader />
 			</section>
 		);
@@ -244,7 +254,7 @@ const MeetingRoom = () => {
 
 	return (
 		<section
-			className="relative w-full overflow-hidden pt-4 text-white bg-dark-2"
+			className="relative w-full overflow-hidden pt-4 md:pt-0 text-white bg-dark-2"
 			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
 		>
 			{showCountdown && countdown && <CountdownDisplay />}
@@ -304,7 +314,7 @@ const MeetingRoom = () => {
 						))}
 
 					{/* Switch Camera */}
-					{isVideoCall && isMobile && (
+					{isVideoCall && isMobile && !showCountdown && (
 						<SwitchCameraType toggleCamera={toggleCamera} />
 					)}
 
