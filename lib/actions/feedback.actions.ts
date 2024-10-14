@@ -39,6 +39,8 @@ export async function createFeedback({
 				position: position || -1,
 			};
 
+			console.log(JSON.stringify(feedbackEntry));
+
 			// Use findOneAndUpdate to create or update the feedback
 			const result = await CallFeedbacks.findOneAndUpdate(
 				{ callId },
