@@ -42,10 +42,7 @@ export async function POST(request: NextRequest) {
 				upiId: result.vpa,
 			};
 
-			const paymentDetails = await createPaymentSettings(details);
-
 			const beneficiary = await Beneficiary.findOne({ user_id: userId });
-			console.log(beneficiary);
 
 			if (beneficiary === null) {
 				const getUserResponse = await fetch('https://flashcall.me/api/v1/creator/getUserById', {
@@ -58,7 +55,6 @@ export async function POST(request: NextRequest) {
 					})
 				});
 				const user = await getUserResponse.json();
-				console.log(user);
 
 				if (user) {
 					const beneficiary_id = userId;
@@ -78,7 +74,7 @@ export async function POST(request: NextRequest) {
 							beneficiary_id,
 							beneficiary_name: user.fullName,
 							beneficiary_instrument_details: {
-								vpa: paymentDetails.upiId
+								vpa: vpa
 							},
 							beneficiary_contact_details,
 						})
@@ -102,7 +98,10 @@ export async function POST(request: NextRequest) {
 							beneficiary_contact_details: beneficiary_contact_details,
 							added_on: beneficiaryResult.added_on,
 						}
-						const postBeneficiaryResponse = await fetch('https:/flashcall.me/api/v1/beneficiary/postBeneficiary', {
+
+						await createPaymentSettings(details);
+
+						const postBeneficiaryResponse = await fetch('https://flashcall.me/api/v1/beneficiary/postBeneficiary', {
 							method: "POST",
 							headers: {
 								'Content-Type': 'application/json'
@@ -124,7 +123,7 @@ export async function POST(request: NextRequest) {
 					return NextResponse.json({ success: false, message: 'User not found' })
 				}
 			} else {
-				if (paymentDetails.upiId !== beneficiary.beneficiary_instrument_details.vpa) {
+				if (vpa !== beneficiary.beneficiary_instrument_details.vpa) {
 					const deleteResponse = await fetch(`https://api.cashfree.com/payout/beneficiary?beneficiary_id=${userId}`, {
 						method: 'DELETE',
 						headers: {
@@ -151,7 +150,6 @@ export async function POST(request: NextRequest) {
 						})
 					});
 					const user = await getUserResponse.json();
-					console.log(user);
 
 					if (user) {
 						const beneficiary_id = userId;
@@ -171,7 +169,7 @@ export async function POST(request: NextRequest) {
 								beneficiary_id,
 								beneficiary_name: user.firstName + ' ' + user.lastName,
 								beneficiary_instrument_details: {
-									vpa: paymentDetails.upiId,
+									vpa: vpa,
 									bank_account_number: beneficiary.beneficiary_instrument_details.bank_account_number,
 									bank_ifsc: beneficiary.beneficiary_instrument_details.bank_ifsc
 								},
@@ -187,13 +185,16 @@ export async function POST(request: NextRequest) {
 						}
 
 						if (beneficiaryResult.beneficiary_status === 'VERIFIED') {
+							
+							await createPaymentSettings(details);
+
 							const payload = {
 								user_id: userId,
 								beneficiary_id: beneficiaryResult.beneficiary_id,
 								beneficiary_name: beneficiaryResult.beneficiary_name,
 								beneficiary_status: beneficiaryResult.beneficiary_status,
 								beneficiary_instrument_details: {
-									vpa: paymentDetails.upiId,
+									vpa: vpa,
 									bank_account_number: beneficiary.beneficiary_instrument_details.bank_account_number,
 									bank_ifsc: beneficiary.beneficiary_instrument_details.bank_ifsc
 								},
