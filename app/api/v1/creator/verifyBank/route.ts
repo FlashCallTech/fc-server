@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
           ifsc,
         }
       };
-      const paymentDetails = await createPaymentSettings(details);
 
       const beneficiary = await Beneficiary.findOne({ user_id: userId });
 
@@ -69,8 +68,8 @@ export async function POST(request: NextRequest) {
               beneficiary_id,
               beneficiary_name: user.firstName + ' ' + user.lastName,
               beneficiary_instrument_details: {
-                bank_account_number: paymentDetails.bank_account_number,
-                bank_ifsc: paymentDetails.bank_ifsc
+                bank_account_number: bank_account,
+                bank_ifsc: ifsc
               },
               beneficiary_contact_details,
             })
@@ -83,6 +82,7 @@ export async function POST(request: NextRequest) {
           }
 
           if (beneficiaryResult.beneficiary_status === 'VERIFIED') {
+            await createPaymentSettings(details);
             const payload = {
               user_id: userId,
               beneficiary_id: beneficiaryResult.beneficiary_id,
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ success: false, message: 'User not found' })
         }
       } else {
-        if (paymentDetails.bankDetails.accountNumber !== beneficiary.beneficiary_instrument_details.bank_account_number) {
+        if (bank_account !== beneficiary.beneficiary_instrument_details.bank_account_number) {
           const deleteResponse = await fetch(`https://api.cashfree.com/payout/beneficiary?beneficiary_id=${userId}`, {
             method: 'DELETE',
             headers: {
@@ -165,8 +165,8 @@ export async function POST(request: NextRequest) {
                 beneficiary_name: user.firstName + ' ' + user.lastName,
                 beneficiary_instrument_details: {
                   vpa: beneficiary.beneficiary_instrument_details.vpa,
-                  bank_account_number: paymentDetails.bankDetails.accountNumber,
-                  bank_ifsc: paymentDetails.bankDetails.ifsc
+                  bank_account_number: bank_account,
+                  bank_ifsc: ifsc
                 },
                 beneficiary_contact_details,
 
@@ -180,6 +180,7 @@ export async function POST(request: NextRequest) {
             }
 
             if (beneficiaryResult.beneficiary_status === 'VERIFIED') {
+              await createPaymentSettings(details);
               const payload = {
                 user_id: userId,
                 beneficiary_id: beneficiaryResult.beneficiary_id,
@@ -187,8 +188,8 @@ export async function POST(request: NextRequest) {
                 beneficiary_status: beneficiaryResult.beneficiary_status,
                 beneficiary_instrument_details: {
                   vpa: beneficiary.beneficiary_instrument_details.vpa,
-                  bank_account_number: paymentDetails.bankDetails.accountNumber,
-                  bank_ifsc: paymentDetails.bankDetails.ifsc
+                  bank_account_number: bank_account,
+                  bank_ifsc: ifsc
                 },
                 beneficiary_contact_details: beneficiary_contact_details,
                 added_on: beneficiaryResult.added_on,
