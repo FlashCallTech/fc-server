@@ -161,9 +161,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					fcmToken,
 					`Incoming Call`,
 					`Chat Request from ${clientUser.username}`,
-					{
-						chatRequestData
-					},
+						chatRequestData,
 					`https:flashcall.me/`
 				);
 			}
@@ -183,6 +181,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 						await setDoc(chatRequestDoc, { status: "ended" }, { merge: true });
 						console.log("Chat request status updated to 'ended' due to timeout");
 					}
+					// localStorage.removeItem("chatRequestId");
 				}
 			}, 30000);  // 60 seconds
 	
@@ -347,7 +346,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 			updateExpertStatus(currentUser?.phone as string, "Busy");
 
-			router.push(
+			router.replace(
 				`/chat/${chatRequest.chatId}?creatorId=${chatRequest.creatorId}&clientId=${chatRequest.clientId}`
 			);
 		} catch (error) {

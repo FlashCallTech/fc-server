@@ -81,7 +81,12 @@ const UserFeedback = ({
 	);
 
 	const handleSubmitFeedback = async () => {
-		if (!currentUser || !call) return;
+		console.log("trying to submit feedback");
+		if (!currentUser || !call) {
+			console.log("Something got wrong");
+			return
+		};
+		
 		try {
 			const userId = currentUser?._id as string;
 
