@@ -13,24 +13,33 @@ import { CallTimerProvider } from "@/lib/context/CallTimerContext";
 import MeetingRoom from "@/components/meeting/MeetingRoom";
 import { useGetCallById } from "@/hooks/useGetCallById";
 import { Cursor, Typewriter } from "react-simple-typewriter";
-import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import {
+	backendBaseUrl,
 	getDarkHexCode,
 	stopMediaStreams,
 	updateExpertStatus,
 	updateFirestoreSessions,
 } from "@/lib/utils";
+import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 
 const MeetingPage = () => {
 	const { id } = useParams();
 	const router = useRouter();
 	const { toast } = useToast();
 	const { call, isCallLoading } = useGetCallById(id);
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 	const creatorURL = localStorage.getItem("creatorURL");
+
+	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
+		if (currentUser?._id && userType === "creator") {
+			navigator.sendBeacon(
+				`${backendBaseUrl}/user/setCallStatus/${currentUser._id}`
+			);
+		}
+	});
 
 	useEffect(() => {
 		if (!isCallLoading && !call) {
