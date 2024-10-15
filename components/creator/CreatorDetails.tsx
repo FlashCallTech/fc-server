@@ -3,6 +3,7 @@
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import {
 	backendBaseUrl,
+	getDisplayName,
 	getProfileImagePlaceholder,
 	isValidHexColor,
 	isValidUrl,
@@ -40,15 +41,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const { toast } = useToast();
 	const creatorURL = pathname || localStorage.getItem("creatorURL");
 
-	const fullName =
-		creator?.fullName?.trim() ||
-		`${creator?.firstName || ""} ${creator?.lastName || ""}`.trim() ||
-		creator.username.startsWith("+91")
-			? creator.username.replace(
-					/(\+91)(\d+)/,
-					(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-			  )
-			: creator.username;
+	const fullName = getDisplayName(creator);
 
 	const imageSrc =
 		creator?.photo && isValidUrl(creator?.photo)
@@ -160,7 +153,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 	return (
 		// Wrapper Section
-		<section className="size-full xl:w-[704px] md:mx-auto flex flex-col items-center gap-4">
+		<section className="size-full xl:w-[704px] md:mx-auto md:pt-4 flex flex-col items-center gap-4">
 			{/* Creator Details */}
 			<section
 				className={`h-fit px-4 w-full flex flex-col md:flex-row gap-4 items-start md:items-center justify-center p-5 md:rounded-[16px]`}
@@ -229,7 +222,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				</section>
 
 				{/* Action Buttons */}
-				<section className={`flex flex-wrap items-center w-full gap-4`}>
+				<section className={`flex items-center w-full gap-4`}>
 					{/* Favorite Button */}
 					{userType === "client" && (
 						<Favorites

@@ -3,10 +3,11 @@
 import {
 	backendBaseUrl,
 	formatDateTime,
+	getDisplayName,
 	getProfileImagePlaceholder,
 	isValidUrl,
 } from "@/lib/utils";
-import { RegisterCallParams } from "@/types";
+import { clientUser, creatorUser, RegisterCallParams } from "@/types";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -111,6 +112,8 @@ const CallListMobile = () => {
 								);
 								const creator = userCall.expertDetails;
 
+								const fullName = getDisplayName(creator);
+
 								const handleRedirect = () => {
 									if (creator?.username) {
 										router.push(`/${creator.username}`);
@@ -153,7 +156,7 @@ const CallListMobile = () => {
 												{/* creator details */}
 												<div className="flex flex-col items-start justify-start">
 													<p className="text-base tracking-wide whitespace-nowrap">
-														{creator?.username || "Creator"}
+														{fullName || "Creator"}
 													</p>
 													<span className="text-xs whitespace-nowrap">
 														{creator?.profession || "Expert"}

@@ -2,6 +2,7 @@ import Image from "next/image";
 import React from "react";
 import { useToast } from "../ui/use-toast";
 import * as Sentry from "@sentry/nextjs";
+import { getDisplayName } from "@/lib/utils";
 
 const CopyToClipboard = ({
 	link,
@@ -34,7 +35,7 @@ const CopyToClipboard = ({
 			});
 	};
 
-	const fullName = `${firstName || ""} ${lastName || ""}`.trim() || username;
+	const fullName = getDisplayName({ firstName, lastName, username });
 
 	const shareLink = async () => {
 		const pronounPart = gender
