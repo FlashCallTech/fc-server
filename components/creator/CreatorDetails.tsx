@@ -229,11 +229,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				</section>
 
 				{/* Action Buttons */}
-				<section
-					className={`grid ${
-						userType === "client" && "grid-cols-2"
-					}  items-center w-full gap-4`}
-				>
+				<section className={`flex flex-wrap items-center w-full gap-4`}>
 					{/* Favorite Button */}
 					{userType === "client" && (
 						<Favorites

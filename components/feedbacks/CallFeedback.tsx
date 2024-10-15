@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "../ui/sheet";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { createFeedback } from "@/lib/actions/feedback.actions";
 import { useToast } from "../ui/use-toast";
 import { success } from "@/constants/icons";
 import { useGetCallById } from "@/hooks/useGetCallById";

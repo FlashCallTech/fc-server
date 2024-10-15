@@ -73,17 +73,17 @@ export const WalletBalanceProvider = ({
 
 	useEffect(() => {
 		if (!currentUser) return;
-		const storedCreator = localStorage.getItem("currentCreator");
+		const creatorId =
+			userType === "client"
+				? JSON.parse(localStorage.getItem("currentCreator") || "{}")?._id
+				: currentUser._id;
 
-		const parsedCreator: creatorUser | null = storedCreator
-			? JSON.parse(storedCreator)
-			: null;
+		if (!creatorId) {
+			console.warn("Creator ID not found");
+			return;
+		}
 
-		const creatorRef = doc(
-			db,
-			"transactions",
-			(parsedCreator?._id as string) ?? currentUser._id
-		);
+		const creatorRef = doc(db, "transactions", creatorId);
 		const unsubscribe = onSnapshot(
 			creatorRef,
 			(snapshot) => {

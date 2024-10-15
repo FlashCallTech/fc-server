@@ -200,11 +200,11 @@ export const resetBodyBackgroundColor = () => {
 
 // default profile images based on
 export const placeholderImages = {
-	male: "https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/M_preview.png?alt=media&token=e27edf60-220b-4151-a523-11b8719a4f8e",
+	male: "https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2FM_preview.png?alt=media&token=87e5c8f2-4729-476d-9bcc-a169b7c56759",
 	female:
-		"https://firebasestorage.googleapis.com/v0/b/flashcall-e4f30.appspot.com/o/F_preview.png?alt=media&token=47162f25-f5e8-4903-9d87-f2981f5c59aa",
+		"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2FF_preview.png?alt=media&token=96191c53-ef0c-4562-9b66-61e07c1402c8",
 	other:
-		"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/Others_preview.png?alt=media&token=fa694039-e9fb-47c9-93c9-b702f5c72ab4",
+		"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2FOthers_preview.png?alt=media&token=20c9d684-3e3d-40cb-a51c-4b0a0caacdbc",
 };
 
 export const getProfileImagePlaceholder = (gender?: string): string => {
@@ -317,8 +317,16 @@ export const analyticEvent = ({ action, category, label, value }: any) => {
 
 export const isValidUrl = (url: string) => {
 	try {
-		new URL(url);
-		return true;
+		const parsedUrl = new URL(url);
+
+		// Ensure it starts with http or https
+		const isHttpOrHttps =
+			parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+
+		// Check if there is a valid hostname and it contains at least one dot (.)
+		const hasValidDomain = parsedUrl.hostname.includes(".");
+
+		return isHttpOrHttps && hasValidDomain;
 	} catch {
 		return false;
 	}
