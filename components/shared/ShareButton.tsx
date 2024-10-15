@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "../ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useToast } from "../ui/use-toast";
+import { getDisplayName } from "@/lib/utils";
 
 const ShareButton = ({
 	username,
@@ -17,7 +18,7 @@ const ShareButton = ({
 	lastName: string;
 }) => {
 	const { toast } = useToast();
-	const fullName = `${firstName || ""} ${lastName || ""}`.trim() || username;
+	const fullName = getDisplayName({ firstName, lastName, username });
 
 	const shareLink = async () => {
 		const link = window.location.href;
@@ -61,7 +62,7 @@ const ShareButton = ({
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<button
-					className={`h-[36px] w-full flex items-center justify-center gap-2 rounded-[6px] bg-transparent border border-black hoverScaleDownEffect text-sm font-bold`}
+					className={`h-[36px] w-full flex items-center justify-center gap-2 rounded-[6px] bg-transparent border border-black hoverScaleDownEffect text-sm font-bold whitespace-nowrap`}
 					onClick={shareLink}
 				>
 					<svg

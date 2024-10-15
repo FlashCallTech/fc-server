@@ -1,5 +1,6 @@
 import {
 	backendBaseUrl,
+	getDisplayName,
 	getProfileImagePlaceholder,
 	isValidUrl,
 } from "@/lib/utils";
@@ -33,9 +34,7 @@ const FavoritesGrid = ({
 	const isFavoritesPath = pathname.includes(`/favorites`);
 	const { toast } = useToast();
 
-	const fullName =
-		`${creator?.firstName || ""} ${creator?.lastName || ""}`.trim() ||
-		creator?.username;
+	const fullName = getDisplayName(creator);
 
 	useEffect(() => {
 		if (!creator) return;

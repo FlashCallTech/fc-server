@@ -1,3 +1,4 @@
+import { isValidUrl } from "@/lib/utils";
 import { CreatorFeedback } from "@/types";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { Rating } from "@smastrom/react-rating";
@@ -25,6 +26,7 @@ const ReviewSlider = ({
 }) => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const sliderRef = useRef<Slider>(null);
+
 	const dummyFeedbacks = ["1", "2", "3", "4", "5", "6", "7"];
 	// Carousel settings
 	const settings = {
@@ -82,7 +84,11 @@ const ReviewSlider = ({
 								style={{ background: theme ? theme : "#ffffff" }}
 							>
 								<img
-									src={feedback?.clientId?.photo || GetRandomImage()}
+									src={
+										isValidUrl(feedback?.clientId?.photo || "")
+											? feedback?.clientId?.photo
+											: GetRandomImage()
+									}
 									alt={`${feedback?.clientId?.username} profile`}
 									width={100}
 									height={100}

@@ -246,6 +246,39 @@ export const getDarkHexCode = (lightHex: string): string | null => {
 	return colorMap[formattedLightHex] || "#50A65C";
 };
 
+export const getDisplayName = (
+	creator: {
+		fullName?: string;
+		firstName?: string;
+		lastName?: string;
+		username: string;
+	},
+	maxNameLength: number = 20
+): string => {
+	const fullName = creator?.fullName?.trim();
+
+	const combinedName = `${creator?.firstName || ""} ${
+		creator?.lastName || ""
+	}`.trim();
+
+	if (fullName && fullName.length <= maxNameLength) {
+		return fullName;
+	}
+
+	if (combinedName && combinedName.length <= maxNameLength) {
+		return combinedName;
+	}
+
+	if (creator.username.startsWith("+91")) {
+		return creator.username.replace(
+			/(\+91)(\d+)/,
+			(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+		);
+	}
+
+	return creator.username;
+};
+
 export const handleError = (error: unknown) => {
 	console.error(error);
 	throw new Error(typeof error === "string" ? error : JSON.stringify(error));

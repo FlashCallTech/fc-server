@@ -2,7 +2,7 @@ import CreatorCard from "@/components/creator/CreatorCard";
 import { Metadata } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { getUserByUsername } from "@/lib/actions/creator.actions";
-import { getProfileImagePlaceholder } from "@/lib/utils";
+import { getDisplayName, getProfileImagePlaceholder } from "@/lib/utils";
 
 // Function to generate metadata dynamically
 export async function generateMetadata({
@@ -57,18 +57,7 @@ export async function generateMetadata({
 		? imageSrc(creatorProfile)
 		: getProfileImagePlaceholder();
 
-	const fullName =
-		creatorProfile?.fullName?.trim() ||
-		`${creatorProfile?.firstName || ""} ${
-			creatorProfile?.lastName || ""
-		}`.trim() ||
-		creatorProfile.username.startsWith("+91")
-			? creatorProfile.username.replace(
-					/(\+91)(\d+)/,
-					(match: any, p1: any, p2: any) =>
-						`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-			  )
-			: creatorProfile.username;
+	const fullName = getDisplayName(creatorProfile);
 
 	try {
 		return {
