@@ -28,6 +28,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
 import { backendBaseUrl } from "@/lib/utils";
+import ContentLoading from "../shared/ContentLoading";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -242,7 +243,7 @@ const MeetingRoom = () => {
 			<p className="text-white text-xl">No other participants in the call</p>
 			{/* You can add visual effects or animations here */}
 			<div className="mt-4">
-				<div className="h-16 w-16 border-4 border-dashed rounded-full animate-spin border-white"></div>
+				<ContentLoading />
 			</div>
 		</div>
 	);

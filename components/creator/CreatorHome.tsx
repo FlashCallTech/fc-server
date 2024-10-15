@@ -8,6 +8,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import axios from "axios";
 import { useToast } from "../ui/use-toast";
 import {
+	backendBaseUrl,
 	calculateTotalEarnings,
 	getProfileImagePlaceholder,
 	isValidUrl,
@@ -57,7 +58,7 @@ const CreatorHome = () => {
 	const fetchCreatorLink = async () => {
 		try {
 			const response = await axios.get(
-				`/api/v1/creator/creatorLink?userId=${creatorUser?._id}`
+				`${backendBaseUrl}/creator/creatorLink/${creatorUser?._id}`
 			);
 
 			return response.data.creatorLink;
@@ -114,7 +115,8 @@ const CreatorHome = () => {
 			const localDate = today.toLocaleDateString("en-CA"); // 'en-CA' gives YYYY-MM-DD format
 
 			const response = await axios.get(
-				`/api/v1/transaction/getTodaysEarnings?userId=${creatorUser?._id}&date=${localDate}`
+				`${backendBaseUrl}/wallet/transactions/user/${creatorUser?._id}/date`,
+				{ params: { date: localDate } }
 			);
 			const fetchedTransactions = response.data.transactions;
 			const totalEarnings = calculateTotalEarnings(fetchedTransactions);
@@ -214,14 +216,16 @@ const CreatorHome = () => {
 		chat: string;
 	}) => {
 		try {
-			await axios.put("/api/v1/creator/updateUser", {
-				userId: creatorUser?._id,
-				user: {
-					videoRate: newPrices.videoCall,
-					audioRate: newPrices.audioCall,
-					chatRate: newPrices.chat,
-				},
-			});
+			await axios.put(
+				`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
+				{
+					user: {
+						videoRate: newPrices.videoCall,
+						audioRate: newPrices.audioCall,
+						chatRate: newPrices.chat,
+					},
+				}
+			);
 			if (newPrices.audioCall !== prices.audioCall) {
 				trackEvent("Creator_Audio_Price_Updated", {
 					Creator_ID: creatorUser?._id,
@@ -312,14 +316,16 @@ const CreatorHome = () => {
 	useEffect(() => {
 		const updateServices = async () => {
 			try {
-				await axios.put("/api/v1/creator/updateUser", {
-					userId: creatorUser?._id,
-					user: {
-						videoAllowed: services.videoCall,
-						audioAllowed: services.audioCall,
-						chatAllowed: services.chat,
-					},
-				});
+				await axios.put(
+					`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
+					{
+						user: {
+							videoAllowed: services.videoCall,
+							audioAllowed: services.audioCall,
+							chatAllowed: services.chat,
+						},
+					}
+				);
 				refreshCurrentUser();
 			} catch (error) {
 				Sentry.captureException(error);
