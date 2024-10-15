@@ -165,7 +165,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		if (!chatReqSent) {
 			console.log("Chat request not sent");
 			return;
-		} 
+		}
 
 		const intervalId = setInterval(() => {
 			const chatRequestId = localStorage.getItem("chatRequestId");
@@ -187,7 +187,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							setChatState(data.status);
 							localStorage.removeItem("user2");
 							localStorage.removeItem("chatRequestId");
-							localStorage.removeItem('chatId');
+							localStorage.removeItem("chatId");
 							// updateExpertStatus(creator.phone as string, "Online");
 							unsubscribe();
 						} else if (
@@ -200,7 +200,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 								clientId: clientUser?._id,
 								creatorId: data.creatorId,
 							});
-							console.log('Chat Accepted')
+							console.log("Chat Accepted");
 							updateExpertStatus(data.creatorPhone as string, "Busy");
 							setTimeout(() => {
 								router.replace(
@@ -218,8 +218,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		return () => clearInterval(intervalId);
 	}, [clientUser?._id, router, chatReqSent]);
-
-	console.log(chatReqSent);
 
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
@@ -274,10 +272,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${callType === "video"
+			const description = `${
+				callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-				}`;
+			}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -417,7 +416,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChatClick = async () => {
-		console.log("Chat now clicked")
+		console.log("Chat now clicked");
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",

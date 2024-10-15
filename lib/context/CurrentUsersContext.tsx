@@ -187,11 +187,11 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					data: { message },
 				} = error.response;
 
-				toast({
-					variant: "destructive",
-					title: status === 401 ? "User Logged Out" : "Error",
-					description: message || "An unexpected error occurred.",
-				});
+				// toast({
+				// 	variant: "destructive",
+				// 	title: status === 401 ? "User Logged Out" : "Error",
+				// 	description: message || "An unexpected error occurred.",
+				// });
 
 				if (status === 401) {
 					handleSignout();

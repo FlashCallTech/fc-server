@@ -85,7 +85,7 @@ export default function AuthenticationPage() {
 
 	return (
 		<main
-			className="size-full h-screen inset-0 bg-[#111111] sm:bg-green-1 top-0 flex flex-col justify-between md:justify-center"
+			className="size-full h-screen inset-0 bg-[#111111] sm:bg-green-1 top-0 grid grid-cols-1 items-start"
 			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
 		>
 			<Head>
@@ -94,75 +94,76 @@ export default function AuthenticationPage() {
 				<link rel="icon" href="/icons/logo_icon.png" />
 			</Head>
 
-			{/* Slider Section */}
-			<section className="relative flex flex-col gap-2 w-full justify-start items-start sm:hidden">
-				<Slider
-					{...settings}
-					ref={sliderRef}
-					className="size-full flex items-center justify-center"
-				>
-					{authSliderContent.map((item, index) => (
-						<section
-							className="flex flex-col h-full text-center gap-4 items-end justify-center px-4 pt-4 pb-2 text-white"
-							key={index}
-						>
-							<Image
-								src={item.imageURL || "/images/defaultProfileImage.png"}
-								alt={`${item.heading}`}
-								width={1000}
-								height={1000}
-								className="size-full max-h-[300px] rounded-xl object-contain mx-auto"
-								onError={(e) => {
-									e.currentTarget.src = "/images/defaultProfileImage.png";
-								}}
-							/>
-							<section className="w-[75%] m-auto flex flex-col items-center justify-center gap-2">
-								<h1 className="text-base sm:text-lg md:text-2xl font-medium mt-4">
-									{item.heading}
-								</h1>
-							</section>
-						</section>
-					))}
-				</Slider>
-
-				{/* Navigation Dots */}
-				{authSliderContent?.length > 1 && (
-					<div className=" flex items-center justify-center w-full">
-						<div className="flex gap-2 items-center">
-							{authSliderContent?.map((_, index) => (
-								<button
-									key={index}
-									className={`${
-										index === currentIndex ? "bg-white" : "bg-white/40"
-									} w-2 h-2 rounded-full`}
-									onClick={() => {
-										sliderRef.current?.slickGoTo(index);
-									}}
-								/>
-							))}
-						</div>
-					</div>
-				)}
-			</section>
-
 			{/* Authentication Form Section */}
 			{isMobileView ? (
 				<Sheet open={true}>
 					<SheetContent
 						onOpenAutoFocus={(e) => e.preventDefault()}
 						side="bottom"
-						className="flex items-center justify-center w-full h-fit !p-0 !border-none"
+						className="flex flex-col items-start justify-between w-full h-full !p-0 !border-none"
 					>
+						{/* Slider Section */}
+						<section className="relative flex flex-col gap-2 w-full h-fit justify-start items-start sm:hidden">
+							<Slider
+								{...settings}
+								ref={sliderRef}
+								className="size-full flex items-center justify-center"
+							>
+								{authSliderContent.map((item, index) => (
+									<section
+										className="flex flex-col h-full text-center gap-4 items-end justify-center px-4 pt-4 pb-2 text-white"
+										key={index}
+									>
+										<Image
+											src={item.imageURL || "/images/defaultProfileImage.png"}
+											alt={`${item.heading}`}
+											width={1000}
+											height={1000}
+											className="size-full max-h-[285px] xm:max-h-[300px] rounded-xl object-contain mx-auto"
+											onError={(e) => {
+												e.currentTarget.src = "/images/defaultProfileImage.png";
+											}}
+										/>
+										<section className="w-[75%] m-auto flex flex-col items-center justify-center gap-2">
+											<h1 className="text-base sm:text-lg md:text-2xl font-medium mt-4">
+												{item.heading}
+											</h1>
+										</section>
+									</section>
+								))}
+							</Slider>
+
+							{/* Navigation Dots */}
+							{authSliderContent?.length > 1 && (
+								<div className=" flex items-center justify-center w-full">
+									<div className="flex gap-2 items-center">
+										{authSliderContent?.map((_, index) => (
+											<button
+												key={index}
+												className={`${
+													index === currentIndex ? "bg-white" : "bg-white/40"
+												} w-2 h-2 rounded-full`}
+												onClick={() => {
+													sliderRef.current?.slickGoTo(index);
+												}}
+											/>
+										))}
+									</div>
+								</div>
+							)}
+						</section>
 						<SheetHeader className="sr-only">
 							<SheetTitle className="sr-only">Authentication</SheetTitle>
 							<SheetDescription className="sr-only">
 								Authenticate via OTP to continue.
 							</SheetDescription>
 						</SheetHeader>
-						<AuthenticateViaOTP
-							userType={userType as string}
-							refId={refId as string}
-						/>
+						<section className="h-fit">
+							<AuthenticateViaOTP
+								userType={userType as string}
+								refId={refId as string}
+							/>
+						</section>
 					</SheetContent>
 				</Sheet>
 			) : (
