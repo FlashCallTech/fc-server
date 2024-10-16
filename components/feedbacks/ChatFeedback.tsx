@@ -21,10 +21,12 @@ import { backendBaseUrl } from "@/lib/utils";
 
 const ChatFeedback = ({
 	chatId,
+	callId,
 	isOpen,
 	onOpenChange,
 }: {
 	chatId: string;
+	callId: string;
 	isOpen: boolean;
 	onOpenChange: (isOpen: boolean) => void;
 }) => {
@@ -98,7 +100,12 @@ const ChatFeedback = ({
 	};
 
 	const handleSubmitFeedback = async () => {
-		if (!currentUser || !chat) return;
+		console.log("trying to submit feedback");
+		if (!currentUser || !chat) 
+		{
+			console.log("Missing fields");
+			return;
+		}
 		try {
 			console.log("Inside try block");
 			trackEvent("Feedback_bottomsheet_submitted", {
@@ -117,7 +124,7 @@ const ChatFeedback = ({
 				clientId: userId,
 				rating: rating,
 				feedbackText: feedbackMessage,
-				callId: chatId,
+				callId: callId,
 				createdAt: new Date(),
 			});
 

@@ -13,8 +13,7 @@ import {
 	where,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import useChat from "./useChat";
+import { useState } from "react";
 import { logEvent } from "firebase/analytics";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import * as Sentry from "@sentry/nextjs";
@@ -70,20 +69,10 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	}
 
 	const handleChat = async (creator: any, clientUser: any) => {
-		logEvent(analytics, "chat_now_click", {
-			clientId: clientUser?._id,
-			creatorId: creator._id,
-		});
-
-		logEvent(analytics, "call_click", {
-			clientId: clientUser?._id,
-			creatorId: creator._id,
-		});
-
 		if (!clientUser) router.push("sign-in");
+
 		let maxCallDuration = (walletBalance / parseInt(creator.chatRate, 10)) * 60;
-		maxCallDuration =
-			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+		maxCallDuration = maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
 		if (maxCallDuration < 300) {
 			toast({
@@ -94,6 +83,10 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			router.push("/payment?callType=chat");
 			return;
 		}
+
+		console.log("Trying to set the callID");
+		const callId = crypto.randomUUID();
+		console.log("CallId: ", callId);
 
 		setSheetOpen(true);
 
@@ -133,6 +126,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 			await setDoc(newChatRequestRef, {
 				id: newChatRequestRef.id,
+				callId,
 				creatorId: creator?._id,
 				creatorName: creator.fullName ? creator.fullName : maskPhoneNumber(creator.phone),
 				creatorPhone: creator.phone,
@@ -156,15 +150,17 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			if (docSnap.exists()) {
 				const chatRequestData = docSnap.data();
 				const fcmToken = await fetchFCMToken(creator.phone);
-			if (fcmToken) {
-				sendNotification(
-					fcmToken,
-					`Incoming Call`,
-					`Chat Request from ${clientUser.username}`,
-						chatRequestData,
-					`https:flashcall.me/`
-				);
-			}
+				if (fcmToken) {
+					sendNotification(
+						fcmToken,
+						`Incoming Chat Request`,
+						`Chat Request from ${clientUser.username}`,
+						{
+							clientName: chatRequestData.clientName,
+						},
+						`https:flashcall.me/`
+					);
+				}
 				console.log("Document data:", chatRequestData);
 			} else {
 				console.log("No such document!");
@@ -173,7 +169,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			const timer = setTimeout(async () => {
 				// Fetch the current status after 60 seconds
 				const latestDocSnap = await getDoc(chatRequestDoc);
-	
+
 				if (latestDocSnap.exists()) {
 					const data = latestDocSnap.data();
 					if (data?.status === "pending") {
@@ -184,7 +180,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					// localStorage.removeItem("chatRequestId");
 				}
 			}, 30000);  // 60 seconds
-	
+
 
 			// Save chatRequest document ID in local storage
 			localStorage.setItem("chatRequestId", newChatRequestRef.id);
@@ -238,7 +234,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	};
 
 	const handleAcceptChat = async (chatRequest: any) => {
-		setLoading(true);
+		console.log("Trying to accept the chat");
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
 		const response = await getUserById(chatRequest.clientId as string);
@@ -251,8 +247,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
 			if (!existingChatDoc.exists()) {
 				await setDoc(doc(db, "chats", chatId), {
-					// startedAt: Date.now(),
-					// endedAt: null,
+					callId: chatRequest.callId,
 					clientId: chatRequest.clientId,
 					clientName: chatRequest.clientName,
 					clientPhone: response.phone,
@@ -295,6 +290,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
 			} else {
 				await updateDoc(doc(db, "chats", chatId), {
+					callId: chatRequest.callId,
 					clientName: chatRequest.clientName,
 					maxChatDuration,
 					clientBalance: response.walletBalance,
@@ -302,12 +298,12 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				});
 			}
 
-			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
-				status: "accepted",
-			});
-
 			await updateDoc(doc(chatRef, chatId), {
 				status: "active",
+			});
+
+			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
+				status: "accepted",
 			});
 
 			localStorage.setItem(

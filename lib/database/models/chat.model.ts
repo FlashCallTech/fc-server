@@ -8,7 +8,7 @@ const ChatDetailsSchema = new Schema({
 }, { _id: false });
 
 const ChatSchema = new Schema({
-	chatId: { type: String, required: true, unique: true },
+	chatId: { type: String, required: true },
 	creator:{ type: String, required: true },
 	startedAt: { type: Date, requried: true },
 	endedAt:{type: Date },
