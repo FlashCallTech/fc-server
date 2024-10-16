@@ -353,10 +353,10 @@ const ChatInterface: React.FC = () => {
 	}
 
 	return (
-		<div className={`flex flex-col h-screen bg-cover bg-center`} style={{ backgroundImage: 'url(/back.png)' }}>
-			<div className="flex flex-col justify-between h-full overflow-y-auto"> {/* Allow scrolling */}
-				{/* Sticky Header */}
-				<div className="sticky top-0  left-0 flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
+		<div className="flex flex-col h-screen bg-cover bg-center" style={{ backgroundImage: 'url(/back.png)' }}>
+			<div className="flex flex-col justify-between h-full">
+				{/* Fixed Header */}
+				<div className="fixed top-0 left-0 w-full flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
 					<div className="flex items-center gap-2">
 						<Image
 							src={`${user2?.photo ? user2?.photo : 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'}`}
@@ -373,9 +373,7 @@ const ChatInterface: React.FC = () => {
 							{userType === "creator" && (
 								<CreatorChatTimer chatId={chatId as string} />
 							)}
-							<p className="text-[10px] md:text-sm text-green-500">
-								Ongoing chat
-							</p>
+							<p className="text-[10px] md:text-sm text-green-500">Ongoing chat</p>
 						</div>
 					</div>
 					<div className="flex gap-2">
@@ -396,36 +394,32 @@ const ChatInterface: React.FC = () => {
 					/>
 				)}
 
-				<div>
-					{/* Chat Messages */}
-					<div className="flex overflow-y-auto scrollbar-none z-30">
-						<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
-					</div>
+				{/* Chat Messages */}
+				<div className="flex flex-col flex-grow overflow-y-auto scrollbar-none z-30 pt-[60px]"> {/* pt adds padding for the fixed header */}
+					<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
+				</div>
 
-					{/* Sticky Chat Input at the Bottom */}
-					<div className="sticky bottom-0 w-full z-40 bg-cover bg-center " style={{ backgroundImage: 'url(/back.png)' }}>
-						<ChatInput
-							isRecording={isRecording}
-							discardAudio={discardAudio}
-							text={text}
-							setText={setText}
-							handleImg={handleImg}
-							handleSend={handleSend}
-							toggleRecording={toggleRecording}
-							img={img}
-							audio={audio}
-							audioStream={audioStream!}
-							// audioContext={audioContext}
-							handleCapturedImg={handleCapturedImg}
-							isImgUploading={isImgUploading}
-							isAudioUploading={isAudioUploading}
-							discardImage={discardImage}
-						/>
-					</div>
+				{/* Fixed Chat Input */}
+				<div className="fixed bottom-0 left-0 w-full z-40 bg-cover bg-center" style={{ backgroundImage: 'url(/back.png)' }}>
+					<ChatInput
+						isRecording={isRecording}
+						discardAudio={discardAudio}
+						text={text}
+						setText={setText}
+						handleImg={handleImg}
+						handleSend={handleSend}
+						toggleRecording={toggleRecording}
+						img={img}
+						audio={audio}
+						audioStream={audioStream!}
+						handleCapturedImg={handleCapturedImg}
+						isImgUploading={isImgUploading}
+						isAudioUploading={isAudioUploading}
+						discardImage={discardImage}
+					/>
 				</div>
 			</div>
 		</div>
-
 	);
 };
 

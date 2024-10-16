@@ -20,6 +20,7 @@ interface User2 {
 
 interface Chat {
 	startedAt: number;
+	callId?: string;
 	endedAt?: number;
 	messages: {
 		senderId: string;
@@ -112,7 +113,7 @@ const useEndChat = () => {
 				localStorage.removeItem("chatRequestId");
 				localStorage.removeItem("chatId");
 				localStorage.removeItem("user2");
-				router.replace(`/chat-ended/${chatId}/${user2?.clientId}`);
+				router.replace(`/chat-ended/${chatId}/${chat?.callId}/${user2?.clientId}`);
 			}
 		}
 	}, [chatEnded]);
