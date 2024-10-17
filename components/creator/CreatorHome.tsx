@@ -134,53 +134,25 @@ const CreatorHome = () => {
 		if (creatorUser) {
 			try {
 				const creatorRef = doc(db, "transactions", creatorUser?._id);
-				const servicesRef = doc(db, "services", creatorUser?._id);
-
-				const unsubscribeTransactions = onSnapshot(
+				const unsubscribe = onSnapshot(
 					creatorRef,
 					(doc) => {
 						const data = doc.data();
+
 						if (data) {
 							updateWalletBalance();
 							fetchTransactions();
 						}
 					},
 					(error) => {
-						console.error("Error fetching transaction snapshot: ", error);
+						console.error("Error fetching snapshot: ", error);
+						// Optional: Retry or fallback logic when Firebase is down
 						updateWalletBalance();
 						fetchTransactions();
 					}
 				);
 
-				const unsubscribeServices = onSnapshot(
-					servicesRef,
-					(doc) => {
-						const data = doc.data();
-						console.log("Cretaor Home ... ", data);
-						if (data) {
-							const services = data.services;
-							setServices({
-								myServices:
-									services.videoAllowed ||
-									services.audioAllowed ||
-									services.chatAllowed
-										? true
-										: false,
-								videoCall: services.videoAllowed,
-								audioCall: services.audioAllowed,
-								chat: services.chatAllowed,
-							});
-						}
-					},
-					(error) => {
-						console.error("Error fetching services snapshot: ", error);
-					}
-				);
-
-				return () => {
-					unsubscribeTransactions();
-					unsubscribeServices();
-				};
+				return () => unsubscribe();
 			} catch (error) {
 				console.error("Error connecting to Firebase: ", error);
 			}
@@ -290,6 +262,45 @@ const CreatorHome = () => {
 			}
 		});
 	};
+
+	useEffect(() => {
+		if (creatorUser) {
+			const sessionTriggeredRef = doc(
+				db,
+				"sessionTriggered",
+				creatorUser?._id as string
+			);
+
+			const unsubscribeSessionTriggered = onSnapshot(
+				sessionTriggeredRef,
+				(doc) => {
+					if (doc.exists()) {
+						const currentCount = doc.data().count || 0;
+
+						if (currentCount >= 3) {
+							// Update each of the services to false
+							const newServices = {
+								myServices: false,
+								videoCall: false,
+								audioCall: false,
+								chat: false,
+							};
+
+							setServices(newServices);
+						}
+					}
+				},
+				(error) => {
+					console.error("Error fetching session triggered snapshot: ", error);
+				}
+			);
+
+			// Clean up the listener on unmount
+			return () => {
+				unsubscribeSessionTriggered();
+			};
+		}
+	}, [creatorUser]);
 
 	useEffect(() => {
 		const updateServices = async () => {
