@@ -134,25 +134,53 @@ const CreatorHome = () => {
 		if (creatorUser) {
 			try {
 				const creatorRef = doc(db, "transactions", creatorUser?._id);
-				const unsubscribe = onSnapshot(
+				const servicesRef = doc(db, "services", creatorUser?._id);
+
+				const unsubscribeTransactions = onSnapshot(
 					creatorRef,
 					(doc) => {
 						const data = doc.data();
-
 						if (data) {
 							updateWalletBalance();
 							fetchTransactions();
 						}
 					},
 					(error) => {
-						console.error("Error fetching snapshot: ", error);
-						// Optional: Retry or fallback logic when Firebase is down
+						console.error("Error fetching transaction snapshot: ", error);
 						updateWalletBalance();
 						fetchTransactions();
 					}
 				);
 
-				return () => unsubscribe();
+				const unsubscribeServices = onSnapshot(
+					servicesRef,
+					(doc) => {
+						const data = doc.data();
+						console.log("Cretaor Home ... ", data);
+						if (data) {
+							const services = data.services;
+							setServices({
+								myServices:
+									services.videoAllowed ||
+									services.audioAllowed ||
+									services.chatAllowed
+										? true
+										: false,
+								videoCall: services.videoAllowed,
+								audioCall: services.audioAllowed,
+								chat: services.chatAllowed,
+							});
+						}
+					},
+					(error) => {
+						console.error("Error fetching services snapshot: ", error);
+					}
+				);
+
+				return () => {
+					unsubscribeTransactions();
+					unsubscribeServices();
+				};
 			} catch (error) {
 				console.error("Error connecting to Firebase: ", error);
 			}

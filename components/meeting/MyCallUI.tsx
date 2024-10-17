@@ -291,9 +291,9 @@ const MyCallUI = () => {
 			const response = await axios.get(
 				`${backendBaseUrl}/calls/getCallById/${outgoingCall?.id}`
 			);
-			const data = response.data;
-			const currentStatus = data?.status;
-			console.log(data, currentStatus);
+			const callData = response.data;
+			const currentStatus = callData?.data?.status;
+			console.log(callData, currentStatus);
 
 			if (currentStatus !== "Not Answered") {
 				const defaultMessage = {
