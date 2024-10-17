@@ -15,7 +15,7 @@ const ChatFeedbackPage = () => {
 	const [loadingFeedback, setLoadingFeedback] = useState(false);
 	const [showFeedback, setShowFeedback] = useState(true);
 	const creatorURL = localStorage.getItem("creatorURL");
-  const { chatId, clientId } = useParams();
+  const { chatId, callId, clientId } = useParams();
   const { currentUser } = useCurrentUsersContext();
 
 	useEffect(() => {
@@ -58,6 +58,7 @@ const ChatFeedbackPage = () => {
 			{clientId === currentUser?._id && (
 					<ChatFeedback
 						chatId={chatId as string}
+						callId={callId as string}
 						isOpen={showFeedback}
 						onOpenChange={handleFeedbackClose}
 					/>

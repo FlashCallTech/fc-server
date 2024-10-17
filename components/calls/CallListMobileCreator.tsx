@@ -103,6 +103,9 @@ const CallListMobileclient = () => {
 													<span className="text-xs  whitespace-nowrap">
 														{"Client"}
 													</span>
+													<span className="text-[10px]  whitespace-nowrap">
+														{(userCall.type).charAt(0).toUpperCase() + (userCall.type).slice(1)}
+													</span>
 												</div>
 											</section>
 											{/* call details */}

@@ -25,8 +25,8 @@ export const ChatRequestProvider = ({
 	const [chatRequest, setChatRequest] = useState<any>(null);
 	const { chatRequestsRef } = useChatRequest();
 	const [currentCreator, setCurrentCreator] = useState<creatorUser>();
-	const [currentCreatorId, setCurrentCreatorId] = useState<string>();
-	const { creatorUser, currentUser } = useCurrentUsersContext();
+	// const [currentCreatorId, setCurrentCreatorId] = useState<string>();
+	const { creatorUser } = useCurrentUsersContext();
 	let collectionUnsubscribe: (() => void) | undefined;
 	let docUnsubscribe: (() => void) | undefined;
 
@@ -39,12 +39,12 @@ export const ChatRequestProvider = ({
 		}
 	}, []);
 
-	useEffect(() => {
-		const currentUser = localStorage.getItem("currentUserID");
-		if (currentUser) {
-			setCurrentCreatorId(currentUser);
-		}
-	}, []);
+	// useEffect(() => {
+	// 	const currentUser = localStorage.getItem("currentUserID");
+	// 	if (currentUser) {
+	// 		setCurrentCreatorId(currentUser);
+	// 	}
+	// }, []);
 
 	// Collection-level listener to find a pending chat request
 	useEffect(() => {
@@ -95,7 +95,7 @@ export const ChatRequestProvider = ({
 
 	return (
 		<ChatRequestContext.Provider value={{ chatRequest, setChatRequest }}>
-			{currentCreatorId === creatorUser?._id && chatRequest ? (
+			{ chatRequest && chatRequest.creatorId === creatorUser?._id ? (
 				<ChatRequest chatRequest={chatRequest} />
 			) : (
 				children
