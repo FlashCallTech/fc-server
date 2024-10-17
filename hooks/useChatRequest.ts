@@ -157,6 +157,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 						`Chat Request from ${clientUser.username}`,
 						{
 							clientName: chatRequestData.clientName,
+							clientId: chatRequestData.clientId,
 						},
 						`https:flashcall.me/`
 					);

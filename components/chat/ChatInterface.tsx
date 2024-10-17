@@ -353,54 +353,53 @@ const ChatInterface: React.FC = () => {
 	}
 
 	return (
-		<div className="flex flex-col h-screen bg-cover bg-center" style={{ backgroundImage: 'url(/back.png)' }}>
-			<div className="flex flex-col justify-between h-full">
-				{/* Fixed Header */}
-				<div className="fixed top-0 left-0 w-full flex justify-between items-center px-4 py-[2px] bg-gray-500 z-50">
-					<div className="flex items-center gap-2">
-						<Image
-							src={`${user2?.photo ? user2?.photo : 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'}`}
-							alt="profile"
-							width={1000}
-							height={1000}
-							className="size-10 min-w-10 rounded-full object-cover"
-						/>
-						<div className="flex flex-col">
-							<div className="text-white font-bold text-xs md:text-lg">
-								{user2?.fullName ? user2?.fullName : maskPhoneNumber(user2?.phone as string)}
-							</div>
-							{userType === "client" && <ChatTimer />}
-							{userType === "creator" && (
-								<CreatorChatTimer chatId={chatId as string} />
-							)}
-							<p className="text-[10px] md:text-sm text-green-500">Ongoing chat</p>
+		<div className={`flex flex-col justify-between h-screen w-screen bg-cover bg-center overflow-y-auto overflow-x-hidden scrollbar-hide`} style={{ backgroundImage: 'url(/back.png)' }}>
+			<div className="fixed top-0 left-0 w-full flex justify-between items-center px-4 py-[2px] bg-gray-500 z-30">
+				<div className="flex items-center gap-2">
+					<Image
+						src={`${user2?.photo ? user2?.photo : 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'}`}
+						alt="profile"
+						width={1000}
+						height={1000}
+						className="size-10 min-w-10 rounded-full object-cover"
+					/>
+					<div className="flex flex-col">
+						<div className="text-white font-bold text-xs md:text-lg">
+							{user2?.fullName ? user2?.fullName : maskPhoneNumber(user2?.phone as string)}
 						</div>
-					</div>
-					<div className="flex gap-2">
-						<Tip />
-						<button
-							onClick={endCall}
-							className="bg-[rgba(255,81,81,1)] text-white p-2 md:px-4 md:py-2 text-[10px] md:text-lg rounded-lg"
-						>
-							End
-						</button>
+						{userType === "client" && <ChatTimer />}
+						{userType === "creator" && (
+							<CreatorChatTimer chatId={chatId as string} />
+						)}
+						<p className="text-[10px] md:text-sm text-green-500">
+							Ongoing chat
+						</p>
 					</div>
 				</div>
-
-				{showDialog && (
-					<EndCallDecision
-						handleDecisionDialog={handleDecisionDialog}
-						setShowDialog={handleCloseDialog}
-					/>
-				)}
-
+				<div className="flex gap-2">
+					<Tip />
+					<button
+						onClick={endCall}
+						className="bg-[rgba(255,81,81,1)] text-white p-2 md:px-4 md:py-2 text-[10px] md:text-lg rounded-lg"
+					>
+						End
+					</button>
+				</div>
+			</div>
+			{showDialog && (
+				<EndCallDecision
+					handleDecisionDialog={handleDecisionDialog}
+					setShowDialog={handleCloseDialog}
+				/>
+			)}
+			<div className="mt-auto pt-[50px] mb-[56px] z-20">
 				{/* Chat Messages */}
-				<div className="flex flex-col flex-grow overflow-y-auto scrollbar-none z-30 pt-[60px]"> {/* pt adds padding for the fixed header */}
+				<div className="flex overflow-y-auto scrollbar-none ">
 					<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
 				</div>
 
-				{/* Fixed Chat Input */}
-				<div className="fixed bottom-0 left-0 w-full z-40 bg-cover bg-center" style={{ backgroundImage: 'url(/back.png)' }}>
+				{/* Sticky Chat Input at the Bottom */}
+				<div className="fixed bottom-0 w-full z-40 bg-cover bg-center " style={{ backgroundImage: 'url(/back.png)' }}>
 					<ChatInput
 						isRecording={isRecording}
 						discardAudio={discardAudio}
@@ -412,6 +411,7 @@ const ChatInterface: React.FC = () => {
 						img={img}
 						audio={audio}
 						audioStream={audioStream!}
+						// audioContext={audioContext}
 						handleCapturedImg={handleCapturedImg}
 						isImgUploading={isImgUploading}
 						isAudioUploading={isAudioUploading}
