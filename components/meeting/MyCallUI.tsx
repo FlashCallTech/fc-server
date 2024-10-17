@@ -136,27 +136,18 @@ const MyCallUI = () => {
 			title: string;
 			description: string;
 		}) => {
-			const { data } = await axios.get(
-				`${backendBaseUrl}/calls/getCallById/${incomingCall?.id}`
-			);
-			const currentStatus = data?.call?.status;
+			const defaultMessage = {
+				title: `Call Declined`,
+				description: "The call was rejected",
+			};
 
-			console.log(data, currentStatus);
+			const message = customMessage || defaultMessage;
 
-			if (currentStatus !== "Not Answered") {
-				const defaultMessage = {
-					title: `Call Declined`,
-					description: "The call was rejected",
-				};
-
-				const message = customMessage || defaultMessage;
-
-				toast({
-					variant: "destructive",
-					title: message.title,
-					description: message.description,
-				});
-			}
+			toast({
+				variant: "destructive",
+				title: message.title,
+				description: message.description,
+			});
 
 			setShowCallUI(false);
 			clearTimeout(autoDeclineTimeout);

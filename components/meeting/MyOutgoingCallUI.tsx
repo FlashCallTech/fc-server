@@ -68,7 +68,7 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 				<button
 					className="bg-red-500 text-white p-4 rounded-full hoverScaleDownEffect"
 					onClick={async () => {
-						await call.reject();
+						await call.endCall();
 
 						toast({
 							variant: "destructive",
