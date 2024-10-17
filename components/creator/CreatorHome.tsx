@@ -16,8 +16,7 @@ import {
 } from "@/lib/utils";
 import ServicesCheckbox from "../shared/ServicesCheckbox";
 import CopyToClipboard from "../shared/CopyToClipboard";
-import { UpdateCreatorParams } from "@/types";
-import { doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
