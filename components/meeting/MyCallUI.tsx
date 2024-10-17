@@ -288,10 +288,11 @@ const MyCallUI = () => {
 			setShowCallUI(false);
 			clearTimeout(autoDeclineTimeout);
 
-			const { data } = await axios.get(
+			const response = await axios.get(
 				`${backendBaseUrl}/calls/getCallById/${outgoingCall?.id}`
 			);
-			const currentStatus = data?.call?.status;
+			const data = response.data;
+			const currentStatus = data?.status;
 			console.log(data, currentStatus);
 
 			if (currentStatus !== "Not Answered") {
