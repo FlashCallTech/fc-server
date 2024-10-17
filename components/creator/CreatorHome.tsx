@@ -25,24 +25,15 @@ import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import ProfileDialog from "./ProfileDialog";
+import useServices from "@/hooks/useServices";
+
+const { services, handleToggle, setServices } = useServices();
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const { getDevicePlatform } = usePlatform();
 	const { toast } = useToast();
-	// State for toggle switches
-	const [services, setServices] = useState({
-		myServices:
-			creatorUser?.videoAllowed ||
-			creatorUser?.audioAllowed ||
-			creatorUser?.chatAllowed
-				? true
-				: false,
-		videoCall: creatorUser?.videoAllowed || false,
-		audioCall: creatorUser?.audioAllowed || false,
-		chat: creatorUser?.chatAllowed || false,
-	});
 
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
 	const [loading, setLoading] = useState(true);
@@ -224,43 +215,6 @@ const CreatorHome = () => {
 				description: "Something went wrong...",
 			});
 		}
-	};
-
-	const handleToggle = (
-		service: "myServices" | "videoCall" | "audioCall" | "chat"
-	) => {
-		setServices((prevStates) => {
-			if (service === "myServices") {
-				// Toggle the master switch and update all services accordingly
-				const newMyServicesState = !prevStates.myServices;
-				const newServices = {
-					myServices: newMyServicesState,
-					videoCall: newMyServicesState,
-					audioCall: newMyServicesState,
-					chat: newMyServicesState,
-				};
-
-				updateFirestoreCallServices(creatorUser, newServices, prices);
-				return newServices;
-			} else {
-				// Toggle an individual service
-				const newServiceState = !prevStates[service];
-				const newServices = {
-					...prevStates,
-					[service]: newServiceState,
-				};
-
-				// Check if any of the individual services are true
-				const isAnyServiceOn =
-					newServices.videoCall || newServices.audioCall || newServices.chat;
-
-				// Update the master toggle (myServices) accordingly
-				newServices.myServices = isAnyServiceOn;
-
-				updateFirestoreCallServices(creatorUser, newServices, prices);
-				return newServices;
-			}
-		});
 	};
 
 	useEffect(() => {

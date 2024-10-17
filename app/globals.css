@@ -199,6 +199,10 @@ html {
 	display: none;
 }
 
+.str-video__video-placeholder .str-video__video-placeholder__avatar {
+	background: white !important;
+}
+
 @media (min-width: 600px) {
 	.str-video__speaker-layout
 		.str-video__speaker-layout__spotlight
