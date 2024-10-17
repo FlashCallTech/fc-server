@@ -12,9 +12,9 @@ import { trackEvent } from "@/lib/mixpanel";
 import CallListMobileCreator from "@/components/calls/CallListMobileCreator";
 
 const PreviousPage = () => {
-	const [historyType, setHistoryType] = useState<"Calls" | "Chats">("Calls");
+	const [historyType, setHistoryType] = useState<"All">("All");
 	const [creator, setCreator] = useState<creatorUser>();
-	const options: ("Calls" | "Chats")[] = ["Calls", "Chats"];
+	const options: ("All")[] = ["All"];
 	const { currentUser, userType } = useCurrentUsersContext();
 
 	useEffect(() => {
@@ -72,7 +72,7 @@ const PreviousPage = () => {
 				))}
 			</div>
 
-			{historyType === "Calls" ? (
+			{historyType === "All" ? (
 				userType === "client" ? (
 					<CallListMobile />
 				) : (

@@ -164,6 +164,10 @@ const CallListMobile = () => {
 													<span className="text-xs whitespace-nowrap">
 														{creator?.profession || "Expert"}
 													</span>
+													<span className="text-[10px] whitespace-nowrap">
+														{userCall.type.charAt(0).toUpperCase() +
+															userCall.type.slice(1)}
+													</span>
 												</div>
 											</button>
 											{/* call details */}
@@ -220,7 +224,8 @@ const CallListMobile = () => {
 											</span>
 											<section className="flex w-full items-end justify-end">
 												{userCall.status !== "Rejected" &&
-												userCall.status !== "Not Answered" ? (
+												userCall.status !== "Not Answered" &&
+												userCall.status !== "Cancelled" ? (
 													<FeedbackCheck callId={userCall?.callId} />
 												) : (
 													<button
