@@ -6,7 +6,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { updateFirestoreCallServices } from "@/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 
-const useServices = () => {
+export const useServices = () => {
 	const { creatorUser } = useCurrentUsersContext();
 	const [services, setServices] = useState({
 		myServices: false,

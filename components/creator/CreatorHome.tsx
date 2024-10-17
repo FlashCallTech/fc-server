@@ -27,11 +27,10 @@ import usePlatform from "@/hooks/usePlatform";
 import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
 
-const { services, handleToggle, setServices } = useServices();
-
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
+	const { services, handleToggle, setServices } = useServices();
 	const { getDevicePlatform } = usePlatform();
 	const { toast } = useToast();
 

@@ -55,9 +55,9 @@ const CallListMobileclient = () => {
 					</h2>
 				</div>
 			) : isError ? (
-				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-red-500">
+				<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
 					Failed to fetch User Calls
-					<h2 className="text-xl">Please try again later.</h2>
+					<h2 className="text-lg">Please try again later.</h2>
 				</div>
 			) : (
 				<>
