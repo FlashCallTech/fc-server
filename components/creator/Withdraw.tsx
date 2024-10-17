@@ -91,12 +91,10 @@ const Withdraw: React.FC = () => {
 			</section>
 		);
 
-	console.log(isStickyVisible);
-
 	return (
 		<>
 			<section className="flex flex-col pt-3  text-gray-800 w-full h-full rounded-xl ">
-				<section className="grid grid-cols-1 items-center sticky top-0 md:top-[76px] z-30 bg-white p-4 ">
+				<section className="grid grid-cols-1 items-center sticky top-0 md:top-[76px] z-50 bg-white p-4 ">
 					{/* Sticky Balance and Recharge Section */}
 					<section
 						ref={stickyRef}

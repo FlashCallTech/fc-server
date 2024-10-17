@@ -35,7 +35,10 @@ const Favorites = () => {
 	const { walletBalance } = useWalletBalanceContext();
 	const stickyRef = useRef<HTMLDivElement>(null);
 
-	const { ref, inView } = useInView();
+	const { ref, inView } = useInView({
+		threshold: 0.1,
+		triggerOnce: false,
+	});
 	const {
 		data: userFavorites,
 		fetchNextPage,
@@ -140,7 +143,10 @@ const Favorites = () => {
 				<h1 className="text-3xl font-bold pl-1">Favorites</h1>
 				<button
 					onClick={toggleFilterPopup}
-					className="relative px-4 py-2 text-sm border rounded-lg bg-green-1 text-white flex items-center justify-center gap-1 hoverScaleDownEffect"
+					disabled={favorites.length === 0}
+					className={`${
+						favorites.length === 0 && "opacity-80 cursor-not-allowed"
+					} relative px-4 py-2 text-sm border rounded-lg bg-green-1 text-white flex items-center justify-center gap-1 hoverScaleDownEffect`}
 				>
 					Filters
 					<svg
@@ -166,7 +172,7 @@ const Favorites = () => {
 			</div>
 			{/* Filter Popup */}
 			{isFilterOpen && (
-				<div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-40">
+				<div className="fixed size-full h-screen inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
 					<section className="bg-white p-5 rounded-xl shadow-lg lg:w-fit w-[85%] ">
 						<h2 className="text-2xl font-semibold mb-4 tracking-wide text-green-1">
 							Filter Options
@@ -255,17 +261,17 @@ const Favorites = () => {
 					<SinglePostLoader />
 				</section>
 			) : favorites.length === 0 ? (
-				<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
+				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
 					No Favorites Found
 				</div>
 			) : isError ? (
-				<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
+				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-red-500">
 					Failed to fetch Favorites <br />
 					Please try again later.
 				</div>
 			) : (
 				<div
-					className={`grid grid-cols-1 xl:grid-cols-2 px-2.5 gap-5 lg:px-0 items-start pb-8 lg:pb-5`}
+					className={`size-full grid grid-cols-1 xl:grid-cols-2 px-2.5 gap-5 lg:px-0 items-start pb-8 lg:pb-5`}
 				>
 					{groupBy === "profession"
 						? Object.entries(filteredFavorites()).map(

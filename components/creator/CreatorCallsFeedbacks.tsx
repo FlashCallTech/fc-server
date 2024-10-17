@@ -48,8 +48,10 @@ const CreatorCallsFeedbacks = () => {
 	);
 
 	const pathname = usePathname();
-	const { ref, inView } = useInView();
-
+	const { ref, inView } = useInView({
+		threshold: 0.1,
+		triggerOnce: false,
+	});
 	useEffect(() => {
 		if (inView) {
 			setCallsCount((prevCount) => prevCount + 6);

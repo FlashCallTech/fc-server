@@ -12,6 +12,7 @@ import {
 	calculateTotalEarnings,
 	getProfileImagePlaceholder,
 	isValidUrl,
+	updateFirestoreCallServices,
 } from "@/lib/utils";
 import ServicesCheckbox from "../shared/ServicesCheckbox";
 import CopyToClipboard from "../shared/CopyToClipboard";
@@ -161,55 +162,6 @@ const CreatorHome = () => {
 
 	const theme = creatorUser?.themeSelected;
 
-	const updateFirestoreCallServices = async (
-		services: {
-			myServices: boolean;
-			videoCall: boolean;
-			audioCall: boolean;
-			chat: boolean;
-		},
-		prices: { videoCall: string; audioCall: string; chat: string }
-	) => {
-		if (creatorUser) {
-			try {
-				const callServicesDocRef = doc(db, "services", creatorUser._id);
-
-				const callServicesDoc = await getDoc(callServicesDocRef);
-				if (callServicesDoc.exists()) {
-					await updateDoc(callServicesDocRef, {
-						services,
-						prices,
-					});
-				} else {
-					await setDoc(callServicesDocRef, {
-						services,
-						prices,
-					});
-				}
-
-				// Determine if any service is active
-				const isOnline =
-					services.videoCall || services.audioCall || services.chat;
-
-				const creatorStatusDocRef = doc(db, "userStatus", creatorUser.phone);
-				// Update or set the creator's status
-				const creatorStatusDoc = await getDoc(creatorStatusDocRef);
-				if (creatorStatusDoc.exists()) {
-					await updateDoc(creatorStatusDocRef, {
-						status: isOnline ? "Online" : "Offline",
-					});
-				} else {
-					await setDoc(creatorStatusDocRef, {
-						status: isOnline ? "Online" : "Offline",
-					});
-				}
-			} catch (error) {
-				Sentry.captureException(error);
-				console.error("Error updating Firestore call services: ", error);
-			}
-		}
-	};
-
 	const handleSavePrices = async (newPrices: {
 		videoCall: string;
 		audioCall: string;
@@ -219,11 +171,9 @@ const CreatorHome = () => {
 			await axios.put(
 				`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
 				{
-					user: {
-						videoRate: newPrices.videoCall,
-						audioRate: newPrices.audioCall,
-						chatRate: newPrices.chat,
-					},
+					videoRate: newPrices.videoCall,
+					audioRate: newPrices.audioCall,
+					chatRate: newPrices.chat,
 				}
 			);
 			if (newPrices.audioCall !== prices.audioCall) {
@@ -257,6 +207,7 @@ const CreatorHome = () => {
 				description: "Values are updated...",
 			});
 			updateFirestoreCallServices(
+				creatorUser,
 				{
 					myServices: services.myServices,
 					videoCall: services.videoCall,
@@ -290,7 +241,7 @@ const CreatorHome = () => {
 					chat: newMyServicesState,
 				};
 
-				updateFirestoreCallServices(newServices, prices);
+				updateFirestoreCallServices(creatorUser, newServices, prices);
 				return newServices;
 			} else {
 				// Toggle an individual service
@@ -307,7 +258,7 @@ const CreatorHome = () => {
 				// Update the master toggle (myServices) accordingly
 				newServices.myServices = isAnyServiceOn;
 
-				updateFirestoreCallServices(newServices, prices);
+				updateFirestoreCallServices(creatorUser, newServices, prices);
 				return newServices;
 			}
 		});
@@ -319,11 +270,9 @@ const CreatorHome = () => {
 				await axios.put(
 					`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
 					{
-						user: {
-							videoAllowed: services.videoCall,
-							audioAllowed: services.audioCall,
-							chatAllowed: services.chat,
-						},
+						videoAllowed: services.videoCall,
+						audioAllowed: services.audioCall,
+						chatAllowed: services.chat,
 					}
 				);
 				refreshCurrentUser();

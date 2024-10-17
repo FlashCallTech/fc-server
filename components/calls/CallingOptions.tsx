@@ -20,9 +20,8 @@ import {
 	isValidHexColor,
 	updateFirestoreSessions,
 	trackCallEvents,
-	fetchFCMToken,
-	sendNotification,
 	updateExpertStatus,
+	getDisplayName,
 } from "@/lib/utils";
 import useChat from "@/hooks/useChat";
 import Loader from "../shared/Loader";
@@ -61,6 +60,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		audioAllowed: creator.audioAllowed,
 		chatAllowed: creator.chatAllowed,
 	});
+
+	const fullName = getDisplayName(creator);
 
 	const handleTabClose = () => {
 		console.log("Tab Closed");
@@ -262,7 +263,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				{
 					user_id: creator?._id,
 					custom: {
-						name: String(creator.username),
+						name: fullName,
 						type: "expert",
 						image: creator.photo || "/images/defaultProfile.png",
 						phone: creator.phone,
@@ -354,10 +355,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	// if any of the calling option is selected open the respective modal
 	const handleClickOption = (callType: string) => {
-		if (isProcessing) return; // Prevent double-click
-		setIsProcessing(true); // Set processing state
+		if (isProcessing) return;
+		setIsProcessing(true);
 
 		if (userType === "creator") {
 			toast({
@@ -435,20 +435,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				status: onlineStatus,
 			});
 			setChatReqSent(true);
-			// Utilize helper functions
-			const fcmToken = await fetchFCMToken(creator.phone);
-			if (fcmToken) {
-				sendNotification(
-					fcmToken,
-					`Incoming Call`,
-					`Chat Request from ${clientUser.username}`,
-					{
-						creatorId: creator._id,
-						message: "gauri ne mera code barbaad krdia",
-					},
-					`https:flashcall.me/`
-				);
-			}
 			handleChat(creator, clientUser);
 			let maxCallDuration =
 				(walletBalance / parseInt(creator.chatRate, 10)) * 60;
