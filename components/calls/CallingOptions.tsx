@@ -182,6 +182,19 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							console.log("Chat Request Ended or Rejected");
 							setChatReqSent(false);
 							setChatState(data.status);
+							if(data.status === "rejected") {
+								toast({
+									variant: "destructive",
+									title: "Rejected",
+									description: "The user is busy, please try again later",
+								});
+							} else {
+								toast({
+									variant: "destructive",
+									title: "Cancelled",
+									description: "User is not asnwering please try again later",
+								});
+							}
 							localStorage.removeItem("user2");
 							localStorage.removeItem("chatRequestId");
 							localStorage.removeItem("chatId");
