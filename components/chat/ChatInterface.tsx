@@ -353,7 +353,7 @@ const ChatInterface: React.FC = () => {
 	}
 
 	return (
-		<div className={`flex flex-col justify-between h-screen w-screen`} >
+		<div className={`flex flex-col justify-between h-screen w-screen bg-cover bg-center overflow-y-auto scrollbar-hide`} style={{ backgroundImage: 'url(/back.png)' }} >
 			<div className="fixed top-0 left-0 w-full flex justify-between items-center px-4 py-[2px] bg-gray-500 z-30">
 				<div className="flex items-center gap-2">
 					<Image
@@ -392,14 +392,14 @@ const ChatInterface: React.FC = () => {
 					setShowDialog={handleCloseDialog}
 				/>
 			)}
-			<div className="mt-auto pt-[50px] mb-[56px] z-20 bg-cover bg-center overflow-y-auto scrollbar-hide" style={{ backgroundImage: 'url(/back.png)' }}>
+			<div className="mt-auto pt-[50px]">
 				{/* Chat Messages */}
-				<div className="flex">
+				<div className="mb-[56px] z-20">
 					<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
 				</div>
 
 				{/* Sticky Chat Input at the Bottom */}
-				<div className="fixed bottom-0 w-full z-30 bg-cover bg-center" style={{ backgroundImage: 'url(/back.png)' }}>
+				<div className="fixed bottom-0 w-full z-30 bg-cover bg-center p-safe-bottom" style={{ backgroundImage: 'url(/back.png)' }}>
 					<ChatInput
 						isRecording={isRecording}
 						discardAudio={discardAudio}
