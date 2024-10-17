@@ -61,7 +61,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 	};
 
 	return (
-		<div className="flex-1 p-4 overflow-y-auto overflow-x-hidden scrollbar-hide">
+		<div className="flex-1 p-4">
 			<div className="mb-4 text-left">
 				{chat?.messages?.map((message, index) => {
 					const isCurrentUserMessage = message.senderId === (currentUser?._id as string);

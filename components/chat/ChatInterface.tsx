@@ -399,7 +399,7 @@ const ChatInterface: React.FC = () => {
 				</div>
 
 				{/* Sticky Chat Input at the Bottom */}
-				<div className="fixed bottom-0 w-full z-40 bg-cover bg-center " style={{ backgroundImage: 'url(/back.png)' }}>
+				<div className="fixed bottom-0 w-full z-30 bg-cover bg-center" style={{ backgroundImage: 'url(/back.png)' }}>
 					<ChatInput
 						isRecording={isRecording}
 						discardAudio={discardAudio}
