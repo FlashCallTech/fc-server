@@ -265,9 +265,9 @@ const Favorites = () => {
 					No Favorites Found
 				</div>
 			) : isError ? (
-				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-red-500">
-					Failed to fetch Favorites <br />
-					Please try again later.
+				<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
+					Failed to fetch Favorites
+					<span className="text-lg">Please try again later.</span>
 				</div>
 			) : (
 				<div

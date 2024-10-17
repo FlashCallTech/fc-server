@@ -303,9 +303,9 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			<ul className="space-y-4 w-full h-full px-4 pt-2 pb-7">
 				{!isLoading ? (
 					isError || !currentUser ? (
-						<div className="size-full flex items-center justify-center text-lg xl:text-2xl font-semibold text-center text-red-500">
-							Failed to fetch Transactions <br />
-							Please try again later.
+						<div className="size-full flex flex-col items-center justify-center text-2xl xl:text-2xl font-semibold text-center text-red-500">
+							Failed to fetch Transactions
+							<span className="text-lg">Please try again later.</span>
 						</div>
 					) : transactions &&
 					  transactions?.pages[0]?.totalTransactions === 0 ? (
