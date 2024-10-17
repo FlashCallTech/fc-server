@@ -161,6 +161,9 @@ const CallListMobile = () => {
 													<span className="text-xs whitespace-nowrap">
 														{creator?.profession || "Expert"}
 													</span>
+													<span className="text-[10px] whitespace-nowrap">
+														{(userCall.type).charAt(0).toUpperCase() + (userCall.type).slice(1)}
+													</span>
 												</div>
 											</button>
 											{/* call details */}
@@ -216,16 +219,16 @@ const CallListMobile = () => {
 												{formattedDate.dateTime}
 											</span>
 											<section className="flex w-full items-end justify-end">
-												{userCall.status !== "Rejected" ? (
-													<FeedbackCheck callId={userCall?.callId} />
-												) : (
-													<button
-														onClick={handleRedirect}
-														className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
-													>
-														Visit Again
-													</button>
-												)}
+													{userCall.status !== "Rejected" && userCall.status !== "Cancelled" ? (
+														<FeedbackCheck callId={userCall?.callId} />
+													) : (
+														<button
+															onClick={handleRedirect}
+															className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
+														>
+															Visit Again
+														</button>
+													)}
 
 												{!reportSubmitted[userCall.callId] && (
 													<ReportDialog
