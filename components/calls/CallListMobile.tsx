@@ -7,7 +7,7 @@ import {
 	getProfileImagePlaceholder,
 	isValidUrl,
 } from "@/lib/utils";
-import { clientUser, creatorUser, RegisterCallParams } from "@/types";
+import { RegisterCallParams } from "@/types";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -21,7 +21,11 @@ import { useGetPreviousCalls } from "@/lib/react-query/queries";
 import ReportDialog from "../client/ReportDialog";
 import axios from "axios";
 
-const CallListMobile = () => {
+const CallListMobile = ({
+	callType,
+}: {
+	callType: "All" | "Audio" | "Video" | "Chat";
+}) => {
 	const { currentUser, userType } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
 	const pathname = usePathname();
@@ -38,7 +42,11 @@ const CallListMobile = () => {
 		isFetching,
 		isError,
 		isLoading,
-	} = useGetPreviousCalls(currentUser?._id as string, userType as string);
+	} = useGetPreviousCalls(
+		currentUser?._id as string,
+		userType as string,
+		callType.toLowerCase()
+	);
 	const [reportSubmitted, setReportSubmitted] = useState<{
 		[key: string]: boolean;
 	}>({});
@@ -50,7 +58,7 @@ const CallListMobile = () => {
 	}, [inView, hasNextPage, isFetching]);
 
 	useEffect(() => {
-		const fetchReportStatus = async (callId: string, creatorId: string) => {
+		const fetchReportStatus = async (callId: string) => {
 			try {
 				const response = await axios.get(
 					`${backendBaseUrl}/reports/call/${callId}`
@@ -71,7 +79,7 @@ const CallListMobile = () => {
 		// Fetch the report status for each user call
 		userCalls?.pages.forEach((page) => {
 			page.calls.forEach((userCall: RegisterCallParams) => {
-				fetchReportStatus(userCall.callId, userCall.expertDetails?._id);
+				fetchReportStatus(userCall.callId);
 			});
 		});
 	}, [userCalls]);
@@ -82,6 +90,8 @@ const CallListMobile = () => {
 			[callId]: true,
 		}));
 	};
+
+	console.log(userCalls);
 
 	return (
 		<>
@@ -158,22 +168,22 @@ const CallListMobile = () => {
 												/>
 												{/* creator details */}
 												<div className="flex flex-col items-start justify-start">
-													<p className="text-base tracking-wide whitespace-nowrap">
+													<p className="text-base tracking-wide whitespace-nowrap capitalize">
 														{fullName || "Creator"}
 													</p>
-													<span className="text-xs whitespace-nowrap">
-														{creator?.profession || "Expert"}
-													</span>
-													<span className="text-[10px] whitespace-nowrap">
-														{userCall.type.charAt(0).toUpperCase() +
-															userCall.type.slice(1)}
-													</span>
+													<section className="flex items-center justify-start gap-2 h-fit text-[12.5px]">
+														<span className="whitespace-nowrap">
+															{creator?.profession || "Expert"}
+														</span>
+														<span className="text-gray-400 text-xs">|</span>
+														<span className="capitalize">{userCall.type}</span>
+													</section>
 												</div>
 											</button>
 											{/* call details */}
-											<div className="flex flex-wrap items-center justify-start gap-2 pl-16">
+											<div className="flex flex-wrap items-center justify-start gap-2 pl-16 text-[12.5px]">
 												<span
-													className={`text-sm ${
+													className={`${
 														userCall.status === "Ended"
 															? "text-green-1"
 															: "text-red-500"
@@ -184,7 +194,7 @@ const CallListMobile = () => {
 														: userCall.status}
 												</span>
 												<section className="flex items-center justify-start gap-2">
-													<span className="text-[12.5px]">
+													<span>
 														{userCall.duration &&
 															(() => {
 																const seconds = parseInt(userCall.duration, 10);
@@ -208,7 +218,7 @@ const CallListMobile = () => {
 															{/* Separator */}
 															<span className="text-gray-400">•</span>
 															{/* User Amount */}
-															<span className="text-[12.5px] text-gray-600 flex items-center gap-1">
+															<span className="text-gray-600 flex items-center gap-1">
 																{/* Amount */}
 																Rs. {userCall.amount.toFixed(0)}
 															</span>
@@ -266,7 +276,7 @@ const CallListMobile = () => {
 					{!hasNextPage &&
 						!isFetching &&
 						userCalls?.pages[0]?.totalCalls !== 0 && (
-							<div className="xl:hidden text-center text-gray-500 py-4">
+							<div className="text-center text-gray-500 pt-4">
 								You have reached the end of the list
 							</div>
 						)}

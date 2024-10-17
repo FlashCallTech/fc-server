@@ -17,6 +17,13 @@ import { trackEvent } from "@/lib/mixpanel";
 import { useInView } from "react-intersection-observer";
 import { useGetUserFavorites } from "@/lib/react-query/queries";
 import Image from "next/image";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 type FavoriteItem = {
 	creatorId: creatorUser;
 };
@@ -34,7 +41,6 @@ const Favorites = () => {
 	const { currentUser, clientUser } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
 	const stickyRef = useRef<HTMLDivElement>(null);
-
 	const { ref, inView } = useInView({
 		threshold: 0.1,
 		triggerOnce: false,
@@ -103,8 +109,10 @@ const Favorites = () => {
 
 		if (sortBy === "name") {
 			sortedFavorites.sort((a, b) => {
-				const nameA = a.creatorId.firstName || a.creatorId.username;
-				const nameB = b.creatorId.firstName || b.creatorId.username;
+				const nameA =
+					a.creatorId.fullName || a.creatorId.firstName || a.creatorId.username;
+				const nameB =
+					b.creatorId.fullName || b.creatorId.firstName || b.creatorId.username;
 				return nameA.localeCompare(nameB);
 			});
 		} else if (sortBy === "updatedAt") {
@@ -171,8 +179,14 @@ const Favorites = () => {
 				</button>
 			</div>
 			{/* Filter Popup */}
-			{isFilterOpen && (
-				<div className="fixed size-full h-screen inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+			<Dialog open={isFilterOpen} onOpenChange={toggleFilterPopup}>
+				<DialogContent className="flex flex-col items-center justify-center w-fit !p-0 border-none">
+					<DialogHeader className="sr-only">
+						<DialogTitle className="sr-only">Filter Options</DialogTitle>
+						<DialogDescription className="sr-only">
+							Select the Filters
+						</DialogDescription>
+					</DialogHeader>
 					<section className="bg-white p-5 rounded-xl shadow-lg lg:w-fit w-[85%] ">
 						<h2 className="text-2xl font-semibold mb-4 tracking-wide text-green-1">
 							Filter Options
@@ -254,8 +268,8 @@ const Favorites = () => {
 							</button>
 						</div>
 					</section>
-				</div>
-			)}
+				</DialogContent>
+			</Dialog>
 			{isLoading || (currentUser && walletBalance < 0) ? (
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
@@ -325,7 +339,7 @@ const Favorites = () => {
 				favorites.length !== 0 &&
 				!hasNextPage &&
 				!isFetching && (
-					<div className="text-center text-gray-500 xl:hidden">
+					<div className="text-center text-gray-500  py-4">
 						You have reached the end of the list.
 					</div>
 				)}

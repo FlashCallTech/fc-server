@@ -2,6 +2,7 @@
 
 import {
 	formatDateTime,
+	getDisplayName,
 	getProfileImagePlaceholder,
 	isValidUrl,
 } from "@/lib/utils";
@@ -71,6 +72,8 @@ const CallListMobileclient = () => {
 								);
 								const client = userCall.expertDetails;
 
+								const fullName = getDisplayName(client);
+
 								return (
 									<div
 										key={userCall.callId}
@@ -90,26 +93,25 @@ const CallListMobileclient = () => {
 																	client?.gender && client.gender
 															  )
 													}
-													alt="Expert"
+													alt="Client"
 													height={1000}
 													width={1000}
 													className="rounded-full max-w-12 min-w-12 h-12 object-cover"
 												/>
 												{/* client details */}
 												<div className="flex flex-col items-start justify-start">
-													<p className="text-base tracking-wide whitespace-nowrap">
-														{client?.username || "client"}
+													<p className="text-base tracking-wide whitespace-nowrap capitalize">
+														{fullName || "client"}
 													</p>
-													<span className="text-xs  whitespace-nowrap">
-														{"Client"}
-													</span>
-													<span className="text-[10px]  whitespace-nowrap">
-														{(userCall.type).charAt(0).toUpperCase() + (userCall.type).slice(1)}
-													</span>
+													<section className="flex items-center justify-start gap-2 h-fit text-[12.5px]">
+														<span className="whitespace-nowrap">Client</span>
+														<span className="text-gray-400 text-xs">|</span>
+														<span className="capitalize">{userCall.type}</span>
+													</section>
 												</div>
 											</section>
 											{/* call details */}
-											<div className="flex flex-wrap-reverse items-center justify-start gap-2 pl-16">
+											<div className="flex flex-wrap items-center justify-start gap-2 pl-16 text-[12.5px]">
 												<span
 													className={`text-sm ${
 														userCall.status === "Ended"
@@ -122,7 +124,7 @@ const CallListMobileclient = () => {
 														: userCall.status}
 												</span>
 												<section className="flex items-center justify-start gap-2">
-													<span className="text-[12.5px]">
+													<span>
 														{userCall.duration &&
 															(() => {
 																const seconds = parseInt(userCall.duration, 10);
@@ -146,7 +148,7 @@ const CallListMobileclient = () => {
 															{/* Separator */}
 															<span className="text-gray-400">•</span>
 															{/* User Amount */}
-															<span className="text-[12.5px] text-gray-600 flex items-center gap-1">
+															<span className="text-gray-600 flex items-center gap-1">
 																{/* Amount */}
 																Rs. {(userCall.amount * 0.8).toFixed(0)}
 															</span>
@@ -188,7 +190,7 @@ const CallListMobileclient = () => {
 					{!hasNextPage &&
 						!isFetching &&
 						userCalls?.pages[0]?.totalCalls !== 0 && (
-							<div className="xl:hidden text-center text-gray-500 py-4">
+							<div className=" text-center text-gray-500 pt-4">
 								You have reached the end of the list
 							</div>
 						)}
