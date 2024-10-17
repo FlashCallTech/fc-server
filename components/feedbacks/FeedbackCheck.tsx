@@ -83,7 +83,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 						readOnly
 					/>
 					<span
-						className={`text-ellipsis overflow-hidden w-full max-w-[200px] whitespace-nowrap pr-2 text-sm text-end ${
+						className={`text-ellipsis overflow-hidden w-full max-w-[200px] whitespace-nowrap pr-2 text-xs xm:text-sm text-end ${
 							!userFeedback.feedback && "text-gray-400 text-xs"
 						}`}
 					>
@@ -111,13 +111,13 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 							<div className="pl-1 flex flex-col items-start justify-center gap-2">
 								<span className="">{userFeedback.feedback}</span>
 								<div className="flex items-center justify-start w-full gap-2">
-									<div className="flex items-center justify-start gap-2">
+									<div className="flex items-center justify-start gap-1">
 										<Image
 											src={userFeedback?.clientId?.photo || GetRandomImage()}
 											alt={userFeedback?.clientId?.username}
 											width={44}
 											height={44}
-											className="w-5 h-5 rounded-full"
+											className="w-5 h-5 object-cover rounded-full"
 											onError={(e) => {
 												e.currentTarget.src = "/images/defaultProfileImage.png";
 											}}

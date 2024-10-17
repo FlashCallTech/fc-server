@@ -10,7 +10,7 @@ import PostLoader from "@/components/shared/PostLoader";
 import Image from "next/image";
 import { trackEvent } from "@/lib/mixpanel";
 import { doc, getDoc } from "firebase/firestore";
-import { db, getFCMToken } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useGetCreators } from "@/lib/react-query/queries";
 
@@ -22,7 +22,10 @@ const HomePage = () => {
 		useCurrentUsersContext();
 	const router = useRouter();
 	const pathname = usePathname();
-	const { ref, inView } = useInView();
+	const { ref, inView } = useInView({
+		threshold: 0.1,
+		triggerOnce: false,
+	});
 	const {
 		data: creators,
 		fetchNextPage,
@@ -32,24 +35,13 @@ const HomePage = () => {
 		isLoading,
 	} = useGetCreators();
 
-	useEffect(() => {
-		if (inView) {
-			fetchNextPage();
-		}
-	}, [inView]);
-
-	useEffect(() => {
-		if (pathname === "/home") {
-			localStorage.removeItem("creatorURL");
-		}
-	}, [router, pathname]);
-
 	const handleCreatorCardClick = async (
 		phone: string,
 		username: string,
 		theme: string,
 		id: string
 	) => {
+		sessionStorage.setItem("scrollPosition", window.scrollY.toString());
 		setLoadingCard(true);
 		updateCreatorURL(`/${username}`);
 		localStorage.setItem("creatorURL", `/${username}`);
@@ -69,6 +61,36 @@ const HomePage = () => {
 		router.push(`/${username}`);
 	};
 
+	useEffect(() => {
+		const restoreScrollPosition = () => {
+			const storedScrollPosition = sessionStorage.getItem("scrollPosition");
+
+			if (storedScrollPosition) {
+				window.scrollTo({
+					top: parseInt(storedScrollPosition, 10),
+					behavior: "smooth", // This enables smooth scrolling
+				});
+				sessionStorage.removeItem("scrollPosition");
+			}
+		};
+
+		if (!isLoading) {
+			setTimeout(restoreScrollPosition, 1000);
+		}
+	}, [isLoading]);
+
+	useEffect(() => {
+		if (inView && hasNextPage && !isFetching) {
+			fetchNextPage();
+		}
+	}, [inView, hasNextPage, isFetching]);
+
+	useEffect(() => {
+		if (pathname === "/home") {
+			localStorage.removeItem("creatorURL");
+		}
+	}, [router, pathname]);
+
 	if (isLoading || loadingCard) {
 		return (
 			<div className="size-full flex flex-col gap-2 items-center justify-center">
@@ -76,6 +98,8 @@ const HomePage = () => {
 			</div>
 		);
 	}
+
+	console.log(creators);
 
 	return (
 		<main
@@ -86,12 +110,12 @@ const HomePage = () => {
 			{userType === "client" ? (
 				<Suspense fallback={<PostLoader count={6} />}>
 					{isError ? (
-						<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
-							Failed to fetch creators <br />
-							Please try again later.
+						<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-red-500">
+							Failed to fetch creators
+							<span className="text-base">Please try again later.</span>
 						</div>
 					) : creators && creators.pages[0].length === 0 && !isLoading ? (
-						<p className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
+						<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
 							No creators found.
 						</p>
 					) : (
@@ -105,10 +129,7 @@ const HomePage = () => {
 								page.map((creator: creatorUser, index: number) => (
 									<section
 										key={creator._id}
-										className="w-full cursor-pointer creator-card entered"
-										style={
-											{ "--delay": `${index * 0.2}s` } as React.CSSProperties
-										}
+										className="w-full cursor-pointer"
 										onClick={() =>
 											handleCreatorCardClick(
 												creator.phone,
@@ -138,11 +159,14 @@ const HomePage = () => {
 						/>
 					)}
 
-					{!hasNextPage && !isFetching && (
-						<div className="text-center text-gray-500 py-4">
-							You have reached the end of the list
-						</div>
-					)}
+					{!hasNextPage &&
+						!isFetching &&
+						creators &&
+						creators?.pages[0]?.length !== 0 && (
+							<div className="text-center text-gray-500 py-4">
+								You have reached the end of the list
+							</div>
+						)}
 
 					{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
 				</Suspense>

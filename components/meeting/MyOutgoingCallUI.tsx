@@ -47,7 +47,7 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 				<img
 					src={expert?.user?.image || "/icons/logo_icon_dark.png"}
 					alt=""
-					className="rounded-full w-28 h-28 object-cover"
+					className="rounded-full w-28 h-28 object-cover bg-white"
 					onError={(e) => {
 						e.currentTarget.src = "/images/defaultProfileImage.png";
 					}}
@@ -68,7 +68,7 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 				<button
 					className="bg-red-500 text-white p-4 rounded-full hoverScaleDownEffect"
 					onClick={async () => {
-						await call.leave({ reject: true });
+						await call.reject();
 
 						toast({
 							variant: "destructive",

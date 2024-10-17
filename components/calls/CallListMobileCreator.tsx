@@ -20,7 +20,10 @@ const CallListMobileclient = () => {
 	const { currentUser, userType } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
 	const pathname = usePathname();
-	const { ref, inView } = useInView();
+	const { ref, inView } = useInView({
+		threshold: 0.1,
+		triggerOnce: false,
+	});
 	const {
 		data: userCalls,
 		fetchNextPage,
@@ -31,10 +34,10 @@ const CallListMobileclient = () => {
 	} = useGetPreviousCalls(currentUser?._id as string, userType as string);
 
 	useEffect(() => {
-		if (inView) {
+		if (inView && hasNextPage && !isFetching) {
 			fetchNextPage();
 		}
-	}, [inView]);
+	}, [inView, hasNextPage, isFetching]);
 
 	return (
 		<>
@@ -42,7 +45,7 @@ const CallListMobileclient = () => {
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
 				</section>
-			) : userCalls && userCalls?.pages[0].calls?.length === 0 ? (
+			) : userCalls && userCalls?.pages[0]?.totalCalls === 0 ? (
 				<div className="flex flex-col w-full items-center justify-center h-full">
 					<h1 className="text-2xl font-semibold text-red-500">
 						No Calls Found
@@ -52,9 +55,9 @@ const CallListMobileclient = () => {
 					</h2>
 				</div>
 			) : isError ? (
-				<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
-					Failed to fetch User Calls <br />
-					Please try again later.
+				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-red-500">
+					Failed to fetch User Calls
+					<h2 className="text-xl">Please try again later.</h2>
 				</div>
 			) : (
 				<>
@@ -179,11 +182,13 @@ const CallListMobileclient = () => {
 						/>
 					)}
 
-					{!hasNextPage && !isFetching && (
-						<div className="xl:hidden text-center text-gray-500 py-4">
-							You have reached the end of the list
-						</div>
-					)}
+					{!hasNextPage &&
+						!isFetching &&
+						userCalls?.pages[0]?.totalCalls !== 0 && (
+							<div className="xl:hidden text-center text-gray-500 py-4">
+								You have reached the end of the list
+							</div>
+						)}
 
 					{hasNextPage && <div ref={ref} className="w-full" />}
 				</>

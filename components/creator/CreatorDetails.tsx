@@ -162,7 +162,20 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				{/* Creator Info */}
 				<section className="w-full h-fit flex items-center justify-start gap-4 ">
 					{/* 1. Creator Status and Image */}
-					<section className="relative flex border-[3px] border-[#098D26] rounded-full min-h-[94px] min-w-[94px] p-1">
+					<section
+						className="relative flex  rounded-full min-h-[94px] min-w-[94px] p-1"
+						style={{
+							border: `3px solid ${
+								status === "Online"
+									? "#098D26"
+									: status === "Offline"
+									? "#f87171"
+									: status === "Busy"
+									? "#fb923c"
+									: "#f87171"
+							}`,
+						}}
+					>
 						{/* Creator Image */}
 						<div
 							className="w-full h-auto rounded-full"
@@ -204,7 +217,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 										? "Offline"
 										: status === "Busy"
 										? "Busy"
-										: "Idle"}
+										: "Offline"}
 								</span>
 							</div>
 						</section>

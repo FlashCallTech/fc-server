@@ -9,15 +9,13 @@ import StreamVideoProvider from "@/providers/streamClientProvider";
 import axios from "axios";
 import { throttle } from "lodash";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 import React, { ReactNode, useEffect, useState } from "react";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	const [isOnline, setIsOnline] = useState(true);
 	const [isMounted, setIsMounted] = useState(false);
-	const pathname = usePathname();
-	// Handle online/offline status with throttling to prevent excessive updates
+
 	useEffect(() => {
 		const handleOnline = throttle(() => setIsOnline(true), 500);
 		const handleOffline = throttle(() => setIsOnline(false), 500);

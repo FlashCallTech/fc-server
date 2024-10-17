@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 		description: "Book your first consultation",
 		images: [
 			{
-				url: "/icons/metadataBg.png",
+				url: "/icons/logo_icon_dark.png",
 				width: 800,
 				height: 600,
 				alt: "FlashCall Logo",

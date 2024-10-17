@@ -27,7 +27,10 @@ const CallListMobile = () => {
 	const pathname = usePathname();
 	const router = useRouter();
 	const { toast } = useToast();
-	const { ref, inView } = useInView();
+	const { ref, inView } = useInView({
+		threshold: 0.1,
+		triggerOnce: false,
+	});
 	const {
 		data: userCalls,
 		fetchNextPage,
@@ -41,10 +44,10 @@ const CallListMobile = () => {
 	}>({});
 
 	useEffect(() => {
-		if (inView) {
+		if (inView && hasNextPage && !isFetching) {
 			fetchNextPage();
 		}
-	}, [inView]);
+	}, [inView, hasNextPage, isFetching]);
 
 	useEffect(() => {
 		const fetchReportStatus = async (callId: string, creatorId: string) => {
@@ -86,7 +89,7 @@ const CallListMobile = () => {
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
 				</section>
-			) : userCalls && userCalls?.pages[0].calls?.length === 0 ? (
+			) : userCalls && userCalls?.pages[0]?.totalCalls === 0 ? (
 				<div className="flex flex-col w-full items-center justify-center h-full">
 					<h1 className="text-2xl font-semibold text-red-500">
 						No Calls Found
@@ -96,14 +99,14 @@ const CallListMobile = () => {
 					</h2>
 				</div>
 			) : isError ? (
-				<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
-					Failed to fetch User Calls <br />
-					Please try again later.
+				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-red-500">
+					Failed to fetch User Calls
+					<h2 className="text-xl">Please try again later.</h2>
 				</div>
 			) : (
 				<>
 					<section
-						className={`w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 xl:gap-10 text-black px-4`}
+						className={`w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 text-black px-4`}
 					>
 						{userCalls?.pages?.flatMap((page: any) =>
 							page?.calls?.map((userCall: RegisterCallParams) => {
@@ -164,7 +167,7 @@ const CallListMobile = () => {
 												</div>
 											</button>
 											{/* call details */}
-											<div className="flex flex-wrap-reverse items-center justify-start gap-2 pl-16">
+											<div className="flex flex-wrap items-center justify-start gap-2 pl-16">
 												<span
 													className={`text-sm ${
 														userCall.status === "Ended"
@@ -216,7 +219,8 @@ const CallListMobile = () => {
 												{formattedDate.dateTime}
 											</span>
 											<section className="flex w-full items-end justify-end">
-												{userCall.status !== "Rejected" ? (
+												{userCall.status !== "Rejected" &&
+												userCall.status !== "Not Answered" ? (
 													<FeedbackCheck callId={userCall?.callId} />
 												) : (
 													<button
@@ -254,11 +258,13 @@ const CallListMobile = () => {
 						/>
 					)}
 
-					{!hasNextPage && !isFetching && (
-						<div className="xl:hidden text-center text-gray-500 py-4">
-							You have reached the end of the list
-						</div>
-					)}
+					{!hasNextPage &&
+						!isFetching &&
+						userCalls?.pages[0]?.totalCalls !== 0 && (
+							<div className="xl:hidden text-center text-gray-500 py-4">
+								You have reached the end of the list
+							</div>
+						)}
 
 					{hasNextPage && <div ref={ref} className="w-full" />}
 				</>

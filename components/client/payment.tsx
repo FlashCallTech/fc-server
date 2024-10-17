@@ -47,7 +47,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const router = useRouter();
 	const { clientUser } = useCurrentUsersContext();
 
-	const { ref, inView } = useInView();
+	const { ref, inView } = useInView({
+		threshold: 0.1,
+		triggerOnce: false,
+	});
 	const {
 		data: transactions,
 		fetchNextPage,
@@ -58,10 +61,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	} = useGetUserTransactionsByType(currentUser?._id as string, btn);
 
 	useEffect(() => {
-		if (inView) {
+		if (inView && hasNextPage && !isFetching) {
 			fetchNextPage();
 		}
-	}, [inView]);
+	}, [inView, hasNextPage, isFetching]);
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -304,9 +307,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 							Failed to fetch Transactions <br />
 							Please try again later.
 						</div>
-					) : transactions && transactions?.pages?.length === 0 ? (
-						<p className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
-							{`No transactions under ${btn} filter`}
+					) : transactions &&
+					  transactions?.pages[0]?.totalTransactions === 0 ? (
+						<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
+							{`No transactions Found`}
 						</p>
 					) : (
 						transactions?.pages?.map((page: any) =>
@@ -355,11 +359,15 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 				/>
 			)}
 
-			{!isError && !hasNextPage && !isFetching && currentUser && (
-				<div className="text-center text-gray-500 py-4">
-					You have reached the end of the list.
-				</div>
-			)}
+			{!isError &&
+				!hasNextPage &&
+				!isFetching &&
+				currentUser &&
+				transactions?.pages[0]?.totalTransactions !== 0 && (
+					<div className="text-center text-gray-500 py-4">
+						You have reached the end of the list.
+					</div>
+				)}
 
 			{hasNextPage && <div ref={ref} className=" pt-10 w-full" />}
 		</div>

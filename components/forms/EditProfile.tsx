@@ -14,6 +14,14 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { UpdateCreatorParams, UpdateUserParams } from "@/types";
 import React, { useEffect, useState } from "react";
@@ -29,7 +37,7 @@ import { updateUser } from "@/lib/actions/client.actions";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
 import axios from "axios";
-import { debounce, placeholderImages } from "@/lib/utils";
+import { backendBaseUrl, debounce, placeholderImages } from "@/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 import Image from "next/image";
 import GetRandomImage from "@/utils/GetRandomImage";
@@ -42,24 +50,6 @@ export type EditProfileProps = {
 	userType: string | null;
 };
 
-const predefinedColors = [
-	"#88D8C0", // Light Green
-	"#79ADDC", // Light Blue
-	"#FFC09F", // Light Orange
-	"#FFEE93", // Light Yellow
-	"#FCF5C7", // Pale Yellow
-	"#ADF7B6", // Light Green
-	"#AAE9E5", // Light Cyan
-	"#87C7F1", // Light Sky Blue
-	"#FEFEFE", // Light Beige
-	"#FFEDA9", // Light Gold
-	"#EACFFF", // Light Purple
-	"#FFBEBE", // Light Red
-	"#FFBEE9", // Light Pink
-	"#BEF3FF", // Light Blue
-	"#A6FCDF", // Light Mint Green
-];
-
 const EditProfile = ({
 	userData,
 	setUserData,
@@ -67,6 +57,7 @@ const EditProfile = ({
 	setEditData,
 	userType,
 }: EditProfileProps) => {
+	const pathname = usePathname();
 	const { toast } = useToast();
 	const [isChanged, setIsChanged] = useState(false);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -81,11 +72,59 @@ const EditProfile = ({
 			return Boolean(!userData.referredBy);
 		}
 	);
-	const pathname = usePathname();
+
+	const [predefinedColors, setPredefinedColors] = useState([]);
+	const [professions, setProfessions] = useState([]);
+	const [selectedProfession, setSelectedProfession] = useState("");
+	const [dialogOpen, setDialogOpen] = useState(false);
+
+	const handleSelectProfession = (profession: any) => {
+		setSelectedProfession(profession);
+		form.setValue("profession", profession);
+		setDialogOpen(false);
+	};
 
 	const handleColorSelect: any = (color: string) => {
 		setSelectedColor(color);
 	};
+
+	// Fetch professions from the API
+	useEffect(() => {
+		const fetchProfessions = async () => {
+			try {
+				const response = await axios.get(
+					`${backendBaseUrl}/profession/selectProfession`
+				);
+				if (response.status === 200) {
+					setProfessions(response.data.professions);
+				}
+			} catch (error) {
+				console.error("Error fetching professions:", error);
+			}
+		};
+
+		fetchProfessions();
+	}, []);
+
+	// Fetch themes from API
+	useEffect(() => {
+		const fetchThemes = async () => {
+			try {
+				// Make the API call to get the themes
+				const response = await axios.get(`${backendBaseUrl}/user/select-theme`);
+				if (response.data.success) {
+					setPredefinedColors(response.data.colors);
+				} else {
+					console.error("Failed to fetch themes");
+				}
+			} catch (error) {
+				console.error("Error fetching themes:", error);
+			}
+		};
+
+		// Call the function to fetch themes on component mount
+		fetchThemes();
+	}, []);
 
 	// Conditionally select the schema based on user role
 	const schema =
@@ -308,6 +347,12 @@ const EditProfile = ({
 			</section>
 		);
 
+	console.log(
+		"Selected profession:",
+		selectedProfession,
+		watchedValues.profession
+	);
+
 	return (
 		<Form {...form}>
 			<span className="text-2xl font-semibold">Edit User Details</span>
@@ -470,14 +515,69 @@ const EditProfile = ({
 								<FormLabel className="text-sm text-gray-400 ml-1">
 									Profession
 								</FormLabel>
-								<FormControl>
-									<Input
-										type="text"
-										placeholder={`Enter your profession`}
-										{...field}
-										className="input-field"
-									/>
-								</FormControl>
+								<section className="w-full flex gap-2.5 items-center justify-start">
+									<FormControl>
+										<Input
+											readOnly
+											type="text"
+											placeholder={`Enter your profession`}
+											value={
+												selectedProfession ? selectedProfession : field.value
+											}
+											className="input-field hoverScaleDownEffect w-fit cursor-pointer"
+											onClick={() => setDialogOpen(true)}
+										/>
+									</FormControl>
+
+									{/* Dialog trigger to open profession selector */}
+									<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+										<DialogTrigger asChild>
+											<Button
+												type="button"
+												className="hoverScaleDownEffect  bg-green-1 w-fit text-white"
+											>
+												Choose
+											</Button>
+										</DialogTrigger>
+										<DialogContent className="flex flex-col items-center justify-center w-[92%] md:w-full bg-white rounded-xl border-none">
+											<DialogHeader>
+												<DialogTitle>Select Your Profession</DialogTitle>
+												<DialogDescription className="sr-only">
+													List is provided below
+												</DialogDescription>
+											</DialogHeader>
+											<div className="w-full mt-4 grid grid-cols-3 items-center gap-5 md:gap-2.5">
+												{professions?.map((profession: any) => (
+													<section
+														className={`cursor-pointer flex flex-col gap-2 items-center hoverScaleDownEffect`}
+														key={profession.id}
+													>
+														<section
+															className={`${
+																profession.name === field.value &&
+																"ring-2 ring-offset-2 ring-green-1"
+															} p-4 bg-white shadow-lg  rounded-full`}
+															onClick={() => {
+																handleSelectProfession(profession.name);
+															}}
+														>
+															<Image
+																src={profession.icon}
+																alt={profession.name}
+																width={1000}
+																height={1000}
+																className={`w-[48px] h-[48px] object-cover`}
+															/>
+														</section>
+														<span className="text-xs sm:text-sm text-[#707070]">
+															{profession.name}
+														</span>
+													</section>
+												))}
+											</div>
+										</DialogContent>
+									</Dialog>
+								</section>
 
 								<FormMessage className="error-message">
 									{errors.profession?.message}
@@ -488,7 +588,7 @@ const EditProfile = ({
 				)}
 
 				<div
-					className={`w-full grid grid-cols-2  items-center justify-between gap-8`}
+					className={`w-full grid grid-cols-1 sm:grid-cols-2 items-center justify-between gap-8`}
 				>
 					{/* gender */}
 					<FormField
@@ -507,7 +607,7 @@ const EditProfile = ({
 											className={
 												field.value === "male"
 													? "bg-green-1 text-white rounded-xl px-4 py-3"
-													: "input-field text-sm px-4 !py-2"
+													: "input-field text-sm px-4 !py-2 hoverScaleDownEffect"
 											}
 										>
 											Male
@@ -518,7 +618,7 @@ const EditProfile = ({
 											className={
 												field.value === "female"
 													? "bg-green-1 text-white rounded-xl px-4 py-3"
-													: "input-field text-sm px-4 !py-2"
+													: "input-field text-sm px-4 !py-2 hoverScaleDownEffect"
 											}
 										>
 											Female
@@ -529,7 +629,7 @@ const EditProfile = ({
 											className={
 												field.value === "other"
 													? "bg-green-1 text-white rounded-xl px-4 py-3"
-													: "input-field text-sm px-4 !py-2"
+													: "input-field text-sm px-4 !py-2 hoverScaleDownEffect"
 											}
 										>
 											Other
@@ -551,7 +651,7 @@ const EditProfile = ({
 						control={form.control}
 						name="dob"
 						render={({ field }) => (
-							<FormItem className="w-full">
+							<FormItem className="w-fit sm:w-full">
 								<FormLabel className="text-sm text-gray-400 ml-1">
 									Date of Birth
 								</FormLabel>
@@ -590,7 +690,7 @@ const EditProfile = ({
 										{predefinedColors.map((color, index) => (
 											<div
 												key={index}
-												className={`w-8 h-8 m-1 rounded-full cursor-pointer ${
+												className={`w-8 h-8 m-1 rounded-full cursor-pointer hoverScaleDownEffect ${
 													selectedColor === color
 														? "ring-2 ring-offset-2 ring-blue-500"
 														: ""
@@ -639,7 +739,7 @@ const EditProfile = ({
 				)}
 				{isChanged && isValid && !formError && !usernameError && (
 					<Button
-						className="bg-green-1 hover:opacity-80 w-3/4 mx-auto text-white"
+						className="bg-green-1 hoverScaleDownEffect w-3/4 mx-auto text-white"
 						type="submit"
 						disabled={!isValid || form.formState.isSubmitting}
 					>

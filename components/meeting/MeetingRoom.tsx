@@ -27,8 +27,8 @@ import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { backendBaseUrl } from "@/lib/utils";
-import ContentLoading from "../shared/ContentLoading";
+import { backendBaseUrl, getDarkHexCode } from "@/lib/utils";
+import { Cursor, Typewriter } from "react-simple-typewriter";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -52,7 +52,7 @@ const useScreenSize = () => {
 const MeetingRoom = () => {
 	const { useCallCallingState, useCallEndedAt, useParticipants } =
 		useCallStateHooks();
-	const { currentUser, userType } = useCurrentUsersContext();
+	const { currentUser, userType, currentTheme } = useCurrentUsersContext();
 	const hasAlreadyJoined = useRef(false);
 	const [showParticipants, setShowParticipants] = useState(false);
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
@@ -239,13 +239,30 @@ const MeetingRoom = () => {
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 
 	const NoParticipantsView = () => (
-		<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-			<p className="text-white text-xl">No other participants in the call</p>
-			{/* You can add visual effects or animations here */}
-			<div className="mt-4">
-				<ContentLoading />
+		<section className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center justify-center">
+			{/* <p className="text-white text-xl">No other participants in the call</p> */}
+			<div className="size-full flex items-center justify-center">
+				<h1
+					className="text-xl md:text-2xl font-semibold"
+					style={{ color: "#ffffff" }}
+				>
+					<Typewriter
+						words={[
+							"You're the first one here",
+							"Waiting for others to join.",
+							"Hang tight",
+						]}
+						loop={true}
+						cursor
+						cursorStyle="_"
+						typeSpeed={50}
+						deleteSpeed={50}
+						delaySpeed={2000}
+					/>
+					<Cursor cursorColor="#ffffff" />
+				</h1>
 			</div>
-		</div>
+		</section>
 	);
 
 	if (callingState !== CallingState.JOINED) {
