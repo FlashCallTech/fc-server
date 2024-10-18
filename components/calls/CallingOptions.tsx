@@ -185,14 +185,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							if(data.status === "rejected") {
 								toast({
 									variant: "destructive",
-									title: "Rejected",
-									description: "The user is busy, please try again later",
+									title: "The user is busy, please try again later",
 								});
 							} else {
 								toast({
 									variant: "destructive",
-									title: "Cancelled",
-									description: "User is not asnwering please try again later",
+									title: "User is not asnwering please try again later",
 								});
 							}
 							localStorage.removeItem("user2");
