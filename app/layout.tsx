@@ -9,16 +9,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { Metadata } from "next";
 import MovePageToTop from "@/components/shared/MovePageToTop";
 
-// Dynamic imports
-const GoogleTagManager = React.lazy(() =>
-	import("@next/third-parties/google").then((module) => ({
-		default: module.GoogleTagManager,
-	}))
-);
-const GoogleAnalytics = React.lazy(
-	() => import("@/components/analytics/GoogleAnalytics")
-);
-
 export const metadata: Metadata = {
 	title: "Flashcall.me",
 	description: "Book your first consultation",
@@ -56,11 +46,6 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<Suspense fallback={null}>
-				<GoogleAnalytics />
-				<GoogleTagManager gtmId={`${process.env.NEXT_PUBLIC_MEASUREMENT_ID}`} />
-			</Suspense>
-
 			<TooltipProvider>
 				<body className="overflow-y-scroll no-scrollbar">
 					<Toaster />
