@@ -16,6 +16,15 @@ import { Textarea } from "../ui/textarea";
 import { backendBaseUrl } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
+import {
+	getFirestore,
+	collection,
+	query,
+	where,
+	getDocs,
+	deleteDoc,
+	doc,
+} from "firebase/firestore";
 
 const DeleteAlert = () => {
 	const { currentUser, handleSignout } = useCurrentUsersContext();
@@ -24,6 +33,48 @@ const DeleteAlert = () => {
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 	const { toast } = useToast();
+
+	const firestore = getFirestore();
+
+	async function deleteFirestoreDocs(userId: string, phoneNumber: string) {
+		try {
+			// Collections that take phoneNumber
+			const phoneCollections = ["userStatus", "FCMtoken", "authToken"];
+			for (const col of phoneCollections) {
+				const q = query(
+					collection(firestore, col),
+					where("phoneNumber", "==", phoneNumber)
+				);
+				const querySnapshot = await getDocs(q);
+				querySnapshot.forEach(async (document) => {
+					await deleteDoc(doc(firestore, col, document.id));
+					console.log(`Deleted document from ${col} with ID:`, document.id);
+				});
+			}
+
+			// Collections that take userId (_id)
+			const userIdCollections = [
+				"services",
+				"sessionTriggered",
+				"sessions",
+				"transactions",
+				"userChats",
+			];
+			for (const col of userIdCollections) {
+				const q = query(
+					collection(firestore, col),
+					where("userId", "==", userId)
+				);
+				const querySnapshot = await getDocs(q);
+				querySnapshot.forEach(async (document) => {
+					await deleteDoc(doc(firestore, col, document.id));
+					console.log(`Deleted document from ${col} with ID:`, document.id);
+				});
+			}
+		} catch (error) {
+			console.error("Error deleting Firestore documents:", error);
+		}
+	}
 	const handleDeleteUser = async () => {
 		setLoading(true);
 		if (!currentUser) return;
@@ -40,6 +91,11 @@ const DeleteAlert = () => {
 			const data = await response.json();
 			if (response.ok) {
 				console.log("User deleted successfully:", data);
+				await deleteFirestoreDocs(
+					currentUser._id as string,
+					currentUser.phone as string
+				);
+
 				handleSignout();
 				toast({
 					variant: "destructive",
