@@ -27,10 +27,34 @@ import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { backendBaseUrl, getDarkHexCode } from "@/lib/utils";
+import { backendBaseUrl } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
+import {
+	doc,
+	getDoc,
+	getFirestore,
+	onSnapshot,
+	setDoc,
+} from "firebase/firestore";
 
 type CallLayoutType = "grid" | "speaker-bottom";
+
+interface LatestTip {
+	callId: string;
+	amount: number;
+}
+
+interface UserTipsData {
+	[key: string]: LatestTip;
+}
+
+const TipAnimation = ({ amount }: { amount: number }) => {
+	return (
+		<div className="absolute top-6 left-6 sm:top-4 sm:left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-[#ffffff4d] text-white flex items-center justify-center">
+			<p>You received a tip of Rs.{amount}</p>
+		</div>
+	);
+};
 
 // Custom hook to track screen size
 const useScreenSize = () => {
@@ -52,10 +76,12 @@ const useScreenSize = () => {
 const MeetingRoom = () => {
 	const { useCallCallingState, useCallEndedAt, useParticipants } =
 		useCallStateHooks();
-	const { currentUser, userType, currentTheme } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 	const hasAlreadyJoined = useRef(false);
 	const [showParticipants, setShowParticipants] = useState(false);
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
+	const [tipReceived, setTipReceived] = useState(false);
+	const [tipAmount, setTipAmount] = useState(0);
 	const call = useCall();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
@@ -69,6 +95,7 @@ const MeetingRoom = () => {
 	const [showCountdown, setShowCountdown] = useState(false);
 	const [countdown, setCountdown] = useState<number | null>(null);
 	const [hasVisited, setHasVisited] = useState(false);
+	const firestore = getFirestore();
 
 	const countdownDuration = 15;
 
@@ -137,6 +164,55 @@ const MeetingRoom = () => {
 			joinCall();
 		}
 	}, [call, callingState, currentUser, callHasEnded]);
+
+	const deleteTip = async (userTipsRef: any, latestTip: LatestTip) => {
+		try {
+			const docSnapshot = await getDoc(userTipsRef);
+			if (docSnapshot.exists()) {
+				const data: UserTipsData | undefined =
+					docSnapshot.data() as UserTipsData;
+
+				if (data && typeof data === "object") {
+					const newData = { ...data };
+
+					delete newData[latestTip.callId];
+
+					await setDoc(userTipsRef, newData);
+					console.log("Tip removed successfully.");
+				} else {
+					console.warn("Data is not an object or is undefined.");
+				}
+			}
+		} catch (error) {
+			console.error("Error removing tip from Firestore:", error);
+		}
+	};
+
+	useEffect(() => {
+		if (userType === "creator") {
+			const expert = call?.state?.members?.find(
+				(member) => member.custom.type === "expert"
+			);
+			const userTipsRef = doc(firestore, "userTips", expert?.user_id as string);
+
+			const unsubscribe = onSnapshot(userTipsRef, async (doc) => {
+				const data = doc.data();
+				if (data) {
+					const latestTip = Object.values(data).pop();
+					if (latestTip) {
+						setTipAmount(latestTip.amount);
+						setTipReceived(true);
+						await deleteTip(userTipsRef, latestTip);
+						setTimeout(() => {
+							setTipReceived(false);
+						}, 5000);
+					}
+				}
+			});
+
+			return () => unsubscribe();
+		}
+	}, [userType, call]);
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -275,7 +351,7 @@ const MeetingRoom = () => {
 
 	// Display countdown notification or modal to the user
 	const CountdownDisplay = () => (
-		<div className="absolute top-4 left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-red-500 text-white flex items-center justify-center">
+		<div className="absolute top-6 left-6 sm:top-4 sm:left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-red-500 text-white flex items-center justify-center">
 			<p>Ending call in {countdown}s</p>
 		</div>
 	);
@@ -298,10 +374,15 @@ const MeetingRoom = () => {
 				)}
 			</div>
 
-			{!callHasEnded && isMeetingOwner && !showCountdown ? (
+			{userType === "creator" && tipReceived && (
+				<TipAnimation amount={tipAmount} />
+			)}
+
+			{!callHasEnded && isMeetingOwner && !showCountdown && call ? (
 				<CallTimer
 					handleCallRejected={handleCallRejected}
 					isVideoCall={isVideoCall}
+					callId={call.id}
 				/>
 			) : (
 				!showCountdown &&

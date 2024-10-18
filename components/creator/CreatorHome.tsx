@@ -266,7 +266,6 @@ const CreatorHome = () => {
 						chatAllowed: services.chat,
 					}
 				);
-				refreshCurrentUser();
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error updating services:", error);

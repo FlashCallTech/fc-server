@@ -5,7 +5,6 @@ import {
 	Sheet,
 	SheetContent,
 	SheetDescription,
-	SheetFooter,
 	SheetHeader,
 	SheetTitle,
 	SheetTrigger,
@@ -18,6 +17,8 @@ import { success } from "@/constants/icons";
 import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { backendBaseUrl } from "@/lib/utils";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import RechargeModal from "./RechargeModal";
 
 // Custom hook to track screen size
 const useScreenSize = () => {
@@ -53,11 +54,13 @@ const TipModal = ({
 	setWalletBalance,
 	updateWalletBalance,
 	isVideoCall,
+	callId,
 }: {
 	walletBalance: number;
 	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
 	updateWalletBalance: () => Promise<void>;
 	isVideoCall: boolean;
+	callId: string;
 }) => {
 	const [rechargeAmount, setRechargeAmount] = useState("");
 	const [audioRatePerMinute, setAudioRatePerMinute] = useState(0);
@@ -69,10 +72,12 @@ const TipModal = ({
 	const [tipPaid, setTipPaid] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
+	const [showRechargeModal, setShowRechargeModal] = useState(false);
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
 	const { totalTimeUtilized, hasLowBalance } = useCallTimerContext();
 	const isMobile = useScreenSize() && isMobileDevice();
+	const firestore = getFirestore();
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -137,8 +142,9 @@ const TipModal = ({
 			toast({
 				variant: "destructive",
 				title: "Insufficient Wallet Balance",
-				description: `Your tip amount exceeds the available balance } for the call. Try a smaller amount.`,
+				description: `Your tip amount exceeds the balance.`,
 			});
+			setShowRechargeModal(true);
 			setErrorMessage("Insufficient Wallet Balance for this tip.");
 			return;
 		}
@@ -152,6 +158,7 @@ const TipModal = ({
 						userId: clientId,
 						userType: "Client",
 						amount: rechargeAmount,
+						category: "Tip",
 					}),
 					headers: { "Content-Type": "application/json" },
 				}),
@@ -161,10 +168,31 @@ const TipModal = ({
 						userId: creatorId,
 						userType: "Creator",
 						amount: (parseInt(rechargeAmount) * 0.8).toFixed(2),
+						category: "Tip",
 					}),
 					headers: { "Content-Type": "application/json" },
 				}),
 			]);
+
+			const userDocRef = doc(firestore, "userTips", creatorId as string);
+
+			const userDocSnapshot = await getDoc(userDocRef);
+
+			if (!userDocSnapshot.exists()) {
+				await setDoc(userDocRef, {});
+			}
+
+			await setDoc(
+				userDocRef,
+				{
+					[callId]: {
+						amount: parseInt(rechargeAmount),
+					},
+				},
+				{ merge: true }
+			);
+			console.log("Latest tip added/updated successfully in Firestore.");
+
 			setWalletBalance((prev) => prev + parseInt(rechargeAmount));
 			setTipPaid(true);
 		} catch (error) {
@@ -187,6 +215,7 @@ const TipModal = ({
 		setLoading(false);
 		setTipPaid(false);
 		setErrorMessage("");
+		setShowRechargeModal(false);
 	};
 
 	const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,8 +223,11 @@ const TipModal = ({
 		setRechargeAmount(amount);
 
 		if (parseInt(amount) > adjustedWalletBalance) {
-			setErrorMessage("Please enter a smaller amount to proceed.");
+			setErrorMessage("Please enter a smaller amount or recharge your wallet.");
+
+			setShowRechargeModal(true);
 		} else {
+			setShowRechargeModal(false);
 			setErrorMessage("");
 		}
 	};
@@ -223,14 +255,8 @@ const TipModal = ({
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
 					className={`flex flex-col items-center justify-center ${
-						!loading ? "px-7 py-4" : "px-4"
-					}  border-none rounded-t-xl bg-white w-full mx-auto overflow-scroll no-scrollbar sm:max-w-[444px] ${
-						!isMobile && !tipPaid
-							? predefinedOptions.length > 8
-								? "max-h-[450px] min-h-[420px]"
-								: "max-h-[400px] min-h-[380px]"
-							: "max-h-[350px] min-h-[350px]"
-					}`}
+						!loading ? "px-7 py-5" : "px-4"
+					}  border-none rounded-t-xl bg-white mx-auto overflow-scroll no-scrollbar min-h-[350px] max-h-fit w-full sm:max-w-[444px]`}
 					style={{ height: "calc(var(--vh, 1vh) * 100)" }}
 				>
 					{loading ? (
@@ -257,7 +283,7 @@ const TipModal = ({
 									errorMessage ? "py-2 gap-2 " : "py-4 gap-4"
 								} w-full`}
 							>
-								<span>Enter Desired amount in INR</span>
+								<span className="text-sm">Enter Desired amount in INR</span>
 								<section className="relative flex flex-col justify-center items-center">
 									<Input
 										id="rechargeAmount"
@@ -269,20 +295,30 @@ const TipModal = ({
 										className="input-field-modal"
 									/>
 
-									<Button
-										className={`absolute right-2 bg-green-1 text-white hoverScaleDownEffect ${
-											(!rechargeAmount ||
-												parseInt(rechargeAmount) > adjustedWalletBalance) &&
-											"cursor-not-allowed"
-										}`}
-										onClick={handleTransaction}
-										disabled={
-											!rechargeAmount ||
-											parseInt(rechargeAmount) > adjustedWalletBalance
-										}
-									>
-										Proceed
-									</Button>
+									{showRechargeModal ? (
+										<section className="absolute right-2 flex items-center justify-center">
+											<RechargeModal
+												inTipModal={true}
+												walletBalance={walletBalance}
+												setWalletBalance={setWalletBalance}
+											/>
+										</section>
+									) : (
+										<Button
+											className={`absolute right-2 bg-green-1 text-white hoverScaleDownEffect ${
+												(!rechargeAmount ||
+													parseInt(rechargeAmount) > adjustedWalletBalance) &&
+												"cursor-not-allowed"
+											}`}
+											onClick={handleTransaction}
+											disabled={
+												!rechargeAmount ||
+												parseInt(rechargeAmount) > adjustedWalletBalance
+											}
+										>
+											Proceed
+										</Button>
+									)}
 								</section>
 
 								{errorMessage && (
@@ -295,30 +331,32 @@ const TipModal = ({
 								className={`flex flex-col items-start justify-start w-full`}
 							>
 								<span className="text-sm">Predefined Options</span>
-								<div
-									className={`${
-										!isMobile
-											? "grid grid-cols-4 gap-4 mt-4 w-full"
-											: "flex justify-start items-center mt-4 space-x-4 w-full overflow-x-scroll overflow-y-hidden no-scrollbar"
-									}`}
-								>
-									{predefinedOptions.map((amount) => (
-										<Button
-											key={amount}
-											onClick={() => handlePredefinedAmountClick(amount)}
-											className={`w-20 bg-gray-200 hover:bg-gray-300 hoverScaleEffect ${
-												rechargeAmount === amount &&
-												"bg-green-1 text-white hover:bg-green-1"
-											}`}
-										>
-											₹{amount}
-										</Button>
-									))}
-								</div>
+								{
+									<div
+										className={`${
+											!isMobile
+												? "grid grid-cols-4 gap-4 mt-4 w-full"
+												: "flex justify-start items-center mt-4 space-x-4 w-full overflow-x-scroll overflow-y-hidden no-scrollbar"
+										}`}
+									>
+										{predefinedOptions.map((amount) => (
+											<Button
+												key={amount}
+												onClick={() => handlePredefinedAmountClick(amount)}
+												className={`w-20 bg-gray-200 hover:bg-gray-300 hoverScaleEffect ${
+													rechargeAmount === amount &&
+													"bg-green-1 text-white hover:bg-green-1"
+												}`}
+											>
+												₹{amount}
+											</Button>
+										))}
+									</div>
+								}
 							</section>
 						</>
 					) : (
-						<div className="flex flex-col items-center justify-center min-w-full h-full gap-4">
+						<div className="flex flex-col items-center justify-center min-w-full h-fit gap-4">
 							{success}
 							<span className="font-semibold text-lg">
 								Tip Added Successfully!

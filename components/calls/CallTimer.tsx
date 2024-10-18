@@ -7,17 +7,33 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import RechargeModal from "./RechargeModal";
 import TipModal from "./TipModal";
 import Image from "next/image";
+import TimeExtensionModal from "./TimeExtensionModal";
+import { backendBaseUrl } from "@/lib/utils";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const CallTimer = ({
 	isVideoCall,
 	handleCallRejected,
+	callId,
 }: {
 	handleCallRejected: () => Promise<void>;
 	isVideoCall: boolean;
+	callId: string;
 }) => {
-	const { timeLeft, hasLowBalance } = useCallTimerContext();
+	const {
+		timeLeft,
+		maxCallDuration,
+		hasLowBalance,
+		callRatePerMinute,
+		setTimeLeft,
+		setMaxCallDuration,
+	} = useCallTimerContext();
 	const [isToastShown, setIsToastShown] = useState(false);
+
 	const { toast } = useToast();
+	const { currentUser } = useCurrentUsersContext();
 	const { walletBalance, setWalletBalance, updateWalletBalance } =
 		useWalletBalanceContext();
 
@@ -29,6 +45,8 @@ const CallTimer = ({
 		.toString()
 		.padStart(2, "0");
 
+	const canAfford60Minutes = walletBalance >= callRatePerMinute * 60;
+
 	useEffect(() => {
 		if (!isLoading && timeLeftInSeconds <= 0) {
 			!isToastShown &&
@@ -38,11 +56,49 @@ const CallTimer = ({
 					description: "Time Limit Exceeded",
 				});
 			setIsToastShown(true);
-			setTimeout(() => {
-				handleCallRejected();
-			}, 1000);
+
+			handleCallRejected();
 		}
 	}, [timeLeftInSeconds, handleCallRejected, isLoading]);
+
+	const handleTimeExtension = async (additionalMinutes: number) => {
+		const cost = callRatePerMinute * additionalMinutes;
+
+		setWalletBalance(walletBalance - cost);
+
+		const additionalTimeInSeconds = additionalMinutes * 60;
+
+		const timeLeftInSeconds = parseFloat(timeLeft);
+
+		const newTimeLeft = timeLeftInSeconds + additionalTimeInSeconds;
+
+		const newMaxCallDuration = maxCallDuration + additionalTimeInSeconds;
+
+		setTimeLeft(newTimeLeft);
+		setMaxCallDuration(newMaxCallDuration);
+
+		try {
+			const callDocRef = doc(db, "calls", callId);
+			await updateDoc(callDocRef, {
+				timeLeft: newTimeLeft,
+				maxCallDuration: newMaxCallDuration,
+			});
+		} catch (error) {
+			console.error("Error updating Firestore timer: ", error);
+		}
+
+		// Trigger backend payout request
+		await fetch(`${backendBaseUrl}/wallet/payout`, {
+			method: "POST",
+			body: JSON.stringify({
+				userId: currentUser?._id,
+				userType: "Client",
+				amount: cost,
+				category: "Added Time",
+			}),
+			headers: { "Content-Type": "application/json" },
+		});
+	};
 
 	return (
 		<div
@@ -68,13 +124,24 @@ const CallTimer = ({
 				</p>
 			)}
 			{hasLowBalance ? (
-				<RechargeModal setWalletBalance={setWalletBalance} />
+				canAfford60Minutes ? (
+					<TimeExtensionModal
+						onExtendTime={handleTimeExtension}
+						ratePerMinute={callRatePerMinute}
+					/>
+				) : (
+					<RechargeModal
+						walletBalance={walletBalance}
+						setWalletBalance={setWalletBalance}
+					/>
+				)
 			) : (
 				<TipModal
 					walletBalance={walletBalance}
 					setWalletBalance={setWalletBalance}
 					updateWalletBalance={updateWalletBalance}
 					isVideoCall={isVideoCall}
+					callId={callId}
 				/>
 			)}
 		</div>
