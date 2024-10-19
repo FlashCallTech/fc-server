@@ -160,21 +160,14 @@ const FavoritesGrid = ({
 						<p className="text-base tracking-wide whitespace-nowrap">
 							{fullName}
 						</p>
-						<span className="text-sm text-green-1 whitespace-nowrap">
+						<span className="text-xs text-gray-400 whitespace-nowrap">
 							{creator?.profession}
 						</span>
 					</div>
 				</Link>
-
-				<span className="text-sm text-[#A7A8A1] pl-1 whitespace-nowrap">
-					{creator?.phone?.replace(
-						/(\+91)(\d+)/,
-						(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-					)}
-				</span>
 			</div>
 
-			<div className="w-full flex flex-col items-end justify-between h-full gap-2">
+			<div className="w-full flex flex-col items-end justify-center h-full gap-2">
 				<Favorites
 					setMarkedFavorite={setMarkedFavorite}
 					markedFavorite={markedFavorite}
@@ -184,20 +177,6 @@ const FavoritesGrid = ({
 					user={clientUser}
 					isFavoritesPath={isFavoritesPath}
 				/>
-				{status !== "Online" ? (
-					<button
-						className={`bg-red-500 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs whitespace-nowrap`}
-					>
-						Unavailable
-					</button>
-				) : (
-					<Link
-						href={`/${creator?.username}`}
-						className="bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
-					>
-						Talk Now
-					</Link>
-				)}
 			</div>
 		</div>
 	);

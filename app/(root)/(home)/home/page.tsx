@@ -74,10 +74,10 @@ const HomePage = () => {
 			}
 		};
 
-		if (!isLoading) {
-			setTimeout(restoreScrollPosition, 500);
+		if (!isLoading && !loadingCard && !isFetching) {
+			setTimeout(restoreScrollPosition, 100);
 		}
-	}, [isLoading]);
+	}, [isLoading, loadingCard, isFetching]);
 
 	useEffect(() => {
 		if (inView && hasNextPage && !isFetching) {

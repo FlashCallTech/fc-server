@@ -285,7 +285,7 @@ const Favorites = () => {
 				</div>
 			) : (
 				<div
-					className={`size-full grid grid-cols-1 xl:grid-cols-2 px-2.5 gap-5 lg:px-0 items-start pb-8 lg:pb-5`}
+					className={`size-full h-fit grid grid-cols-1 xl:grid-cols-2 px-2.5 gap-5 lg:px-0 items-start pb-8 lg:pb-5`}
 				>
 					{groupBy === "profession"
 						? Object.entries(filteredFavorites()).map(

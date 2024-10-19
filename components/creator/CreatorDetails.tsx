@@ -76,7 +76,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 			if (data) {
 				const services = data.services;
-
+				console.log(services);
 				// Check if any of the services are enabled
 				const isOnline =
 					services?.videoCall || services?.audioCall || services?.chat;
@@ -87,7 +87,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				// Now listen for the user's status
 				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
 					const statusData = statusDoc.data();
-
+					console.log(statusData);
 					if (statusData) {
 						// Check if status is "Busy"
 						if (statusData.status === "Busy") {
@@ -109,6 +109,8 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			unsubscribeServices();
 		};
 	}, [creator._id, creator.phone]);
+
+	console.log(status);
 
 	const handleToggleFavorite = async () => {
 		if (!clientUser) {
@@ -154,7 +156,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 	return (
 		// Wrapper Section
-		<section className="size-full xl:w-[704px] md:mx-auto md:pt-4 flex flex-col items-center gap-4">
+		<section className="size-full xl:w-[704px] md:mx-auto md:pt-4 flex flex-col items-center">
 			{/* Creator Details */}
 			<section
 				className={`h-fit px-4 w-full flex flex-col md:flex-row gap-4 items-start md:items-center justify-center p-5 md:rounded-[16px]`}

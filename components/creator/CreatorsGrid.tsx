@@ -61,8 +61,6 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 		};
 	}, [creator._id, creator.phone]);
 
-	console.log(fullName);
-
 	return (
 		<>
 			<div className="relative flex flex-col items-center justify-center rounded-xl w-full h-72 xl:h-80 2xl:h-96  transition-all duration-300 hover:scale-95">
