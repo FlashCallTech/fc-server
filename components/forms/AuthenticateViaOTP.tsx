@@ -205,7 +205,7 @@ const AuthenticateViaOTP = ({
 						audioRate: "10",
 						chatRate: "10",
 						walletBalance: 0,
-						referredBy: refId ? refId : "",
+						referredBy: refId ? refId : null,
 						creatorId: `@${formattedPhone as string}`,
 					};
 				} else {
