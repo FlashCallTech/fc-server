@@ -212,7 +212,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 					<Form {...form}>
 						<form
 							onSubmit={form.handleSubmit(onSubmit)}
-							className="w-full flex items-center"
+							className="w-full flex items-center text-base"
 						>
 							<FormField
 								control={form.control}

@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
     })
 
     const result = await response.json();
+    console.log(result);
 
     if (!response.ok) {
       return NextResponse.json({ success: false, error: result.message || 'Validation error' });
@@ -37,6 +38,7 @@ export async function POST(request: NextRequest) {
       };
 
       const beneficiary = await Beneficiary.findOne({ user_id: userId });
+      console.log("Beneficiary: ", beneficiary);
 
       if (beneficiary === null) {
         const getUserResponse = await fetch('https://flashcall.me/api/v1/creator/getUserById', {
@@ -49,6 +51,7 @@ export async function POST(request: NextRequest) {
           })
         });
         const user = await getUserResponse.json();
+        console.log("user: ", user);
 
         if (user) {
           const beneficiary_id = userId;
@@ -109,7 +112,9 @@ export async function POST(request: NextRequest) {
               throw new Error(postBeneficiaryResult.message)
             }
 
-            return NextResponse.json({ success: true, data: result, details: {ifsc, bank_account} });
+            console.log("beneficiary: ", beneficiaryResult);
+
+            return NextResponse.json({ success: true, data: result, details: { ifsc, bank_account } });
           } else {
             throw new Error('Failed to create beneficiary');
           }
@@ -117,7 +122,17 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ success: false, message: 'User not found' })
         }
       } else {
-        if (bank_account !== beneficiary.beneficiary_instrument_details.bank_account_number) {
+        const getBeneficiaryResponse = await fetch(`https://api.cashfree.com/payout/beneficiary?beneficiary_id=${userId}`, {
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-version': ' 2024-01-01',
+            'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
+            'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
+          }
+        })
+
+        if (!getBeneficiaryResponse.ok) {
           const deleteResponse = await fetch(`https://api.cashfree.com/payout/beneficiary?beneficiary_id=${userId}`, {
             method: 'DELETE',
             headers: {
@@ -129,10 +144,12 @@ export async function POST(request: NextRequest) {
           });
 
           const deleteResult = await deleteResponse.json();
+          console.log("delete: ", deleteResult);
 
           if (!deleteResponse.ok) {
             throw new Error(deleteResult.message);
           }
+        } 
 
           const getUserResponse = await fetch('https://flashcall.me/api/v1/creator/getUserById', {
             method: 'POST',
@@ -144,7 +161,6 @@ export async function POST(request: NextRequest) {
             })
           });
           const user = await getUserResponse.json();
-          console.log(user);
 
           if (user) {
             const beneficiary_id = userId;
@@ -174,6 +190,7 @@ export async function POST(request: NextRequest) {
             })
 
             const beneficiaryResult = await beneficiaryResponse.json();
+            console.log("new: ", beneficiaryResult);
 
             if (!beneficiaryResponse.ok) {
               throw new Error(beneficiaryResult.message);
@@ -208,16 +225,14 @@ export async function POST(request: NextRequest) {
                 throw new Error(postBeneficiaryResult.message)
               }
 
-              return NextResponse.json({ success: true, data: result, details: {ifsc, bank_account} });
+              return NextResponse.json({ success: true, data: result, details: { ifsc, bank_account } });
             }
 
             return NextResponse.json({ success: false, message: 'User not found' });
-
-          } else {
-            throw new Error('Failed to create beneficiary');
-          }
+          
+        } else {
+          throw new Error('Failed to create beneficiary');
         }
-        return NextResponse.json({ success: false, message: 'Cannot update same UPI ID' });
       }
     } else {
       return NextResponse.json({ success: false, message: result.status });
