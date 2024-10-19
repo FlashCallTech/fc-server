@@ -52,7 +52,7 @@ interface UserTipsData {
 const TipAnimation = ({ amount }: { amount: number }) => {
 	return (
 		<div className="absolute top-6 left-6 sm:top-4 sm:left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-[#ffffff4d] text-white flex items-center justify-center">
-			<p>Rs.{amount} tip received</p>
+			<p>Tip ₹ {amount}</p>
 		</div>
 	);
 };
@@ -176,15 +176,15 @@ const MeetingRoom = () => {
 			const unsubscribe = onSnapshot(userTipsRef, async (doc) => {
 				const data = doc.data();
 				if (data) {
-					const isCurrentCall = Object.keys(data).includes(call?.id as string);
-					const latestTip = Object.values(data).pop();
-					if (latestTip && isCurrentCall) {
-						console.log(data, latestTip, isCurrentCall);
-						setTipAmount(latestTip.amount);
+					const currentTip = data[call?.id as string];
+					if (currentTip) {
+						setTipAmount(currentTip.amount);
 						setTipReceived(true);
 						setTimeout(() => {
 							setTipReceived(false);
 						}, 5000);
+					} else {
+						console.log("No tip for this call ID:", call?.id);
 					}
 				}
 			});
