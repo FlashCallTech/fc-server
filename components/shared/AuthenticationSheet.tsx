@@ -37,22 +37,6 @@ const AuthenticationSheet = ({
 		}
 	}, [isOpen]);
 
-	// Handle resizing to adjust height for mobile viewports
-	useEffect(() => {
-		const handleResize = () => {
-			setIsMobileView(window.innerWidth <= 584);
-			const height = window.innerHeight;
-			document.documentElement.style.setProperty("--vh", `${height * 0.01}px`);
-		};
-
-		window.addEventListener("resize", handleResize);
-		handleResize(); // Call once on mount
-
-		return () => {
-			window.removeEventListener("resize", handleResize);
-		};
-	}, []);
-
 	if (isMobileView) {
 		return (
 			<Sheet open={isOpen} onOpenChange={onOpenChange}>

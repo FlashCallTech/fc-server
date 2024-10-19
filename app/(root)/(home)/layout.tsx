@@ -49,7 +49,7 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 			<div className="flex">
 				<Sidebar />
 				<section
-					className={`flex min-h-[calc(100vh-100px)] flex-1 flex-col transition-all duration-300 ease-in-out  md:px-10`}
+					className={`flex min-h-[calc(100dvh-76px)] flex-1 flex-col transition-all duration-300 ease-in-out  md:px-10`}
 				>
 					<div className="size-full">{children}</div>
 				</section>

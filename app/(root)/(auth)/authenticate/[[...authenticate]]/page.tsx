@@ -66,27 +66,8 @@ export default function AuthenticationPage() {
 		};
 	}, []);
 
-	// Handle resizing to adjust height for mobile viewports
-	useEffect(() => {
-		const handleResize = () => {
-			setIsMobileView(window.innerWidth <= 584);
-			const height = window.innerHeight;
-			document.documentElement.style.setProperty("--vh", `${height * 0.01}px`);
-		};
-
-		window.addEventListener("resize", handleResize);
-		handleResize(); // Call once on mount
-
-		return () => {
-			window.removeEventListener("resize", handleResize);
-		};
-	}, []);
-
 	return (
-		<main
-			className="size-full h-screen inset-0 bg-[#111111] sm:bg-green-1 top-0 grid grid-cols-1 items-start"
-			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
-		>
+		<main className="size-full inset-0 bg-[#111111] sm:bg-green-1 top-0 grid grid-cols-1 items-start h-dvh">
 			<Head>
 				<title>Authentication</title>
 				<meta name="description" content="Authentication Form" />

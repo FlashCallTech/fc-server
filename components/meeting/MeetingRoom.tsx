@@ -194,20 +194,6 @@ const MeetingRoom = () => {
 	}, [userType, call]);
 
 	useEffect(() => {
-		const handleResize = () => {
-			const height = window.innerHeight;
-			document.documentElement.style.setProperty("--vh", `${height * 0.01}px`);
-		};
-
-		window.addEventListener("resize", handleResize);
-		handleResize();
-
-		return () => {
-			window.removeEventListener("resize", handleResize);
-		};
-	}, []);
-
-	useEffect(() => {
 		let timeoutId: NodeJS.Timeout | null = null;
 
 		let countdownInterval: NodeJS.Timeout | null = null;
@@ -336,10 +322,7 @@ const MeetingRoom = () => {
 	);
 
 	return (
-		<section
-			className="relative w-full overflow-hidden pt-4 md:pt-0 text-white bg-dark-2"
-			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
-		>
+		<section className="relative w-full overflow-hidden pt-4 md:pt-0 text-white bg-dark-2 h-dvh">
 			{showCountdown && countdown && <CountdownDisplay />}
 			<div className="relative flex size-full items-center justify-center transition-all">
 				<div className="flex size-full max-w-[95%] md:max-w-[1000px] items-center transition-all">

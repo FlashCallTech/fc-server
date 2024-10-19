@@ -45,7 +45,7 @@ const Sidebar = () => {
 				isExpertPath && "border-r border-white/20"
 			}`}
 			style={{
-				maxHeight: `calc(100vh - 76px)`,
+				maxHeight: `calc(100dvh - 76px)`,
 				backgroundColor: isExpertPath ? "transparent" : "#ffffff",
 			}}
 		>

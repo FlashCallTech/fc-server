@@ -41,26 +41,6 @@ const RechargeModal = ({
 	const { pauseTimer, resumeTimer } = useCallTimerContext();
 
 	useEffect(() => {
-		const handleResize = () => {
-			// Get the viewport height and calculate the 1% vh unit
-			const vh = window.innerHeight * 0.01;
-			// Set the --vh custom property to the root of the document
-			document.documentElement.style.setProperty("--vh", `${vh}px`);
-		};
-
-		// Initial calculation
-		handleResize();
-
-		// Add event listener for resize event to handle keyboard open/close
-		window.addEventListener("resize", handleResize);
-
-		// Cleanup the event listener
-		return () => {
-			window.removeEventListener("resize", handleResize);
-		};
-	}, []);
-
-	useEffect(() => {
 		if (isSheetOpen || onGoingPayment) {
 			pauseTimer();
 		} else {
@@ -222,8 +202,7 @@ const RechargeModal = ({
 				</SheetTrigger>
 				<SheetContent
 					side="bottom"
-					className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white max-h-[444px] min-h-[420px] w-full sm:max-w-[444px] mx-auto"
-					style={{ height: "calc(var(--vh, 1vh) * 100)" }}
+					className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white max-h-[444px] min-h-[420px] w-full sm:max-w-[444px] h-dvh mx-auto"
 				>
 					<SheetHeader className="flex flex-col items-center justify-center">
 						<SheetTitle>

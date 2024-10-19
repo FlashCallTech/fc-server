@@ -31,10 +31,7 @@ const CallFeedbackPage = () => {
 	};
 
 	return (
-		<section
-			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
-			className="w-full flex items-center justify-center"
-		>
+		<section className="w-full h-dvh flex items-center justify-center">
 			<CallFeedback
 				callId={callId as string}
 				isOpen={showFeedback}

@@ -118,19 +118,6 @@ const TipModal = ({
 		videoRatePerMinute,
 	]);
 
-	useEffect(() => {
-		const handleResize = () => {
-			const vh = window.innerHeight * 0.01;
-			document.documentElement.style.setProperty("--vh", `${vh}px`);
-		};
-		handleResize();
-
-		window.addEventListener("resize", handleResize);
-		return () => {
-			window.removeEventListener("resize", handleResize);
-		};
-	}, []);
-
 	const handlePredefinedAmountClick = (amount: string) => {
 		setRechargeAmount(amount);
 		setErrorMessage("");
@@ -257,8 +244,7 @@ const TipModal = ({
 					side="bottom"
 					className={`flex flex-col items-center justify-center ${
 						!loading ? "px-7 py-5" : "px-4"
-					}  border-none rounded-t-xl bg-white mx-auto overflow-scroll no-scrollbar min-h-[350px] max-h-fit w-full sm:max-w-[444px]`}
-					style={{ height: "calc(var(--vh, 1vh) * 100)" }}
+					}  border-none rounded-t-xl bg-white mx-auto overflow-scroll no-scrollbar min-h-[350px] max-h-fit w-full h-dvh sm:max-w-[444px]`}
 				>
 					{loading ? (
 						<ContentLoading />
