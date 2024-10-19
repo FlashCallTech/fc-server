@@ -43,7 +43,7 @@ const isMobileDevice = () => {
 	if (/android/i.test(userAgent)) {
 		return true; // Android device
 	}
-	if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+	if (/iPad|iPhone|iPod/.test(userAgent)) {
 		return true; // iOS device
 	}
 	return false; // Not Android or iOS

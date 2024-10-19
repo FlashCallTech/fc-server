@@ -3,7 +3,7 @@ const usePlatform = () => {
 		const userAgent = navigator.userAgent || navigator.vendor;
 
 		// Detect iOS
-		if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+		if (/iPad|iPhone|iPod/.test(userAgent)) {
 			return "iOS";
 		}
 
