@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
           }
         })
 
-        if (!getBeneficiaryResponse.ok) {
+        if (getBeneficiaryResponse.ok) {
           const deleteResponse = await fetch(`https://api.cashfree.com/payout/beneficiary?beneficiary_id=${userId}`, {
             method: 'DELETE',
             headers: {
@@ -149,87 +149,87 @@ export async function POST(request: NextRequest) {
           if (!deleteResponse.ok) {
             throw new Error(deleteResult.message);
           }
-        } 
+        }
 
-          const getUserResponse = await fetch('https://flashcall.me/api/v1/creator/getUserById', {
+        const getUserResponse = await fetch('https://flashcall.me/api/v1/creator/getUserById', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            userId
+          })
+        });
+        const user = await getUserResponse.json();
+
+        if (user) {
+          const beneficiary_id = userId;
+          const beneficiary_contact_details = {
+            beneficiary_phone: user.phone
+          }
+
+          const beneficiaryResponse = await fetch('https://api.cashfree.com/payout/beneficiary', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json'
+              'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
+              'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
+              'x-api-version': ' 2024-01-01',
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              userId
-            })
-          });
-          const user = await getUserResponse.json();
-
-          if (user) {
-            const beneficiary_id = userId;
-            const beneficiary_contact_details = {
-              beneficiary_phone: user.phone
-            }
-
-            const beneficiaryResponse = await fetch('https://api.cashfree.com/payout/beneficiary', {
-              method: 'POST',
-              headers: {
-                'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
-                'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
-                'x-api-version': ' 2024-01-01',
-                'Content-Type': 'application/json',
+              beneficiary_id,
+              beneficiary_name: user.firstName + ' ' + user.lastName,
+              beneficiary_instrument_details: {
+                vpa: beneficiary.beneficiary_instrument_details.vpa,
+                bank_account_number: bank_account,
+                bank_ifsc: ifsc
               },
-              body: JSON.stringify({
-                beneficiary_id,
-                beneficiary_name: user.firstName + ' ' + user.lastName,
-                beneficiary_instrument_details: {
-                  vpa: beneficiary.beneficiary_instrument_details.vpa,
-                  bank_account_number: bank_account,
-                  bank_ifsc: ifsc
-                },
-                beneficiary_contact_details,
+              beneficiary_contact_details,
 
-              })
+            })
+          })
+
+          const beneficiaryResult = await beneficiaryResponse.json();
+          console.log("new: ", beneficiaryResult);
+
+          if (!beneficiaryResponse.ok) {
+            throw new Error(beneficiaryResult.message);
+          }
+
+          if (beneficiaryResult.beneficiary_status === 'VERIFIED') {
+            await createPaymentSettings(details);
+            const payload = {
+              user_id: userId,
+              beneficiary_id: beneficiaryResult.beneficiary_id,
+              beneficiary_name: beneficiaryResult.beneficiary_name,
+              beneficiary_status: beneficiaryResult.beneficiary_status,
+              beneficiary_instrument_details: {
+                vpa: beneficiary.beneficiary_instrument_details.vpa,
+                bank_account_number: bank_account,
+                bank_ifsc: ifsc
+              },
+              beneficiary_contact_details: beneficiary_contact_details,
+              added_on: beneficiaryResult.added_on,
+            }
+            const postBeneficiaryResponse = await fetch('https:/flashcall.me/api/v1/beneficiary/postBeneficiary', {
+              method: "POST",
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ payload })
             })
 
-            const beneficiaryResult = await beneficiaryResponse.json();
-            console.log("new: ", beneficiaryResult);
+            const postBeneficiaryResult = await postBeneficiaryResponse.json();
 
-            if (!beneficiaryResponse.ok) {
-              throw new Error(beneficiaryResult.message);
+            if (!postBeneficiaryResult.success) {
+              throw new Error(postBeneficiaryResult.message)
             }
 
-            if (beneficiaryResult.beneficiary_status === 'VERIFIED') {
-              await createPaymentSettings(details);
-              const payload = {
-                user_id: userId,
-                beneficiary_id: beneficiaryResult.beneficiary_id,
-                beneficiary_name: beneficiaryResult.beneficiary_name,
-                beneficiary_status: beneficiaryResult.beneficiary_status,
-                beneficiary_instrument_details: {
-                  vpa: beneficiary.beneficiary_instrument_details.vpa,
-                  bank_account_number: bank_account,
-                  bank_ifsc: ifsc
-                },
-                beneficiary_contact_details: beneficiary_contact_details,
-                added_on: beneficiaryResult.added_on,
-              }
-              const postBeneficiaryResponse = await fetch('https:/flashcall.me/api/v1/beneficiary/postBeneficiary', {
-                method: "POST",
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ payload })
-              })
+            return NextResponse.json({ success: true, data: result, details: { ifsc, bank_account } });
+          }
 
-              const postBeneficiaryResult = await postBeneficiaryResponse.json();
+          return NextResponse.json({ success: false, message: 'User not found' });
 
-              if (!postBeneficiaryResult.success) {
-                throw new Error(postBeneficiaryResult.message)
-              }
-
-              return NextResponse.json({ success: true, data: result, details: { ifsc, bank_account } });
-            }
-
-            return NextResponse.json({ success: false, message: 'User not found' });
-          
         } else {
           throw new Error('Failed to create beneficiary');
         }
