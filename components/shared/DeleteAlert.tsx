@@ -1,16 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogDescription,
-} from "@/components/ui/alert-dialog";
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+} from "@/components/ui/dialog";
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { Textarea } from "../ui/textarea";
 import { backendBaseUrl } from "@/lib/utils";
@@ -33,6 +38,23 @@ const DeleteAlert = () => {
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 	const { toast } = useToast();
+
+	const [isMobileView, setIsMobileView] = useState(false);
+
+	useEffect(() => {
+		// Set the initial value and listen for window resize to adjust the view
+		const handleResize = () => {
+			setIsMobileView(window.innerWidth <= 584);
+		};
+
+		handleResize(); // Set initial value
+		window.addEventListener("resize", handleResize); // Update on resize
+
+		// Clean up the event listener
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
 
 	const firestore = getFirestore();
 
@@ -137,39 +159,81 @@ const DeleteAlert = () => {
 					/>
 				</svg>
 			</Button>
-
-			{/* Delete confirmation dialog */}
-			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-				<AlertDialogContent className="bg-white max-w-[92%] md:max-w-sm rounded-[8px]">
-					<AlertDialogHeader>
-						<AlertDialogTitle className="text-red-500">
-							Delete User
-						</AlertDialogTitle>
-						<AlertDialogDescription className="text-gray-400 text-sm">
-							Please provide a reason for deleting this user. <br />
-							This action cannot be undone.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<Textarea
-						className="max-h-20 no-scrollbar"
-						placeholder="Reason for deletion"
-						value={deleteReason}
-						onChange={(e: any) => setDeleteReason(e.target.value)}
-					/>
-					<div className="w-full flex items-center justify-end gap-2">
-						<AlertDialogCancel className="bg-gray-400 hoverScaleDownEffect text-white mt-0">
-							Cancel
-						</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={handleDeleteUser}
-							disabled={loading}
-							className="bg-red-500 text-white"
-						>
-							{loading ? "Deleting..." : "Confirm Delete"}
-						</AlertDialogAction>
-					</div>
-				</AlertDialogContent>
-			</AlertDialog>
+			{isMobileView ? (
+				<Sheet open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+					<SheetContent side="bottom" className=" bg-white rounded-t-xl ">
+						<SheetHeader>
+							<SheetTitle className="text-red-500 !text-start">
+								Unfollow User
+							</SheetTitle>
+							<SheetDescription className="!text-start">
+								Are you sure you want to unfollow this user?
+							</SheetDescription>
+						</SheetHeader>
+						<Textarea
+							className="max-h-20 no-scrollbar mt-5"
+							placeholder="Reason for deletion (Optional)"
+							value={deleteReason}
+							onChange={(e: any) => setDeleteReason(e.target.value)}
+						/>
+						<div className="w-full flex items-center justify-start gap-2 mt-4">
+							<Button
+								variant="outline"
+								onClick={() => setShowDeleteDialog(false)}
+								disabled={loading}
+								className="hoverScaleDownEffect text-black mt-0 border border-gray-300 hover:bg-gray-50"
+							>
+								Cancel
+							</Button>
+							<Button
+								onClick={handleDeleteUser}
+								disabled={loading}
+								className="border border-gray-300 hover:bg-gray-50 hoverScaleDownEffect"
+							>
+								{loading ? "Deleting..." : "Confirm Delete"}
+							</Button>
+						</div>
+					</SheetContent>
+				</Sheet>
+			) : (
+				<Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+					<DialogContent
+						onOpenAutoFocus={(e) => e.preventDefault()}
+						className="bg-white max-w-[92%] md:max-w-sm rounded-[8px]"
+					>
+						<DialogHeader>
+							<DialogTitle className="text-red-500">Delete User</DialogTitle>
+							<DialogDescription className="text-gray-400 text-sm">
+								Please provide a reason for deleting this user. <br />
+								This action cannot be undone.
+							</DialogDescription>
+						</DialogHeader>
+						<Textarea
+							className="max-h-20 no-scrollbar"
+							placeholder="Reason for deletion (Optional)"
+							value={deleteReason}
+							onChange={(e: any) => setDeleteReason(e.target.value)}
+						/>
+						<div className="w-full flex items-center justify-end gap-2">
+							<Button
+								variant="outline"
+								onClick={() => setShowDeleteDialog(false)}
+								disabled={loading}
+								className="hoverScaleDownEffect text-black mt-0 border border-gray-300 hover:bg-gray-50"
+							>
+								Cancel
+							</Button>
+							<Button
+								onClick={handleDeleteUser}
+								disabled={loading}
+								className="border border-gray-300 hover:bg-gray-50 hoverScaleDownEffect"
+							>
+								{loading ? "Deleting..." : "Confirm Delete"}
+							</Button>
+						</div>
+					</DialogContent>
+				</Dialog>
+			)}
 		</div>
 	);
 };
