@@ -137,7 +137,10 @@ export async function POST(request: NextRequest) {
 					}
 				})
 
-				if (!getBeneficiaryResponse.ok) {
+				const getBeneficiaryResult = await getBeneficiaryResponse.json();
+				console.log(getBeneficiaryResult);
+
+				if (getBeneficiaryResponse.ok) {
 					const deleteResponse = await fetch(`https://api.cashfree.com/payout/beneficiary?beneficiary_id=${userId}`, {
 						method: 'DELETE',
 						headers: {

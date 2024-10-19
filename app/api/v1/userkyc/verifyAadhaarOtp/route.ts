@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
 
 							await createUserKyc(kyc, 'status');
 
-							return NextResponse.json({ success: false, kycStatus: false, message: 'Our team will verify the details you have submitted. This usually takes 24 hours.' });
+							return NextResponse.json({ success: true, kycStatus: false, message: 'Our team will verify the details you have submitted. This usually takes 24 hours.' });
 						}
 					} else {
 						const user = {
