@@ -99,22 +99,6 @@ const ReportDialog = ({
 		setIsChanged(watchedIssue.trim() !== "");
 	}, [watchedIssue]);
 
-	// Adjust height for mobile screen resizing
-	useEffect(() => {
-		const handleResize = () => {
-			const vh = window.innerHeight * 0.01;
-			document.documentElement.style.setProperty("--vh", `${vh}px`);
-		};
-
-		handleResize();
-
-		window.addEventListener("resize", handleResize);
-
-		return () => {
-			window.removeEventListener("resize", handleResize);
-		};
-	}, []);
-
 	// Handles open/close state of the modal
 	const onOpenChange = (open: boolean) => {
 		setIsOpen(open);
@@ -147,8 +131,7 @@ const ReportDialog = ({
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white max-h-fit w-full sm:max-w-[444px] mx-auto"
-					style={{ height: "calc(var(--vh, 1vh) * 100)" }}
+					className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white h-dvh max-h-fit w-full sm:max-w-[444px] mx-auto"
 				>
 					{message && messageType === "success" ? (
 						<div className="flex flex-col items-center justify-center w-full sm:min-w-[24rem] sm:max-w-[24rem]  gap-4 p-5">

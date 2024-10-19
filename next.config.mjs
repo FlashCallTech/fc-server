@@ -19,7 +19,9 @@ const nextConfig = {
                 hostname: 'drive.google.com'
             },
             {
-                hostname: 'localhost'
+                hostname: 'localhost',
+                port: '5000',
+                protocol: 'http',
             },
             {
                 protocol: 'https',

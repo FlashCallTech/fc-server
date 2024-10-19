@@ -290,6 +290,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 							?.map((link: LinkType, index: number) => (
 								<Link
 									href={link.url}
+									target="_black"
 									className="grid grid-cols-3 px-4 border border-white/20 bg-[#4E515C4D] rounded-[24px] h-[52px] justify-between font-semibold items-center text-center w-full hoverScaleDownEffect cursor-pointer capitalize"
 									key={index + link.title}
 									title={link.title}
