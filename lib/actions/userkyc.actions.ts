@@ -43,6 +43,7 @@ export async function createUserKyc(
 				existingUserKyc.set("face_match", kyc.face_match);
 			} else if (type === 'status' && kyc.kyc_status) {
 				existingUserKyc.set("kyc_status", kyc.kyc_status);
+				if(kyc.reason) existingUserKyc.set("reason", kyc.reason);
 			} else {
 				console.warn("No matching type or missing data for update");
 			}
