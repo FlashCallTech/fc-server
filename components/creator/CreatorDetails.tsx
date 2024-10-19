@@ -149,6 +149,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		backgroundSize: "cover",
 		backgroundPosition: "center",
 		backgroundRepeat: "no-repeat",
+		backgroundColor: "#ffffff",
 	};
 
 	return (

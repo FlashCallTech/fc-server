@@ -89,7 +89,7 @@ const TimeExtensionModal = ({
 					>
 						{isExtending
 							? "Extending..."
-							: `Pay ₹${ratePerMinute * selectedMinutes}`}
+							: `Pay Rs.${ratePerMinute * selectedMinutes}`}
 					</Button>
 				</section>
 			</SheetContent>

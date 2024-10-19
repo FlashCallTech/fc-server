@@ -78,7 +78,7 @@ export type creatorUser = {
 	videoAllowed: boolean;
 	audioAllowed: boolean;
 	chatAllowed: boolean;
-	kycStatus: string;
+	kyc_status: string;
 	walletBalance: number;
 	referralId: string;
 	referredBy: string;
