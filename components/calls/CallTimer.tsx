@@ -64,7 +64,7 @@ const CallTimer = ({
 	const handleTimeExtension = async (additionalMinutes: number) => {
 		const cost = callRatePerMinute * additionalMinutes;
 
-		setWalletBalance(walletBalance - cost);
+		// setWalletBalance(walletBalance - cost);
 
 		const additionalTimeInSeconds = additionalMinutes * 60;
 
@@ -88,16 +88,16 @@ const CallTimer = ({
 		}
 
 		// Trigger backend payout request
-		await fetch(`${backendBaseUrl}/wallet/payout`, {
-			method: "POST",
-			body: JSON.stringify({
-				userId: currentUser?._id,
-				userType: "Client",
-				amount: cost,
-				category: "Added Time",
-			}),
-			headers: { "Content-Type": "application/json" },
-		});
+		// await fetch(`${backendBaseUrl}/wallet/payout`, {
+		// 	method: "POST",
+		// 	body: JSON.stringify({
+		// 		userId: currentUser?._id,
+		// 		userType: "Client",
+		// 		amount: cost,
+		// 		category: "Added Time",
+		// 	}),
+		// 	headers: { "Content-Type": "application/json" },
+		// });
 	};
 
 	return (

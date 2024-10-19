@@ -75,6 +75,7 @@ const DeleteAlert = () => {
 			console.error("Error deleting Firestore documents:", error);
 		}
 	}
+
 	const handleDeleteUser = async () => {
 		setLoading(true);
 		if (!currentUser) return;
