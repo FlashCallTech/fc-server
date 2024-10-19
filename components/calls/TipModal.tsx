@@ -134,6 +134,7 @@ const TipModal = ({
 	const handlePredefinedAmountClick = (amount: string) => {
 		setRechargeAmount(amount);
 		setErrorMessage("");
+		setShowRechargeModal(false);
 	};
 
 	const handleTransaction = async () => {

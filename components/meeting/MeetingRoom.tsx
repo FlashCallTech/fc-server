@@ -35,6 +35,7 @@ import {
 	getFirestore,
 	onSnapshot,
 	setDoc,
+	updateDoc,
 } from "firebase/firestore";
 
 type CallLayoutType = "grid" | "speaker-bottom";
@@ -165,29 +166,6 @@ const MeetingRoom = () => {
 		}
 	}, [call, callingState, currentUser, callHasEnded]);
 
-	const deleteTip = async (userTipsRef: any, latestTip: LatestTip) => {
-		try {
-			const docSnapshot = await getDoc(userTipsRef);
-			if (docSnapshot.exists()) {
-				const data: UserTipsData | undefined =
-					docSnapshot.data() as UserTipsData;
-
-				if (data && typeof data === "object") {
-					const newData = { ...data };
-
-					delete newData[latestTip.callId];
-
-					await setDoc(userTipsRef, newData);
-					console.log("Tip removed successfully.");
-				} else {
-					console.warn("Data is not an object or is undefined.");
-				}
-			}
-		} catch (error) {
-			console.error("Error removing tip from Firestore:", error);
-		}
-	};
-
 	useEffect(() => {
 		if (userType === "creator") {
 			const expert = call?.state?.members?.find(
@@ -198,11 +176,12 @@ const MeetingRoom = () => {
 			const unsubscribe = onSnapshot(userTipsRef, async (doc) => {
 				const data = doc.data();
 				if (data) {
+					const isCurrentCall = Object.keys(data).includes(call?.id as string);
 					const latestTip = Object.values(data).pop();
-					if (latestTip) {
+					if (latestTip && isCurrentCall) {
+						console.log(data, latestTip, isCurrentCall);
 						setTipAmount(latestTip.amount);
 						setTipReceived(true);
-						await deleteTip(userTipsRef, latestTip);
 						setTimeout(() => {
 							setTipReceived(false);
 						}, 5000);
