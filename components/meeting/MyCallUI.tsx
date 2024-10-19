@@ -26,6 +26,7 @@ const MyCallUI = () => {
 	const { currentUser, userType } = useCurrentUsersContext();
 	const { toast } = useToast();
 	const [callId, setCallId] = useState<string | null>("");
+	const [endedByMe, setEndedByMe] = useState(false);
 	const { call, isCallLoading } = useGetCallById(callId || "");
 	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
 	const [showCallUI, setShowCallUI] = useState(false);
@@ -40,12 +41,13 @@ const MyCallUI = () => {
 					setCallId(ongoingCall.callId);
 				}
 			}
-			// Check for stored call in localStorage
-			const storedCallId = localStorage.getItem("activeCallId");
-			if (storedCallId && !hide) {
-				setCallId(storedCallId);
-			}
 		});
+
+		// Check for stored call in localStorage
+		const storedCallId = localStorage.getItem("activeCallId");
+		if (storedCallId && !hide) {
+			setCallId(storedCallId);
+		}
 
 		return unsubscribe;
 	};
@@ -138,7 +140,7 @@ const MyCallUI = () => {
 		}) => {
 			const defaultMessage = {
 				title: `Call Declined`,
-				description: "The call was rejected",
+				description: "The call got Canceled",
 			};
 
 			const message = customMessage || defaultMessage;
@@ -279,17 +281,34 @@ const MyCallUI = () => {
 			setShowCallUI(false);
 			clearTimeout(autoDeclineTimeout);
 
+			if (sessionStorage.getItem(`callRejected-${outgoingCall.id}`)) return;
+
+			sessionStorage.setItem(`callRejected-${outgoingCall.id}`, "true");
+
 			const response = await axios.get(
 				`${backendBaseUrl}/calls/getCallById/${outgoingCall?.id}`
 			);
+
 			const callData = response.data;
 			const currentStatus = callData?.data?.status;
-			console.log(callData, currentStatus);
 
-			if (currentStatus !== "Not Answered") {
+			await updateFirestoreSessions(
+				outgoingCall?.state?.createdBy?.id as string,
+				{
+					status: "ended",
+				}
+			);
+
+			logEvent(analytics, "call_rejected", { callId: outgoingCall.id });
+
+			if (currentStatus !== "Not Answered" || currentStatus === "Canceled") {
 				const defaultMessage = {
-					title: `${expert?.custom?.name || "User"} is Busy`,
-					description: "Please try again later",
+					title: endedByMe
+						? "Call Canceled"
+						: `${expert?.custom?.name || "User"} is Busy`,
+					description: endedByMe
+						? "You ended the Call"
+						: "Please try again later",
 				};
 
 				const message = defaultMessage;
@@ -303,19 +322,12 @@ const MyCallUI = () => {
 				await axios.post(`${backendBaseUrl}/calls/updateCall`, {
 					callId: outgoingCall?.id,
 					call: {
-						status: "Rejected",
+						status: endedByMe ? "Canceled" : "Rejected",
 					},
 				});
+
+				setEndedByMe(false);
 			}
-
-			await updateFirestoreSessions(
-				outgoingCall?.state?.createdBy?.id as string,
-				{
-					status: "ended",
-				}
-			);
-
-			logEvent(analytics, "call_rejected", { callId: outgoingCall.id });
 		};
 
 		const handleCallIgnored = async () => {
@@ -342,21 +354,21 @@ const MyCallUI = () => {
 
 		const handleCallEnded = async () => {
 			stopMediaStreams();
+			setShowCallUI(false);
+			clearTimeout(autoDeclineTimeout);
 			await updateExpertStatus(
 				outgoingCall.state.createdBy?.custom?.phone as string,
 				"Idle"
 			);
-			setShowCallUI(false);
-			clearTimeout(autoDeclineTimeout);
 		};
 
 		outgoingCall.on("call.accepted", handleCallAccepted);
-		outgoingCall.on("call.rejected", () => handleCallRejected());
+		outgoingCall.on("call.rejected", handleCallRejected);
 		outgoingCall.on("call.ended", handleCallEnded);
 
 		return () => {
 			outgoingCall.off("call.accepted", handleCallAccepted);
-			outgoingCall.off("call.rejected", () => handleCallRejected());
+			outgoingCall.off("call.rejected", handleCallRejected);
 			outgoingCall.off("call.ended", handleCallEnded);
 			clearTimeout(autoDeclineTimeout);
 		};
@@ -375,8 +387,12 @@ const MyCallUI = () => {
 	}
 
 	if (outgoingCalls.length > 0 && showCallUI && !hide) {
-		return <MyOutgoingCallUI call={outgoingCalls[0]} />;
+		return (
+			<MyOutgoingCallUI call={outgoingCalls[0]} setEndedByMe={setEndedByMe} />
+		);
 	}
+
+	console.log(endedByMe);
 
 	return null; // No calls to handle
 };

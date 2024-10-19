@@ -91,8 +91,6 @@ const CallListMobile = ({
 		}));
 	};
 
-	console.log(userCalls);
-
 	return (
 		<>
 			{isLoading || (currentUser && walletBalance < 0) ? (

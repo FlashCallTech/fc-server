@@ -147,8 +147,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 							if (clientStatusData) {
 								setIsClientBusy(
-									clientStatusData.status === "Busy" ||
-										clientStatusData.status === "Payment Pending"
+									clientStatusData.status === "Busy" 
 								);
 							} else {
 								setIsClientBusy(false);
