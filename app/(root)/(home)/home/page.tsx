@@ -68,14 +68,14 @@ const HomePage = () => {
 			if (storedScrollPosition) {
 				window.scrollTo({
 					top: parseInt(storedScrollPosition, 10),
-					behavior: "smooth", // This enables smooth scrolling
+					behavior: "smooth",
 				});
 				sessionStorage.removeItem("scrollPosition");
 			}
 		};
 
 		if (!isLoading) {
-			setTimeout(restoreScrollPosition, 1000);
+			setTimeout(restoreScrollPosition, 500);
 		}
 	}, [isLoading]);
 
