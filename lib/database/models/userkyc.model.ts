@@ -44,12 +44,13 @@ const FaceMatch = new Schema({
 
 const UserKycSchema = new Schema({
 	userId: { type: String, required: true, unique: true },
-	kyc_status: {type: String, required: true, enum: ['PENDING', 'FAILED', 'COMPLETED']},
+	kyc_status: {type: String, required: true, enum: ['PENDING', 'FAILED', 'COMPLETED'], default: "PENDING" },
 	pan: { type: PanSchema, default: null },
 	aadhaar: { type: AadhaarSchema, default: null },
 	liveliness: { type: LivelinessSchema, default: null },
 	name_match: { type: NameMatch, default: null },
 	face_match: { type: FaceMatch, default: null },
+	reason: { type: String },
 });
 
 const UserKyc = models.UserKyc || model("UserKyc", UserKycSchema);
