@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
 	const { panNumber, userId } = await request.json();
-	console.log(userId);
 
 	const payload = {
 		pan: panNumber,
@@ -139,6 +138,15 @@ export async function POST(request: NextRequest) {
 							const user = {
 								kyc_status: "FAILED",
 							};
+
+							let reason: string;
+
+							if(!faceMatchResult.success) {
+								reason = "The face in the Aadhaar and the selfie do not match. Our team will contact you for manual verification, which may take up to 2 business days."
+							} else {
+								reason = "The name in the PAN and the Aadhaar do not match. Our team will contact you for manual verification, which may take up to 2 business days."
+							}
+								
 							const userResponse = await fetch(
 								"https://flashcall.me/api/v1/creator/updateUser",
 								{
@@ -156,6 +164,7 @@ export async function POST(request: NextRequest) {
 							const kyc = {
 								userId: userId,
 								kyc_status: user.kyc_status,
+								reason: reason,
 							};
 
 							await createUserKyc(kyc, "status");
@@ -168,31 +177,6 @@ export async function POST(request: NextRequest) {
 							});
 						}
 					} else {
-						const user = {
-							kyc_status: "PENDING",
-						};
-						const userResponse = await fetch(
-							"https://flashcall.me/api/v1/creator/updateUser",
-							{
-								method: "PUT",
-								headers: {
-									"Content-Type": "application/json",
-								},
-								body: JSON.stringify({
-									userId: userId,
-									user,
-								}),
-							}
-						);
-
-						const kyc = {
-							userId: userId,
-							kyc_status: user.kyc_status,
-						};
-
-						const dbResponse = await createUserKyc(kyc, "status");
-						const dbResult = await dbResponse.json();
-
 						return NextResponse.json({
 							success: true,
 							kycStatus: false,
