@@ -1,5 +1,9 @@
 import { db } from "@/lib/firebase";
-import { getProfileImagePlaceholder, isValidUrl } from "@/lib/utils";
+import {
+	getDisplayName,
+	getProfileImagePlaceholder,
+	isValidUrl,
+} from "@/lib/utils";
 import { creatorUser } from "@/types";
 import { doc, onSnapshot } from "firebase/firestore";
 import Image from "next/image";
@@ -7,7 +11,7 @@ import { useEffect, useState } from "react";
 
 const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 	const [status, setStatus] = useState<string>("Offline");
-	const [isImageLoaded, setIsImageLoaded] = useState(false);
+	const fullName = getDisplayName(creator);
 
 	const imageSrc =
 		creator?.photo && isValidUrl(creator.photo)
@@ -57,13 +61,7 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 		};
 	}, [creator._id, creator.phone]);
 
-	const backgroundImageStyle = {
-		backgroundImage: `url(${imageSrc})`,
-		backgroundSize: "cover",
-		backgroundPosition: "center",
-		backgroundRepeat: "no-repeat",
-		opacity: isImageLoaded ? 1 : 0,
-	};
+	console.log(fullName);
 
 	return (
 		<>
@@ -81,13 +79,7 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 				<div className="text-white flex flex-col items-start w-full creatorsGirdHighlight">
 					{/* Username */}
 					<p className="font-semibold text-base sm:text-2xl max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
-						{creator.firstName ? (
-							<span className="capitalize">
-								{creator.firstName} {creator.lastName}
-							</span>
-						) : (
-							creator.username
-						)}
+						{fullName}
 					</p>
 					{/* Profession and Status */}
 					<div className="flex items-center justify-between w-full mt-2 gap-2">
