@@ -39,11 +39,11 @@ const useScreenSize = () => {
 
 // Utility function to detect Android or iOS
 const isMobileDevice = () => {
-	const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+	const userAgent = navigator.userAgent || navigator.vendor;
 	if (/android/i.test(userAgent)) {
 		return true; // Android device
 	}
-	if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+	if (/iPad|iPhone|iPod/.test(userAgent)) {
 		return true; // iOS device
 	}
 	return false; // Not Android or iOS
