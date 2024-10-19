@@ -7,7 +7,7 @@ import {
 	getProfileImagePlaceholder,
 	isValidUrl,
 } from "@/lib/utils";
-import { clientUser, creatorUser, RegisterCallParams } from "@/types";
+import { RegisterCallParams } from "@/types";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -21,13 +21,20 @@ import { useGetPreviousCalls } from "@/lib/react-query/queries";
 import ReportDialog from "../client/ReportDialog";
 import axios from "axios";
 
-const CallListMobile = () => {
+const CallListMobile = ({
+	callType,
+}: {
+	callType: "All" | "Audio" | "Video" | "Chat";
+}) => {
 	const { currentUser, userType } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
 	const pathname = usePathname();
 	const router = useRouter();
 	const { toast } = useToast();
-	const { ref, inView } = useInView();
+	const { ref, inView } = useInView({
+		threshold: 0.1,
+		triggerOnce: false,
+	});
 	const {
 		data: userCalls,
 		fetchNextPage,
@@ -35,19 +42,23 @@ const CallListMobile = () => {
 		isFetching,
 		isError,
 		isLoading,
-	} = useGetPreviousCalls(currentUser?._id as string, userType as string);
+	} = useGetPreviousCalls(
+		currentUser?._id as string,
+		userType as string,
+		callType.toLowerCase()
+	);
 	const [reportSubmitted, setReportSubmitted] = useState<{
 		[key: string]: boolean;
 	}>({});
 
 	useEffect(() => {
-		if (inView) {
+		if (inView && hasNextPage && !isFetching) {
 			fetchNextPage();
 		}
-	}, [inView]);
+	}, [inView, hasNextPage, isFetching]);
 
 	useEffect(() => {
-		const fetchReportStatus = async (callId: string, creatorId: string) => {
+		const fetchReportStatus = async (callId: string) => {
 			try {
 				const response = await axios.get(
 					`${backendBaseUrl}/reports/call/${callId}`
@@ -68,7 +79,7 @@ const CallListMobile = () => {
 		// Fetch the report status for each user call
 		userCalls?.pages.forEach((page) => {
 			page.calls.forEach((userCall: RegisterCallParams) => {
-				fetchReportStatus(userCall.callId, userCall.expertDetails?._id);
+				fetchReportStatus(userCall.callId);
 			});
 		});
 	}, [userCalls]);
@@ -86,7 +97,7 @@ const CallListMobile = () => {
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
 				</section>
-			) : userCalls && userCalls?.pages[0].calls?.length === 0 ? (
+			) : userCalls && userCalls?.pages[0]?.totalCalls === 0 ? (
 				<div className="flex flex-col w-full items-center justify-center h-full">
 					<h1 className="text-2xl font-semibold text-red-500">
 						No Calls Found
@@ -96,14 +107,14 @@ const CallListMobile = () => {
 					</h2>
 				</div>
 			) : isError ? (
-				<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
-					Failed to fetch User Calls <br />
-					Please try again later.
+				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-red-500">
+					Failed to fetch User Calls
+					<h2 className="text-xl">Please try again later.</h2>
 				</div>
 			) : (
 				<>
 					<section
-						className={`w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 xl:gap-10 text-black px-4`}
+						className={`w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 text-black px-4`}
 					>
 						{userCalls?.pages?.flatMap((page: any) =>
 							page?.calls?.map((userCall: RegisterCallParams) => {
@@ -155,21 +166,22 @@ const CallListMobile = () => {
 												/>
 												{/* creator details */}
 												<div className="flex flex-col items-start justify-start">
-													<p className="text-base tracking-wide whitespace-nowrap">
+													<p className="text-base tracking-wide whitespace-nowrap capitalize">
 														{fullName || "Creator"}
 													</p>
-													<span className="text-xs whitespace-nowrap">
-														{creator?.profession || "Expert"}
-													</span>
-													<span className="text-[10px] whitespace-nowrap">
-														{(userCall.type).charAt(0).toUpperCase() + (userCall.type).slice(1)}
-													</span>
+													<section className="flex items-center justify-start gap-2 h-fit text-[12.5px]">
+														<span className="whitespace-nowrap">
+															{creator?.profession || "Expert"}
+														</span>
+														<span className="text-gray-400 text-xs">|</span>
+														<span className="capitalize">{userCall.type}</span>
+													</section>
 												</div>
 											</button>
 											{/* call details */}
-											<div className="flex flex-wrap-reverse items-center justify-start gap-2 pl-16">
+											<div className="flex flex-wrap items-center justify-start gap-2 pl-16 text-[12.5px]">
 												<span
-													className={`text-sm ${
+													className={`${
 														userCall.status === "Ended"
 															? "text-green-1"
 															: "text-red-500"
@@ -180,7 +192,7 @@ const CallListMobile = () => {
 														: userCall.status}
 												</span>
 												<section className="flex items-center justify-start gap-2">
-													<span className="text-[12.5px]">
+													<span>
 														{userCall.duration &&
 															(() => {
 																const seconds = parseInt(userCall.duration, 10);
@@ -204,7 +216,7 @@ const CallListMobile = () => {
 															{/* Separator */}
 															<span className="text-gray-400">•</span>
 															{/* User Amount */}
-															<span className="text-[12.5px] text-gray-600 flex items-center gap-1">
+															<span className="text-gray-600 flex items-center gap-1">
 																{/* Amount */}
 																Rs. {userCall.amount.toFixed(0)}
 															</span>
@@ -219,16 +231,18 @@ const CallListMobile = () => {
 												{formattedDate.dateTime}
 											</span>
 											<section className="flex w-full items-end justify-end">
-													{userCall.status !== "Rejected" && userCall.status !== "Cancelled" ? (
-														<FeedbackCheck callId={userCall?.callId} />
-													) : (
-														<button
-															onClick={handleRedirect}
-															className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
-														>
-															Visit Again
-														</button>
-													)}
+												{userCall.status !== "Rejected" &&
+												userCall.status !== "Not Answered" &&
+												userCall.status !== "Cancelled" ? (
+													<FeedbackCheck callId={userCall?.callId} />
+												) : (
+													<button
+														onClick={handleRedirect}
+														className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
+													>
+														Visit Again
+													</button>
+												)}
 
 												{!reportSubmitted[userCall.callId] && (
 													<ReportDialog
@@ -257,11 +271,13 @@ const CallListMobile = () => {
 						/>
 					)}
 
-					{!hasNextPage && !isFetching && (
-						<div className="xl:hidden text-center text-gray-500 py-4">
-							You have reached the end of the list
-						</div>
-					)}
+					{!hasNextPage &&
+						!isFetching &&
+						userCalls?.pages[0]?.totalCalls !== 0 && (
+							<div className="text-center text-gray-500 pt-4">
+								You have reached the end of the list
+							</div>
+						)}
 
 					{hasNextPage && <div ref={ref} className="w-full" />}
 				</>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import MobileNav from "./MobileNav";
+import Headroom from "react-headroom";
 
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { usePathname, useRouter } from "next/navigation";
@@ -26,13 +27,7 @@ const NavLoader = () => {
 	);
 };
 
-const Navbar = ({
-	isVisible,
-	isMobile,
-}: {
-	isVisible: boolean;
-	isMobile: boolean;
-}) => {
+const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 	const {
 		currentUser,
 		fetchingUser,
@@ -44,10 +39,7 @@ const Navbar = ({
 	const router = useRouter();
 	const [creator, setCreator] = useState<creatorUser>();
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
-
 	const pathname = usePathname();
-	// const creatorURL = localStorage.getItem("creatorURL");
-
 	const isCreatorOrExpertPath =
 		creatorURL && creatorURL !== "" && pathname.includes(`${creatorURL}`);
 	const followCreatorTheme = isCreatorOrExpertPath ? "#ffffff" : "#000000";
@@ -66,7 +58,6 @@ const Navbar = ({
 	}, []);
 
 	const handleRouting = () => {
-		// localStorage.setItem("userType", "client");
 		if (userType === "creator") {
 			router.push("/authenticate?usertype=creator");
 		} else {
@@ -77,6 +68,7 @@ const Navbar = ({
 			setIsAuthSheetOpen(true);
 		}
 	};
+
 	const { walletBalance } = useWalletBalanceContext();
 
 	useEffect(() => {
@@ -85,22 +77,9 @@ const Navbar = ({
 
 	const handleAppRedirect = () => {
 		trackEvent("Getlink_TopNav_Clicked");
-		const isAndroid = /Android/i.test(navigator.userAgent);
-		const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-		let url = "https://forms.gle/bo42SCVG6T4YjJzg8";
-
-		// if (isAndroid) {
-		// 	url = "https://play.google.com/store/apps?hl=en_US";
-		// } else if (isIOS) {
-		// 	url = "https://flashcall.me";
-		// } else {
-		// 	url = "https://flashcall.me";
-		// }
-
+		const url = "https://forms.gle/bo42SCVG6T4YjJzg8";
 		window.open(url, "_blank");
 	};
-
-	// console.log(isCreatorOrExpertPath, isMobile, currentTheme);
 
 	const AppLink = () => (
 		<Button
@@ -132,7 +111,6 @@ const Navbar = ({
 				alt="flashcall logo"
 				className={`size-6 xl:w-[28px] xl:h-[36px] rounded-full`}
 			/>
-
 			<span className="w-fit whitespace-nowrap text-xs font-semibold">
 				Get Your Link
 			</span>
@@ -141,12 +119,9 @@ const Navbar = ({
 
 	return (
 		<nav
-			className={`flex justify-between items-center fixed h-[76px] z-40 top-0 left-0 ${
+			className={`flex justify-between items-center sticky h-[76px] z-40 top-0 left-0 ${
 				isCreatorOrExpertPath && "border-b border-white/20"
-			}  ${
-				isVisible ? "translate-y-0" : "-translate-y-full"
-			} w-full px-4 py-4 transition-transform duration-300 shadow-sm blurEffect
-			 `}
+			} w-full px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}
 			style={{
 				background: `${
 					isCreatorOrExpertPath
@@ -154,7 +129,7 @@ const Navbar = ({
 							? currentTheme
 							: "#121319"
 						: "#ffffff"
-				} `,
+				}`,
 			}}
 		>
 			{currentUser ? (
@@ -195,7 +170,7 @@ const Navbar = ({
 			)}
 
 			{currentUser ? (
-				<div className=" flex justify-end items-center gap-4 h-full text-white">
+				<div className="flex justify-end items-center gap-4 h-full text-white">
 					{walletBalance >= 0 ? (
 						<Link
 							href="/payment"
@@ -243,7 +218,7 @@ const Navbar = ({
 				<NavLoader />
 			) : (
 				<Button
-					className="hoverScaleDownEffect font-semibold w-fit h-[40px] xl:h-[48px]  mr-1 rounded-md"
+					className="hoverScaleDownEffect font-semibold w-fit h-[40px] xl:h-[48px] mr-1 rounded-md"
 					size="lg"
 					onClick={handleRouting}
 					style={{

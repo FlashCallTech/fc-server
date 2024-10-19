@@ -22,6 +22,7 @@ import { useToast } from "../ui/use-toast";
 import Script from "next/script";
 import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { backendBaseUrl } from "@/lib/utils";
 
 const RechargeModal = ({
 	setWalletBalance,
@@ -120,12 +121,13 @@ const RechargeModal = ({
 						const userType = "Client"; // Replace with actual user type
 						setWalletBalance((prev) => prev + parseInt(rechargeAmount));
 
-						await fetch("/api/v1/wallet/addMoney", {
+						fetch(`${backendBaseUrl}/wallet/addMoney`, {
 							method: "POST",
 							body: JSON.stringify({
-								userId,
-								userType,
+								userId: userId,
+								userType: "Creator",
 								amount: rechargeAmount,
+								category: "Recharge",
 							}),
 							headers: { "Content-Type": "application/json" },
 						});

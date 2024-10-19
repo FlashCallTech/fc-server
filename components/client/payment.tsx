@@ -33,6 +33,7 @@ interface Transaction {
 	amount: number;
 	createdAt: string;
 	type: "credit" | "debit";
+	category: string;
 }
 
 interface PaymentProps {
@@ -47,7 +48,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const router = useRouter();
 	const { clientUser } = useCurrentUsersContext();
 
-	const { ref, inView } = useInView();
+	const { ref, inView } = useInView({
+		threshold: 0.1,
+		triggerOnce: false,
+	});
 	const {
 		data: transactions,
 		fetchNextPage,
@@ -58,10 +62,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	} = useGetUserTransactionsByType(currentUser?._id as string, btn);
 
 	useEffect(() => {
-		if (inView) {
+		if (inView && hasNextPage && !isFetching) {
 			fetchNextPage();
 		}
-	}, [inView]);
+	}, [inView, hasNextPage, isFetching]);
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -272,11 +276,11 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			<section
 				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4`}
 			>
-				<div className="flex flex-col items-start justify-start gap-4 w-full h-fit">
-					<h2 className=" text-gray-500 text-xl font-normal leading-7">
+				<div className="flex flex-col items-start justify-start gap-2.5 w-full h-fit">
+					<h2 className="text-gray-500 text-xl font-normal">
 						Transaction History
 					</h2>
-					<div className="flex space-x-2  text-xs font-bold leading-4 w-fit">
+					<div className="flex space-x-2 text-xs font-bold leading-4 w-fit">
 						{["all", "credit", "debit"].map((filter) => (
 							<button
 								key={filter}
@@ -300,40 +304,52 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			<ul className="space-y-4 w-full h-full px-4 pt-2 pb-7">
 				{!isLoading ? (
 					isError || !currentUser ? (
-						<div className="size-full flex items-center justify-center text-lg xl:text-2xl font-semibold text-center text-red-500">
-							Failed to fetch Transactions <br />
-							Please try again later.
+						<div className="size-full flex flex-col items-center justify-center text-2xl xl:text-2xl font-semibold text-center text-red-500">
+							Failed to fetch Transactions
+							<span className="text-lg">Please try again later.</span>
 						</div>
-					) : transactions && transactions?.pages?.length === 0 ? (
-						<p className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
-							{`No transactions under ${btn} filter`}
+					) : transactions &&
+					  transactions?.pages[0]?.totalTransactions === 0 ? (
+						<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
+							{`No transactions Found`}
 						</p>
 					) : (
 						transactions?.pages?.map((page: any) =>
 							page.transactions.map((transaction: Transaction) => (
 								<li
 									key={transaction?._id}
-									className="animate-enterFromBottom flex justify-between items-center p-4 bg-white dark:bg-gray-800 border-b-2"
+									className="animate-enterFromBottom flex gap-2 justify-between items-center py-4 sm:px-4 bg-white dark:bg-gray-800 border-b-2"
 								>
 									<div className="flex flex-col items-start justify-center gap-2">
-										<p className="font-normal text-sm leading-4">
-											Transaction ID <strong>{transaction?._id}</strong>
+										<p className="font-normal text-xs xm:text-sm leading-4">
+											Transaction ID{" "}
+											<strong className="text-xs xm:text-sm">
+												{transaction?._id}
+											</strong>
 										</p>
 										<p className="text-gray-500 font-normal text-xs leading-4">
 											{new Date(transaction?.createdAt).toLocaleString()}
 										</p>
 									</div>
-									<p
-										className={`font-bold text-sm leading-4 w-fit whitespace-nowrap ${
-											transaction?.type === "credit"
-												? "text-green-500"
-												: "text-red-500"
-										} `}
-									>
-										{transaction?.type === "credit"
-											? `+ ₹${transaction?.amount?.toFixed(2)}`
-											: `- ₹${transaction?.amount?.toFixed(2)}`}
-									</p>
+									<div className="flex flex-col items-end justify-start gap-2">
+										{transaction?.category && (
+											<p className="font-normal text-xs text-green-1 whitespace-nowrap">
+												{transaction?.category}
+											</p>
+										)}
+
+										<p
+											className={`font-bold text-xs xm:text-sm leading-4 w-fit whitespace-nowrap ${
+												transaction?.type === "credit"
+													? "text-green-500"
+													: "text-red-500"
+											} `}
+										>
+											{transaction?.type === "credit"
+												? `+ ₹${transaction?.amount?.toFixed(2)}`
+												: `- ₹${transaction?.amount?.toFixed(2)}`}
+										</p>
+									</div>
 								</li>
 							))
 						)
@@ -355,11 +371,15 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 				/>
 			)}
 
-			{!isError && !hasNextPage && !isFetching && currentUser && (
-				<div className="text-center text-gray-500 py-4">
-					You have reached the end of the list.
-				</div>
-			)}
+			{!isError &&
+				!hasNextPage &&
+				!isFetching &&
+				currentUser &&
+				transactions?.pages[0]?.totalTransactions !== 0 && (
+					<div className="text-center text-gray-500 py-4">
+						You have reached the end of the list.
+					</div>
+				)}
 
 			{hasNextPage && <div ref={ref} className=" pt-10 w-full" />}
 		</div>

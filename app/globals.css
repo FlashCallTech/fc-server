@@ -216,9 +216,25 @@ html {
 	.str-video__device-settings__option {
 		font-size: 14px !important;
 	}
+
+	.str-video__video-placeholder .str-video__video-placeholder__avatar {
+	background: white !important;
+	/* height: 10rem !important;
+	width: 10rem !important; */
+}
+
+   /* .str-video__video-placeholder .str-video__video-placeholder__initials-fallback {
+	height: 10rem !important;
+	width: 10rem !important;
+	font-size: 50px !important;
+   } */
 }
 
 /* Other Styles */
+
+.headroom {
+	z-index: 40 !important;
+}
 
 .blurEffect {
 	/* box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); */

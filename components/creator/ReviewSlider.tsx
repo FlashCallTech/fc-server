@@ -92,7 +92,7 @@ const ReviewSlider = ({
 									alt={`${feedback?.clientId?.username} profile`}
 									width={100}
 									height={100}
-									className="w-8 h-8 rounded-full object-cover"
+									className="w-8 h-8 rounded-full object-cover bg-white"
 									onError={(e) => {
 										e.currentTarget.src = "/images/defaultProfileImage.png";
 									}}

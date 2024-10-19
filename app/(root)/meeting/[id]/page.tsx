@@ -49,7 +49,7 @@ const MeetingPage = () => {
 				description: "Redirecting Back...",
 			});
 			setTimeout(() => {
-				router.push(`${creatorURL ? creatorURL : "/home"}`);
+				router.replace(`${creatorURL ? creatorURL : "/home"}`);
 			}, 1000);
 		}
 	}, [isCallLoading, call, router, toast]);
@@ -145,7 +145,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 			handleCallEnd();
 		} else if (!isMeetingOwner) {
 			stopMediaStreams();
-			router.push(`/home`);
+			router.replace(`/home`);
 		}
 	}, [call?.id, currentUser?._id]);
 

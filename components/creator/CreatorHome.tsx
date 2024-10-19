@@ -12,11 +12,11 @@ import {
 	calculateTotalEarnings,
 	getProfileImagePlaceholder,
 	isValidUrl,
+	updateFirestoreCallServices,
 } from "@/lib/utils";
 import ServicesCheckbox from "../shared/ServicesCheckbox";
 import CopyToClipboard from "../shared/CopyToClipboard";
-import { UpdateCreatorParams } from "@/types";
-import { doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "../shared/ContentLoading";
@@ -25,24 +25,14 @@ import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import ProfileDialog from "./ProfileDialog";
+import useServices from "@/hooks/useServices";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
+	const { services, handleToggle, setServices } = useServices();
 	const { getDevicePlatform } = usePlatform();
 	const { toast } = useToast();
-	// State for toggle switches
-	const [services, setServices] = useState({
-		myServices:
-			creatorUser?.videoAllowed ||
-			creatorUser?.audioAllowed ||
-			creatorUser?.chatAllowed
-				? true
-				: false,
-		videoCall: creatorUser?.videoAllowed || false,
-		audioCall: creatorUser?.audioAllowed || false,
-		chat: creatorUser?.chatAllowed || false,
-	});
 
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
 	const [loading, setLoading] = useState(true);
@@ -161,55 +151,6 @@ const CreatorHome = () => {
 
 	const theme = creatorUser?.themeSelected;
 
-	const updateFirestoreCallServices = async (
-		services: {
-			myServices: boolean;
-			videoCall: boolean;
-			audioCall: boolean;
-			chat: boolean;
-		},
-		prices: { videoCall: string; audioCall: string; chat: string }
-	) => {
-		if (creatorUser) {
-			try {
-				const callServicesDocRef = doc(db, "services", creatorUser._id);
-
-				const callServicesDoc = await getDoc(callServicesDocRef);
-				if (callServicesDoc.exists()) {
-					await updateDoc(callServicesDocRef, {
-						services,
-						prices,
-					});
-				} else {
-					await setDoc(callServicesDocRef, {
-						services,
-						prices,
-					});
-				}
-
-				// Determine if any service is active
-				const isOnline =
-					services.videoCall || services.audioCall || services.chat;
-
-				const creatorStatusDocRef = doc(db, "userStatus", creatorUser.phone);
-				// Update or set the creator's status
-				const creatorStatusDoc = await getDoc(creatorStatusDocRef);
-				if (creatorStatusDoc.exists()) {
-					await updateDoc(creatorStatusDocRef, {
-						status: isOnline ? "Online" : "Offline",
-					});
-				} else {
-					await setDoc(creatorStatusDocRef, {
-						status: isOnline ? "Online" : "Offline",
-					});
-				}
-			} catch (error) {
-				Sentry.captureException(error);
-				console.error("Error updating Firestore call services: ", error);
-			}
-		}
-	};
-
 	const handleSavePrices = async (newPrices: {
 		videoCall: string;
 		audioCall: string;
@@ -219,11 +160,9 @@ const CreatorHome = () => {
 			await axios.put(
 				`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
 				{
-					user: {
-						videoRate: newPrices.videoCall,
-						audioRate: newPrices.audioCall,
-						chatRate: newPrices.chat,
-					},
+					videoRate: newPrices.videoCall,
+					audioRate: newPrices.audioCall,
+					chatRate: newPrices.chat,
 				}
 			);
 			if (newPrices.audioCall !== prices.audioCall) {
@@ -257,6 +196,7 @@ const CreatorHome = () => {
 				description: "Values are updated...",
 			});
 			updateFirestoreCallServices(
+				creatorUser,
 				{
 					myServices: services.myServices,
 					videoCall: services.videoCall,
@@ -276,42 +216,44 @@ const CreatorHome = () => {
 		}
 	};
 
-	const handleToggle = (
-		service: "myServices" | "videoCall" | "audioCall" | "chat"
-	) => {
-		setServices((prevStates) => {
-			if (service === "myServices") {
-				// Toggle the master switch and update all services accordingly
-				const newMyServicesState = !prevStates.myServices;
-				const newServices = {
-					myServices: newMyServicesState,
-					videoCall: newMyServicesState,
-					audioCall: newMyServicesState,
-					chat: newMyServicesState,
-				};
+	useEffect(() => {
+		if (creatorUser) {
+			const sessionTriggeredRef = doc(
+				db,
+				"sessionTriggered",
+				creatorUser?._id as string
+			);
 
-				updateFirestoreCallServices(newServices, prices);
-				return newServices;
-			} else {
-				// Toggle an individual service
-				const newServiceState = !prevStates[service];
-				const newServices = {
-					...prevStates,
-					[service]: newServiceState,
-				};
+			const unsubscribeSessionTriggered = onSnapshot(
+				sessionTriggeredRef,
+				(doc) => {
+					if (doc.exists()) {
+						const currentCount = doc.data().count || 0;
 
-				// Check if any of the individual services are true
-				const isAnyServiceOn =
-					newServices.videoCall || newServices.audioCall || newServices.chat;
+						if (currentCount >= 3) {
+							// Update each of the services to false
+							const newServices = {
+								myServices: false,
+								videoCall: false,
+								audioCall: false,
+								chat: false,
+							};
 
-				// Update the master toggle (myServices) accordingly
-				newServices.myServices = isAnyServiceOn;
+							setServices(newServices);
+						}
+					}
+				},
+				(error) => {
+					console.error("Error fetching session triggered snapshot: ", error);
+				}
+			);
 
-				updateFirestoreCallServices(newServices, prices);
-				return newServices;
-			}
-		});
-	};
+			// Clean up the listener on unmount
+			return () => {
+				unsubscribeSessionTriggered();
+			};
+		}
+	}, [creatorUser]);
 
 	useEffect(() => {
 		const updateServices = async () => {
@@ -319,14 +261,11 @@ const CreatorHome = () => {
 				await axios.put(
 					`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
 					{
-						user: {
-							videoAllowed: services.videoCall,
-							audioAllowed: services.audioCall,
-							chatAllowed: services.chat,
-						},
+						videoAllowed: services.videoCall,
+						audioAllowed: services.audioCall,
+						chatAllowed: services.chat,
 					}
 				);
-				refreshCurrentUser();
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error updating services:", error);

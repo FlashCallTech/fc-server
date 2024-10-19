@@ -189,6 +189,77 @@ export const handlePendingTransaction = async (
 	}
 };
 
+type Services = {
+	myServices?: boolean;
+	videoCall?: boolean;
+	audioCall?: boolean;
+	chat?: boolean;
+};
+
+type Prices = {
+	videoCall?: string;
+	audioCall?: string;
+	chat?: string;
+};
+
+type Status = "Online" | "Offline" | "Busy";
+
+export const updateFirestoreCallServices = async (
+	creatorUser: any,
+	services?: Services,
+	prices?: Prices,
+	status?: Status
+) => {
+	if (creatorUser) {
+		try {
+			const callServicesDocRef = doc(db, "services", creatorUser._id);
+
+			const callServicesDoc = await getDoc(callServicesDocRef);
+			if (callServicesDoc.exists()) {
+				const existingData = callServicesDoc.data();
+
+				const updatedServices = {
+					...existingData.services,
+					...services,
+				};
+
+				const updatedPrices = {
+					...existingData.prices,
+					...prices,
+				};
+
+				await updateDoc(callServicesDocRef, {
+					services: updatedServices,
+					prices: updatedPrices,
+				});
+			} else {
+				await setDoc(callServicesDocRef, {
+					services: services || {},
+					prices: prices || {},
+				});
+			}
+
+			const isOnline =
+				services?.videoCall || services?.audioCall || services?.chat;
+
+			const creatorStatusDocRef = doc(db, "userStatus", creatorUser.phone);
+			const creatorStatusDoc = await getDoc(creatorStatusDocRef);
+			if (creatorStatusDoc.exists()) {
+				await updateDoc(creatorStatusDocRef, {
+					status: status ? status : isOnline ? "Online" : "Offline",
+				});
+			} else {
+				await setDoc(creatorStatusDocRef, {
+					status: status ? status : isOnline ? "Online" : "Offline",
+				});
+			}
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error updating Firestore call services: ", error);
+		}
+	}
+};
+
 // setBodyBackgroundColor
 export const setBodyBackgroundColor = (color: string) => {
 	document.body.style.backgroundColor = color;
