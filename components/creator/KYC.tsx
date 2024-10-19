@@ -25,7 +25,7 @@ const KYC: React.FC = () => {
 	const [otpGenerated, setOtpGenerated] = useState(false);
 	const [otpRefId, setOtpRefId] = useState<string | null>(null);
 	const [otpSubmitted, setOtpSubmitted] = useState<boolean>(false);
-	const [kycDone, setKycDone] = useState<string>("");
+	const [kycDone, setKycDone] = useState<string>("PENDING");
 	const [loading, setLoading] = useState<boolean>(true);
 	const [isPanInputVisible, setPanInputVisible] = useState(false);
 	const [isAadhaarInputVisible, setAadhaarInputVisible] = useState(false);
@@ -36,18 +36,44 @@ const KYC: React.FC = () => {
 	const [verifyingLiveliness, setVerifyingLiveliness] =
 		useState<boolean>(false);
 	const [verifying, setVerifying] = useState<boolean>(false);
+	const [reason, setReason] = useState<string>("");
 
 	const { creatorUser } = useCurrentUsersContext();
 
 	useEffect(() => {
 		const getKyc = async () => {
 			if (creatorUser) {
-				if (creatorUser.kyc_status) {
-					if (creatorUser.kyc_status === 'COMPLETED' || 'FAILED') {
-						setKycDone(creatorUser.kyc_status);
+				if (creatorUser.kycStatus) {
+					if (creatorUser.kycStatus === 'COMPLETED' || 'FAILED') {
+						setKycDone(creatorUser.kycStatus);
 						setPanVerified(true);
 						setAadhaarVerified(true);
 						setLivelinessCheckVerified(true);
+						if (creatorUser.kycStatus === 'FAILED') {
+							const response = await fetch(
+								`/api/v1/userkyc/getKyc?userId=${creatorUser?._id}`,
+								{
+									method: "GET",
+									headers: {
+										"Content-Type": "application/json",
+									},
+								}
+							);
+
+							if (!response.ok) {
+								console.log('response not ok')
+								setLoading(false);
+								return;
+							}
+
+							const kycResponse = await response.json();
+							if (kycResponse.success) {
+								if (kycResponse.data.reason) {
+									setReason(kycResponse.data.reason);
+								}
+							}
+
+						}
 						setLoading(false);
 
 						return;
@@ -126,11 +152,11 @@ const KYC: React.FC = () => {
 
 				const panResult = await panResponse.json();
 				if (panResult.success) {
-					if(panResult.kycStatus){
+					if (panResult.kycStatus) {
 						setKycDone("COMPLETED");
 						alert('KYC VERIFIED');
 					} else {
-						if(panResult.message === 'Our team will verify the details you have submitted. This usually takes 24 hours.') {
+						if (panResult.message === 'Our team will verify the details you have submitted. This usually takes 24 hours.') {
 							setKycDone("FAILED");
 							alert('KYC FAILED');
 						} else {
@@ -139,7 +165,7 @@ const KYC: React.FC = () => {
 					}
 					setPanVerified(true);
 				} else {
-					if(panResult.message === 'This PAN number is already associated with another account.'){
+					if (panResult.message === 'This PAN number is already associated with another account.') {
 						setPanNumber('');
 						alert('This PAN number is already associated with another account.');
 					}
@@ -218,12 +244,12 @@ const KYC: React.FC = () => {
 				);
 
 				const otpVerificationResult = await otpVerificationResponse.json();
-				if (otpVerificationResult.success){
-					if(otpVerificationResult.kycStatus){
+				if (otpVerificationResult.success) {
+					if (otpVerificationResult.kycStatus) {
 						setKycDone("COMPLETED");
 						alert('KYC VERIFIED');
 					} else {
-						if(otpVerificationResult.message === 'Our team will verify the details you have submitted. This usually takes 24 hours.') {
+						if (otpVerificationResult.message === 'Our team will verify the details you have submitted. This usually takes 24 hours.') {
 							setKycDone("FAILED");
 							alert('KYC FAILED');
 						} else {
@@ -231,9 +257,9 @@ const KYC: React.FC = () => {
 						}
 					}
 					setAadhaarVerified(true);
-				} 
+				}
 				else {
-					if(otpVerificationResult.message === 'This Aadhaar number is already associated with another account.'){
+					if (otpVerificationResult.message === 'This Aadhaar number is already associated with another account.') {
 						alert('This PAN number is already associated with another account.');
 						setAadhaarNumber('');
 					}
@@ -300,12 +326,12 @@ const KYC: React.FC = () => {
 			});
 
 			const result = await response.json();
-			if (result.success){
-				if(result.kycStatus){
+			if (result.success) {
+				if (result.kycStatus) {
 					setKycDone("COMPLETED");
 					alert('KYC VERIFIED');
 				} else {
-					if(result.message === 'Our team will verify the details you have submitted. This usually takes 24 hours.') {
+					if (result.message === 'Our team will verify the details you have submitted. This usually takes 24 hours.') {
 						setKycDone("FAILED");
 						alert('KYC FAILED');
 					} else {
@@ -313,7 +339,7 @@ const KYC: React.FC = () => {
 					}
 				}
 				setLivelinessCheckVerified(true);
-			} 
+			}
 			else {
 				alert("Verify Again");
 			}
@@ -639,8 +665,11 @@ const KYC: React.FC = () => {
 					) : (
 						kycDone === "FAILED" && (
 							<div className="w-full  text-red-500 text-center p-2">
-								<b>Our team will verify the details you have submitted.</b>
-								<br></br> This usually takes 24 hours.
+								<p>
+									<span>{reason.split('.')[0]}.</span>
+									<br />
+									<span className="font-bold">{reason.split('.')[1] + "."}</span>
+								</p>
 							</div>
 						)
 					)}

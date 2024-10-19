@@ -92,7 +92,7 @@ const ChatInput: React.FC<Props> = ({
                             onChange={e => setText(e.target.value)}
                             className={`px-2 ${textSizeClass} font-normal flex-auto bg-transparent outline-none`}
                         />
-                        <button onClick={handleSend} onContextMenu={(e) => e.preventDefault()}>
+                        <button onClick={handleSend} onContextMenu={(e) => e.preventDefault()} disabled={isImgUploading}>
                             <div className='bg-[#25D366] p-1 rounded-full size-10 flex items-center justify-center'>
                                 <Image src="/send.svg" width={1000} height={1000} alt="Send" className="size-5" />
                             </div>
