@@ -15,12 +15,16 @@ import * as Sentry from "@sentry/nextjs";
 
 interface CallTimerContextProps {
 	timeLeft: string;
+	setTimeLeft: React.Dispatch<React.SetStateAction<number>>;
+	maxCallDuration: number;
+	setMaxCallDuration: React.Dispatch<React.SetStateAction<number>>;
 	hasLowBalance: boolean;
 	pauseTimer: () => void;
 	resumeTimer: () => void;
 	anyModalOpen: boolean;
 	setAnyModalOpen: (isOpen: boolean) => void;
 	totalTimeUtilized: number;
+	callRatePerMinute: number;
 }
 
 interface CallTimerProviderProps {
@@ -52,7 +56,9 @@ export const CallTimerProvider = ({
 	const { toast } = useToast();
 	const [audioRatePerMinute, setAudioRatePerMinute] = useState(0);
 	const [videoRatePerMinute, setVideoRatePerMinute] = useState(0);
+	const [callRatePerMinute, setCallRatePerMinute] = useState(0);
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
+	const [maxCallDuration, setMaxCallDuration] = useState(NaN);
 	const { useCallStartsAt } = useCallStateHooks();
 	const [timeLeft, setTimeLeft] = useState(NaN);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
@@ -83,13 +89,21 @@ export const CallTimerProvider = ({
 
 	useEffect(() => {
 		if (!isMeetingOwner || !callId) {
-			return; // Exit early if not the meeting owner or callId is undefined
+			return;
 		}
 		const ratePerMinute = isVideoCall ? videoRatePerMinute : audioRatePerMinute;
-		let maxCallDuration = (walletBalance / ratePerMinute) * 60; // in seconds
-		maxCallDuration = maxCallDuration > 3600 ? 3600 : maxCallDuration; // Limit to 60 minutes (3600 seconds)
+		setCallRatePerMinute(ratePerMinute);
+
+		// Calculate the initial max call duration based on wallet balance
+		let initialMaxCallDuration = (walletBalance / ratePerMinute) * 60;
+		initialMaxCallDuration =
+			initialMaxCallDuration > 3600 ? 3600 : initialMaxCallDuration;
+
+		// Update maxCallDuration state
+		setMaxCallDuration(initialMaxCallDuration);
+
 		if (!callStartedAt) {
-			setTimeLeft(maxCallDuration);
+			setTimeLeft(initialMaxCallDuration);
 			return;
 		}
 
@@ -121,7 +135,7 @@ export const CallTimerProvider = ({
 		const intervalId = setInterval(() => {
 			if (isTimerRunning) {
 				const now = new Date();
-				const timeUtilized = (now.getTime() - callStartedTime.getTime()) / 1000; // Time in seconds
+				const timeUtilized = (now.getTime() - callStartedTime.getTime()) / 1000;
 
 				const newTimeLeft = maxCallDuration - timeUtilized;
 				const clampedTimeLeft = newTimeLeft > 0 ? newTimeLeft : 0;
@@ -173,12 +187,16 @@ export const CallTimerProvider = ({
 		<CallTimerContext.Provider
 			value={{
 				timeLeft: String(timeLeft),
+				setTimeLeft,
+				maxCallDuration,
+				setMaxCallDuration,
 				hasLowBalance,
 				pauseTimer,
 				resumeTimer,
 				anyModalOpen,
 				setAnyModalOpen,
 				totalTimeUtilized,
+				callRatePerMinute,
 			}}
 		>
 			{children}

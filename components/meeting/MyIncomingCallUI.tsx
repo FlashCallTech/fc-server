@@ -94,7 +94,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 
 	const handleCallState = async (action: string) => {
 		if (action === "declined") {
-			await call.leave({ reject: true });
+			await call.reject();
 			setCallState("declined");
 		} else if (action === "accepted") {
 			const expertPhone = expert?.custom?.phone;
@@ -126,7 +126,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 				<img
 					src={call?.state?.createdBy?.image || "/icons/logo_icon_dark.png"}
 					alt=""
-					className="rounded-full w-28 h-28 object-cover"
+					className="rounded-full w-28 h-28 bg-white object-cover"
 					onError={(e) => {
 						e.currentTarget.src = "/images/defaultProfileImage.png";
 					}}

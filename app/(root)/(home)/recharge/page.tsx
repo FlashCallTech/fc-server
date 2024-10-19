@@ -245,8 +245,8 @@ const Recharge: React.FC = () => {
 					{/* <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" /> */}
 
 					{/* Payment Information */}
-					<section className="w-full mb-8 sticky">
-						<div className="flex items-center gap-2 mb-4">
+					<section className="w-full py-5 sticky">
+						<div className="flex items-center gap-2 mb-2">
 							<Link href="/payment" className="text-xl font-bold">
 								&larr;
 							</Link>

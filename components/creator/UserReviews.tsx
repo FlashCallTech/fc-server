@@ -79,9 +79,9 @@ const UserReviews = ({
 		<>
 			{!isLoading ? (
 				isError ? (
-					<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-red-500">
-						Failed to fetch User Reviews <br />
-						Please try again later.
+					<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
+						Failed to fetch User Reviews
+						<span className="text-lg">Please try again later.</span>
 					</div>
 				) : (
 					<section className="flex flex-col">

@@ -135,12 +135,12 @@ const MobileNav = () => {
 						alt="Profile"
 						width={1000}
 						height={1000}
-						className="rounded-full w-11 h-11 object-cover cursor-pointer hoverScaleDownEffect"
+						className="rounded-full w-11 h-11 object-cover cursor-pointer hoverScaleDownEffect bg-white"
 					/>
 				</SheetTrigger>
 				<SheetContent
 					side="right"
-					className="border-none bg-black rounded-l-xl size-full max-w-xs sm:max-w-sm "
+					className="border-none bg-black rounded-l-xl size-full max-w-xs sm:max-w-sm z-50"
 				>
 					<div className="flex h-[calc(100vh-72px)] w-full  flex-col justify-between overflow-y-auto no-scrollbar">
 						<SheetTitle>
@@ -155,7 +155,7 @@ const MobileNav = () => {
 										alt="Profile"
 										width={1000}
 										height={1000}
-										className="rounded-full w-12 h-12 min-w-12 max-w-12 object-cover"
+										className="rounded-full w-12 h-12 min-w-12 max-w-12 object-cover bg-white"
 									/>
 									<div className="flex flex-col w-full items-start justify-center text-white">
 										<span className="text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap">

@@ -2,8 +2,15 @@ import React, { useEffect, useState } from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import * as Sentry from "@sentry/nextjs";
 import { useToast } from "../ui/use-toast";
+import { reject } from "lodash";
 
-const MyOutgoingCallUI = ({ call }: { call: Call }) => {
+const MyOutgoingCallUI = ({
+	call,
+	setEndedByMe,
+}: {
+	call: Call;
+	setEndedByMe: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
 	const [callState, setCallState] = useState("outgoing");
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"
@@ -47,7 +54,7 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 				<img
 					src={expert?.user?.image || "/icons/logo_icon_dark.png"}
 					alt=""
-					className="rounded-full w-28 h-28 object-cover"
+					className="rounded-full w-28 h-28 object-cover bg-white"
 					onError={(e) => {
 						e.currentTarget.src = "/images/defaultProfileImage.png";
 					}}
@@ -68,14 +75,8 @@ const MyOutgoingCallUI = ({ call }: { call: Call }) => {
 				<button
 					className="bg-red-500 text-white p-4 rounded-full hoverScaleDownEffect"
 					onClick={async () => {
-						await call.leave({ reject: true });
-
-						toast({
-							variant: "destructive",
-							title: `${"Call Declined"}`,
-							description: `${"Redirecting Back ..."}`,
-						});
-
+						setEndedByMe(true);
+						await call.leave();
 						return;
 					}}
 				>

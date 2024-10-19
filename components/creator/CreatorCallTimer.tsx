@@ -40,7 +40,7 @@ const CreatorCallTimer = ({ callId }: { callId: string }) => {
 
 	return (
 		<div
-			className={`fixed top-6 right-6 z-30 font-semibold ${
+			className={`fixed top-6 right-6 sm:top-4 sm:right-4 z-30 font-semibold ${
 				minutes < 5 ? "bg-[#ffffff21]" : "bg-white/30"
 			}  p-4 rounded-lg`}
 		>

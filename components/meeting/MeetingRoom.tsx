@@ -28,9 +28,34 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
 import { backendBaseUrl } from "@/lib/utils";
-import ContentLoading from "../shared/ContentLoading";
+import { Cursor, Typewriter } from "react-simple-typewriter";
+import {
+	doc,
+	getDoc,
+	getFirestore,
+	onSnapshot,
+	setDoc,
+	updateDoc,
+} from "firebase/firestore";
 
 type CallLayoutType = "grid" | "speaker-bottom";
+
+interface LatestTip {
+	callId: string;
+	amount: number;
+}
+
+interface UserTipsData {
+	[key: string]: LatestTip;
+}
+
+const TipAnimation = ({ amount }: { amount: number }) => {
+	return (
+		<div className="absolute top-6 left-6 sm:top-4 sm:left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-[#ffffff4d] text-white flex items-center justify-center">
+			<p>Tip ₹ {amount}</p>
+		</div>
+	);
+};
 
 // Custom hook to track screen size
 const useScreenSize = () => {
@@ -56,6 +81,8 @@ const MeetingRoom = () => {
 	const hasAlreadyJoined = useRef(false);
 	const [showParticipants, setShowParticipants] = useState(false);
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
+	const [tipReceived, setTipReceived] = useState(false);
+	const [tipAmount, setTipAmount] = useState(0);
 	const call = useCall();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
@@ -69,6 +96,7 @@ const MeetingRoom = () => {
 	const [showCountdown, setShowCountdown] = useState(false);
 	const [countdown, setCountdown] = useState<number | null>(null);
 	const [hasVisited, setHasVisited] = useState(false);
+	const firestore = getFirestore();
 
 	const countdownDuration = 15;
 
@@ -137,6 +165,33 @@ const MeetingRoom = () => {
 			joinCall();
 		}
 	}, [call, callingState, currentUser, callHasEnded]);
+
+	useEffect(() => {
+		if (userType === "creator") {
+			const expert = call?.state?.members?.find(
+				(member) => member.custom.type === "expert"
+			);
+			const userTipsRef = doc(firestore, "userTips", expert?.user_id as string);
+
+			const unsubscribe = onSnapshot(userTipsRef, async (doc) => {
+				const data = doc.data();
+				if (data) {
+					const currentTip = data[call?.id as string];
+					if (currentTip) {
+						setTipAmount(currentTip.amount);
+						setTipReceived(true);
+						setTimeout(() => {
+							setTipReceived(false);
+						}, 5000);
+					} else {
+						console.log("No tip for this call ID:", call?.id);
+					}
+				}
+			});
+
+			return () => unsubscribe();
+		}
+	}, [userType, call]);
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -239,13 +294,30 @@ const MeetingRoom = () => {
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 
 	const NoParticipantsView = () => (
-		<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-			<p className="text-white text-xl">No other participants in the call</p>
-			{/* You can add visual effects or animations here */}
-			<div className="mt-4">
-				<ContentLoading />
+		<section className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center justify-center">
+			{/* <p className="text-white text-xl">No other participants in the call</p> */}
+			<div className="size-full flex items-center justify-center">
+				<h1
+					className="text-xl md:text-2xl font-semibold"
+					style={{ color: "#ffffff" }}
+				>
+					<Typewriter
+						words={[
+							"You're the first one here",
+							"Waiting for others to join.",
+							"Hang tight",
+						]}
+						loop={true}
+						cursor
+						cursorStyle="_"
+						typeSpeed={50}
+						deleteSpeed={50}
+						delaySpeed={2000}
+					/>
+					<Cursor cursorColor="#ffffff" />
+				</h1>
 			</div>
-		</div>
+		</section>
 	);
 
 	if (callingState !== CallingState.JOINED) {
@@ -258,7 +330,7 @@ const MeetingRoom = () => {
 
 	// Display countdown notification or modal to the user
 	const CountdownDisplay = () => (
-		<div className="absolute top-4 left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-red-500 text-white flex items-center justify-center">
+		<div className="absolute top-6 left-6 sm:top-4 sm:left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-red-500 text-white flex items-center justify-center">
 			<p>Ending call in {countdown}s</p>
 		</div>
 	);
@@ -281,10 +353,15 @@ const MeetingRoom = () => {
 				)}
 			</div>
 
-			{!callHasEnded && isMeetingOwner && !showCountdown ? (
+			{userType === "creator" && tipReceived && (
+				<TipAnimation amount={tipAmount} />
+			)}
+
+			{!callHasEnded && isMeetingOwner && !showCountdown && call ? (
 				<CallTimer
 					handleCallRejected={handleCallRejected}
 					isVideoCall={isVideoCall}
+					callId={call.id}
 				/>
 			) : (
 				!showCountdown &&

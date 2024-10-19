@@ -8,12 +8,28 @@ const GetRandomImage = () => {
 		"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2F5.png?alt=media&token=b8a25c64-6e06-4250-9417-fd95bdaddf1e",
 		"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2F6.png?alt=media&token=8c1f47cf-780d-4ffb-be7d-7a80000516e0",
 	];
-	let randomImage = "";
+	// Check if we are in the browser
+	if (typeof window !== "undefined") {
+		const storedImage = sessionStorage.getItem("randomImage");
 
-	const randomIndex = Math.floor(Math.random() * imageList.length);
-	randomImage = imageList[randomIndex];
+		if (storedImage) {
+			// If available, return the stored image
+			return storedImage;
+		} else {
+			// Otherwise, select a random image
+			const randomIndex = Math.floor(Math.random() * imageList.length);
+			const randomImage = imageList[randomIndex];
 
-	return randomImage;
+			// Store the selected random image in session storage
+			sessionStorage.setItem("randomImage", randomImage);
+
+			// Return the selected random image
+			return randomImage;
+		}
+	}
+
+	// Fallback in case sessionStorage is not available
+	return imageList[0]; // or any default image
 };
 
 export default GetRandomImage;

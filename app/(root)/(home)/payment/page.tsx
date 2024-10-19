@@ -14,11 +14,7 @@ const PaymentsPage = () => {
 	const callType = searchParams.get("callType") || undefined;
 	return (
 		<section className="size-full">
-			{userType !== "creator" ? (
-				<Payment callType={callType} /> // Pass the `callType` prop to Payment
-			) : (
-				<Withdraw />
-			)}
+			{userType !== "creator" ? <Payment callType={callType} /> : <Withdraw />}
 		</section>
 	);
 };

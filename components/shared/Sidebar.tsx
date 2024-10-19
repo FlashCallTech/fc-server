@@ -41,10 +41,11 @@ const Sidebar = () => {
 
 	return (
 		<section
-			className={`sticky left-0 top-0 flex h-screen flex-col justify-between p-6 pt-24 max-md:hidden lg:w-[264px] shadow-md ${
+			className={`sticky left-0 top-[76px] flex h-screen flex-col justify-between p-6  max-md:hidden lg:w-[264px] shadow-md ${
 				isExpertPath && "border-r border-white/20"
 			}`}
 			style={{
+				maxHeight: `calc(100vh - 76px)`,
 				backgroundColor: isExpertPath ? "transparent" : "#ffffff",
 			}}
 		>

@@ -6,6 +6,7 @@ import MyCallUI from "@/components/meeting/MyCallUI";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { tokenProvider } from "@/lib/actions/stream.actions";
 import * as Sentry from "@sentry/nextjs";
+import { getDisplayName } from "@/lib/utils";
 
 const API_KEY = process.env.NEXT_PUBLIC_STREAM_API_KEY;
 
@@ -15,7 +16,10 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 	);
 	const { currentUser } = useCurrentUsersContext();
 	const userId = currentUser?._id as string | undefined;
-
+	let firstName = currentUser?.firstName || "";
+	let lastName = currentUser?.lastName || "";
+	let username = currentUser?.username || "";
+	const fullName = getDisplayName({ firstName, lastName, username });
 	useEffect(() => {
 		const initializeVideoClient = async () => {
 			if (!currentUser || !userId) {
@@ -27,7 +31,7 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 			try {
 				const token = await tokenProvider(
 					userId,
-					currentUser.username,
+					fullName,
 					currentUser.photo,
 					currentUser.phone
 				);
