@@ -392,8 +392,6 @@ const MyCallUI = () => {
 		);
 	}
 
-	console.log(endedByMe);
-
 	return null; // No calls to handle
 };
 
