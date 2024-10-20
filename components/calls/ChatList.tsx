@@ -61,13 +61,11 @@ const ChatList = () => {
 	};
 
 	const findOpposite = (members: any) => {
-		if(
-			members[0].role === "admin"
-		) {
+		if (members[0].role === "admin") {
 			return 1;
 		}
 		return 0;
-	}
+	};
 
 	if (loading) {
 		return (
@@ -109,7 +107,8 @@ const ChatList = () => {
 										<Image
 											src={
 												isValidUrl(chat.members[0].custom.image)
-													? chat.members[findOpposite(chat.members)].custom.image
+													? chat.members[findOpposite(chat.members)].custom
+															.image
 													: "/images/defaultProfileImage.png"
 											}
 											alt="Expert"
@@ -138,13 +137,11 @@ const ChatList = () => {
 											href={`/creator/${chat.members[0].user_id}`}
 											className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1 hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
 										>
-											Visit Again
+											Chat Again
 										</Link>
 									)}
 								</div>
-								<div>
-									
-								</div>
+								<div></div>
 							</div>
 						);
 					})}

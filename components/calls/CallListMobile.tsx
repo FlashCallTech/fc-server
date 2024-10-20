@@ -240,7 +240,7 @@ const CallListMobile = ({
 														onClick={handleRedirect}
 														className="animate-enterFromRight lg:animate-enterFromBottom bg-green-1  hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs"
 													>
-														Visit Again
+														Call Again
 													</button>
 												)}
 

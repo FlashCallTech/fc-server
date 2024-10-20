@@ -12,7 +12,6 @@ import { updateFirestoreCallServices } from "@/lib/utils";
 import {
 	backendBaseUrl,
 	handleInterruptedCall,
-	stopMediaStreams,
 	updateExpertStatus,
 	updateFirestoreSessions,
 } from "@/lib/utils";
@@ -124,7 +123,6 @@ const MyCallUI = () => {
 		}, 30000);
 
 		const handleCallEnded = async () => {
-			stopMediaStreams();
 			const expertPhone = expert?.custom?.phone;
 			if (expertPhone) {
 				await updateExpertStatus(expertPhone, "Online");
@@ -157,12 +155,18 @@ const MyCallUI = () => {
 			logEvent(analytics, "call_rejected", { callId: incomingCall.id });
 		};
 
+		const handleCallAccepted = async () => {
+			clearTimeout(autoDeclineTimeout);
+		};
+
 		incomingCall.on("call.ended", handleCallEnded);
 		incomingCall.on("call.rejected", () => handleCallRejected());
+		incomingCall.on("call.accepted", handleCallAccepted);
 
 		return () => {
 			incomingCall.off("call.ended", handleCallEnded);
 			incomingCall.off("call.rejected", () => handleCallRejected());
+			incomingCall.off("call.accepted", () => handleCallAccepted());
 			clearTimeout(autoDeclineTimeout);
 		};
 	}, [incomingCalls]);
@@ -353,7 +357,6 @@ const MyCallUI = () => {
 		};
 
 		const handleCallEnded = async () => {
-			stopMediaStreams();
 			setShowCallUI(false);
 			clearTimeout(autoDeclineTimeout);
 			await updateExpertStatus(
