@@ -29,14 +29,7 @@ import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
 import { backendBaseUrl } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
-import {
-	doc,
-	getDoc,
-	getFirestore,
-	onSnapshot,
-	setDoc,
-	updateDoc,
-} from "firebase/firestore";
+import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
