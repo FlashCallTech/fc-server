@@ -93,6 +93,8 @@ export const ChatRequestProvider = ({
 		return () => collectionUnsubscribe && collectionUnsubscribe(); // Cleanup collection listener
 	}, [currentCreator, creatorUser, chatRequest]);
 
+	console.log("Chat Request Received: ", chatRequest);
+
 	return (
 		<ChatRequestContext.Provider value={{ chatRequest, setChatRequest }}>
 			{ chatRequest && chatRequest.creatorId === creatorUser?._id ? (
