@@ -146,9 +146,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							const clientStatusData = clientStatusDoc.data();
 
 							if (clientStatusData) {
-								setIsClientBusy(
-									clientStatusData.status === "Busy" 
-								);
+								setIsClientBusy(clientStatusData.status === "Busy");
 							} else {
 								setIsClientBusy(false);
 							}
@@ -188,7 +186,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							console.log("Chat Request Ended or Rejected");
 							setChatReqSent(false);
 							setChatState(data.status);
-							if(data.status === "rejected") {
+							if (data.status === "rejected") {
 								toast({
 									variant: "destructive",
 									title: "The user is busy, please try again later",
@@ -364,7 +362,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 	};
 
-	const handleClickOption = (callType: string) => {
+	const handleClickOption = async (callType: string) => {
 		if (isProcessing) return;
 		setIsProcessing(true);
 
