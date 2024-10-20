@@ -94,6 +94,9 @@ const CallFeedback = ({
 				createdAt: new Date(),
 			});
 			setFeedbackSubmitted(true);
+			setTimeout(() => {
+				onOpenChange(false);
+			}, 2000);
 			toast({
 				variant: "destructive",
 				title: "Feedback Submitted Successfully",
@@ -112,9 +115,9 @@ const CallFeedback = ({
 		}
 	};
 
-	const handleKeyPress = (event: React.KeyboardEvent) => {
-		if (event.key === "Enter" && feedbackMessage.length >= 3) {
-			event.preventDefault();
+	const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (event.key === "Enter" && !event.shiftKey) {
+			event.preventDefault(); // Prevents adding a new line
 			handleSubmitFeedback();
 		}
 	};

@@ -29,14 +29,7 @@ import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
 import { backendBaseUrl } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
-import {
-	doc,
-	getDoc,
-	getFirestore,
-	onSnapshot,
-	setDoc,
-	updateDoc,
-} from "firebase/firestore";
+import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -72,6 +65,17 @@ const useScreenSize = () => {
 	}, []);
 
 	return isMobile;
+};
+
+export const isMobileDevice = () => {
+	const userAgent = navigator.userAgent || navigator.vendor;
+	if (/android/i.test(userAgent)) {
+		return true; // Android device
+	}
+	if (/iPad|iPhone|iPod/.test(userAgent)) {
+		return true; // iOS device
+	}
+	return false; // Not Android or iOS
 };
 
 const MeetingRoom = () => {
@@ -110,6 +114,7 @@ const MeetingRoom = () => {
 	});
 
 	const isMobile = useScreenSize();
+	const mobileDevice = isMobileDevice();
 
 	const handleCallRejected = async () => {
 		await call?.endCall().catch((err) => console.warn(err));
@@ -359,7 +364,7 @@ const MeetingRoom = () => {
 					{/* Audio Button */}
 					{!showCountdown && (
 						<SpeakingWhileMutedNotification>
-							{isMobile ? (
+							{isMobile && mobileDevice ? (
 								<AudioToggleButton />
 							) : (
 								<ToggleAudioPublishingButton />
@@ -368,7 +373,7 @@ const MeetingRoom = () => {
 					)}
 
 					{/* Audio Device List */}
-					{isMobile && !showCountdown && (
+					{isMobile && mobileDevice && !showCountdown && (
 						<AudioDeviceList
 							showAudioDeviceList={showAudioDeviceList}
 							setShowAudioDeviceList={setShowAudioDeviceList}
@@ -378,16 +383,18 @@ const MeetingRoom = () => {
 					{/* Video Button */}
 					{isVideoCall &&
 						!showCountdown &&
-						(isMobile ? (
+						(isMobile && mobileDevice ? (
 							<VideoToggleButton />
 						) : (
 							<ToggleVideoPublishingButton />
 						))}
 
 					{/* Switch Camera */}
-					{isVideoCall && isMobile && !showCountdown && (
-						<SwitchCameraType toggleCamera={toggleCamera} />
-					)}
+					{isVideoCall &&
+						isMobile &&
+						mobileDevice &&
+						!showCountdown &&
+						mobileDevice && <SwitchCameraType toggleCamera={toggleCamera} />}
 
 					{!showCountdown && (
 						<Tooltip>

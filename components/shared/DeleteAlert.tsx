@@ -164,10 +164,10 @@ const DeleteAlert = () => {
 					<SheetContent side="bottom" className=" bg-white rounded-t-xl ">
 						<SheetHeader>
 							<SheetTitle className="text-red-500 !text-start">
-								Unfollow User
+								Delete User
 							</SheetTitle>
 							<SheetDescription className="!text-start">
-								Are you sure you want to unfollow this user?
+								Are you sure you want to delete this user?
 							</SheetDescription>
 						</SheetHeader>
 						<Textarea

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 	title: "Flashcall.me",
 	description: "Book your first consultation",
 	icons: {
-		icon: "/icons/logo_icon.png",
+		icon: "/icons/logo_icon_dark.png",
 	},
 
 	openGraph: {

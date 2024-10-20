@@ -84,9 +84,9 @@ const UserFeedback = ({
 		console.log("trying to submit feedback");
 		if (!currentUser || !call) {
 			console.log("Something got wrong");
-			return
-		};
-		
+			return;
+		}
+
 		try {
 			const userId = currentUser?._id as string;
 
@@ -99,6 +99,9 @@ const UserFeedback = ({
 				createdAt: new Date(),
 			});
 			setFeedbackSubmitted(true);
+			setTimeout(() => {
+				onOpenChange(false);
+			}, 2000);
 		} catch (error: any) {
 			toast({
 				variant: "destructive",
@@ -108,6 +111,13 @@ const UserFeedback = ({
 		} finally {
 			setRating(5);
 			setFeedbackMessage("");
+		}
+	};
+
+	const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (event.key === "Enter" && !event.shiftKey) {
+			event.preventDefault(); // Prevents adding a new line
+			handleSubmitFeedback();
 		}
 	};
 
@@ -193,6 +203,7 @@ const UserFeedback = ({
 						<textarea
 							value={feedbackMessage}
 							onChange={handleFeedbackChange}
+							onKeyDown={handleKeyPress}
 							placeholder="Write your feedback here..."
 							className="w-full p-2 border rounded resize-none h-full max-h-[100px] overflow-y-scroll no-scrollbar outline-none hover:bg-gray-50"
 						></textarea>
