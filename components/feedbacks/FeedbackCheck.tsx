@@ -52,7 +52,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 		if (currentUser?._id) {
 			checkFeedback();
 		}
-	}, [callId, currentUser?._id]);
+	}, [callId, currentUser?._id, isSheetOpen]);
 
 	if (feedbackExists === null) {
 		return (

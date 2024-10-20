@@ -195,6 +195,9 @@ const TipModal = ({
 			// Update wallet balance after transaction
 			setLoading(false);
 			updateWalletBalance();
+			setTimeout(() => {
+				setIsSheetOpen(false);
+			}, 2000);
 		}
 	};
 

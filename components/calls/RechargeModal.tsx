@@ -23,6 +23,7 @@ import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { backendBaseUrl } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 const RechargeModal = ({
 	inTipModal,
@@ -39,7 +40,7 @@ const RechargeModal = ({
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
 	const { pauseTimer, resumeTimer } = useCallTimerContext();
-
+	const pathname = usePathname();
 	useEffect(() => {
 		if (isSheetOpen || onGoingPayment) {
 			pauseTimer();
@@ -192,7 +193,9 @@ const RechargeModal = ({
 			<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
 				<SheetTrigger asChild>
 					<Button
-						className={`bg-red-500 text-white ${
+						className={`${
+							pathname.includes("meeting") ? "bg-green-1" : "bg-red-500"
+						} text-white ${
 							inTipModal ? "mt-0" : "mt-2"
 						}  w-full hoverScaleEffect`}
 						onClick={() => setIsSheetOpen(true)}
