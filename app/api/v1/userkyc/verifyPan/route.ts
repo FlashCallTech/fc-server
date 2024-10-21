@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
 
 						if (faceMatchResult.success && nameMatchResult.success) {
 							const user = {
-								kyc_status: "COMPLETED",
+								kycStatus: "COMPLETED",
 							};
 							const userResponse = await fetch(
 								"https://flashcall.me/api/v1/creator/updateUser",
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
 
 							const kyc = {
 								userId: userId,
-								kyc_status: user.kyc_status,
+								kyc_status: user.kycStatus,
 							};
 
 							await createUserKyc(kyc, "status");
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
 							});
 						} else {
 							const user = {
-								kyc_status: "FAILED",
+								kycStatus: "FAILED",
 							};
 
 							let reason: string;
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
 
 							const kyc = {
 								userId: userId,
-								kyc_status: user.kyc_status,
+								kyc_status: user.kycStatus,
 								reason: reason,
 							};
 

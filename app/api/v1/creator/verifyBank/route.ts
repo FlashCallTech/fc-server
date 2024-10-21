@@ -1,3 +1,4 @@
+import PaymentSettings from "@/components/creator/PaymentSettings";
 import { createPaymentSettings } from "@/lib/actions/paymentSettings.actions";
 import Beneficiary from "@/lib/database/models/beneficiary.model";
 import { NextRequest, NextResponse } from "next/server";
@@ -112,8 +113,22 @@ export async function POST(request: NextRequest) {
               throw new Error(postBeneficiaryResult.message)
             }
 
-            console.log("beneficiary: ", beneficiaryResult);
-
+            const user = {
+							paymentSettingsStatus: "COMPLETED",
+						};
+						await fetch(
+							"https://flashcall.me/api/v1/creator/updateUser",
+							{
+								method: "PUT",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									userId: userId,
+									user,
+								}),
+							}
+						);
             return NextResponse.json({ success: true, data: result, details: { ifsc, bank_account } });
           } else {
             throw new Error('Failed to create beneficiary');
