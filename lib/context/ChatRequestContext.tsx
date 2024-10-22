@@ -30,37 +30,33 @@ export const ChatRequestProvider = ({
 }) => {
 	const [chatRequest, setChatRequest] = useState<any>(null);
 	const { chatRequestsRef } = useChatRequest();
-	const [currentCreator, setCurrentCreator] = useState<creatorUser>();
-	// const [currentCreatorId, setCurrentCreatorId] = useState<string>();
+	// const [currentCreator, setCurrentCreator] = useState<creatorUser>();
 	const { creatorUser } = useCurrentUsersContext();
 	let collectionUnsubscribe: (() => void) | undefined;
 	let docUnsubscribe: (() => void) | undefined;
 
 	// Load the current creator from localStorage
-	useEffect(() => {
-		const storedCreator = localStorage.getItem("currentCreator");
-		if (storedCreator) {
-			const parsedCreator: creatorUser = JSON.parse(storedCreator);
-			setCurrentCreator(parsedCreator);
-		}
-	}, []);
-
 	// useEffect(() => {
-	// 	const currentUser = localStorage.getItem("currentUserID");
-	// 	if (currentUser) {
-	// 		setCurrentCreatorId(currentUser);
+	// 	const storedCreator = localStorage.getItem("currentCreator");
+	// 	if (storedCreator) {
+	// 		const parsedCreator: creatorUser = JSON.parse(storedCreator);
+	// 		setCurrentCreator(parsedCreator);
 	// 	}
 	// }, []);
 
 	// Collection-level listener to find a pending chat request
 	useEffect(() => {
-		if ((!currentCreator && !creatorUser) || chatRequest) return;
+		console.log("CreatorID: ", creatorUser?._id);
+
+		if (!creatorUser || chatRequest) return;
 
 		const q = query(
 			chatRequestsRef,
-			where("creatorId", "==", currentCreator?._id || creatorUser?._id),
+			where("creatorId", "==", creatorUser?._id),
 			where("status", "==", "pending")
 		);
+
+		if (q) console.log("Query received");
 
 		collectionUnsubscribe = onSnapshot(
 			q,
@@ -100,7 +96,9 @@ export const ChatRequestProvider = ({
 		);
 
 		return () => collectionUnsubscribe && collectionUnsubscribe(); // Cleanup collection listener
-	}, [currentCreator, creatorUser, chatRequest]);
+	}, [creatorUser, chatRequest]);
+
+	if (chatRequest) console.log("Chat Request Received: ", chatRequest);
 
 	return (
 		<ChatRequestContext.Provider value={{ chatRequest, setChatRequest }}>

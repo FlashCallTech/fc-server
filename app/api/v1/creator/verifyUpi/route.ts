@@ -119,6 +119,23 @@ export async function POST(request: NextRequest) {
 
 						await createPaymentSettings(details);
 
+						const user = {
+							paymentSettingsStatus: "COMPLETED",
+						};
+						const userResponse = await fetch(
+							"https://flashcall.me/api/v1/creator/updateUser",
+							{
+								method: "PUT",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									userId: userId,
+									user,
+								}),
+							}
+						);
+
 						return NextResponse.json({ success: true, data: result });
 					} else {
 						throw new Error('Failed to create beneficiary');
