@@ -35,7 +35,7 @@ const MovePageToTop = () => {
 			{isVisible && shouldDisplayButton && (
 				<button
 					onClick={scrollToTop}
-					className="fixed bottom-5 right-5 lg:right-9 z-40 bg-gray-100 p-3 rounded-full shadow-lg hoverScaleDownEffect"
+					className="fixed bottom-5 right-5 lg:right-9 z-40 bg-gray-100 hover:bg-gray-200 p-3 rounded-full shadow-lg hoverScaleDownEffect"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

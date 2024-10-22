@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { doc, query, where, onSnapshot, QuerySnapshot } from "firebase/firestore";
+import {
+	doc,
+	query,
+	where,
+	onSnapshot,
+	QuerySnapshot,
+} from "firebase/firestore";
 import useChatRequest from "@/hooks/useChatRequest";
 import { useCurrentUsersContext } from "./CurrentUsersContext";
 import { creatorUser } from "@/types";
@@ -71,7 +77,10 @@ export const ChatRequestProvider = ({
 					const chatRequestDoc = doc(chatRequestsRef, chatRequests[0].id);
 					docUnsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
 						if (docSnapshot.exists()) {
-							const updatedRequest: any = { id: docSnapshot.id, ...docSnapshot.data() };
+							const updatedRequest: any = {
+								id: docSnapshot.id,
+								...docSnapshot.data(),
+							};
 							// setChatRequest(updatedRequest);
 
 							// Stop the listener if the status is now "accepted"
@@ -93,11 +102,9 @@ export const ChatRequestProvider = ({
 		return () => collectionUnsubscribe && collectionUnsubscribe(); // Cleanup collection listener
 	}, [currentCreator, creatorUser, chatRequest]);
 
-	console.log("Chat Request Received: ", chatRequest);
-
 	return (
 		<ChatRequestContext.Provider value={{ chatRequest, setChatRequest }}>
-			{ chatRequest && chatRequest.creatorId === creatorUser?._id ? (
+			{chatRequest && chatRequest.creatorId === creatorUser?._id ? (
 				<ChatRequest chatRequest={chatRequest} />
 			) : (
 				children

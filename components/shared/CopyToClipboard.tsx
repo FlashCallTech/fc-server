@@ -78,7 +78,7 @@ const CopyToClipboard = ({
 	return (
 		<div className="flex justify-between items-center w-full gap-2 p-1">
 			<div
-				className="relative flex border w-full rounded-full p-2 bg-white justify-between items-center shadow-sm gap-2 group cursor-pointer"
+				className="relative flex border w-full rounded-full px-4 p-2 bg-white justify-between items-center shadow-sm gap-2 group cursor-pointer"
 				onClick={() => copyToClipboard(link)}
 			>
 				<Image
@@ -99,7 +99,7 @@ const CopyToClipboard = ({
 					width={24}
 					height={24}
 					alt="copy"
-					className="w-10 h-10 p-2 rounded-full hover:bg-gray-100"
+					className="w-10 h-10 p-2 object-fit rounded-full bg-gray-50 hoverScaleDownEffect hover:bg-gray-200"
 				/>
 			</div>
 			<Image
@@ -107,7 +107,7 @@ const CopyToClipboard = ({
 				width={24}
 				height={24}
 				alt="share"
-				className="w-10 h-10 p-2 bg-gray-800 rounded-full hoverScaleEffect cursor-pointer"
+				className="w-10 h-10 p-2 bg-gray-800 rounded-full hoverScaleDownEffect cursor-pointer"
 				onClick={shareLink}
 			/>
 		</div>

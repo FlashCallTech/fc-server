@@ -9,7 +9,6 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import Loader from "@/components/shared/Loader";
 import { useToast } from "@/components/ui/use-toast";
-import { CallTimerProvider } from "@/lib/context/CallTimerContext";
 import MeetingRoom from "@/components/meeting/MeetingRoom";
 import { useGetCallById } from "@/hooks/useGetCallById";
 import { Cursor, Typewriter } from "react-simple-typewriter";
@@ -42,6 +41,20 @@ const MeetingPage = () => {
 	});
 
 	useEffect(() => {
+		const preventBackNavigation = () => {
+			history.pushState(null, "", window.location.href);
+		};
+
+		history.pushState(null, "", window.location.href);
+
+		window.addEventListener("popstate", preventBackNavigation);
+
+		return () => {
+			window.removeEventListener("popstate", preventBackNavigation);
+		};
+	}, []);
+
+	useEffect(() => {
 		if (!isCallLoading && !call) {
 			toast({
 				variant: "destructive",
@@ -65,23 +78,20 @@ const MeetingPage = () => {
 	}
 
 	const isVideoCall = call?.type === "default";
-	const expert = call?.state?.members?.find(
-		(member) => member.custom.type === "expert"
-	);
+
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 
 	return (
 		<main className="h-full w-full">
 			<StreamCall call={call}>
 				<StreamTheme>
-					<CallTimerProvider
+					{/* <CallTimerProvider
 						isVideoCall={isVideoCall}
 						isMeetingOwner={isMeetingOwner}
-						expert={expert}
 						call={call}
-					>
-						<MeetingRoomWrapper toast={toast} router={router} call={call} />
-					</CallTimerProvider>
+					> */}
+					<MeetingRoomWrapper toast={toast} router={router} call={call} />
+					{/* </CallTimerProvider> */}
 				</StreamTheme>
 			</StreamCall>
 		</main>

@@ -32,7 +32,6 @@ interface CallTimerProviderProps {
 	isVideoCall: boolean;
 	isMeetingOwner: boolean;
 	call?: Call;
-	expert: any;
 }
 
 const CallTimerContext = createContext<CallTimerContextProps | null>(null);

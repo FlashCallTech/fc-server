@@ -218,12 +218,12 @@ html {
 	}
 
 	.str-video__video-placeholder .str-video__video-placeholder__avatar {
-	background: white !important;
-	/* height: 10rem !important;
+		background: white !important;
+		/* height: 10rem !important;
 	width: 10rem !important; */
-}
+	}
 
-   /* .str-video__video-placeholder .str-video__video-placeholder__initials-fallback {
+	/* .str-video__video-placeholder .str-video__video-placeholder__initials-fallback {
 	height: 10rem !important;
 	width: 10rem !important;
 	font-size: 50px !important;
@@ -267,6 +267,11 @@ input[type="number"] {
 	.hoverScaleDownEffect {
 		@apply transition-all duration-500 hover:scale-95;
 	}
+
+	.hoverScaleDownEffect:active {
+		@apply scale-100;
+	}
+
 	.flex-center {
 		@apply flex justify-center items-center;
 	}
