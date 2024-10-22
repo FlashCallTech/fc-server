@@ -174,8 +174,9 @@ const MeetingRoom = () => {
 				}
 				if (callingState === CallingState.IDLE) {
 					userType === "creator" && (await call?.accept());
-
-					await call?.join();
+					setTimeout(async () => {
+						await call?.join();
+					}, 1000);
 					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
 					if (isVideoCall) call?.camera?.enable();

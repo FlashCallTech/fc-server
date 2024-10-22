@@ -93,7 +93,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 
 	const handleCallState = async (action: string) => {
 		if (action === "declined") {
-			await call.reject();
+			await call.leave({ reject: true });
 			setCallState("declined");
 		} else if (action === "accepted") {
 			const expertPhone = expert?.custom?.phone;
@@ -101,7 +101,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 				await updateExpertStatus(expertPhone, "Busy");
 			}
 			// await call.accept();
-			// setCallState("accepted");
+			setCallState("accepted");
 			router.replace(`/meeting/${call?.id}`);
 		} else if (action === "ended") {
 			setCallState("ended");
