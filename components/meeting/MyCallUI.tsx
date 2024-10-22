@@ -112,15 +112,15 @@ const MyCallUI = () => {
 			(member) => member.custom.type === "expert"
 		);
 
-		const autoDeclineTimeout = setTimeout(async () => {
-			if (incomingCall?.state?.callingState === CallingState.RINGING) {
-				console.log("Auto-declining call due to timeout...");
-				await handleCallRejected({
-					title: "Missed Call",
-					description: "The call was not answered",
-				});
-			}
-		}, 30000);
+		// const autoDeclineTimeout = setTimeout(async () => {
+		// 	if (incomingCall?.state?.callingState === CallingState.RINGING) {
+		// 		console.log("Auto-declining call due to timeout...");
+		// 		await handleCallRejected({
+		// 			title: "Missed Call",
+		// 			description: "The call was not answered",
+		// 		});
+		// 	}
+		// }, 30000);
 
 		const handleCallEnded = async () => {
 			const expertPhone = expert?.custom?.phone;
@@ -129,7 +129,6 @@ const MyCallUI = () => {
 			}
 
 			setShowCallUI(false);
-			clearTimeout(autoDeclineTimeout);
 		};
 
 		const handleCallRejected = async (customMessage?: {
@@ -150,24 +149,16 @@ const MyCallUI = () => {
 			});
 
 			setShowCallUI(false);
-			clearTimeout(autoDeclineTimeout);
 
 			logEvent(analytics, "call_rejected", { callId: incomingCall.id });
 		};
 
-		const handleCallAccepted = async () => {
-			clearTimeout(autoDeclineTimeout);
-		};
-
 		incomingCall.on("call.ended", handleCallEnded);
 		incomingCall.on("call.rejected", () => handleCallRejected());
-		incomingCall.on("call.accepted", handleCallAccepted);
 
 		return () => {
 			incomingCall.off("call.ended", handleCallEnded);
 			incomingCall.off("call.rejected", () => handleCallRejected());
-			incomingCall.off("call.accepted", () => handleCallAccepted());
-			clearTimeout(autoDeclineTimeout);
 		};
 	}, [incomingCalls]);
 
