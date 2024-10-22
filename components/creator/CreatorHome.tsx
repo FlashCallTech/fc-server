@@ -320,7 +320,7 @@ const CreatorHome = () => {
 				<div className="flex justify-end p-2 absolute top-2 right-2">
 					<Link
 						href="/profile/editProfile"
-						className="px-4 py-2 text-black text-sm h-auto w-auto bg-white rounded-full hover:bg-gray-300"
+						className="px-4 py-2 text-black text-sm h-auto w-auto bg-white rounded-full hoverScaleDownEffect"
 					>
 						Edit Profile
 					</Link>

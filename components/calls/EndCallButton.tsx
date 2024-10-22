@@ -3,7 +3,6 @@
 import { useCall } from "@stream-io/video-react-sdk";
 import { useState } from "react";
 import { Button } from "../ui/button";
-import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 
 import EndCallDecision from "./EndCallDecision";
 import Image from "next/image";
@@ -11,13 +10,11 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { trackEvent } from "@/lib/mixpanel";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
 import { updateFirestoreSessions } from "@/lib/utils";
 
 const EndCallButton = () => {
 	const call = useCall();
 	const [showDialog, setShowDialog] = useState(false);
-	const { setAnyModalOpen } = useCallTimerContext();
 	const { currentUser } = useCurrentUsersContext();
 	if (!call) {
 		throw new Error(
@@ -27,7 +24,6 @@ const EndCallButton = () => {
 
 	const endCall = async () => {
 		setShowDialog(true);
-		setAnyModalOpen(true);
 	};
 
 	const handleDecisionDialog = async () => {
@@ -37,6 +33,7 @@ const EndCallButton = () => {
 		await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
 			status: "payment pending",
 		});
+		await call?.endCall().catch((err) => console.warn(err));
 
 		trackEvent("BookCall_Chat_Ended", {
 			Client_ID: call.state.createdBy?.id,
@@ -48,13 +45,11 @@ const EndCallButton = () => {
 			Walletbalace_Available: currentUser?.walletBalance,
 			Endedby: call.state.endedBy?.role === "admin" ? "Client" : "Creator",
 		});
-		await call?.endCall().catch((err) => console.warn(err));
 		setShowDialog(false);
 	};
 
 	const handleCloseDialog = () => {
 		setShowDialog(false);
-		setAnyModalOpen(false);
 	};
 
 	return (

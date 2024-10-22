@@ -1,3 +1,4 @@
+import React, { memo } from "react";
 import { useEffect, useState, useMemo, useRef } from "react";
 import {
 	CallParticipantsList,
@@ -30,17 +31,36 @@ import { useRouter } from "next/navigation";
 import { backendBaseUrl } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
+import { CallTimerProvider } from "@/lib/context/CallTimerContext";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
-interface LatestTip {
-	callId: string;
-	amount: number;
-}
-
-interface UserTipsData {
-	[key: string]: LatestTip;
-}
+const NoParticipantsView = () => (
+	<section className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center justify-center">
+		{/* <p className="text-white text-xl">No other participants in the call</p> */}
+		<div className="size-full flex items-center justify-center">
+			<h1
+				className="text-xl md:text-2xl font-semibold"
+				style={{ color: "#ffffff" }}
+			>
+				<Typewriter
+					words={[
+						"You're the first one here",
+						"Waiting for others.",
+						"Hang tight",
+					]}
+					loop={true}
+					cursor
+					cursorStyle="_"
+					typeSpeed={50}
+					deleteSpeed={50}
+					delaySpeed={2000}
+				/>
+				<Cursor cursorColor="#ffffff" />
+			</h1>
+		</div>
+	</section>
+);
 
 const TipAnimation = ({ amount }: { amount: number }) => {
 	return (
@@ -284,33 +304,6 @@ const MeetingRoom = () => {
 
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 
-	const NoParticipantsView = () => (
-		<section className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center justify-center">
-			{/* <p className="text-white text-xl">No other participants in the call</p> */}
-			<div className="size-full flex items-center justify-center">
-				<h1
-					className="text-xl md:text-2xl font-semibold"
-					style={{ color: "#ffffff" }}
-				>
-					<Typewriter
-						words={[
-							"You're the first one here",
-							"Waiting for others to join.",
-							"Hang tight",
-						]}
-						loop={true}
-						cursor
-						cursorStyle="_"
-						typeSpeed={50}
-						deleteSpeed={50}
-						delaySpeed={2000}
-					/>
-					<Cursor cursorColor="#ffffff" />
-				</h1>
-			</div>
-		</section>
-	);
-
 	if (callingState !== CallingState.JOINED) {
 		return (
 			<section className="w-full h-screen flex items-center justify-center ">
@@ -345,17 +338,23 @@ const MeetingRoom = () => {
 				<TipAnimation amount={tipAmount} />
 			)}
 
-			{!callHasEnded && isMeetingOwner && !showCountdown && call ? (
-				<CallTimer
-					handleCallRejected={handleCallRejected}
-					isVideoCall={isVideoCall}
-					callId={call.id}
-				/>
-			) : (
-				!showCountdown &&
-				call &&
-				participants.length > 1 && <CreatorCallTimer callId={call.id} />
-			)}
+			<CallTimerProvider
+				isVideoCall={isVideoCall}
+				isMeetingOwner={isMeetingOwner}
+				call={call}
+			>
+				{!callHasEnded && isMeetingOwner && !showCountdown && call ? (
+					<CallTimer
+						handleCallRejected={handleCallRejected}
+						isVideoCall={isVideoCall}
+						callId={call.id}
+					/>
+				) : (
+					!showCountdown &&
+					call &&
+					participants.length > 1 && <CreatorCallTimer callId={call.id} />
+				)}
+			</CallTimerProvider>
 
 			{/* Call Controls */}
 

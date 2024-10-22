@@ -3,7 +3,6 @@ import { Call } from "@stream-io/video-react-sdk";
 import { useToast } from "../ui/use-toast";
 import * as Sentry from "@sentry/nextjs";
 import { updateExpertStatus } from "@/lib/utils";
-import GetRandomImage from "@/utils/GetRandomImage";
 import { useRouter } from "next/navigation";
 
 const MyIncomingCallUI = ({ call }: { call: Call }) => {

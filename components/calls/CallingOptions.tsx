@@ -26,7 +26,6 @@ import {
 	isValidHexColor,
 	updateFirestoreSessions,
 	trackCallEvents,
-	updateExpertStatus,
 	getDisplayName,
 } from "@/lib/utils";
 import useChat from "@/hooks/useChat";
@@ -320,7 +319,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				Walletbalance_Available: clientUser?.walletBalance,
 			});
 
-			await call.getOrCreate({
+			await call.create({
 				members_limit: 2,
 				ring: true,
 				data: {
@@ -559,89 +558,85 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	return (
 		<>
-			{!updatedCreator?.blocked?.some(
-				(clientId) => clientId === clientUser?._id
-			) && (
-				<div className="flex flex-col w-full items-center justify-center gap-4">
-					{sortedServices.map((service) => (
-						<button
-							disabled={!service.enabled}
-							key={service.type}
-							className={`callOptionContainer ${
+			<div className="flex flex-col w-full items-center justify-center gap-4">
+				{sortedServices.map((service) => (
+					<button
+						disabled={!service.enabled}
+						key={service.type}
+						className={`callOptionContainer ${
+							(isProcessing ||
+								!service.enabled ||
+								onlineStatus === "Busy" ||
+								isClientBusy) &&
+							"!cursor-not-allowed"
+						}`}
+						onClick={service.onClick}
+					>
+						<div className={`flex gap-4 items-center font-bold text-white`}>
+							{service.icon}
+							{service.label}
+						</div>
+						<p
+							className={`font-medium tracking-widest rounded-[18px] px-4 h-[36px] text-black flex items-center justify-center ${
 								(isProcessing ||
 									!service.enabled ||
 									onlineStatus === "Busy" ||
 									isClientBusy) &&
-								"!cursor-not-allowed"
+								"border border-white/50 text-white"
 							}`}
-							onClick={service.onClick}
-						>
-							<div className={`flex gap-4 items-center font-bold text-white`}>
-								{service.icon}
-								{service.label}
-							</div>
-							<p
-								className={`font-medium tracking-widest rounded-[18px] px-4 h-[36px] text-black flex items-center justify-center ${
-									(isProcessing ||
-										!service.enabled ||
-										onlineStatus === "Busy" ||
-										isClientBusy) &&
-									"border border-white/50 text-white"
-								}`}
-								style={{
-									backgroundColor:
-										isProcessing || !service.enabled || onlineStatus === "Busy"
-											? "transparent"
-											: themeColor,
-								}}
-							>
-								Rs.<span className="ml-1">{service.rate}</span>/min
-							</p>
-						</button>
-					))}
-
-					<Sheet
-						open={isSheetOpen}
-						onOpenChange={async () => {
-							setSheetOpen(false);
-							try {
-								const chatRequestId = localStorage.getItem("chatRequestId");
-								await updateDoc(doc(chatRequestsRef, chatRequestId as string), {
-									status: "ended",
-								});
-							} catch (error) {
-								Sentry.captureException(error);
-								console.error(error);
-							} finally {
-								localStorage.removeItem("chatRequestId");
-								localStorage.removeItem("chatId");
-							}
-						}}
-					>
-						<SheetTrigger asChild>
-							<div className="hidden"></div>
-						</SheetTrigger>
-						<SheetContent
-							side="bottom"
-							onInteractOutside={(event) => {
-								// Prevent sheet from closing when clicking outside
-								event.preventDefault();
+							style={{
+								backgroundColor:
+									isProcessing || !service.enabled || onlineStatus === "Busy"
+										? "transparent"
+										: themeColor,
 							}}
-							className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[200px] max-h-fit w-full sm:max-w-[444px] mx-auto"
 						>
-							<SheetTitle></SheetTitle>
-							<SheetDescription></SheetDescription>
-							<div className="relative flex flex-col items-center gap-7">
-								<div className="flex flex-col py-5 items-center justify-center gap-4 w-full text-center">
-									<span className="font-semibold text-xl">
-										Waiting for the creator to accept your chat request...
-									</span>
-								</div>
+							Rs.<span className="ml-1">{service.rate}</span>/min
+						</p>
+					</button>
+				))}
+
+				<Sheet
+					open={isSheetOpen}
+					onOpenChange={async () => {
+						setSheetOpen(false);
+						try {
+							const chatRequestId = localStorage.getItem("chatRequestId");
+							await updateDoc(doc(chatRequestsRef, chatRequestId as string), {
+								status: "ended",
+							});
+						} catch (error) {
+							Sentry.captureException(error);
+							console.error(error);
+						} finally {
+							localStorage.removeItem("chatRequestId");
+							localStorage.removeItem("chatId");
+						}
+					}}
+				>
+					<SheetTrigger asChild>
+						<div className="hidden"></div>
+					</SheetTrigger>
+					<SheetContent
+						side="bottom"
+						onInteractOutside={(event) => {
+							// Prevent sheet from closing when clicking outside
+							event.preventDefault();
+						}}
+						className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[200px] max-h-fit w-full sm:max-w-[444px] mx-auto"
+					>
+						<SheetTitle></SheetTitle>
+						<SheetDescription></SheetDescription>
+						<div className="relative flex flex-col items-center gap-7">
+							<div className="flex flex-col py-5 items-center justify-center gap-4 w-full text-center">
+								<span className="font-semibold text-xl">
+									Waiting for the creator to accept your chat request...
+								</span>
 							</div>
-						</SheetContent>
-					</Sheet>
-				</div>
-			)}
+						</div>
+					</SheetContent>
+				</Sheet>
+			</div>
 
 			{isAuthSheetOpen && (
 				<AuthenticationSheet

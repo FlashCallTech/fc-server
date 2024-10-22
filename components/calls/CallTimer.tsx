@@ -8,7 +8,6 @@ import RechargeModal from "./RechargeModal";
 import TipModal from "./TipModal";
 import Image from "next/image";
 import TimeExtensionModal from "./TimeExtensionModal";
-import { backendBaseUrl } from "@/lib/utils";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -33,7 +32,6 @@ const CallTimer = ({
 	const [isToastShown, setIsToastShown] = useState(false);
 
 	const { toast } = useToast();
-	const { currentUser } = useCurrentUsersContext();
 	const { walletBalance, setWalletBalance, updateWalletBalance } =
 		useWalletBalanceContext();
 

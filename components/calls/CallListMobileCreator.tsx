@@ -83,7 +83,7 @@ const CallListMobileclient = () => {
 									>
 										<div className="flex  flex-col items-start justify-start w-full gap-2">
 											{/* Expert's Details */}
-											<section className="w-1/2 flex items-center justify-start gap-4 hoverScaleDownEffect">
+											<section className="w-1/2 flex items-center justify-start gap-4">
 												{/* client image */}
 												<Image
 													src={

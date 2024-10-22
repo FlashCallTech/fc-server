@@ -277,7 +277,7 @@ const MyCallUI = () => {
 					console.warn("unable to leave client user ... ", err);
 				}
 			} else {
-				router.replace(`/meeting/${outgoingCall.id}`);
+				handleCallAccepted();
 			}
 		};
 

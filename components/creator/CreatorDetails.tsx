@@ -76,41 +76,30 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 			if (data) {
 				const services = data.services;
-				console.log(services);
-				// Check if any of the services are enabled
 				const isOnline =
 					services?.videoCall || services?.audioCall || services?.chat;
 
-				// Set initial status to Online or Offline based on services
 				setStatus(isOnline ? "Online" : "Offline");
 
-				// Now listen for the user's status
 				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
 					const statusData = statusDoc.data();
-					console.log(statusData);
 					if (statusData) {
-						// Check if status is "Busy"
 						if (statusData.status === "Busy") {
 							setStatus("Busy");
 						} else {
-							// Update status based on services
 							setStatus(isOnline ? "Online" : "Offline");
 						}
 					}
 				});
 
-				// Clean up the status listener
 				return () => unsubscribeStatus();
 			}
 		});
 
-		// Clean up the services listener
 		return () => {
 			unsubscribeServices();
 		};
 	}, [creator._id, creator.phone]);
-
-	console.log(status);
 
 	const handleToggleFavorite = async () => {
 		if (!clientUser) {
