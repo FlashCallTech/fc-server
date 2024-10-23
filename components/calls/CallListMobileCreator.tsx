@@ -17,7 +17,11 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useGetPreviousCalls } from "@/lib/react-query/queries";
 import OptionsList from "../shared/OptionsList";
 
-const CallListMobileclient = () => {
+const CallListMobileclient = ({
+	callType,
+}: {
+	callType: "All" | "Audio" | "Video" | "Chat";
+}) => {
 	const { currentUser, userType } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
 	const pathname = usePathname();
@@ -25,6 +29,7 @@ const CallListMobileclient = () => {
 		threshold: 0.1,
 		triggerOnce: false,
 	});
+
 	const {
 		data: userCalls,
 		fetchNextPage,
@@ -32,7 +37,11 @@ const CallListMobileclient = () => {
 		isFetching,
 		isError,
 		isLoading,
-	} = useGetPreviousCalls(currentUser?._id as string, userType as string);
+	} = useGetPreviousCalls(
+		currentUser?._id as string,
+		userType as string,
+		callType.toLowerCase()
+	);
 
 	useEffect(() => {
 		if (inView && hasNextPage && !isFetching) {

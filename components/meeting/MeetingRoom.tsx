@@ -36,7 +36,7 @@ import { CallTimerProvider } from "@/lib/context/CallTimerContext";
 type CallLayoutType = "grid" | "speaker-bottom";
 
 const NoParticipantsView = () => (
-	<section className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center justify-center">
+	<section className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center whitespace-nowrap flex flex-col items-center justify-center">
 		{/* <p className="text-white text-xl">No other participants in the call</p> */}
 		<div className="size-full flex items-center justify-center">
 			<h1

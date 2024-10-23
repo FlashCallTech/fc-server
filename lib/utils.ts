@@ -340,14 +340,14 @@ export const getDisplayName = (
 		return combinedName;
 	}
 
-	if (creator.username.startsWith("+91")) {
+	if (creator?.username?.startsWith("+91")) {
 		return creator.username.replace(
 			/(\+91)(\d+)/,
 			(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
 		);
 	}
 
-	return creator.username;
+	return creator?.username || "Flashcall User";
 };
 
 export const handleError = (error: unknown) => {
