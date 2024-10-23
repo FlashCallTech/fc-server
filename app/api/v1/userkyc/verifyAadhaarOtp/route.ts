@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
 							}
 
 							const userResponse = await fetch(
-								"http://localhost:3000/api/v1/creator/updateUser",
+								"https://flashcall.me/api/v1/creator/updateUser",
 								{
 									method: "PUT",
 									headers: {
