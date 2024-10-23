@@ -82,7 +82,7 @@ const PreviousPage = () => {
 			{userType === "client" ? (
 				<CallListMobile callType={historyType} />
 			) : (
-				<CallListMobileCreator />
+				<CallListMobileCreator callType={historyType} />
 			)}
 		</section>
 	);

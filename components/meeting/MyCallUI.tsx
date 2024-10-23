@@ -243,6 +243,8 @@ const MyCallUI = () => {
 				"Busy"
 			);
 
+			await updateExpertStatus(expert?.custom?.phone as string, "Busy");
+
 			await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
 				status: "ongoing",
 			});

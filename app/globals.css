@@ -260,16 +260,45 @@ input[type="number"] {
 }
 
 @layer utilities {
-	.hoverScaleEffect {
-		@apply transition-all duration-500 hover:scale-105;
-	}
-
+	/* Common base styles for all devices */
+	.hoverScaleEffect,
 	.hoverScaleDownEffect {
-		@apply transition-all duration-500 hover:scale-95;
+		@apply transition-all duration-500;
 	}
 
-	.hoverScaleDownEffect:active {
-		@apply scale-100;
+	/* Styles for hover-enabled devices (like desktops) */
+	@media (hover: hover) {
+		.hoverScaleEffect:hover {
+			@apply scale-105; /* Scale up on hover */
+		}
+
+		.hoverScaleDownEffect:hover {
+			@apply scale-95; /* Scale down on hover */
+		}
+	}
+
+	/* Styles for touch devices (like mobiles) */
+	@media (hover: none) {
+		/* Disable hover effects */
+		.hoverScaleEffect:hover,
+		.hoverScaleDownEffect:hover {
+			@apply scale-100; /* Disable hover scaling for touch devices */
+		}
+
+		/* Apply scaling on tap */
+		.hoverScaleEffect:active {
+			@apply scale-110; /* Scale up on tap */
+		}
+
+		.hoverScaleDownEffect:active {
+			@apply scale-90; /* Scale down on tap */
+		}
+
+		/* Reset the scale after tap */
+		.hoverScaleEffect,
+		.hoverScaleDownEffect {
+			@apply scale-100; /* Reset back to original scale */
+		}
 	}
 
 	.flex-center {
