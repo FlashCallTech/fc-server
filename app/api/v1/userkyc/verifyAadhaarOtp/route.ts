@@ -101,25 +101,35 @@ export async function POST(request: NextRequest) {
 							const user = {
 								kycStatus: "COMPLETED",
 							};
-							const userResponse = await fetch("https://flashcall.me/api/v1/creator/updateUser", {
-								method: "PUT",
-								headers: {
-									"Content-Type": "application/json",
-								},
-								body: JSON.stringify({
-									userId: userId,
-									user,
-								}),
-							});
+							const userResponse = await fetch(
+								"https://flashcall.me/api/v1/creator/updateUser",
+								{
+									method: "PUT",
+									headers: {
+										"Content-Type": "application/json",
+									},
+									body: JSON.stringify({
+										userId: userId,
+										user,
+									}),
+								}
+							);
+
+							const userResult = await userResponse.json();
+							console.log(userResult);
 
 							const kyc = {
 								userId: userId,
-								kyc_status: user.kycStatus
-							}
+								kyc_status: user.kycStatus,
+							};
 
-							await createUserKyc(kyc, 'status');
+							await createUserKyc(kyc, "status");
 
-							return NextResponse.json({ success: true, kycStatus: true, message: 'Kyc Completed' })
+							return NextResponse.json({
+								success: true,
+								kycStatus: true,
+								message: "Kyc Completed",
+							});
 						} else {
 							const user = {
 								kycStatus: "FAILED",
@@ -127,32 +137,39 @@ export async function POST(request: NextRequest) {
 
 							let reason: string;
 
-							if(!faceMatchResult.success) {
+							if (!faceMatchResult.success) {
 								reason = "The face in the Aadhaar and the selfie do not match. Our team will contact you for manual verification, which may take up to 2 business days."
 							} else {
 								reason = "The name in the PAN and the Aadhaar do not match. Our team will contact you for manual verification, which may take up to 2 business days."
 							}
 
-							const userResponse = await fetch("https://flashcall.me/api/v1/creator/updateUser", {
-								method: "PUT",
-								headers: {
-									"Content-Type": "application/json",
-								},
-								body: JSON.stringify({
-									userId: userId,
-									user,
-								}),
-							});
+							const userResponse = await fetch(
+								"http://localhost:3000/api/v1/creator/updateUser",
+								{
+									method: "PUT",
+									headers: {
+										"Content-Type": "application/json",
+									},
+									body: JSON.stringify({
+										userId: userId,
+										user,
+									}),
+								}
+							);
+
+							const userResult = await userResponse.json();
+							console.log(userResult);
 
 							const kyc = {
 								userId: userId,
 								kyc_status: user.kycStatus,
 								reason: reason,
-							}
+							};
 
-							await createUserKyc(kyc, 'status');
+							const final = await createUserKyc(kyc, "status");
+							console.log(final);
 
-							return NextResponse.json({ success: true, kycStatus: false, message: 'Our team will verify the details you have submitted. This usually takes 24 hours.' });
+							return NextResponse.json({ success: true, kycStatus: false, message: result.final });
 						}
 					} else {
 						return NextResponse.json({ success: true, kycStatus: false, message: 'Kyc Pending' });

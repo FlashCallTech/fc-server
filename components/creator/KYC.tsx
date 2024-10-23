@@ -45,7 +45,7 @@ const KYC: React.FC = () => {
 			if (creatorUser) {
 				if (creatorUser.kycStatus) {
 					console.log(creatorUser.kycStatus);
-					if (creatorUser.kycStatus === 'COMPLETED' || 'FAILED') {
+					if (creatorUser.kycStatus === 'COMPLETED' || creatorUser.kycStatus === "FAILED") {
 						setKycDone(creatorUser.kycStatus);
 						setPanVerified(true);
 						setAadhaarVerified(true);
