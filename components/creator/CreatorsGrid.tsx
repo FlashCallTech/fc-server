@@ -73,6 +73,7 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 					className="w-full h-full absolute top-0 object-cover rounded-xl"
 					placeholder="blur"
 					blurDataURL="/icons/blurryPlaceholder.png"
+					priority
 				/>
 				<div className="text-white flex flex-col items-start w-full creatorsGirdHighlight">
 					{/* Username */}
