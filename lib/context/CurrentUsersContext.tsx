@@ -248,6 +248,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				try {
 					if (doc.exists()) {
 						const data = doc.data();
+
 						if (isBrowser()) {
 							if (data?.token && data.token !== authToken) {
 								handleSignout();
@@ -273,7 +274,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		return () => {
 			unsubscribe();
 		};
-	}, [currentUser?.phone]);
+	}, [currentUser?._id, authToken]);
 
 	// Provide the context value to children
 	return (
