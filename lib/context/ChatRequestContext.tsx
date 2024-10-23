@@ -8,7 +8,6 @@ import {
 } from "firebase/firestore";
 import useChatRequest from "@/hooks/useChatRequest";
 import { useCurrentUsersContext } from "./CurrentUsersContext";
-import { creatorUser } from "@/types";
 import ChatRequest from "@/components/chat/ChatRequest";
 
 const ChatRequestContext = createContext<any>(null);
@@ -35,19 +34,8 @@ export const ChatRequestProvider = ({
 	let collectionUnsubscribe: (() => void) | undefined;
 	let docUnsubscribe: (() => void) | undefined;
 
-	// Load the current creator from localStorage
-	// useEffect(() => {
-	// 	const storedCreator = localStorage.getItem("currentCreator");
-	// 	if (storedCreator) {
-	// 		const parsedCreator: creatorUser = JSON.parse(storedCreator);
-	// 		setCurrentCreator(parsedCreator);
-	// 	}
-	// }, []);
-
 	// Collection-level listener to find a pending chat request
 	useEffect(() => {
-		console.log("CreatorID: ", creatorUser?._id);
-
 		if (!creatorUser || chatRequest) return;
 
 		const q = query(
@@ -55,8 +43,6 @@ export const ChatRequestProvider = ({
 			where("creatorId", "==", creatorUser?._id),
 			where("status", "==", "pending")
 		);
-
-		if (q) console.log("Query received");
 
 		collectionUnsubscribe = onSnapshot(
 			q,
@@ -97,8 +83,6 @@ export const ChatRequestProvider = ({
 
 		return () => collectionUnsubscribe && collectionUnsubscribe(); // Cleanup collection listener
 	}, [creatorUser, chatRequest]);
-
-	if (chatRequest) console.log("Chat Request Received: ", chatRequest);
 
 	return (
 		<ChatRequestContext.Provider value={{ chatRequest, setChatRequest }}>
