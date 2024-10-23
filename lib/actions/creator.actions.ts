@@ -172,7 +172,6 @@ export async function updateCreatorUser(
 	try {
 		await connectToDatabase();
 		const user = await Creator.findById({ _id: userId });
-
 		// Validate the username
 		if (updates.username && !validateUsername(updates.username)) {
 			return {
@@ -183,14 +182,13 @@ export async function updateCreatorUser(
 
 		// Construct the update object
 		const updateObject: any = { ...updates };
+		console.log(updateObject);
 
 		// If the updates object contains a link to add, use $push to add it to the links array
 		if (updates.link) {
 			updateObject.$push = { links: updates.link };
 			delete updateObject.links;
 		}
-
-		console.log("Trying to update user");
 
 		// Check if links array is empty
 		if (Array.isArray(updateObject.links) && updateObject.links.length === 0) {

@@ -137,7 +137,8 @@ export type UpdateCreatorParams = {
 	gender?: string;
 	dob?: string;
 	bio?: string;
-	kyc_status?: string;
+	kycStatus?: string;
+	paymentSettingsStatus?: string; 
 	walletBalance?: number;
 	referralId?: string;
 	referredBy?: string;
