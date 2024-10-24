@@ -13,6 +13,7 @@ const About = () => {
 				width={1000}
 				height={1000}
 				className="hidden lg:flex rounded-xl w-full h-full max-h-[444px] object-contain"
+				priority
 			/>
 			{/* heading and content */}{" "}
 			<div className="flex flex-col items-start justify-center gap-7">
@@ -26,6 +27,7 @@ const About = () => {
 					width={100}
 					height={100}
 					className="w-[150px] h-auto"
+					priority
 				/>
 			</div>
 			{/* About Banner Phone*/}
@@ -35,6 +37,7 @@ const About = () => {
 				width={1000}
 				height={1000}
 				className="rounded-xl w-full h-full max-h-[380px] object-contain lg:hidden"
+				priority
 			/>
 		</section>
 	);

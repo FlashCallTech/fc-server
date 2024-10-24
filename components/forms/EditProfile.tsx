@@ -347,12 +347,6 @@ const EditProfile = ({
 			</section>
 		);
 
-	console.log(
-		"Selected profession:",
-		selectedProfession,
-		watchedValues.profession
-	);
-
 	return (
 		<Form {...form}>
 			<span className="text-2xl font-semibold">Edit User Details</span>
