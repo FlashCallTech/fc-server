@@ -67,8 +67,8 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 				<Image
 					src={imageSrc}
 					alt={creator.firstName || creator.username}
-					width={300}
-					height={300}
+					width={1000}
+					height={1000}
 					quality={75}
 					className="w-full h-full absolute top-0 object-cover rounded-xl"
 					placeholder="blur"

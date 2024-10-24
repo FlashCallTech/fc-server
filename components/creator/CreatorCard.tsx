@@ -11,7 +11,7 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import CreatorDetails from "./CreatorDetails";
 import { useRouter } from "next/navigation";
 
-const CreatorCard: React.FC = () => {
+const CreatorCard = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
 	const [loading, setLoading] = useState(true);
 	const { username } = useParams();
