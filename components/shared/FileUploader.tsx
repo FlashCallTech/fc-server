@@ -1,8 +1,9 @@
 import { useCallback, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "../ui/button";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage } from "@/lib/firebase";
+import { S3Client } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
+
 import { useToast } from "../ui/use-toast";
 import Image from "next/image";
 import imageCompression from "browser-image-compression";
@@ -20,77 +21,85 @@ const FileUploader = ({
 	mediaUrl,
 	onFileSelect,
 }: FileUploaderProps) => {
-	const pathname = usePathname(); // Get the current pathname
-	const [fileUrl, setFileUrl] = useState(mediaUrl); // Old image
-	const [newFileUrl, setNewFileUrl] = useState<string | null>(null); // New image preview
-	const [uploadProgress, setUploadProgress] = useState(0);
+	const pathname = usePathname();
+	const [fileUrl, setFileUrl] = useState(mediaUrl);
+	const [newFileUrl, setNewFileUrl] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
+
+	// S3 client setup
+	const s3Client = new S3Client({
+		region: process.env.NEXT_PUBLIC_AWS_REGION!,
+		credentials: {
+			accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID!,
+			secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY!,
+		},
+	});
 
 	const onDrop = useCallback(
 		async (acceptedFiles: FileWithPath[]) => {
 			setLoading(true);
+
 			try {
 				let file = acceptedFiles[0];
 
-				// Convert the image to WebP format
+				// Compress and convert the image to WebP format
 				const options = {
-					maxSizeMB: 0.5, // Specify the max size in MB
+					maxSizeMB: 0.5,
 					maxWidthOrHeight: 1920,
 					useWebWorker: true,
-					fileType: "image/webp", // Convert to WebP format
+					fileType: "image/webp",
 				};
-
-				// Compress the image
 				const compressedFile = await imageCompression(file, options);
-
-				const fileRef = ref(storage, `uploads/${compressedFile.name}`);
-				const uploadTask = uploadBytesResumable(fileRef, compressedFile);
-
 				onFileSelect(compressedFile);
 
-				uploadTask.on(
-					"state_changed",
-					(snapshot) => {
-						const progress =
-							(snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-						setUploadProgress(progress);
-						console.log(`Upload is ${progress}% done`);
-					},
-					(error) => {
-						console.error("Upload failed", error);
-						toast({
-							variant: "destructive",
-							title: "Unable to Upload Image",
-							description: "Please Try Again...",
-						});
-						setLoading(false); // Set loading state to false if upload fails
-					},
-					() => {
-						getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-							if (pathname === "/updateDetails") {
-								setFileUrl(downloadURL); // Set fileUrl with the new image URL
-							} else {
-								setFileUrl(mediaUrl);
-								setNewFileUrl(downloadURL); // Show new image preview
-								fieldChange(downloadURL); // Pass only new image URL to parent form state
-							}
-							console.log("File available at", downloadURL);
-							setLoading(false); // Set loading state to false once upload completes
-						});
-					}
-				);
+				const fileName = `${Date.now()}_${compressedFile.name}`;
+				const fileStream = compressedFile.stream(); // Use the stream directly
+
+				// S3 bucket params
+				const s3Params = {
+					Bucket: "flashcall.me",
+					Key: `uploads/${fileName}`,
+					Body: fileStream,
+					ContentType: compressedFile.type,
+				};
+
+				// Create an instance of the Upload utility
+				const upload = new Upload({
+					client: s3Client,
+					params: s3Params,
+					queueSize: 4,
+					leavePartsOnError: false,
+				});
+
+				// Execute the upload
+				await upload.done();
+
+				// Generate CloudFront URL
+				const cloudFrontUrl = `https://dxvnlnyzij172.cloudfront.net/uploads/${fileName}`;
+
+				// Update UI and state
+				if (pathname === "/updateDetails") {
+					setFileUrl(cloudFrontUrl);
+				} else {
+					setFileUrl(mediaUrl);
+					setNewFileUrl(cloudFrontUrl);
+					fieldChange(cloudFrontUrl);
+				}
+
+				setLoading(false);
 			} catch (error) {
+				console.error("Upload error:", error); // Log the error for debugging
 				Sentry.captureException(error);
 				toast({
 					variant: "destructive",
 					title: "Unable to Upload Image",
 					description: "Please Try Again...",
 				});
-				setLoading(false); // Set loading state to false if upload fails
+				setLoading(false);
 			}
 		},
-		[fieldChange, onFileSelect, toast, pathname] // Include pathname in dependencies
+		[fieldChange, onFileSelect, toast, pathname]
 	);
 
 	const { getRootProps, getInputProps } = useDropzone({
@@ -114,13 +123,6 @@ const FileUploader = ({
 						alt="Loading..."
 						className="w-20 h-20"
 					/>
-				</div>
-				{/* Progress Bar */}
-				<div className="w-[25%] bg-gray-200 rounded-xl h-2 dark:bg-gray-700">
-					<div
-						className="bg-green-1 h-2 rounded-xl transition-all duration-500"
-						style={{ width: `${uploadProgress}%` }}
-					></div>
 				</div>
 			</div>
 		);

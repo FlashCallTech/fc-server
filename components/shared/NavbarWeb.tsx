@@ -41,6 +41,7 @@ const NavbarWeb = ({
 						style={{
 							boxShadow: theme,
 						}}
+						priority
 					/>
 				</Link>
 
@@ -54,6 +55,7 @@ const NavbarWeb = ({
 						style={{
 							boxShadow: theme,
 						}}
+						priority
 					/>
 				</Link>
 

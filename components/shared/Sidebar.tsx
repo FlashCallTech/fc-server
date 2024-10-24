@@ -84,6 +84,7 @@ const Sidebar = () => {
 										className={`w-6 h-6 object-cover invert group-hover:invert-0 group-hover:brightness-200 ${
 											(isActive || isExpertPath) && "invert-0 brightness-200"
 										}`}
+										priority
 									/>
 
 									<p className="text-base max-lg:hidden group-hover:text-white">

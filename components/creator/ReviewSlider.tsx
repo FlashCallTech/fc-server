@@ -2,6 +2,7 @@ import { isValidUrl } from "@/lib/utils";
 import { CreatorFeedback } from "@/types";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { Rating } from "@smastrom/react-rating";
+import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import Slider from "react-slick";
 
@@ -26,6 +27,12 @@ const ReviewSlider = ({
 }) => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const sliderRef = useRef<Slider>(null);
+
+	const getImageSrc = (feedback: any) => {
+		return isValidUrl(feedback?.clientId?.photo || "")
+			? feedback?.clientId?.photo
+			: GetRandomImage();
+	};
 
 	const dummyFeedbacks = ["1", "2", "3", "4", "5", "6", "7"];
 	// Carousel settings
@@ -83,12 +90,8 @@ const ReviewSlider = ({
 								className="flex w-[80px] height-[40px] mx-auto rounded-full items-center justify-center py-1 px-2 z-10"
 								style={{ background: theme ? theme : "#ffffff" }}
 							>
-								<img
-									src={
-										isValidUrl(feedback?.clientId?.photo || "")
-											? feedback?.clientId?.photo
-											: GetRandomImage()
-									}
+								<Image
+									src={getImageSrc(feedback)}
 									alt={`${feedback?.clientId?.username} profile`}
 									width={100}
 									height={100}

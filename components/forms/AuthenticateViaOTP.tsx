@@ -273,7 +273,7 @@ const AuthenticateViaOTP = ({
 			let newErrors = { ...error };
 			newErrors.otpVerificationError = error.message;
 			setError(newErrors);
-			otpForm.reset(); // Reset OTP form
+			otpForm.reset();
 			setIsVerifyingOTP(false);
 		} finally {
 			setIsVerifyingOTP(false);
