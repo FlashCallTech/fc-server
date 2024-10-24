@@ -46,6 +46,7 @@ const Hero = () => {
 					width={1000}
 					height={1000}
 					className="hidden lg:block rounded-xl w-full h-full max-h-[480px] object-contain"
+					priority
 				/>
 				<Image
 					src="/web/images/hero_mobile.png"
@@ -53,6 +54,7 @@ const Hero = () => {
 					width={1000}
 					height={1000}
 					className="lg:hidden rounded-xl w-full h-full max-h-[480px] object-contain"
+					priority
 				/>
 
 				{/* more content */}

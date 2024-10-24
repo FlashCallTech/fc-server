@@ -110,6 +110,7 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 				height={100}
 				alt="flashcall logo"
 				className={`size-6 xl:w-[28px] xl:h-[36px] rounded-full`}
+				priority
 			/>
 			<span className="w-fit whitespace-nowrap text-xs font-semibold">
 				Get Your Link
