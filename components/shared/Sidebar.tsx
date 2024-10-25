@@ -12,9 +12,11 @@ import { analytics } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import {
 	getDarkHexCode,
+	getImageSource,
 	getProfileImagePlaceholder,
 	isValidUrl,
 } from "@/lib/utils";
+import { clientUser, creatorUser } from "@/types";
 
 const Sidebar = () => {
 	const pathname = usePathname();
@@ -34,10 +36,7 @@ const Sidebar = () => {
 	const sidebarItems =
 		userType === "creator" ? sidebarLinksCreator : sidebarLinks;
 
-	const imageSrc =
-		currentUser?.photo && isValidUrl(currentUser?.photo)
-			? currentUser?.photo
-			: getProfileImagePlaceholder((currentUser?.gender as string) ?? "");
+	const imageSrc = getImageSource(currentUser as clientUser | creatorUser);
 
 	return (
 		<section

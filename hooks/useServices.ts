@@ -8,12 +8,12 @@ import * as Sentry from "@sentry/nextjs";
 
 export const useServices = () => {
 	const { creatorUser } = useCurrentUsersContext();
-	const [services, setServices] = useState({
+	const [services, setServices] = useState(() => ({
 		myServices: false,
 		videoCall: false,
 		audioCall: false,
 		chat: false,
-	});
+	}));
 
 	// Initialize services based on creatorUser
 	useEffect(() => {

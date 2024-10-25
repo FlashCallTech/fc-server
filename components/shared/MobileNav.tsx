@@ -14,14 +14,19 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { sidebarLinks, sidebarLinksCreator } from "@/constants";
-import { cn, getProfileImagePlaceholder, isValidUrl } from "@/lib/utils";
+import {
+	cn,
+	getImageSource,
+	getProfileImagePlaceholder,
+	isValidUrl,
+} from "@/lib/utils";
 import { Button } from "../ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useEffect, useMemo, useState } from "react";
 import { trackEvent } from "@/lib/mixpanel";
-import { creatorUser } from "@/types";
+import { clientUser, creatorUser } from "@/types";
 
 const MobileNav = () => {
 	const pathname = usePathname();
@@ -122,10 +127,7 @@ const MobileNav = () => {
 		}
 	};
 
-	const imageSrc =
-		currentUser?.photo && isValidUrl(currentUser?.photo)
-			? currentUser?.photo
-			: getProfileImagePlaceholder((currentUser?.gender as string) ?? "");
+	const imageSrc = getImageSource(currentUser as clientUser | creatorUser);
 
 	return (
 		<section className="flex items-center justify-center w-fit relative">

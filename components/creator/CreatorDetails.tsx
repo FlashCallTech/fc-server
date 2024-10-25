@@ -4,6 +4,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import {
 	backendBaseUrl,
 	getDisplayName,
+	getImageSource,
 	getProfileImagePlaceholder,
 	isValidHexColor,
 	isValidUrl,
@@ -44,10 +45,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 	const fullName = getDisplayName(creator);
 
-	const imageSrc =
-		creator?.photo && isValidUrl(creator?.photo)
-			? creator?.photo
-			: getProfileImagePlaceholder(creator && (creator.gender as string));
+	const imageSrc = getImageSource(creator);
 
 	const themeColor = isValidHexColor(creator.themeSelected)
 		? creator.themeSelected

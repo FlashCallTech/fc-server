@@ -10,8 +10,7 @@ import { useToast } from "../ui/use-toast";
 import {
 	backendBaseUrl,
 	calculateTotalEarnings,
-	getProfileImagePlaceholder,
-	isValidUrl,
+	getImageSource,
 	updateFirestoreCallServices,
 } from "@/lib/utils";
 import ServicesCheckbox from "../shared/ServicesCheckbox";
@@ -28,7 +27,7 @@ import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
 
 const CreatorHome = () => {
-	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
+	const { creatorUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const { services, handleToggle, setServices } = useServices();
 	const { getDevicePlatform } = usePlatform();
@@ -40,10 +39,30 @@ const CreatorHome = () => {
 	const [todaysEarning, setTodaysEarning] = useState(0);
 	const [isPriceEditOpen, setIsPriceEditOpen] = useState(false);
 	const [prices, setPrices] = useState({
-		videoCall: creatorUser?.videoRate || "0",
-		audioCall: creatorUser?.audioRate || "0",
-		chat: creatorUser?.chatRate || "0",
+		videoCall: "0",
+		audioCall: "0",
+		chat: "0",
 	});
+
+	useEffect(() => {
+		if (creatorUser) {
+			setServices({
+				myServices:
+					creatorUser.videoAllowed ||
+					creatorUser.audioAllowed ||
+					creatorUser.chatAllowed,
+				videoCall: creatorUser.videoAllowed,
+				audioCall: creatorUser.audioAllowed,
+				chat: creatorUser.chatAllowed,
+			});
+
+			setPrices({
+				videoCall: creatorUser.videoRate,
+				audioCall: creatorUser.audioRate,
+				chat: creatorUser.chatRate,
+			});
+		}
+	}, [creatorUser]);
 
 	const fetchCreatorLink = async () => {
 		try {
@@ -304,12 +323,7 @@ const CreatorHome = () => {
 			</section>
 		);
 
-	const imageSrc =
-		creatorUser.photo && isValidUrl(creatorUser.photo)
-			? creatorUser.photo
-			: getProfileImagePlaceholder(
-					creatorUser && (creatorUser.gender as string)
-			  );
+	const imageSrc = getImageSource(creatorUser);
 
 	return (
 		<>
