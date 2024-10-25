@@ -463,7 +463,7 @@ export const getImageSource = (creator: creatorUser | clientUser) => {
 			new URL(url);
 			return true;
 		} catch (error) {
-			console.error(`Invalid URL provided: ${url}`, error);
+			// console.error(`Invalid URL provided: ${url}`, error);
 			return false;
 		}
 	};
