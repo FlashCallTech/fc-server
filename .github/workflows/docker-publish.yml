@@ -32,6 +32,9 @@ env:
   NODE_ENV: ${{ secrets.NODE_ENV }}
   NEXT_PUBLIC_FIREBASE_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_KEY }}
   FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
+  NEXT_PUBLIC_AWS_ACCESS_KEY_ID: ${{secrets.NEXT_PUBLIC_AWS_ACCESS_KEY_ID}}
+  NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY: ${{secrets.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY}}
+  NEXT_PUBLIC_AWS_REGION: ${{secrets.NEXT_PUBLIC_AWS_REGION}}
 
 jobs:
   build:
@@ -76,6 +79,9 @@ jobs:
           --build-arg NODE_ENV='${{ env.NODE_ENV }}' \
           --build-arg NEXT_PUBLIC_FIREBASE_KEY='${{ env.NEXT_PUBLIC_FIREBASE_KEY }}' \
           --build-arg FIREBASE_SERVICE_ACCOUNT_BASE64='${{ env.FIREBASE_SERVICE_ACCOUNT_BASE64 }}' \
+          --build-arg NEXT_PUBLIC_AWS_ACCESS_KEY_ID='${{ env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID }}' \
+          --build-arg NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY='${{ env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY }}' \
+          --build-arg NEXT_PUBLIC_AWS_REGION='${{ env.NEXT_PUBLIC_AWS_REGION }}' \
           -t flashcallme/flashcall:${IMAGE_TAG} -f Dockerfile.prod .
 
       # Push development image to Docker Hub
