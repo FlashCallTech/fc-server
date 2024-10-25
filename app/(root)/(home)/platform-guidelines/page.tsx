@@ -1,11 +1,11 @@
 import React from "react";
-import { guidelines } from "../../../../constants/services/PlatformGuidelines.json";
+import guidelines from "../../../../constants/services/PlatformGuidelines.json";
 
 const PlatformGuidelines = () => {
-	const enforcements = guidelines.enforcement;
-	const harassment = guidelines.bullyingHarassment;
-	const contentRestrictions = guidelines.contentRestrictions;
-	const clientAccounts = guidelines.clientAccounts;
+	const enforcements = guidelines.guidelines.enforcement;
+	const harassment = guidelines.guidelines.bullyingHarassment;
+	const contentRestrictions = guidelines.guidelines.contentRestrictions;
+	const clientAccounts = guidelines.guidelines.clientAccounts;
 
 	return (
 		<section className="w-full h-fit py-7 pb-24 bg-white flex flex-col gap-4 items-center justify-start md:px-14 lg:px-24 max-md:px-4">

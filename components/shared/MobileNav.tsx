@@ -19,7 +19,7 @@ import { Button } from "../ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { trackEvent } from "@/lib/mixpanel";
 import { creatorUser } from "@/types";
 
@@ -55,8 +55,9 @@ const MobileNav = () => {
 		});
 	}, []);
 
-	const sidebarItems =
-		userType === "creator" ? sidebarLinksCreator : sidebarLinks;
+	const sidebarItems = useMemo(() => {
+		return userType === "creator" ? sidebarLinksCreator : sidebarLinks;
+	}, [userType]);
 
 	const handleAuthentication = () => {
 		trackEvent("Menu_Signout clicked", {

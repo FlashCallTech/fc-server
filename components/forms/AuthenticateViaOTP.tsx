@@ -254,18 +254,14 @@ const AuthenticateViaOTP = ({
 			if (resolvedUserType === "client") {
 				if (creatorURL) {
 					router.replace(creatorURL);
-					resetState();
 				} else {
 					router.replace("/home");
-					resetState();
 				}
 			} else if (resolvedUserType === "creator") {
 				if (firstLogin) {
 					router.replace("/updateDetails");
-					resetState();
 				} else {
 					router.replace("/home");
-					resetState();
 				}
 			}
 		} catch (error: any) {
@@ -276,6 +272,7 @@ const AuthenticateViaOTP = ({
 			otpForm.reset();
 			setIsVerifyingOTP(false);
 		} finally {
+			resetState();
 			setIsVerifyingOTP(false);
 		}
 	};

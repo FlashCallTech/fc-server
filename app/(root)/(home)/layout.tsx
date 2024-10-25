@@ -1,11 +1,11 @@
 "use client";
 
+import React, { ReactNode, useEffect, useState } from "react";
 import Navbar from "@/components/shared/Navbar";
 import Sidebar from "@/components/shared/Sidebar";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { resetBodyBackgroundColor, setBodyBackgroundColor } from "@/lib/utils";
 import { usePathname } from "next/navigation";
-import React, { ReactNode, useEffect, useState } from "react";
 import Headroom from "react-headroom";
 
 // Custom hook to track screen size
