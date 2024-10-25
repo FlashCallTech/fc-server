@@ -32,7 +32,7 @@ const OTPVerification = ({
 	onEditNumber: () => void;
 	otpForm: any;
 	onOTPChange: (value: string) => void;
-	onSubmit: () => void;
+	onSubmit: any;
 	isVerifyingOTP: boolean;
 	errors: any;
 	changeError: React.Dispatch<React.SetStateAction<{}>>;

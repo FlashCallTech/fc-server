@@ -245,10 +245,7 @@ const AuthenticateViaOTP = ({
 			}
 
 			localStorage.setItem("userType", resolvedUserType);
-			refreshCurrentUser();
-			updateWalletBalance();
-			setAuthenticationSheetOpen(false);
-			onOpenChange && onOpenChange(false);
+
 			const creatorURL = localStorage.getItem("creatorURL");
 
 			if (resolvedUserType === "client") {
@@ -272,7 +269,11 @@ const AuthenticateViaOTP = ({
 			otpForm.reset();
 			setIsVerifyingOTP(false);
 		} finally {
-			resetState();
+			setAuthenticationSheetOpen(false);
+			onOpenChange && onOpenChange(false);
+			setIsVerifyingOTP(false);
+			refreshCurrentUser();
+			updateWalletBalance();
 		}
 	};
 
@@ -296,9 +297,9 @@ const AuthenticateViaOTP = ({
 	const resetState = () => {
 		setShowOTP(false);
 		setPhoneNumber("");
-		// setVerificationSuccess(false);
-		signUpForm.reset(); // Reset sign-up form
-		otpForm.reset(); // Reset OTP form
+		setVerificationSuccess(false);
+		signUpForm.reset();
+		otpForm.reset();
 	};
 
 	const sectionRef = useRef<HTMLElement>(null);
