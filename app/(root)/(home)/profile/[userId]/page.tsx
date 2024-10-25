@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { UpdateUserParams } from "@/types";
+import { clientUser, creatorUser, UpdateUserParams } from "@/types";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import Image from "next/image";
 import EditProfile from "@/components/forms/EditProfile";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
-import { getProfileImagePlaceholder, isValidUrl } from "@/lib/utils";
+import { getImageSource } from "@/lib/utils";
 import DeleteAlert from "@/components/shared/DeleteAlert";
 
 const UserProfilePage = () => {
@@ -55,10 +55,7 @@ const UserProfilePage = () => {
 
 	const isInitialState = userData.id === "";
 
-	const imageSrc =
-		currentUser?.photo && isValidUrl(currentUser?.photo)
-			? currentUser?.photo
-			: getProfileImagePlaceholder((currentUser?.gender as string) ?? "");
+	const imageSrc = getImageSource(currentUser as clientUser | creatorUser);
 
 	return (
 		<div className="flex justify-start items-center size-full flex-col gap-7 text-black">

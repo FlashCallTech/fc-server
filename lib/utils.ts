@@ -11,6 +11,7 @@ import { analytics } from "@/lib/firebase";
 import { trackEvent } from "./mixpanel";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { Call } from "@stream-io/video-react-sdk";
+import { clientUser, creatorUser } from "@/types";
 
 const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 const key_secret = process.env.NEXT_PUBLIC_RAZORPAY_SECRET;
@@ -456,23 +457,29 @@ export const isValidImageUrl = async (url: string) => {
 	}
 };
 
-export const imageSrc = (creator: any) => {
+export const getImageSource = (creator: creatorUser | clientUser) => {
 	const isValidUrl = (url: string) => {
 		try {
 			new URL(url);
 			return true;
-		} catch {
+		} catch (error) {
+			console.error(`Invalid URL provided: ${url}`, error);
 			return false;
 		}
 	};
 
-	if (creator.photo && isValidUrl(creator.photo)) {
+	if (creator?.photo && isValidUrl(creator.photo)) {
 		return creator.photo;
 	} else {
-		return (
-			getProfileImagePlaceholder(creator.gender) ??
-			"/images/defaultProfileImage.png"
-		);
+		const placeholder = getProfileImagePlaceholder(creator?.gender);
+		if (placeholder) {
+			return placeholder;
+		} else {
+			console.warn(
+				`No valid photo or placeholder found for creator: ${creator?.username}`
+			);
+			return "/images/defaultProfileImage.png";
+		}
 	}
 };
 

@@ -2,7 +2,11 @@ import CreatorCard from "@/components/creator/CreatorCard";
 import { Metadata } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { getUserByUsername } from "@/lib/actions/creator.actions";
-import { getDisplayName, getProfileImagePlaceholder } from "@/lib/utils";
+import {
+	getDisplayName,
+	getProfileImagePlaceholder,
+	getImageSource,
+} from "@/lib/utils";
 
 // Function to generate metadata dynamically
 export async function generateMetadata({
@@ -10,23 +14,6 @@ export async function generateMetadata({
 }: {
 	params: { username: string };
 }): Promise<Metadata> {
-	const imageSrc = (creator: any) => {
-		const isValidUrl = (url: string) => {
-			try {
-				new URL(url);
-				return true;
-			} catch {
-				return false;
-			}
-		};
-
-		if (creator?.photo && isValidUrl(creator.photo)) {
-			return creator.photo;
-		} else {
-			return getProfileImagePlaceholder(creator?.gender && creator.gender);
-		}
-	};
-
 	// Decode the URL-encoded username
 	const decodedUsername = decodeURIComponent(params.username as string);
 
@@ -54,7 +41,7 @@ export async function generateMetadata({
 	}
 
 	const imageURL = creatorProfile
-		? imageSrc(creatorProfile)
+		? getImageSource(creatorProfile)
 		: getProfileImagePlaceholder();
 
 	const fullName = getDisplayName(creatorProfile);

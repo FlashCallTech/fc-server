@@ -273,7 +273,6 @@ const AuthenticateViaOTP = ({
 			setIsVerifyingOTP(false);
 		} finally {
 			resetState();
-			setIsVerifyingOTP(false);
 		}
 	};
 
@@ -297,7 +296,7 @@ const AuthenticateViaOTP = ({
 	const resetState = () => {
 		setShowOTP(false);
 		setPhoneNumber("");
-		setVerificationSuccess(false);
+		// setVerificationSuccess(false);
 		signUpForm.reset(); // Reset sign-up form
 		otpForm.reset(); // Reset OTP form
 	};
@@ -309,7 +308,7 @@ const AuthenticateViaOTP = ({
 			ref={sectionRef}
 			className="relative bg-[#F8F8F8] rounded-t-3xl sm:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-4 shadow-lg w-screen h-fit sm:w-full sm:min-w-[24rem] sm:max-w-sm mx-auto"
 		>
-			{!showOTP ? (
+			{!showOTP && !verificationSuccess ? (
 				// SignUp form
 				<>
 					<div className="flex flex-col items-center justify-enter gap-2 text-center">

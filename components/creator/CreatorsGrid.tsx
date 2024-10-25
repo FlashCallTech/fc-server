@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase";
 import {
 	getDisplayName,
+	getImageSource,
 	getProfileImagePlaceholder,
 	isValidUrl,
 } from "@/lib/utils";
@@ -13,10 +14,7 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 	const [status, setStatus] = useState<string>("Offline");
 	const fullName = getDisplayName(creator);
 
-	const imageSrc =
-		creator?.photo && isValidUrl(creator.photo)
-			? creator.photo
-			: getProfileImagePlaceholder(creator && (creator.gender as string));
+	const imageSrc = getImageSource(creator);
 
 	useEffect(() => {
 		const creatorRef = doc(db, "services", creator._id);
