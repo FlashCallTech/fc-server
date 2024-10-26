@@ -70,7 +70,6 @@ const AuthenticateViaOTP = ({
 
 	const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 584);
 
-	// Handle resizing to adjust height for mobile viewports
 	useEffect(() => {
 		const handleResize = () => {
 			setIsMobileView(window.innerWidth <= 584);
@@ -79,7 +78,7 @@ const AuthenticateViaOTP = ({
 		};
 
 		window.addEventListener("resize", handleResize);
-		handleResize(); // Call once on mount
+		handleResize();
 
 		return () => {
 			window.removeEventListener("resize", handleResize);
@@ -125,8 +124,8 @@ const AuthenticateViaOTP = ({
 
 	// Handle OTP submission
 	const handleOTPSubmit = async (values: z.infer<typeof FormSchemaOTP>) => {
-		setIsVerifyingOTP(true);
 		try {
+			setIsVerifyingOTP(true);
 			// Retrieve the FCM token
 			const fcmToken: any = await getFCMToken();
 
@@ -245,6 +244,8 @@ const AuthenticateViaOTP = ({
 
 			setAuthenticationSheetOpen(false);
 			onOpenChange && onOpenChange(false);
+			setIsVerifyingOTP(false);
+
 			const creatorURL = localStorage.getItem("creatorURL");
 
 			if (resolvedUserType === "client") {
@@ -266,8 +267,6 @@ const AuthenticateViaOTP = ({
 			newErrors.otpVerificationError = error.message;
 			setError(newErrors);
 			otpForm.reset(); // Reset OTP form
-			setIsVerifyingOTP(false);
-		} finally {
 			setIsVerifyingOTP(false);
 		}
 	};

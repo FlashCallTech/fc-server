@@ -23,9 +23,9 @@ export const useServices = () => {
 					creatorUser.videoAllowed ||
 					creatorUser.audioAllowed ||
 					creatorUser.chatAllowed,
-				videoCall: creatorUser.videoAllowed || false,
-				audioCall: creatorUser.audioAllowed || false,
-				chat: creatorUser.chatAllowed || false,
+				videoCall: creatorUser.videoAllowed,
+				audioCall: creatorUser.audioAllowed,
+				chat: creatorUser.chatAllowed,
 			});
 		}
 	}, [creatorUser]);

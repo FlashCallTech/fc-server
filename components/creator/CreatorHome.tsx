@@ -46,16 +46,6 @@ const CreatorHome = () => {
 
 	useEffect(() => {
 		if (creatorUser) {
-			setServices({
-				myServices:
-					creatorUser.videoAllowed ||
-					creatorUser.audioAllowed ||
-					creatorUser.chatAllowed,
-				videoCall: creatorUser.videoAllowed,
-				audioCall: creatorUser.audioAllowed,
-				chat: creatorUser.chatAllowed,
-			});
-
 			setPrices({
 				videoCall: creatorUser.videoRate,
 				audioCall: creatorUser.audioRate,
@@ -94,27 +84,6 @@ const CreatorHome = () => {
 			setLoading(false);
 		}, 1000);
 	}, []);
-
-	useEffect(() => {
-		if (creatorUser) {
-			setPrices({
-				videoCall: creatorUser?.videoRate,
-				audioCall: creatorUser?.audioRate,
-				chat: creatorUser?.chatRate,
-			});
-			setServices({
-				myServices:
-					creatorUser?.videoAllowed ||
-					creatorUser?.audioAllowed ||
-					creatorUser?.chatAllowed
-						? true
-						: false,
-				videoCall: creatorUser?.videoAllowed,
-				audioCall: creatorUser?.audioAllowed,
-				chat: creatorUser?.chatAllowed,
-			});
-		}
-	}, [creatorUser?._id]);
 
 	const fetchTransactions = async () => {
 		try {
@@ -294,7 +263,7 @@ const CreatorHome = () => {
 		if (creatorUser) {
 			updateServices();
 		}
-	}, [services]);
+	}, [creatorUser, services]);
 
 	if (!creatorUser || loading || walletBalance < 0)
 		return (
