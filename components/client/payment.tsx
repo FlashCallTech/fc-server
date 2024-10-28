@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import {
 	Form,
 	FormControl,
@@ -27,6 +26,7 @@ import Link from "next/link";
 import { useInView } from "react-intersection-observer";
 import Image from "next/image";
 import { useGetUserTransactionsByType } from "@/lib/react-query/queries";
+import { Button } from "../ui/button";
 
 interface Transaction {
 	_id: string;
@@ -37,7 +37,7 @@ interface Transaction {
 }
 
 interface PaymentProps {
-	callType?: string; // Define callType as an optional string
+	callType?: string;
 }
 
 const Payment: React.FC<PaymentProps> = ({ callType }) => {
@@ -85,6 +85,24 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			Walletbalace_Available: clientUser?.walletBalance,
 		});
 	}, []);
+
+	// Group transactions by date
+	const groupTransactionsByDate = (transactionsList: Transaction[]) => {
+		return transactionsList.reduce((acc, transaction) => {
+			const date = new Date(transaction.createdAt).toLocaleDateString();
+			if (!acc[date]) {
+				acc[date] = [];
+			}
+			acc[date].push(transaction);
+			return acc;
+		}, {} as Record<string, Transaction[]>);
+	};
+
+	const groupedTransactions = transactions
+		? groupTransactionsByDate(
+				transactions.pages.flatMap((page) => page.transactions)
+		  )
+		: {};
 
 	const getRateForCallType = () => {
 		let rate: number | undefined;
@@ -284,9 +302,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						{["all", "credit", "debit"].map((filter) => (
 							<button
 								key={filter}
-								onClick={() => {
-									setBtn(filter as "all" | "credit" | "debit");
-								}}
+								onClick={() => setBtn(filter as "all" | "credit" | "debit")}
 								className={`capitalize px-5 py-1 border-2 border-black rounded-full ${
 									filter === btn
 										? "bg-gray-800 text-white"
@@ -308,51 +324,53 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 							Failed to fetch Transactions
 							<span className="text-lg">Please try again later.</span>
 						</div>
-					) : transactions &&
-					  transactions?.pages[0]?.totalTransactions === 0 ? (
+					) : Object.keys(groupedTransactions).length === 0 ? (
 						<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
 							{`No transactions Found`}
 						</p>
 					) : (
-						transactions?.pages?.map((page: any) =>
-							page.transactions.map((transaction: Transaction) => (
-								<li
-									key={transaction?._id}
-									className="animate-enterFromBottom flex gap-2 justify-between items-center py-4 sm:px-4 bg-white dark:bg-gray-800 border-b-2"
-								>
-									<div className="flex flex-col items-start justify-center gap-2">
-										<p className="font-normal text-xs xm:text-sm leading-4">
-											Transaction ID{" "}
-											<strong className="text-xs xm:text-sm">
-												{transaction?._id}
-											</strong>
-										</p>
-										<p className="text-gray-500 font-normal text-xs leading-4">
-											{new Date(transaction?.createdAt).toLocaleString()}
-										</p>
-									</div>
-									<div className="flex flex-col items-end justify-start gap-2">
-										{transaction?.category && (
-											<p className="font-normal text-xs text-green-1 whitespace-nowrap">
-												{transaction?.category}
+						Object.entries(groupedTransactions).map(([date, transactions]) => (
+							<div key={date}>
+								<h3 className="font-bold text-lg text-gray-600">{date}</h3>
+								{transactions.map((transaction) => (
+									<li
+										key={transaction?._id}
+										className="animate-enterFromBottom flex gap-2 justify-between items-center py-4  bg-white dark:bg-gray-800 border-b-2"
+									>
+										<div className="flex flex-col items-start justify-center gap-2">
+											<p className="font-normal text-xs xm:text-sm leading-4">
+												Transaction ID{" "}
+												<strong className="text-xs xm:text-sm">
+													{transaction?._id}
+												</strong>
 											</p>
-										)}
+											<p className="text-gray-500 font-normal text-xs leading-4">
+												{new Date(transaction?.createdAt).toLocaleTimeString()}
+											</p>
+										</div>
+										<div className="flex flex-col items-end justify-start gap-2">
+											{transaction?.category && (
+												<p className="font-normal text-xs text-green-1 whitespace-nowrap">
+													{transaction?.category}
+												</p>
+											)}
 
-										<p
-											className={`font-bold text-xs xm:text-sm leading-4 w-fit whitespace-nowrap ${
-												transaction?.type === "credit"
-													? "text-green-500"
-													: "text-red-500"
-											} `}
-										>
-											{transaction?.type === "credit"
-												? `+ ₹${transaction?.amount?.toFixed(2)}`
-												: `- ₹${transaction?.amount?.toFixed(2)}`}
-										</p>
-									</div>
-								</li>
-							))
-						)
+											<p
+												className={`font-bold text-xs xm:text-sm leading-4 w-fit whitespace-nowrap ${
+													transaction?.type === "credit"
+														? "text-green-500"
+														: "text-red-500"
+												} `}
+											>
+												{transaction?.type === "credit"
+													? `+ ₹${transaction?.amount?.toFixed(2)}`
+													: `- ₹${transaction?.amount?.toFixed(2)}`}
+											</p>
+										</div>
+									</li>
+								))}
+							</div>
+						))
 					)
 				) : (
 					<div className="size-full flex flex-col gap-2 items-center justify-center">

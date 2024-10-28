@@ -9,10 +9,14 @@ import * as Sentry from "@sentry/nextjs";
 export const useServices = () => {
 	const { creatorUser } = useCurrentUsersContext();
 	const [services, setServices] = useState(() => ({
-		myServices: false,
-		videoCall: false,
-		audioCall: false,
-		chat: false,
+		myServices: creatorUser
+			? creatorUser.videoAllowed ||
+			  creatorUser.audioAllowed ||
+			  creatorUser.chatAllowed
+			: false,
+		videoCall: creatorUser ? creatorUser.videoAllowed : false,
+		audioCall: creatorUser ? creatorUser.audioAllowed : false,
+		chat: creatorUser ? creatorUser.chatAllowed : false,
 	}));
 
 	// Initialize services based on creatorUser
