@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { Button } from "@/components/ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -18,6 +17,7 @@ interface Transaction {
 	amount: number;
 	createdAt: string;
 	type: "credit" | "debit";
+	category: string;
 }
 
 const Withdraw: React.FC = () => {
@@ -27,9 +27,14 @@ const Withdraw: React.FC = () => {
 
 	const { initiateWithdraw, loadingTransfer } = usePayout();
 	const { ref: stickyRef, inView: isStickyVisible } = useInView({
-		threshold: 1,
-		rootMargin: "-100px 0px 0px 0px",
+		threshold: 0.75,
+		triggerOnce: false,
+		delay: 50,
 	});
+
+	const stickyClass = isStickyVisible
+		? "transition-opacity duration-300 opacity-100"
+		: "opacity-0";
 
 	const { ref, inView } = useInView({
 		threshold: 0.1,
@@ -73,7 +78,7 @@ const Withdraw: React.FC = () => {
 		return <Verify message={"Initiating Transfer"} />;
 	}
 
-	if (!creatorUser?._id || isLoading)
+	if (!creatorUser?._id)
 		return (
 			<section className="size-full flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
@@ -87,7 +92,7 @@ const Withdraw: React.FC = () => {
 					{/* Sticky Balance and Recharge Section */}
 					<section
 						ref={stickyRef}
-						className={`flex flex-col gap-5 items-center justify-center md:items-start`}
+						className={`flex flex-col gap-5 items-center justify-center md:items-start ${stickyClass}`}
 					>
 						{/* Balance Section */}
 						{isStickyVisible && (
@@ -198,19 +203,17 @@ const Withdraw: React.FC = () => {
 						) : (
 							Object.entries(groupedTransactions).map(
 								([date, transactions]) => (
-									<li
+									<div
 										key={date}
 										className="p-4 bg-white rounded-lg shadow w-full animate-enterFromBottom"
 									>
 										<h3 className="text-base items-start font-normal  text-gray-400">
 											{date}
 										</h3>
-										{transactions.map((transaction, index, arr) => (
-											<div
-												key={transaction._id}
-												className={`flex justify-between items-start lg:items-center py-4 left-0 dark:bg-gray-800 ${
-													index < arr.length - 1 ? "border-b-2" : ""
-												}`}
+										{transactions.map((transaction) => (
+											<li
+												key={transaction?._id}
+												className="animate-enterFromBottom  flex gap-2 justify-between items-center py-4  bg-white dark:bg-gray-800 border-b-2"
 											>
 												<div className="flex flex-wrap flex-col items-start justify-center gap-2">
 													<p className="font-normal text-xs leading-4">
@@ -225,20 +228,28 @@ const Withdraw: React.FC = () => {
 														).toLocaleTimeString()}
 													</p>
 												</div>
-												<p
-													className={`font-bold text-sm leading-4 w-fit whitespace-nowrap ${
-														transaction.type === "credit"
-															? "text-green-500"
-															: "text-red-500"
-													} `}
-												>
-													{transaction.type === "credit"
-														? `+ ₹${transaction.amount.toFixed(2)}`
-														: `- ₹${transaction.amount.toFixed(2)}`}
-												</p>
-											</div>
+												<div className="flex flex-col items-end justify-start gap-2">
+													{transaction?.category && (
+														<p className="font-normal text-xs text-green-1 whitespace-nowrap">
+															{transaction?.category}
+														</p>
+													)}
+
+													<p
+														className={`font-bold text-xs xm:text-sm leading-4 w-fit whitespace-nowrap ${
+															transaction?.type === "credit"
+																? "text-green-500"
+																: "text-red-500"
+														} `}
+													>
+														{transaction?.type === "credit"
+															? `+ ₹${transaction?.amount?.toFixed(2)}`
+															: `- ₹${transaction?.amount?.toFixed(2)}`}
+													</p>
+												</div>
+											</li>
 										))}
-									</li>
+									</div>
 								)
 							)
 						)

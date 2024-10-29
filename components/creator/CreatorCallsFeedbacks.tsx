@@ -14,6 +14,7 @@ import GetRandomImage from "@/utils/GetRandomImage";
 import { backendBaseUrl, isValidUrl } from "@/lib/utils";
 import axios from "axios";
 import { useInView } from "react-intersection-observer";
+import { useGetFeedbacks } from "@/lib/react-query/queries";
 
 // Function to reorder the array based on the drag result
 const reorder = (
@@ -47,11 +48,20 @@ const CreatorCallsFeedbacks = () => {
 		null
 	);
 
+	const {
+		data: feedbackData,
+		isLoading,
+		isError,
+		fetchNextPage,
+		hasNextPage,
+	} = useGetFeedbacks(creatorUser?._id as string);
+
 	const pathname = usePathname();
 	const { ref, inView } = useInView({
 		threshold: 0.1,
 		triggerOnce: false,
 	});
+
 	useEffect(() => {
 		if (inView) {
 			setCallsCount((prevCount) => prevCount + 6);
@@ -61,26 +71,23 @@ const CreatorCallsFeedbacks = () => {
 	useEffect(() => {
 		const getFeedbacks = async () => {
 			try {
-				const response = await axios.get(
-					`${backendBaseUrl}/feedback/call/getFeedbacks?creatorId=${String(
-						creatorUser?._id
-					)}`
-				);
+				if (feedbackData) {
+					const allFeedbacks = feedbackData.pages.flatMap(
+						(page) => page.creatorFeedbacks
+					);
+					const feedbacksWithCallId = allFeedbacks?.map(
+						(item: FeedbackParams, index: number) => ({
+							...item.feedback,
+							callId: item.callId ?? "", // Default to an empty string if undefined
+							position:
+								item.feedback.position !== -1
+									? item.feedback.position
+									: index + 1,
+						})
+					);
 
-				let data = await response.data;
-
-				const feedbacksWithCallId = data.map(
-					(item: FeedbackParams, index: number) => ({
-						...item.feedback,
-						callId: item.callId,
-						position:
-							item.feedback.position !== -1
-								? item.feedback.position
-								: index + 1,
-					})
-				);
-
-				setFeedbacks(feedbacksWithCallId);
+					setFeedbacks(feedbacksWithCallId);
+				}
 			} catch (error) {
 				Sentry.captureException(error);
 				console.warn(error);
@@ -98,9 +105,42 @@ const CreatorCallsFeedbacks = () => {
 		showFeedback: boolean,
 		index: number
 	) => {
-		setLoadingFeedbackId(feedback.callId); // Set loading state
+		setLoadingFeedbackId(feedback.callId);
+
+		// Calculate the new position based on `showFeedback`
+		const newPosition = (() => {
+			if (showFeedback) {
+				// Calculate position just after the last toggled-on feedback
+				const lastOnPosition = feedbacks
+					.filter((fb) => fb.showFeedback)
+					.reduce((maxPos, fb: any) => Math.max(maxPos, fb.position), 0);
+				return lastOnPosition + 1;
+			} else {
+				// Calculate position after all feedbacks
+				const maxPosition = feedbacks.reduce(
+					(maxPos, fb: any) => Math.max(maxPos, fb.position),
+					0
+				);
+				return maxPosition + 1;
+			}
+		})();
+
+		// Now update feedbacks in a separate state update
+		setFeedbacks((prevFeedbacks) => {
+			const updatedFeedbacks = [...prevFeedbacks];
+			updatedFeedbacks[index] = {
+				...updatedFeedbacks[index],
+				showFeedback,
+				position: newPosition,
+			};
+			// Sort based on updated positions
+			return updatedFeedbacks.sort((a: any, b: any) => a.position - b.position);
+		});
+
+		console.log("New position:", newPosition);
 
 		try {
+			// Use `newPosition` in the API calls
 			const response = await axios.post(
 				`${backendBaseUrl}/feedback/creator/setFeedback`,
 				{
@@ -110,7 +150,7 @@ const CreatorCallsFeedbacks = () => {
 					feedbackText: feedback.feedback,
 					showFeedback: showFeedback,
 					createdAt: feedback.createdAt,
-					position: feedback.position,
+					position: newPosition,
 				}
 			);
 
@@ -126,19 +166,13 @@ const CreatorCallsFeedbacks = () => {
 				feedbackText: feedback.feedback,
 				showFeedback: showFeedback,
 				createdAt: feedback.createdAt,
-				position: feedback.position,
+				position: newPosition,
 			});
-
-			setFeedbacks((prevFeedbacks) =>
-				prevFeedbacks.map((fb, i) =>
-					i === index ? { ...fb, showFeedback: showFeedback } : fb
-				)
-			);
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error updating feedback visibility:", error);
 		} finally {
-			setLoadingFeedbackId(null); // Reset loading state
+			setLoadingFeedbackId(null);
 		}
 	};
 
@@ -236,9 +270,7 @@ const CreatorCallsFeedbacks = () => {
 					<Droppable droppableId="feedbacks">
 						{(provided) => (
 							<section
-								className={`grid grid-cols-1 ${
-									feedbacks.length > 0 && "xl:grid-cols-2"
-								} items-start gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-x-hidden no-scrollbar`}
+								className={`grid grid-cols-1 items-start gap-5 xl:gap-10 w-full h-fit text-black px-4 overflow-x-hidden no-scrollbar`}
 								ref={provided.innerRef}
 								{...provided.droppableProps}
 							>
@@ -253,7 +285,7 @@ const CreatorCallsFeedbacks = () => {
 												ref={provided.innerRef}
 												{...provided.draggableProps}
 												{...provided.dragHandleProps}
-												className={`relative flex flex-col items-start justify-center gap-4 xl:max-w-[568px]  border  rounded-xl p-4 pl-10 shadow-lg  border-gray-300  ${
+												className={`relative flex flex-col items-start justify-center gap-4 border rounded-xl p-4 pl-10 shadow-lg  border-gray-300 bg-white ${
 													pathname.includes("/profile") && "mx-auto"
 												}`}
 											>

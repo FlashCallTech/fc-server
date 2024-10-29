@@ -10,12 +10,7 @@ import { Button } from "../ui/button";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import {
-	getDarkHexCode,
-	getImageSource,
-	getProfileImagePlaceholder,
-	isValidUrl,
-} from "@/lib/utils";
+import { getDarkHexCode, getImageSource } from "@/lib/utils";
 import { clientUser, creatorUser } from "@/types";
 
 const Sidebar = () => {
@@ -36,7 +31,8 @@ const Sidebar = () => {
 	const sidebarItems =
 		userType === "creator" ? sidebarLinksCreator : sidebarLinks;
 
-	const imageSrc = getImageSource(currentUser as clientUser | creatorUser);
+	const imageSrc =
+		getImageSource(currentUser as clientUser | creatorUser) ?? "";
 
 	return (
 		<section

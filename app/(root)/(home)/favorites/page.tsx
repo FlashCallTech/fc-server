@@ -40,7 +40,6 @@ const Favorites = () => {
 	const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
 	const { currentUser, clientUser } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
-	const stickyRef = useRef<HTMLDivElement>(null);
 	const { ref, inView } = useInView({
 		threshold: 0.1,
 		triggerOnce: false,
@@ -144,7 +143,7 @@ const Favorites = () => {
 	const activeFiltersCount = [sortBy, groupBy].filter(Boolean).length;
 
 	return (
-		<section ref={stickyRef} className="flex size-full flex-col gap-2">
+		<section className="flex size-full flex-col gap-2">
 			<div
 				className={`sticky flex w-full items-center justify-between top-0 md:top-[76px] bg-white z-30 px-2 lg:pl-0.5 p-4 transition-all duration-300`}
 			>
