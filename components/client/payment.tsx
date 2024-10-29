@@ -14,19 +14,21 @@ import {
 	FormItem,
 	FormMessage,
 } from "@/components/ui/form";
-
+import * as Sentry from "@sentry/nextjs";
 import { Input } from "@/components/ui/input";
 import { enterAmountSchema } from "@/lib/validator";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { creatorUser } from "@/types";
+import { creatorUser, PaymentFailedResponse, PaymentResponse, RazorpayOptions } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
 import Link from "next/link";
 import { useInView } from "react-intersection-observer";
 import Image from "next/image";
 import { useGetUserTransactionsByType } from "@/lib/react-query/queries";
 import { Button } from "../ui/button";
+import { useToast } from "../ui/use-toast";
+import Script from "next/script";
 
 interface Transaction {
 	_id: string;
@@ -43,10 +45,12 @@ interface PaymentProps {
 const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const [btn, setBtn] = useState<"all" | "credit" | "debit">("all");
 	const [creator, setCreator] = useState<creatorUser>();
-	const { walletBalance } = useWalletBalanceContext();
+	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const { currentUser } = useCurrentUsersContext();
 	const router = useRouter();
 	const { clientUser } = useCurrentUsersContext();
+	const [loading, setLoading] = useState<boolean>(false);
+	const { toast } = useToast();
 
 	const { ref, inView } = useInView({
 		threshold: 0.1,
@@ -100,8 +104,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 	const groupedTransactions = transactions
 		? groupTransactionsByDate(
-				transactions.pages.flatMap((page) => page.transactions)
-		  )
+			transactions.pages.flatMap((page) => page.transactions)
+		)
 		: {};
 
 	const getRateForCallType = () => {
@@ -135,8 +139,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		const rate = getRateForCallType();
 		return rate
 			? [5, 10, 15, 30, 40, 60].map((multiplier) =>
-					(rate * multiplier).toFixed(2)
-			  )
+				(rate * multiplier).toFixed(2)
+			)
 			: ["99", "199", "499", "999", "1999", "2999"];
 	};
 
@@ -162,23 +166,156 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const rechargeAmount = form.watch("rechargeAmount");
 
 	// 3. Define a submit handler.
-	function onSubmit(values: z.infer<typeof enterAmountSchema>) {
-		const rechargeAmount = values.rechargeAmount;
-
-		logEvent(analytics, "payment_initiated", {
-			userId: currentUser?._id,
-			amount: rechargeAmount,
-		});
+	async function onSubmit(event: React.FormEvent<HTMLFormElement>, values: z.infer<typeof enterAmountSchema>) {
+		event.preventDefault();
+		console.log("hehe");
+		const rechargeAmount = Number(values.rechargeAmount) * 100;
 
 		trackEvent("Recharge_Page_RechargeClicked", {
 			Client_ID: clientUser?._id,
 			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 			Creator_ID: creator?._id,
-			Recharge_value: rechargeAmount,
+			Recharge_value: rechargeAmount/100,
 			Walletbalace_Available: clientUser?.walletBalance,
 		});
 
-		router.push(`/recharge?amount=${rechargeAmount}`);
+		trackEvent("Recharge_Page_Proceed_Clicked", {
+			Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+			Creator_ID: creator?._id,
+			Recharge_value: rechargeAmount/100,
+			Walletbalace_Available: clientUser?.walletBalance,
+		});
+
+		if (typeof window.Razorpay === "undefined") {
+			console.error("Razorpay SDK is not loaded");
+			setLoading(false); // Set loading state to false on error
+			return;
+		}
+
+		const currency: string = "INR";
+
+		try {
+			const response: Response = await fetch("/api/v1/order", {
+				method: "POST",
+				body: JSON.stringify({ amount: rechargeAmount, currency }),
+				headers: { "Content-Type": "application/json" },
+			});
+
+			const order = await response.json();
+
+			const options: RazorpayOptions = {
+				key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string,
+				rechargeAmount,
+				currency,
+				name: "FlashCall.me",
+				description: "Test Transaction",
+				image: "https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8a795d10-f22b-40c6-8724-1e7f01130bdc",
+				order_id: order.id,
+				handler: async (response: PaymentResponse): Promise<void> => {
+					const body: PaymentResponse = { ...response };
+
+					try {
+						setLoading(true); // Set loading state to true
+
+						const paymentId = body.razorpay_order_id;
+
+						await fetch("/api/v1/payment", {
+							method: "POST",
+							body: paymentId,
+							headers: { "Content-Type": "text/plain" },
+						});
+					} catch (error) {
+						Sentry.captureException(error);
+
+						console.log(error);
+						setLoading(false); // Set loading state to false on error
+					}
+
+					try {
+						const validateRes: Response = await fetch(
+							"/api/v1/order/validate",
+							{
+								method: "POST",
+								body: JSON.stringify(body),
+								headers: { "Content-Type": "application/json" },
+							}
+						);
+
+						const jsonRes: any = await validateRes.json();
+
+						// Add money to user wallet upon successful validation
+						const userId = currentUser?._id as string; // Replace with actual user ID
+						const userType = "Client"; // Replace with actual user type
+
+						await fetch("/api/v1/wallet/addMoney", {
+							method: "POST",
+							body: JSON.stringify({
+								userId,
+								userType,
+								amount: rechargeAmount/100,
+							}),
+							headers: { "Content-Type": "application/json" },
+						});
+
+						trackEvent("Recharge_Successfull", {
+							Client_ID: clientUser?._id,
+							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+							Creator_ID: creator?._id,
+							Recharge_value: rechargeAmount/100,
+							Walletbalace_Available: clientUser?.walletBalance,
+						});
+
+						router.push("/success");
+					} catch (error) {
+						Sentry.captureException(error);
+						console.error("Validation request failed:", error);
+						setLoading(false);
+					} finally {
+						updateWalletBalance();
+					}
+				},
+				prefill: {
+					name: currentUser?.firstName + " " + currentUser?.lastName,
+					email: "",
+					contact: currentUser?.phone as string,
+					method: "",
+				},
+				notes: {
+					address: "Razorpay Corporate Office",
+				},
+				theme: {
+					color: "#50A65C",
+				},
+			};
+
+			const rzp1 = new window.Razorpay(options);
+			rzp1.on("payment.failed", (response: PaymentFailedResponse): void => {
+				alert(response.error.code);
+				alert(response.error.metadata.payment_id);
+				setLoading(false); // Set loading state to false on error
+			});
+
+			rzp1.open();
+		} catch (error) {
+			Sentry.captureException(error);
+
+			trackEvent("Recharge_Failed", {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+				Creator_ID: creator?._id,
+				Recharge_value: rechargeAmount,
+				Walletbalace_Available: clientUser?.walletBalance,
+			});
+			console.error("Payment request failed:", error);
+			setLoading(false); // Set loading state to false on error
+			router.push("/payment");
+			toast({
+				variant: "destructive",
+				title: "Payment Failed",
+				description: "Redirecting ...",
+			});
+		}
 	}
 
 	useEffect(() => {
@@ -197,6 +334,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 	return (
 		<div className="flex flex-col pt-4 bg-white text-gray-800 w-full h-full">
+			<Script src="https://checkout.razorpay.com/v1/checkout.js" />
 			{/* Balance Section */}
 			<div className="flex items-center pb-5 px-4 gap-4">
 				<Link
@@ -233,7 +371,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 				<div className="w-[100%] flex justify-center items-center font-normal leading-5 border-[1px] rounded-lg p-3">
 					<Form {...form}>
 						<form
-							onSubmit={form.handleSubmit(onSubmit)}
+							onSubmit={(event) => form.handleSubmit((values) => onSubmit(event, values))(event)}
 							className="w-full flex items-center text-base"
 						>
 							<FormField
@@ -303,11 +441,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 							<button
 								key={filter}
 								onClick={() => setBtn(filter as "all" | "credit" | "debit")}
-								className={`capitalize px-5 py-1 border-2 border-black rounded-full ${
-									filter === btn
-										? "bg-gray-800 text-white"
-										: "bg-white text-black dark:bg-gray-700 dark:text-white hoverScaleDownEffect"
-								}`}
+								className={`capitalize px-5 py-1 border-2 border-black rounded-full ${filter === btn
+									? "bg-gray-800 text-white"
+									: "bg-white text-black dark:bg-gray-700 dark:text-white hoverScaleDownEffect"
+									}`}
 							>
 								{filter}
 							</button>
@@ -356,11 +493,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 											)}
 
 											<p
-												className={`font-bold text-xs xm:text-sm leading-4 w-fit whitespace-nowrap ${
-													transaction?.type === "credit"
-														? "text-green-500"
-														: "text-red-500"
-												} `}
+												className={`font-bold text-xs xm:text-sm leading-4 w-fit whitespace-nowrap ${transaction?.type === "credit"
+													? "text-green-500"
+													: "text-red-500"
+													} `}
 											>
 												{transaction?.type === "credit"
 													? `+ ₹${transaction?.amount?.toFixed(2)}`

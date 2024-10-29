@@ -288,7 +288,7 @@ export interface RazorpayOptions {
 	description: string;
 	image: string;
 	order_id: string;
-	handler: (response: PaymentResponse) => void;
+	handler: (response: PaymentResponse) => Promise<void>;
 	prefill: {
 		name: string;
 		email: string;
