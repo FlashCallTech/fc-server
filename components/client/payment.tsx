@@ -330,46 +330,45 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						</p>
 					) : (
 						Object.entries(groupedTransactions).map(([date, transactions]) => (
-							<div key={date}>
-								<h3 className="font-bold text-lg text-gray-600">{date}</h3>
-								{transactions.map((transaction) => (
-									<li
-										key={transaction?._id}
-										className="animate-enterFromBottom flex gap-2 justify-between items-center py-4  bg-white dark:bg-gray-800 border-b-2"
+							<li
+								key={date}
+								className="p-4 bg-white rounded-lg shadow w-full animate-enterFromBottom"
+							>
+								<h3 className="text-base items-start font-normal  text-gray-400">
+									{date}
+								</h3>
+								{transactions.map((transaction, index, arr) => (
+									<div
+										key={transaction._id}
+										className={`flex justify-between items-start lg:items-center py-4 left-0 dark:bg-gray-800 ${
+											index < arr.length - 1 ? "border-b-2" : ""
+										}`}
 									>
-										<div className="flex flex-col items-start justify-center gap-2">
-											<p className="font-normal text-xs xm:text-sm leading-4">
+										<div className="flex flex-wrap flex-col items-start justify-center gap-2">
+											<p className="font-normal text-xs leading-4">
 												Transaction ID{" "}
-												<strong className="text-xs xm:text-sm">
-													{transaction?._id}
-												</strong>
+												<span className="text-sm font-semibold">
+													{transaction._id}
+												</span>
 											</p>
-											<p className="text-gray-500 font-normal text-xs leading-4">
-												{new Date(transaction?.createdAt).toLocaleTimeString()}
-											</p>
-										</div>
-										<div className="flex flex-col items-end justify-start gap-2">
-											{transaction?.category && (
-												<p className="font-normal text-xs text-green-1 whitespace-nowrap">
-													{transaction?.category}
-												</p>
-											)}
-
-											<p
-												className={`font-bold text-xs xm:text-sm leading-4 w-fit whitespace-nowrap ${
-													transaction?.type === "credit"
-														? "text-green-500"
-														: "text-red-500"
-												} `}
-											>
-												{transaction?.type === "credit"
-													? `+ ₹${transaction?.amount?.toFixed(2)}`
-													: `- ₹${transaction?.amount?.toFixed(2)}`}
+											<p className=" text-gray-400 font-normal text-xs leading-4">
+												{new Date(transaction.createdAt).toLocaleTimeString()}
 											</p>
 										</div>
-									</li>
+										<p
+											className={`font-bold text-sm leading-4 w-fit whitespace-nowrap ${
+												transaction.type === "credit"
+													? "text-green-500"
+													: "text-red-500"
+											} `}
+										>
+											{transaction.type === "credit"
+												? `+ ₹${transaction.amount.toFixed(2)}`
+												: `- ₹${transaction.amount.toFixed(2)}`}
+										</p>
+									</div>
 								))}
-							</div>
+							</li>
 						))
 					)
 				) : (
