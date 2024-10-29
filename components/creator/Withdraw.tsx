@@ -73,7 +73,7 @@ const Withdraw: React.FC = () => {
 		return <Verify message={"Initiating Transfer"} />;
 	}
 
-	if (!creatorUser?._id || isLoading)
+	if (!creatorUser?._id)
 		return (
 			<section className="size-full flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />

@@ -153,10 +153,16 @@ const MyCallUI = () => {
 			logEvent(analytics, "call_rejected", { callId: incomingCall.id });
 		};
 
+		const handleCallAccepted = async () => {
+			setShowCallUI(false);
+		};
+
+		incomingCall.on("call.accepted", handleCallAccepted);
 		incomingCall.on("call.ended", handleCallEnded);
 		incomingCall.on("call.rejected", () => handleCallRejected());
 
 		return () => {
+			incomingCall.off("call.accepted", handleCallAccepted);
 			incomingCall.off("call.ended", handleCallEnded);
 			incomingCall.off("call.rejected", () => handleCallRejected());
 		};
