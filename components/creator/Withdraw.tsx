@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { Button } from "@/components/ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -28,9 +27,14 @@ const Withdraw: React.FC = () => {
 
 	const { initiateWithdraw, loadingTransfer } = usePayout();
 	const { ref: stickyRef, inView: isStickyVisible } = useInView({
-		threshold: 1,
-		rootMargin: "-100px 0px 0px 0px",
+		threshold: 0.75,
+		triggerOnce: false,
+		delay: 50,
 	});
+
+	const stickyClass = isStickyVisible
+		? "transition-opacity duration-300 opacity-100"
+		: "opacity-0";
 
 	const { ref, inView } = useInView({
 		threshold: 0.1,
@@ -88,7 +92,7 @@ const Withdraw: React.FC = () => {
 					{/* Sticky Balance and Recharge Section */}
 					<section
 						ref={stickyRef}
-						className={`flex flex-col gap-5 items-center justify-center md:items-start`}
+						className={`flex flex-col gap-5 items-center justify-center md:items-start ${stickyClass}`}
 					>
 						{/* Balance Section */}
 						{isStickyVisible && (
