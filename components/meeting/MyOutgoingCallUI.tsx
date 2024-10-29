@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import * as Sentry from "@sentry/nextjs";
-import { useToast } from "../ui/use-toast";
-import { reject } from "lodash";
 
 const MyOutgoingCallUI = ({
 	call,
@@ -15,7 +13,6 @@ const MyOutgoingCallUI = ({
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"
 	);
-	const { toast } = useToast();
 
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;

@@ -37,8 +37,8 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 			const response = await axios.get(
 				`${backendBaseUrl}/feedback/call/getFeedbacks?callId=${callId}`
 			);
-			const hasFeedback = response.data;
-			const data = response.data.feedback;
+			const hasFeedback = response.data.creatorFeedbacks.feedback;
+			const data = response.data.creatorFeedbacks.feedback;
 			setFeedbackExists(hasFeedback);
 			setUserFeedback(data);
 		} catch (error) {

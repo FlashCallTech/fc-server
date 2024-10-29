@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, Suspense, lazy, useCallback } from "react";
+import React, { useEffect, useState, Suspense, lazy } from "react";
 import { useInView } from "react-intersection-observer";
 import { creatorUser } from "@/types";
 import CreatorHome from "@/components/creator/CreatorHome";

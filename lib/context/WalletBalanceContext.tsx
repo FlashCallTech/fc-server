@@ -12,7 +12,6 @@ import { useCurrentUsersContext } from "./CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
-import { creatorUser } from "@/types";
 
 interface WalletBalanceContextProps {
 	walletBalance: number;
@@ -79,7 +78,6 @@ export const WalletBalanceProvider = ({
 				: currentUser._id;
 
 		if (!creatorId) {
-			console.warn("Creator ID not found");
 			return;
 		}
 
