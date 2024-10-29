@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
 									}),
 								}
 							);
-
+							
 							const userResult = await userResponse.json();
 							console.log(userResult);
 
