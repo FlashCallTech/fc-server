@@ -51,6 +51,7 @@ const CreatorCallsFeedbacks = () => {
 	const {
 		data: feedbackData,
 		isLoading,
+		isFetching,
 		isError,
 		fetchNextPage,
 		hasNextPage,
@@ -253,7 +254,13 @@ const CreatorCallsFeedbacks = () => {
 		}
 	};
 
-	if (loading) {
+	useEffect(() => {
+		if (inView && hasNextPage && !isFetching) {
+			fetchNextPage();
+		}
+	}, [inView, hasNextPage, isFetching]);
+
+	if (loading || isLoading) {
 		return (
 			<section className="w-full h-full flex items-center justify-center">
 				<SinglePostLoader />
@@ -265,7 +272,12 @@ const CreatorCallsFeedbacks = () => {
 
 	return (
 		<>
-			{feedbacks && feedbacks.length > 0 ? (
+			{isError ? (
+				<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
+					Failed to fetch creators
+					<span className="text-lg">Please try again later.</span>
+				</div>
+			) : feedbacks && feedbacks.length > 0 ? (
 				<DragDropContext onDragEnd={onDragEnd}>
 					<Droppable droppableId="feedbacks">
 						{(provided) => (
@@ -378,6 +390,26 @@ const CreatorCallsFeedbacks = () => {
 									</Draggable>
 								))}
 								{provided.placeholder}
+								{hasNextPage && isFetching && (
+									<Image
+										src="/icons/loading-circle.svg"
+										alt="Loading..."
+										width={50}
+										height={50}
+										className="mx-auto invert my-5 mt-10 z-20"
+									/>
+								)}
+
+								{!hasNextPage &&
+									!isFetching &&
+									creatorUser &&
+									feedbacks?.length !== 0 && (
+										<div className="text-center text-gray-500 py-4">
+											You have reached the end of the list
+										</div>
+									)}
+
+								{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
 							</section>
 						)}
 					</Droppable>
