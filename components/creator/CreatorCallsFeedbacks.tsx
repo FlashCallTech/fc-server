@@ -4,7 +4,6 @@ import { UserFeedback } from "@/types";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import SinglePostLoader from "../shared/SinglePostLoader";
 import CreatorFeedbackCheck from "../feedbacks/CreatorFeedbackCheck";
 import { Switch } from "../ui/switch";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -13,8 +12,7 @@ import * as Sentry from "@sentry/nextjs";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { backendBaseUrl, isValidUrl } from "@/lib/utils";
 import axios from "axios";
-import { useInView } from "react-intersection-observer";
-import { useGetFeedbacks } from "@/lib/react-query/queries";
+import { InfiniteData } from "@tanstack/react-query";
 
 // Function to reorder the array based on the drag result
 const reorder = (
@@ -39,53 +37,37 @@ type ExtendedUserFeedback = UserFeedback & {
 	callId: string;
 };
 
-const CreatorCallsFeedbacks = () => {
+const CreatorCallsFeedbacks = ({
+	feedbackData,
+}: {
+	feedbackData: InfiniteData<any, unknown> | undefined;
+}) => {
 	const [feedbacks, setFeedbacks] = useState<ExtendedUserFeedback[]>([]);
-	const [callsCount, setCallsCount] = useState(10);
-	const [loading, setLoading] = useState(true);
 	const { creatorUser } = useCurrentUsersContext();
 	const [loadingFeedbackId, setLoadingFeedbackId] = useState<string | null>(
 		null
 	);
-
-	const {
-		data: feedbackData,
-		isLoading,
-		isFetching,
-		isError,
-		fetchNextPage,
-		hasNextPage,
-	} = useGetFeedbacks(creatorUser?._id as string);
+	const [loading, isLoading] = useState(false);
 
 	const pathname = usePathname();
-	const { ref, inView } = useInView({
-		threshold: 0.1,
-		triggerOnce: false,
-	});
-
-	useEffect(() => {
-		if (inView) {
-			setCallsCount((prevCount) => prevCount + 6);
-		}
-	}, [inView]);
 
 	useEffect(() => {
 		const getFeedbacks = async () => {
 			try {
+				isLoading(true);
 				if (feedbackData) {
 					const allFeedbacks = feedbackData.pages.flatMap(
 						(page) => page.creatorFeedbacks
 					);
-					const feedbacksWithCallId = allFeedbacks?.map(
-						(item: FeedbackParams, index: number) => ({
+					const feedbacksWithCallId =
+						allFeedbacks?.map((item: FeedbackParams, index: number) => ({
 							...item.feedback,
 							callId: item.callId ?? "", // Default to an empty string if undefined
 							position:
 								item.feedback.position !== -1
 									? item.feedback.position
 									: index + 1,
-						})
-					);
+						})) || [];
 
 					setFeedbacks(feedbacksWithCallId);
 				}
@@ -93,13 +75,13 @@ const CreatorCallsFeedbacks = () => {
 				Sentry.captureException(error);
 				console.warn(error);
 			} finally {
-				setLoading(false);
+				isLoading(false);
 			}
 		};
 		if (creatorUser) {
 			getFeedbacks();
 		}
-	}, [pathname]);
+	}, [feedbackData, creatorUser]);
 
 	const handleSwitchToggle = async (
 		feedback: ExtendedUserFeedback,
@@ -254,30 +236,9 @@ const CreatorCallsFeedbacks = () => {
 		}
 	};
 
-	useEffect(() => {
-		if (inView && hasNextPage && !isFetching) {
-			fetchNextPage();
-		}
-	}, [inView, hasNextPage, isFetching]);
-
-	if (loading || isLoading) {
-		return (
-			<section className="w-full h-full flex items-center justify-center">
-				<SinglePostLoader />
-			</section>
-		);
-	}
-
-	const visibleFeedbacks = feedbacks.slice(0, callsCount);
-
 	return (
 		<>
-			{isError ? (
-				<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
-					Failed to fetch creators
-					<span className="text-lg">Please try again later.</span>
-				</div>
-			) : feedbacks && feedbacks.length > 0 ? (
+			{feedbacks && feedbacks.length > 0 ? (
 				<DragDropContext onDragEnd={onDragEnd}>
 					<Droppable droppableId="feedbacks">
 						{(provided) => (
@@ -286,7 +247,7 @@ const CreatorCallsFeedbacks = () => {
 								ref={provided.innerRef}
 								{...provided.droppableProps}
 							>
-								{visibleFeedbacks.map((feedback, index) => (
+								{feedbacks.map((feedback, index) => (
 									<Draggable
 										key={feedback.callId}
 										draggableId={feedback.callId}
@@ -390,26 +351,6 @@ const CreatorCallsFeedbacks = () => {
 									</Draggable>
 								))}
 								{provided.placeholder}
-								{hasNextPage && isFetching && (
-									<Image
-										src="/icons/loading-circle.svg"
-										alt="Loading..."
-										width={50}
-										height={50}
-										className="mx-auto invert my-5 mt-10 z-20"
-									/>
-								)}
-
-								{!hasNextPage &&
-									!isFetching &&
-									creatorUser &&
-									feedbacks?.length !== 0 && (
-										<div className="text-center text-gray-500 py-4">
-											You have reached the end of the list
-										</div>
-									)}
-
-								{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
 							</section>
 						)}
 					</Droppable>
