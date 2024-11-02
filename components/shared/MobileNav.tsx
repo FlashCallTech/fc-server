@@ -14,12 +14,7 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { sidebarLinks, sidebarLinksCreator } from "@/constants";
-import {
-	cn,
-	getImageSource,
-	getProfileImagePlaceholder,
-	isValidUrl,
-} from "@/lib/utils";
+import { cn, getImageSource } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, setDoc } from "firebase/firestore";
@@ -176,10 +171,10 @@ const MobileNav = () => {
 								</Link>
 							</SheetClose>
 						</SheetTitle>
-						<div className="w-full border border-gray-500 my-7" />
+						<div className="w-full border border-gray-500 my-5" />
 						<SheetClose asChild>
-							<section className="flex size-full items-start flex-col">
-								<section className="flex flex-1 flex-col gap-3.5 w-full max-h-[83.5%] overflow-y-scroll no-scrollbar text-white">
+							<section className="flex size-full items-start flex-col overflow-y-scroll no-scrollbar mb-8">
+								<section className="flex flex-1 flex-col gap-3.5 w-full h-full  text-white">
 									{sidebarItems.map((item) => {
 										const isActive = pathname === item.route;
 

@@ -1,10 +1,4 @@
-import {
-	backendBaseUrl,
-	getDisplayName,
-	getImageSource,
-	getProfileImagePlaceholder,
-	isValidUrl,
-} from "@/lib/utils";
+import { backendBaseUrl, getDisplayName, getImageSource } from "@/lib/utils";
 import { creatorUser } from "@/types";
 import Image from "next/image";
 import Link from "next/link";

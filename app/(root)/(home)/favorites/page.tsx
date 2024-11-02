@@ -72,7 +72,7 @@ const Favorites = () => {
 		if (inView && hasNextPage && !isFetching) {
 			fetchNextPage();
 		}
-	}, [inView]);
+	}, [inView, hasNextPage, isFetching]);
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");

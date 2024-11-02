@@ -10,7 +10,7 @@ import {
 import { RegisterCallParams } from "@/types";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import FeedbackCheck from "../feedbacks/FeedbackCheck";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -28,7 +28,6 @@ const CallListMobile = ({
 }) => {
 	const { currentUser, userType } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
-	const pathname = usePathname();
 	const router = useRouter();
 	const { toast } = useToast();
 	const { ref, inView } = useInView({
@@ -140,9 +139,7 @@ const CallListMobile = ({
 								return (
 									<div
 										key={userCall.callId}
-										className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300  ${
-											pathname.includes("/profile") && "mx-auto"
-										}`}
+										className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300`}
 									>
 										<div className="flex  flex-col items-start justify-start w-full gap-2">
 											{/* Expert's Details */}

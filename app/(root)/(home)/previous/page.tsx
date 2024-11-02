@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import CallListMobile from "@/components/calls/CallListMobile";
-import ChatList from "@/components/calls/ChatList";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 import { creatorUser } from "@/types";

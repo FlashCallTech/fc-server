@@ -58,9 +58,13 @@ const UserFeedbacks = () => {
 			</section>
 			{isError ? (
 				<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
-					Failed to fetch creators
+					Failed to fetch Feedbacks
 					<span className="text-lg">Please try again later.</span>
 				</div>
+			) : feedbackData && feedbackData.pages[0].length === 0 && !isLoading ? (
+				<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
+					No Feedback found.
+				</p>
 			) : (
 				<CreatorCallsFeedbacks feedbackData={feedbackData} />
 			)}

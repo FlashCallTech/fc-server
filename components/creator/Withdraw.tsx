@@ -26,15 +26,20 @@ const Withdraw: React.FC = () => {
 	const { walletBalance } = useWalletBalanceContext();
 
 	const { initiateWithdraw, loadingTransfer } = usePayout();
-	const { ref: stickyRef, inView: isStickyVisible } = useInView({
-		threshold: 0.75,
-		triggerOnce: false,
-		delay: 50,
-	});
+	const [isStickyVisible, setIsStickyVisible] = useState(false);
 
-	const stickyClass = isStickyVisible
-		? "transition-opacity duration-300 opacity-100"
-		: "opacity-0";
+	useEffect(() => {
+		const handleScroll = () => {
+			if (window.scrollY > 0) {
+				setIsStickyVisible(false);
+			} else {
+				setIsStickyVisible(true);
+			}
+		};
+
+		window.addEventListener("scroll", handleScroll);
+		return () => window.removeEventListener("scroll", handleScroll);
+	}, []);
 
 	const { ref, inView } = useInView({
 		threshold: 0.1,
@@ -91,8 +96,7 @@ const Withdraw: React.FC = () => {
 				<section className="grid grid-cols-1 items-center sticky top-0 md:top-[76px] z-50 bg-white p-4 ">
 					{/* Sticky Balance and Recharge Section */}
 					<section
-						ref={stickyRef}
-						className={`flex flex-col gap-5 items-center justify-center md:items-start ${stickyClass}`}
+						className={`flex flex-col gap-5 items-center justify-center md:items-start`}
 					>
 						{/* Balance Section */}
 						{isStickyVisible && (
