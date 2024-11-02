@@ -17,7 +17,7 @@ const BlockUnblockButton = ({
 	currentCreator: clientUser | creatorUser | null;
 	creatorId: string;
 	clientId: string;
-	refetch: (
+	refetch?: (
 		options?: RefetchOptions
 	) => Promise<QueryObserverResult<InfiniteData<any, unknown>, Error>>;
 }) => {
@@ -39,7 +39,7 @@ const BlockUnblockButton = ({
 
 			if (response.data.success) {
 				setIsBlocked(!isBlocked);
-				refetch();
+				refetch && refetch();
 			}
 		} catch (error) {
 			console.error("Error updating blocked status:", error);
