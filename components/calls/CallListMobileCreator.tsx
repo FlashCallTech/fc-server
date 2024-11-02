@@ -9,7 +9,6 @@ import {
 import { RegisterCallParams } from "@/types";
 import React, { useEffect } from "react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useInView } from "react-intersection-observer";
@@ -17,14 +16,13 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useGetPreviousCalls } from "@/lib/react-query/queries";
 import OptionsList from "../shared/OptionsList";
 
-const CallListMobileclient = ({
+const CallListMobileCreator = ({
 	callType,
 }: {
 	callType: "All" | "Audio" | "Video" | "Chat";
 }) => {
 	const { currentUser, userType } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
-	const pathname = usePathname();
 	const { ref, inView } = useInView({
 		threshold: 0.1,
 		triggerOnce: false,
@@ -86,9 +84,7 @@ const CallListMobileclient = ({
 								return (
 									<div
 										key={userCall.callId}
-										className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300  ${
-											pathname.includes("/profile") && "mx-auto"
-										}`}
+										className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300 `}
 									>
 										<div className="flex  flex-col items-start justify-start w-full gap-2">
 											{/* Expert's Details */}
@@ -211,4 +207,4 @@ const CallListMobileclient = ({
 	);
 };
 
-export default CallListMobileclient;
+export default CallListMobileCreator;

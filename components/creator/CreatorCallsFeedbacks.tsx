@@ -120,8 +120,6 @@ const CreatorCallsFeedbacks = ({
 			return updatedFeedbacks.sort((a: any, b: any) => a.position - b.position);
 		});
 
-		console.log("New position:", newPosition);
-
 		try {
 			// Use `newPosition` in the API calls
 			const response = await axios.post(
@@ -238,7 +236,17 @@ const CreatorCallsFeedbacks = ({
 
 	return (
 		<>
-			{feedbacks && feedbacks.length > 0 ? (
+			{loading || !feedbacks ? (
+				<section className="size-full m-auto flex items-center justify-center">
+					<Image
+						src="/icons/loading-circle.svg"
+						alt="Loading..."
+						width={50}
+						height={50}
+						className="mx-auto invert my-5 mt-10 z-20"
+					/>
+				</section>
+			) : feedbacks && feedbacks.length > 0 ? (
 				<DragDropContext onDragEnd={onDragEnd}>
 					<Droppable droppableId="feedbacks">
 						{(provided) => (
@@ -258,9 +266,7 @@ const CreatorCallsFeedbacks = ({
 												ref={provided.innerRef}
 												{...provided.draggableProps}
 												{...provided.dragHandleProps}
-												className={`relative flex flex-col items-start justify-center gap-4 border rounded-xl p-4 pl-10 shadow-lg  border-gray-300 bg-white ${
-													pathname.includes("/profile") && "mx-auto"
-												}`}
+												className={`relative flex flex-col items-start justify-center gap-4 border rounded-xl p-4 pl-10 shadow-lg  border-gray-300 bg-white`}
 											>
 												<Image
 													src="/icons/dragIndicator.svg"

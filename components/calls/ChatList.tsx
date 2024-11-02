@@ -91,7 +91,7 @@ const ChatList = () => {
 							<div
 								key={index}
 								className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300 ${
-									pathname.includes("/profile") && "mx-auto"
+									 
 								}`}
 							>
 								<div

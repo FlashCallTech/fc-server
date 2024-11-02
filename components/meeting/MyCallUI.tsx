@@ -17,6 +17,7 @@ import {
 } from "@/lib/utils";
 import { useGetCallById } from "@/hooks/useGetCallById";
 import axios from "axios";
+import MyCallConnectingUI from "./MyCallConnectigUI";
 
 const MyCallUI = () => {
 	const router = useRouter();
@@ -29,6 +30,7 @@ const MyCallUI = () => {
 	const { call, isCallLoading } = useGetCallById(callId || "");
 	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
 	const [showCallUI, setShowCallUI] = useState(false);
+	const [connecting, setConnecting] = useState(false);
 
 	const checkFirestoreSession = (userId: string) => {
 		const sessionDocRef = doc(db, "sessions", userId);
@@ -237,13 +239,14 @@ const MyCallUI = () => {
 
 		const handleCallAccepted = async () => {
 			setShowCallUI(false);
+			setConnecting(true);
 			clearTimeout(autoDeclineTimeout);
 			logEvent(analytics, "call_accepted", { callId: outgoingCall.id });
-			toast({
-				variant: "destructive",
-				title: `${"Call Accepted"}`,
-				description: `${"Redirecting ..."}`,
-			});
+			// toast({
+			// 	variant: "destructive",
+			// 	title: `${"Call Accepted"}`,
+			// 	description: `${"Redirecting ..."}`,
+			// });
 			await updateExpertStatus(
 				outgoingCall.state.createdBy?.custom?.phone as string,
 				"Busy"
@@ -278,6 +281,8 @@ const MyCallUI = () => {
 			} else {
 				handleCallAccepted();
 			}
+
+			setConnecting(false);
 		};
 
 		const handleCallRejected = async () => {
@@ -382,6 +387,11 @@ const MyCallUI = () => {
 			setShowCallUI(true);
 		}
 	}, [incomingCalls, outgoingCalls]);
+
+	// Display loading UI when connecting
+	if (connecting) {
+		return <MyCallConnectingUI call={outgoingCalls[0]} />;
+	}
 
 	// Display UI components based on call state
 	if (incomingCalls.length > 0 && showCallUI && !hide) {
