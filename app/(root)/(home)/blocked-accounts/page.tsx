@@ -9,19 +9,25 @@ const BlockedClients = () => {
 	const [clientListType, setClientListType] = useState<"All" | "Blocked">(
 		"Blocked"
 	);
-	const options: ("Blocked" | "All")[] = ["Blocked", "All"];
+	// const options: ("Blocked" | "All")[] = ["Blocked", "All"];
 
 	return (
-		<section className="flex size-full flex-col gap-2 pb-5">
+		<section className="flex flex-col gap-4 pb-5 w-full max-w-screen-lg h-full mx-auto">
 			<section
-				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4 flex flex-wrap gap-2.5 items-center justify-between transition-all duration-300`}
+				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4 pb-2 flex flex-col md:flex-row md:items-center justify-between transition-all duration-300`}
 			>
-				<h1 className="text-3xl font-bold">{clientListType} Clients</h1>
-				<div className="flex items-center justify-center w-fit gap-2">
+				<section className="flex items-center gap-4 w-full">
+					<h1 className="text-2xl md:text-3xl font-bold flex-shrink-0">
+						{clientListType} Clients
+					</h1>
+				</section>
+
+				{/* Toggle Buttons */}
+				{/* <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
 					{options.map((option) => (
 						<Button
 							key={option}
-							className={`text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 transition-transform duration-300 hover:text-white hover:bg-green-1 hover:scale-105 ${
+							className={`text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 hoverScaleDownEffect ${
 								clientListType === option && "bg-green-1 text-white"
 							}`}
 							onClick={() => setClientListType(option)}
@@ -29,9 +35,13 @@ const BlockedClients = () => {
 							{option}
 						</Button>
 					))}
-				</div>
+				</div> */}
 			</section>
-			{clientListType === "Blocked" ? <Blocked /> : <ClientList />}
+
+			{/* Client List */}
+			{/* {clientListType === "Blocked" ? <Blocked /> : <ClientList />} */}
+
+			<ClientList />
 		</section>
 	);
 };

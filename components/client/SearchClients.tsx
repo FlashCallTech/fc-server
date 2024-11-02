@@ -1,47 +1,26 @@
-import React, { useEffect, useState } from "react";
-import SinglePostLoader from "@/components/shared/SinglePostLoader";
-import { useGetClients } from "@/lib/react-query/queries";
 import { backendBaseUrl } from "@/lib/utils";
 import { creatorUser } from "@/types";
-
 import axios from "axios";
-import Image from "next/image";
-import { useInView } from "react-intersection-observer";
+import React, { useState } from "react";
+import SinglePostLoader from "../shared/SinglePostLoader";
 import ClientCard from "./ClientCard";
+import {
+	InfiniteData,
+	QueryObserverResult,
+	RefetchOptions,
+} from "@tanstack/react-query";
 
-const ClientList = () => {
-	const [clients, setClients] = useState<creatorUser[]>([]);
+const SearchClients = ({
+	refetch,
+}: {
+	refetch?: (
+		options?: RefetchOptions
+	) => Promise<QueryObserverResult<InfiniteData<any, unknown>, Error>>;
+}) => {
 	const [searchResults, setSearchResults] = useState<creatorUser[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isSearching, setIsSearching] = useState(false);
 	const [searchCompleted, setSearchCompleted] = useState(false);
-
-	const { ref: clientsRef, inView: inViewClients } = useInView({
-		threshold: 0.1,
-		triggerOnce: false,
-	});
-	const {
-		data: userClients,
-		isFetching: isFetchingClients,
-		isError: isErrorClients,
-		isLoading: isLoadingClients,
-		hasNextPage: hasNextPageClients,
-		refetch,
-		fetchNextPage: fetchNextPageClients,
-	} = useGetClients();
-
-	useEffect(() => {
-		const flatClients =
-			userClients?.pages.flatMap((page) => page?.users || []) || [];
-		setClients(flatClients);
-	}, [userClients]);
-
-	useEffect(() => {
-		if (inViewClients && hasNextPageClients && !isFetchingClients) {
-			fetchNextPageClients();
-		}
-	}, [inViewClients, hasNextPageClients, isFetchingClients]);
-
 	// Handle search input change
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value;
@@ -90,11 +69,11 @@ const ClientList = () => {
 		setSearchQuery("");
 		setSearchResults([]);
 		setSearchCompleted(false);
-		refetch();
+		refetch && refetch();
 	};
 
 	return (
-		<section className="flex size-full flex-col gap-4 px-4">
+		<section className="w-full grid grid-cols-1 gap-4 items-center">
 			{/* Search Input */}
 			<section className="relative flex items-center justify-between w-full max-w-md md:max-w-lg">
 				<input
@@ -160,52 +139,17 @@ const ClientList = () => {
 						<ClientCard key={client._id} client={client} refetch={refetch} />
 					))}
 				</div>
-			) : searchQuery && searchCompleted && searchResults.length === 0 ? (
-				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
-					No clients found matching "{searchQuery}"
-				</div>
-			) : isLoadingClients ? (
-				<SinglePostLoader />
-			) : clients.length === 0 ? (
-				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
-					No Clients Found
-				</div>
-			) : isErrorClients ? (
-				<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
-					Failed to fetch clients
-					<span className="text-lg">Please try again later.</span>
-				</div>
 			) : (
-				// Render Paginated Clients
-				<div className="w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-start gap-5 text-black">
-					{clients.map((client) => (
-						<ClientCard key={client._id} client={client} refetch={refetch} />
-					))}
-				</div>
-			)}
-
-			{hasNextPageClients && isFetchingClients && (
-				<Image
-					src="/icons/loading-circle.svg"
-					alt="Loading..."
-					width={50}
-					height={50}
-					className="mx-auto invert my-5 mt-10 z-20"
-				/>
-			)}
-
-			{!searchQuery &&
-				clients.length > 0 &&
-				!hasNextPageClients &&
-				!isFetchingClients && (
-					<div className="text-center text-gray-500 py-4">
-						You have reached the end of the clients list.
+				searchQuery &&
+				searchCompleted &&
+				searchResults.length === 0 && (
+					<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
+						No clients found matching "{searchQuery}"
 					</div>
-				)}
-
-			{hasNextPageClients && <div ref={clientsRef} className="pt-10 w-full" />}
+				)
+			)}
 		</section>
 	);
 };
 
-export default ClientList;
+export default SearchClients;
