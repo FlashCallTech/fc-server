@@ -170,7 +170,9 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 				<AppLink />
 			)}
 
-			{currentUser ? (
+			{fetchingUser ? (
+				<NavLoader />
+			) : currentUser ? (
 				<div className="flex justify-end items-center gap-4 h-full text-white">
 					{walletBalance >= 0 ? (
 						<Link
@@ -215,8 +217,6 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 					)}
 					<MobileNav />
 				</div>
-			) : fetchingUser ? (
-				<NavLoader />
 			) : (
 				<Button
 					className="hoverScaleDownEffect font-semibold w-fit h-[40px] xl:h-[48px] mr-1 rounded-md"

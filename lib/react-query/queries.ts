@@ -119,14 +119,29 @@ export const useGetCreators = () => {
 	const limit = 10;
 	return useInfiniteQuery({
 		queryKey: [QUERY_KEYS.GET_CREATORS],
-		queryFn: ({ pageParam = 0 }) => getUsersPaginated(pageParam, limit),
-		getNextPageParam: (lastPage: any, allPages: any) => {
-			if (lastPage && lastPage.length === 0) {
-				return null;
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(
+				`${backendBaseUrl}/creator/getUsersFiltered`,
+				{
+					params: {
+						page: pageParam,
+						limit,
+					},
+				}
+			);
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching clients");
 			}
-			return allPages.length * limit;
 		},
-		initialPageParam: 0,
+		getNextPageParam: (lastPage, allPages) => {
+			const totalPages = Math.ceil(lastPage.totalUsers / limit);
+			const nextPage = allPages.length + 1;
+			return nextPage <= totalPages ? nextPage : null;
+		},
+		initialPageParam: 1,
 	});
 };
 

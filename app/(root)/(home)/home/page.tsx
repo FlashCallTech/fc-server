@@ -124,7 +124,7 @@ const HomePage = () => {
 							}}
 						>
 							{creators?.pages?.map((page: any, pageIndex: any) =>
-								page.map((creator: creatorUser, index: number) => (
+								page?.users?.map((creator: creatorUser, index: number) => (
 									<section
 										key={creator._id}
 										className="w-full cursor-pointer"

@@ -9,21 +9,21 @@ const BlockedClients = () => {
 	const [clientListType, setClientListType] = useState<"All" | "Blocked">(
 		"Blocked"
 	);
-	// const options: ("Blocked" | "All")[] = ["Blocked", "All"];
+	const options: ("Blocked" | "All")[] = ["Blocked", "All"];
 
 	return (
 		<section className="flex flex-col gap-4 pb-5 w-full max-w-screen-lg h-full mx-auto">
 			<section
-				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4 pb-2 flex flex-col md:flex-row md:items-center justify-between transition-all duration-300`}
+				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4 pb-2 flex flex-row flex-wrap md:items-center justify-between transition-all duration-300`}
 			>
-				<section className="flex items-center gap-4 w-full">
+				<section className="flex items-center gap-4 w-fit">
 					<h1 className="text-2xl md:text-3xl font-bold flex-shrink-0">
 						{clientListType} Clients
 					</h1>
 				</section>
 
 				{/* Toggle Buttons */}
-				{/* <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
+				<div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
 					{options.map((option) => (
 						<Button
 							key={option}
@@ -35,13 +35,11 @@ const BlockedClients = () => {
 							{option}
 						</Button>
 					))}
-				</div> */}
+				</div>
 			</section>
 
 			{/* Client List */}
-			{/* {clientListType === "Blocked" ? <Blocked /> : <ClientList />} */}
-
-			<ClientList />
+			{clientListType === "Blocked" ? <Blocked /> : <ClientList />}
 		</section>
 	);
 };

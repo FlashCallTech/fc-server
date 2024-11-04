@@ -21,7 +21,7 @@ const ClientCard = ({
 		options?: RefetchOptions
 	) => Promise<QueryObserverResult<InfiniteData<any, unknown>, Error>>;
 }) => {
-	const { creatorUser } = useCurrentUsersContext();
+	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
 	const fullName = getDisplayName(client);
 
 	return (
@@ -54,6 +54,7 @@ const ClientCard = ({
 				currentCreator={creatorUser}
 				creatorId={creatorUser?._id as string}
 				clientId={client?._id as string}
+				refreshCurrentUser={refreshCurrentUser}
 			/>
 		</section>
 	);

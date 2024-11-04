@@ -47,7 +47,7 @@ const MyOutgoingCallUI = ({
 	return (
 		<div className="text-center bg-dark-2 text-white fixed h-full sm:h-fit z-50 w-full sm:max-w-sm flex flex-col items-center justify-between py-10 sm:rounded-xl bottom-0 right-0 sm:top-2 sm:right-2 gap-5">
 			<h1 className="font-bold text-xl mb-2">Outgoing Call ...</h1>
-			<div className="flex flex-col items-center justify-center gap-10">
+			<div className="size-full flex flex-col items-center justify-center gap-10">
 				<img
 					src={expert?.user?.image || "/icons/logo_icon_dark.png"}
 					alt=""
