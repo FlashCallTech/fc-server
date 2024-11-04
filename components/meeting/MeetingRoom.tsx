@@ -45,7 +45,7 @@ const NoParticipantsView = () => (
 			>
 				<Typewriter
 					words={[
-						"You're the first one here",
+						"It’s just you in the call for now",
 						"Waiting for others.",
 						"Hang tight",
 					]}
@@ -329,7 +329,7 @@ const MeetingRoom = () => {
 				</div>
 
 				{showParticipants && (
-					<div className="h-fit w-full fixed right-0 top-0 md:top-2 md:right-2 md:max-w-[400px] rounded-xl ml-2 p-4 z-20 bg-black transition-all">
+					<div className="h-fit w-full fixed right-0 top-0 md:top-2 md:right-2 md:max-w-[400px] rounded-xl ml-2 p-4 z-40 bg-black transition-all">
 						<CallParticipantsList onClose={() => setShowParticipants(false)} />
 					</div>
 				)}
