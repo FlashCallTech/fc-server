@@ -66,8 +66,9 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({ creatorId }) => {
 
 	return (
 		<section
-			className={`grid grid-cols-1 ${chats!.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
-				} items-center gap-5 xl:gap-10 w-full h-fit text-black px-4`}
+			className={`grid grid-cols-1 ${
+				chats!.length > 0 && "xl:grid-cols-2 3xl:grid-cols-3"
+			} items-center gap-5 xl:gap-10 w-full h-fit text-black px-4`}
 		>
 			{chats![0].chatDetails.map((chat, index) => {
 				const formattedDate = formatDateTime(chat.startedAt as Date);
@@ -75,21 +76,21 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({ creatorId }) => {
 				return (
 					<div
 						key={index}
-						className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300 ${ 
-							}`}
+						className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300 `}
 					>
 						<div className="w-1/2 flex flex-col items-start justify-between h-full gap-2">
 							<span className="text-sm text-[#A7A8A1] pr-1 pt-1 whitespace-nowrap">
 								{formattedDate.dateTime}
 							</span>
 							<span
-								className={`text-sm ${chat.status === "ended" ? "text-green-1" : "text-red-500"
-									}`}
+								className={`text-sm ${
+									chat.status === "ended" ? "text-green-1" : "text-red-500"
+								}`}
 							>
 								{chat.status}
-							<span className="ml-4 text-sm text-end">
-							{chat.price? `₹ ${chat.price}`: chat.price}
-							</span>
+								<span className="ml-4 text-sm text-end">
+									{chat.price ? `₹ ${chat.price}` : chat.price}
+								</span>
 							</span>
 						</div>
 						{chat.status === "ended" && (
