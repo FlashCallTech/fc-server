@@ -65,19 +65,21 @@ const HomePage = () => {
 		const restoreScrollPosition = () => {
 			const storedScrollPosition = sessionStorage.getItem("scrollPosition");
 
-			if (storedScrollPosition) {
+			if (pathname === "/home" && storedScrollPosition) {
 				window.scrollTo({
 					top: parseInt(storedScrollPosition, 10),
 					behavior: "smooth",
 				});
 				sessionStorage.removeItem("scrollPosition");
+			} else if (pathname !== "/home") {
+				window.scrollTo({ top: 0, behavior: "smooth" });
 			}
 		};
 
 		if (!isLoading && !loadingCard && !isFetching) {
 			setTimeout(restoreScrollPosition, 100);
 		}
-	}, [isLoading, loadingCard, isFetching]);
+	}, [pathname, isLoading, loadingCard, isFetching]);
 
 	useEffect(() => {
 		if (inView && hasNextPage && !isFetching) {
