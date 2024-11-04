@@ -43,6 +43,8 @@ const SearchClients = ({
 				{
 					params: {
 						username: searchQuery,
+						firstName: searchQuery,
+						lastName: searchQuery,
 						fullName: searchQuery,
 						phone: searchQuery,
 					},
