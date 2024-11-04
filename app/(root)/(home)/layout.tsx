@@ -37,6 +37,15 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 			: setBodyBackgroundColor("#121319");
 	}, [pathname, creatorURL]);
 
+	useEffect(() => {
+		if (pathname !== "/home") {
+			window.scrollTo({
+				top: 0,
+				behavior: "smooth",
+			});
+		}
+	}, [pathname]);
+
 	return (
 		<main className="relative">
 			{isMobile ? (
