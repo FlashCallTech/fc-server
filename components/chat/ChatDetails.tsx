@@ -76,7 +76,7 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({ creatorId }) => {
 				return (
 					<div
 						key={index}
-						className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300 `}
+						className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300`}
 					>
 						<div className="w-1/2 flex flex-col items-start justify-between h-full gap-2">
 							<span className="text-sm text-[#A7A8A1] pr-1 pt-1 whitespace-nowrap">
