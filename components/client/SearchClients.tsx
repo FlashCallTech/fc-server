@@ -146,7 +146,7 @@ const SearchClients = ({
 				searchCompleted &&
 				searchResults.length === 0 && (
 					<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
-						No clients found matching "{searchQuery}"
+						No clients found matching &quot;{searchQuery}&quot;
 					</div>
 				)
 			)}
