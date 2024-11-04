@@ -9,7 +9,7 @@ const BlockedClients = () => {
 	const [clientListType, setClientListType] = useState<"All" | "Blocked">(
 		"Blocked"
 	);
-	const options: ("Blocked" | "All")[] = ["Blocked", "All"];
+	const options: ("Blocked" | "All")[] = ["All", "Blocked"];
 
 	return (
 		<section className="flex flex-col gap-4 pb-5 w-full max-w-screen-lg h-full mx-auto">
@@ -39,7 +39,11 @@ const BlockedClients = () => {
 			</section>
 
 			{/* Client List */}
-			{clientListType === "Blocked" ? <Blocked /> : <ClientList />}
+			{clientListType === "Blocked" ? (
+				<Blocked setClientListType={setClientListType} />
+			) : (
+				<ClientList />
+			)}
 		</section>
 	);
 };
