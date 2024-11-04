@@ -31,7 +31,7 @@ const MyCallUI = () => {
 	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
 	const [showCallUI, setShowCallUI] = useState(false);
 	const [connecting, setConnecting] = useState(false);
-
+	const [connectingCall, setConnectingCall] = useState<Call | null>(null);
 	const checkFirestoreSession = (userId: string) => {
 		const sessionDocRef = doc(db, "sessions", userId);
 		const unsubscribe = onSnapshot(sessionDocRef, (sessionDoc) => {
@@ -240,13 +240,9 @@ const MyCallUI = () => {
 		const handleCallAccepted = async () => {
 			setShowCallUI(false);
 			setConnecting(true);
+			setConnectingCall(outgoingCall);
 			clearTimeout(autoDeclineTimeout);
 			logEvent(analytics, "call_accepted", { callId: outgoingCall.id });
-			// toast({
-			// 	variant: "destructive",
-			// 	title: `${"Call Accepted"}`,
-			// 	description: `${"Redirecting ..."}`,
-			// });
 			await updateExpertStatus(
 				outgoingCall.state.createdBy?.custom?.phone as string,
 				"Busy"
@@ -390,7 +386,7 @@ const MyCallUI = () => {
 
 	// Display loading UI when connecting
 	if (connecting) {
-		return <MyCallConnectingUI call={outgoingCalls[0]} />;
+		return <MyCallConnectingUI call={connectingCall} />;
 	}
 
 	// Display UI components based on call state

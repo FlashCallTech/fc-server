@@ -8,7 +8,6 @@ import RechargeModal from "./RechargeModal";
 import TipModal from "./TipModal";
 import Image from "next/image";
 import TimeExtensionModal from "./TimeExtensionModal";
-import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -84,18 +83,6 @@ const CallTimer = ({
 		} catch (error) {
 			console.error("Error updating Firestore timer: ", error);
 		}
-
-		// Trigger backend payout request
-		// await fetch(`${backendBaseUrl}/wallet/payout`, {
-		// 	method: "POST",
-		// 	body: JSON.stringify({
-		// 		userId: currentUser?._id,
-		// 		userType: "Client",
-		// 		amount: cost,
-		// 		category: "Added Time",
-		// 	}),
-		// 	headers: { "Content-Type": "application/json" },
-		// });
 	};
 
 	return (

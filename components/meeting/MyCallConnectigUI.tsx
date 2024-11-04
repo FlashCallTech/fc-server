@@ -2,7 +2,7 @@ import React from "react";
 import { Call } from "@stream-io/video-react-sdk";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 
-const MyCallConnectingUI = ({ call }: { call: Call }) => {
+const MyCallConnectingUI = ({ call }: { call: Call | null }) => {
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"
 	);
