@@ -7,8 +7,13 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import ClientCard from "./ClientCard";
+import { Button } from "../ui/button";
 
-const Blocked = () => {
+const Blocked = ({
+	setClientListType,
+}: {
+	setClientListType: React.Dispatch<React.SetStateAction<"All" | "Blocked">>;
+}) => {
 	const [blockedClients, setBlockedClients] = useState<creatorUser[]>([]);
 	const { creatorUser } = useCurrentUsersContext();
 	const { ref, inView } = useInView({
@@ -45,8 +50,14 @@ const Blocked = () => {
 					<SinglePostLoader />
 				</section>
 			) : blockedClients.length === 0 ? (
-				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
+				<div className="size-full flex flex-col gap-4 items-center justify-center text-xl font-semibold text-center text-gray-500">
 					No Blocked Clients Found
+					<Button
+						className={`text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 hoverScaleDownEffect bg-green-1 text-white`}
+						onClick={() => setClientListType("All")}
+					>
+						Browse Clients
+					</Button>
 				</div>
 			) : isError ? (
 				<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
