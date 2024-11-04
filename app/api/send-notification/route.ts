@@ -45,6 +45,9 @@ export async function POST(request: NextRequest) {
 				...(link && { link }),
 				...data,
 			},
+			android: {
+				priority: "high",
+			},
 		};
 
 		await admin.messaging().send(payload);

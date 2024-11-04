@@ -157,7 +157,7 @@ const ClientList = () => {
 				// Render Search Results
 				<div className="size-full grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-start gap-5 text-black">
 					{searchResults.map((client) => (
-						<ClientCard key={client._id} client={client} refetch={refetch} />
+						<ClientCard key={client._id} client={client} />
 					))}
 				</div>
 			) : searchQuery && searchCompleted && searchResults.length === 0 ? (
