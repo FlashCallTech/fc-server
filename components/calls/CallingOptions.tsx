@@ -488,13 +488,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		{
 			type: "audio",
 			enabled:
-				!clientUser ||
-				(!updatedCreator?.blocked?.some(
+				!updatedCreator?.blocked?.some(
 					(clientId) => clientId === clientUser?._id
 				) &&
-					!isClientBusy &&
-					updatedCreator.audioAllowed &&
-					parseInt(updatedCreator.audioRate, 10) > 0),
+				!isClientBusy &&
+				updatedCreator.audioAllowed &&
+				parseInt(updatedCreator.audioRate, 10) > 0,
 			rate: updatedCreator.audioRate,
 			label: "Audio Call",
 			icon: audio,

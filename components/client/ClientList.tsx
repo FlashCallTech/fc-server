@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useGetClients } from "@/lib/react-query/queries";
 import { backendBaseUrl } from "@/lib/utils";
 import { creatorUser } from "@/types";
@@ -8,6 +7,8 @@ import axios from "axios";
 import Image from "next/image";
 import { useInView } from "react-intersection-observer";
 import ClientCard from "./ClientCard";
+import ContentLoading from "../shared/ContentLoading";
+import SinglePostLoader from "@/components/shared/SinglePostLoader";
 
 const ClientList = () => {
 	const [clients, setClients] = useState<creatorUser[]>([]);
@@ -64,6 +65,8 @@ const ClientList = () => {
 				{
 					params: {
 						username: searchQuery,
+						firstName: searchQuery,
+						lastName: searchQuery,
 						fullName: searchQuery,
 						phone: searchQuery,
 					},
@@ -152,7 +155,9 @@ const ClientList = () => {
 			</section>
 
 			{isSearching ? (
-				<SinglePostLoader />
+				<section className={`w-full h-full flex items-center justify-center`}>
+					<ContentLoading />
+				</section>
 			) : searchCompleted && searchResults.length > 0 ? (
 				// Render Search Results
 				<div className="size-full grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-start gap-5 text-black">
@@ -165,7 +170,9 @@ const ClientList = () => {
 					No clients found matching "{searchQuery}"
 				</div>
 			) : isLoadingClients ? (
-				<SinglePostLoader />
+				<section className={`w-full h-full flex items-center justify-center`}>
+					<SinglePostLoader />
+				</section>
 			) : clients.length === 0 ? (
 				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
 					No Clients Found
