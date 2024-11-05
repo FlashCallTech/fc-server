@@ -11,18 +11,24 @@ import ReportDialog from "../creator/ReportDialog";
 import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 import { clientUser, creatorUser } from "@/types";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import CallInvoiceModal from "../client/callInvoiceModal";
+import TransactionInvoice from "../creator/transactionInvoice";
 
 const OptionsList = ({
 	callId,
 	creatorId,
 	clientId,
 	currentCreator,
+	userCall,
 }: {
 	callId: string;
 	currentCreator: clientUser | creatorUser | null;
 	creatorId: string;
 	clientId: string;
+	userCall?: any;
 }) => {
+	const { refreshCurrentUser, userType } = useCurrentUsersContext();
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 	// const [isBlocked, setIsBlocked] = useState(
@@ -31,6 +37,9 @@ const OptionsList = ({
 	// 		: false
 	// );
 	const [reportSubmitted, setReportSubmitted] = useState(false);
+	const [showInvoice, setShowInvoice] = useState(false);
+	const [showTransactionInvoice, setShowTransactionInvoice] = useState(false);
+	const [selected, setSelected] = useState<any>(null); // Added
 
 	const handleDropdownOpenChange = (open: boolean) => {
 		setIsDropdownOpen(open);
@@ -39,6 +48,26 @@ const OptionsList = ({
 	const handleReportClick = () => {
 		setIsDropdownOpen(false);
 		setIsReportDialogOpen(true);
+	};
+
+	const handleOpenInvoice = (call: any) => {
+		setSelected(call); // Set the selected transaction
+		setShowInvoice(true);
+	};
+
+	const handleCloseInvoice = () => {
+		setSelected(null); // Reset transaction data when closing
+		setShowInvoice(false);
+	};
+
+	const handleOpenTransactionInvoice = (call: any) => {
+		setSelected(call); // Set the selected transaction
+		setShowTransactionInvoice(true);
+	};
+
+	const handleCloseTransactionInvoice = () => {
+		setSelected(null); // Reset transaction data when closing
+		setShowTransactionInvoice(false);
 	};
 
 	useEffect(() => {
@@ -109,47 +138,77 @@ const OptionsList = ({
 					<DropdownMenuLabel className="!sr-only">
 						Options List
 					</DropdownMenuLabel>
-					{/* <DropdownMenuItem>
+					<DropdownMenuItem>
 						<button
-							onClick={handleBlockClient}
+							onClick={() => handleOpenInvoice(userCall)}
 							className="w-full flex items-center justify-start gap-2 "
+							title="Download Invoice"
 						>
-							{isBlocked ? (
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									strokeWidth={1.5}
-									stroke="currentColor"
-									className="size-4"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-									/>
-								</svg>
-							) : (
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									strokeWidth={1.5}
-									stroke="currentColor"
-									className="size-4"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-									/>
-								</svg>
-							)}
-
-							<span>{isBlocked ? "Unblock" : "Block"}</span>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="size-4">
+								<path fillRule="evenodd" d="M5.25 2A2.25 2.25 0 0 0 3 4.25v9a.75.75 0 0 0 1.183.613l1.692-1.195 1.692 1.195a.75.75 0 0 0 .866 0l1.692-1.195 1.693 1.195A.75.75 0 0 0 13 13.25v-9A2.25 2.25 0 0 0 10.75 2h-5.5Zm3.03 3.28a.75.75 0 0 0-1.06-1.06L4.97 6.47a.75.75 0 0 0 0 1.06l2.25 2.25a.75.75 0 0 0 1.06-1.06l-.97-.97h1.315c.76 0 1.375.616 1.375 1.375a.75.75 0 0 0 1.5 0A2.875 2.875 0 0 0 8.625 6.25H7.311l.97-.97Z" clipRule="evenodd" />
+							</svg>
+							<span>View Call Invoice</span>
 						</button>
-					</DropdownMenuItem> */}
+					</DropdownMenuItem>
 					<DropdownMenuSeparator />
+					{userType === "creator" &&
+						<DropdownMenuItem>
+							<button
+								onClick={() => handleOpenTransactionInvoice(userCall)}
+								className="w-full flex items-center justify-start gap-2 "
+								title="Download Invoice"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="size-4">
+									<path fillRule="evenodd" d="M5.25 2A2.25 2.25 0 0 0 3 4.25v9a.75.75 0 0 0 1.183.613l1.692-1.195 1.692 1.195a.75.75 0 0 0 .866 0l1.692-1.195 1.693 1.195A.75.75 0 0 0 13 13.25v-9A2.25 2.25 0 0 0 10.75 2h-5.5Zm3.03 3.28a.75.75 0 0 0-1.06-1.06L4.97 6.47a.75.75 0 0 0 0 1.06l2.25 2.25a.75.75 0 0 0 1.06-1.06l-.97-.97h1.315c.76 0 1.375.616 1.375 1.375a.75.75 0 0 0 1.5 0A2.875 2.875 0 0 0 8.625 6.25H7.311l.97-.97Z" clipRule="evenodd" />
+								</svg>
+								<span>View Transaction Invoice</span>
+							</button>
+						</DropdownMenuItem>
+					}
+					{userType === "creator" && <DropdownMenuSeparator />}
+					<DropdownMenuItem>
+						{userType === "creator" &&
+							<button
+								onClick={handleBlockClient}
+								className="w-full flex items-center justify-start gap-2 "
+							>
+								{isBlocked ? (
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										strokeWidth={1.5}
+										stroke="currentColor"
+										className="size-4"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+										/>
+									</svg>
+								) : (
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										strokeWidth={1.5}
+										stroke="currentColor"
+										className="size-4"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+										/>
+									</svg>
+								)}
+
+								<span>{isBlocked ? "Unblock" : "Block"}</span>
+							</button>
+						}
+					</DropdownMenuItem>
+					{userType === "creator" && <DropdownMenuSeparator />}
 					<DropdownMenuItem
 						onClick={handleReportClick}
 						disabled={reportSubmitted}
@@ -184,6 +243,22 @@ const OptionsList = ({
 				isOpen={isReportDialogOpen}
 				setIsOpen={setIsReportDialogOpen}
 			/>
+
+			{showInvoice && selected && (
+				<CallInvoiceModal
+					isOpen={showInvoice}
+					onClose={handleCloseInvoice}
+					call={selected} // Pass selected transaction
+				/>
+			)}
+
+			{showTransactionInvoice && selected && (
+				<TransactionInvoice
+					isOpen={showTransactionInvoice}
+					onClose={handleCloseTransactionInvoice}
+					call={selected} // Pass selected transaction
+				/>
+			)}
 		</section>
 	);
 };
