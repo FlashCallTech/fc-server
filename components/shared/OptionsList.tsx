@@ -31,11 +31,11 @@ const OptionsList = ({
 	const { refreshCurrentUser, userType } = useCurrentUsersContext();
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
-	// const [isBlocked, setIsBlocked] = useState(
-	// 	currentCreator
-	// 		? currentCreator?.blocked?.some((client) => client === clientId)
-	// 		: false
-	// );
+	const [isBlocked, setIsBlocked] = useState(
+		currentCreator
+			? currentCreator?.blocked?.some((client) => client === clientId)
+			: false
+	);
 	const [reportSubmitted, setReportSubmitted] = useState(false);
 	const [showInvoice, setShowInvoice] = useState(false);
 	const [showTransactionInvoice, setShowTransactionInvoice] = useState(false);
@@ -92,24 +92,24 @@ const OptionsList = ({
 	}, [callId, isReportDialogOpen]);
 
 	// Block or unblock a client
-	// const handleBlockClient = async () => {
-	// 	try {
-	// 		const action = isBlocked ? "unblock" : "block";
-	// 		const response = await axios.put(
-	// 			`${backendBaseUrl}/creator/blockUser/${creatorId}`,
-	// 			{
-	// 				blockClientId: clientId,
-	// 				action: action,
-	// 			}
-	// 		);
+	const handleBlockClient = async () => {
+		try {
+			const action = isBlocked ? "unblock" : "block";
+			const response = await axios.put(
+				`${backendBaseUrl}/creator/blockUser/${creatorId}`,
+				{
+					blockClientId: clientId,
+					action: action,
+				}
+			);
 
-	// 		if (response.data.success) {
-	// 			setIsBlocked(!isBlocked);
-	// 		}
-	// 	} catch (error) {
-	// 		console.error("Error updating blocked status:", error);
-	// 	}
-	// };
+			if (response.data.success) {
+				setIsBlocked(!isBlocked);
+			}
+		} catch (error) {
+			console.error("Error updating blocked status:", error);
+		}
+	};
 
 	return (
 		<section>
