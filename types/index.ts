@@ -391,6 +391,7 @@ export type WalletParams = {
 	userId: string;
 	userType: string;
 	amount: number;
+	method?: string;
 	flag?: any;
 };
 

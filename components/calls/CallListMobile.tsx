@@ -18,8 +18,8 @@ import { useInView } from "react-intersection-observer";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useToast } from "../ui/use-toast";
 import { useGetPreviousCalls } from "@/lib/react-query/queries";
-import ReportDialog from "../client/ReportDialog";
 import axios from "axios";
+import OptionsList from "../shared/OptionsList";
 
 const CallListMobile = ({
 	callType,
@@ -140,9 +140,8 @@ const CallListMobile = ({
 								return (
 									<div
 										key={userCall.callId}
-										className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300  ${
-											pathname.includes("/profile") && "mx-auto"
-										}`}
+										className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300  ${pathname.includes("/profile") && "mx-auto"
+											}`}
 									>
 										<div className="flex  flex-col items-start justify-start w-full gap-2">
 											{/* Expert's Details */}
@@ -156,8 +155,8 @@ const CallListMobile = ({
 														isValidUrl(creator?.photo as string)
 															? (creator?.photo as string)
 															: getProfileImagePlaceholder(
-																	creator?.gender && creator.gender
-															  )
+																creator?.gender && creator.gender
+															)
 													}
 													alt="Expert"
 													height={1000}
@@ -181,11 +180,10 @@ const CallListMobile = ({
 											{/* call details */}
 											<div className="flex flex-wrap items-center justify-start gap-2 pl-16 text-[12.5px]">
 												<span
-													className={`${
-														userCall.status === "Ended"
-															? "text-green-1"
-															: "text-red-500"
-													}`}
+													className={`${userCall.status === "Ended"
+														? "text-green-1"
+														: "text-red-500"
+														}`}
 												>
 													{userCall.status === "Ended"
 														? "Completed"
@@ -232,8 +230,8 @@ const CallListMobile = ({
 											</span>
 											<section className="flex w-full items-end justify-end">
 												{userCall.status !== "Rejected" &&
-												userCall.status !== "Not Answered" &&
-												userCall.status !== "Cancelled" ? (
+													userCall.status !== "Not Answered" &&
+													userCall.status !== "Cancelled" ? (
 													<FeedbackCheck callId={userCall?.callId} />
 												) : (
 													<button
@@ -244,16 +242,15 @@ const CallListMobile = ({
 													</button>
 												)}
 
-												{!reportSubmitted[userCall.callId] && (
-													<ReportDialog
+												<section>
+													<OptionsList
 														callId={userCall.callId}
+														currentCreator={currentUser}
+														creatorId={userCall.members[0].user_id as string}
 														clientId={currentUser?._id as string}
-														creatorId={creator?._id as string}
-														onReportSubmitted={() =>
-															handleReportSubmitted(userCall.callId)
-														}
+														userCall={userCall}
 													/>
-												)}
+												</section>
 											</section>
 										</section>
 									</div>

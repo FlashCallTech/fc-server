@@ -178,6 +178,7 @@ const CallListMobileclient = ({
 													currentCreator={currentUser}
 													creatorId={currentUser?._id as string}
 													clientId={client?._id as string}
+													userCall={userCall}
 												/>
 											</section>
 										</section>
