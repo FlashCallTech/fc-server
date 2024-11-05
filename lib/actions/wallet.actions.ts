@@ -12,6 +12,7 @@ export async function addMoney({
 	userId,
 	userType,
 	amount,
+	method,
 	flag,
 }: WalletParams) {
 	try {
@@ -51,12 +52,15 @@ export async function addMoney({
 			{ new: true, upsert: true }
 		);
 
+		console.log(method);
+
 		// Create a transaction record
 		numericAmount > 0 &&
 			(await Transaction.create({
 				userId,
 				userType,
 				amount: numericAmount,
+				method,
 				type: "credit",
 			}));
 

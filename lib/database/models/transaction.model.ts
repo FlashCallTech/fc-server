@@ -10,6 +10,7 @@ const TransactionSchema = new Schema(
 		userType: { type: String, required: true, enum: ["Client", "Creator"] },
 		amount: { type: Number, required: true },
 		type: { type: String, required: true, enum: ["credit", "debit"] },
+		method: {type: String},
 	},
 	{
 		timestamps: true,
