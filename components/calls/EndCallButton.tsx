@@ -56,7 +56,7 @@ const EndCallButton = () => {
 		<>
 			<Button
 				onClick={endCall}
-				className="bg-red-500 font-semibold hover:opacity-80 h-11 w-11 rounded-full p-0"
+				className="bg-red-500 font-semibold hover:opacity-80 h-11 w-11 rounded-full p-0 hoverScaleDownEffect"
 			>
 				<Image
 					src="/icons/endCall.png"

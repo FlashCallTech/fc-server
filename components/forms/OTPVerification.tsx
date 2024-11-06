@@ -106,6 +106,7 @@ const OTPVerification = ({
 										<InputOTPGroup className="flex justify-center gap-3">
 											{Array.from({ length: 6 }).map((_, index) => (
 												<InputOTPSlot
+													autoFocus={true}
 													key={index}
 													index={index}
 													className={`w-10 h-10 rounded-xl shadow-sm text-black bg-[#F3F4F6] border ${
