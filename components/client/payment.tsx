@@ -32,7 +32,7 @@ import { useGetUserTransactionsByType } from "@/lib/react-query/queries";
 import { Button } from "../ui/button";
 import { useToast } from "../ui/use-toast";
 import Script from "next/script";
-import SinglePostLoader from "../shared/SinglePostLoader";
+import InvoiceModal from "./invoiceModal";
 
 interface Transaction {
 	_id: string;
@@ -55,6 +55,18 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const { clientUser } = useCurrentUsersContext();
 	const [loading, setLoading] = useState<boolean>(false);
 	const { toast } = useToast();
+	const [showInvoice, setShowInvoice] = useState(false);
+	const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null); // Added
+
+	const handleOpenInvoice = (transaction: Transaction) => {
+		setSelectedTransaction(transaction); // Set the selected transaction
+		setShowInvoice(true);
+	};
+
+	const handleCloseInvoice = () => {
+		setSelectedTransaction(null); // Reset transaction data when closing
+		setShowInvoice(false);
+	};
 
 	const { ref, inView } = useInView({
 		threshold: 0.1,
@@ -175,7 +187,6 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		values: z.infer<typeof enterAmountSchema>
 	) {
 		event.preventDefault();
-		console.log("hehe");
 		const rechargeAmount = Number(values.rechargeAmount) * 100;
 
 		trackEvent("Recharge_Page_RechargeClicked", {
@@ -228,53 +239,57 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 						const paymentId = body.razorpay_order_id;
 
-						await fetch("/api/v1/payment", {
+						const response = await fetch("/api/v1/payment", {
 							method: "POST",
 							body: paymentId,
 							headers: { "Content-Type": "text/plain" },
 						});
-					} catch (error) {
-						Sentry.captureException(error);
 
-						console.log(error);
-						setLoading(false); // Set loading state to false on error
-					}
+						const result = await response.json();
+						const capturedPayment = result.payments.find((payment: { captured: boolean; }) => payment.captured === true);
 
-					try {
-						const validateRes: Response = await fetch(
-							"/api/v1/order/validate",
-							{
+						if (capturedPayment) {
+							console.log('Captured payment found:', capturedPayment);
+							const validateRes: Response = await fetch(
+								"/api/v1/order/validate",
+								{
+									method: "POST",
+									body: JSON.stringify(body),
+									headers: { "Content-Type": "application/json" },
+								}
+							);
+
+							const jsonRes: any = await validateRes.json();
+
+							// Add money to user wallet upon successful validation
+							const userId = currentUser?._id as string; // Replace with actual user ID
+							const userType = "Client"; // Replace with actual user type
+
+							console.log(result);
+
+							await fetch("/api/v1/wallet/addMoney", {
 								method: "POST",
-								body: JSON.stringify(body),
+								body: JSON.stringify({
+									userId,
+									userType,
+									amount: rechargeAmount / 100,
+									method: capturedPayment.method,
+								}),
 								headers: { "Content-Type": "application/json" },
-							}
-						);
+							});
 
-						const jsonRes: any = await validateRes.json();
+							trackEvent("Recharge_Successfull", {
+								Client_ID: clientUser?._id,
+								User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+								Creator_ID: creator?._id,
+								Recharge_value: rechargeAmount / 100,
+								Walletbalace_Available: clientUser?.walletBalance,
+							});
 
-						// Add money to user wallet upon successful validation
-						const userId = currentUser?._id as string; // Replace with actual user ID
-						const userType = "Client"; // Replace with actual user type
-
-						await fetch("/api/v1/wallet/addMoney", {
-							method: "POST",
-							body: JSON.stringify({
-								userId,
-								userType,
-								amount: rechargeAmount / 100,
-							}),
-							headers: { "Content-Type": "application/json" },
-						});
-
-						trackEvent("Recharge_Successfull", {
-							Client_ID: clientUser?._id,
-							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-							Creator_ID: creator?._id,
-							Recharge_value: rechargeAmount / 100,
-							Walletbalace_Available: clientUser?.walletBalance,
-						});
-
-						router.push("/success");
+							router.push("/success");
+						} else {
+							throw new Error('Captured payment not found');
+						}
 					} catch (error) {
 						Sentry.captureException(error);
 						console.error("Validation request failed:", error);
@@ -337,6 +352,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			form.clearErrors("rechargeAmount");
 		}
 	}, [rechargeAmount, form]);
+
+	const downloadInvoice = async (transactionId: string) => {
+		console.log(transactionId);
+	}
 
 	const creatorURL = localStorage.getItem("creatorURL");
 
@@ -450,6 +469,13 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			<section
 				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4`}
 			>
+				{showInvoice && selectedTransaction && (
+					<InvoiceModal
+						isOpen={showInvoice}
+						onClose={handleCloseInvoice}
+						transaction={selectedTransaction} // Pass selected transaction
+					/>
+				)}
 				<div className="flex flex-col items-start justify-start gap-2.5 w-full h-fit">
 					<h2 className="text-gray-500 text-xl font-normal">
 						Transaction History
@@ -527,6 +553,16 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 													? `+ ₹${transaction?.amount?.toFixed(2)}`
 													: `- ₹${transaction?.amount?.toFixed(2)}`}
 											</p>
+											{/* Download Invoice Button */}
+											{transaction?.type === "credit" && (
+												<button
+													onClick={() => handleOpenInvoice(transaction)}
+													className="text-sm"
+													title="Download Invoice"
+												>
+													<span className="">View Invoice</span>
+												</button>
+											)}
 										</div>
 									</li>
 								))}

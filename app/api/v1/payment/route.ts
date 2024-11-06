@@ -55,17 +55,13 @@ export async function POST(req: NextRequest) {
 
 		await orderPayments.save();
 
-		const order = await Order.findOneAndUpdate(
+		await Order.findOneAndUpdate(
 			{ order_id },
 			{ status: orderResponse.status },
 			{ new: true }
 		);
 
-		// console.log(order);
-
-		// await order?.save();
-
-		return NextResponse.json({ success: "payment successfully created" });
+		return NextResponse.json(orderPayments);
 	} catch (error) {
 		Sentry.captureException(error);
 		console.error(error);
