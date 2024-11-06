@@ -5,7 +5,7 @@ import { useInView } from "react-intersection-observer";
 import { creatorUser } from "@/types";
 import CreatorHome from "@/components/creator/CreatorHome";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PostLoader from "@/components/shared/PostLoader";
 import Image from "next/image";
 import { trackEvent } from "@/lib/mixpanel";
@@ -22,6 +22,8 @@ const HomePage = () => {
 		useCurrentUsersContext();
 	const router = useRouter();
 	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const isCreatorPage = !!searchParams.get("creator");
 	const { ref, inView } = useInView({
 		threshold: 0.1,
 		triggerOnce: false,
@@ -86,7 +88,7 @@ const HomePage = () => {
 	}, [inView, hasNextPage, isFetching]);
 
 	useEffect(() => {
-		if (pathname === "/home") {
+		if (pathname === "/home" && !isCreatorPage) {
 			localStorage.removeItem("creatorURL");
 		}
 	}, [router, pathname]);

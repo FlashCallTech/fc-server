@@ -266,7 +266,6 @@ const MyCallUI = () => {
 				outgoingCall.state.callingState === CallingState.JOINED
 			) {
 				try {
-					console.log("leaving the call");
 					await outgoingCall
 						.leave()
 						.then(() => router.replace(`/meeting/${outgoingCall.id}`))
@@ -275,7 +274,15 @@ const MyCallUI = () => {
 					console.warn("unable to leave client user ... ", err);
 				}
 			} else {
-				handleCallAccepted();
+				try {
+					await outgoingCall
+						.leave()
+						.then(() => router.replace(`/meeting/${outgoingCall.id}`))
+						.catch((err) => console.log("redirection error ", err));
+				} catch (err) {
+					console.warn("unable to leave client user ... ", err);
+					router.replace(`/meeting/${outgoingCall.id}`);
+				}
 			}
 
 			setConnecting(false);

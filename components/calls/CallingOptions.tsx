@@ -460,13 +460,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		{
 			type: "video",
 			enabled:
-				!clientUser ||
-				(!updatedCreator?.blocked?.some(
+				!updatedCreator?.blocked?.some(
 					(clientId) => clientId === clientUser?._id
 				) &&
-					!isClientBusy &&
-					updatedCreator.videoAllowed &&
-					parseInt(updatedCreator.videoRate, 10) > 0),
+				!isClientBusy &&
+				updatedCreator.videoAllowed &&
+				parseInt(updatedCreator.videoRate, 10) > 0,
 			rate: updatedCreator.videoRate,
 			label: "Video Call",
 			icon: video,
@@ -515,13 +514,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		{
 			type: "chat",
 			enabled:
-				!clientUser ||
-				(!updatedCreator?.blocked?.some(
+				!updatedCreator?.blocked?.some(
 					(clientId) => clientId === clientUser?._id
 				) &&
-					!isClientBusy &&
-					updatedCreator.chatAllowed &&
-					parseInt(updatedCreator.chatRate, 10) > 0),
+				!isClientBusy &&
+				updatedCreator.chatAllowed &&
+				parseInt(updatedCreator.chatRate, 10) > 0,
 			rate: updatedCreator.chatRate,
 			label: "Chat Now",
 			icon: chat,

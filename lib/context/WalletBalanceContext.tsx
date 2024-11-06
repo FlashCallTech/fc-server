@@ -6,8 +6,7 @@ import React, {
 	ReactNode,
 	useEffect,
 } from "react";
-import { getUserById } from "../actions/client.actions";
-import { getCreatorById } from "../actions/creator.actions";
+
 import { useCurrentUsersContext } from "./CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { doc, onSnapshot } from "firebase/firestore";

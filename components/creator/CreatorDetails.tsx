@@ -5,9 +5,7 @@ import {
 	backendBaseUrl,
 	getDisplayName,
 	getImageSource,
-	getProfileImagePlaceholder,
 	isValidHexColor,
-	isValidUrl,
 	setBodyBackgroundColor,
 } from "@/lib/utils";
 import { creatorUser, LinkType } from "@/types";
@@ -132,14 +130,6 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		} finally {
 			setAddingFavorite(false);
 		}
-	};
-
-	const backgroundImageStyle = {
-		backgroundImage: `url(${imageSrc})`,
-		backgroundSize: "cover",
-		backgroundPosition: "center",
-		backgroundRepeat: "no-repeat",
-		backgroundColor: "#ffffff",
 	};
 
 	return (
