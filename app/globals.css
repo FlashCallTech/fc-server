@@ -188,11 +188,14 @@ html {
 	color: #50a65c;
 }
 
+#audiooutput--communications,
 .str-video__device-settings__device-kind .str-video__option input[type="radio"],
 .str-video__device-settings__device-kind
 	.str-video__device-settings__option
 	input[type="radio"] {
 	height: 0.75rem !important;
+	display: flex !important;
+	width: auto !important;
 }
 
 .str-video__participant-view > .str-video__call-controls__button {
@@ -287,17 +290,17 @@ input[type="number"] {
 
 		/* Apply scaling on tap */
 		.hoverScaleEffect:active {
-			@apply scale-110; /* Scale up on tap */
+			@apply scale-110 bg-opacity-80; /* Scale up on tap */
 		}
 
 		.hoverScaleDownEffect:active {
-			@apply scale-90; /* Scale down on tap */
+			@apply scale-90 bg-opacity-80 bg-white/20; /* Scale down on tap */
 		}
 
 		/* Reset the scale after tap */
 		.hoverScaleEffect,
 		.hoverScaleDownEffect {
-			@apply scale-100; /* Reset back to original scale */
+			@apply scale-100 bg-opacity-100; /* Reset back to original scale */
 		}
 	}
 

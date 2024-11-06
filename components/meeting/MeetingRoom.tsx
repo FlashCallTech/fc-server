@@ -359,8 +359,8 @@ const MeetingRoom = () => {
 
 			{/* Call Controls */}
 
-			<section className="call-controls fixed bg-dark-1 bottom-0 flex w-full items-center justify-start py-2 px-4 transition-all">
-				<div className="flex overflow-x-scroll no-scrollbar w-fit px-4 items-center mx-auto justify-start gap-4">
+			<section className="call-controls fixed bottom-0 flex w-full items-center justify-start transition-all">
+				<div className="flex bg-[#19232d] overflow-x-scroll no-scrollbar w-full md:w-fit py-2 px-4 items-center mx-auto justify-center gap-4 rounded-lg md:rounded-b-none md:mb-2">
 					{/* Audio Button */}
 					{!showCountdown && (
 						<SpeakingWhileMutedNotification>

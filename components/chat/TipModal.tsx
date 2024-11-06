@@ -156,7 +156,7 @@ const TipModal = ({
 			>
 				<SheetTrigger asChild>
 					<button
-						className="bg-black/40 text-white p-2 rounded-lg text-[10px] md:text-lg hoverScaleEffect"
+						className="bg-black/40 text-white p-2 rounded-lg text-[10px] md:text-lg hoverScaleDownEffect"
 						onClick={() => setIsSheetOpen(true)}
 					>
 						Give Tip
@@ -218,7 +218,7 @@ const TipModal = ({
 										<Button
 											key={amount}
 											onClick={() => handlePredefinedAmountClick(amount)}
-											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleEffect ${
+											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${
 												tipAmount === amount &&
 												"bg-green-1 text-white hover:bg-green-1"
 											}`}

@@ -130,6 +130,8 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 		setClientUser(null);
 		setCreatorUser(null);
+
+		router.replace("/home");
 	};
 
 	// Function to fetch the current user

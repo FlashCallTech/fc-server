@@ -13,14 +13,12 @@ const SupportPage = () => {
 			</p>
 
 			<section className="flex flex-col items-start justify-start gap-2">
-				<span className="text-gray-600 text-sm mr-2">
-					Need help? Reach out to us at
-				</span>
+				<span className="text-gray-600 text-base mr-2">Reach out to us at</span>
 				<a
 					href="mailto:support@Flashcall.me"
-					className="text-sm font-medium hoverScaleDownEffect text-green-1"
+					className="text-base font-medium hoverScaleDownEffect text-green-1"
 				>
-					support@Flashcall.me
+					support@flashcall.me
 				</a>
 			</section>
 		</section>

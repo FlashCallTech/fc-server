@@ -17,7 +17,6 @@ const AudioDeviceList = ({
 	showAudioDeviceList: boolean;
 	setShowAudioDeviceList: Dispatch<SetStateAction<boolean>>;
 }) => {
-	const [isScaled, setIsScaled] = useState(false);
 	const deviceListRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null); // Add ref for button
 
@@ -46,7 +45,6 @@ const AudioDeviceList = ({
 
 	const handleClick = () => {
 		setShowAudioDeviceList((prev) => !prev);
-		setIsScaled((prev) => !prev);
 	};
 
 	return (
@@ -54,11 +52,9 @@ const AudioDeviceList = ({
 			<button
 				ref={buttonRef} // Attach the ref to the button
 				onClick={handleClick}
-				className={`cursor-pointer rounded-full bg-[#ffffff14] p-3 hover:bg-[${
-					isScaled && "#4c535b"
-				}]  transition-all duration-300 active:scale-75  hover:${
-					isScaled ? "scale-95" : "scale-100"
-				} flex items-center`}
+				className={`cursor-pointer rounded-full  ${
+					showAudioDeviceList ? "bg-white/20" : "bg-[#ffffff14]"
+				} p-3 hoverScaleDownEffect flex items-center`}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -79,7 +75,7 @@ const AudioDeviceList = ({
 			{showAudioDeviceList && (
 				<div
 					ref={deviceListRef}
-					className="absolute bottom-16 left-0 bg-dark-1 rounded-t-xl w-full z-40"
+					className="absolute bottom-16 left-0 bg-dark-1 rounded-t-xl w-full z-40 grid grid-cols-1 items-center"
 					onChange={() => setShowAudioDeviceList(false)}
 				>
 					<DeviceSelectorAudioOutput title="Audio Out" />
