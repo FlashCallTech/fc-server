@@ -12,11 +12,11 @@ import {
 import { clientUser, creatorUser } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
-import { deleteDoc, doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 import { usePathname, useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
-import { backendBaseUrl } from "../utils";
+import { backendBaseUrl, frontendBaseUrl } from "../utils";
 
 // Define the shape of the context value
 interface CurrentUsersContextValue {
@@ -120,6 +120,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const handleSignout = async () => {
 		localStorage.removeItem("currentUserID");
 		localStorage.removeItem("authToken");
+		const creatorURL = localStorage.getItem("creatorURL");
 
 		// Clear user data and local storage
 		await axios.post(`${backendBaseUrl}/user/endSession`);
@@ -131,7 +132,9 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		setClientUser(null);
 		setCreatorUser(null);
 
-		router.replace("/home");
+		creatorURL
+			? router.replace(`${frontendBaseUrl}/${creatorURL}`)
+			: router.replace("/home");
 	};
 
 	// Function to fetch the current user

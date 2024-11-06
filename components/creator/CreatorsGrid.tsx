@@ -1,10 +1,5 @@
 import { db } from "@/lib/firebase";
-import {
-	getDisplayName,
-	getImageSource,
-	getProfileImagePlaceholder,
-	isValidUrl,
-} from "@/lib/utils";
+import { getDisplayName, getImageSource } from "@/lib/utils";
 import { creatorUser } from "@/types";
 import { doc, onSnapshot } from "firebase/firestore";
 import Image from "next/image";

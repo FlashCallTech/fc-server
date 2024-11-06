@@ -270,6 +270,15 @@ export const resetBodyBackgroundColor = () => {
 	document.body.style.backgroundColor = "";
 };
 
+// Utility function to get theme color from sessionStorage
+export const getThemeColor = (
+	creatorId: string,
+	defaultColor?: string
+): string | null => {
+	const storedTheme = sessionStorage.getItem(creatorId);
+	return storedTheme ? JSON.parse(storedTheme) : defaultColor || null;
+};
+
 // default profile images based on
 export const placeholderImages = {
 	male: "https://dxvnlnyzij172.cloudfront.net/users/M_preview.png",
