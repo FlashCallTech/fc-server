@@ -176,7 +176,7 @@ const CallListMobile = ({
 														<span
 															className={` whitespace-nowrap  ${
 																userCall.status === "Ended"
-																	? "text-green-1 hidden md:block"
+																	? "text-green-1 hidden xm:block"
 																	: "text-red-500"
 															}`}
 														>
