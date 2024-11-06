@@ -5,7 +5,6 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import MobileNav from "./MobileNav";
-import Headroom from "react-headroom";
 
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { usePathname, useRouter } from "next/navigation";

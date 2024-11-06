@@ -82,11 +82,11 @@ const CallListMobileCreator = ({
 								const fullName = getDisplayName(client);
 
 								return (
-									<div
+									<section
 										key={userCall.callId}
 										className={`flex h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 xl:shadow-md border-gray-300 `}
 									>
-										<div className="flex  flex-col items-start justify-start w-full gap-2">
+										<section className="flex  flex-col items-start justify-start w-full gap-2">
 											{/* Expert's Details */}
 											<section className="w-1/2 flex items-center justify-start gap-4">
 												{/* client image */}
@@ -127,7 +127,7 @@ const CallListMobileCreator = ({
 												</div>
 											</section>
 											{/* call details */}
-											<div className="flex flex-wrap items-center justify-start gap-2 pl-16 text-[12.5px]">
+											<section className="flex flex-wrap items-center justify-start gap-2 pl-16 text-[12.5px]">
 												<span
 													className={`${
 														userCall.status === "Ended" ? "block" : "hidden"
@@ -215,25 +215,23 @@ const CallListMobileCreator = ({
 														</>
 													)}
 												</section>
-											</div>
-										</div>
+											</section>
+										</section>
 										{/* StartedAt & Feedbacks */}
 										<section className="relative w-fit flex flex-col items-end justify-between h-full gap-2">
 											<span className="text-sm text-[#A7A8A1] pr-2 pt-1 whitespace-nowrap">
 												{formattedDate.dateTime}
 											</span>
 
-											<section>
-												<OptionsList
-													callId={userCall.callId}
-													currentCreator={currentUser}
-													creatorId={currentUser?._id as string}
-													clientId={client?._id as string}
-													userCall={userCall}
-												/>
-											</section>
+											<OptionsList
+												callId={userCall.callId}
+												currentCreator={currentUser}
+												creatorId={currentUser?._id as string}
+												clientId={client?._id as string}
+												userCall={userCall}
+											/>
 										</section>
-									</div>
+									</section>
 								);
 							})
 						)}
