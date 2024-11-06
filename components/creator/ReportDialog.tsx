@@ -120,7 +120,7 @@ const ReportDialog = ({
 	};
 
 	return (
-		<section>
+		<>
 			{/* Sheet modal to handle report dialog */}
 			<Sheet open={isOpen} onOpenChange={onOpenChange}>
 				{/* The actual form inside the sheet */}
@@ -206,7 +206,7 @@ const ReportDialog = ({
 					)}
 				</SheetContent>
 			</Sheet>
-		</section>
+		</>
 	);
 };
 

@@ -33,6 +33,7 @@ import { Button } from "../ui/button";
 import { useToast } from "../ui/use-toast";
 import Script from "next/script";
 import InvoiceModal from "./invoiceModal";
+import SinglePostLoader from "../shared/SinglePostLoader";
 
 interface Transaction {
 	_id: string;
@@ -56,7 +57,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const [loading, setLoading] = useState<boolean>(false);
 	const { toast } = useToast();
 	const [showInvoice, setShowInvoice] = useState(false);
-	const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null); // Added
+	const [selectedTransaction, setSelectedTransaction] =
+		useState<Transaction | null>(null); // Added
 
 	const handleOpenInvoice = (transaction: Transaction) => {
 		setSelectedTransaction(transaction); // Set the selected transaction
@@ -246,10 +248,12 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						});
 
 						const result = await response.json();
-						const capturedPayment = result.payments.find((payment: { captured: boolean; }) => payment.captured === true);
+						const capturedPayment = result.payments.find(
+							(payment: { captured: boolean }) => payment.captured === true
+						);
 
 						if (capturedPayment) {
-							console.log('Captured payment found:', capturedPayment);
+							console.log("Captured payment found:", capturedPayment);
 							const validateRes: Response = await fetch(
 								"/api/v1/order/validate",
 								{
@@ -280,7 +284,9 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 							trackEvent("Recharge_Successfull", {
 								Client_ID: clientUser?._id,
-								User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+								User_First_Seen: clientUser?.createdAt
+									?.toString()
+									.split("T")[0],
 								Creator_ID: creator?._id,
 								Recharge_value: rechargeAmount / 100,
 								Walletbalace_Available: clientUser?.walletBalance,
@@ -288,7 +294,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 							router.push("/success");
 						} else {
-							throw new Error('Captured payment not found');
+							throw new Error("Captured payment not found");
 						}
 					} catch (error) {
 						Sentry.captureException(error);
@@ -355,7 +361,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 	const downloadInvoice = async (transactionId: string) => {
 		console.log(transactionId);
-	}
+	};
 
 	const creatorURL = localStorage.getItem("creatorURL");
 
