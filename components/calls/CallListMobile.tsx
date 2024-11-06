@@ -18,8 +18,8 @@ import { useInView } from "react-intersection-observer";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useToast } from "../ui/use-toast";
 import { useGetPreviousCalls } from "@/lib/react-query/queries";
-import ReportDialog from "../client/ReportDialog";
 import axios from "axios";
+import OptionsList from "../shared/OptionsList";
 
 const CallListMobile = ({
 	callType,
@@ -298,16 +298,15 @@ const CallListMobile = ({
 													</button>
 												)}
 
-												{!reportSubmitted[userCall.callId] && (
-													<ReportDialog
+												<section>
+													<OptionsList
 														callId={userCall.callId}
+														currentCreator={currentUser}
+														creatorId={userCall.members[0].user_id as string}
 														clientId={currentUser?._id as string}
-														creatorId={creator?._id as string}
-														onReportSubmitted={() =>
-															handleReportSubmitted(userCall.callId)
-														}
+														userCall={userCall}
 													/>
-												)}
+												</section>
 											</section>
 										</section>
 									</div>
