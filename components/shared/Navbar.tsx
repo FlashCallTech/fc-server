@@ -119,6 +119,7 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 
 	return (
 		<nav
+		id="navbar"
 			className={`flex justify-between items-center sticky h-[76px] z-40 top-0 left-0 ${
 				isCreatorOrExpertPath && "border-b border-white/20"
 			} w-full px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}

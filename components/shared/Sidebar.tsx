@@ -36,6 +36,7 @@ const Sidebar = () => {
 
 	return (
 		<section
+			id="sidebar"
 			className={`sticky left-0 top-[76px] flex h-screen flex-col justify-between p-6  max-md:hidden lg:w-[264px] shadow-md ${
 				isExpertPath && "border-r border-white/20"
 			}`}

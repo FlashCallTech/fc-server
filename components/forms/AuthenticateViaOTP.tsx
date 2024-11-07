@@ -367,7 +367,7 @@ const AuthenticateViaOTP = ({
 												</div>
 											</FormControl>
 										</div>
-										<FormMessage />
+										<FormMessage className="text-center" />
 									</FormItem>
 								)}
 							/>

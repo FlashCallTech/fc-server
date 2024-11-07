@@ -2,18 +2,14 @@ import {
 	DeviceSelectorAudioInput,
 	DeviceSelectorAudioOutput,
 } from "@stream-io/video-react-sdk";
-import React, {
-	Dispatch,
-	SetStateAction,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import React, { Dispatch, SetStateAction, useEffect, useRef } from "react";
 
 const AudioDeviceList = ({
+	micEnabled,
 	showAudioDeviceList,
 	setShowAudioDeviceList,
 }: {
+	micEnabled: boolean | undefined;
 	showAudioDeviceList: boolean;
 	setShowAudioDeviceList: Dispatch<SetStateAction<boolean>>;
 }) => {
@@ -44,17 +40,24 @@ const AudioDeviceList = ({
 	}, [showAudioDeviceList, setShowAudioDeviceList]);
 
 	const handleClick = () => {
-		setShowAudioDeviceList((prev) => !prev);
+		if (micEnabled) {
+			setShowAudioDeviceList((prev) => !prev);
+		}
 	};
+
+	console.log(!micEnabled || showAudioDeviceList);
 
 	return (
 		<>
 			<button
 				ref={buttonRef} // Attach the ref to the button
 				onClick={handleClick}
-				className={`cursor-pointer rounded-full  ${
-					showAudioDeviceList ? "bg-white/20" : "bg-[#ffffff14]"
-				} p-3 hoverScaleDownEffect flex items-center`}
+				className={`cursor-pointer rounded-full 
+	${!micEnabled || showAudioDeviceList ? "bg-white/20" : "bg-[#ffffff14]"}
+	p-3 hoverScaleDownEffect flex items-center ${
+		!micEnabled ? "cursor-not-allowed" : ""
+	}`}
+				aria-disabled={!micEnabled}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -62,7 +65,7 @@ const AudioDeviceList = ({
 					viewBox="0 0 24 24"
 					strokeWidth={1.5}
 					stroke="currentColor"
-					className="size-6"
+					className={`size-6 ${micEnabled ? "text-white" : "text-gray-400"}`}
 				>
 					<path
 						strokeLinecap="round"
@@ -72,7 +75,7 @@ const AudioDeviceList = ({
 				</svg>
 			</button>
 
-			{showAudioDeviceList && (
+			{showAudioDeviceList && micEnabled && (
 				<div
 					ref={deviceListRef}
 					className="absolute bottom-16 left-0 bg-dark-1 rounded-t-xl w-full z-40 grid grid-cols-1 items-center"

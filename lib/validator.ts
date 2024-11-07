@@ -18,7 +18,7 @@ export const UpdateProfileFormSchema = z.object({
 			usernameRegex,
 			"Username can only contain letters, numbers, underscores, and hyphens"
 		),
-	profession: z.string().min(5, "Profession must be at least 5 characters"),
+	profession: z.string().min(3, "Profession must be at least 3 characters"),
 	themeSelected: z.string().min(6, "Profile Theme must be a valid hexcode"),
 	photo: z.string().optional(),
 	bio: z.string().optional(),
