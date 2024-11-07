@@ -21,12 +21,44 @@ interface Transaction {
 }
 
 const Withdraw: React.FC = () => {
-	const [btn, setBtn] = useState<"all" | "credit" | "debit">("all");
 	const { creatorUser } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
-
 	const { initiateWithdraw, loadingTransfer } = usePayout();
+	const [btn, setBtn] = useState<"all" | "credit" | "debit">("all");
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [withdrawAmount, setWithdrawAmount] = useState<string>("");
 	const [isStickyVisible, setIsStickyVisible] = useState(false);
+
+	const openModal = () => setIsModalOpen(true);
+	const closeModal = () => {
+		setWithdrawAmount("");
+		setError(null);
+		setIsModalOpen(false);
+	};
+
+	const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		// Check if input is a valid number
+		if (/^\d*$/.test(value)) {
+			setWithdrawAmount(value);
+			setError(null); // Clear error if the input is valid
+		} else {
+			setError("Please enter a valid number.");
+		}
+	};
+
+	const handleWithdraw = () => {
+		if (!withdrawAmount) {
+			setError("Amount is required.");
+			return;
+		}
+
+		if (creatorUser?._id && creatorUser?.phone) {
+			initiateWithdraw(creatorUser._id, creatorUser.phone, Number(withdrawAmount));
+			closeModal();
+		}
+	};
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -75,8 +107,8 @@ const Withdraw: React.FC = () => {
 
 	const groupedTransactions = userTransactions
 		? groupTransactionsByDate(
-				userTransactions.pages.flatMap((page) => page.transactions)
-		  )
+			userTransactions.pages.flatMap((page) => page.transactions)
+		)
 		: {};
 
 	if (loadingTransfer) {
@@ -114,9 +146,8 @@ const Withdraw: React.FC = () => {
 						{/* Recharge Section */}
 						<div className="flex flex-col gap-5 w-full items-center justify-center md:items-start">
 							<div
-								className={`w-[100%] flex justify-between items-center font-normal leading-5 border-[1px] rounded-lg p-3 bg-white shadow ${
-									!isStickyVisible ? "flex-row" : "flex-col"
-								} relative`}
+								className={`w-[100%] flex justify-between items-center font-normal leading-5 border-[1px] rounded-lg p-3 bg-white shadow ${!isStickyVisible ? "flex-row" : "flex-col"
+									} relative`}
 							>
 								<div
 									className={
@@ -127,32 +158,30 @@ const Withdraw: React.FC = () => {
 								>
 									<span className={`text-[13px] `}>Wallet Balance</span>
 									<p
-										className={`text-green-600 ${
-											!isStickyVisible
-												? "text-[20px] font-bold"
-												: "text-[25px] font-extrabold"
-										} ${!isStickyVisible ? "p-0" : "p-2"} `}
+										className={`text-green-600 ${!isStickyVisible
+											? "text-[20px] font-bold"
+											: "text-[25px] font-extrabold"
+											} ${!isStickyVisible ? "p-0" : "p-2"} `}
 									>
 										₹ {walletBalance.toFixed(2)}
 									</p>
 								</div>
 								{!isStickyVisible && (
 									<Button
-										type="submit"
 										onClick={() =>
-											initiateWithdraw(creatorUser._id, creatorUser.phone)
+											openModal()
 										}
 										className="right-0 w-auto px-4 py-3 shadow bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
 									>
 										Withdraw
 									</Button>
 								)}
+
 							</div>
 							{isStickyVisible && (
 								<Button
-									type="submit"
 									onClick={() =>
-										initiateWithdraw(creatorUser._id, creatorUser.phone)
+										openModal()
 									}
 									className="w-full px-4 bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
 								>
@@ -179,11 +208,10 @@ const Withdraw: React.FC = () => {
 										onClick={() => {
 											setBtn(filter as "all" | "credit" | "debit");
 										}}
-										className={`capitalize px-5 py-1 border-2 border-black rounded-full ${
-											filter === btn
-												? "bg-gray-800 text-white"
-												: "bg-white text-black dark:bg-gray-700 dark:text-white hoverScaleDownEffect"
-										}`}
+										className={`capitalize px-5 py-1 border-2 border-black rounded-full ${filter === btn
+											? "bg-gray-800 text-white"
+											: "bg-white text-black dark:bg-gray-700 dark:text-white hoverScaleDownEffect"
+											}`}
 									>
 										{filter}
 									</button>
@@ -240,11 +268,10 @@ const Withdraw: React.FC = () => {
 													)}
 
 													<p
-														className={`font-bold text-xs xm:text-sm leading-4 w-fit whitespace-nowrap ${
-															transaction?.type === "credit"
-																? "text-green-500"
-																: "text-red-500"
-														} `}
+														className={`font-bold text-xs xm:text-sm leading-4 w-fit whitespace-nowrap ${transaction?.type === "credit"
+															? "text-green-500"
+															: "text-red-500"
+															} `}
 													>
 														{transaction?.type === "credit"
 															? `+ ₹${transaction?.amount?.toFixed(2)}`
@@ -285,6 +312,27 @@ const Withdraw: React.FC = () => {
 					)}
 
 				{hasNextPage && <div ref={ref} className=" pt-10 w-full" />}
+
+				{isModalOpen && (
+					<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+						<div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+							<h2 className="text-lg font-semibold mb-4">Enter Withdrawal Amount</h2>
+							<input
+								type="text"
+								value={withdrawAmount}
+								onChange={handleAmountChange}
+								placeholder="Enter amount"
+								className="p-2 border rounded w-full mb-4"
+							/>
+							<div className="flex justify-end gap-4">
+								<Button onClick={closeModal} className="bg-gray-300 text-black">Cancel</Button>
+								<Button onClick={handleWithdraw} className="bg-green-600 text-white font-bold">
+									Confirm
+								</Button>
+							</div>
+						</div>
+					</div>
+				)}
 			</section>
 		</>
 	);
