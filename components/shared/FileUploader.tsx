@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "../ui/button";
 import { S3Client } from "@aws-sdk/client-s3";
@@ -108,6 +108,10 @@ const FileUploader = ({
 			"image/*": [".png", ".jpeg", ".jpg"],
 		},
 	});
+
+	useEffect(() => {
+		fieldChange(fileUrl);
+	}, [fileUrl, fieldChange]);
 
 	if (loading)
 		return (

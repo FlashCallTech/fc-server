@@ -120,21 +120,20 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const handleSignout = async () => {
 		localStorage.removeItem("currentUserID");
 		localStorage.removeItem("authToken");
-		const creatorURL = localStorage.getItem("creatorURL");
 
 		// Clear user data and local storage
 		await axios.post(`${backendBaseUrl}/user/endSession`);
 
-		if (pathname === "/home") {
-			localStorage.removeItem("creatorURL");
-		}
-
 		setClientUser(null);
 		setCreatorUser(null);
-
-		creatorURL
-			? router.replace(`${frontendBaseUrl}/${creatorURL}`)
-			: router.replace("/home");
+		console.log(creatorURL);
+		// Redirect logic
+		if (pathname !== "/home" && pathname !== creatorURL) {
+			localStorage.removeItem("creatorURL");
+			setCreatorURL("");
+			router.replace("/home");
+			return;
+		}
 	};
 
 	// Function to fetch the current user

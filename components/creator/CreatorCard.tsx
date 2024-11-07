@@ -4,12 +4,11 @@ import React, { useEffect, useState } from "react";
 import { creatorUser } from "@/types";
 import { getUserByUsername } from "@/lib/actions/creator.actions";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import CreatorDetails from "./CreatorDetails";
-import { useRouter } from "next/navigation";
 
 const CreatorCard = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
@@ -18,8 +17,10 @@ const CreatorCard = () => {
 	const { currentUser, userType } = useCurrentUsersContext();
 	const { walletBalance } = useWalletBalanceContext();
 	const router = useRouter();
+
 	useEffect(() => {
 		const fetchCreator = async () => {
+			setLoading(true);
 			try {
 				const response = await getUserByUsername(String(username));
 				setCreator(response || null);
@@ -36,7 +37,7 @@ const CreatorCard = () => {
 		} else {
 			router.replace("/home");
 		}
-	}, [username]);
+	}, [username, userType, router]);
 
 	if (loading || (currentUser && walletBalance < 0)) {
 		return (

@@ -90,13 +90,15 @@ const CallListMobile = ({
 		}));
 	};
 
+	console.log(userCalls);
+
 	return (
 		<>
 			{isLoading || (currentUser && walletBalance < 0) ? (
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
 				</section>
-			) : userCalls && userCalls?.pages[0]?.totalCalls === 0 ? (
+			) : userCalls && userCalls.pages[0].length === 0 ? (
 				<div className="flex flex-col w-full items-center justify-center h-full">
 					<h1 className="text-2xl font-semibold text-red-500">
 						No Calls Found

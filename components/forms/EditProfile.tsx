@@ -34,13 +34,13 @@ import { useToast } from "../ui/use-toast";
 import FileUploader from "../shared/FileUploader";
 import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
-import SinglePostLoader from "../shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
 import axios from "axios";
 import { backendBaseUrl, debounce, placeholderImages } from "@/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 import Image from "next/image";
 import GetRandomImage from "@/utils/GetRandomImage";
+import ContentLoading from "../shared/ContentLoading";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -64,8 +64,10 @@ const EditProfile = ({
 	const [loading, setLoading] = useState(false);
 	const [usernameError, setUsernameError] = useState<string | null>(null);
 	const [formError, setFormError] = useState<string | null>(null);
+	const [loadingProfessions, setLoadingProfessions] = useState(true);
+	const [loadingThemes, setLoadingThemes] = useState(true);
 	const [selectedColor, setSelectedColor] = useState(
-		userData.themeSelected ?? "#50A65C"
+		userData.themeSelected ?? "#88D8C0"
 	);
 	const [initialReferralValue, setInitialReferralValue] = useState<boolean>(
 		() => {
@@ -77,11 +79,24 @@ const EditProfile = ({
 	const [professions, setProfessions] = useState([]);
 	const [selectedProfession, setSelectedProfession] = useState("");
 	const [dialogOpen, setDialogOpen] = useState(false);
+	const [customProfession, setCustomProfession] = useState("");
 
 	const handleSelectProfession = (profession: any) => {
 		setSelectedProfession(profession);
-		form.setValue("profession", profession);
-		setDialogOpen(false);
+		setCustomProfession("");
+		form.setValue(
+			"profession",
+			profession === "Other" ? customProfession : profession
+		);
+		// setDialogOpen(false);
+	};
+
+	const handleCustomProfessionChange = (e: any) => {
+		const value = e.target.value;
+		if (value.length <= 30 && /^[A-Za-z\s]*$/.test(value)) {
+			setCustomProfession(value);
+			form.setValue("profession", value);
+		}
 	};
 
 	const handleColorSelect: any = (color: string) => {
@@ -100,6 +115,8 @@ const EditProfile = ({
 				}
 			} catch (error) {
 				console.error("Error fetching professions:", error);
+			} finally {
+				setLoadingProfessions(false); // Set loading to false after fetching is done
 			}
 		};
 
@@ -110,7 +127,6 @@ const EditProfile = ({
 	useEffect(() => {
 		const fetchThemes = async () => {
 			try {
-				// Make the API call to get the themes
 				const response = await axios.get(`${backendBaseUrl}/user/select-theme`);
 				if (response.data.success) {
 					setPredefinedColors(response.data.colors);
@@ -119,10 +135,11 @@ const EditProfile = ({
 				}
 			} catch (error) {
 				console.error("Error fetching themes:", error);
+			} finally {
+				setLoadingThemes(false); // Set loading to false after fetching is done
 			}
 		};
 
-		// Call the function to fetch themes on component mount
 		fetchThemes();
 	}, []);
 
@@ -165,14 +182,16 @@ const EditProfile = ({
 
 	useEffect(() => {
 		if (!selectedFile) {
-			// Check if gender has changed and update the photo accordingly
 			const newPhoto =
 				placeholderImages[
 					watchedValues.gender as "male" | "female" | "other"
 				] || GetRandomImage();
 
-			// Only update the photo if it hasn't been set by the user or differs from the current value
-			if (watchedValues.photo !== newPhoto) {
+			if (
+				!watchedValues.photo ||
+				watchedValues.photo === "" ||
+				watchedValues.photo === newPhoto
+			) {
 				form.setValue("photo", newPhoto);
 			}
 		}
@@ -313,6 +332,8 @@ const EditProfile = ({
 					dob: updatedUser.dob,
 				};
 
+				console.log(userData);
+
 				setUserData(newUserDetails);
 
 				toast({
@@ -343,7 +364,7 @@ const EditProfile = ({
 					pathname.includes("/updateDetails") ? "h-screen" : "h-full"
 				} flex items-center justify-center`}
 			>
-				<SinglePostLoader />
+				<ContentLoading />
 			</section>
 		);
 
@@ -514,9 +535,11 @@ const EditProfile = ({
 										<Input
 											readOnly
 											type="text"
-											placeholder={`Enter your profession`}
+											placeholder="Enter your profession"
 											value={
-												selectedProfession ? selectedProfession : field.value
+												selectedProfession === "Other"
+													? customProfession
+													: selectedProfession || field.value
 											}
 											className="input-field hoverScaleDownEffect w-fit cursor-pointer"
 											onClick={() => setDialogOpen(true)}
@@ -528,47 +551,87 @@ const EditProfile = ({
 										<DialogTrigger asChild>
 											<Button
 												type="button"
-												className="hoverScaleDownEffect  bg-green-1 w-fit text-white"
+												className="hoverScaleDownEffect bg-green-1 w-fit text-white"
 											>
 												Choose
 											</Button>
 										</DialogTrigger>
-										<DialogContent className="flex flex-col items-center justify-center w-[92%] md:w-full bg-white rounded-xl border-none">
+										<DialogContent className="flex flex-col items-center justify-start w-[92%] max-h-[95%] overflow-y-scroll no-scrollbar md:w-full bg-white rounded-xl border-none">
 											<DialogHeader>
-												<DialogTitle>Select Your Profession</DialogTitle>
+												<DialogTitle>
+													{loadingProfessions
+														? "Loading Professions"
+														: "Select Your Profession"}
+												</DialogTitle>
 												<DialogDescription className="sr-only">
 													List is provided below
 												</DialogDescription>
 											</DialogHeader>
-											<div className="w-full mt-4 grid grid-cols-3 items-center gap-5 md:gap-2.5">
-												{professions?.map((profession: any) => (
-													<section
-														className={`cursor-pointer flex flex-col gap-2 items-center hoverScaleDownEffect`}
-														key={profession.id}
-													>
+											{loadingProfessions ? (
+												<div className="flex justify-center w-full">
+													<ContentLoading />
+												</div>
+											) : (
+												<div className="size-full mt-4 grid grid-cols-3 items-center gap-5 md:gap-2.5">
+													{professions?.map((profession: any) => (
 														<section
-															className={`${
-																profession.name === field.value &&
-																"ring-2 ring-offset-2 ring-green-1"
-															} p-4 bg-white shadow-lg  rounded-full`}
-															onClick={() => {
-																handleSelectProfession(profession.name);
-															}}
+															className="cursor-pointer flex flex-col gap-2 items-center hoverScaleDownEffect"
+															key={profession.id}
+															onClick={() =>
+																handleSelectProfession(profession.name)
+															}
 														>
-															<Image
-																src={profession.icon}
-																alt={profession.name}
-																width={1000}
-																height={1000}
-																className={`w-[48px] h-[48px] object-cover`}
-															/>
+															<section
+																className={`${
+																	(profession.name === field.value ||
+																		profession.name === selectedProfession) &&
+																	"ring-2 ring-offset-2 ring-green-1"
+																} p-4 bg-white shadow-lg rounded-full`}
+															>
+																<Image
+																	src={profession.icon}
+																	alt={profession.name}
+																	width={1000}
+																	height={1000}
+																	className="w-[48px] h-[48px] object-cover"
+																/>
+															</section>
+															<span className="text-xs sm:text-sm text-[#707070]">
+																{profession.name}
+															</span>
 														</section>
-														<span className="text-xs sm:text-sm text-[#707070]">
-															{profession.name}
-														</span>
-													</section>
-												))}
-											</div>
+													))}
+												</div>
+											)}
+											<section className="w-full flex items-start justify-center gap-2">
+												{selectedProfession === "Other" && (
+													<div className="w-full mt-4 flex flex-col items-center">
+														<Input
+															type="text"
+															placeholder="Enter your profession"
+															value={customProfession}
+															onChange={handleCustomProfessionChange}
+															className="w-full"
+														/>
+
+														{customProfession.length >= 30 && (
+															<span className="text-red-500 text-sm mt-1 mb-2">
+																Maximum 30 characters allowed
+															</span>
+														)}
+													</div>
+												)}
+
+												<Button
+													type="button"
+													className={`${
+														loadingProfessions ? "hidden" : "mt-4"
+													}  bg-green-1 hoverScaleDownEffect text-white w-fit`}
+													onClick={() => setDialogOpen(false)}
+												>
+													Confirm Profession
+												</Button>
+											</section>
 										</DialogContent>
 									</Dialog>
 								</section>
@@ -679,46 +742,63 @@ const EditProfile = ({
 									Profile Theme
 								</FormLabel>
 								<FormControl>
-									{/* Predefined Colors */}
-									<div className="flex flex-wrap mt-2">
-										{predefinedColors.map((color, index) => (
-											<div
-												key={index}
-												className={`w-8 h-8 m-1 rounded-full cursor-pointer hoverScaleDownEffect ${
-													selectedColor === color
-														? "ring-2 ring-offset-2 ring-blue-500"
-														: ""
-												}`}
-												style={{ backgroundColor: color }}
-												onClick={() => {
-													handleColorSelect(color);
-													field.onChange(color);
-												}}
-											>
-												{selectedColor === color && (
-													<div className="w-full h-full flex items-center justify-center">
-														<svg
-															xmlns="http://www.w3.org/2000/svg"
-															className="h-4 w-4 text-white"
-															fill="none"
-															viewBox="0 0 24 24"
-															stroke="currentColor"
-														>
-															<path
-																strokeLinecap="round"
-																strokeLinejoin="round"
-																strokeWidth={2}
-																d="M5 13l4 4L19 7"
-															/>
-														</svg>
+									{loadingThemes ? (
+										<div className="flex justify-start items-start gap-5 rounded-lg max-w-lg h-auto w-full  animate-pulse">
+											<div className="flex-1 space-y-4 py-1 w-full">
+												<div className="h-3 bg-slate-300 rounded w-full"></div>
+												<div className="space-y-3">
+													<div className="grid grid-cols-3 gap-4">
+														<div className="h-2 bg-slate-300 rounded col-span-2"></div>
+														<div className="h-2 bg-slate-300 rounded col-span-1"></div>
 													</div>
-												)}
+													<div className="h-2 bg-slate-300 rounded w-full"></div>
+													<div className="h-2 bg-slate-300 rounded w-3/4"></div>
+												</div>
 											</div>
-										))}
-									</div>
+										</div>
+									) : (
+										<div className="flex flex-wrap mt-2">
+											{predefinedColors.map((color, index) => (
+												<div
+													key={index}
+													className={`w-8 h-8 m-1 rounded-full cursor-pointer hoverScaleDownEffect ${
+														selectedColor === color
+															? "ring-2 ring-offset-2 ring-blue-500"
+															: ""
+													}`}
+													style={{ backgroundColor: color }}
+													onClick={() => {
+														handleColorSelect(color);
+														field.onChange(color);
+													}}
+												>
+													{selectedColor === color && (
+														<div className="w-full h-full flex items-center justify-center">
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																className="h-4 w-4 text-white"
+																fill="none"
+																viewBox="0 0 24 24"
+																stroke="currentColor"
+															>
+																<path
+																	strokeLinecap="round"
+																	strokeLinejoin="round"
+																	strokeWidth={2}
+																	d="M5 13l4 4L19 7"
+																/>
+															</svg>
+														</div>
+													)}
+												</div>
+											))}
+										</div>
+									)}
 								</FormControl>
 								<FormDescription className="text-xs text-gray-400 ml-1">
-									Select your theme color
+									{loadingThemes
+										? "Loading theme colors"
+										: "Select your theme color"}
 								</FormDescription>
 								<FormMessage className="error-message">
 									{errors.themeSelected?.message}

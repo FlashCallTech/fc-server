@@ -7,7 +7,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import ReportDialog from "../creator/ReportDialog";
+import ReportDialog from "../../components/shared/ReportDialog";
 import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 import { clientUser, creatorUser } from "@/types";
@@ -194,6 +194,7 @@ const OptionsList = ({
 				creatorId={creatorId}
 				isOpen={isReportDialogOpen}
 				setIsOpen={setIsReportDialogOpen}
+				usertype={userType as string}
 			/>
 
 			{showInvoice && selected && (

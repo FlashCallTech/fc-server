@@ -23,7 +23,7 @@ const UserProfilePage = () => {
 		lastName: currentUser?.lastName ?? "",
 		username: currentUser?.username ?? "",
 		profession: currentUser?.profession ?? "",
-		themeSelected: currentUser?.themeSelected ?? "#50A65C",
+		themeSelected: currentUser?.themeSelected ?? "#88D8C0",
 		phone: currentUser?.phone ?? "",
 		photo: currentUser?.photo ?? "",
 		bio: currentUser?.bio ?? "",
@@ -46,11 +46,11 @@ const UserProfilePage = () => {
 			setUserData(updatedInitialState);
 			setInitialState(updatedInitialState);
 		}
-	}, [userType, pathname]);
+	}, [currentUser, userType, pathname]);
 
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		setUserData(newUserData);
-		refreshCurrentUser();
+		await refreshCurrentUser();
 	};
 
 	const isInitialState = userData.id === "";
@@ -203,9 +203,6 @@ const UserProfilePage = () => {
 					</h1>
 				</>
 			)}
-
-			{/* user's calls */}
-			{/* <div className="grid grid-cols-1 lg:grid-cols-2 items-center w-full mt-14 gap-14 xl:gap-0"></div> */}
 		</div>
 	);
 };

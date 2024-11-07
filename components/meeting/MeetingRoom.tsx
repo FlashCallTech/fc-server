@@ -375,6 +375,7 @@ const MeetingRoom = () => {
 					{/* Audio Device List */}
 					{isMobile && mobileDevice && !showCountdown && (
 						<AudioDeviceList
+							micEnabled={call?.microphone?.enabled}
 							showAudioDeviceList={showAudioDeviceList}
 							setShowAudioDeviceList={setShowAudioDeviceList}
 						/>
@@ -394,7 +395,12 @@ const MeetingRoom = () => {
 						isMobile &&
 						mobileDevice &&
 						!showCountdown &&
-						mobileDevice && <SwitchCameraType toggleCamera={toggleCamera} />}
+						mobileDevice && (
+							<SwitchCameraType
+								toggleCamera={toggleCamera}
+								cameraEnabled={call?.camera?.enabled}
+							/>
+						)}
 
 					{!showCountdown && (
 						<Tooltip>

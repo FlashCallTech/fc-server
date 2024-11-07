@@ -22,8 +22,6 @@ const HomePage = () => {
 		useCurrentUsersContext();
 	const router = useRouter();
 	const pathname = usePathname();
-	const searchParams = useSearchParams();
-	const isCreatorPage = !!searchParams.get("creator");
 	const { ref, inView } = useInView({
 		threshold: 0.1,
 		triggerOnce: false,
@@ -88,9 +86,7 @@ const HomePage = () => {
 	}, [inView, hasNextPage, isFetching]);
 
 	useEffect(() => {
-		if (pathname === "/home" && !isCreatorPage) {
-			localStorage.removeItem("creatorURL");
-		}
+		localStorage.removeItem("creatorURL");
 	}, [router, pathname]);
 
 	if (isLoading || loadingCard) {

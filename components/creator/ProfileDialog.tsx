@@ -65,7 +65,7 @@ const ProfileDialog = ({
 					</span>
 				</div>
 			</DialogTrigger>
-			<DialogContent className="bg-white border-none w-full md:max-w-md">
+			<DialogContent className="bg-white border-none w-full max-w-[95%] md:max-w-md rounded-md">
 				{!isLoading ? (
 					<>
 						<FileUploaderHome

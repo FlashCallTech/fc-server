@@ -78,10 +78,21 @@ const PreviousPage = () => {
 				))}
 			</div>
 
-			{userType === "client" ? (
-				<CallListMobile callType={historyType} />
+			{currentUser ? (
+				userType === "client" ? (
+					<CallListMobile callType={historyType} />
+				) : (
+					<CallListMobileCreator callType={historyType} />
+				)
 			) : (
-				<CallListMobileCreator callType={historyType} />
+				<div className="flex flex-col w-full items-center justify-center h-full">
+					<h1 className="text-2xl font-semibold text-red-500">
+						No Calls Found
+					</h1>
+					<h2 className="text-xl font-semibold text-red-500">
+						Please sign in to continue.
+					</h2>
+				</div>
 			)}
 		</section>
 	);

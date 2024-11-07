@@ -1,21 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SwitchCamera } from "lucide-react";
 
 const SwitchCameraType = ({
 	toggleCamera,
+	cameraEnabled,
 }: {
 	toggleCamera: () => Promise<void>;
+	cameraEnabled: boolean | undefined;
 }) => {
 	const handleClick = () => {
-		toggleCamera();
+		if (cameraEnabled) {
+			toggleCamera();
+		}
 	};
 
 	return (
 		<section
 			onClick={handleClick}
-			className={`cursor-pointer rounded-full bg-[#ffffff14] p-3 hoverScaleDownEffect flex items-center`}
+			className={`cursor-pointer rounded-full p-3 hoverScaleDownEffect flex items-center ${
+				cameraEnabled ? "bg-[#ffffff14]" : "bg-white/20"
+			}`}
+			aria-disabled={!cameraEnabled}
 		>
-			<SwitchCamera size={24} className="text-white" />
+			<SwitchCamera
+				size={24}
+				className={cameraEnabled ? "text-white" : "text-gray-400"}
+			/>
 		</section>
 	);
 };

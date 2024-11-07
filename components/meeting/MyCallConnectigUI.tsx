@@ -33,7 +33,7 @@ const MyCallConnectingUI = ({ call }: { call: Call | null }) => {
 			</div>
 			<div className="w-full h-fit flex items-center justify-center">
 				<h1
-					className="text-xl md:text-2xl font-semibold"
+					className="text-xl md:text-lg font-semibold"
 					style={{ color: "#ffffff" }}
 				>
 					<Typewriter
