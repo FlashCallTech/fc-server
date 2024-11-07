@@ -9,7 +9,7 @@ const usePayout = () => {
   const { refreshCurrentUser } = useCurrentUsersContext();
   const { toast } = useToast();
 
-  const initiateWithdraw = async (creatorId: string, phone: string) => {
+  const initiateWithdraw = async (creatorId: string, phone: string, amount: number) => {
     setLoading(true);
 
     const response = await fetch('/api/v1/transfer/initiate', {
@@ -19,7 +19,8 @@ const usePayout = () => {
       },
       body: JSON.stringify({
         userId: creatorId,
-        phone
+        phone,
+        amount
       })
     });
 
