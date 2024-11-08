@@ -1,5 +1,6 @@
 import { toast, useToast } from "@/components/ui/use-toast";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { backendBaseUrl } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -9,17 +10,18 @@ const usePayout = () => {
   const { refreshCurrentUser } = useCurrentUsersContext();
   const { toast } = useToast();
 
-  const initiateWithdraw = async (creatorId: string, phone: string) => {
+  const initiateWithdraw = async (creatorId: string, phone: string, amount: number) => {
     setLoading(true);
-
-    const response = await fetch('/api/v1/transfer/initiate', {
+    console.log("Initiating");
+    const response = await fetch(`api/v1/transfer/initiate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         userId: creatorId,
-        phone
+        phone,
+        amount
       })
     });
 

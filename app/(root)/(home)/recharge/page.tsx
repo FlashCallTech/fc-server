@@ -25,11 +25,11 @@ const Recharge: React.FC = () => {
 	const { currentUser, clientUser } = useCurrentUsersContext();
 	const { toast } = useToast();
 	const [creator, setCreator] = useState<creatorUser>();
+	const [method, setMethod] = useState("");
+	const [loading, setLoading] = useState(false);
 	const searchParams = useSearchParams();
 	const amount = searchParams.get("amount");
 
-	const [method, setMethod] = useState("");
-	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 	const amountInt: number | null = amount ? parseFloat(amount) : null;
 
@@ -287,8 +287,8 @@ const Recharge: React.FC = () => {
 								].map((app) => (
 									<button
 										key={app.name}
-										className="flex flex-col items-center max-w-44 bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
 										onClick={() => setMethod(app.name.toLowerCase())}
+										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${method === app.name.toLowerCase() ? "bg-gray-300 dark:bg-gray-600 !important" : ""}`}
 									>
 										<Image
 											src={app.icon}
