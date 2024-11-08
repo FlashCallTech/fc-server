@@ -28,7 +28,7 @@ const MyCallUI = () => {
 	const [callId, setCallId] = useState<string | null>("");
 	const [endedByMe, setEndedByMe] = useState(false);
 	const { call, isCallLoading } = useGetCallById(callId || "");
-	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
+	let hide = pathname.includes("/meeting");
 	const [showCallUI, setShowCallUI] = useState(false);
 	const [connecting, setConnecting] = useState(false);
 	const [connectingCall, setConnectingCall] = useState<Call | null>(null);
