@@ -12,8 +12,8 @@ const usePayout = () => {
 
   const initiateWithdraw = async (creatorId: string, phone: string, amount: number) => {
     setLoading(true);
-
-    const response = await fetch(`${backendBaseUrl}/withdraw/initiate`, {
+    console.log("Initiating");
+    const response = await fetch(`api/v1/transfer/initiate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
