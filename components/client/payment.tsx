@@ -189,7 +189,11 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		values: z.infer<typeof enterAmountSchema>
 	) {
 		event.preventDefault();
-		const rechargeAmount = Number(values.rechargeAmount) * 100;
+		const rechargeAmount = Number(values.rechargeAmount);
+
+		router.push(`/recharge?amount=${rechargeAmount}`);
+
+		return;
 
 		trackEvent("Recharge_Page_RechargeClicked", {
 			Client_ID: clientUser?._id,

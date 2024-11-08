@@ -1,5 +1,6 @@
 import { toast, useToast } from "@/components/ui/use-toast";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { backendBaseUrl } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -12,7 +13,7 @@ const usePayout = () => {
   const initiateWithdraw = async (creatorId: string, phone: string, amount: number) => {
     setLoading(true);
 
-    const response = await fetch('/api/v1/transfer/initiate', {
+    const response = await fetch(`${backendBaseUrl}/withdraw/initiate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
