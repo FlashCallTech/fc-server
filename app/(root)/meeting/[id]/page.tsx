@@ -139,7 +139,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 				// 	});
 				// 	setToastShown(true);
 				// }
-
+			const creatorURL = localStorage.getItem("creatorURL");
 			const hasVisitedFeedbackPage = localStorage.getItem("hasVisitedFeedbackPage");
 
             if (hasVisitedFeedbackPage) {
