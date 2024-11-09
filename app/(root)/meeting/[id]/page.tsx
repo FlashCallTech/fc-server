@@ -139,16 +139,14 @@ const CallEnded = ({ toast, router, call }: any) => {
 				// 	});
 				// 	setToastShown(true);
 				// }
-				const creatorURL = localStorage.getItem("creatorURL");
-				const hasVisitedFeedbackPage = localStorage.getItem(
-					"hasVisitedFeedbackPage"
-				);
+			const creatorURL = localStorage.getItem("creatorURL");
+			const hasVisitedFeedbackPage = localStorage.getItem("hasVisitedFeedbackPage");
 
-				if (hasVisitedFeedbackPage) {
-					router.replace(`${creatorURL ? creatorURL : "/home"}`);
-				} else {
-					router.replace(`/feedback/${call.id}`);
-				}
+            if (hasVisitedFeedbackPage) {
+                router.replace(`${creatorURL ? creatorURL : "/home"}`);
+            } else {
+                router.replace(`/feedback/${call.id}`);
+            }
 			} catch (error) {
 				console.error("Error handling call end", error);
 				const creatorURL = localStorage.getItem("creatorURL");
