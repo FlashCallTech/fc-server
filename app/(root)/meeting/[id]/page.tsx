@@ -131,16 +131,22 @@ const CallEnded = ({ toast, router, call }: any) => {
 					"Payment Pending"
 				);
 				// Show toast notification
-				if (!toastShown) {
-					toast({
-						variant: "destructive",
-						title: "Session Has Ended",
-						description: "Checking for Pending Transactions ...",
-					});
-					setToastShown(true);
-				}
+				// if (!toastShown) {
+				// 	toast({
+				// 		variant: "destructive",
+				// 		title: "Session Has Ended",
+				// 		description: "Checking for Pending Transactions ...",
+				// 	});
+				// 	setToastShown(true);
+				// }
 
-				router.replace(`/feedback/${call.id}`);
+			const hasVisitedFeedbackPage = localStorage.getItem("hasVisitedFeedbackPage");
+
+            if (hasVisitedFeedbackPage) {
+                router.replace(`${creatorURL ? creatorURL : "/home"}`);
+            } else {
+                router.replace(`/feedback/${call.id}`);
+            }
 			} catch (error) {
 				console.error("Error handling call end", error);
 				const creatorURL = localStorage.getItem("creatorURL");
