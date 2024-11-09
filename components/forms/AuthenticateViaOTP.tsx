@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import OTPVerification from "./OTPVerification";
 import jwt from "jsonwebtoken";
@@ -61,7 +61,7 @@ const AuthenticateViaOTP = ({
 	const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
 	const [verificationSuccess, setVerificationSuccess] = useState(false);
 
-	const [firstLogin, setFirstLogin] = useState(false);
+	const firstLoginRef = useRef(false);
 	const [error, setError] = useState({});
 	const { toast } = useToast();
 	const { getDevicePlatform } = usePlatform();
@@ -159,7 +159,7 @@ const AuthenticateViaOTP = ({
 			const user = decodedToken.user || {};
 			let resolvedUserType = userType;
 
-			if (user._id) {
+			if (user._id || !user.error) {
 				// Existing user found
 				resolvedUserType = user.userType || "client";
 				console.log("current usertype: ", resolvedUserType);
@@ -180,7 +180,7 @@ const AuthenticateViaOTP = ({
 			} else {
 				// No user found, proceed as new user
 				console.log("No user found. Proceeding as a new user.");
-				setFirstLogin(true);
+				firstLoginRef.current = true;
 				let newUser: CreateCreatorParams | CreateUserParams;
 
 				const formattedPhone = phoneNumber.startsWith("+91")
@@ -251,15 +251,11 @@ const AuthenticateViaOTP = ({
 			if (resolvedUserType === "client") {
 				localStorage.setItem("userType", resolvedUserType);
 				router.replace(creatorURL ? creatorURL : "/home");
-				setTimeout(() => {
-					refreshCurrentUser();
-				}, 1000);
+				refreshCurrentUser();
 			} else if (resolvedUserType === "creator") {
 				localStorage.setItem("userType", resolvedUserType);
-				router.replace(firstLogin ? "/updateDetails" : "/home");
-				setTimeout(() => {
-					refreshCurrentUser();
-				}, 1000);
+				router.replace(firstLoginRef.current ? "/updateDetails" : "/home");
+				refreshCurrentUser();
 			}
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);

@@ -211,7 +211,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				});
 			}, 1000);
 		}
-	}, [router, userType]);
+	}, [router, userType, currentUser]);
 
 	// real-time session monitoring
 	useEffect(() => {
