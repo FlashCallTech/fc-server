@@ -68,17 +68,6 @@ export const handleInterruptedCall = async (
 	};
 
 	try {
-		// Send the backend request
-		await fetch(`${backendBaseUrl}/calls/transaction/handleInterrupted`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				call: callData,
-			}),
-		});
-
 		// Update the user's status based on the type
 		if (userType === "client") {
 			await updateExpertStatus(currentUserPhone, "Idle");
@@ -90,6 +79,17 @@ export const handleInterruptedCall = async (
 
 		localStorage.removeItem("activeCallId");
 		localStorage.removeItem(localSessionKey);
+
+		// Send the backend request
+		await fetch(`${backendBaseUrl}/calls/transaction/handleInterrupted`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				call: callData,
+			}),
+		});
 
 		console.log("Call Transaction done and status updated");
 	} catch (error) {
