@@ -26,6 +26,7 @@ const CallFeedbackPage = () => {
 
 	const handleFeedbackClose = async () => {
 		setShowFeedback(false);
+		localStorage.setItem("hasVisitedFeedbackPage", "true");
 
 		router.replace(`${creatorURL ? creatorURL : "/home"}`);
 	};
