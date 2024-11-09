@@ -331,6 +331,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				},
 			});
 
+            localStorage.removeItem("hasVisitedFeedbackPage");
+
 			trackCallEvents(callType, clientUser, creator);
 
 			await fetch(`${backendBaseUrl}/calls/registerCall`, {
