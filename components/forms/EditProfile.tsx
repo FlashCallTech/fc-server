@@ -40,6 +40,7 @@ import { backendBaseUrl, debounce, placeholderImages } from "@/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 import Image from "next/image";
 import GetRandomImage from "@/utils/GetRandomImage";
+import SinglePostLoader from "../shared/SinglePostLoader";
 import ContentLoading from "../shared/ContentLoading";
 
 export type EditProfileProps = {
@@ -364,7 +365,7 @@ const EditProfile = ({
 					pathname.includes("/updateDetails") ? "h-screen" : "h-full"
 				} flex items-center justify-center`}
 			>
-				<ContentLoading />
+				<SinglePostLoader />
 			</section>
 		);
 
