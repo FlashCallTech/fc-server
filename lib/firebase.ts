@@ -43,31 +43,21 @@ if (typeof window !== "undefined") {
 		}
 	});
 }
+
 // Function to get FCM token, only in the browser
 export const getFCMToken = async () => {
 	if (typeof window !== "undefined") {
 		try {
-			const supported = await isMessagingSupported();
-			if (supported) {
-				const messaging = getMessaging(app);
-				const fcmToken = await getToken(messaging, {
-					vapidKey:
-						process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY ||
-						"BLFyNBff7-gu9oSHeZMvwRLzBbPX9McEseh9rIknZEkAWy6THjUlm59aj6GZevx8dP4g4sM7BVxQXBoyrqPsapA",
-				});
+			const messaging = getMessaging(app);
+			const fcmToken = await getToken(messaging, {
+				vapidKey:
+					process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY ||
+					"BLFyNBff7-gu9oSHeZMvwRLzBbPX9McEseh9rIknZEkAWy6THjUlm59aj6GZevx8dP4g4sM7BVxQXBoyrqPsapA",
+			});
 
-				if (fcmToken) {
-					return fcmToken;
-				} else {
-					console.warn("No FCM token found.");
-					return null;
-				}
-			} else {
-				console.warn("Browser does not support Firebase Messaging.");
-				return null;
-			}
+			return fcmToken || null; // Return token if available, otherwise null
 		} catch (error) {
-			console.error("Error retrieving FCM token: ", error);
+			console.error("Error retrieving FCM token:", error);
 			return null;
 		}
 	}
