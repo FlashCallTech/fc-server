@@ -22,6 +22,7 @@ import Image from "next/image";
 import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 import { success } from "@/constants/icons";
+import { Button } from "../ui/button";
 
 const ReportDialog = ({
 	callId,
@@ -140,7 +141,7 @@ const ReportDialog = ({
 						</div>
 					) : (
 						<>
-							<SheetHeader className="flex items-center justify-center">
+							<SheetHeader className="w-full flex flex-col items-start justify-center">
 								<SheetTitle className="text-lg font-semibold">
 									Report an Issue
 								</SheetTitle>
@@ -170,7 +171,7 @@ const ReportDialog = ({
 											<FormItem className="w-full">
 												<FormControl>
 													<Textarea
-														className="textarea max-h-32"
+														className="flex flex-1 placeholder:text-gray-500 px-5 py-3  focus-visible:ring-transparent max-h-32"
 														placeholder="Tell us a little bit about the issue"
 														{...field}
 													/>
@@ -183,25 +184,35 @@ const ReportDialog = ({
 										)}
 									/>
 
-									<button
-										className={`${
-											!isValid && "cursor-not-allowed opacity-50"
-										} flex items-center justify-center bg-green-1 hoverScaleDownEffect w-3/4 mx-auto text-white mt-4 px-4 py-2 rounded-[6px]`}
-										type="submit"
-										disabled={!isValid || !isChanged || loading}
-									>
-										{loading ? (
-											<Image
-												src="/icons/loading-circle.svg"
-												alt="Loading..."
-												width={24}
-												height={24}
-												priority
-											/>
-										) : (
-											"Submit Report"
-										)}
-									</button>
+									<div className="w-full flex items-center justify-end gap-2">
+										<Button
+											variant="outline"
+											onClick={() => setIsOpen(false)}
+											disabled={loading}
+											className="hoverScaleDownEffect text-black mt-0 border border-gray-300 hover:bg-gray-50"
+										>
+											Cancel
+										</Button>
+										<Button
+											className={`${
+												!isValid && "!cursor-not-allowed opacity-50"
+											} border border-gray-300 bg-green-1 text-white hoverScaleDownEffect`}
+											type="submit"
+											disabled={!isValid || !isChanged || loading}
+										>
+											{loading ? (
+												<Image
+													src="/icons/loading-circle.svg"
+													alt="Loading..."
+													width={24}
+													height={24}
+													priority
+												/>
+											) : (
+												"Submit Report"
+											)}
+										</Button>
+									</div>
 								</form>
 							</Form>
 						</>
