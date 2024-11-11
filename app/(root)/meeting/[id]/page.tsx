@@ -77,21 +77,11 @@ const MeetingPage = () => {
 		);
 	}
 
-	const isVideoCall = call?.type === "default";
-
-	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
-
 	return (
 		<main className="h-full w-full">
 			<StreamCall call={call}>
 				<StreamTheme>
-					{/* <CallTimerProvider
-						isVideoCall={isVideoCall}
-						isMeetingOwner={isMeetingOwner}
-						call={call}
-					> */}
 					<MeetingRoomWrapper toast={toast} router={router} call={call} />
-					{/* </CallTimerProvider> */}
 				</StreamTheme>
 			</StreamCall>
 		</main>
@@ -112,7 +102,7 @@ const MeetingRoomWrapper = ({ toast, router, call }: any) => {
 
 const CallEnded = ({ toast, router, call }: any) => {
 	const [loading, setLoading] = useState(false);
-	const [toastShown, setToastShown] = useState(false);
+	// const [toastShown, setToastShown] = useState(false);
 	const transactionHandled = useRef(false);
 	const { currentUser, currentTheme } = useCurrentUsersContext();
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
@@ -139,14 +129,16 @@ const CallEnded = ({ toast, router, call }: any) => {
 				// 	});
 				// 	setToastShown(true);
 				// }
-			const creatorURL = localStorage.getItem("creatorURL");
-			const hasVisitedFeedbackPage = localStorage.getItem("hasVisitedFeedbackPage");
+				const creatorURL = localStorage.getItem("creatorURL");
+				const hasVisitedFeedbackPage = localStorage.getItem(
+					"hasVisitedFeedbackPage"
+				);
 
-            if (hasVisitedFeedbackPage) {
-                router.replace(`${creatorURL ? creatorURL : "/home"}`);
-            } else {
-                router.replace(`/feedback/${call.id}`);
-            }
+				if (hasVisitedFeedbackPage) {
+					router.replace(`${creatorURL ? creatorURL : "/home"}`);
+				} else {
+					router.replace(`/feedback/${call.id}`);
+				}
 			} catch (error) {
 				console.error("Error handling call end", error);
 				const creatorURL = localStorage.getItem("creatorURL");
@@ -157,10 +149,10 @@ const CallEnded = ({ toast, router, call }: any) => {
 		};
 
 		if (isMeetingOwner && !transactionHandled.current) {
-			stopMediaStreams();
+			// stopMediaStreams();
 			handleCallEnd();
 		} else if (!isMeetingOwner) {
-			stopMediaStreams();
+			// stopMediaStreams();
 			router.replace(`/home`);
 		}
 	}, [call?.id, currentUser?._id]);

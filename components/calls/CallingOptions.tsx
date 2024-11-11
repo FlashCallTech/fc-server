@@ -253,72 +253,41 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		};
 	}, [chatState]);
 
-	const checkPermissions = async (callType: string) => {
-		try {
-			const permissions = {
-				audio: false,
-				video: false,
-			};
-
-			// Request audio first, because some browsers (like Chrome) may only show one permission at a time
-			if (callType === "video" || callType === "audio") {
-				// Request both audio and video, but request audio first
-				const stream = await navigator.mediaDevices.getUserMedia({
-					audio: true, // Request audio first
-					video: callType === "video", // Only request video for video calls
-				});
-
-				if (stream) {
-					permissions.audio = stream.getAudioTracks().length > 0;
-					permissions.video = stream.getVideoTracks().length > 0;
-					stream.getTracks().forEach((track) => track.stop());
-				}
-			}
-
-			return permissions;
-		} catch (err) {
-			return { audio: false, video: false };
-		}
-	};
-
 	const createMeeting = async (callType: string) => {
 		if (!client || !clientUser) return;
 
-		const permissions = await checkPermissions(callType);
+		// const permissions = await checkPermissions(callType);
 
-		// If audio or video permissions are missing, request permissions again
-		if (
-			(callType === "audio" && !permissions.audio) ||
-			(callType === "video" && (!permissions.audio || !permissions.video))
-		) {
-			toast({
-				variant: "destructive",
-				title: "Permission Denied",
-				description: `Please allow audio${
-					callType === "video" ? " and video" : ""
-				} permissions to proceed.`,
-			});
+		// if (
+		// 	(callType === "audio" && !permissions.audio) ||
+		// 	(callType === "video" && (!permissions.audio || !permissions.video))
+		// ) {
+		// 	toast({
+		// 		variant: "destructive",
+		// 		title: "Permission Denied",
+		// 		description: `Please allow audio${
+		// 			callType === "video" ? " and video" : ""
+		// 		} permissions to proceed.`,
+		// 	});
 
-			// Try requesting permissions again in case the user denied audio or video earlier
-			try {
-				// Only ask for video if it's a video call, otherwise just ask for audio
-				const userMediaConstraints = {
-					audio: true,
-					video: callType === "video", // Video only if it's a video call
-				};
+		// 	try {
+		// 		const userMediaConstraints = {
+		// 			audio: true,
+		// 			video: callType === "video",
+		// 		};
 
-				await navigator.mediaDevices.getUserMedia(userMediaConstraints);
-			} catch (err) {
-				console.error("Permission request failed:", err);
-				toast({
-					variant: "destructive",
-					title: "Permission Request Failed",
-					description: "Please enable permissions in your browser settings.",
-				});
-			}
+		// 		await navigator.mediaDevices.getUserMedia(userMediaConstraints);
+		// 	} catch (err) {
+		// 		console.error("Permission request failed:", err);
+		// 		toast({
+		// 			variant: "destructive",
+		// 			title: "Permission Request Failed",
+		// 			description: "Please enable permissions in your browser settings.",
+		// 		});
+		// 	}
 
-			return;
-		}
+		// 	return;
+		// }
 
 		// Proceed with creating the meeting once permissions are granted
 		try {

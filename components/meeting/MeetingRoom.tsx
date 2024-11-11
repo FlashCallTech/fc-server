@@ -28,7 +28,7 @@ import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { backendBaseUrl } from "@/lib/utils";
+import { backendBaseUrl, checkPermissions } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 import { CallTimerProvider } from "@/lib/context/CallTimerContext";
@@ -112,11 +112,11 @@ const MeetingRoom = () => {
 	const callHasEnded = !!callEndedAt;
 	const { toast } = useToast();
 	const isVideoCall = useMemo(() => call?.type === "default", [call]);
+
 	const callingState = useCallCallingState();
 	const participants = useParticipants();
 	const [layout, setLayout] = useState<CallLayoutType>("grid");
 	const router = useRouter();
-
 	const [showCountdown, setShowCountdown] = useState(false);
 	const [countdown, setCountdown] = useState<number | null>(null);
 	const [hasVisited, setHasVisited] = useState(false);
@@ -179,8 +179,8 @@ const MeetingRoom = () => {
 					}, 1000);
 					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
-					if (isVideoCall) call?.camera?.enable();
-					call?.microphone?.enable();
+					// if (isVideoCall) call?.camera?.enable();
+					// call?.microphone?.enable();
 				}
 			} catch (error) {
 				console.warn("Error Joining Call ", error);
@@ -364,11 +364,7 @@ const MeetingRoom = () => {
 					{/* Audio Button */}
 					{!showCountdown && (
 						<SpeakingWhileMutedNotification>
-							{isMobile && mobileDevice ? (
-								<AudioToggleButton />
-							) : (
-								<ToggleAudioPublishingButton />
-							)}
+							<AudioToggleButton />
 						</SpeakingWhileMutedNotification>
 					)}
 
@@ -382,13 +378,7 @@ const MeetingRoom = () => {
 					)}
 
 					{/* Video Button */}
-					{isVideoCall &&
-						!showCountdown &&
-						(isMobile && mobileDevice ? (
-							<VideoToggleButton />
-						) : (
-							<ToggleVideoPublishingButton />
-						))}
+					{isVideoCall && !showCountdown && <VideoToggleButton />}
 
 					{/* Switch Camera */}
 					{isVideoCall &&

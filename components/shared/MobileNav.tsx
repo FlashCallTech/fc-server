@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import * as Sentry from "@sentry/nextjs";
 
 import {
 	Sheet,
@@ -15,23 +14,16 @@ import {
 } from "@/components/ui/sheet";
 import { sidebarLinks, sidebarLinksCreator } from "@/constants";
 import { cn, getImageSource } from "@/lib/utils";
-import { Button } from "../ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { useEffect, useMemo, useState } from "react";
 import { trackEvent } from "@/lib/mixpanel";
 import { clientUser, creatorUser } from "@/types";
+import SignoutAlert from "./SignoutAlert";
 
 const MobileNav = () => {
 	const pathname = usePathname();
-	const {
-		currentUser,
-		userType,
-		handleSignout,
-		setAuthenticationSheetOpen,
-		clientUser,
-	} = useCurrentUsersContext();
+	const { currentUser, userType, handleSignout, clientUser } =
+		useCurrentUsersContext();
 	const [creator, setCreator] = useState<creatorUser>();
 
 	// const router = useRouter();
@@ -58,31 +50,6 @@ const MobileNav = () => {
 	const sidebarItems = useMemo(() => {
 		return userType === "creator" ? sidebarLinksCreator : sidebarLinks;
 	}, [userType]);
-
-	const handleAuthentication = () => {
-		trackEvent("Menu_Signout clicked", {
-			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-			Creator_ID: creator?._id,
-			Walletbalace_Available: clientUser?.walletBalance,
-		});
-		setAuthenticationSheetOpen(false);
-		if (currentUser) {
-			const statusDocRef = doc(db, "userStatus", currentUser.phone);
-			setDoc(statusDocRef, { status: "Offline" }, { merge: true })
-				.then(() => {
-					console.log("User status set to Offline");
-				})
-				.catch((error: any) => {
-					Sentry.captureException(error);
-					console.error("Error updating user status: ", error);
-				});
-		}
-
-		localStorage.setItem("userType", "client");
-
-		handleSignout();
-	};
 
 	const handleClick = (label: string) => {
 		if (label === "Order History") {
@@ -140,7 +107,7 @@ const MobileNav = () => {
 					side="right"
 					className="border-none bg-black rounded-l-xl size-full max-w-xs sm:max-w-sm z-50"
 				>
-					<div className="flex h-[calc(100dvh-76px)] w-full  flex-col justify-between ">
+					<div className="flex h-[calc(100dvh-50px)] w-full flex-col justify-between">
 						<SheetTitle>
 							<SheetDescription></SheetDescription>
 							<SheetClose asChild>
@@ -173,7 +140,7 @@ const MobileNav = () => {
 						</SheetTitle>
 						<div className="w-full border border-gray-500 my-5" />
 						<SheetClose asChild>
-							<section className="flex size-full items-start flex-col overflow-y-scroll no-scrollbar mb-8">
+							<section className="flex size-full items-start flex-col overflow-y-scroll no-scrollbar mb-5">
 								<section className="flex flex-1 flex-col gap-3.5 w-full h-full  text-white">
 									{sidebarItems.map((item) => {
 										const isActive = pathname === item.route;
@@ -205,31 +172,12 @@ const MobileNav = () => {
 										);
 									})}
 								</section>
-								<Button
-									className={cn(
-										"absolute bottom-4 md:bottom-6 flex gap-4 items-center p-6 rounded-lg w-[85%] text-white bg-green-1 outline-none focus:ring-0 hoverScaleDownEffect"
-									)}
-									onClick={handleAuthentication}
-								>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										strokeWidth={1.5}
-										stroke="currentColor"
-										className="size-6"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
-										/>
-									</svg>
-
-									<p className="font-semibold">Sign Out</p>
-								</Button>
 							</section>
 						</SheetClose>
+
+						<section className={cn(" flex justify-start items-center")}>
+							<SignoutAlert />
+						</section>
 					</div>
 				</SheetContent>
 			</Sheet>

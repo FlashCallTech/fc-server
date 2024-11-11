@@ -261,6 +261,33 @@ export const updateFirestoreCallServices = async (
 	}
 };
 
+// check permissions
+export const checkPermissions = async (callType: string) => {
+	try {
+		const permissions = {
+			audio: false,
+			video: false,
+		};
+
+		if (callType === "video" || callType === "audio") {
+			const stream = await navigator.mediaDevices.getUserMedia({
+				audio: true,
+				video: callType === "video",
+			});
+
+			if (stream) {
+				permissions.audio = stream.getAudioTracks().length > 0;
+				permissions.video = stream.getVideoTracks().length > 0;
+				stream.getTracks().forEach((track) => track.stop());
+			}
+		}
+
+		return permissions;
+	} catch (err) {
+		return { audio: false, video: false };
+	}
+};
+
 // setBodyBackgroundColor
 export const setBodyBackgroundColor = (color: string) => {
 	document.body.style.backgroundColor = color;
