@@ -430,7 +430,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 											<Input
 												placeholder="Enter amount in INR"
 												{...field}
-												className="w-full outline-none border-none focus-visible:ring-offset-0 focus-visible:!ring-transparent placeholder:text-grey-500"
+												className="w-full outline-none border-none text-base focus-visible:ring-offset-0 focus-visible:!ring-transparent placeholder:text-grey-500"
 												pattern="\d*"
 												title="Amount must be a numeric value"
 											/>
