@@ -189,7 +189,7 @@ const CallInvoiceModal = ({
 							</tbody>
 						</table>
 
-						<div className="flex justify-end text-sm font-medium pt-4">
+						<div className="flex text-sm font-medium pt-4">
 							<div>
 								<div>Subtotal: INR {call.amount}</div>
 								<div>Total Amount Due: INR {call.amount}</div>

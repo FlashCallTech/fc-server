@@ -5,6 +5,7 @@ import Loader from "../shared/Loader";
 import { useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { useToast } from "../ui/use-toast";
+import { backendBaseUrl } from "@/lib/utils";
 
 const PaymentSettings = () => {
 	const { toast } = useToast();
@@ -39,7 +40,7 @@ const PaymentSettings = () => {
 			const abortController = new AbortController();
 			try {
 				const response = await fetch(
-					`/api/v1/creator/getPayment?userId=${currentUser?._id}`,
+					`${backendBaseUrl}/paymentSetting/getPaymentSettings/${currentUser?._id}`,
 					{
 						signal: abortController.signal,
 					}
@@ -142,7 +143,7 @@ const PaymentSettings = () => {
 			try {
 				setIsLoading(true);
 				if (paymentData.paymentMode === 'UPI') {
-					const response = await fetch('/api/v1/creator/verifyUpi', {
+					const response = await fetch(`${backendBaseUrl}/paymentSetting/verifyUpi`, {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json'
@@ -179,7 +180,7 @@ const PaymentSettings = () => {
 
 				}
 				else if (paymentData.paymentMode === 'BANK_TRANSFER') {
-					const response = await fetch('/api/v1/creator/verifyBank', {
+					const response = await fetch(`${backendBaseUrl}/paymentSetting/verifyBank`, {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json'

@@ -152,19 +152,19 @@ const TransactionInvoice = ({
 									INR {(call.amount * 0.2).toFixed(2)}
 								</td>
 							</tr>
-							<tr>
+							{/* <tr>
 								<td className="p-2 border border-gray-300">{`GST on Commission (18%)`}</td>
 								<td className="p-2 border border-gray-300">
 									INR {(call.amount * 0.2 * 0.18).toFixed(2)}
 								</td>
-							</tr>
+							</tr> */}
 							<tr>
 								<td className="p-2 border border-gray-300">
 									Total Commission Amount
 								</td>
 								<td className="p-2 border border-gray-300">
 									INR{" "}
-									{(call.amount * 0.2 * 0.18 + call.amount * 0.2).toFixed(2)}
+									{(call.amount * 0.2).toFixed(2)}
 								</td>
 							</tr>
 						</tbody>
@@ -175,12 +175,12 @@ const TransactionInvoice = ({
 							<div>{`Subtotal (Commission): INR ${(call.amount * 0.2).toFixed(
 								2
 							)}`}</div>
-							<div>{`GST (18%): INR ${(call.amount * 0.2 * 0.18).toFixed(
+							{/* <div>{`GST (18%): INR ${(call.amount * 0.2 * 0.18).toFixed(
 								2
-							)}`}</div>
+							)}`}</div> */}
 							<div>
 								Total Amount Due: INR{" "}
-								{(call.amount * 0.2 * 0.18 + call.amount * 0.2).toFixed(2)}
+								{(call.amount * 0.2).toFixed(2)}
 							</div>
 						</div>
 					</div>
@@ -191,12 +191,12 @@ const TransactionInvoice = ({
 					</div>
 
 					<div className="text-xs text-gray-600 border-t pt-4 text-center">
-						Terms: GST is applicable on the commission charged.
+						Terms: No taxes are applicable on this transaction.
 					</div>
 					<div className="text-xs text-center text-gray-600 pt-2 pb-2">
 						Thank you for using our platform!
 						<br />
-						For assistance, contact us at [support email].
+						For assistance, contact us at <a href="mailto:support@flashcall.me">support@flashcall.me</a>
 					</div>
 				</div>
 
