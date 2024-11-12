@@ -128,7 +128,12 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		setCreatorUser(null);
 		console.log(creatorURL);
 		// Redirect logic
-		if (pathname !== "/" && pathname !== "/home" && pathname !== creatorURL) {
+		if (
+			pathname !== "/" &&
+			pathname !== "/home" &&
+			!pathname.includes("/authenticate") &&
+			pathname !== creatorURL
+		) {
 			localStorage.removeItem("creatorURL");
 			setCreatorURL("");
 			router.replace("/home");

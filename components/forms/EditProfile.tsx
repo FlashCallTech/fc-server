@@ -3,7 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
-
+import DatePicker from "react-datepicker";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -36,12 +42,21 @@ import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
 import { usePathname } from "next/navigation";
 import axios from "axios";
-import { backendBaseUrl, debounce, placeholderImages } from "@/lib/utils";
+import { backendBaseUrl, cn, debounce, placeholderImages } from "@/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 import Image from "next/image";
 import GetRandomImage from "@/utils/GetRandomImage";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import ContentLoading from "../shared/ContentLoading";
+import { format } from "date-fns";
+import { CalendarDaysIcon } from "lucide-react";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../ui/select";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -49,6 +64,7 @@ export type EditProfileProps = {
 	initialState: any;
 	setEditData?: React.Dispatch<React.SetStateAction<boolean>>;
 	userType: string | null;
+	closeButton?: boolean;
 };
 
 const EditProfile = ({
@@ -57,6 +73,7 @@ const EditProfile = ({
 	initialState,
 	setEditData,
 	userType,
+	closeButton,
 }: EditProfileProps) => {
 	const pathname = usePathname();
 	const { toast } = useToast();
@@ -75,6 +92,42 @@ const EditProfile = ({
 			return Boolean(!userData.referredBy);
 		}
 	);
+
+	const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+	const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+	const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+	const handleMonthChange = (month: number) => {
+		setSelectedMonth(month);
+		const newDate = new Date(selectedYear, month, selectedDate?.getDate() || 1);
+		setSelectedDate(newDate);
+		form.setValue("dob", newDate.toLocaleDateString());
+	};
+
+	const handleYearChange = (year: number) => {
+		setSelectedYear(year);
+		const newDate = new Date(year, selectedMonth, selectedDate?.getDate() || 1);
+		setSelectedDate(newDate);
+		form.setValue("dob", newDate.toLocaleDateString());
+	};
+
+	const goToPreviousMonth = () => {
+		if (selectedMonth === 0) {
+			setSelectedMonth(11);
+			setSelectedYear(selectedYear - 1);
+		} else {
+			setSelectedMonth(selectedMonth - 1);
+		}
+	};
+
+	const goToNextMonth = () => {
+		if (selectedMonth === 11) {
+			setSelectedMonth(0);
+			setSelectedYear(selectedYear + 1);
+		} else {
+			setSelectedMonth(selectedMonth + 1);
+		}
+	};
 
 	const [predefinedColors, setPredefinedColors] = useState([]);
 	const [professions, setProfessions] = useState([]);
@@ -375,7 +428,7 @@ const EditProfile = ({
 
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
-				className="space-y-8 w-full flex flex-col items-center"
+				className="relative space-y-8 w-full flex flex-col items-center"
 			>
 				{/* User Profile Image */}
 				<FormField
@@ -469,29 +522,6 @@ const EditProfile = ({
 						/>
 					))}
 				</div>
-
-				{/* Container for bio */}
-				<FormField
-					control={form.control}
-					name="bio"
-					render={({ field }) => (
-						<FormItem className="w-full">
-							<FormLabel className="font-medium text-sm text-gray-400 ml-1">
-								{userData?.bio?.length === 0 ? "Add" : "Edit"} Bio
-							</FormLabel>
-							<FormControl>
-								<Textarea
-									className="textarea max-h-32"
-									placeholder="Tell us a little bit about yourself"
-									{...field}
-								/>
-							</FormControl>
-							<FormMessage className="error-message">
-								{errors.bio?.message}
-							</FormMessage>
-						</FormItem>
-					)}
-				/>
 
 				{/* Referal Field */}
 				{userData.role === "creator" && pathname.includes("/updateDetails") && (
@@ -694,9 +724,7 @@ const EditProfile = ({
 										</button>
 									</div>
 								</FormControl>
-								<FormDescription className="text-xs text-gray-400 ml-1">
-									Choose any one from the above
-								</FormDescription>
+
 								<FormMessage className="error-message">
 									{errors.gender?.message}
 								</FormMessage>
@@ -709,28 +737,126 @@ const EditProfile = ({
 						control={form.control}
 						name="dob"
 						render={({ field }) => (
-							<FormItem className="w-fit sm:w-full">
-								<FormLabel className="text-sm text-gray-400 ml-1">
-									Date of Birth
-								</FormLabel>
-								<FormControl>
-									<Input
-										type="date"
-										placeholder={`Enter DOB`}
-										{...field}
-										className="input-field"
-									/>
-								</FormControl>
-								<FormDescription className="text-xs text-gray-400 ml-1">
-									Tap the icon to select date
-								</FormDescription>
-								<FormMessage className="error-message">
-									{errors.dob?.message}
-								</FormMessage>
+							<FormItem className="flex flex-col w-full">
+								<FormLabel>Date of birth</FormLabel>
+								<Popover>
+									<PopoverTrigger asChild>
+										<FormControl>
+											<Button
+												variant={"outline"}
+												className={cn(
+													"input-field text-left font-normal w-full",
+													!field.value && "text-muted-foreground"
+												)}
+											>
+												{field.value ? (
+													format(new Date(field.value), "PPP") // Format the stored string value back to a readable format
+												) : (
+													<span>Pick a date</span>
+												)}
+												<CalendarDaysIcon className="ml-auto h-4 w-4 opacity-50" />
+											</Button>
+										</FormControl>
+									</PopoverTrigger>
+									<PopoverContent className="w-auto p-4 bg-white" align="start">
+										<div className="flex space-x-2 mb-4">
+											{/* Month Selector */}
+											<Select
+												onValueChange={(value: any) =>
+													handleMonthChange(parseInt(value))
+												}
+												defaultValue={selectedMonth.toString()}
+											>
+												<SelectTrigger>
+													<SelectValue placeholder="Month" />
+												</SelectTrigger>
+												<SelectContent className="bg-white">
+													{Array.from({ length: 12 }, (_, index) => (
+														<SelectItem key={index} value={index.toString()}>
+															{new Date(0, index).toLocaleString("default", {
+																month: "long",
+															})}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+
+											{/* Year Selector */}
+											<Select
+												onValueChange={(value) =>
+													handleYearChange(parseInt(value))
+												}
+												defaultValue={selectedYear.toString()}
+											>
+												<SelectTrigger>
+													<SelectValue placeholder="Year" />
+												</SelectTrigger>
+												<SelectContent className="bg-white">
+													{Array.from({ length: 100 }, (_, index) => {
+														const year = new Date().getFullYear() - index;
+														return (
+															<SelectItem key={year} value={year.toString()}>
+																{year}
+															</SelectItem>
+														);
+													})}
+												</SelectContent>
+											</Select>
+										</div>
+
+										<Calendar
+											mode="single"
+											selected={selectedDate}
+											onSelect={(date) => {
+												setSelectedDate(date);
+												// Convert the date to a string format before setting it in the form
+												field.onChange(
+													format(date as Date | string, "yyyy-MM-dd")
+												); // Format as 'yyyy-MM-dd' (ISO format)
+											}}
+											month={new Date(selectedYear, selectedMonth)}
+											disabled={(date) =>
+												date > new Date() || date < new Date("1900-01-01")
+											}
+											initialFocus
+											onMonthChange={(monthDate) => {
+												setSelectedMonth(monthDate.getMonth());
+												setSelectedYear(monthDate.getFullYear());
+											}}
+											onPrevClick={goToPreviousMonth}
+											onNextClick={goToNextMonth}
+										/>
+									</PopoverContent>
+								</Popover>
+
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
 				</div>
+
+				{/* Container for bio */}
+				<FormField
+					control={form.control}
+					name="bio"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+								{userData?.bio?.length === 0 ? "Add" : "Edit"} Bio
+							</FormLabel>
+							<FormControl>
+								<Textarea
+									className="flex flex-1 placeholder:text-gray-500 px-5 py-3  focus-visible:ring-transparent max-h-32"
+									placeholder="Tell us a little bit about yourself"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage className="error-message">
+								{errors.bio?.message}
+							</FormMessage>
+						</FormItem>
+					)}
+				/>
 
 				{/* profile theme */}
 				{userData.role === "creator" && (
@@ -812,26 +938,42 @@ const EditProfile = ({
 				{formError && (
 					<div className="text-red-500 text-lg text-center">{formError}</div>
 				)}
-				{isChanged && isValid && !formError && !usernameError && (
-					<Button
-						className="bg-green-1 hoverScaleDownEffect w-3/4 mx-auto text-white"
-						type="submit"
-						disabled={!isValid || form.formState.isSubmitting}
-					>
-						{form.formState.isSubmitting ? (
-							<Image
-								src="/icons/loading-circle.svg"
-								alt="Loading..."
-								width={24}
-								height={24}
-								className=""
-								priority
-							/>
-						) : (
-							"Update Details"
-						)}
-					</Button>
-				)}
+				<section
+					className={`${
+						isChanged && isValid && !formError && !usernameError
+							? "grid-cols-2 w-full"
+							: "grid-cols-1 w-3/4 lg:w-1/2"
+					} sticky bottom-2 right-0 grid  gap-4 items-center justify-center `}
+				>
+					{closeButton && (
+						<Button
+							className="text-base rounded-lg border border-gray-300  hoverScaleDownEffect bg-gray-400 text-white"
+							onClick={() => setEditData && setEditData((prev) => !prev)}
+						>
+							Close
+						</Button>
+					)}
+					{isChanged && isValid && !formError && !usernameError && (
+						<Button
+							className="text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
+							type="submit"
+							disabled={!isValid || form.formState.isSubmitting}
+						>
+							{form.formState.isSubmitting ? (
+								<Image
+									src="/icons/loading-circle.svg"
+									alt="Loading..."
+									width={24}
+									height={24}
+									className=""
+									priority
+								/>
+							) : (
+								"Update Details"
+							)}
+						</Button>
+					)}
+				</section>
 			</form>
 		</Form>
 	);

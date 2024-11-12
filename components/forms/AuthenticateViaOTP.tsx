@@ -293,7 +293,7 @@ const AuthenticateViaOTP = ({
 	};
 
 	return (
-		<section className="relative bg-[#F8F8F8] rounded-t-3xl sm:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-4 shadow-lg w-screen h-fit sm:w-full sm:min-w-[24rem] sm:max-w-sm mx-auto">
+		<section className="relative bg-[#F8F8F8] rounded-t-3xl sm:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-2 shadow-lg w-screen h-fit sm:w-full sm:min-w-[24rem] sm:max-w-sm mx-auto">
 			{!showOTP && !verificationSuccess ? (
 				// SignUp form
 				<>
@@ -303,11 +303,7 @@ const AuthenticateViaOTP = ({
 							width={1000}
 							height={1000}
 							alt="flashcall logo"
-							className={`${
-								pathname.includes("/authenticate") && isMobileView
-									? "hidden"
-									: "flex items-center justify-center w-40 h-16 -ml-2"
-							} `}
+							className={`flex items-center justify-center w-40 h-16 -ml-2 `}
 						/>
 
 						<h2 className="text-black text-lg font-semibold">

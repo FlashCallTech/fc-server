@@ -25,7 +25,9 @@ const SheetOverlay = React.forwardRef<
 				`fixed size-full inset-0 z-50 ${
 					pathname.includes("/authenticate")
 						? "bg-transparent h-fit"
-						: "bg-black/40 "
+						: pathname.includes("/feedback")
+						? "bg-black"
+						: "bg-black/40"
 				}  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 outline-none`,
 				className
 			)}

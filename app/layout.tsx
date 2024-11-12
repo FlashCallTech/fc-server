@@ -3,6 +3,7 @@ import "@stream-io/video-react-sdk/dist/css/styles.css";
 import "@smastrom/react-rating/style.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import "react-datepicker/dist/react-datepicker.css";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";

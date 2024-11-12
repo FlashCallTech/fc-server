@@ -149,10 +149,10 @@ const CallEnded = ({ toast, router, call }: any) => {
 		};
 
 		if (isMeetingOwner && !transactionHandled.current) {
-			// stopMediaStreams();
+			stopMediaStreams();
 			handleCallEnd();
 		} else if (!isMeetingOwner) {
-			// stopMediaStreams();
+			stopMediaStreams();
 			router.replace(`/home`);
 		}
 	}, [call?.id, currentUser?._id]);

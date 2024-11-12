@@ -27,7 +27,7 @@ import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
 
 const CreatorHome = () => {
-	const { creatorUser } = useCurrentUsersContext();
+	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const { services, handleToggle, setServices } = useServices();
 	const { getDevicePlatform } = usePlatform();
@@ -201,6 +201,8 @@ const CreatorHome = () => {
 				title: "Rates were Not Updated",
 				description: "Something went wrong...",
 			});
+		} finally {
+			refreshCurrentUser();
 		}
 	};
 
