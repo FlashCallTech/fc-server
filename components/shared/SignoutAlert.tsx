@@ -91,7 +91,7 @@ const SignoutAlert = () => {
 		<>
 			{/* Other profile content */}
 			<button
-				className="text-red-500 flex items-center justify-center gap-2 hoverScaleDownEffect pl-4"
+				className="text-red-500 flex items-center justify-center gap-2 hoverScaleDownEffect pl-4 border-none outline-none"
 				onClick={() => setShowSignoutDialog(true)} // Trigger dialog on click
 			>
 				<svg

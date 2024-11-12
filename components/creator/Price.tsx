@@ -18,10 +18,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 	currentPrices,
 }) => {
 	const [prices, setPrices] = useState(currentPrices);
-	const [notSaved, setNotSaved] = useState(true); // Initially disabled until valid values are entered
-	const { toast } = useToast();
-
-	// Validate if any price is empty, NaN, or below 10
+	const [notSaved, setNotSaved] = useState(true);
 	const validatePrices = (updatedPrices: {
 		videoCall: string;
 		audioCall: string;
@@ -57,19 +54,19 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 		};
 
 		setPrices(updatedPrices);
-		validatePrices(updatedPrices); // Revalidate prices on input change
+		validatePrices(updatedPrices);
 	};
 
 	const handleSave = () => {
 		if (notSaved) return;
-		// Save prices if valid
+
 		onSave(prices);
 		onClose();
 	};
 
 	return (
 		<div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-40">
-			<div className="flex flex-col gap-8 bg-white rounded-3xl p-8">
+			<div className="flex flex-col gap-8 bg-white rounded-3xl py-5 px-8">
 				<h2 className="text-lg font-bold text-center border-b">Price</h2>
 				<div className="flex flex-col gap-4">
 					<div className="flex flex-row gap-20 justify-between items-center">
@@ -125,10 +122,10 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 					</div>
 				</div>
 				<div className="flex items-center justify-center pt-4 p-2">
-					<div className="flex flex-row gap-6 justify-between">
+					<div className="grid grid-cols-2 gap-4 justify-between">
 						<Button
 							onClick={onClose}
-							className=" text-black rounded-xl px-8 bg-gray-200 hover:bg-gray-400 hover:text-white"
+							className=" text-black rounded-md px-8 bg-gray-200 hover:bg-gray-400 hover:text-white w-full"
 						>
 							Cancel
 						</Button>
@@ -139,7 +136,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 								notSaved
 									? "bg-black/20 !cursor-not-allowed"
 									: "bg-green-600 text-white hoverScaleDownEffect"
-							}  rounded-xl px-8 `}
+							}  rounded-md px-8 w-full`}
 						>
 							Save
 						</Button>

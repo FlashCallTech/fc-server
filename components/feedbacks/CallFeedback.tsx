@@ -52,6 +52,29 @@ const CallFeedback = ({
 		),
 	};
 
+	// Calculate duration in seconds and format as MM:SS
+	const formatDuration = (durationInSeconds: number) => {
+		const minutes = Math.floor(durationInSeconds / 60)
+			.toString()
+			.padStart(2, "0");
+		const seconds = (durationInSeconds % 60).toString().padStart(2, "0");
+		return `${minutes}:${seconds}`;
+	};
+
+	// Get duration and format it
+	const callEndedAt = call?.state?.endedAt;
+	const callStartsAt = call?.state?.startsAt;
+
+	let callDuration = "00:00";
+	if (callEndedAt && callStartsAt) {
+		const callEndedTime = new Date(callEndedAt);
+		const callStartsAtTime = new Date(callStartsAt);
+		const durationInSeconds = Math.floor(
+			(callEndedTime.getTime() - callStartsAtTime.getTime()) / 1000
+		);
+		callDuration = formatDuration(durationInSeconds);
+	}
+
 	const handleSliderChange = (value: any) => {
 		setRating(value);
 	};
@@ -146,12 +169,14 @@ const CallFeedback = ({
 			</>
 		);
 
+	console.log(callDuration);
+
 	return (
 		<Sheet
 			open={isOpen}
 			onOpenChange={(open) => {
 				if (!open) {
-					onOpenChange(false); // Trigger the closing function only when the sheet is closed
+					onOpenChange(false);
 				}
 			}}
 		>
@@ -161,6 +186,14 @@ const CallFeedback = ({
 				side="bottom"
 				className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto"
 			>
+				{/* Display the call duration */}
+				<section className="fixed top-[76px] grid items-center gap-2 text-white">
+					<div className="text-center text-2xl font-semibold mt-2">
+						{callDuration}
+					</div>
+					<span>Call Ended</span>
+				</section>
+
 				{!feedbackSubmitted ? (
 					<div className="relative flex flex-col items-center gap-7">
 						<div className="flex items-center absolute -top-20 text-[4rem]">
