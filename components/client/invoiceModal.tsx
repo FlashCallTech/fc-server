@@ -79,10 +79,11 @@ const InvoiceModal = ({ isOpen, onClose, transaction }: { isOpen: any, onClose: 
             </tbody>
           </table>
 
-          <div className="flex justify-end text-sm font-medium pt-4">
+          <div className="flex text-sm font-medium pt-4">
             <div>
               <div>Subtotal: INR {transaction.amount}</div>
-              <div>Total Amount Due: INR {transaction.amount}</div>
+              <div>{`GST (18%): INR ${transaction.amount * 0.18}`}</div>
+              <div>Total Amount Due: INR {transaction.amount + transaction.amount * 0.18}</div>
             </div>
           </div>
 
@@ -96,8 +97,8 @@ const InvoiceModal = ({ isOpen, onClose, transaction }: { isOpen: any, onClose: 
           </div>
           <div className="text-xs text-center text-gray-600 pt-2 pb-2">
             Thank you for your recharge!<br />
-            For assistance, contact us at [support email].
-          </div>
+            For assistance, contact us at <a href="mailto:support@flashcall.me">support@flashcall.me</a>
+            </div>
         </div>
 
         <div className="flex justify-end space-x-4 mt-4">
