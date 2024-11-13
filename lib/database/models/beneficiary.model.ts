@@ -22,7 +22,7 @@ interface BeneficiaryDocument extends Document {
 
 const BeneficiaryInstrumentDetailsSchema = new Schema<BeneficiaryInstrumentDetails>({
   bank_account_number: { type: String, unique: true, sparse: true },
-  bank_ifsc: { type: String, unique: true, sparse: true },
+  bank_ifsc: { type: String },
   vpa: { type: String, unique: true, sparse: true }
 }, { _id: false });
 
