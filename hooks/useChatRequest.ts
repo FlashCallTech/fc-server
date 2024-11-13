@@ -21,6 +21,7 @@ import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "./usePlatform";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { fetchFCMToken, sendNotification } from "@/lib/utils";
+import axios from "axios";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
@@ -67,6 +68,17 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			return maskedNumber;
 		}
 	}
+
+	const getUserData = async (userId: string) => {
+		try {
+			const response = await axios.get(`https://flashcall.me/api/v1/creator/getUser/${userId}`);
+			console.log("User data:", response.data);
+			return response.data.chatRate;
+		} catch (error) {
+			console.error("Error fetching user data:", error);
+			throw error;
+		}
+	};
 
 	const handleChat = async (creator: any, clientUser: any) => {
 		if (!clientUser) router.push("sign-in");
@@ -124,6 +136,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				: new Date();
 			const formattedDate = createdAtDate.toISOString().split("T")[0];
 
+			const chatRate = getUserData(creator._id);
+
 			await setDoc(newChatRequestRef, {
 				id: newChatRequestRef.id,
 				callId,
@@ -141,7 +155,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				rate: creator.chatRate,
 				status: "pending",
 				chatId: chatId,
-				chatRate: creator.chatRate,
+				chatRate,
 				createdAt: Date.now(),
 			});
 

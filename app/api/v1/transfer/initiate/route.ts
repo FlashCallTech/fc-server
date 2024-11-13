@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
                 if (!payout.ok) {
                   throw new Error(payoutResult);
                 }
-                return NextResponse.json({ success: true, data: result, message: 'PENDING' });
+                return NextResponse.json({ success: true, data: result, message: 'Transfer Initiated Successfully' });
               }
               else {
                 if (result.status === 'FAILED')
