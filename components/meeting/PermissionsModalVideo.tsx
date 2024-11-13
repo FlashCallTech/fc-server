@@ -8,7 +8,7 @@ import {
 	SheetTitle,
 } from "@/components/ui/sheet";
 
-const PermissionsModalVideo = ({
+const PermissionsModalAudio = ({
 	isOpen,
 	onOpenChange,
 }: {
@@ -19,10 +19,41 @@ const PermissionsModalVideo = ({
 		<Sheet open={isOpen} onOpenChange={onOpenChange}>
 			<SheetContent
 				side="bottom"
-				className="bg-white text-black rounded-t-xl p-7 flex flex-col items-start justify-between gap-4  max-h-fit w-full sm:max-w-[444px] mx-auto"
+				className="bg-white text-black rounded-t-xl p-5 flex flex-col items-center justify-between gap-4  max-h-fit w-full sm:max-w-[444px] mx-auto"
 			>
+				<img
+					src="/images/Permissions.png"
+					alt="Notification settings"
+					className="mb-2 w-full h-full max-h-[350px] object-cover"
+				/>
+				<SheetHeader className="flex flex-col items-center justify-center w-full px-10">
+					<SheetTitle>Enable Camera</SheetTitle>
+					<SheetDescription className="grid text-start gap-2">
+						<p>
+							<strong className="mr-2">Step 1:</strong>
+							<span>
+								Click the lock icon or site information icon
+								<img
+									src="/icons/browserSetting.svg"
+									alt="Icon"
+									className="inline-block size-6 mx-2 align-middle"
+								/>
+								in the address bar at the top of your browser.
+							</span>
+						</p>
+						<p>
+							<strong>Step 2:</strong> A popup will appear showing permissions
+							like Camera, Microphone, and Notifications.
+						</p>
+						<p>
+							<strong>Step 3:</strong> Set each permission to Allow to enable
+							full functionality.
+						</p>
+					</SheetDescription>
+				</SheetHeader>
+
 				<SheetClose
-					className="z-50 absolute -top-12 left-1/2 transform -translate-x-1/2 bg-green-1 text-white rounded-full p-2 hoverScaleDownEffect cursor-pointer"
+					className="bg-black text-white rounded-full p-2 hoverScaleDownEffect cursor-pointer"
 					onClick={() => onOpenChange(false)}
 				>
 					<svg
@@ -40,22 +71,9 @@ const PermissionsModalVideo = ({
 						/>
 					</svg>
 				</SheetClose>
-
-				<img
-					src="/images/Permissions.png"
-					alt="Notification settings"
-					className="mb-2 w-full h-full max-h-[350px] object-cover"
-				/>
-				<SheetHeader className="flex flex-col items-center justify-center w-full">
-					<SheetTitle>Enable Camera</SheetTitle>
-					<SheetDescription className="text-center">
-						Please go to your browser's settings and enable <br />
-						access to your camera for Calling.
-					</SheetDescription>
-				</SheetHeader>
 			</SheetContent>
 		</Sheet>
 	);
 };
 
-export default PermissionsModalVideo;
+export default PermissionsModalAudio;

@@ -21,7 +21,7 @@ const UpdateProfilePage = () => {
 		lastName: currentUser?.lastName || "",
 		username: currentUser?.username || "",
 		profession: currentUser?.profession || "",
-		themeSelected: currentUser?.themeSelected || "#50A65C",
+		themeSelected: currentUser?.themeSelected || "#88D8C0",
 		phone: currentUser?.phone || "",
 		photo: currentUser?.photo || "",
 		bio: currentUser?.bio || "",

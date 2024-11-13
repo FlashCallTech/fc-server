@@ -12,6 +12,12 @@ export const sidebarLinks = [
 		protected: true,
 	},
 	{
+		imgURL: "/icons/refer-and-earn.svg",
+		route: "/transactions",
+		label: "Transaction History",
+		protected: true,
+	},
+	{
 		imgURL: "/icons/favorites.svg",
 		route: "/favorites",
 		label: "Favorites",
@@ -85,18 +91,18 @@ export const sidebarLinksCreator = [
 export const authSliderContent = [
 	{
 		heading: "Your numbers are private anonymous. No spam calls.",
-
 		imageURL: "/images/Slider_1.png",
+		imageURLCreator: "/images/Creator_Slider_1.png",
 	},
 	{
 		heading: "Talk to your favorite celebrities 1:1",
-
 		imageURL: "/images/Slider_2.png",
+		imageURLCreator: "/images/Creator_Slider_2.png",
 	},
 	{
 		heading: " Pay only for the time you spend with pay-per-minute pricing",
-
 		imageURL: "/images/Slider_3.png",
+		imageURLCreator: "/images/Creator_Slider_3.png",
 	},
 ];
 

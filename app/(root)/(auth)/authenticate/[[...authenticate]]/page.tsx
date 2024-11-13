@@ -91,11 +91,15 @@ export default function AuthenticationPage() {
 							>
 								{authSliderContent.map((item, index) => (
 									<section
-										className="flex flex-col h-full text-center gap-4 items-end justify-center pt-4 pb-2 text-white"
+										className="flex flex-col h-full text-center gap-4 items-end justify-center pt-4 pb-2 text-white outline-none border-none"
 										key={index}
 									>
 										<Image
-											src={item.imageURL}
+											src={
+												userType === "creator"
+													? item.imageURLCreator
+													: item.imageURL
+											}
 											alt={`${item.heading}`}
 											width={1000}
 											height={1000}
