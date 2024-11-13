@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { clientUser, creatorUser, UpdateUserParams } from "@/types";
-import { Cursor, Typewriter } from "react-simple-typewriter";
 import Image from "next/image";
 import EditProfile from "@/components/forms/EditProfile";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -160,26 +158,6 @@ const UserProfilePage = () => {
 								closeButton={true}
 							/>
 						</div>
-					)}
-
-					{/* typewriter effect */}
-					{!editData && (
-						<h1 className="hidden md:block md:text-2xl font-semibold text-center">
-							<Typewriter
-								words={[
-									`Hi There ${userData.username}`,
-									"FlashCall Welcomes You",
-									"Glad to Have You",
-								]}
-								loop={true}
-								cursor
-								cursorStyle="_"
-								typeSpeed={50}
-								deleteSpeed={50}
-								delaySpeed={2000}
-							/>
-							<Cursor cursorColor="#50A65C" />
-						</h1>
 					)}
 				</>
 			)}

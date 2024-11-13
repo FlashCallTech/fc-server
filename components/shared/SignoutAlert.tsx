@@ -127,7 +127,7 @@ const SignoutAlert = () => {
 								variant="outline"
 								onClick={() => setShowSignoutDialog(false)}
 								disabled={loading}
-								className="hoverScaleDownEffect text-black mt-0 border border-gray-300 hover:bg-gray-50"
+								className="hoverScaleDownEffect text-[#A7A8A1] hover:border border-gray-300 hover:bg-gray-50"
 							>
 								Cancel
 							</Button>
@@ -159,7 +159,7 @@ const SignoutAlert = () => {
 								variant="outline"
 								onClick={() => setShowSignoutDialog(false)}
 								disabled={loading}
-								className="hoverScaleDownEffect text-black mt-0 border border-gray-300 hover:bg-gray-50"
+								className="hoverScaleDownEffect text-[#A7A8A1] hover:border border-gray-300 hover:bg-gray-50"
 							>
 								Cancel
 							</Button>

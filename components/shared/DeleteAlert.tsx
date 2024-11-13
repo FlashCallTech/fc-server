@@ -162,7 +162,11 @@ const DeleteAlert = () => {
 			</button>
 			{isMobileView ? (
 				<Sheet open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-					<SheetContent side="bottom" className=" bg-white rounded-t-xl ">
+					<SheetContent
+						onOpenAutoFocus={(e) => e.preventDefault()}
+						side="bottom"
+						className=" bg-white rounded-t-xl "
+					>
 						<SheetHeader>
 							<SheetTitle className="text-red-500 !text-start">
 								Delete User
@@ -182,7 +186,7 @@ const DeleteAlert = () => {
 								variant="outline"
 								onClick={() => setShowDeleteDialog(false)}
 								disabled={loading}
-								className="hoverScaleDownEffect text-black mt-0 border border-gray-300 hover:bg-gray-50"
+								className="hoverScaleDownEffect text-[#A7A8A1] hover:border border-gray-300 hover:bg-gray-50"
 							>
 								Cancel
 							</Button>
@@ -220,7 +224,7 @@ const DeleteAlert = () => {
 								variant="outline"
 								onClick={() => setShowDeleteDialog(false)}
 								disabled={loading}
-								className="hoverScaleDownEffect text-black mt-0 border border-gray-300 hover:bg-gray-50"
+								className="hoverScaleDownEffect text-[#A7A8A1] hover:border border-gray-300 hover:bg-gray-50"
 							>
 								Cancel
 							</Button>

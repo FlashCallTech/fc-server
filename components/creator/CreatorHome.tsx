@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import PriceEditModal from "./Price";
+import PriceEditModal from "./PriceEditModal";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import axios from "axios";
 import { useToast } from "../ui/use-toast";

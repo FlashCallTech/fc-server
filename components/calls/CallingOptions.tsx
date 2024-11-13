@@ -256,40 +256,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const createMeeting = async (callType: string) => {
 		if (!client || !clientUser) return;
 
-		// const permissions = await checkPermissions(callType);
-
-		// if (
-		// 	(callType === "audio" && !permissions.audio) ||
-		// 	(callType === "video" && (!permissions.audio || !permissions.video))
-		// ) {
-		// 	toast({
-		// 		variant: "destructive",
-		// 		title: "Permission Denied",
-		// 		description: `Please allow audio${
-		// 			callType === "video" ? " and video" : ""
-		// 		} permissions to proceed.`,
-		// 	});
-
-		// 	try {
-		// 		const userMediaConstraints = {
-		// 			audio: true,
-		// 			video: callType === "video",
-		// 		};
-
-		// 		await navigator.mediaDevices.getUserMedia(userMediaConstraints);
-		// 	} catch (err) {
-		// 		console.error("Permission request failed:", err);
-		// 		toast({
-		// 			variant: "destructive",
-		// 			title: "Permission Request Failed",
-		// 			description: "Please enable permissions in your browser settings.",
-		// 		});
-		// 	}
-
-		// 	return;
-		// }
-
-		// Proceed with creating the meeting once permissions are granted
 		try {
 			const id = crypto.randomUUID();
 			const call =
@@ -610,7 +576,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							{service.label}
 						</div>
 						<p
-							className={`font-medium tracking-widest rounded-[18px] px-4 h-[36px] text-black flex items-center justify-center ${
+							className={`font-medium tracking-widest rounded-[18px] w-[100px] h-[36px] text-black flex items-center justify-center ${
 								(isProcessing ||
 									!service.enabled ||
 									onlineStatus === "Busy" ||

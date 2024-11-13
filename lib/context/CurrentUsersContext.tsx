@@ -132,6 +132,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			pathname !== "/" &&
 			pathname !== "/home" &&
 			!pathname.includes("/authenticate") &&
+			pathname !== "support" &&
 			pathname !== creatorURL
 		) {
 			localStorage.removeItem("creatorURL");
