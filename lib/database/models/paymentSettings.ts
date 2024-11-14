@@ -6,7 +6,7 @@ interface BankDetails {
   accountType: string;
 }
 
-interface Payment extends Document {
+interface PaymentSettings extends Document {
   userId: string;
   paymentMode: 'UPI' | 'BANK_TRANSFER';
   upiId?: string;
@@ -19,7 +19,11 @@ const BankDetailsSchema = new Schema<BankDetails>({
   accountType: { type: String }
 }, { _id: false });
 
-const PaymentSchema = new Schema<Payment>({
+// Create a partial index to enforce uniqueness on `ifsc` and `accountNumber` when they are not null
+BankDetailsSchema.index({ ifsc: 1 }, { unique: true, partialFilterExpression: { ifsc: { $ne: null } } });
+BankDetailsSchema.index({ accountNumber: 1 }, { unique: true, partialFilterExpression: { accountNumber: { $ne: null } } });
+
+const PaymentSettingsSchema = new Schema<PaymentSettings>({
   userId: { type: String, required: true, unique: true },
   paymentMode: {
     type: String,
@@ -38,7 +42,10 @@ const PaymentSchema = new Schema<Payment>({
   }
 });
 
-// Ensure the model is only compiled once
-const PaymentModel = models.Payment || model<Payment>('Payment', PaymentSchema);
+// Create a partial index to enforce uniqueness on `upiId` when it is not null
+PaymentSettingsSchema.index({ upiId: 1 }, { unique: true, partialFilterExpression: { upiId: { $ne: null } } });
 
-export default PaymentModel;
+// Ensure the model is only compiled once
+const PaymentSettingsModel = models.PaymentSettings || model<PaymentSettings>('PaymentSettings', PaymentSettingsSchema);
+
+export default PaymentSettingsModel;
