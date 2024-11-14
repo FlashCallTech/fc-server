@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import PriceEditModal from "./Price";
+import PriceEditModal from "./PriceEditModal";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import axios from "axios";
 import { useToast } from "../ui/use-toast";
@@ -27,12 +27,14 @@ import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
 
 const CreatorHome = () => {
-	const { creatorUser } = useCurrentUsersContext();
+	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const { services, handleToggle, setServices } = useServices();
 	const { getDevicePlatform } = usePlatform();
 	const { toast } = useToast();
-
+	const [showRestrictedWarning, setShowRestrictedWarning] = useState(
+		services.isRestricted ?? false
+	);
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [creatorLink, setCreatorLink] = useState<string | null>(null);
@@ -201,6 +203,8 @@ const CreatorHome = () => {
 				title: "Rates were Not Updated",
 				description: "Something went wrong...",
 			});
+		} finally {
+			refreshCurrentUser();
 		}
 	};
 
@@ -225,6 +229,7 @@ const CreatorHome = () => {
 								videoCall: false,
 								audioCall: false,
 								chat: false,
+								isRestricted: true,
 							};
 
 							setServices(newServices);
@@ -335,6 +340,62 @@ const CreatorHome = () => {
 						lastName={creatorUser.lastName}
 					/>
 
+					{/* restriction warning */}
+					{showRestrictedWarning && (
+						<section className="flex flex-col gap-4 items-start justify-center rounded-lg bg-[#FFECEC] border border-red-500 p-3 shadow-sm">
+							{/* heading */}
+							<section className="w-full flex items-center justify-between">
+								<section className="flex items-center w-full gap-4">
+									<span className="bg-red-500 text-white rounded-full p-1 hoverScaleDownEffect cursor-pointer">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+											strokeWidth={1.5}
+											stroke="currentColor"
+											className="size-5 text-white"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+											/>
+										</svg>
+									</span>
+
+									<span className="font-bold">Account Temporarily Blocked</span>
+								</section>
+
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									strokeWidth={1.5}
+									stroke="currentColor"
+									className="size-6 hoverScaleDownEffect cursor-pointer"
+									onClick={() => setShowRestrictedWarning(false)}
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										d="M6 18 18 6M6 6l12 12"
+									/>
+								</svg>
+							</section>
+
+							{/* subheading */}
+							<section className="w-full flex items-center justify-between gap-7">
+								<span className="text-xs">
+									We’ve temporarily paused your account, so you won’t be able to
+									take calls at this time
+								</span>
+								<span className="text-green-1 text-xs hoverScaleDownEffect">
+									Help
+								</span>
+							</section>
+						</section>
+					)}
+
 					<section className="flex flex-row justify-between border rounded-lg bg-white p-2 shadow-sm">
 						<div className="flex flex-row pl-2 gap-3">
 							<Image
@@ -362,15 +423,22 @@ const CreatorHome = () => {
 							<span className="text-gray-400 font-semibold">My Services</span>
 							<label className="relative inline-block w-14 h-6">
 								<input
+									disabled={services.isRestricted}
 									type="checkbox"
-									className="toggle-checkbox absolute w-0 h-0 opacity-0"
+									className={`${
+										services.isRestricted && "!cursor-not-allowed"
+									} toggle-checkbox absolute w-0 h-0 opacity-0`}
 									checked={services.myServices}
 									onChange={() => handleToggle("myServices")}
 								/>
 								<p
 									className={`toggle-label block overflow-hidden h-6 rounded-full ${
 										services.myServices ? "bg-green-600" : "bg-gray-500"
-									}  servicesCheckbox cursor-pointer`}
+									} ${
+										services.isRestricted
+											? "!cursor-not-allowed"
+											: "cursor-pointer"
+									} servicesCheckbox`}
 									style={{
 										justifyContent: services.myServices
 											? "flex-end"
@@ -397,6 +465,7 @@ const CreatorHome = () => {
 								audioCall: services.audioCall,
 								chat: services.chat,
 							}}
+							isRestricted={services.isRestricted}
 							handleToggle={handleToggle}
 							prices={prices}
 						/>

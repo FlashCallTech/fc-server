@@ -56,7 +56,7 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 
 	if (feedbackExists === null) {
 		return (
-			<div className="flex items-center space-x-4 w-1/2 animate-pulse">
+			<div className="px-2 flex items-center space-x-4 animate-pulse">
 				<div className="flex-1 space-y-4 py-1 w-full">
 					<div className="space-y-3">
 						<div className="grid grid-cols-3 gap-4">
@@ -71,11 +71,11 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 	}
 
 	return feedbackExists && userFeedback ? (
-		<div className="animate-enterFromRight lg:animate-enterFromBottom w-fit flex items-center justify-start md:justify-end">
+		<div className="animate-enterFromBottom w-fit flex items-center justify-start md:justify-end">
 			<Dialog>
-				<DialogTrigger className="flex flex-col gap-1 items-end justify-center hoverScaleEffect">
+				<DialogTrigger className=" pl-1 flex flex-col gap-1 items-start justify-center hoverScaleDownEffect">
 					<Rating
-						style={{ maxWidth: 150, fill: "white" }}
+						style={{ maxWidth: 135, fill: "white" }}
 						value={userFeedback.rating}
 						items={5}
 						spaceBetween="medium"
@@ -83,14 +83,14 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 						readOnly
 					/>
 					<span
-						className={`text-ellipsis overflow-hidden w-full max-w-[200px] whitespace-nowrap pr-2 text-xs xm:text-sm text-end ${
+						className={`text-ellipsis overflow-hidden w-full max-w-[120px] whitespace-nowrap pl-2 text-sm text-start ${
 							!userFeedback.feedback && "text-gray-400 text-xs"
 						}`}
 					>
 						{userFeedback.feedback || "No Feedback"}
 					</span>
 				</DialogTrigger>
-				<DialogContent className="bg-white rounded-lg max-h-[500px] overflow-y-scroll no-scrollbar">
+				<DialogContent className="bg-white rounded-lg overflow-y-scroll no-scrollbar max-w-[95%] md:max-w-lg">
 					<DialogHeader className="flex flex-col items-start justify-center">
 						<DialogTitle>All Feedbacks</DialogTitle>
 						<DialogDescription>
@@ -98,18 +98,24 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 						</DialogDescription>
 					</DialogHeader>
 
-					<div className="flex items-center justify-start w-full">
-						<div className="flex flex-col gap-1 items-start justify-center w-full">
+					<div className="flex items-center justify-start w-full overflow-x-scroll no-scrollbar">
+						<div className="-ml-1 flex flex-col gap-1 items-start justify-center w-full">
 							<Rating
-								style={{ maxWidth: 100, fill: "white" }}
+								style={{ maxWidth: 150, fill: "white" }}
 								value={userFeedback.rating}
 								items={5}
 								spaceBetween="medium"
 								transition="zoom"
 								readOnly
 							/>
-							<div className="pl-1 flex flex-col items-start justify-center gap-2">
-								<span className="">{userFeedback.feedback}</span>
+							<div className="pl-2 flex flex-col items-start justify-center gap-2">
+								<span
+									className={`w-full text-start ${
+										!userFeedback.feedback && "text-gray-400 text-xs"
+									}`}
+								>
+									{userFeedback.feedback || "No Feedback"}
+								</span>
 								<div className="flex items-center justify-start w-full gap-2">
 									<div className="flex items-center justify-start gap-1">
 										<Image

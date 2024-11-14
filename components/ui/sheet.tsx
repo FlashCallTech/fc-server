@@ -25,7 +25,9 @@ const SheetOverlay = React.forwardRef<
 				`fixed size-full inset-0 z-50 ${
 					pathname.includes("/authenticate")
 						? "bg-transparent h-fit"
-						: "bg-black/40 "
+						: pathname.includes("/feedback")
+						? "bg-black"
+						: "bg-black/40"
 				}  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 outline-none`,
 				className
 			)}
@@ -78,7 +80,11 @@ const SheetContent = React.forwardRef<
 						pathname.includes("/authenticate") ? "hidden" : "absolute"
 					}  right-4 top-4 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-secondary rounded-full`}
 				>
-					<X className="h-7 w-7 text-gray-400 hover:text-green-1 outline-none rounded-xl p-1" />
+					<X
+						className={`${
+							pathname.includes("/meeting") && "hidden"
+						} h-7 w-7 text-gray-400 hover:text-green-1 outline-none rounded-xl p-1`}
+					/>
 					<span className="sr-only">Close</span>
 				</SheetPrimitive.Close>
 			</SheetPrimitive.Content>

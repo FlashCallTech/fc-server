@@ -3,7 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
-
+import DatePicker from "react-datepicker";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -24,7 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { UpdateCreatorParams, UpdateUserParams } from "@/types";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	UpdateProfileFormSchema,
 	UpdateProfileFormSchemaClient,
@@ -36,12 +42,21 @@ import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
 import { usePathname } from "next/navigation";
 import axios from "axios";
-import { backendBaseUrl, debounce, placeholderImages } from "@/lib/utils";
+import { backendBaseUrl, cn, debounce, placeholderImages } from "@/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 import Image from "next/image";
 import GetRandomImage from "@/utils/GetRandomImage";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import ContentLoading from "../shared/ContentLoading";
+import { format } from "date-fns";
+import { CalendarDaysIcon } from "lucide-react";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../ui/select";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -49,6 +64,7 @@ export type EditProfileProps = {
 	initialState: any;
 	setEditData?: React.Dispatch<React.SetStateAction<boolean>>;
 	userType: string | null;
+	closeButton?: boolean;
 };
 
 const EditProfile = ({
@@ -57,6 +73,7 @@ const EditProfile = ({
 	initialState,
 	setEditData,
 	userType,
+	closeButton,
 }: EditProfileProps) => {
 	const pathname = usePathname();
 	const { toast } = useToast();
@@ -76,14 +93,55 @@ const EditProfile = ({
 		}
 	);
 
+	const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+	const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+	const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+	const handleMonthChange = (month: number) => {
+		setSelectedMonth(month);
+		const newDate = new Date(selectedYear, month, selectedDate?.getDate() || 1);
+		setSelectedDate(newDate);
+		form.setValue("dob", newDate.toLocaleDateString());
+	};
+
+	const handleYearChange = (year: number) => {
+		setSelectedYear(year);
+		const newDate = new Date(year, selectedMonth, selectedDate?.getDate() || 1);
+		setSelectedDate(newDate);
+		form.setValue("dob", newDate.toLocaleDateString());
+	};
+
+	const goToPreviousMonth = () => {
+		if (selectedMonth === 0) {
+			setSelectedMonth(11);
+			setSelectedYear(selectedYear - 1);
+		} else {
+			setSelectedMonth(selectedMonth - 1);
+		}
+	};
+
+	const goToNextMonth = () => {
+		if (selectedMonth === 11) {
+			setSelectedMonth(0);
+			setSelectedYear(selectedYear + 1);
+		} else {
+			setSelectedMonth(selectedMonth + 1);
+		}
+	};
+
 	const [predefinedColors, setPredefinedColors] = useState([]);
 	const [professions, setProfessions] = useState([]);
+	const [errorMessage, setErrorMessage] = useState("");
+
 	const [selectedProfession, setSelectedProfession] = useState("");
 	const [dialogOpen, setDialogOpen] = useState(false);
+	const bottomRef = useRef(null);
+
 	const [customProfession, setCustomProfession] = useState("");
 
 	const handleSelectProfession = (profession: any) => {
 		setSelectedProfession(profession);
+		setErrorMessage("");
 		setCustomProfession("");
 		form.setValue(
 			"profession",
@@ -92,11 +150,22 @@ const EditProfile = ({
 		// setDialogOpen(false);
 	};
 
+	// handle profession confirmation
+	const handleConfirmProfession = () => {
+		if (selectedProfession === "Other" && !customProfession) {
+			setErrorMessage("Please enter your profession.");
+		} else {
+			setErrorMessage("");
+			setDialogOpen(false);
+		}
+	};
+
 	const handleCustomProfessionChange = (e: any) => {
 		const value = e.target.value;
 		if (value.length <= 30 && /^[A-Za-z\s]*$/.test(value)) {
 			setCustomProfession(value);
 			form.setValue("profession", value);
+			setErrorMessage("");
 		}
 	};
 
@@ -375,9 +444,9 @@ const EditProfile = ({
 
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
-				className="space-y-8 w-full flex flex-col items-center"
+				className="relative space-y-8 w-full flex flex-col items-center"
 			>
-				{/* User Profile Image */}
+				{/* User Profile Photo */}
 				<FormField
 					control={form.control}
 					name="photo"
@@ -470,29 +539,6 @@ const EditProfile = ({
 					))}
 				</div>
 
-				{/* Container for bio */}
-				<FormField
-					control={form.control}
-					name="bio"
-					render={({ field }) => (
-						<FormItem className="w-full">
-							<FormLabel className="font-medium text-sm text-gray-400 ml-1">
-								{userData?.bio?.length === 0 ? "Add" : "Edit"} Bio
-							</FormLabel>
-							<FormControl>
-								<Textarea
-									className="textarea max-h-32"
-									placeholder="Tell us a little bit about yourself"
-									{...field}
-								/>
-							</FormControl>
-							<FormMessage className="error-message">
-								{errors.bio?.message}
-							</FormMessage>
-						</FormItem>
-					)}
-				/>
-
 				{/* Referal Field */}
 				{userData.role === "creator" && pathname.includes("/updateDetails") && (
 					<FormField
@@ -542,7 +588,7 @@ const EditProfile = ({
 													? customProfession
 													: selectedProfession || field.value
 											}
-											className="input-field hoverScaleDownEffect w-fit cursor-pointer"
+											className="input-field hoverScaleDownEffect border-none outline-none w-full cursor-pointer"
 											onClick={() => setDialogOpen(true)}
 										/>
 									</FormControl>
@@ -557,86 +603,151 @@ const EditProfile = ({
 												Choose
 											</Button>
 										</DialogTrigger>
-										<DialogContent className="flex flex-col items-center justify-start w-[92%] max-h-[95%] overflow-y-scroll no-scrollbar md:w-full bg-white rounded-xl border-none">
-											<DialogHeader>
-												<DialogTitle>
-													{loadingProfessions
-														? "Loading Professions"
-														: "Select Your Profession"}
-												</DialogTitle>
-												<DialogDescription className="sr-only">
-													List is provided below
-												</DialogDescription>
-											</DialogHeader>
-											{loadingProfessions ? (
-												<div className="flex justify-center w-full">
-													<ContentLoading />
-												</div>
-											) : (
-												<div className="size-full mt-4 grid grid-cols-3 items-center gap-5 md:gap-2.5">
-													{professions?.map((profession: any) => (
-														<section
-															className="cursor-pointer flex flex-col gap-2 items-center hoverScaleDownEffect"
-															key={profession.id}
-															onClick={() =>
-																handleSelectProfession(profession.name)
-															}
-														>
+										<section className="relative">
+											<DialogContent className="!pb-2 flex flex-col items-center justify-start w-[92%] max-h-[95%] overflow-y-scroll no-scrollbar md:w-full bg-white rounded-xl border-none">
+												<DialogHeader>
+													<DialogTitle>
+														{loadingProfessions
+															? "Loading Professions"
+															: "Select Your Profession"}
+													</DialogTitle>
+													<DialogDescription className="sr-only">
+														List is provided below
+													</DialogDescription>
+												</DialogHeader>
+												{loadingProfessions ? (
+													<div className="flex justify-center w-full">
+														<ContentLoading />
+													</div>
+												) : (
+													<div className="size-full mt-4 grid grid-cols-3 items-center gap-5 md:gap-2.5">
+														{professions?.map((profession: any) => (
 															<section
-																className={`${
-																	(profession.name === field.value ||
-																		profession.name === selectedProfession) &&
-																	"ring-2 ring-offset-2 ring-green-1"
-																} p-4 bg-white shadow-lg rounded-full`}
+																className="relative cursor-pointer flex flex-col items-center hoverScaleDownEffect"
+																key={profession.id}
+																onClick={() =>
+																	handleSelectProfession(profession.name)
+																}
 															>
-																<Image
-																	src={profession.icon}
-																	alt={profession.name}
-																	width={1000}
-																	height={1000}
-																	className="w-[48px] h-[48px] object-cover"
-																/>
-															</section>
-															<span className="text-xs sm:text-sm text-[#707070]">
-																{profession.name}
-															</span>
-														</section>
-													))}
-												</div>
-											)}
-											<section className="w-full flex items-start justify-center gap-2">
-												{selectedProfession === "Other" && (
-													<div className="w-full mt-4 flex flex-col items-center">
-														<Input
-															type="text"
-															placeholder="Enter your profession"
-															value={customProfession}
-															onChange={handleCustomProfessionChange}
-															className="w-full"
-														/>
+																<section
+																	className={`${
+																		(profession.name === field.value ||
+																			profession.name === selectedProfession) &&
+																		"ring-2 ring-offset-2 ring-green-1"
+																	} relative shadow-lg rounded-[12px]`}
+																>
+																	{/* Overlay */}
 
-														{customProfession.length >= 30 && (
-															<span className="text-red-500 text-sm mt-1 mb-2">
-																Maximum 30 characters allowed
-															</span>
-														)}
+																	<div
+																		className={`${
+																			profession.name === field.value ||
+																			profession.name === selectedProfession
+																				? "bg-black/60"
+																				: "bg-black/20"
+																		} absolute inset-0  rounded-[12px]`}
+																	/>
+
+																	<Image
+																		src={profession.icon}
+																		alt={profession.name}
+																		width={1000}
+																		height={1000}
+																		className="w-[100px] h-[120px] object-cover rounded-[12px]"
+																	/>
+																</section>
+
+																<section className="flex flex-col gap-2 items-center justify-center absolute bottom-2">
+																	<button
+																		className={`${
+																			profession.name !== field.value ||
+																			profession.name !== selectedProfession
+																				? "bg-white text-black "
+																				: "bg-green-1 text-white"
+																		} rounded-full p-2 hoverScaleDownEffect cursor-pointer`}
+																	>
+																		{profession.name !== field.value ||
+																		profession.name !== selectedProfession ? (
+																			<svg
+																				xmlns="http://www.w3.org/2000/svg"
+																				fill="none"
+																				viewBox="0 0 24 24"
+																				strokeWidth={1.5}
+																				stroke="currentColor"
+																				className="size-4"
+																			>
+																				<path
+																					strokeLinecap="round"
+																					strokeLinejoin="round"
+																					d="M12 4.5v15m7.5-7.5h-15"
+																				/>
+																			</svg>
+																		) : (
+																			<svg
+																				xmlns="http://www.w3.org/2000/svg"
+																				fill="none"
+																				viewBox="0 0 24 24"
+																				strokeWidth={2}
+																				stroke="currentColor"
+																				className="size-4"
+																			>
+																				<path
+																					strokeLinecap="round"
+																					strokeLinejoin="round"
+																					d="m4.5 12.75 6 6 9-13.5"
+																				/>
+																			</svg>
+																		)}
+																	</button>
+																	<span className="text-xs sm:text-sm text-white">
+																		{profession.name}
+																	</span>
+																</section>
+															</section>
+														))}
 													</div>
 												)}
+												<section className="sticky bottom-0 left-0 w-full flex flex-wrap items-start justify-center gap-2 mt-4 mb-2">
+													{(errorMessage || customProfession.length >= 30) && (
+														<section className="flex flex-wrap w-full rounded-[12px] border bg-white border-red-500 items-center justify-start gap-2 p-3 mb-2 shadow-sm">
+															{customProfession.length >= 30 && (
+																<span className="text-red-500 text-sm">
+																	Maximum 30 characters allowed
+																</span>
+															)}
 
-												<Button
-													type="button"
-													className={`${
-														loadingProfessions ? "hidden" : "mt-4"
-													}  bg-green-1 hoverScaleDownEffect text-white w-fit`}
-													onClick={() => setDialogOpen(false)}
-												>
-													Confirm Profession
-												</Button>
-											</section>
-										</DialogContent>
+															{errorMessage && (
+																<span className="text-red-500 text-sm">
+																	{errorMessage}
+																</span>
+															)}
+														</section>
+													)}
+													<section className="w-full flex items-center justify-center gap-2">
+														{selectedProfession === "Other" && (
+															<Input
+																type="text"
+																placeholder="Enter your profession"
+																value={customProfession}
+																onChange={handleCustomProfessionChange}
+																className="w-full border border-gray-300"
+															/>
+														)}
+
+														<Button
+															type="button"
+															className={`${
+																loadingProfessions && "hidden"
+															} bg-green-1 hoverScaleDownEffect text-white w-fit`}
+															onClick={handleConfirmProfession}
+														>
+															Confirm Profession
+														</Button>
+													</section>
+												</section>
+											</DialogContent>
+										</section>
 									</Dialog>
 								</section>
-
 								<FormMessage className="error-message">
 									{errors.profession?.message}
 								</FormMessage>
@@ -694,9 +805,7 @@ const EditProfile = ({
 										</button>
 									</div>
 								</FormControl>
-								<FormDescription className="text-xs text-gray-400 ml-1">
-									Choose any one from the above
-								</FormDescription>
+
 								<FormMessage className="error-message">
 									{errors.gender?.message}
 								</FormMessage>
@@ -709,28 +818,126 @@ const EditProfile = ({
 						control={form.control}
 						name="dob"
 						render={({ field }) => (
-							<FormItem className="w-fit sm:w-full">
-								<FormLabel className="text-sm text-gray-400 ml-1">
-									Date of Birth
-								</FormLabel>
-								<FormControl>
-									<Input
-										type="date"
-										placeholder={`Enter DOB`}
-										{...field}
-										className="input-field"
-									/>
-								</FormControl>
-								<FormDescription className="text-xs text-gray-400 ml-1">
-									Tap the icon to select date
-								</FormDescription>
-								<FormMessage className="error-message">
-									{errors.dob?.message}
-								</FormMessage>
+							<FormItem className="flex flex-col w-full">
+								<FormLabel className="text-gray-400">Date of birth</FormLabel>
+								<Popover>
+									<PopoverTrigger asChild>
+										<FormControl>
+											<Button
+												variant={"outline"}
+												className={cn(
+													"input-field text-left font-normal w-full",
+													!field.value && "text-muted-foreground"
+												)}
+											>
+												{field.value ? (
+													format(new Date(field.value), "PPP") // Format the stored string value back to a readable format
+												) : (
+													<span>Pick a date</span>
+												)}
+												<CalendarDaysIcon className="ml-auto h-4 w-4 opacity-50" />
+											</Button>
+										</FormControl>
+									</PopoverTrigger>
+									<PopoverContent className="w-auto p-4 bg-white" align="start">
+										<div className="flex space-x-2 mb-4">
+											{/* Month Selector */}
+											<Select
+												onValueChange={(value: any) =>
+													handleMonthChange(parseInt(value))
+												}
+												defaultValue={selectedMonth.toString()}
+											>
+												<SelectTrigger>
+													<SelectValue placeholder="Month" />
+												</SelectTrigger>
+												<SelectContent className="bg-white">
+													{Array.from({ length: 12 }, (_, index) => (
+														<SelectItem key={index} value={index.toString()}>
+															{new Date(0, index).toLocaleString("default", {
+																month: "long",
+															})}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+
+											{/* Year Selector */}
+											<Select
+												onValueChange={(value) =>
+													handleYearChange(parseInt(value))
+												}
+												defaultValue={selectedYear.toString()}
+											>
+												<SelectTrigger>
+													<SelectValue placeholder="Year" />
+												</SelectTrigger>
+												<SelectContent className="bg-white">
+													{Array.from({ length: 100 }, (_, index) => {
+														const year = new Date().getFullYear() - index;
+														return (
+															<SelectItem key={year} value={year.toString()}>
+																{year}
+															</SelectItem>
+														);
+													})}
+												</SelectContent>
+											</Select>
+										</div>
+
+										<Calendar
+											mode="single"
+											selected={selectedDate}
+											onSelect={(date) => {
+												setSelectedDate(date);
+												// Convert the date to a string format before setting it in the form
+												field.onChange(
+													format(date as Date | string, "yyyy-MM-dd")
+												); // Format as 'yyyy-MM-dd' (ISO format)
+											}}
+											month={new Date(selectedYear, selectedMonth)}
+											disabled={(date) =>
+												date > new Date() || date < new Date("1900-01-01")
+											}
+											initialFocus
+											onMonthChange={(monthDate) => {
+												setSelectedMonth(monthDate.getMonth());
+												setSelectedYear(monthDate.getFullYear());
+											}}
+											onPrevClick={goToPreviousMonth}
+											onNextClick={goToNextMonth}
+										/>
+									</PopoverContent>
+								</Popover>
+
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
 				</div>
+
+				{/* Container for bio */}
+				<FormField
+					control={form.control}
+					name="bio"
+					render={({ field }) => (
+						<FormItem className="w-full">
+							<FormLabel className="font-medium text-sm text-gray-400 ml-1">
+								{userData?.bio?.length === 0 ? "Add" : "Edit"} Bio
+							</FormLabel>
+							<FormControl>
+								<Textarea
+									className="flex flex-1 placeholder:text-gray-500 px-5 py-3  focus-visible:ring-transparent max-h-32"
+									placeholder="Tell us a little bit about yourself"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage className="error-message">
+								{errors.bio?.message}
+							</FormMessage>
+						</FormItem>
+					)}
+				/>
 
 				{/* profile theme */}
 				{userData.role === "creator" && (
@@ -812,26 +1019,45 @@ const EditProfile = ({
 				{formError && (
 					<div className="text-red-500 text-lg text-center">{formError}</div>
 				)}
-				{isChanged && isValid && !formError && !usernameError && (
-					<Button
-						className="bg-green-1 hoverScaleDownEffect w-3/4 mx-auto text-white"
-						type="submit"
-						disabled={!isValid || form.formState.isSubmitting}
-					>
-						{form.formState.isSubmitting ? (
-							<Image
-								src="/icons/loading-circle.svg"
-								alt="Loading..."
-								width={24}
-								height={24}
-								className=""
-								priority
-							/>
-						) : (
-							"Update Details"
-						)}
-					</Button>
-				)}
+				<section
+					className={`${
+						isChanged && isValid && !formError && !usernameError
+							? "grid-cols-2 w-full"
+							: "grid-cols-1 w-3/4 lg:w-1/2"
+					} sticky bottom-2 right-0 grid  gap-4 items-center justify-center `}
+				>
+					{closeButton && (
+						<Button
+							className="text-base rounded-lg border border-gray-300  hoverScaleDownEffect bg-gray-400 text-white"
+							onClick={() => {
+								form.reset();
+								setEditData && setEditData((prev) => !prev);
+							}}
+						>
+							Close
+						</Button>
+					)}
+					{isChanged && isValid && !formError && !usernameError && (
+						<Button
+							className="text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
+							type="submit"
+							disabled={!isValid || form.formState.isSubmitting}
+						>
+							{form.formState.isSubmitting ? (
+								<Image
+									src="/icons/loading-circle.svg"
+									alt="Loading..."
+									width={24}
+									height={24}
+									className=""
+									priority
+								/>
+							) : (
+								"Update Details"
+							)}
+						</Button>
+					)}
+				</section>
 			</form>
 		</Form>
 	);

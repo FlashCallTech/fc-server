@@ -69,11 +69,6 @@ export const handleInterruptedCall = async (
 
 	try {
 		// Update the user's status based on the type
-		if (userType === "client") {
-			await updateExpertStatus(currentUserPhone, "Idle");
-		} else {
-			await updateExpertStatus(currentUserPhone, "Online");
-		}
 
 		const localSessionKey = `meeting_${callId}_${currentUserId}`;
 
@@ -258,6 +253,33 @@ export const updateFirestoreCallServices = async (
 			Sentry.captureException(error);
 			console.error("Error updating Firestore call services: ", error);
 		}
+	}
+};
+
+// check permissions
+export const checkPermissions = async (callType: string) => {
+	try {
+		const permissions = {
+			audio: false,
+			video: false,
+		};
+
+		if (callType === "video" || callType === "audio") {
+			const stream = await navigator.mediaDevices.getUserMedia({
+				audio: true,
+				video: callType === "video",
+			});
+
+			if (stream) {
+				permissions.audio = stream.getAudioTracks().length > 0;
+				permissions.video = stream.getVideoTracks().length > 0;
+				stream.getTracks().forEach((track) => track.stop());
+			}
+		}
+
+		return permissions;
+	} catch (err) {
+		return { audio: false, video: false };
 	}
 };
 

@@ -13,7 +13,7 @@ export const UpdateProfileFormSchema = z.object({
 	username: z
 		.string()
 		.min(4, "Username must be at least 4 characters")
-		.max(10, "Username must be at most 10 characters")
+		.max(20, "Username must be at most 20 characters")
 		.regex(
 			usernameRegex,
 			"Username can only contain letters, numbers, underscores, and hyphens"
@@ -39,7 +39,7 @@ export const UpdateProfileFormSchemaClient = z.object({
 	username: z
 		.string()
 		.min(4, "Username must be at least 4 characters")
-		.max(10, "Username must be at most 10 characters")
+		.max(20, "Username must be at most 20 characters")
 		.regex(
 			usernameRegex,
 			"Username can only contain letters, numbers, underscores, and hyphens"

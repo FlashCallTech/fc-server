@@ -151,7 +151,7 @@ const UserFeedback = ({
 			<SheetTrigger asChild>
 				<button
 					onClick={() => onOpenChange(true)}
-					className={`animate-enterFromRight lg:animate-enterFromBottom bg-green-1 transition-all duration-300 hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md px-4 py-2 text-xs whitespace-nowrap`}
+					className={`animate-enterFromRight lg:animate-enterFromBottom bg-green-1 transition-all duration-300 hover:bg-green-700 text-white font-semibold w-fit mr-1 rounded-md ml-2 px-4 py-2 text-xs whitespace-nowrap`}
 				>
 					{text}
 				</button>

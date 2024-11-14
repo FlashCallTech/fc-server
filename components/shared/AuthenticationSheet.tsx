@@ -12,7 +12,6 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-	DialogTrigger,
 } from "@/components/ui/dialog";
 import AuthenticateViaOTP from "../forms/AuthenticateViaOTP";
 import { trackEvent } from "@/lib/mixpanel";
@@ -36,6 +35,21 @@ const AuthenticationSheet = ({
 			});
 		}
 	}, [isOpen]);
+
+	// Update isMobileView when window size changes
+	useEffect(() => {
+		const handleResize = () => {
+			setIsMobileView(window.innerWidth <= 584);
+		};
+
+		// Add event listener on mount
+		window.addEventListener("resize", handleResize);
+
+		// Cleanup event listener on unmount
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
 
 	if (isMobileView) {
 		return (

@@ -91,21 +91,25 @@ export default function AuthenticationPage() {
 							>
 								{authSliderContent.map((item, index) => (
 									<section
-										className="flex flex-col h-full text-center gap-4 items-end justify-center px-4 pt-4 pb-2 text-white"
+										className="flex flex-col h-full text-center gap-4 items-end justify-center pt-4 pb-2 text-white outline-none border-none"
 										key={index}
 									>
 										<Image
-											src={item.imageURL || "/images/defaultProfileImage.png"}
+											src={
+												userType === "creator"
+													? item.imageURLCreator
+													: item.imageURL
+											}
 											alt={`${item.heading}`}
 											width={1000}
 											height={1000}
-											className="size-full max-h-[285px] xm:max-h-[300px] rounded-xl object-contain mx-auto"
+											className="size-full max-h-[230px] xm:max-h-[250px] rounded-xl object-contain mx-auto"
 											onError={(e) => {
 												e.currentTarget.src = "/images/defaultProfileImage.png";
 											}}
 										/>
-										<section className="w-[75%] m-auto flex flex-col items-center justify-center gap-2">
-											<h1 className="text-base sm:text-lg md:text-2xl font-medium mt-4">
+										<section className="max-w-[250px] xm:max-w-[275px] m-auto flex flex-col items-center justify-center gap-2">
+											<h1 className="text-base sm:text-lg font-bold mt-4">
 												{item.heading}
 											</h1>
 										</section>

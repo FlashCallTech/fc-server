@@ -77,21 +77,11 @@ const MeetingPage = () => {
 		);
 	}
 
-	const isVideoCall = call?.type === "default";
-
-	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
-
 	return (
 		<main className="h-full w-full">
 			<StreamCall call={call}>
 				<StreamTheme>
-					{/* <CallTimerProvider
-						isVideoCall={isVideoCall}
-						isMeetingOwner={isMeetingOwner}
-						call={call}
-					> */}
 					<MeetingRoomWrapper toast={toast} router={router} call={call} />
-					{/* </CallTimerProvider> */}
 				</StreamTheme>
 			</StreamCall>
 		</main>
@@ -112,7 +102,6 @@ const MeetingRoomWrapper = ({ toast, router, call }: any) => {
 
 const CallEnded = ({ toast, router, call }: any) => {
 	const [loading, setLoading] = useState(false);
-	const [toastShown, setToastShown] = useState(false);
 	const transactionHandled = useRef(false);
 	const { currentUser, currentTheme } = useCurrentUsersContext();
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
@@ -130,23 +119,17 @@ const CallEnded = ({ toast, router, call }: any) => {
 					call.state.createdBy?.custom?.phone as string,
 					"Payment Pending"
 				);
-				// Show toast notification
-				// if (!toastShown) {
-				// 	toast({
-				// 		variant: "destructive",
-				// 		title: "Session Has Ended",
-				// 		description: "Checking for Pending Transactions ...",
-				// 	});
-				// 	setToastShown(true);
-				// }
-			const creatorURL = localStorage.getItem("creatorURL");
-			const hasVisitedFeedbackPage = localStorage.getItem("hasVisitedFeedbackPage");
 
-            if (hasVisitedFeedbackPage) {
-                router.replace(`${creatorURL ? creatorURL : "/home"}`);
-            } else {
-                router.replace(`/feedback/${call.id}`);
-            }
+				const creatorURL = localStorage.getItem("creatorURL");
+				const hasVisitedFeedbackPage = localStorage.getItem(
+					"hasVisitedFeedbackPage"
+				);
+
+				if (hasVisitedFeedbackPage) {
+					router.replace(`${creatorURL ? creatorURL : "/home"}`);
+				} else {
+					router.replace(`/feedback/${call.id}`);
+				}
 			} catch (error) {
 				console.error("Error handling call end", error);
 				const creatorURL = localStorage.getItem("creatorURL");

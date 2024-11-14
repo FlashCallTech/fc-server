@@ -112,7 +112,7 @@ const CustomParticipantViewUI = () => {
 
 	return (
 		<>
-			<span
+			{/* <span
 				className={`absolute w-full text-sm text-ellipsis overflow-hidden ${
 					expert?.user_id !== participant.userId
 						? "max-w-[85%] pb-2 bottom-0 left-3"
@@ -125,7 +125,7 @@ const CustomParticipantViewUI = () => {
 							(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
 					  )
 					: participant.name}
-			</span>
+			</span> */}
 
 			<PoorConnectionNotification />
 

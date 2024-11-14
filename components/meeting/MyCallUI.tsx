@@ -32,6 +32,7 @@ const MyCallUI = () => {
 	const [showCallUI, setShowCallUI] = useState(false);
 	const [connecting, setConnecting] = useState(false);
 	const [connectingCall, setConnectingCall] = useState<Call | null>(null);
+
 	const checkFirestoreSession = (userId: string) => {
 		const sessionDocRef = doc(db, "sessions", userId);
 		const unsubscribe = onSnapshot(sessionDocRef, (sessionDoc) => {
@@ -62,6 +63,12 @@ const MyCallUI = () => {
 			const expertPhone = updatedCall.state?.members?.find(
 				(member) => member.custom.type === "expert"
 			)?.custom?.phone;
+			if (userType === "client") {
+				await updateExpertStatus(currentUser?.phone as string, "Idle");
+			} else {
+				await updateExpertStatus(expertPhone, "Online");
+			}
+
 			await handleInterruptedCall(
 				currentUser?._id as string,
 				updatedCall.id,
@@ -82,7 +89,7 @@ const MyCallUI = () => {
 		if (currentUser?._id && !hide) {
 			const unsubscribe = checkFirestoreSession(currentUser._id);
 			return () => {
-				unsubscribe(); // Cleanup listener on unmount
+				unsubscribe();
 			};
 		}
 	}, [hide, currentUser?._id]);
