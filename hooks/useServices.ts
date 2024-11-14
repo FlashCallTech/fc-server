@@ -1,4 +1,3 @@
-// hooks/useServices.ts
 import { useState, useEffect } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -9,32 +8,50 @@ import * as Sentry from "@sentry/nextjs";
 export const useServices = () => {
 	const { creatorUser } = useCurrentUsersContext();
 	const [services, setServices] = useState(() => ({
-		myServices: creatorUser
-			? creatorUser.videoAllowed ||
-			  creatorUser.audioAllowed ||
-			  creatorUser.chatAllowed
-			: false,
-		videoCall: creatorUser ? creatorUser.videoAllowed : false,
-		audioCall: creatorUser ? creatorUser.audioAllowed : false,
-		chat: creatorUser ? creatorUser.chatAllowed : false,
+		myServices:
+			creatorUser && !creatorUser.restricted
+				? creatorUser.videoAllowed ||
+				  creatorUser.audioAllowed ||
+				  creatorUser.chatAllowed
+				: false,
+		videoCall:
+			creatorUser && !creatorUser.restricted ? creatorUser.videoAllowed : false,
+		audioCall:
+			creatorUser && !creatorUser.restricted ? creatorUser.audioAllowed : false,
+		chat:
+			creatorUser && !creatorUser.restricted ? creatorUser.chatAllowed : false,
+		isRestricted: creatorUser ? creatorUser.restricted : false, // Track restriction state
 	}));
 
 	// Initialize services based on creatorUser
 	useEffect(() => {
 		if (creatorUser) {
+			const isRestricted = creatorUser.restricted || false;
 			setServices({
 				myServices:
-					creatorUser.videoAllowed ||
-					creatorUser.audioAllowed ||
-					creatorUser.chatAllowed,
-				videoCall: creatorUser.videoAllowed,
-				audioCall: creatorUser.audioAllowed,
-				chat: creatorUser.chatAllowed,
+					!isRestricted &&
+					(creatorUser.videoAllowed ||
+						creatorUser.audioAllowed ||
+						creatorUser.chatAllowed),
+				videoCall: !isRestricted && creatorUser.videoAllowed,
+				audioCall: !isRestricted && creatorUser.audioAllowed,
+				chat: !isRestricted && creatorUser.chatAllowed,
+				isRestricted: isRestricted,
 			});
+
+			// Automatically update Firebase if restricted
+			if (isRestricted) {
+				updateFirestoreCallServices(creatorUser, {
+					myServices: false,
+					videoCall: false,
+					audioCall: false,
+					chat: false,
+				});
+			}
 		}
 	}, [creatorUser]);
 
-	// Real-time updates from Firebase
+	// Real-time updates from Firebase session trigger and restricted status
 	useEffect(() => {
 		if (creatorUser) {
 			const sessionTriggeredRef = doc(db, "sessionTriggered", creatorUser._id);
@@ -43,12 +60,13 @@ export const useServices = () => {
 				(docSnapshot) => {
 					if (docSnapshot.exists()) {
 						const currentCount = docSnapshot.data().count || 0;
-						if (currentCount >= 3) {
+						if (currentCount >= 3 || creatorUser.restricted) {
 							setServices({
 								myServices: false,
 								videoCall: false,
 								audioCall: false,
 								chat: false,
+								isRestricted: true,
 							});
 						}
 					}
@@ -63,10 +81,13 @@ export const useServices = () => {
 		}
 	}, [creatorUser]);
 
-	// Toggle handler
+	// Toggle handler with restricted check
 	const handleToggle = (
 		service: "myServices" | "videoCall" | "audioCall" | "chat"
 	) => {
+		// Prevent toggling if restricted
+		if (services.isRestricted) return;
+
 		setServices((prev) => {
 			let updatedServices = { ...prev };
 			if (service === "myServices") {
@@ -76,6 +97,7 @@ export const useServices = () => {
 					videoCall: newState,
 					audioCall: newState,
 					chat: newState,
+					isRestricted: false, // Not restricted if toggle is allowed
 				};
 			} else {
 				updatedServices[service] = !prev[service];

@@ -102,7 +102,6 @@ const MeetingRoomWrapper = ({ toast, router, call }: any) => {
 
 const CallEnded = ({ toast, router, call }: any) => {
 	const [loading, setLoading] = useState(false);
-	// const [toastShown, setToastShown] = useState(false);
 	const transactionHandled = useRef(false);
 	const { currentUser, currentTheme } = useCurrentUsersContext();
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
@@ -120,15 +119,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 					call.state.createdBy?.custom?.phone as string,
 					"Payment Pending"
 				);
-				// Show toast notification
-				// if (!toastShown) {
-				// 	toast({
-				// 		variant: "destructive",
-				// 		title: "Session Has Ended",
-				// 		description: "Checking for Pending Transactions ...",
-				// 	});
-				// 	setToastShown(true);
-				// }
+
 				const creatorURL = localStorage.getItem("creatorURL");
 				const hasVisitedFeedbackPage = localStorage.getItem(
 					"hasVisitedFeedbackPage"
