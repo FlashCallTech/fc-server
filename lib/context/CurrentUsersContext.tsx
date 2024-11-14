@@ -126,14 +126,20 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 		setClientUser(null);
 		setCreatorUser(null);
-		console.log(creatorURL);
+
 		// Redirect logic
-		if (pathname !== "/" && pathname !== "/home" && pathname !== creatorURL) {
-			localStorage.removeItem("creatorURL");
-			setCreatorURL("");
-			router.replace("/home");
-			return;
-		}
+		// if (
+		// 	pathname !== "/" &&
+		// 	pathname !== "/home" &&
+		// 	!pathname.includes("/authenticate") &&
+		// 	pathname !== "support" &&
+		// 	pathname !== creatorURL
+		// ) {
+		// 	localStorage.removeItem("creatorURL");
+		// 	setCreatorURL("");
+		// 	router.replace("/home");
+		// 	return;
+		// }
 	};
 
 	// Function to fetch the current user

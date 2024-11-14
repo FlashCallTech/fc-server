@@ -28,10 +28,12 @@ import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { backendBaseUrl } from "@/lib/utils";
+import { backendBaseUrl, checkPermissions } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 import { CallTimerProvider } from "@/lib/context/CallTimerContext";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import TipModal from "../calls/TipModal";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -102,6 +104,9 @@ const MeetingRoom = () => {
 	const { useCallCallingState, useCallEndedAt, useParticipants } =
 		useCallStateHooks();
 	const { currentUser, userType } = useCurrentUsersContext();
+	const { walletBalance, setWalletBalance, updateWalletBalance } =
+		useWalletBalanceContext();
+
 	const hasAlreadyJoined = useRef(false);
 	const [showParticipants, setShowParticipants] = useState(false);
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
@@ -112,11 +117,11 @@ const MeetingRoom = () => {
 	const callHasEnded = !!callEndedAt;
 	const { toast } = useToast();
 	const isVideoCall = useMemo(() => call?.type === "default", [call]);
+
 	const callingState = useCallCallingState();
 	const participants = useParticipants();
 	const [layout, setLayout] = useState<CallLayoutType>("grid");
 	const router = useRouter();
-
 	const [showCountdown, setShowCountdown] = useState(false);
 	const [countdown, setCountdown] = useState<number | null>(null);
 	const [hasVisited, setHasVisited] = useState(false);
@@ -179,8 +184,8 @@ const MeetingRoom = () => {
 					}, 1000);
 					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
-					if (isVideoCall) call?.camera?.enable();
-					call?.microphone?.enable();
+					// if (isVideoCall) call?.camera?.enable();
+					// call?.microphone?.enable();
 				}
 			} catch (error) {
 				console.warn("Error Joining Call ", error);
@@ -355,6 +360,18 @@ const MeetingRoom = () => {
 					call &&
 					participants.length > 1 && <CreatorCallTimer callId={call.id} />
 				)}
+
+				{isMeetingOwner && (
+					<section className="px-4 absolute bottom-20 z-50 w-fit">
+						<TipModal
+							walletBalance={walletBalance}
+							setWalletBalance={setWalletBalance}
+							updateWalletBalance={updateWalletBalance}
+							isVideoCall={isVideoCall}
+							callId={call?.id as string}
+						/>
+					</section>
+				)}
 			</CallTimerProvider>
 
 			{/* Call Controls */}
@@ -364,11 +381,7 @@ const MeetingRoom = () => {
 					{/* Audio Button */}
 					{!showCountdown && (
 						<SpeakingWhileMutedNotification>
-							{isMobile && mobileDevice ? (
-								<AudioToggleButton />
-							) : (
-								<ToggleAudioPublishingButton />
-							)}
+							<AudioToggleButton />
 						</SpeakingWhileMutedNotification>
 					)}
 
@@ -382,13 +395,7 @@ const MeetingRoom = () => {
 					)}
 
 					{/* Video Button */}
-					{isVideoCall &&
-						!showCountdown &&
-						(isMobile && mobileDevice ? (
-							<VideoToggleButton />
-						) : (
-							<ToggleVideoPublishingButton />
-						))}
+					{isVideoCall && !showCountdown && <VideoToggleButton />}
 
 					{/* Switch Camera */}
 					{isVideoCall &&

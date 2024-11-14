@@ -17,8 +17,16 @@ import { success } from "@/constants/icons";
 import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { backendBaseUrl } from "@/lib/utils";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import {
+	getFirestore,
+	doc,
+	setDoc,
+	getDoc,
+	updateDoc,
+	deleteField,
+} from "firebase/firestore";
 import RechargeModal from "./RechargeModal";
+import SinglePostLoader from "../shared/SinglePostLoader";
 
 // Custom hook to track screen size
 const useScreenSize = () => {
@@ -183,6 +191,11 @@ const TipModal = ({
 
 			setWalletBalance((prev) => prev + parseInt(rechargeAmount));
 			setTipPaid(true);
+
+			// Immediately remove the added tip from Firestore
+			await updateDoc(userDocRef, {
+				[callId]: deleteField(),
+			});
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error handling wallet changes:", error);
@@ -235,12 +248,32 @@ const TipModal = ({
 				}}
 			>
 				<SheetTrigger asChild>
-					<Button
-						className="bg-black/40 text-white mt-2 w-full hoverScaleDownEffect"
+					<button
+						className="flex items-center gap-1 rounded-[20px] py-2 px-3 text-white w-full hoverScaleDownEffect"
+						style={{
+							background:
+								"linear-gradient(83.94deg, #F98900 14.83%, #F9BF06 98.24%)",
+						}}
 						onClick={() => setIsSheetOpen(true)}
 					>
-						Provide Tip
-					</Button>
+						<section className="bg-white text-black rounded-full cursor-pointer">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								strokeWidth={1.5}
+								stroke="currentColor"
+								className="size-6 text-[#f99501]"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M15 8.25H9m6 3H9m3 6-3-3h1.5a3 3 0 1 0 0-6M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+								/>
+							</svg>
+						</section>
+						Tip
+					</button>
 				</SheetTrigger>
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
@@ -250,7 +283,7 @@ const TipModal = ({
 					}  border-none rounded-t-xl bg-white mx-auto overflow-scroll no-scrollbar min-h-[350px] max-h-fit w-full h-dvh sm:max-w-[444px]`}
 				>
 					{loading ? (
-						<ContentLoading />
+						<SinglePostLoader />
 					) : !tipPaid ? (
 						<>
 							<SheetHeader className="flex flex-col items-center justify-center">
@@ -278,7 +311,7 @@ const TipModal = ({
 									<Input
 										id="rechargeAmount"
 										type="number"
-										placeholder="Enter recharge amount"
+										placeholder="Enter tip amount"
 										value={rechargeAmount}
 										max={adjustedWalletBalance}
 										onChange={handleAmountChange}

@@ -197,7 +197,7 @@ const RechargeModal = ({
 							pathname.includes("meeting") ? "bg-green-1" : "bg-red-500"
 						} text-white ${
 							inTipModal ? "mt-0" : "mt-2"
-						}  w-full hoverScaleEffect`}
+						}  w-full hoverScaleEffect rounded-[20px]`}
 						onClick={() => setIsSheetOpen(true)}
 					>
 						Recharge

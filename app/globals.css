@@ -139,8 +139,8 @@ html {
 	.str-video__speaker-layout__participants-bar
 	.str-video__speaker-layout__participant-tile {
 	width: 100% !important;
-	min-width: 144px !important;
-	max-width: 160px !important;
+	min-width: 120px !important;
+	max-width: 140px !important;
 	padding: 0px;
 	border: 2px solid rgba(255, 255, 255, 0.233);
 	border-radius: 15px;
@@ -222,15 +222,27 @@ html {
 
 	.str-video__video-placeholder .str-video__video-placeholder__avatar {
 		background: white !important;
-		/* height: 10rem !important;
-	width: 10rem !important; */
 	}
+}
 
-	/* .str-video__video-placeholder .str-video__video-placeholder__initials-fallback {
-	height: 10rem !important;
-	width: 10rem !important;
-	font-size: 50px !important;
-   } */
+/* react date picker */
+
+.react-datepicker__header {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.react-datepicker__month-select,
+.react-datepicker__year-select {
+	background: #216ba5;
+	padding: 0.25rem 0.5rem;
+	padding-left: 4px;
+	border-radius: 5px;
+	cursor: pointer;
+	border: none;
+	outline: none;
+	color: white;
 }
 
 /* Other Styles */
