@@ -45,6 +45,8 @@ const PaymentSettingsSchema = new Schema<PaymentSettings>({
 // Create a partial index to enforce uniqueness on `upiId` when it is not null
 PaymentSettingsSchema.index({ upiId: 1 }, { unique: true, partialFilterExpression: { upiId: { $ne: null } } });
 
+console.log(models);
+
 // Ensure the model is only compiled once
 const PaymentSettingsModel = models.PaymentSettings || model<PaymentSettings>('PaymentSettings', PaymentSettingsSchema);
 
