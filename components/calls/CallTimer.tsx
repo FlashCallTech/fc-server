@@ -108,8 +108,8 @@ const CallTimer = ({
 					Time Left: {minutes}:{seconds}
 				</p>
 			)}
-			{hasLowBalance ? (
-				canAfford60Minutes ? (
+			{hasLowBalance &&
+				(canAfford60Minutes ? (
 					<TimeExtensionModal
 						onExtendTime={handleTimeExtension}
 						ratePerMinute={callRatePerMinute}
@@ -119,16 +119,7 @@ const CallTimer = ({
 						walletBalance={walletBalance}
 						setWalletBalance={setWalletBalance}
 					/>
-				)
-			) : (
-				<TipModal
-					walletBalance={walletBalance}
-					setWalletBalance={setWalletBalance}
-					updateWalletBalance={updateWalletBalance}
-					isVideoCall={isVideoCall}
-					callId={callId}
-				/>
-			)}
+				))}
 		</div>
 	);
 };
