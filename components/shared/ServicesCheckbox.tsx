@@ -7,6 +7,7 @@ import React from "react";
 const ServicesCheckbox = ({
 	setIsPriceEditOpen,
 	services,
+	isRestricted,
 	handleToggle,
 	prices,
 }: any) => {
@@ -47,15 +48,16 @@ const ServicesCheckbox = ({
 					</div>
 					<label className="relative inline-block w-14 h-6">
 						<input
+							disabled={isRestricted}
 							type="checkbox"
-							className="toggle-checkbox absolute w-0 h-0 opacity-0"
+							className={` toggle-checkbox absolute w-0 h-0 opacity-0`}
 							checked={services[service]}
 							onChange={() => handleToggle(service)}
 						/>
-						<span
+						<p
 							className={`toggle-label block overflow-hidden h-6 rounded-full ${
 								services[service] ? "bg-green-600" : "bg-gray-500"
-							}  servicesCheckbox cursor-pointer`}
+							} ${isRestricted ? "!cursor-not-allowed" : "cursor-pointer"}`}
 							style={{
 								justifyContent: services[service] ? "flex-end" : "flex-start",
 							}}
@@ -69,7 +71,7 @@ const ServicesCheckbox = ({
 										: "translateX(0)",
 								}}
 							/>
-						</span>
+						</p>
 					</label>
 				</div>
 			))}

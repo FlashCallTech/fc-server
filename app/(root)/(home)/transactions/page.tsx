@@ -104,7 +104,7 @@ const Transactions = () => {
 			</section>
 
 			{/* Transaction History List */}
-			<ul className="space-y-4 w-full h-full px-4 pt-2 pb-7">
+			<ul className="space-y-4 w-full h-[60vh] px-4 pt-2 pb-7">
 				{!isLoading ? (
 					isError || !currentUser ? (
 						<div className="size-full flex flex-col items-center justify-center text-2xl xl:text-2xl font-semibold text-center text-red-500">

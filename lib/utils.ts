@@ -69,11 +69,6 @@ export const handleInterruptedCall = async (
 
 	try {
 		// Update the user's status based on the type
-		if (userType === "client") {
-			await updateExpertStatus(currentUserPhone, "Idle");
-		} else {
-			await updateExpertStatus(currentUserPhone, "Online");
-		}
 
 		const localSessionKey = `meeting_${callId}_${currentUserId}`;
 
