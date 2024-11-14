@@ -20,7 +20,7 @@ import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "./usePlatform";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { fetchFCMToken, sendNotification } from "@/lib/utils";
+import { backendBaseUrl, fetchFCMToken, sendNotification } from "@/lib/utils";
 import axios from "axios";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
@@ -71,8 +71,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 	const getUserData = async (userId: string) => {
 		try {
-			const response = await axios.get(`https://flashcall.me/api/v1/creator/getUser/${userId}`);
-			console.log("User data:", response.data);
+			const response = await axios.get(`${backendBaseUrl}/creator/getUser/${userId}`);
+			console.log("User data:", response.data.chatRate);
 			return response.data.chatRate;
 		} catch (error) {
 			console.error("Error fetching user data:", error);
@@ -136,7 +136,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				: new Date();
 			const formattedDate = createdAtDate.toISOString().split("T")[0];
 
-			const chatRate = getUserData(creator._id);
+			const chatRate = await getUserData(creator._id);
 
 			await setDoc(newChatRequestRef, {
 				id: newChatRequestRef.id,
