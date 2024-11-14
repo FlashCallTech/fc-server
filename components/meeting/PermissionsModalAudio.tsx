@@ -26,7 +26,7 @@ const PermissionsModalAudio = ({
 					alt="Notification settings"
 					className="mb-2 w-full h-full max-h-[350px] object-cover"
 				/>
-				<SheetHeader className="flex flex-col items-center justify-center w-full px-10">
+				<SheetHeader className="flex flex-col items-center justify-center w-full px-5">
 					<SheetTitle>Enable Microphone</SheetTitle>
 					<SheetDescription className="grid text-start gap-2">
 						<p>

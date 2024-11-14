@@ -32,6 +32,8 @@ import { backendBaseUrl, checkPermissions } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 import { CallTimerProvider } from "@/lib/context/CallTimerContext";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import TipModal from "../calls/TipModal";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -102,6 +104,9 @@ const MeetingRoom = () => {
 	const { useCallCallingState, useCallEndedAt, useParticipants } =
 		useCallStateHooks();
 	const { currentUser, userType } = useCurrentUsersContext();
+	const { walletBalance, setWalletBalance, updateWalletBalance } =
+		useWalletBalanceContext();
+
 	const hasAlreadyJoined = useRef(false);
 	const [showParticipants, setShowParticipants] = useState(false);
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
@@ -354,6 +359,18 @@ const MeetingRoom = () => {
 					!showCountdown &&
 					call &&
 					participants.length > 1 && <CreatorCallTimer callId={call.id} />
+				)}
+
+				{isMeetingOwner && (
+					<section className="px-4 absolute bottom-20 z-50 w-fit">
+						<TipModal
+							walletBalance={walletBalance}
+							setWalletBalance={setWalletBalance}
+							updateWalletBalance={updateWalletBalance}
+							isVideoCall={isVideoCall}
+							callId={call?.id as string}
+						/>
+					</section>
 				)}
 			</CallTimerProvider>
 

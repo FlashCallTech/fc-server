@@ -186,16 +186,12 @@ const OptionsList = ({
 						</section>
 					</DropdownMenuItem>
 
-					{userType === "client" &&
-						userCall.status !== "Rejected" &&
-						userCall.status !== "Not Answered" &&
-						userCall.status !== "Cancelled" &&
-						userCall.status !== "Initiated" && (
-							<section className="grid gap-1 pb-1">
-								<DropdownMenuSeparator />
-								<FeedbackCheck callId={userCall?.callId} />
-							</section>
-						)}
+					{userType === "client" && userCall.status === "Ended" && (
+						<section className="grid gap-1 pb-1">
+							<DropdownMenuSeparator />
+							<FeedbackCheck callId={userCall?.callId} />
+						</section>
+					)}
 				</DropdownMenuContent>
 			</DropdownMenu>
 
