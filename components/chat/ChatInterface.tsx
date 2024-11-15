@@ -57,48 +57,6 @@ const ChatInterface: React.FC = () => {
 		setIsRecording,
 	} = useMediaRecorder();
 
-	// const [tipReceived, setTipReceived] = useState(0);
-
-	// const callId = localStorage.getItem("CallId");
-	
-	// useEffect(() => {
-	// 	let previousTipAmount = 0; // Track the last known amount for calculating increments
-
-	// 	if (userType === "creator" && currentUser?._id) {
-	// 		// Reference to the userTips document
-	// 		const tipRef = doc(db, "userTips", currentUser?._id as string);
-
-	// 		// Set up the Firestore listener
-	// 		const unsubscribe = onSnapshot(tipRef, (docSnap) => {
-	// 			if (docSnap.exists()) {
-	// 				const data = docSnap.data();
-	// 				const newAmount = data[callId as string]?.amount;
-
-	// 				if (typeof newAmount === "number") {
-	// 					// If it's the first tip, set tipReceived to newAmount
-	// 					if (previousTipAmount === 0) {
-	// 						setTipReceived(newAmount);
-	// 					} else {
-	// 						// Calculate the incremental tip amount
-	// 						const incrementAmount = newAmount - previousTipAmount;
-	// 						setTipReceived((prev) => prev + incrementAmount);
-	// 					}
-
-	// 					// Update previousTipAmount to the new value
-	// 					previousTipAmount = newAmount;
-	// 				}
-	// 			} else {
-	// 				console.log("No such document!");
-	// 			}
-	// 		});
-
-	// 		// Clean up listener on component unmount
-	// 		return () => {
-	// 			unsubscribe();
-	// 		};
-	// 	}
-	// }, [currentUser, callId]);
-
 	useEffect(() => {
 		const updateChatStartedAt = async () => {
 			if (!chatId) return; // Exit if chatId is not available
@@ -411,7 +369,7 @@ const ChatInterface: React.FC = () => {
 	// console.log(tipReceived);
 
 	return (
-		<div className={`flex flex-col h-screen justify-between w-screen lg:max-w-[80%] bg-cover bg-center overflow-y-auto scrollbar-hide`} style={{ backgroundImage: 'url(/back.png)' }} >
+		<div className={`flex flex-col h-screen justify-between w-screen bg-cover bg-center overflow-y-auto scrollbar-hide`} style={{ backgroundImage: 'url(/back.png)' }} >
 			<div className="fixed top-0 left-0 w-full flex justify-between items-center px-4 py-[2px] bg-gray-500 z-30">
 				<div className="flex items-center gap-2">
 					<Image

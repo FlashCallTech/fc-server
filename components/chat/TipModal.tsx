@@ -118,13 +118,14 @@ const TipModal = ({
 					console.log("exists");
 					// If callId exists, increment amount; otherwise, add it
 					await updateDoc(tipRef, {
-						[`${callId}.amount`]: increment(parseInt(tipAmount)),
+						[`${callId}.totalAmount`]: increment(parseInt(tipAmount)),
+						[`${callId}.amount`]: parseInt(tipAmount),
 					});
 				} else {
 					console.log("not exists");
 					// Create document if it doesn't exist with initial callId and amount
 					await setDoc(tipRef, {
-						[callId as string]: { amount: parseInt(tipAmount) },
+						[callId as string]: { amount: parseInt(tipAmount), totalAmount: parseInt(tipAmount) },
 					});
 				}
 
