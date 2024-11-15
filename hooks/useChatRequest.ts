@@ -266,6 +266,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			if (!existingChatDoc.exists()) {
 				await setDoc(doc(db, "chats", chatId), {
 					callId: chatRequest.callId,
+					chatId: chatRequest.chatId,
 					clientId: chatRequest.clientId,
 					clientName: chatRequest.clientName,
 					clientPhone: response.phone,
@@ -311,6 +312,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					callId: chatRequest.callId,
 					clientName: chatRequest.clientName,
 					maxChatDuration,
+					chatId: chatRequest.chatId,
 					clientBalance: response.walletBalance,
 					timerSet: false,
 				});
