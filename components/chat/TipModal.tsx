@@ -18,6 +18,8 @@ import { success } from "@/constants/icons";
 import ContentLoading from "../shared/ContentLoading";
 import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { doc, getDoc, increment, setDoc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const TipModal = ({
 	walletBalance,
@@ -41,6 +43,8 @@ const TipModal = ({
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
 	const { totalTimeUtilized, hasLowBalance } = useChatTimerContext();
+
+	const callId = localStorage.getItem("CallId");
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -105,6 +109,26 @@ const TipModal = ({
 						headers: { "Content-Type": "application/json" },
 					}),
 				]);
+
+				// Firestore tip document update
+				const tipRef = doc(db, "userTips", creatorId as string);
+				const tipDoc = await getDoc(tipRef);
+
+				if (tipDoc.exists()) {
+					console.log("exists");
+					// If callId exists, increment amount; otherwise, add it
+					await updateDoc(tipRef, {
+						[`${callId}.amount`]: increment(parseInt(tipAmount)),
+					});
+				} else {
+					console.log("not exists");
+					// Create document if it doesn't exist with initial callId and amount
+					await setDoc(tipRef, {
+						[callId as string]: { amount: parseInt(tipAmount) },
+					});
+				}
+
+
 				setWalletBalance((prev) => prev + parseInt(tipAmount));
 				setTipPaid(true);
 			} catch (error) {
@@ -143,6 +167,8 @@ const TipModal = ({
 		}
 	};
 
+	console.log("call: ", callId);
+
 	return (
 		<section>
 			<Sheet
@@ -165,9 +191,8 @@ const TipModal = ({
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className={`flex flex-col items-center justify-center ${
-						!loading ? "px-10 py-7" : "px-4"
-					} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
+					className={`flex flex-col items-center justify-center ${!loading ? "px-10 py-7" : "px-4"
+						} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
 				>
 					{loading ? (
 						<ContentLoading />
@@ -179,9 +204,8 @@ const TipModal = ({
 									<p>
 										Balance Left
 										<span
-											className={`ml-2 ${
-												hasLowBalance ? "text-red-500" : "text-green-1"
-											}`}
+											className={`ml-2 ${hasLowBalance ? "text-red-500" : "text-green-1"
+												}`}
 										>
 											₹ {adjustedWalletBalance.toFixed(2)}
 										</span>
@@ -218,10 +242,9 @@ const TipModal = ({
 										<Button
 											key={amount}
 											onClick={() => handlePredefinedAmountClick(amount)}
-											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${
-												tipAmount === amount &&
+											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${tipAmount === amount &&
 												"bg-green-1 text-white hover:bg-green-1"
-											}`}
+												}`}
 										>
 											₹{amount}
 										</Button>

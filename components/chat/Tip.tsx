@@ -1,7 +1,6 @@
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import TipModal from "./TipModal";
 import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
-import RechargeModal from "./RechargeModal";
 import { useEffect, useState } from "react";
 
 const Tip: React.FC = () => {
