@@ -120,7 +120,7 @@ const PaymentSettings = () => {
 		if (initialBankDetails.upiId === "" && method === "UPI") return;
 
 		const details = {
-			method,
+			method: method==="UPI"? "upi": "banktransfer",
 			userId: currentUser?._id
 		}
 
