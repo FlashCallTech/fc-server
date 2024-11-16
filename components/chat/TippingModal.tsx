@@ -16,6 +16,7 @@ import { useToast } from "../ui/use-toast";
 import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 import useEndChat from "@/hooks/useEndChat";
 import * as Sentry from "@sentry/nextjs";
+import { backendBaseUrl } from "@/lib/utils";
 
 const TippingModal = ({
 	setWalletBalance,
@@ -64,7 +65,7 @@ const TippingModal = ({
 				});
 			} else {
 				await Promise.all([
-					fetch("/api/v1/wallet/payout", {
+					fetch(`${backendBaseUrl}/wallet/payout`, {
 						method: "POST",
 						body: JSON.stringify({
 							userId: user2?.clientId,
