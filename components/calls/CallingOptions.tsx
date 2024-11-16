@@ -199,6 +199,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							localStorage.removeItem("user2");
 							localStorage.removeItem("chatRequestId");
 							localStorage.removeItem("chatId");
+							localStorage.removeItem("CallId");
 							// updateExpertStatus(creator.phone as string, "Online");
 							unsubscribe();
 						} else if (
