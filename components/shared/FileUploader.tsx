@@ -157,7 +157,7 @@ const FileUploader = ({
 			) : (
 				<div className="relative flex justify-center items-center">
 					{/* Overlay */}
-					<div className="absolute inset-0 bg-black/50 rounded-full flex justify-center items-center">
+					<div className="absolute inset-0 bg-black/30 rounded-full flex justify-center items-center">
 						{/* Icon */}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"

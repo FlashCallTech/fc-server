@@ -32,6 +32,7 @@ const MyCallUI = () => {
 	const [showCallUI, setShowCallUI] = useState(false);
 	const [connecting, setConnecting] = useState(false);
 	const [connectingCall, setConnectingCall] = useState<Call | null>(null);
+	const [redirecting, setRedirecting] = useState(false);
 
 	const checkFirestoreSession = (userId: string) => {
 		const sessionDocRef = doc(db, "sessions", userId);
@@ -63,6 +64,7 @@ const MyCallUI = () => {
 			const expertPhone = updatedCall.state?.members?.find(
 				(member) => member.custom.type === "expert"
 			)?.custom?.phone;
+
 			if (userType === "client") {
 				await updateExpertStatus(currentUser?.phone as string, "Idle");
 			} else {
@@ -93,6 +95,14 @@ const MyCallUI = () => {
 			};
 		}
 	}, [hide, currentUser?._id]);
+
+	useEffect(() => {
+		const handleRouteChange = () => {
+			setRedirecting(false);
+		};
+
+		handleRouteChange();
+	}, [router, pathname]);
 
 	useEffect(() => {
 		if (callId && !isCallLoading && call && !hide) {
@@ -247,6 +257,7 @@ const MyCallUI = () => {
 		const handleCallAccepted = async () => {
 			setShowCallUI(false);
 			setConnecting(true);
+			setRedirecting(true);
 			setConnectingCall(outgoingCall);
 			clearTimeout(autoDeclineTimeout);
 			logEvent(analytics, "call_accepted", { callId: outgoingCall.id });
@@ -273,6 +284,7 @@ const MyCallUI = () => {
 				outgoingCall.state.callingState === CallingState.JOINED
 			) {
 				try {
+					setConnecting(false);
 					await outgoingCall
 						.leave()
 						.then(() => router.replace(`/meeting/${outgoingCall.id}`))
@@ -289,10 +301,10 @@ const MyCallUI = () => {
 				} catch (err) {
 					console.warn("unable to leave client user ... ", err);
 					router.replace(`/meeting/${outgoingCall.id}`);
+				} finally {
+					setConnecting(false);
 				}
 			}
-
-			setConnecting(false);
 		};
 
 		const handleCallRejected = async () => {
@@ -399,7 +411,7 @@ const MyCallUI = () => {
 	}, [incomingCalls, outgoingCalls]);
 
 	// Display loading UI when connecting
-	if (connecting) {
+	if (connecting || redirecting) {
 		return <MyCallConnectingUI call={connectingCall} />;
 	}
 

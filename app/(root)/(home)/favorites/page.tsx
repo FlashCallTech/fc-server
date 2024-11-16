@@ -24,6 +24,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import Link from "next/link";
 type FavoriteItem = {
 	creatorId: creatorUser;
 };
@@ -142,12 +143,35 @@ const Favorites = () => {
 
 	const activeFiltersCount = [sortBy, groupBy].filter(Boolean).length;
 
+	const creatorURL = localStorage.getItem("creatorURL");
+
 	return (
 		<section className="flex size-full flex-col gap-2">
 			<div
 				className={`sticky flex w-full items-center justify-between top-0 md:top-[76px] bg-white z-30 px-2 lg:pl-0.5 p-4 transition-all duration-300`}
 			>
-				<h1 className="text-3xl font-bold pl-1">Favorites</h1>
+				<section className="flex items-center gap-4">
+					<Link
+						href={`${creatorURL ? creatorURL : "/home"}`}
+						className="text-xl font-bold hoverScaleDownEffect"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							strokeWidth={1.5}
+							stroke="currentColor"
+							className="size-6"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M15.75 19.5 8.25 12l7.5-7.5"
+							/>
+						</svg>
+					</Link>
+					<h1 className="text-xl md:text-3xl font-bold">Favorites</h1>
+				</section>
 				<button
 					onClick={toggleFilterPopup}
 					disabled={favorites.length === 0}
@@ -179,17 +203,16 @@ const Favorites = () => {
 			</div>
 			{/* Filter Popup */}
 			<Dialog open={isFilterOpen} onOpenChange={toggleFilterPopup}>
-				<DialogContent className="flex flex-col items-center justify-center w-fit !p-0 border-none">
-					<DialogHeader className="sr-only">
-						<DialogTitle className="sr-only">Filter Options</DialogTitle>
+				<DialogContent className="bg-white rounded-xl shadow-lg flex flex-col items-center justify-center w-fit p-5 border-none">
+					<DialogHeader className="text-start w-full">
+						<DialogTitle className="w-full text-start text-2xl font-semibold tracking-wide">
+							Filter Options
+						</DialogTitle>
 						<DialogDescription className="sr-only">
 							Select the Filters
 						</DialogDescription>
 					</DialogHeader>
-					<section className="bg-white p-5 rounded-xl shadow-lg lg:w-fit w-[85%] ">
-						<h2 className="text-2xl font-semibold mb-4 tracking-wide text-green-1">
-							Filter Options
-						</h2>
+					<section className="size-full">
 						<div className="flex gap-4 mb-4">
 							<Select
 								value={sortBy}
@@ -247,23 +270,22 @@ const Favorites = () => {
 								</SelectContent>
 							</Select>
 						</div>
-						<div className="flex items-center gap-2 justify-end w-full">
+						<div className="flex items-center gap-2 justify-between w-full">
+							<button
+								onClick={toggleFilterPopup}
+								className="w-full px-4 py-2 text-sm border rounded-lg  flex items-center justify-center gap-1 hoverScaleDownEffect hover:opacity-80"
+							>
+								Close
+							</button>
 							<button
 								onClick={() => {
 									setSortBy("");
 									setGroupBy("");
 									toggleFilterPopup();
 								}}
-								className="px-4 py-2 text-sm border rounded-lg bg-green-1 text-white flex items-center justify-center gap-1 hoverScaleDownEffect hover:opacity-80"
+								className="w-full px-4 py-2 text-sm border rounded-lg bg-green-1 text-white flex items-center justify-center gap-1 hoverScaleDownEffect hover:opacity-80"
 							>
 								Clear
-							</button>
-
-							<button
-								onClick={toggleFilterPopup}
-								className="px-4 py-2 text-sm border rounded-lg bg-red-500 text-white flex items-center justify-center gap-1 hoverScaleDownEffect hover:opacity-80"
-							>
-								Close
 							</button>
 						</div>
 					</section>

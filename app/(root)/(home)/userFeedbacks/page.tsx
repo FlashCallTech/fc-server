@@ -54,7 +54,7 @@ const UserFeedbacks = () => {
 			<section
 				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4  pb-4 flex items-center justify-between transition-all duration-300`}
 			>
-				<h1 className="text-3xl font-bold">User Feedbacks</h1>
+				<h1 className="text-xl md:text-3xl font-bold">User Feedbacks</h1>
 			</section>
 			{isError ? (
 				<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">

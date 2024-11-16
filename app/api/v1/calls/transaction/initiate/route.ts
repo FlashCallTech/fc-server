@@ -7,7 +7,7 @@ export async function POST(req: Request) {
 		const { callId, duration, isVideoCall, clientId, creatorId } =
 			await req.json();
 
-		const baseUrl = process.env.API_BASE_URL || "http://localhost:3000"; // Use your actual base URL or an environment variable
+		const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
 
 		const [transactionResponse, creator] = await Promise.all([
 			fetch(
