@@ -42,7 +42,13 @@ import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
 import { usePathname } from "next/navigation";
 import axios from "axios";
-import { backendBaseUrl, cn, debounce, placeholderImages } from "@/lib/utils";
+import {
+	backendBaseUrl,
+	cn,
+	debounce,
+	getProfileImagePlaceholder,
+	placeholderImages,
+} from "@/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 import Image from "next/image";
 import GetRandomImage from "@/utils/GetRandomImage";
@@ -242,6 +248,19 @@ const EditProfile = ({
 
 	// Watch form values to detect changes
 	const watchedValues: any = useWatch({ control: form.control });
+
+	// State to track the media URL (for reactivity)
+	const [mediaUrl, setMediaUrl] = useState<string | undefined>(
+		userData?.photo || getProfileImagePlaceholder(watchedValues?.gender)
+	);
+
+	// Update the mediaUrl dynamically when gender changes
+	useEffect(() => {
+		// If userData.photo is not available, update the mediaUrl based on gender change
+		if (!userData?.photo && watchedValues?.gender) {
+			setMediaUrl(getProfileImagePlaceholder(watchedValues.gender));
+		}
+	}, [watchedValues?.gender, userData?.photo]);
 
 	useEffect(() => {
 		const hasChanged = Object.keys(watchedValues).some((key) => {
@@ -450,20 +469,26 @@ const EditProfile = ({
 				<FormField
 					control={form.control}
 					name="photo"
-					render={({ field }) => (
-						<FormItem className="w-full">
-							<FormControl>
-								<FileUploader
-									fieldChange={field.onChange}
-									mediaUrl={userData?.photo as string}
-									onFileSelect={setSelectedFile}
-								/>
-							</FormControl>
-							<FormMessage className="error-message">
-								{errors.photo?.message}
-							</FormMessage>
-						</FormItem>
-					)}
+					render={({ field }) => {
+						const gender = userData?.gender;
+						const mediaUrl =
+							userData?.photo || getProfileImagePlaceholder(gender);
+
+						return (
+							<FormItem className="w-full">
+								<FormControl>
+									<FileUploader
+										fieldChange={field.onChange}
+										mediaUrl={mediaUrl}
+										onFileSelect={setSelectedFile}
+									/>
+								</FormControl>
+								<FormMessage className="error-message">
+									{errors.photo?.message}
+								</FormMessage>
+							</FormItem>
+						);
+					}}
 				/>
 
 				{/* username */}

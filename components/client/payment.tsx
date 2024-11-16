@@ -158,7 +158,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						/>
 					</svg>
 				</Link>
-				<h1 className="text-3xl font-bold">User Wallet</h1>
+				<h1 className="text-xl md:text-3xl font-bold">User Wallet</h1>
 			</section>
 
 			{/* Balance Section */}

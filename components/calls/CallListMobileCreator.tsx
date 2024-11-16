@@ -102,11 +102,11 @@ const CallListMobileCreator = ({
 													alt="Expert"
 													height={1000}
 													width={1000}
-													className="rounded-full max-w-12 min-w-12 h-12 object-cover  cursor-pointer"
+													className="rounded-full max-w-12 min-w-12 h-12 object-cover"
 												/>
 												{/* creator details */}
 												<section className="size-full flex flex-col items-start justify-between gap-1">
-													<p className="text-base tracking-wide whitespace-nowrap capitalize  cursor-pointer">
+													<p className="text-base tracking-wide whitespace-nowrap capitalize">
 														{fullName || "Creator"}
 													</p>
 
@@ -180,7 +180,7 @@ const CallListMobileCreator = ({
 																</svg>
 															)}
 														</span>
-														<section className="flex items-center justify-start gap-2">
+														<section className="flex items-center justify-start gap-1.5">
 															<span className="text-gray-400">•</span>
 
 															<span>
@@ -215,7 +215,7 @@ const CallListMobileCreator = ({
 																{/* User Amount */}
 																<span className="flex items-center gap-1 text-green-500">
 																	{/* Amount */}
-																	{`+ ₹${userCall?.amount?.toFixed(0) ?? 0}`}
+																	{`₹${userCall?.amount?.toFixed(0) ?? 0}`}
 																</span>
 															</>
 														</section>
@@ -235,7 +235,7 @@ const CallListMobileCreator = ({
 												/>
 											</section>
 
-											<span className="text-sm text-[#A7A8A1] pr-1 whitespace-nowrap">
+											<span className="text-[13px] xm:text-sm text-[#A7A8A1] whitespace-nowrap">
 												{formattedDate.dateTime}
 											</span>
 										</section>

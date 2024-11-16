@@ -100,7 +100,7 @@ const CallListMobile = ({
 								return (
 									<section
 										key={userCall.callId}
-										className={`flex h-full w-full items-start justify-between p-4 xl:max-w-[568px] border rounded-xl border-gray-300`}
+										className={`flex h-full w-full items-start justify-between p-2.5 xm:p-4 xl:max-w-[568px] border rounded-xl border-gray-300`}
 									>
 										<section className="flex flex-col items-start justify-start w-full gap-2">
 											{/* Expert's Details */}
@@ -130,7 +130,7 @@ const CallListMobile = ({
 													</p>
 
 													{/* call details */}
-													<section className="flex flex-wrap items-center justify-start gap-2 text-[12.5px]">
+													<section className="flex items-center justify-start gap-2 text-[12.5px]">
 														<span>
 															{userCall.type === "audio" ? (
 																userCall.status === "Ended" ? (
@@ -199,7 +199,7 @@ const CallListMobile = ({
 																</svg>
 															)}
 														</span>
-														<section className="flex items-center justify-start gap-2">
+														<section className="flex items-center justify-start gap-1.5">
 															<span className="text-gray-400">•</span>
 
 															<span>
@@ -234,7 +234,7 @@ const CallListMobile = ({
 																{/* User Amount */}
 																<span className="flex items-center gap-1 text-green-500">
 																	{/* Amount */}
-																	{`+ ₹${userCall?.amount?.toFixed(0) ?? 0}`}
+																	{`₹${userCall?.amount?.toFixed(0) ?? 0}`}
 																</span>
 															</>
 														</section>
@@ -254,7 +254,7 @@ const CallListMobile = ({
 												/>
 											</section>
 
-											<span className="text-sm text-[#A7A8A1] pr-1 whitespace-nowrap">
+											<span className="text-[13px] xm:text-sm text-[#A7A8A1] whitespace-nowrap">
 												{formattedDate.dateTime}
 											</span>
 										</section>

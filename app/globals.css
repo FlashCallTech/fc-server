@@ -395,7 +395,7 @@ input[type="number"] {
 
 	/* card content highlighter */
 	.creatorsGirdHighlight {
-		@apply absolute bottom-0 w-full bg-gradient-to-t from-black to-black/20 p-4 rounded-xl;
+		@apply absolute bottom-0 w-full bg-gradient-to-t from-black/70 to-black/0 p-4 rounded-xl rounded-t-none;
 	}
 }
 

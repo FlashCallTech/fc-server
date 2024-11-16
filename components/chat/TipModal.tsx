@@ -88,7 +88,7 @@ const TipModal = ({
 			try {
 				setLoading(true);
 				await Promise.all([
-					fetch("/api/v1/wallet/payout", {
+					fetch(`${backendBaseUrl}/api/v1/payout/addMoney`, {
 						method: "POST",
 						body: JSON.stringify({
 							userId: clientId,
@@ -98,7 +98,7 @@ const TipModal = ({
 						}),
 						headers: { "Content-Type": "application/json" },
 					}),
-					fetch("/api/v1/wallet/addMoney", {
+					fetch(`${backendBaseUrl}/api/v1/wallet/addMoney`, {
 						method: "POST",
 						body: JSON.stringify({
 							userId: creatorId,
@@ -125,10 +125,12 @@ const TipModal = ({
 					console.log("not exists");
 					// Create document if it doesn't exist with initial callId and amount
 					await setDoc(tipRef, {
-						[callId as string]: { amount: parseInt(tipAmount), totalAmount: parseInt(tipAmount) },
+						[callId as string]: {
+							amount: parseInt(tipAmount),
+							totalAmount: parseInt(tipAmount),
+						},
 					});
 				}
-
 
 				setWalletBalance((prev) => prev + parseInt(tipAmount));
 				setTipPaid(true);
@@ -192,8 +194,9 @@ const TipModal = ({
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className={`flex flex-col items-center justify-center ${!loading ? "px-10 py-7" : "px-4"
-						} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
+					className={`flex flex-col items-center justify-center ${
+						!loading ? "px-10 py-7" : "px-4"
+					} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
 				>
 					{loading ? (
 						<ContentLoading />
@@ -205,8 +208,9 @@ const TipModal = ({
 									<p>
 										Balance Left
 										<span
-											className={`ml-2 ${hasLowBalance ? "text-red-500" : "text-green-1"
-												}`}
+											className={`ml-2 ${
+												hasLowBalance ? "text-red-500" : "text-green-1"
+											}`}
 										>
 											₹ {adjustedWalletBalance.toFixed(2)}
 										</span>
@@ -243,9 +247,10 @@ const TipModal = ({
 										<Button
 											key={amount}
 											onClick={() => handlePredefinedAmountClick(amount)}
-											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${tipAmount === amount &&
+											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${
+												tipAmount === amount &&
 												"bg-green-1 text-white hover:bg-green-1"
-												}`}
+											}`}
 										>
 											₹{amount}
 										</Button>

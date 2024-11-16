@@ -45,14 +45,14 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 	const imageSrc = getImageSource(creator);
 
-	const themeColor = isValidHexColor(creator.themeSelected)
-		? creator.themeSelected
+	const themeColor = isValidHexColor(creator?.themeSelected)
+		? creator?.themeSelected
 		: "#90EE90";
 
 	useEffect(() => {
 		localStorage.setItem("currentCreator", JSON.stringify(creator));
 		if (userType !== "creator" && creator?.username) {
-			localStorage.setItem("creatorURL", `/${creator.username}`);
+			localStorage.setItem("creatorURL", `/${creator?.username}`);
 		}
 		setCurrentTheme(themeColor);
 		updateCreatorURL(creatorURL);
@@ -64,9 +64,9 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	}, [isAuthSheetOpen]);
 
 	useEffect(() => {
-		if (!creator || !creator._id || !creator.phone) return;
-		const creatorRef = doc(db, "services", creator._id);
-		const statusDocRef = doc(db, "userStatus", creator.phone);
+		if (!creator || !creator?._id || !creator?.phone) return;
+		const creatorRef = doc(db, "services", creator?._id);
+		const statusDocRef = doc(db, "userStatus", creator?.phone);
 
 		const unsubscribeServices = onSnapshot(creatorRef, (doc) => {
 			const data = doc.data();
@@ -96,7 +96,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		return () => {
 			unsubscribeServices();
 		};
-	}, [creator._id, creator.phone]);
+	}, [creator?._id, creator?.phone]);
 
 	const handleToggleFavorite = async () => {
 		if (!clientUser) {
@@ -110,7 +110,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				`${backendBaseUrl}/favorites/upsertFavorite`,
 				{
 					clientId: clientId as string,
-					creatorId: creator._id,
+					creatorId: creator?._id,
 				}
 			);
 
@@ -165,7 +165,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 						<Image
 							src={imageSrc}
-							alt={creator.firstName || creator.username}
+							alt={creator?.firstName || creator?.username}
 							width={300}
 							height={300}
 							quality={75}
@@ -222,7 +222,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 							{fullName}
 						</p>
 						<span className="text-sm">
-							{creator.profession ? creator.profession : "Expert"}
+							{creator?.profession ? creator?.profession : "Expert"}
 						</span>
 					</section>
 				</section>
@@ -239,31 +239,31 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 							creator={creator}
 							user={clientUser}
 							isCreatorOrExpertPath={pathname.includes(
-								creatorURL || `/${creator.username}`
+								creatorURL || `/${creator?.username}`
 							)}
 						/>
 					)}
 					{/* Share Button */}
 					<ShareButton
-						username={creator.username ? creator.username : creator.phone}
-						profession={creator.profession ?? "Astrologer"}
-						gender={creator.gender ? creator.gender.toLowerCase() : ""}
-						firstName={creator.firstName}
-						lastName={creator.lastName}
+						username={creator?.username ? creator?.username : creator?.phone}
+						profession={creator?.profession ?? "Astrologer"}
+						gender={creator?.gender ? creator?.gender.toLowerCase() : ""}
+						firstName={creator?.firstName}
+						lastName={creator?.lastName}
 					/>
 				</section>
 			</section>
 
 			{/* About, Services and Reviews */}
 			<section className="size-full rounded-t-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5">
-				{creator.bio && (
+				{creator?.bio && (
 					<>
 						{/* About Creator */}
 						<section className="flex flex-col items-start justify-start gap-2">
 							{/* Heading */}
 							<h2 className="text-base font-bold">About Me</h2>
 							{/* Content */}
-							<p className="text-sm">{creator.bio}</p>
+							<p className="text-sm">{creator?.bio}</p>
 						</section>
 						{/* Divider */}
 						<div className="w-full border border-white" />
@@ -313,7 +313,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				<section className="grid grid-cols-1 w-full items-start justify-start gap-2 pt-4">
 					{/* Content */}
 					<UserReviews
-						theme={creator.themeSelected}
+						theme={creator?.themeSelected}
 						creatorUsername={fullName}
 						creatorId={creator?._id}
 					/>

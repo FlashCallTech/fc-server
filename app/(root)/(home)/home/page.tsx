@@ -26,6 +26,20 @@ const HomePage = () => {
 		threshold: 0.1,
 		triggerOnce: false,
 	});
+
+	const [limit, setLimit] = useState(() => {
+		return window.innerWidth >= 1536 ? 12 : 10;
+	});
+
+	useEffect(() => {
+		const handleResize = () => {
+			setLimit(window.innerWidth >= 1536 ? 12 : 10);
+		};
+
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
+
 	const {
 		data: creators,
 		fetchNextPage,
@@ -33,7 +47,7 @@ const HomePage = () => {
 		isFetching,
 		isError,
 		isLoading,
-	} = useGetCreators();
+	} = useGetCreators(limit);
 
 	const handleCreatorCardClick = async (
 		phone: string,
@@ -68,14 +82,14 @@ const HomePage = () => {
 			if (storedScrollPosition) {
 				window.scrollTo({
 					top: parseInt(storedScrollPosition, 10),
-					behavior: "smooth",
+					behavior: "auto",
 				});
 				sessionStorage.removeItem("scrollPosition");
 			}
 		};
 
 		if (!isLoading && !loadingCard && !isFetching) {
-			setTimeout(restoreScrollPosition, 100);
+			restoreScrollPosition();
 		}
 	}, [isLoading, loadingCard, isFetching]);
 
