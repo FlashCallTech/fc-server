@@ -247,19 +247,6 @@ const EditProfile = ({
 	// Watch form values to detect changes
 	const watchedValues: any = useWatch({ control: form.control });
 
-	// State to track the media URL (for reactivity)
-	const [mediaUrl, setMediaUrl] = useState<string | undefined>(
-		userData?.photo || getProfileImagePlaceholder(watchedValues?.gender)
-	);
-
-	// Update the mediaUrl dynamically when gender changes
-	useEffect(() => {
-		// If userData.photo is not available, update the mediaUrl based on gender change
-		if (!userData?.photo && watchedValues?.gender) {
-			setMediaUrl(getProfileImagePlaceholder(watchedValues.gender));
-		}
-	}, [watchedValues?.gender, userData?.photo]);
-
 	useEffect(() => {
 		const hasChanged = Object.keys(watchedValues).some((key) => {
 			return watchedValues[key] !== initialState[key];
@@ -674,6 +661,12 @@ const EditProfile = ({
 													<div className="flex justify-center w-full">
 														<ContentLoading />
 													</div>
+												) : !loadingProfessions &&
+												  professions &&
+												  professions.length === 0 ? (
+													<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
+														Error fetching the list
+													</p>
 												) : (
 													<div className="size-full mt-4 grid grid-cols-3 items-center gap-5 md:gap-2.5">
 														{professions?.map((profession: any) => (
