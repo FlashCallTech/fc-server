@@ -19,7 +19,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { trackEvent } from "@/lib/mixpanel";
-import { backendBaseIconUrl } from "@/lib/utils";
+import { backendBaseIconUrl, backendBaseUrl } from "@/lib/utils";
 
 const Recharge: React.FC = () => {
 	const { updateWalletBalance } = useWalletBalanceContext();
