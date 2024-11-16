@@ -1,4 +1,5 @@
-import { Schema, model, models } from "mongoose";
+import pkg from "mongoose";
+const { Schema, model, models } = pkg;
 
 const TransactionSchema = new Schema(
 	{
@@ -10,7 +11,9 @@ const TransactionSchema = new Schema(
 		userType: { type: String, required: true, enum: ["Client", "Creator"] },
 		amount: { type: Number, required: true },
 		type: { type: String, required: true, enum: ["credit", "debit"] },
-		method: {type: String},
+		category: { type: String, default: "Call Transaction" },
+		method: { type: String },
+		callType: { type: String },
 	},
 	{
 		timestamps: true,

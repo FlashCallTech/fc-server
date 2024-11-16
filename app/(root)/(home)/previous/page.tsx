@@ -9,6 +9,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
 import CallListMobileCreator from "@/components/calls/CallListMobileCreator";
+import Link from "next/link";
 
 const PreviousPage = () => {
 	const [historyType, setHistoryType] = useState<
@@ -43,12 +44,35 @@ const PreviousPage = () => {
 			});
 	}, []);
 
+	const creatorURL = localStorage.getItem("creatorURL");
+
 	return (
 		<section className="flex size-full flex-col gap-2 pb-5">
 			<section
 				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4  pb-4 flex items-center justify-between transition-all duration-300`}
 			>
-				<h1 className="text-3xl font-bold">Order History</h1>
+				<section className="flex items-center gap-4">
+					<Link
+						href={`${creatorURL ? creatorURL : "/home"}`}
+						className="text-xl font-bold"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							strokeWidth={1.5}
+							stroke="currentColor"
+							className="size-6"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M15.75 19.5 8.25 12l7.5-7.5"
+							/>
+						</svg>
+					</Link>
+					<h1 className="text-xl md:text-3xl font-bold">Order History</h1>
+				</section>
 				<div className="hidden xl:flex items-center justify-center w-fit gap-2">
 					{options.map((option) => (
 						<Button

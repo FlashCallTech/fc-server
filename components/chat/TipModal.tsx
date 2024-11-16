@@ -18,6 +18,7 @@ import { success } from "@/constants/icons";
 import ContentLoading from "../shared/ContentLoading";
 import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { backendBaseUrl } from "@/lib/utils";
 
 const TipModal = ({
 	walletBalance,
@@ -84,7 +85,7 @@ const TipModal = ({
 			try {
 				setLoading(true);
 				await Promise.all([
-					fetch("/api/v1/wallet/payout", {
+					fetch(`${backendBaseUrl}/api/v1/payout/addMoney`, {
 						method: "POST",
 						body: JSON.stringify({
 							userId: clientId,
@@ -94,7 +95,7 @@ const TipModal = ({
 						}),
 						headers: { "Content-Type": "application/json" },
 					}),
-					fetch("/api/v1/wallet/addMoney", {
+					fetch(`${backendBaseUrl}/api/v1/wallet/addMoney`, {
 						method: "POST",
 						body: JSON.stringify({
 							userId: creatorId,
