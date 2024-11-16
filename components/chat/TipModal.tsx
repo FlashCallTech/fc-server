@@ -20,6 +20,7 @@ import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, getDoc, increment, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { backendBaseUrl } from "@/lib/utils";
 
 const TipModal = ({
 	walletBalance,
