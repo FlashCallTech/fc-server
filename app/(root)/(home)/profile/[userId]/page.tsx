@@ -148,7 +148,7 @@ const UserProfilePage = () => {
 
 					{/* Edit profile area */}
 					{editData && (
-						<div className="px-4 flex flex-col size-full items-start justify-center gap-7 mt-4">
+						<div className="p-4 flex flex-col size-full items-start justify-start gap-7">
 							<EditProfile
 								userData={userData}
 								setUserData={handleUpdate}

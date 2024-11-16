@@ -457,7 +457,37 @@ const EditProfile = ({
 
 	return (
 		<Form {...form}>
-			<span className="text-2xl font-semibold">Edit User Details</span>
+			<section
+				className={`sticky top-0 md:top-[76px] bg-white z-30 p-4 flex flex-col items-start justify-start gap-4 w-full h-fit`}
+			>
+				<section className="flex items-center gap-4">
+					{pathname.includes("/profile") && (
+						<section
+							onClick={() => {
+								form.reset();
+								setEditData && setEditData((prev) => !prev);
+							}}
+							className="text-xl font-bold hoverScaleDownEffect cursor-pointer"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								strokeWidth={1.5}
+								stroke="currentColor"
+								className="size-6"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M15.75 19.5 8.25 12l7.5-7.5"
+								/>
+							</svg>
+						</section>
+					)}
+					<h1 className="text-xl md:text-3xl font-bold">Edit User Details</h1>
+				</section>
+			</section>
 
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
@@ -854,6 +884,7 @@ const EditProfile = ({
 													"input-field text-left font-normal w-full",
 													!field.value && "text-muted-foreground"
 												)}
+												style={{ paddingBottom: "0px !important" }}
 											>
 												{field.value ? (
 													format(new Date(field.value), "PPP") // Format the stored string value back to a readable format
