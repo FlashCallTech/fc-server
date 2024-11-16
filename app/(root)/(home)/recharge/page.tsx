@@ -19,6 +19,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { trackEvent } from "@/lib/mixpanel";
+import { backendBaseUrl } from "@/lib/utils";
 
 const Recharge: React.FC = () => {
 	const { updateWalletBalance } = useWalletBalanceContext();
@@ -146,7 +147,7 @@ const Recharge: React.FC = () => {
 						const userId = currentUser?._id as string; // Replace with actual user ID
 						const userType = "Client"; // Replace with actual user type
 
-						await fetch("/api/v1/wallet/addMoney", {
+						await fetch(`${backendBaseUrl}/api/v1/wallet/addMoney`, {
 							method: "POST",
 							body: JSON.stringify({
 								userId,
@@ -288,7 +289,11 @@ const Recharge: React.FC = () => {
 									<button
 										key={app.name}
 										onClick={() => setMethod(app.name.toLowerCase())}
-										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${method === app.name.toLowerCase() ? "bg-gray-300 dark:bg-gray-600 !important" : ""}`}
+										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${
+											method === app.name.toLowerCase()
+												? "bg-gray-300 dark:bg-gray-600 !important"
+												: ""
+										}`}
 									>
 										<Image
 											src={app.icon}

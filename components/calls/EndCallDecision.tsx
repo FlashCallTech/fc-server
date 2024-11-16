@@ -25,7 +25,7 @@ const EndCallDecision = ({
 				</SheetTrigger>
 				<SheetContent
 					side="bottom"
-					className="bg-white text-black rounded-t-xl p-7 flex flex-col items-start justify-between gap-4 min-h-[200px] max-h-fit w-full sm:max-w-[444px] mx-auto"
+					className="bg-white text-black rounded-t-xl p-5 flex flex-col items-start justify-between gap-7 max-h-fit w-full sm:max-w-[444px] mx-auto"
 				>
 					<SheetHeader className="flex flex-col items-start justify-center">
 						<SheetTitle>Are you sure?</SheetTitle>

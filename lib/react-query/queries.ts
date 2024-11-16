@@ -1,7 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
-import { getUsersPaginated } from "../actions/creator.actions";
 
 import axios from "axios";
 import { backendBaseUrl } from "../utils";
@@ -115,10 +114,10 @@ export const useGetClients = () => {
 // CREATOR QUERIES
 // ============================================================
 
-export const useGetCreators = () => {
-	const limit = 10;
+export const useGetCreators = (limit: number) => {
+	console.log(limit);
 	return useInfiniteQuery({
-		queryKey: [QUERY_KEYS.GET_CREATORS],
+		queryKey: [QUERY_KEYS.GET_CREATORS, limit],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
 				`${backendBaseUrl}/creator/getUsersFiltered`,

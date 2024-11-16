@@ -3,7 +3,7 @@ import { analytics, db } from "@/lib/firebase";
 import { logEvent } from "firebase/analytics";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import * as Sentry from "@sentry/nextjs";
-import { updateFirestoreSessions } from "@/lib/utils";
+import { backendBaseUrl, updateFirestoreSessions } from "@/lib/utils";
 
 export const handleTransaction = async ({
 	expertId,
@@ -105,7 +105,7 @@ export const handleTransaction = async ({
 				}),
 				headers: { "Content-Type": "application/json" },
 			}),
-			fetch("/api/v1/wallet/addMoney", {
+			fetch(`${backendBaseUrl}/api/v1/wallet/addMoney`, {
 				method: "POST",
 				body: JSON.stringify({
 					userId: expertId,
