@@ -232,7 +232,7 @@ const CallListMobile = ({
 																{/* Separator */}
 																<span className="text-gray-400">•</span>
 																{/* User Amount */}
-																<span className="flex items-center gap-1 text-green-500">
+																<span className="flex items-center gap-1">
 																	{/* Amount */}
 																	{`₹${userCall?.amount?.toFixed(0) ?? 0}`}
 																</span>

@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
-import DatePicker from "react-datepicker";
 import {
 	Popover,
 	PopoverContent,
@@ -30,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { UpdateCreatorParams, UpdateUserParams } from "@/types";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	UpdateProfileFormSchema,
 	UpdateProfileFormSchemaClient,
@@ -141,7 +140,6 @@ const EditProfile = ({
 
 	const [selectedProfession, setSelectedProfession] = useState("");
 	const [dialogOpen, setDialogOpen] = useState(false);
-	const bottomRef = useRef(null);
 
 	const [customProfession, setCustomProfession] = useState("");
 
@@ -544,13 +542,15 @@ const EditProfile = ({
 							render={({ field }) => (
 								<FormItem className="flex-1">
 									<FormLabel className="font-medium text-sm text-gray-400 ml-1">
-										{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
+										{field.name
+											.replace(/([a-z])([A-Z])/g, "$1 $2")
+											.replace(/^\w/, (c) => c.toUpperCase())}
 									</FormLabel>
 									<FormControl>
 										<Input
-											placeholder={`Enter ${
-												field.name.charAt(0).toUpperCase() + field.name.slice(1)
-											}`}
+											placeholder={`Enter ${field.name
+												.replace(/([a-z])([A-Z])/g, "$1 $2")
+												.replace(/^\w/, (c) => c.toUpperCase())}`}
 											{...field}
 											className="input-field"
 										/>
@@ -1047,11 +1047,11 @@ const EditProfile = ({
 				<section
 					className={`${
 						isChanged && isValid && !formError && !usernameError
-							? "grid-cols-2 w-full"
+							? "grid-cols-1 w-full"
 							: "grid-cols-1 w-3/4 lg:w-1/2"
 					} sticky bottom-2 right-0 grid  gap-4 items-center justify-center `}
 				>
-					{closeButton && (
+					{/* {closeButton && (
 						<Button
 							className="text-base rounded-lg border border-gray-300  hoverScaleDownEffect bg-gray-400 text-white"
 							onClick={() => {
@@ -1061,7 +1061,7 @@ const EditProfile = ({
 						>
 							Close
 						</Button>
-					)}
+					)} */}
 					{isChanged && isValid && !formError && !usernameError && (
 						<Button
 							className="text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"

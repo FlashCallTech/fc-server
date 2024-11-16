@@ -310,6 +310,7 @@ const MyCallUI = () => {
 		const handleCallRejected = async () => {
 			setShowCallUI(false);
 			clearTimeout(autoDeclineTimeout);
+			setRedirecting(false);
 
 			if (sessionStorage.getItem(`callRejected-${outgoingCall.id}`)) return;
 
@@ -367,6 +368,8 @@ const MyCallUI = () => {
 			};
 
 			const message = defaultMessage;
+
+			setRedirecting(false);
 
 			toast({
 				variant: "destructive",
