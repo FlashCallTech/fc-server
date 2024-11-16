@@ -35,6 +35,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const frontendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 export const backendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL_BACKEND;
+export const backendBaseIconUrl = `{process.env.NEXT_PUBLIC_BASE_URL_BACKEND_ICON}/icons`
 // export const backendBaseUrl = "https://backend.flashcall.me/api/v1";
 
 // Function to handle interrupted calls and update the user's status

@@ -12,16 +12,11 @@ export async function addMoney({
 	userId,
 	userType,
 	amount,
+	category,
 	method,
-	flag,
 }: WalletParams) {
 	try {
 		await connectToDatabase();
-		if (flag) {
-			flag = false;
-		} else {
-			flag = true;
-		}
 		let user;
 		let referDetails;
 		if (userType === "Client") {
@@ -52,19 +47,18 @@ export async function addMoney({
 			{ new: true, upsert: true }
 		);
 
-		console.log(method);
-
 		// Create a transaction record
 		numericAmount > 0 &&
 			(await Transaction.create({
 				userId,
 				userType,
 				amount: numericAmount,
-				method,
 				type: "credit",
+				category: category,
+				method,
 			}));
 
-		if (referDetails && referDetails.amount > 0 && flag) {
+		if (referDetails && referDetails.amount > 0 && category === "Call Transaction") {
 			const referrer = await Creator.findOne({ _id: referDetails.referredBy });
 			if (referrer) {
 				const referralBonus = Math.round((5 / 100) * numericAmount);
