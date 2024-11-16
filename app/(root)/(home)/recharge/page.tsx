@@ -19,6 +19,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { trackEvent } from "@/lib/mixpanel";
+import { backendBaseIconUrl } from "@/lib/utils";
 
 const Recharge: React.FC = () => {
 	const { updateWalletBalance } = useWalletBalanceContext();
@@ -107,8 +108,8 @@ const Recharge: React.FC = () => {
 				rechargeAmount,
 				currency,
 				name: "FlashCall.me",
-				description: "Test Transaction",
-				image: "https://example.com/your_logo",
+				description: "Wallet Recharge",
+				image: `${backendBaseIconUrl}/logo_icon.png`,
 				order_id: order.id,
 				handler: async (response: PaymentResponse): Promise<void> => {
 					const body: PaymentResponse = { ...response };
@@ -152,6 +153,7 @@ const Recharge: React.FC = () => {
 								userId,
 								userType,
 								amount: parseFloat(amountInt!.toFixed(2)),
+								category: "Recharge"
 							}),
 							headers: { "Content-Type": "application/json" },
 						});

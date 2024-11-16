@@ -4,8 +4,8 @@ import * as Sentry from "@sentry/nextjs";
 
 export async function POST(request: Request) {
 	try {
-		const { userId, userType, amount, method } = await request.json();
-		const updatedWallet = await addMoney({ userId, userType, amount, method });
+		const { userId, userType, amount, category = "Call Transaction", method } = await request.json();
+		const updatedWallet = await addMoney({ userId, userType, amount, category, method });
 		return NextResponse.json(updatedWallet);
 	} catch (error) {
 		Sentry.captureException(error);

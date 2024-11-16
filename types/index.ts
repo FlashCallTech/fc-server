@@ -393,6 +393,7 @@ export type WalletParams = {
 	amount: number;
 	method?: string;
 	flag?: any;
+	category?: string;
 };
 
 // Call Transactions
