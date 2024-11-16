@@ -33,10 +33,15 @@ export const handleTransaction = async ({
 		};
 		const creator = await getCreatorById(creatorId!);
 		const rate = creator.chatRate;
-		console.log(`Duration: ${roundToNearestThousand(parseInt(duration, 10))} + rate: ${rate}`);
+		console.log(
+			`Duration: ${roundToNearestThousand(
+				parseInt(duration, 10)
+			)} + rate: ${rate}`
+		);
 		const amountToBePaid = (
 			(roundToNearestThousand(parseInt(duration, 10)) / (1000 * 60)) *
-			rate * 0.8
+			rate *
+			0.8
 		).toFixed(1);
 		console.log("amount paid", amountToBePaid);
 		// console.log("clientID: ", clientId)
@@ -78,7 +83,7 @@ export const handleTransaction = async ({
 			}
 
 			await Promise.all([
-				fetch("/api/v1/wallet/payout", {
+				fetch(`${backendBaseUrl}/wallet/payout`, {
 					method: "POST",
 					body: JSON.stringify({
 						userId: clientId,
