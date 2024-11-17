@@ -76,7 +76,8 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 
 	const handleAppRedirect = () => {
 		trackEvent("Getlink_TopNav_Clicked");
-		const url = "https://forms.gle/bo42SCVG6T4YjJzg8";
+		const url =
+			"https://play.google.com/store/apps/details?id=com.flashcall.me";
 		window.open(url, "_blank");
 	};
 

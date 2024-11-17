@@ -130,7 +130,8 @@ const UserReviews = ({
 						<section className="size-full flex flex-col items-center justify-center xl:flex-row xl:justify-between gap-4 mt-5 xl:mt-10">
 							{/* External Link */}
 							<Link
-								href="/"
+								href="https://play.google.com/store/apps/details?id=com.flashcall.me"
+								target="_blank"
 								className="flex items-center justify-center gap-2 bg-white/20 rounded-3xl mx-auto w-full px-[16px] py-[10px]  min-w-[233px] max-w-fit h-[40px] hoverScaleDownEffect cursor-pointer"
 							>
 								<p className="text-center text-sm">

@@ -9,7 +9,6 @@ import {
 	DialogTitle,
 	DialogDescription,
 } from "@/components/ui/dialog";
-import * as Sentry from "@sentry/nextjs";
 
 import {
 	Sheet,
@@ -22,6 +21,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 import { trackEvent } from "@/lib/mixpanel";
 import { creatorUser } from "@/types";
+import { useRouter } from "next/navigation";
 
 const SignoutAlert = () => {
 	const {
@@ -37,7 +37,7 @@ const SignoutAlert = () => {
 	const [isMobileView, setIsMobileView] = useState(false);
 	const [creator, setCreator] = useState<creatorUser>();
 
-	// const router = useRouter();
+	const router = useRouter();
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -67,6 +67,8 @@ const SignoutAlert = () => {
 	const handleSignoutUser = async () => {
 		setLoading(true);
 		if (!currentUser) return;
+		const storedURL = localStorage.getItem("creatorURL");
+
 		try {
 			trackEvent("Menu_Signout clicked", {
 				Client_ID: clientUser?._id,
@@ -75,7 +77,7 @@ const SignoutAlert = () => {
 				Walletbalace_Available: clientUser?.walletBalance,
 			});
 			setAuthenticationSheetOpen(false);
-
+			router.replace(storedURL ? `${storedURL}` : "/home");
 			localStorage.setItem("userType", "client");
 
 			handleSignout();
@@ -83,7 +85,7 @@ const SignoutAlert = () => {
 			console.error("Error deleting user:", error);
 		} finally {
 			setLoading(false);
-			setShowSignoutDialog(false); // Close dialog
+			setShowSignoutDialog(false);
 		}
 	};
 

@@ -115,7 +115,6 @@ export const useGetClients = () => {
 // ============================================================
 
 export const useGetCreators = (limit: number) => {
-	console.log(limit);
 	return useInfiniteQuery({
 		queryKey: [QUERY_KEYS.GET_CREATORS, limit],
 		queryFn: async ({ pageParam = 1 }) => {
