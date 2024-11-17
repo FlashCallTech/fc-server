@@ -334,7 +334,7 @@ const AuthenticateViaOTP = ({
 														<Input
 															placeholder="Enter a Valid Number"
 															{...field}
-															className="w-full font-semibold bg-transparent border-none text-black focus-visible:ring-offset-0 placeholder:text-gray-400 placeholder:font-normal rounded-xl pr-4 pl-2 mx-1 py-3 focus-visible:ring-transparent !important"
+															className="w-full font-semibold bg-transparent border-none text-black focus-visible:ring-offset-0 placeholder:text-gray-400 placeholder:font-normal rounded-xl pr-4 pl-2 mx-1 py-3 focus-visible:ring-transparent hover:bg-transparent !important"
 														/>
 													</div>
 
