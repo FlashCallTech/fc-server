@@ -10,7 +10,7 @@ export const initMixpanel = (): void => {
   }
   mixpanel.init(MIXPANEL_TOKEN, {
     debug: true,
-    track_pageview: true,
+    track_pageview: false,
     autotrack: false,
     ignore_dnt: true,
     persistence: "localStorage",
