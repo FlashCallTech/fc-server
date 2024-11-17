@@ -100,7 +100,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof enterAmountSchema>>({
-		mode: "onChange"
+		mode: "onChange",
 		resolver: zodResolver(enterAmountSchema),
 		defaultValues: {
 			rechargeAmount: "",
