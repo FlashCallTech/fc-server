@@ -114,9 +114,9 @@ export const useGetClients = () => {
 // CREATOR QUERIES
 // ============================================================
 
-export const useGetCreators = (limit: number) => {
+export const useGetCreators = (limit: number, profession: string) => {
 	return useInfiniteQuery({
-		queryKey: [QUERY_KEYS.GET_CREATORS, limit],
+		queryKey: [QUERY_KEYS.GET_CREATORS, limit, profession],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
 				`${backendBaseUrl}/creator/getUsersFiltered`,
@@ -124,6 +124,7 @@ export const useGetCreators = (limit: number) => {
 					params: {
 						page: pageParam,
 						limit,
+						profession,
 					},
 				}
 			);

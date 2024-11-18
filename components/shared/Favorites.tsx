@@ -35,7 +35,6 @@ const Favorites = ({
 
 	const handleUnfollowClick = () => {
 		if (markedFavorite) {
-			// Show the unfollow confirmation dialog
 			setShowUnfollowDialog(true);
 		} else {
 			// Follow directly
@@ -97,7 +96,7 @@ const Favorites = ({
 			<Tooltip>
 				<TooltipTrigger asChild>
 					<button
-						className={`border ${
+						className={`border flex items-center justify-center w-full ${
 							isFavoritesPath
 								? "p-2 rounded-full border-white transition-all duration-300 hover:bg-green-1 hover:scale-105 "
 								: "h-[36px] w-full rounded-[6px] border-black hoverScaleDownEffect"
