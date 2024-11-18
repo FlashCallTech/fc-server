@@ -37,6 +37,7 @@ export type UpdateUserParams = {
 
 export type clientUser = {
 	_id: string;
+	fullName: string;
 	firstName: string;
 	lastName: string;
 	username: string;

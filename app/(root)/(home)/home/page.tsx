@@ -13,11 +13,14 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useGetCreators } from "@/lib/react-query/queries";
+import HomepageFilter from "@/components/filters/HomepageFilter";
 
 const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
 const HomePage = () => {
 	const [loadingCard, setLoadingCard] = useState(false);
+	const [selectedProfession, setSelectedProfession] = useState("All");
+
 	const { clientUser, userType, setCurrentTheme, updateCreatorURL } =
 		useCurrentUsersContext();
 	const router = useRouter();
@@ -47,7 +50,11 @@ const HomePage = () => {
 		isFetching,
 		isError,
 		isLoading,
-	} = useGetCreators(limit);
+	} = useGetCreators(limit, selectedProfession);
+
+	const handleProfessionChange = (profession: string) => {
+		setSelectedProfession(profession);
+	};
 
 	const handleCreatorCardClick = async (
 		phone: string,
@@ -114,7 +121,7 @@ const HomePage = () => {
 	return (
 		<main
 			className={`flex flex-col ${
-				userType === "creator" ? "pt-0 md:pt-5" : "pt-5"
+				userType === "creator" ? "pt-0 md:pt-5" : "pt-0"
 			}  size-full`}
 		>
 			{userType === "client" ? (
@@ -124,38 +131,56 @@ const HomePage = () => {
 							Failed to fetch creators
 							<span className="text-lg">Please try again later.</span>
 						</div>
-					) : creators && creators.pages[0].length === 0 && !isLoading ? (
-						<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
-							No creators found.
-						</p>
-					) : (
-						<section
-							className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 2xl:gap-7 px-3.5 lg:px-0 items-center overflow-hidden`}
-							style={{
-								WebkitTransform: "translateZ(0)",
-							}}
-						>
-							{creators?.pages?.map((page: any, pageIndex: any) =>
-								page?.users?.map((creator: creatorUser, index: number) => (
-									<section
-										key={creator._id}
-										className="w-full cursor-pointer"
-										onClick={() =>
-											handleCreatorCardClick(
-												creator.phone,
-												creator.username,
-												creator.themeSelected,
-												creator._id
-											)
-										}
-									>
-										<CreatorsGrid
-											key={`${pageIndex}-${index}`}
-											creator={creator}
-										/>
-									</section>
-								))
+					) : creators &&
+					  creators?.pages.flatMap((page: any) => page.totalUsers)[0] === 0 &&
+					  !isLoading ? (
+						<div className="size-full flex flex-col items-center justify-center gap-4 text-gray-500">
+							<p className="text-xl font-semibold text-center">
+								No creators found
+							</p>
+							{selectedProfession !== "All" && (
+								<button
+									onClick={() => setSelectedProfession("All")}
+									className="px-4 py-2 bg-green-1 text-white text-sm rounded-lg hoverScaleDownEffect"
+								>
+									Reset Filters
+								</button>
 							)}
+						</div>
+					) : (
+						<section className="grid grid-cols-1 px-4 lg:px-0">
+							<HomepageFilter
+								selectedProfession={selectedProfession}
+								handleProfessionChange={handleProfessionChange}
+							/>
+							<section
+								className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 2xl:gap-7  items-center overflow-hidden`}
+								style={{
+									WebkitTransform: "translateZ(0)",
+								}}
+							>
+								{creators?.pages?.map((page: any, pageIndex: any) =>
+									page?.users?.map((creator: creatorUser, index: number) => (
+										<section
+											key={creator._id}
+											className="w-full cursor-pointer"
+											onClick={() =>
+												handleCreatorCardClick(
+													creator.phone,
+													creator.username,
+													creator.themeSelected,
+													creator._id
+												)
+											}
+										>
+											<CreatorsGrid
+												key={`${pageIndex}-${index}`}
+												creator={creator}
+											/>
+										</section>
+									))
+								)}
+							</section>
 						</section>
 					)}
 
@@ -172,7 +197,7 @@ const HomePage = () => {
 					{!hasNextPage &&
 						!isFetching &&
 						creators &&
-						creators?.pages[0]?.length !== 0 && (
+						creators.pages.flatMap((page: any) => page.users).length > 6 && (
 							<div className="text-center text-gray-500 py-4">
 								You have reached the end of the list
 							</div>

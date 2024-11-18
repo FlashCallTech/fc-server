@@ -13,7 +13,7 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { sidebarLinks, sidebarLinksCreator } from "@/constants";
-import { cn, getImageSource } from "@/lib/utils";
+import { cn, getDisplayName, getImageSource } from "@/lib/utils";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useEffect, useMemo, useState } from "react";
 import { trackEvent } from "@/lib/mixpanel";
@@ -25,6 +25,12 @@ const MobileNav = () => {
 	const { currentUser, userType, handleSignout, clientUser } =
 		useCurrentUsersContext();
 	const [creator, setCreator] = useState<creatorUser>();
+	const fullName = getDisplayName({
+		fullName: currentUser?.fullName,
+		firstName: currentUser?.firstName,
+		lastName: currentUser?.lastName,
+		username: currentUser?.username as string,
+	});
 
 	// const router = useRouter();
 
@@ -105,7 +111,7 @@ const MobileNav = () => {
 				</SheetTrigger>
 				<SheetContent
 					side="right"
-					className="border-none bg-black rounded-l-xl size-full max-w-xs sm:max-w-sm z-50"
+					className="border-none bg-black size-full max-w-xs sm:max-w-sm z-50"
 				>
 					<div className="flex h-[calc(100dvh-50px)] w-full flex-col justify-between">
 						<SheetTitle>
@@ -124,16 +130,28 @@ const MobileNav = () => {
 									/>
 									<div className="flex flex-col w-full items-start justify-center text-white">
 										<span className="text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap">
-											{currentUser?.username ||
-												currentUser?.firstName ||
-												"Hello User"}
-										</span>
-										<span className="text-sm text-green-1">
 											{currentUser?.phone?.replace(
 												/(\+91)(\d+)/,
 												(match, p1, p2) => `${p1} ${p2}`
-											) || `@${currentUser?.username} || "Authenticate"`}
+											) || `@${fullName}`}
 										</span>
+										<section className="flex items-center justify-between w-fit gap-4">
+											<span className="text-sm text-green-1">{fullName}</span>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												viewBox="0 0 24 24"
+												strokeWidth={2.5}
+												stroke="currentColor"
+												className="size-3.5 text-green-1"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													d="m8.25 4.5 7.5 7.5-7.5 7.5"
+												/>
+											</svg>
+										</section>
 									</div>
 								</Link>
 							</SheetClose>
