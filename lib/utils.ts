@@ -244,10 +244,12 @@ export const updateFirestoreCallServices = async (
 			if (creatorStatusDoc.exists()) {
 				await updateDoc(creatorStatusDocRef, {
 					status: status ? status : isOnline ? "Online" : "Offline",
+					loginStatus: false,
 				});
 			} else {
 				await setDoc(creatorStatusDocRef, {
 					status: status ? status : isOnline ? "Online" : "Offline",
+					loginStatus: false,
 				});
 			}
 		} catch (error) {
