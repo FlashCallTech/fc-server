@@ -66,7 +66,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const [userType, setUserType] = useState<string | null>(null);
 	const [authToken, setAuthToken] = useState<string | null>(null);
 	const [creatorURL, setCreatorURL] = useState("");
-	const pathname = usePathname();
 
 	const { toast } = useToast();
 	const router = useRouter();
@@ -118,6 +117,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 	// Function to handle user signout
 	const handleSignout = async () => {
+		if (!currentUser) return;
 		localStorage.removeItem("currentUserID");
 		localStorage.removeItem("authToken");
 		const creatorStatusDocRef = doc(
@@ -129,11 +129,13 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		if (creatorStatusDoc.exists()) {
 			await updateDoc(creatorStatusDocRef, {
 				status: "Offline",
-				loginStatus: true,
+				loginStatus: false,
 			});
 		}
 		// Clear user data and local storage
 		await axios.post(`${backendBaseUrl}/user/endSession`);
+
+		localStorage.setItem("userType", "client");
 
 		setClientUser(null);
 		setCreatorUser(null);

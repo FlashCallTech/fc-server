@@ -130,11 +130,10 @@ const MeetingRoom = () => {
 	const countdownDuration = 15;
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
-		if (currentUser?._id) {
-			navigator.sendBeacon(
-				`${backendBaseUrl}/user/setCallStatus/${currentUser._id}`
-			);
-		}
+		navigator.sendBeacon(
+			`${backendBaseUrl}/user/setCallStatus/${currentUser?._id as string}`
+		);
+
 		call?.endCall();
 	});
 

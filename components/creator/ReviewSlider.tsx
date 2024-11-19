@@ -17,7 +17,7 @@ const ReviewSlider = ({
 	hasNextPage,
 }: {
 	creatorFeedbacks: CreatorFeedback[];
-	getClampedText: (text: string) => string;
+	getClampedText: (text: string) => string | undefined;
 	isExpanded: boolean;
 	setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
 	toggleReadMore: () => void;

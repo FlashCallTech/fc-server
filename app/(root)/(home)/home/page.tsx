@@ -23,7 +23,7 @@ const HomePage = () => {
 	const [loadingCard, setLoadingCard] = useState(false);
 	const [selectedProfession, setSelectedProfession] = useState("All");
 
-	const { clientUser, userType, setCurrentTheme, updateCreatorURL } =
+	const { currentUser, userType, setCurrentTheme, updateCreatorURL } =
 		useCurrentUsersContext();
 	const router = useRouter();
 	const { toast } = useToast();
@@ -78,7 +78,7 @@ const HomePage = () => {
 			UTM_Source: "google",
 			Creator_ID: id,
 			status: docSnap.data()?.status,
-			Wallet_Balance: clientUser?.walletBalance,
+			Wallet_Balance: currentUser?.walletBalance,
 		});
 
 		// Trigger the route change immediately
@@ -141,7 +141,7 @@ const HomePage = () => {
 				userType === "creator" ? "pt-0 md:pt-5" : "pt-0"
 			}  size-full`}
 		>
-			{userType === "client" ? (
+			{!currentUser || userType === "client" ? (
 				<Suspense fallback={<PostLoader count={6} />}>
 					{isError ? (
 						<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">

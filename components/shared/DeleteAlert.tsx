@@ -193,7 +193,7 @@ const DeleteAlert = () => {
 							<Button
 								onClick={handleDeleteUser}
 								disabled={loading}
-								className="border border-gray-300 hover:bg-gray-50 hoverScaleDownEffect"
+								className="border border-gray-300 bg-black text-white hoverScaleDownEffect"
 							>
 								{loading ? "Deleting..." : "Confirm Delete"}
 							</Button>
@@ -231,7 +231,7 @@ const DeleteAlert = () => {
 							<Button
 								onClick={handleDeleteUser}
 								disabled={loading}
-								className="border border-gray-300 hover:bg-gray-50 bg-black text-white hoverScaleDownEffect"
+								className="border border-gray-300 bg-black text-white hoverScaleDownEffect"
 							>
 								{loading ? "Deleting..." : "Confirm Delete"}
 							</Button>

@@ -51,6 +51,7 @@ const UserReviews = ({
 	};
 
 	const getClampedText = (text: string) => {
+		if (!text) return;
 		let charLen = isMobile ? 100 : 200;
 		if (text?.length > 100 && !isExpanded) {
 			return text.slice(0, charLen) + "... ";

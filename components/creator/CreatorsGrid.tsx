@@ -12,6 +12,8 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 	const imageSrc = getImageSource(creator);
 
 	useEffect(() => {
+		if (!creator || !creator._id || !creator.phone) return;
+
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);
 
@@ -22,23 +24,29 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 				const services = data.services;
 
 				// Check if any of the services are enabled
-				const isOnline =
+				const hasActiveService =
 					services?.videoCall || services?.audioCall || services?.chat;
-
-				// Set initial status to Online or Offline based on services
-				setStatus(isOnline ? "Online" : "Offline");
 
 				// Now listen for the user's status
 				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
 					const statusData = statusDoc.data();
 
 					if (statusData) {
-						// Check if status is "Busy"
-						if (statusData.status === "Busy") {
-							setStatus("Busy");
+						if (statusData.loginStatus === true) {
+							if (statusData.status === "Busy") {
+								setStatus("Busy");
+							} else {
+								setStatus("Online");
+							}
+						} else if (statusData.loginStatus === false) {
+							setStatus("Offline");
 						} else {
-							// Update status based on services
-							setStatus(isOnline ? "Online" : "Offline");
+							// Fallback to services and status
+							if (statusData.status === "Busy") {
+								setStatus("Busy");
+							} else {
+								setStatus(hasActiveService ? "Online" : "Offline");
+							}
 						}
 					}
 				});
