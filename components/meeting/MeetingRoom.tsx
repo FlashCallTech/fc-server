@@ -362,7 +362,7 @@ const MeetingRoom = () => {
 				)}
 
 				{isMeetingOwner && (
-					<section className="px-4 absolute bottom-20 z-50 w-fit">
+					<section className="pl-4 absolute bottom-[5.75rem] left-4 z-50 w-fit">
 						<TipModal
 							walletBalance={walletBalance}
 							setWalletBalance={setWalletBalance}

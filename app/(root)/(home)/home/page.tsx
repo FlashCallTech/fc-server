@@ -14,6 +14,8 @@ import { db } from "@/lib/firebase";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useGetCreators } from "@/lib/react-query/queries";
 import HomepageFilter from "@/components/filters/HomepageFilter";
+import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
 const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
@@ -24,6 +26,7 @@ const HomePage = () => {
 	const { clientUser, userType, setCurrentTheme, updateCreatorURL } =
 		useCurrentUsersContext();
 	const router = useRouter();
+	const { toast } = useToast();
 	const pathname = usePathname();
 	const { ref, inView } = useInView({
 		threshold: 0.1,
@@ -107,6 +110,20 @@ const HomePage = () => {
 	}, [inView, hasNextPage, isFetching]);
 
 	useEffect(() => {
+		if (
+			creators &&
+			creators?.pages.flatMap((page: any) => page.totalUsers)[0] === 0 &&
+			!isLoading
+		) {
+			toast({
+				variant: "destructive",
+				title: `No creators found in the ${selectedProfession} category`,
+				description: "Try adjusting your filters",
+			});
+		}
+	}, [creators, selectedProfession, isLoading]);
+
+	useEffect(() => {
 		localStorage.removeItem("creatorURL");
 	}, [router, pathname]);
 
@@ -129,22 +146,24 @@ const HomePage = () => {
 					{isError ? (
 						<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
 							Failed to fetch creators
-							<span className="text-lg">Please try again later.</span>
+							<span className="text-lg">Please try again later</span>
 						</div>
-					) : creators &&
-					  creators?.pages.flatMap((page: any) => page.totalUsers)[0] === 0 &&
-					  !isLoading ? (
-						<div className="size-full flex flex-col items-center justify-center gap-4 text-gray-500">
-							<p className="text-xl font-semibold text-center">
-								No creators found
+					) : creators?.pages.flatMap((page: any) => page.users).length ===
+					  0 ? (
+						<div className="size-full flex flex-col gap-4 items-center justify-center text-center text-gray-500">
+							<h2 className="text-2xl font-bold">No Creators Found</h2>
+							<p className="text-lg text-gray-400">
+								{selectedProfession !== "All"
+									? `No results found in the "${selectedProfession}" category.`
+									: "No creators are available at the moment. Please check back later."}
 							</p>
 							{selectedProfession !== "All" && (
-								<button
+								<Button
+									className="px-6 py-2 rounded-lg bg-green-1 text-white font-semibold hoverScaleDownEffect"
 									onClick={() => setSelectedProfession("All")}
-									className="px-4 py-2 bg-green-1 text-white text-sm rounded-lg hoverScaleDownEffect"
 								>
 									Reset Filters
-								</button>
+								</Button>
 							)}
 						</div>
 					) : (
@@ -197,7 +216,7 @@ const HomePage = () => {
 					{!hasNextPage &&
 						!isFetching &&
 						creators &&
-						creators.pages.flatMap((page: any) => page.users).length > 6 && (
+						creators.pages.flatMap((page: any) => page.users).length >= 6 && (
 							<div className="text-center text-gray-500 py-4">
 								You have reached the end of the list
 							</div>

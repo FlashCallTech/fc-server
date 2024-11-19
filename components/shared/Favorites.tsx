@@ -57,13 +57,12 @@ const Favorites = ({
 				);
 
 				// Check if response data is available
-				if (response.data && response.data.paginatedData.favorites) {
-					const favorites: FavoriteItem[] =
-						response.data.paginatedData.favorites;
+				if (response.data && response.data.paginatedData) {
+					const favorites: FavoriteItem[] = response.data.paginatedData;
 
 					// Check if the current creator is in the favorites
 					const isFavorite = favorites.some(
-						(fav) => fav.creatorId._id === creator?._id
+						(fav: any) => fav._id === creator?._id
 					);
 					setMarkedFavorite(isFavorite);
 				} else {
@@ -96,13 +95,13 @@ const Favorites = ({
 			<Tooltip>
 				<TooltipTrigger asChild>
 					<button
-						className={`border flex items-center justify-center w-full ${
+						className={` flex items-center justify-center w-full hoverScaleDownEffect ${
 							isFavoritesPath
-								? "p-2 rounded-full border-white transition-all duration-300 hover:bg-green-1 hover:scale-105 "
-								: "h-[36px] w-full rounded-[6px] border-black hoverScaleDownEffect"
+								? "p-2 rounded-full "
+								: "h-[36px] w-full rounded-[6px] border border-black"
 						}  ${
 							markedFavorite
-								? isFavoritesPath && "bg-green-1 text-white"
+								? isFavoritesPath && "bg-transparent"
 								: "bg-transparent"
 						} flex gap-2 items-center`}
 						onClick={handleUnfollowClick}
@@ -116,14 +115,12 @@ const Favorites = ({
 										viewBox="0 0 24 24"
 										strokeWidth={1.5}
 										stroke="currentColor"
-										className={`${
-											isFavoritesPath ? "size-4" : "size-6"
-										} invert`}
+										className="size-6 invert"
 									>
 										<path
 											strokeLinecap="round"
 											strokeLinejoin="round"
-											d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
+											d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
 										/>
 									</svg>
 								) : (
@@ -134,17 +131,11 @@ const Favorites = ({
 							) : isFavoritesPath ? (
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
 									viewBox="0 0 24 24"
-									strokeWidth={1.5}
-									stroke="currentColor"
-									className={`size-4`}
+									fill="currentColor"
+									className="size-6 text-red-500"
 								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										d="m3 3 1.664 1.664M21 21l-1.5-1.5m-5.485-1.242L12 17.25 4.5 21V8.742m.164-4.078a2.15 2.15 0 0 1 1.743-1.342 48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185V19.5M4.664 4.664 19.5 19.5"
-									/>
+									<path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
 								</svg>
 							) : (
 								<span className="text-center w-full font-bold text-sm">
@@ -163,7 +154,7 @@ const Favorites = ({
 						)}
 					</button>
 				</TooltipTrigger>
-				<TooltipContent className="bg-green-1 border-none text-white">
+				<TooltipContent className="bg-green-1 border-none text-white z-40">
 					<p>{`${
 						markedFavorite ? "Remove as Favorite" : "Add to Favorites"
 					} `}</p>

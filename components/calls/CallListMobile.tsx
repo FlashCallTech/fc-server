@@ -275,7 +275,8 @@ const CallListMobile = ({
 
 					{!hasNextPage &&
 						!isFetching &&
-						userCalls?.pages[0]?.totalCalls !== 0 && (
+						userCalls?.pages.flatMap((page: any) => page.totalCalls)[0] >=
+							6 && (
 							<div className="text-center text-gray-500 pt-4">
 								You have reached the end of the list
 							</div>

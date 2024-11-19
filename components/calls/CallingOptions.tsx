@@ -193,7 +193,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							} else {
 								toast({
 									variant: "destructive",
-									title: "User is not asnwering please try again later",
+									title: "User is not answering please try again later",
 								});
 							}
 							localStorage.removeItem("user2");

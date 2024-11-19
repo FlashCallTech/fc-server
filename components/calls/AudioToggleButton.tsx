@@ -61,8 +61,6 @@ export const AudioToggleButton = () => {
 		}
 	};
 
-	console.log("Audio Toggle Button ", permissionDenied, isModalOpen);
-
 	return (
 		<>
 			<div

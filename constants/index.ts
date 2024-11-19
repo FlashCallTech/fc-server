@@ -18,7 +18,7 @@ export const sidebarLinks = [
 		protected: true,
 	},
 	{
-		imgURL: "/icons/favorites.svg",
+		imgURL: "/icons/heart.svg",
 		route: "/favorites",
 		label: "Favorites",
 		protected: true,

@@ -49,11 +49,13 @@ export const useGetPreviousCalls = (
 // FAVORITES QUERIES
 // ============================================================
 
-export const useGetUserFavorites = (userId: string) => {
-	const limit = 10; // Define the limit per page
-
+export const useGetUserFavorites = (
+	userId: string,
+	selectedProfession: string,
+	limit = 10
+) => {
 	return useInfiniteQuery({
-		queryKey: [QUERY_KEYS.GET_USER_CALLS, userId],
+		queryKey: [QUERY_KEYS.GET_USER_CALLS, userId, selectedProfession],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
 				`${backendBaseUrl}/favorites/${userId}`,
@@ -61,6 +63,7 @@ export const useGetUserFavorites = (userId: string) => {
 					params: {
 						page: pageParam,
 						limit,
+						selectedProfession,
 					},
 				}
 			);
