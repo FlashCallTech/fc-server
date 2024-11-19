@@ -65,6 +65,12 @@ const MyCallUI = () => {
 				(member) => member.custom.type === "expert"
 			)?.custom?.phone;
 
+			if (userType === "client") {
+				await updateExpertStatus(currentUser?.phone as string, "Idle");
+			} else {
+				await updateExpertStatus(expertPhone, "Online");
+			}
+
 			await handleInterruptedCall(
 				currentUser?._id as string,
 				updatedCall.id,
@@ -99,21 +105,9 @@ const MyCallUI = () => {
 	}, [router, pathname]);
 
 	useEffect(() => {
-		const handleCallUpdation = async () => {
-			if (callId && !isCallLoading && call && !hide) {
-				const expertPhone = call.state?.members?.find(
-					(member: any) => member.custom.type === "expert"
-				)?.custom?.phone;
-
-				if (userType === "client") {
-					await updateExpertStatus(currentUser?.phone as string, "Idle");
-				} else {
-					await updateExpertStatus(expertPhone, "Online");
-				}
-				handleInterruptedCallOnceLoaded(call);
-			}
-		};
-		handleCallUpdation();
+		if (callId && !isCallLoading && call && !hide) {
+			handleInterruptedCallOnceLoaded(call);
+		}
 	}, [callId, isCallLoading, call, currentUser?._id, userType]);
 
 	// Filter incoming and outgoing calls once
@@ -300,6 +294,7 @@ const MyCallUI = () => {
 				}
 			} else {
 				try {
+					setConnecting(false);
 					await outgoingCall
 						.leave()
 						.then(() => router.replace(`/meeting/${outgoingCall.id}`))
@@ -307,8 +302,6 @@ const MyCallUI = () => {
 				} catch (err) {
 					console.warn("unable to leave client user ... ", err);
 					router.replace(`/meeting/${outgoingCall.id}`);
-				} finally {
-					setConnecting(false);
 				}
 			}
 		};

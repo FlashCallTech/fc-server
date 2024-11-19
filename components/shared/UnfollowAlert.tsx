@@ -71,7 +71,7 @@ const UnfollowAlert = ({
 					<Button
 						onClick={handleUnfollow}
 						disabled={loading}
-						className="hoverScaleDownEffect border border-gray-300 hover:bg-gray-50"
+						className="border border-gray-300 bg-black text-white hoverScaleDownEffect"
 					>
 						{loading ? "Unfollowing..." : "Unfollow"}
 					</Button>
@@ -100,7 +100,7 @@ const UnfollowAlert = ({
 					<Button
 						onClick={handleUnfollow}
 						disabled={loading}
-						className="hoverScaleDownEffect border border-gray-300 hover:bg-gray-50"
+						className="border border-gray-300 bg-black text-white hoverScaleDownEffect"
 					>
 						{loading ? "Unfollowing..." : "Unfollow"}
 					</Button>

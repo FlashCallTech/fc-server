@@ -87,9 +87,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
 	}, [isAuthSheetOpen, setAuthenticationSheetOpen]);
 
-	// logic to show the updated creator services in realtime
+	// Logic to show the updated creator services in real-time
 	useEffect(() => {
 		if (!creator?._id || !creator?.phone) return;
+
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);
 
@@ -102,8 +103,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const data = doc.data();
 
 			if (data) {
-				let prices = data.prices;
-				let services = data.services;
+				const prices = data.prices;
+				const services = data.services;
+
+				// Update creator services in state
 				setUpdatedCreator((prev) => ({
 					...prev,
 					videoRate: prices?.videoCall ?? "",
@@ -114,23 +117,32 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					chatAllowed: services?.chat ?? false,
 				}));
 
-				// Check if any of the services is enabled
-				const isOnline =
+				// Check if any of the services are enabled
+				const hasActiveService =
 					services?.videoCall || services?.audioCall || services?.chat;
-
-				setOnlineStatus(isOnline ? "Online" : "Offline");
 
 				// Now listen for the creator's status
 				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
 					const statusData = statusDoc.data();
 
 					if (statusData) {
-						// Check if status is "Busy"
-						if (statusData.status === "Busy") {
-							setOnlineStatus("Busy");
+						// Prioritize loginStatus
+						if (statusData.loginStatus === true) {
+							if (statusData.status === "Busy") {
+								setOnlineStatus("Busy");
+							} else {
+								setOnlineStatus("Online");
+							}
+						} else if (statusData.loginStatus === false) {
+							// Explicitly set to Offline when loginStatus is false
+							setOnlineStatus("Offline");
 						} else {
-							// Update status based on services
-							setOnlineStatus(isOnline ? "Online" : "Offline");
+							// Fallback to services and status
+							if (statusData.status === "Busy") {
+								setOnlineStatus("Busy");
+							} else {
+								setOnlineStatus(hasActiveService ? "Online" : "Offline");
+							}
 						}
 					}
 				});
@@ -138,7 +150,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				// Listen for the client's status only if clientUser is not null
 				let unsubscribeClientStatus: any;
 				if (clientUser) {
-					// Listen for the client's status
 					unsubscribeClientStatus = onSnapshot(
 						clientStatusDocRef,
 						(clientStatusDoc: any) => {
@@ -156,13 +167,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				// Clean up both status listeners
 				return () => {
 					unsubscribeStatus();
-					unsubscribeClientStatus();
+					if (unsubscribeClientStatus) unsubscribeClientStatus();
 				};
 			}
 		});
 
+		// Clean up the services listener
 		return () => unsubscribe();
-	}, [creator._id, isAuthSheetOpen]);
+	}, [creator._id, creator.phone, clientUser, isAuthSheetOpen]);
 
 	useEffect(() => {
 		if (!chatReqSent) {
@@ -467,6 +479,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					(clientId) => clientId === clientUser?._id
 				) &&
 				!isClientBusy &&
+				onlineStatus === "Online" &&
 				updatedCreator.videoAllowed &&
 				parseInt(updatedCreator.videoRate, 10) > 0,
 			rate: updatedCreator.videoRate,
@@ -494,6 +507,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					(clientId) => clientId === clientUser?._id
 				) &&
 				!isClientBusy &&
+				onlineStatus === "Online" &&
 				updatedCreator.audioAllowed &&
 				parseInt(updatedCreator.audioRate, 10) > 0,
 			rate: updatedCreator.audioRate,
@@ -521,6 +535,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					(clientId) => clientId === clientUser?._id
 				) &&
 				!isClientBusy &&
+				onlineStatus === "Online" &&
 				updatedCreator.chatAllowed &&
 				parseInt(updatedCreator.chatRate, 10) > 0,
 			rate: updatedCreator.chatRate,
@@ -555,6 +570,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	if (loading) {
 		return <Loader />;
 	}
+
+	console.log(onlineStatus);
 
 	return (
 		<>

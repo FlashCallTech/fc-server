@@ -22,8 +22,7 @@ import SignoutAlert from "./SignoutAlert";
 
 const MobileNav = () => {
 	const pathname = usePathname();
-	const { currentUser, userType, handleSignout, clientUser } =
-		useCurrentUsersContext();
+	const { currentUser, userType, clientUser } = useCurrentUsersContext();
 	const [creator, setCreator] = useState<creatorUser>();
 	const fullName = getDisplayName({
 		fullName: currentUser?.fullName,

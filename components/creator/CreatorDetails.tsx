@@ -65,6 +65,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 	useEffect(() => {
 		if (!creator || !creator?._id || !creator?.phone) return;
+
 		const creatorRef = doc(db, "services", creator?._id);
 		const statusDocRef = doc(db, "userStatus", creator?.phone);
 
@@ -73,18 +74,31 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 			if (data) {
 				const services = data.services;
-				const isOnline =
+				const hasActiveService =
 					services?.videoCall || services?.audioCall || services?.chat;
-
-				setStatus(isOnline ? "Online" : "Offline");
 
 				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
 					const statusData = statusDoc.data();
 					if (statusData) {
-						if (statusData.status === "Busy") {
-							setStatus("Busy");
+						// Prioritize loginStatus
+						if (statusData.loginStatus === true) {
+							// Check Busy status if loginStatus is true
+							if (statusData.status === "Busy") {
+								setStatus("Busy");
+							} else {
+								setStatus(
+									statusData.status === "Online" ? "Online" : "Offline"
+								);
+							}
+						} else if (statusData.loginStatus === false) {
+							setStatus("Offline");
 						} else {
-							setStatus(isOnline ? "Online" : "Offline");
+							// Fallback to services and status
+							if (statusData.status === "Busy") {
+								setStatus("Busy");
+							} else {
+								setStatus(hasActiveService ? "Online" : "Offline");
+							}
 						}
 					}
 				});
