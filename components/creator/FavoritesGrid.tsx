@@ -110,56 +110,57 @@ const FavoritesGrid = ({
 	const imageSrc = getImageSource(creator);
 
 	return (
-		<div className="grid grid-cols-[2fr_1fr] h-full w-full items-start justify-between pt-2 pb-4 xl:max-w-[568px] border-b xl:border xl:rounded-xl xl:p-4 border-gray-300 ">
-			<div className="flex flex-col items-start justify-between w-full h-full gap-2">
-				{/* Expert's Details */}
-				<Link
-					onClick={() =>
-						trackEvent("Favourites_Profile_Clicked", {
-							Client_ID: clientUser?._id,
-							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-							Creator_ID: creator?._id,
-							Walletbalace_Available: clientUser?.walletBalance,
-						})
-					}
-					href={`/${creator?.username}`}
-					className="w-full flex items-center justify-start gap-4 cursor-pointer hoverScaleDownEffect"
-				>
-					{/* creator image */}
-					<section className="relative flex items-center">
-						<Image
-							src={imageSrc}
-							alt="Expert"
-							height={1000}
-							width={1000}
-							className="rounded-full w-12 h-12 object-cover"
-						/>
-
+		<section className="relative flex flex-col items-center justify-center rounded-xl w-full h-[202px] xl:h-80 group">
+			<Link
+				href={creator?.username}
+				className="flex flex-col items-center justify-center size-full hoverScaleDownEffect"
+			>
+				<Image
+					src={imageSrc}
+					alt={creator.firstName || creator.username}
+					width={500}
+					height={500}
+					className="w-full h-full absolute top-0 object-cover rounded-xl"
+					placeholder="blur"
+					blurDataURL="/icons/blurryPlaceholder.png"
+					priority
+				/>
+				<div className="text-white flex flex-col items-start w-full creatorsGirdHighlight">
+					{/* Username */}
+					<p className="font-semibold text-base sm:text-2xl max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
+						{fullName}
+					</p>
+					{/* Profession and Status */}
+					<div className="flex items-center justify-between w-full mt-2 gap-2">
+						<span className="text-sm sm:text-lg h-full max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
+							{creator.profession ? creator.profession : "Expert"}
+						</span>
 						<div
-							className={`absolute bottom-0 right-0 ${
+							className={`${
 								status === "Online"
-									? "bg-green-1"
+									? "bg-green-500"
 									: status === "Offline"
-									? "bg-red-400"
+									? "bg-red-500"
 									: status === "Busy"
 									? "bg-orange-400"
 									: ""
-							} text-xs rounded-full sm:rounded-xl p-1.5 border-2 border-white`}
-						/>
-					</section>
-					{/* creator details */}
-					<div className="flex flex-col">
-						<p className="text-base tracking-wide whitespace-nowrap">
-							{fullName}
-						</p>
-						<span className="text-xs text-gray-400 whitespace-nowrap">
-							{creator?.profession}
-						</span>
+							} text-xs rounded-full sm:rounded-xl px-1.5 py-1.5 sm:px-4 sm:py-2`}
+						>
+							<span className="hidden sm:flex">
+								{status === "Online"
+									? "Online"
+									: status === "Offline"
+									? "Offline"
+									: status === "Busy"
+									? "Busy"
+									: "Offline"}
+							</span>
+						</div>
 					</div>
-				</Link>
-			</div>
+				</div>
+			</Link>
 
-			<div className="w-full flex flex-col items-end justify-center h-full gap-2">
+			<div className="absolute top-0 right-0 flex flex-col items-end justify-center gap-2">
 				<Favorites
 					setMarkedFavorite={setMarkedFavorite}
 					markedFavorite={markedFavorite}
@@ -170,7 +171,7 @@ const FavoritesGrid = ({
 					isFavoritesPath={isFavoritesPath}
 				/>
 			</div>
-		</div>
+		</section>
 	);
 };
 

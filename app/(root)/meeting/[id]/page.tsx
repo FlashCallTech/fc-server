@@ -103,7 +103,7 @@ const MeetingRoomWrapper = ({ toast, router, call }: any) => {
 const CallEnded = ({ toast, router, call }: any) => {
 	const [loading, setLoading] = useState(false);
 	const transactionHandled = useRef(false);
-	const { currentUser, currentTheme } = useCurrentUsersContext();
+	const { currentUser, currentTheme, userType } = useCurrentUsersContext();
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 
 	useEffect(() => {
@@ -112,13 +112,19 @@ const CallEnded = ({ toast, router, call }: any) => {
 			transactionHandled.current = true;
 			try {
 				setLoading(true);
+
+				const expertPhone = call.state?.members?.find(
+					(member: any) => member.custom.type === "expert"
+				)?.custom?.phone;
+
+				if (userType === "client") {
+					await updateExpertStatus(currentUser?.phone as string, "Idle");
+				}
+				await updateExpertStatus(expertPhone, "Online");
+
 				await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
 					status: "payment pending",
 				});
-				await updateExpertStatus(
-					call.state.createdBy?.custom?.phone as string,
-					"Payment Pending"
-				);
 
 				const creatorURL = localStorage.getItem("creatorURL");
 				const hasVisitedFeedbackPage = localStorage.getItem(

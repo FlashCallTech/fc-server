@@ -79,9 +79,12 @@ const HomepageFilter = ({
 	};
 
 	return (
-		<div className="relative w-full flex items-center justify-start gap-2 py-4">
-			<Button
-				className={` text-sm font-medium px-[20px] py-[7px] rounded-full border border-gray-300 hoverScaleDownEffect cursor-pointer outline-none ${
+		<div
+			ref={dropdownRef}
+			className="relative w-full flex items-center justify-start gap-2 py-4"
+		>
+			<button
+				className={` text-sm font-medium px-[16px] py-[7px] rounded-[24px] border border-gray-300 hoverScaleDownEffect cursor-pointer outline-none ${
 					toggleFilter && "bg-green-1 text-white"
 				}`}
 				onClick={() => setToggleFilter((prev) => !prev)}
@@ -117,16 +120,13 @@ const HomepageFilter = ({
 						/>
 					</svg>
 				)}
-			</Button>
+			</button>
 			{toggleFilter && (
-				<section
-					ref={dropdownRef}
-					className="absolute top-16 left-0 max-w-[88vw] md:max-w-[44vw] mx-auto bg-white border border-gray-300 rounded-md shadow-md p-4 z-10"
-				>
+				<section className="absolute top-16 left-0 max-w-[88vw] md:max-w-[44vw] mx-auto bg-white border border-gray-300 rounded-md shadow-md p-4 z-10">
 					<span className="text-xl">Filter by Profession</span>
 					<section className="mt-4 flex items-center justify-start flex-wrap gap-2.5">
 						<section
-							className={`text-sm font-medium px-[20px] py-[7px] rounded-full border border-gray-300 hover:text-white hover:bg-green-1 hoverScaleDownEffect cursor-pointer ${
+							className={`text-sm font-medium px-[20px] py-[7px] rounded-[24px] border border-gray-300 hover:text-white hover:bg-green-1 hoverScaleDownEffect cursor-pointer ${
 								selectedProfession === "All" && "bg-green-1 text-white"
 							}`}
 							onClick={handleClickAll}
@@ -134,16 +134,16 @@ const HomepageFilter = ({
 							<span className="text-xs sm:text-sm whitespace-nowrap">All</span>
 						</section>
 						{loadingProfessions
-							? [...Array(6)].map((_, idx) => (
+							? [...Array(7)].map((_, idx) => (
 									<div
 										key={idx}
-										className="w-[80px] h-[34px] bg-gray-200 animate-pulse rounded-full my-2"
+										className="w-[80px] h-[34px] bg-gray-200 animate-pulse rounded-[24px] my-2"
 									/>
 							  ))
 							: professions.map((profession: any) => (
 									<section
 										key={profession.id}
-										className={`text-sm font-medium px-[20px] py-[7px] rounded-full border border-gray-300 hover:text-white hover:bg-green-1 cursor-pointer ${
+										className={`text-sm font-medium px-[20px] py-[7px] rounded-[24px] border border-gray-300 hover:text-white hover:bg-green-1 cursor-pointer ${
 											profession.name === selectedProfession &&
 											"bg-green-1 text-white"
 										}`}

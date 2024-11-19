@@ -296,7 +296,8 @@ const Transactions = () => {
 				!hasNextPage &&
 				!isFetching &&
 				currentUser &&
-				transactions?.pages[0]?.totalTransactions !== 0 && (
+				transactions?.pages.flatMap((page: any) => page.totalTransactions)[0] >
+					6 && (
 					<div className="text-center text-gray-500 py-4">
 						You have reached the end of the list.
 					</div>

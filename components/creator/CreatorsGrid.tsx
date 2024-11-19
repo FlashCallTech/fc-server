@@ -55,53 +55,51 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 	}, [creator._id, creator.phone]);
 
 	return (
-		<>
-			<div className="relative flex flex-col items-center justify-center rounded-xl w-full h-[202px] xl:h-80 transition-all duration-300 hover:scale-95">
-				<Image
-					src={imageSrc}
-					alt={creator.firstName || creator.username}
-					width={500}
-					height={500}
-					className="w-full h-full absolute top-0 object-cover rounded-xl"
-					placeholder="blur"
-					blurDataURL="/icons/blurryPlaceholder.png"
-					priority
-				/>
-				<div className="text-white flex flex-col items-start w-full creatorsGirdHighlight">
-					{/* Username */}
-					<p className="font-semibold text-base sm:text-2xl max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
-						{fullName}
-					</p>
-					{/* Profession and Status */}
-					<div className="flex items-center justify-between w-full mt-2 gap-2">
-						<span className="text-sm sm:text-lg h-full max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
-							{creator.profession ? creator.profession : "Expert"}
+		<div className="relative flex flex-col items-center justify-center rounded-xl w-full h-[202px] xl:h-80 transition-all duration-300 hover:scale-95">
+			<Image
+				src={imageSrc}
+				alt={creator.firstName || creator.username}
+				width={500}
+				height={500}
+				className="w-full h-full absolute top-0 object-cover rounded-xl"
+				placeholder="blur"
+				blurDataURL="/icons/blurryPlaceholder.png"
+				priority
+			/>
+			<div className="text-white flex flex-col items-start w-full creatorsGirdHighlight">
+				{/* Username */}
+				<p className="font-semibold text-base sm:text-2xl max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
+					{fullName}
+				</p>
+				{/* Profession and Status */}
+				<div className="flex items-center justify-between w-full mt-2 gap-2">
+					<span className="text-sm sm:text-lg h-full max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
+						{creator.profession ? creator.profession : "Expert"}
+					</span>
+					<div
+						className={`${
+							status === "Online"
+								? "bg-green-500"
+								: status === "Offline"
+								? "bg-red-500"
+								: status === "Busy"
+								? "bg-orange-400"
+								: ""
+						} text-xs rounded-full sm:rounded-xl px-1.5 py-1.5 sm:px-4 sm:py-2`}
+					>
+						<span className="hidden sm:flex">
+							{status === "Online"
+								? "Online"
+								: status === "Offline"
+								? "Offline"
+								: status === "Busy"
+								? "Busy"
+								: "Offline"}
 						</span>
-						<div
-							className={`${
-								status === "Online"
-									? "bg-green-500"
-									: status === "Offline"
-									? "bg-red-500"
-									: status === "Busy"
-									? "bg-orange-400"
-									: ""
-							} text-xs rounded-full sm:rounded-xl px-1.5 py-1.5 sm:px-4 sm:py-2`}
-						>
-							<span className="hidden sm:flex">
-								{status === "Online"
-									? "Online"
-									: status === "Offline"
-									? "Offline"
-									: status === "Busy"
-									? "Busy"
-									: "Offline"}
-							</span>
-						</div>
 					</div>
 				</div>
 			</div>
-		</>
+		</div>
 	);
 };
 
