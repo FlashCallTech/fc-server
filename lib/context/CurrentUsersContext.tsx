@@ -12,7 +12,7 @@ import {
 import { clientUser, creatorUser } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { usePathname, useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
@@ -120,26 +120,23 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const handleSignout = async () => {
 		localStorage.removeItem("currentUserID");
 		localStorage.removeItem("authToken");
-
+		const creatorStatusDocRef = doc(
+			db,
+			"userStatus",
+			currentUser?.phone as string
+		);
+		const creatorStatusDoc = await getDoc(creatorStatusDocRef);
+		if (creatorStatusDoc.exists()) {
+			await updateDoc(creatorStatusDocRef, {
+				status: "Offline",
+				loginStatus: true,
+			});
+		}
 		// Clear user data and local storage
 		await axios.post(`${backendBaseUrl}/user/endSession`);
 
 		setClientUser(null);
 		setCreatorUser(null);
-
-		// Redirect logic
-		// if (
-		// 	pathname !== "/" &&
-		// 	pathname !== "/home" &&
-		// 	!pathname.includes("/authenticate") &&
-		// 	pathname !== "support" &&
-		// 	pathname !== creatorURL
-		// ) {
-		// 	localStorage.removeItem("creatorURL");
-		// 	setCreatorURL("");
-		// 	router.replace("/home");
-		// 	return;
-		// }
 	};
 
 	// Function to fetch the current user

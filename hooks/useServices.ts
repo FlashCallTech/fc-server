@@ -20,7 +20,7 @@ export const useServices = () => {
 			creatorUser && !creatorUser.restricted ? creatorUser.audioAllowed : false,
 		chat:
 			creatorUser && !creatorUser.restricted ? creatorUser.chatAllowed : false,
-		isRestricted: creatorUser ? creatorUser.restricted : false, // Track restriction state
+		isRestricted: creatorUser ? creatorUser.restricted : false,
 	}));
 
 	// Initialize services based on creatorUser
