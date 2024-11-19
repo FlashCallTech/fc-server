@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
 
     const userResponse = await getUserByPhone(phone);
 
-    if (amount > 0) {
+    if (amount >= 500) {
       if (userResponse[0].walletBalance >= amount) {
         const paymentSettingsResponse = await fetch(`https://flashcall.me/api/v1/creator/getPayment?userId=${userId}`,
           {
