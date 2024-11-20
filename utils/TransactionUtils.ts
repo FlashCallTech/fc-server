@@ -105,7 +105,7 @@ export const handleTransaction = async ({
 				}),
 				headers: { "Content-Type": "application/json" },
 			}),
-			fetch(`${backendBaseUrl}/api/v1/wallet/addMoney`, {
+			fetch(`${backendBaseUrl}/wallet/addMoney`, {
 				method: "POST",
 				body: JSON.stringify({
 					userId: expertId,
