@@ -147,7 +147,7 @@ const Recharge: React.FC = () => {
 						const userId = currentUser?._id as string; // Replace with actual user ID
 						const userType = "Client"; // Replace with actual user type
 
-						await fetch(`${backendBaseUrl}/api/v1/wallet/addMoney`, {
+						await fetch(`${backendBaseUrl}/wallet/addMoney`, {
 							method: "POST",
 							body: JSON.stringify({
 								userId,
