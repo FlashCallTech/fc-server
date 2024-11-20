@@ -131,10 +131,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							if (statusData.status === "Busy") {
 								setOnlineStatus("Busy");
 							} else {
-								setOnlineStatus("Online");
+								setOnlineStatus(
+									statusData.status === "Online" ? "Online" : "Offline"
+								);
 							}
 						} else if (statusData.loginStatus === false) {
-							// Explicitly set to Offline when loginStatus is false
 							setOnlineStatus("Offline");
 						} else {
 							// Fallback to services and status
