@@ -23,7 +23,7 @@ import Tip from "./Tip";
 import useMarkAsSeen from "@/hooks/useMarkAsSeen";
 
 const ChatInterface: React.FC = () => {
-	const [text, setText] = useState("");
+	const [text, setText] = useState<string>("");
 	const [isImgUploading, setIsImgUploading] = useState(false);
 	const [isAudioUploading, setIsAudioUploading] = useState(false);
 	const [showDialog, setShowDialog] = useState(false);
@@ -37,7 +37,7 @@ const ChatInterface: React.FC = () => {
 		url: "",
 	});
 	const [messages, setMessages] = useState<
-		{ text: string | null; img: string | null; audio: string | null }[]
+		{ text: string | null; img: string | null; audio: string | null, tip: string | null }[]
 	>([]);
 
 	useUserStatus();
@@ -161,8 +161,62 @@ const ChatInterface: React.FC = () => {
 		return null;
 	};
 
+	const handleSendTip = async (tipAmt: string) => {
+		if (!tipAmt) {
+			console.log("Got nothing");
+			return
+		};
+
+		try {
+			if (!chatId) {
+				console.log("invalid chatId");
+				return;
+			}
+			await updateDoc(doc(db, "chats", chatId as string), {
+				messages: arrayUnion({
+					senderId: currentUser?._id as string,
+					createdAt: Date.now(),
+					seen: false,
+					text,
+					tip: tipAmt,
+					img: null,
+					audio: null,
+				}),
+			});
+			setMessages((prevMessages) => [
+				...prevMessages,
+				{ text: null, img: null, audio: null, tip: null },
+			]);
+			const userIDs = [user2?.clientId as string, user2?.creatorId as string];
+			userIDs.forEach(async (id) => {
+				if (!id) return;
+				const userChatsRef = doc(db, "userchats", id);
+				const userChatsSnapshot = await getDoc(userChatsRef);
+				if (userChatsSnapshot.exists()) {
+					const userChatsData = userChatsSnapshot.data();
+					const chatIndex = userChatsData.chats.findIndex(
+						(c: { chatId: string | string[] }) => c.chatId === chatId
+					);
+					userChatsData.chats[chatIndex].updatedAt = Date.now();
+					await updateDoc(userChatsRef, {
+						chats: userChatsData.chats,
+					});
+				}
+			});
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setText("");
+		}
+	}
+
 	const handleSend = async () => {
-		if (text === "" && !img.file && !audio.file) return;
+		console.log("Triggered");
+		if (text === "" && !img.file && !audio.file) {
+			console.log("Got nothing");
+			return
+		};
+		console.log(text);
 		let imgUrl: string | null = null;
 		let audioUrl: string | null = null;
 		try {
@@ -192,7 +246,7 @@ const ChatInterface: React.FC = () => {
 			});
 			setMessages((prevMessages) => [
 				...prevMessages,
-				{ text: null, img: imgUrl, audio: audioUrl },
+				{ text: null, img: imgUrl, audio: audioUrl, tip: null },
 			]);
 			const userIDs = [user2?.clientId as string, user2?.creatorId as string];
 			userIDs.forEach(async (id) => {
@@ -366,8 +420,6 @@ const ChatInterface: React.FC = () => {
 		};
 	}, []);
 
-	// console.log(tipReceived);
-
 	return (
 		<div className={`flex flex-col h-screen justify-between w-screen bg-cover bg-center overflow-y-auto scrollbar-hide`} style={{ backgroundImage: 'url(/back.png)' }} >
 			<div className="fixed top-0 left-0 w-full flex justify-between items-center px-4 py-[2px] bg-gray-500 z-30">
@@ -393,7 +445,10 @@ const ChatInterface: React.FC = () => {
 					</div>
 				</div>
 				<div className="flex gap-2">
-					<Tip />
+					<Tip
+						handleSendTip={handleSendTip}
+						setText={setText}
+					/>
 					<button
 						onClick={endCall}
 						className="bg-[rgba(255,81,81,1)] text-white p-2 md:px-4 md:py-2 text-[10px] md:text-lg rounded-lg"
