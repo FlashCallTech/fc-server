@@ -8,7 +8,6 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "../ui/button";
-import SinglePostLoader from "../shared/SinglePostLoader";
 
 const EndCallDecision = ({
 	handleDecisionDialog,

@@ -333,43 +333,46 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				Walletbalance_Available: clientUser?.walletBalance,
 			});
 
-			await call.getOrCreate({
-				members_limit: 2,
-				ring: true,
-				data: {
-					starts_at: startsAt,
-					members: members,
-					custom: {
-						description,
+			await call
+				.getOrCreate({
+					members_limit: 2,
+					ring: true,
+					data: {
+						starts_at: startsAt,
+						members: members,
+						custom: {
+							description,
+						},
 					},
-				},
-			});
+				})
+				.then(async () => {
+					localStorage.removeItem("hasVisitedFeedbackPage");
 
-			localStorage.removeItem("hasVisitedFeedbackPage");
+					trackCallEvents(callType, clientUser, creator);
 
-			trackCallEvents(callType, clientUser, creator);
+					await fetch(`${backendBaseUrl}/calls/registerCall`, {
+						method: "POST",
+						body: JSON.stringify({
+							callId: id as string,
+							type: callType as string,
+							status: "Initiated",
+							creator: String(clientUser?._id),
+							members: members,
+						}),
+						headers: { "Content-Type": "application/json" },
+					});
 
-			await fetch(`${backendBaseUrl}/calls/registerCall`, {
-				method: "POST",
-				body: JSON.stringify({
-					callId: id as string,
-					type: callType as string,
-					status: "Initiated",
-					creator: String(clientUser?._id),
-					members: members,
-				}),
-				headers: { "Content-Type": "application/json" },
-			});
-
-			await updateFirestoreSessions(clientUser?._id as string, {
-				callId: call.id,
-				status: "initiated",
-				clientId: clientUser?._id as string,
-				expertId: creator._id,
-				isVideoCall: callType,
-				creatorPhone: creator.phone,
-				clientPhone: clientUser?.phone,
-			});
+					await updateFirestoreSessions(clientUser?._id as string, {
+						callId: call.id,
+						status: "initiated",
+						clientId: clientUser?._id as string,
+						expertId: creator._id,
+						isVideoCall: callType,
+						creatorPhone: creator.phone,
+						clientPhone: clientUser?.phone,
+					});
+				})
+				.catch((err) => console.log("Unable to create Meeting", err));
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
@@ -571,8 +574,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	if (loading) {
 		return <Loader />;
 	}
-
-	console.log(onlineStatus);
 
 	return (
 		<>
