@@ -55,8 +55,6 @@ export const useServices = () => {
 	useEffect(() => {
 		const updateServices = async () => {
 			try {
-				console.log(services);
-
 				await axios.put(
 					`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
 					{

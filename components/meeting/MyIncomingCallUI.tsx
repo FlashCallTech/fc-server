@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Call } from "@stream-io/video-react-sdk";
+import { Call, CallingState, RingingCall } from "@stream-io/video-react-sdk";
 import { useToast } from "../ui/use-toast";
 import * as Sentry from "@sentry/nextjs";
 import { updateExpertStatus } from "@/lib/utils";
@@ -93,15 +93,15 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 
 	const handleCallState = async (action: string) => {
 		if (action === "declined") {
-			await call.leave({ reject: true });
+			await call.leave({ reject: true, reason: "decline" });
 			setCallState("declined");
 		} else if (action === "accepted") {
 			const expertPhone = expert?.custom?.phone;
 			if (expertPhone) {
 				await updateExpertStatus(expertPhone, "Busy");
 			}
-			// await call.accept();
 			setCallState("accepted");
+			call.state.setCallingState(CallingState.IDLE);
 			router.replace(`/meeting/${call?.id}`);
 		} else if (action === "ended") {
 			setCallState("ended");

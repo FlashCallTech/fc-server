@@ -73,7 +73,7 @@ const MyOutgoingCallUI = ({
 					className="bg-red-500 text-white p-4 rounded-full hoverScaleDownEffect"
 					onClick={async () => {
 						setEndedByMe(true);
-						await call.leave({ reject: true });
+						await call.endCall();
 						return;
 					}}
 				>
