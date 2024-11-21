@@ -142,10 +142,10 @@ const MyCallUI = () => {
 		// }, 30000);
 
 		const handleCallEnded = async () => {
-			const expertPhone = expert?.custom?.phone;
-			if (expertPhone) {
-				await updateExpertStatus(expertPhone, "Online");
-			}
+			// const expertPhone = expert?.custom?.phone;
+			// if (expertPhone) {
+			// 	await updateExpertStatus(expertPhone, "Online");
+			// }
 
 			setShowCallUI(false);
 		};

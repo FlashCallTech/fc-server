@@ -229,7 +229,7 @@ const CreatorHome = () => {
 								videoCall: false,
 								audioCall: false,
 								chat: false,
-								isRestricted: true,
+								isRestricted: false,
 							};
 
 							setServices(newServices);
@@ -247,28 +247,6 @@ const CreatorHome = () => {
 			};
 		}
 	}, [creatorUser]);
-
-	useEffect(() => {
-		const updateServices = async () => {
-			try {
-				await axios.put(
-					`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
-					{
-						videoAllowed: services.videoCall,
-						audioAllowed: services.audioCall,
-						chatAllowed: services.chat,
-					}
-				);
-			} catch (error) {
-				Sentry.captureException(error);
-				console.error("Error updating services:", error);
-			}
-		};
-
-		if (creatorUser) {
-			updateServices();
-		}
-	}, [creatorUser, services]);
 
 	if (!creatorUser || loading || walletBalance < 0)
 		return (
