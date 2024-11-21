@@ -15,7 +15,6 @@ interface Props {
     img: { file: File | null; url: string };
     audio: { file: Blob | null; url: string };
     audioStream: MediaStream | null;
-    // audioContext: AudioContext;
     handleCapturedImg: ChangeEventHandler<HTMLInputElement>; // Updated to handle both types
     isImgUploading: boolean;
     isAudioUploading: boolean;

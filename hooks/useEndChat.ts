@@ -26,6 +26,7 @@ interface Chat {
 		senderId: string;
 		text: string;
 		createdAt: number;
+		tip: string;
 		img: string;
 		audio: string;
 		seen: boolean;
