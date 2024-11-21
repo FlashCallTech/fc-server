@@ -594,7 +594,7 @@ export const updateFirestoreSessions = async (
 // Function to update expert's status
 export const updateExpertStatus = async (phone: string, status: string) => {
 	try {
-		const response = await fetch("/api/set-status", {
+		const response = await fetch(`${backendBaseUrl}/user/setStatus`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

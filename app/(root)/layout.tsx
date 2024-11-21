@@ -80,7 +80,7 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 							</div>
 						</div>
 					</div>
-					<h1 className="text-2xl font-semibold mt-7">
+					<h1 className="text-2xl text-[#50A65C] font-semibold mt-7">
 						<Typewriter
 							words={[
 								"Connection Lost",

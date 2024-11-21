@@ -58,7 +58,9 @@ const FavoritesGrid = ({
 							if (statusData.status === "Busy") {
 								setStatus("Busy");
 							} else {
-								setStatus("Online");
+								setStatus(
+									statusData.status === "Online" ? "Online" : "Offline"
+								);
 							}
 						} else if (statusData.loginStatus === false) {
 							setStatus("Offline");
