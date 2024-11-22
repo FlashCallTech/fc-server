@@ -69,8 +69,8 @@ const Transactions = () => {
 
 	const groupedTransactions = transactions
 		? groupTransactionsByDate(
-			transactions.pages.flatMap((page) => page.transactions)
-		)
+				transactions.pages.flatMap((page) => page.transactions)
+		  )
 		: {};
 
 	const copyToClipboard = (text: string) => {
@@ -127,8 +127,9 @@ const Transactions = () => {
 					<button
 						key={filter}
 						onClick={() => setBtn(filter as "all" | "credit" | "debit")}
-						className={`capitalize text-sm font-medium px-[20px] py-[7px] rounded-3xl border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${filter === btn && "bg-green-1 text-white"
-							}`}
+						className={`capitalize text-sm font-medium px-[20px] py-[7px] rounded-3xl border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${
+							filter === btn && "bg-green-1 text-white"
+						}`}
 					>
 						{filter}
 					</button>
@@ -144,7 +145,7 @@ const Transactions = () => {
 							<span className="text-lg">Please try again later.</span>
 						</div>
 					) : Object.keys(groupedTransactions).length === 0 ? (
-						<section className="size-full h-[60vh] flex flex-col gap-4 items-center justify-center text-xl font-semibold text-center text-gray-500">
+						<section className="size-full max-h-[60vh] flex flex-col gap-4 items-center justify-center text-xl font-semibold text-center text-gray-500">
 							<Image
 								src={"/images/noTransaction.png"}
 								alt="no transaction"
@@ -152,7 +153,7 @@ const Transactions = () => {
 								height={1000}
 								className="size-[200px] object-contain"
 							/>
-							<span>No transaction yet</span>
+							<span className="text-center w-full">No transaction yet</span>
 						</section>
 					) : (
 						Object.entries(groupedTransactions).map(([date, transactions]) => {
@@ -274,21 +275,25 @@ const Transactions = () => {
 											</div>
 											<section className="flex flex-col gap-2 justify-between items-center">
 												<span
-													className={`size-full flex items-center font-bold text-sm leading-4 w-fit whitespace-nowrap ${transaction?.type === "credit"
-														? "text-green-500"
-														: "text-red-500"
-														} `}
+													className={`size-full flex items-center font-bold text-sm leading-4 w-fit whitespace-nowrap ${
+														transaction?.type === "credit"
+															? "text-green-500"
+															: "text-red-500"
+													} `}
 												>
 													{transaction?.type === "credit"
 														? `+ ₹${transaction?.amount?.toFixed(2)}`
 														: `- ₹${transaction?.amount?.toFixed(2)}`}
 												</span>
 
-												{transaction.type === "credit" &&
-													<span className="text-[13px] hover:cursor-pointer" onClick={() => openModal(transaction)}>
+												{transaction.type === "credit" && (
+													<span
+														className="text-[13px] hover:cursor-pointer"
+														onClick={() => openModal(transaction)}
+													>
 														View Invoice
 													</span>
-												}
+												)}
 											</section>
 										</li>
 									))}
@@ -318,7 +323,7 @@ const Transactions = () => {
 				!isFetching &&
 				currentUser &&
 				transactions?.pages.flatMap((page: any) => page.totalTransactions)[0] >
-				6 && (
+					6 && (
 					<div className="text-center text-gray-500 py-4">
 						You have reached the end of the list.
 					</div>

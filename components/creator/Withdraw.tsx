@@ -70,9 +70,13 @@ const Withdraw: React.FC = () => {
 	useEffect(() => {
 		const handleScroll = () => {
 			if (window.scrollY > 0 && Object.keys(groupedTransactions).length > 0) {
-				setIsStickyVisible(false);
+				setTimeout(() => {
+					setIsStickyVisible(false);
+				}, 500);
 			} else {
-				setIsStickyVisible(true);
+				setTimeout(() => {
+					setIsStickyVisible(true);
+				}, 500);
 			}
 		};
 
@@ -168,7 +172,7 @@ const Withdraw: React.FC = () => {
 						{/* Recharge Section */}
 						<div className="flex flex-col gap-5 w-full items-center justify-center md:items-start">
 							<div
-								className={`w-[100%] flex justify-between items-center font-normal leading-5 border-[1px] rounded-lg p-3 bg-white shadow ${
+								className={`w-full flex justify-between items-center font-normal leading-5 border-[1px] rounded-lg p-3 bg-white shadow ${
 									!isStickyVisible ? "flex-row" : "flex-col"
 								} relative`}
 							>
@@ -257,7 +261,7 @@ const Withdraw: React.FC = () => {
 									height={1000}
 									className="size-[150px] object-contain"
 								/>
-								<span>No transaction yet</span>
+								<span className="text-center w-full">No transaction yet</span>
 							</section>
 						) : (
 							Object.entries(groupedTransactions).map(
@@ -402,7 +406,7 @@ const Withdraw: React.FC = () => {
 							)
 						)
 					) : (
-						<div className="size-full h-full flex flex-col gap-2 items-center justify-center">
+						<div className="size-full h-[60vh] flex flex-col gap-2 items-center justify-center">
 							<ContentLoading />
 						</div>
 					)}
