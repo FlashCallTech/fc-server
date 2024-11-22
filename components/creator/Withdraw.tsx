@@ -69,7 +69,7 @@ const Withdraw: React.FC = () => {
 
 	useEffect(() => {
 		const handleScroll = () => {
-			if (window.scrollY > 0) {
+			if (window.scrollY > 0 && Object.keys(groupedTransactions).length > 0) {
 				setIsStickyVisible(false);
 			} else {
 				setIsStickyVisible(true);
@@ -244,18 +244,18 @@ const Withdraw: React.FC = () => {
 				<ul className="space-y-4 w-full px-4 pt-2 pb-7">
 					{!isLoading || !creatorUser ? (
 						isError ? (
-							<div className="size-full h-[60vh] flex flex-col items-center justify-center text-2xl xl:text-2xl font-semibold text-center text-red-500">
+							<div className="size-full h-full flex flex-col items-center justify-center text-2xl xl:text-2xl font-semibold text-center text-red-500">
 								Failed to fetch Transactions
 								<span className="text-lg">Please try again later.</span>
 							</div>
 						) : Object.keys(groupedTransactions).length === 0 ? (
-							<section className="size-full h-[60vh] flex flex-col gap-4 items-center justify-center text-xl font-semibold text-center text-gray-500">
+							<section className="size-full h-full flex flex-col gap-4 items-center justify-center text-xl font-semibold text-center text-gray-500">
 								<Image
 									src={"/images/noTransaction.png"}
 									alt="no transaction"
 									width={1000}
 									height={1000}
-									className="size-[200px] object-contain"
+									className="size-[150px] object-contain"
 								/>
 								<span>No transaction yet</span>
 							</section>
@@ -402,7 +402,7 @@ const Withdraw: React.FC = () => {
 							)
 						)
 					) : (
-						<div className="size-full h-[60vh] flex flex-col gap-2 items-center justify-center">
+						<div className="size-full h-full flex flex-col gap-2 items-center justify-center">
 							<ContentLoading />
 						</div>
 					)}
