@@ -22,14 +22,20 @@ import { doc, getDoc, increment, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { backendBaseUrl } from "@/lib/utils";
 
-const TipModal = ({
+interface Props {
+	walletBalance: number,
+	setWalletBalance: React.Dispatch<React.SetStateAction<number>>,
+	updateWalletBalance: () => Promise<void>,
+	handleSendTip: (tipAmt: string) => Promise<void>;
+	setText: React.Dispatch<React.SetStateAction<string>>,
+}
+
+const TipModal: React.FC<Props> = ({
 	walletBalance,
 	setWalletBalance,
 	updateWalletBalance,
-}: {
-	walletBalance: number;
-	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
-	updateWalletBalance: () => Promise<void>;
+	handleSendTip,
+	setText,
 }) => {
 	const [tipAmount, setTipAmount] = useState("");
 	const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
@@ -89,7 +95,7 @@ const TipModal = ({
 			try {
 				setLoading(true);
 				await Promise.all([
-					fetch(`${backendBaseUrl}/api/v1/payout/addMoney`, {
+					fetch(`${backendBaseUrl}/payout/addMoney`, {
 						method: "POST",
 						body: JSON.stringify({
 							userId: clientId,
@@ -116,7 +122,6 @@ const TipModal = ({
 				const tipDoc = await getDoc(tipRef);
 
 				if (tipDoc.exists()) {
-					console.log("exists");
 					// If callId exists, increment amount; otherwise, add it
 					await updateDoc(tipRef, {
 						[`${callId}.totalAmount`]: increment(parseInt(tipAmount)),
@@ -135,6 +140,7 @@ const TipModal = ({
 
 				setWalletBalance((prev) => prev + parseInt(tipAmount));
 				setTipPaid(true);
+
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error handling wallet changes:", error);
@@ -147,6 +153,7 @@ const TipModal = ({
 				// Update wallet balance after transaction
 				setLoading(false);
 				updateWalletBalance();
+				handleSendTip(tipAmount);
 			}
 		}
 	};
@@ -170,8 +177,6 @@ const TipModal = ({
 			setErrorMessage("");
 		}
 	};
-
-	console.log("call: ", callId);
 
 	return (
 		<section>
