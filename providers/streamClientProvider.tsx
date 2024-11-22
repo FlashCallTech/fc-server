@@ -14,7 +14,7 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 	const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(
 		null
 	);
-	const { currentUser, hasOngoingCall } = useCurrentUsersContext();
+	const { currentUser } = useCurrentUsersContext();
 	const userId = currentUser?._id as string | undefined;
 	let firstName = currentUser?.firstName || "";
 	let lastName = currentUser?.lastName || "";
