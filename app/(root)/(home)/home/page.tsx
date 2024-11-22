@@ -152,7 +152,7 @@ const HomePage = () => {
 					  0 ? (
 						<div className="size-full flex flex-col gap-4 items-center justify-center text-center text-gray-500">
 							<h2 className="text-2xl font-bold">No Creators Found</h2>
-							<p className="text-lg text-gray-400">
+							<p className="text-lg text-gray-400 px-5">
 								{selectedProfession !== "All"
 									? `No results found in the "${selectedProfession}" category.`
 									: "No creators are available at the moment. Please check back later."}
