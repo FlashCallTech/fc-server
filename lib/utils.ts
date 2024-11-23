@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { format } from "date-fns";
 
 import Razorpay from "razorpay";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
@@ -387,8 +388,6 @@ export const handleError = (error: unknown) => {
 	console.error(error);
 	throw new Error(typeof error === "string" ? error : JSON.stringify(error));
 };
-
-import { format } from "date-fns";
 
 export const formatDateTime = (dateString: Date) => {
 	const date = new Date(dateString);
