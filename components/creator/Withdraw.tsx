@@ -107,7 +107,7 @@ const Withdraw: React.FC = () => {
 	// Group transactions by date
 	const groupTransactionsByDate = (transactionsList: Transaction[]) => {
 		return transactionsList.reduce((acc, transaction) => {
-			const date = new Date(transaction.createdAt).toLocaleDateString();
+			const date = new Date(transaction.createdAt).toISOString().split("T")[0]; // Get only the date part (YYYY-MM-DD)
 			if (!acc[date]) {
 				acc[date] = [];
 			}
