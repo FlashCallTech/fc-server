@@ -153,7 +153,11 @@ const Transactions = () => {
 							<span className="text-lg">Please try again later.</span>
 						</div>
 					) : Object.keys(groupedTransactions).length === 0 ? (
-						<section className="size-full max-h-[60vh] flex flex-col gap-4 items-center justify-center text-xl font-semibold text-center text-gray-500">
+						<section
+							className={`size-full ${
+								Object.keys(groupedTransactions).length > 0 && "h-[60vh]"
+							} flex flex-col gap-4 items-center justify-center text-xl font-semibold text-center text-gray-500`}
+						>
 							<Image
 								src={"/images/noTransaction.png"}
 								alt="no transaction"
