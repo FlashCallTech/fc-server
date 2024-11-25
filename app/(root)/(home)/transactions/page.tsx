@@ -9,6 +9,7 @@ import { formatDateTime } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import { parseISO, isValid, format } from "date-fns";
 import { useInView } from "react-intersection-observer";
 interface Transaction {
 	_id: string;
@@ -58,11 +59,18 @@ const Transactions = () => {
 	// Group transactions by date
 	const groupTransactionsByDate = (transactionsList: Transaction[]) => {
 		return transactionsList.reduce((acc, transaction) => {
-			const date = new Date(transaction.createdAt).toLocaleDateString();
-			if (!acc[date]) {
-				acc[date] = [];
+			// Use parseISO to handle the date correctly, assuming 'createdAt' is in ISO format
+			const date = parseISO(transaction.createdAt);
+
+			if (!isValid(date)) {
+				throw new Error("Invalid Date");
 			}
-			acc[date].push(transaction);
+
+			const dateString = format(date, "yyyy-MM-dd"); // This format is consistent and works across browsers
+			if (!acc[dateString]) {
+				acc[dateString] = [];
+			}
+			acc[dateString].push(transaction);
 			return acc;
 		}, {} as Record<string, Transaction[]>);
 	};
