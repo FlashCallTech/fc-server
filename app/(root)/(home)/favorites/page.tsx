@@ -178,7 +178,10 @@ const Favorites = () => {
 					/>
 
 					<div
-						className={`size-full h-fit grid grid-cols-1 xm:grid-cols-2 2xl:grid-cols-3 px-2.5 gap-5 2xl:gap-7 lg:px-0 items-start pb-4`}
+						className={`size-full h-fit grid grid-cols-1 xs:grid-cols-2 2xl:grid-cols-3 px-2.5 gap-5 2xl:gap-7 lg:px-0 items-start pb-4`}
+						style={{
+							WebkitTransform: "translateZ(0)",
+						}}
 					>
 						{favorites.map((favorite: any, idx: number) => (
 							<section

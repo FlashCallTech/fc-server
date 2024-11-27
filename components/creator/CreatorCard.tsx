@@ -32,10 +32,10 @@ const CreatorCard = () => {
 			}
 		};
 
-		if (username && userType === "client") {
-			fetchCreator();
-		} else {
+		if (currentUser && userType && userType === "creator") {
 			router.replace("/home");
+		} else {
+			fetchCreator();
 		}
 	}, [username, userType, router]);
 

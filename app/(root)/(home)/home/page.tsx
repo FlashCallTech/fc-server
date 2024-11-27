@@ -152,7 +152,7 @@ const HomePage = () => {
 					  0 ? (
 						<div className="size-full flex flex-col gap-4 items-center justify-center text-center text-gray-500">
 							<h2 className="text-2xl font-bold">No Creators Found</h2>
-							<p className="text-lg text-gray-400">
+							<p className="text-lg text-gray-400 px-5">
 								{selectedProfession !== "All"
 									? `No results found in the "${selectedProfession}" category.`
 									: "No creators are available at the moment. Please check back later."}
@@ -168,10 +168,12 @@ const HomePage = () => {
 						</div>
 					) : (
 						<section className="grid grid-cols-1 px-4 lg:px-0">
-							<HomepageFilter
-								selectedProfession={selectedProfession}
-								handleProfessionChange={handleProfessionChange}
-							/>
+							<section className="sticky top-0 md:top-[76px] bg-white z-50">
+								<HomepageFilter
+									selectedProfession={selectedProfession}
+									handleProfessionChange={handleProfessionChange}
+								/>
+							</section>
 							<section
 								className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 2xl:gap-7  items-center overflow-hidden`}
 								style={{

@@ -121,6 +121,8 @@ const CreatorCallsFeedbacks = ({
 		});
 
 		try {
+			const feedbackText = feedback.feedback || null;
+
 			// Use `newPosition` in the API calls
 			const response = await axios.post(
 				`${backendBaseUrl}/feedback/creator/setFeedback`,
@@ -128,7 +130,7 @@ const CreatorCallsFeedbacks = ({
 					creatorId: creatorUser?._id,
 					clientId: feedback.clientId._id,
 					rating: feedback.rating,
-					feedbackText: feedback.feedback,
+					feedbackText: feedbackText,
 					showFeedback: showFeedback,
 					createdAt: feedback.createdAt,
 					position: newPosition,
@@ -144,7 +146,7 @@ const CreatorCallsFeedbacks = ({
 				callId: feedback.callId,
 				clientId: feedback.clientId._id,
 				rating: feedback.rating,
-				feedbackText: feedback.feedback,
+				feedbackText: feedbackText,
 				showFeedback: showFeedback,
 				createdAt: feedback.createdAt,
 				position: newPosition,

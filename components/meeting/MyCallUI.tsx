@@ -20,7 +20,6 @@ import axios from "axios";
 import MyCallConnectingUI from "./MyCallConnectigUI";
 
 const MyCallUI = () => {
-	const router = useRouter();
 	const calls = useCalls();
 	const pathname = usePathname();
 	const { currentUser, userType } = useCurrentUsersContext();
@@ -28,12 +27,14 @@ const MyCallUI = () => {
 	const [callId, setCallId] = useState<string | null>("");
 	const [endedByMe, setEndedByMe] = useState(false);
 	const { call, isCallLoading } = useGetCallById(callId || "");
-	let hide = pathname.includes("/meeting") || pathname.includes("/feedback");
+	let hide = pathname.includes("/meeting");
 	const [showCallUI, setShowCallUI] = useState(false);
 	const [connecting, setConnecting] = useState(false);
 	const [connectingCall, setConnectingCall] = useState<Call | null>(null);
 	const [redirecting, setRedirecting] = useState(false);
 
+	let autoDeclineTimeout: NodeJS.Timeout;
+	const router = useRouter();
 	const checkFirestoreSession = (userId: string) => {
 		const sessionDocRef = doc(db, "sessions", userId);
 		const unsubscribe = onSnapshot(sessionDocRef, (sessionDoc) => {
@@ -131,22 +132,7 @@ const MyCallUI = () => {
 			(member) => member.custom.type === "expert"
 		);
 
-		// const autoDeclineTimeout = setTimeout(async () => {
-		// 	if (incomingCall?.state?.callingState === CallingState.RINGING) {
-		// 		console.log("Auto-declining call due to timeout...");
-		// 		await handleCallRejected({
-		// 			title: "Missed Call",
-		// 			description: "The call was not answered",
-		// 		});
-		// 	}
-		// }, 30000);
-
 		const handleCallEnded = async () => {
-			// const expertPhone = expert?.custom?.phone;
-			// if (expertPhone) {
-			// 	await updateExpertStatus(expertPhone, "Online");
-			// }
-
 			setShowCallUI(false);
 		};
 
@@ -202,57 +188,58 @@ const MyCallUI = () => {
 			expert?.user_id as string
 		);
 
-		const autoDeclineTimeout = setTimeout(async () => {
-			await setDoc(
-				sessionTriggeredRef,
-				{
-					count: increment(1),
-				},
-				{ merge: true }
-			);
+		const startAutoDeclineCountdown = () => {
+			autoDeclineTimeout = setTimeout(async () => {
+				await setDoc(
+					sessionTriggeredRef,
+					{ count: increment(1) },
+					{ merge: true }
+				);
 
-			const sessionTriggeredDoc = await getDoc(sessionTriggeredRef);
-			if (!sessionTriggeredDoc.exists()) {
-				await setDoc(sessionTriggeredRef, { count: 0 });
-			}
-			if (sessionTriggeredDoc.exists()) {
-				const currentCount = sessionTriggeredDoc.data().count || 0;
-
-				if (currentCount >= 3) {
-					await updateFirestoreCallServices(
-						{
-							_id: expert?.user_id as string,
-							phone: expert?.custom?.phone,
-						},
-						{
-							myServices: false,
-							videoCall: false,
-							audioCall: false,
-							chat: false,
-						},
-						undefined,
-						"Offline"
-					);
-
-					await axios.put(
-						`${backendBaseUrl}/creator/updateUser/${expert?.user_id}`,
-						{
-							videoAllowed: false,
-							audioAllowed: false,
-							chatAllowed: false,
-						}
-					);
-
-					// Reset the count back to 0
-					await setDoc(sessionTriggeredRef, { count: 0 }, { merge: true });
+				const sessionTriggeredDoc = await getDoc(sessionTriggeredRef);
+				if (!sessionTriggeredDoc.exists()) {
+					await setDoc(sessionTriggeredRef, { count: 0 });
 				}
-			}
 
-			if (outgoingCall?.state?.callingState === CallingState.RINGING) {
-				console.log("Auto-declining call due to timeout...");
-				await handleCallIgnored();
-			}
-		}, 30000);
+				if (sessionTriggeredDoc.exists()) {
+					const currentCount = sessionTriggeredDoc.data().count || 0;
+
+					if (currentCount >= 3) {
+						await updateFirestoreCallServices(
+							{
+								_id: expert?.user_id as string,
+								phone: expert?.custom?.phone,
+							},
+							{
+								myServices: false,
+								videoCall: false,
+								audioCall: false,
+								chat: false,
+							},
+							undefined,
+							"Offline"
+						);
+
+						await axios.put(
+							`${backendBaseUrl}/creator/updateUser/${expert?.user_id}`,
+							{
+								videoAllowed: false,
+								audioAllowed: false,
+								chatAllowed: false,
+							}
+						);
+
+						// Reset the count back to 0
+						await setDoc(sessionTriggeredRef, { count: 0 }, { merge: true });
+					}
+				}
+
+				if (outgoingCall?.state?.callingState === CallingState.RINGING) {
+					console.log("Auto-declining call due to timeout...");
+					await handleCallIgnored();
+				}
+			}, 30000);
+		};
 
 		const handleCallAccepted = async () => {
 			setShowCallUI(false);
@@ -260,7 +247,11 @@ const MyCallUI = () => {
 			setRedirecting(true);
 			setConnectingCall(outgoingCall);
 			clearTimeout(autoDeclineTimeout);
+
+			outgoingCall?.state.setCallingState(CallingState.IDLE);
+
 			logEvent(analytics, "call_accepted", { callId: outgoingCall.id });
+
 			await updateExpertStatus(
 				outgoingCall.state.createdBy?.custom?.phone as string,
 				"Busy"
@@ -279,37 +270,32 @@ const MyCallUI = () => {
 				},
 			});
 
-			if (
-				outgoingCall.state.callingState === CallingState.JOINING ||
-				outgoingCall.state.callingState === CallingState.JOINED
-			) {
-				try {
-					setConnecting(false);
-					await outgoingCall
-						.leave()
-						.then(() => router.replace(`/meeting/${outgoingCall.id}`))
-						.catch((err) => console.log("redirection error ", err));
-				} catch (err) {
-					console.warn("unable to leave client user ... ", err);
-				}
-			} else {
-				try {
-					setConnecting(false);
-					await outgoingCall
-						.leave()
-						.then(() => router.replace(`/meeting/${outgoingCall.id}`))
-						.catch((err) => console.log("redirection error ", err));
-				} catch (err) {
-					console.warn("unable to leave client user ... ", err);
-					router.replace(`/meeting/${outgoingCall.id}`);
-				}
+			// router.replace(`/meeting/${outgoingCall.id}`);
+			// setConnecting(false);
+			// setRedirecting(false);
+
+			try {
+				await outgoingCall
+					.leave()
+					.then(() => router.replace(`/meeting/${outgoingCall.id}`))
+					.catch((err) => console.log("redirection error ", err));
+			} catch (err) {
+				console.warn("unable to leave client user ... ", err);
+			} finally {
+				await outgoingCall
+					.leave()
+					.then(() => router.replace(`/meeting/${outgoingCall.id}`))
+					.catch((err) => console.log("redirection error ", err));
+				setConnecting(false);
+				setRedirecting(false);
 			}
 		};
 
 		const handleCallRejected = async () => {
 			setShowCallUI(false);
-			clearTimeout(autoDeclineTimeout);
+			setConnecting(false);
 			setRedirecting(false);
+			clearTimeout(autoDeclineTimeout);
 
 			if (sessionStorage.getItem(`callRejected-${outgoingCall.id}`)) return;
 
@@ -361,14 +347,16 @@ const MyCallUI = () => {
 		};
 
 		const handleCallIgnored = async () => {
+			setShowCallUI(false);
+			setConnecting(false);
+			setRedirecting(false);
+
 			const defaultMessage = {
 				title: `${expert?.custom?.name || "User"} is not answering`,
 				description: "Please try again later",
 			};
 
 			const message = defaultMessage;
-
-			setRedirecting(false);
 
 			toast({
 				variant: "destructive",
@@ -393,6 +381,17 @@ const MyCallUI = () => {
 			);
 		};
 
+		if (outgoingCall?.state?.callingState === CallingState.RINGING) {
+			startAutoDeclineCountdown();
+		}
+
+		if (
+			outgoingCall?.state?.callingState === CallingState.JOINING ||
+			outgoingCall?.state?.callingState === CallingState.JOINED
+		) {
+			clearTimeout(autoDeclineTimeout);
+		}
+
 		outgoingCall.on("call.accepted", handleCallAccepted);
 		outgoingCall.on("call.rejected", handleCallRejected);
 		outgoingCall.on("call.ended", handleCallEnded);
@@ -412,17 +411,17 @@ const MyCallUI = () => {
 		}
 	}, [incomingCalls, outgoingCalls]);
 
-	// Display loading UI when connecting
+	// Display UI components based on call state
+
 	if (connecting || redirecting) {
 		return <MyCallConnectingUI call={connectingCall} />;
 	}
 
-	// Display UI components based on call state
 	if (incomingCalls.length > 0 && showCallUI && !hide) {
 		return <MyIncomingCallUI call={incomingCalls[0]} />;
 	}
 
-	if (outgoingCalls.length > 0 && showCallUI && !hide) {
+	if (outgoingCalls.length > 0 && showCallUI) {
 		return (
 			<MyOutgoingCallUI call={outgoingCalls[0]} setEndedByMe={setEndedByMe} />
 		);

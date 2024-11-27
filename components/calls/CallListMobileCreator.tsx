@@ -85,7 +85,7 @@ const CallListMobileCreator = ({
 								return (
 									<section
 										key={userCall.callId}
-										className={`flex h-full w-full items-start justify-between p-4 xl:max-w-[568px] border rounded-xl border-gray-300`}
+										className={`flex h-full w-full items-start justify-between p-2.5 xm:p-4 xl:max-w-[568px] border rounded-xl border-gray-300`}
 									>
 										<section className="flex flex-col items-start justify-start w-full gap-2">
 											{/* Expert's Details */}
@@ -102,16 +102,16 @@ const CallListMobileCreator = ({
 													alt="Expert"
 													height={1000}
 													width={1000}
-													className="rounded-full max-w-12 min-w-12 h-12 object-cover"
+													className="rounded-full max-w-12 min-w-12 h-12 object-cover hoverScaleDownEffect cursor-pointer"
 												/>
 												{/* creator details */}
 												<section className="size-full flex flex-col items-start justify-between gap-1">
-													<p className="text-base tracking-wide whitespace-nowrap capitalize">
+													<p className="text-base tracking-wide whitespace-nowrap capitalize hoverScaleDownEffect cursor-pointer">
 														{fullName || "Creator"}
 													</p>
 
 													{/* call details */}
-													<section className="flex flex-wrap items-center justify-start gap-2 text-[12.5px]">
+													<section className="flex items-center justify-start gap-2 text-[12.5px]">
 														<span>
 															{userCall.type === "audio" ? (
 																userCall.status === "Ended" ? (
@@ -126,7 +126,7 @@ const CallListMobileCreator = ({
 																		<path
 																			strokeLinecap="round"
 																			strokeLinejoin="round"
-																			d="M14.25 9.75v-4.5m0 4.5h4.5m-4.5 0 6-6m-3 18c-8.284 0-15-6.716-15-15V4.5A2.25 2.25 0 0 1 4.5 2.25h1.372c.516 0 .966.351 1.091.852l1.106 4.423c.11.44-.054.902-.417 1.173l-1.293.97a1.062 1.062 0 0 0-.38 1.21 12.035 12.035 0 0 0 7.143 7.143c.441.162.928-.004 1.21-.38l.97-1.293a1.125 1.125 0 0 1 1.173-.417l4.423 1.106c.5.125.852.575.852 1.091V19.5a2.25 2.25 0 0 1-2.25 2.25h-2.25Z"
+																			d="M20.25 3.75v4.5m0-4.5h-4.5m4.5 0-6 6m3 12c-8.284 0-15-6.716-15-15V4.5A2.25 2.25 0 0 1 4.5 2.25h1.372c.516 0 .966.351 1.091.852l1.106 4.423c.11.44-.054.902-.417 1.173l-1.293.97a1.062 1.062 0 0 0-.38 1.21 12.035 12.035 0 0 0 7.143 7.143c.441.162.928-.004 1.21-.38l.97-1.293a1.125 1.125 0 0 1 1.173-.417l4.423 1.106c.5.125.852.575.852 1.091V19.5a2.25 2.25 0 0 1-2.25 2.25h-2.25Z"
 																		/>
 																	</svg>
 																) : (
@@ -213,9 +213,9 @@ const CallListMobileCreator = ({
 																{/* Separator */}
 																<span className="text-gray-400">•</span>
 																{/* User Amount */}
-																<span className="flex items-center gap-1 ">
+																<span className="flex items-center gap-1">
 																	{/* Amount */}
-																	{`₹${userCall?.amount?.toFixed(0) ?? 0}`}
+																	{`₹ ${userCall?.amount?.toFixed(0) ?? 0}`}
 																</span>
 															</>
 														</section>
