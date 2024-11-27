@@ -242,7 +242,6 @@ const MyCallUI = () => {
 		};
 
 		const handleCallAccepted = async () => {
-			setShowCallUI(false);
 			setConnecting(true);
 			setRedirecting(true);
 			setConnectingCall(outgoingCall);
@@ -271,6 +270,7 @@ const MyCallUI = () => {
 			});
 
 			router.replace(`/meeting/${outgoingCall.id}`);
+			setShowCallUI(false);
 			setConnecting(false);
 			setRedirecting(false);
 		};

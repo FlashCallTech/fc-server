@@ -202,7 +202,7 @@ const Transactions = () => {
 														viewBox="0 0 24 24"
 														strokeWidth={1.5}
 														stroke="currentColor"
-														className="cursor-pointer mb-[1px] size-3 sm:size-4 text-gray-400 hoverScaleDownEffect hover:text-green-1"
+														className="cursor-pointer mb-[1px] size-3 md:size-4 text-gray-400 hoverScaleDownEffect hover:text-green-1"
 														onClick={() => copyToClipboard(transaction._id)}
 													>
 														<path

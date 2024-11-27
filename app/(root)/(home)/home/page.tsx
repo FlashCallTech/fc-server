@@ -168,7 +168,7 @@ const HomePage = () => {
 						</div>
 					) : (
 						<section className="grid grid-cols-1 px-4 lg:px-0">
-							<section className="sticky top-0 md:top-[76px] bg-white z-50">
+							<section className="sticky top-0 md:top-[76px] bg-white z-30">
 								<HomepageFilter
 									selectedProfession={selectedProfession}
 									handleProfessionChange={handleProfessionChange}
