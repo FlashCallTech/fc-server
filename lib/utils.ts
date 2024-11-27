@@ -640,10 +640,17 @@ export const sendNotification = async (
 	token: string,
 	title: string,
 	body: string,
-	data: any,
+	data?: any,
 	link?: string
 ) => {
 	try {
+		// Convert all data values to strings
+		const stringifiedData = data
+			? Object.fromEntries(
+					Object.entries(data).map(([key, value]) => [key, String(value)])
+			  )
+			: {};
+
 		const response = await fetch("/api/send-notification", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -651,7 +658,7 @@ export const sendNotification = async (
 				token,
 				title,
 				message: body,
-				data: data,
+				data: stringifiedData, // Use the stringified data
 				link,
 			}),
 		});
