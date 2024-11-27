@@ -376,12 +376,12 @@ const MyCallUI = () => {
 			clearTimeout(autoDeclineTimeout);
 		}
 
-		outgoingCall.on("call.accepted", handleCallAccepted);
+		outgoingCall.on("call.session_participant_joined", handleCallAccepted);
 		outgoingCall.on("call.rejected", handleCallRejected);
 		outgoingCall.on("call.ended", handleCallEnded);
 
 		return () => {
-			outgoingCall.off("call.accepted", handleCallAccepted);
+			outgoingCall.off("call.session_participant_joined", handleCallAccepted);
 			outgoingCall.off("call.rejected", handleCallRejected);
 			outgoingCall.off("call.ended", handleCallEnded);
 			clearTimeout(autoDeclineTimeout);
