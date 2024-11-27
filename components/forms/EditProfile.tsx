@@ -274,7 +274,7 @@ const EditProfile = ({
 	const checkUsernameAvailability = async (username: string) => {
 		try {
 			const response = await axios.get(
-				`/api/v1/user/getAllUsernames?username=${username}`
+				`${backendBaseUrl}/user/getAllUsernames?username=${username}`
 			);
 
 			// Check the response status directly
@@ -296,7 +296,7 @@ const EditProfile = ({
 
 	const debouncedCheckUsernameAvailability = debounce(
 		checkUsernameAvailability,
-		500
+		300
 	);
 
 	// Utility function to get updated value or fallback to existing value
