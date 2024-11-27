@@ -135,17 +135,21 @@ const ReviewSlider = ({
 											}`}
 											style={{ maxHeight: isExpanded ? "10rem" : "7rem" }}
 										>
-											{getClampedText(feedback?.feedback)}
-											{!isExpanded && feedback?.feedback?.length > 100 && (
-												<span className="text-white">
-													<button
-														onClick={toggleReadMore}
-														className="underline underline-offset-2 hover:opacity-80"
-													>
-														Read more
-													</button>
-												</span>
-											)}
+											{feedback?.feedback
+												? getClampedText(feedback.feedback)
+												: "No feedback provided"}
+											{feedback?.feedback &&
+												!isExpanded &&
+												feedback.feedback.length > 100 && (
+													<span className="text-white">
+														<button
+															onClick={toggleReadMore}
+															className="underline underline-offset-2 hover:opacity-80"
+														>
+															Read more
+														</button>
+													</span>
+												)}
 										</span>
 
 										{isExpanded && (

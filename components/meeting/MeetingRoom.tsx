@@ -7,8 +7,6 @@ import {
 	PaginatedGridLayout,
 	SpeakerLayout,
 	SpeakingWhileMutedNotification,
-	ToggleAudioPublishingButton,
-	ToggleVideoPublishingButton,
 	useCall,
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
@@ -28,12 +26,13 @@ import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { backendBaseUrl, checkPermissions } from "@/lib/utils";
+import { backendBaseUrl } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 import { CallTimerProvider } from "@/lib/context/CallTimerContext";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import TipModal from "../calls/TipModal";
+import MyCallConnectingUI from "./MyCallConnectigUI";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -103,7 +102,7 @@ export const isMobileDevice = () => {
 const MeetingRoom = () => {
 	const { useCallCallingState, useCallEndedAt, useParticipants } =
 		useCallStateHooks();
-	const { currentUser, userType } = useCurrentUsersContext();
+	const { currentUser, userType, ongoingCallStatus } = useCurrentUsersContext();
 	const { walletBalance, setWalletBalance, updateWalletBalance } =
 		useWalletBalanceContext();
 
@@ -127,7 +126,7 @@ const MeetingRoom = () => {
 	const [hasVisited, setHasVisited] = useState(false);
 	const firestore = getFirestore();
 
-	const countdownDuration = 15;
+	const countdownDuration = ongoingCallStatus === "initiated" ? 30 : 15;
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
 		navigator.sendBeacon(
@@ -178,13 +177,10 @@ const MeetingRoom = () => {
 				}
 				if (callingState === CallingState.IDLE) {
 					userType === "creator" && (await call?.accept());
-					setTimeout(async () => {
-						await call?.join();
-					}, 1000);
+					await call?.join();
+
 					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
-					// if (isVideoCall) call?.camera?.enable();
-					// call?.microphone?.enable();
 				}
 			} catch (error) {
 				console.warn("Error Joining Call ", error);
@@ -326,6 +322,10 @@ const MeetingRoom = () => {
 
 	return (
 		<section className="relative w-full overflow-hidden pt-4 md:pt-0 text-white bg-dark-2 h-dvh">
+			{call &&
+				participants.length === 1 &&
+				isMeetingOwner &&
+				ongoingCallStatus === "initiate" && <MyCallConnectingUI call={call} />}
 			{showCountdown && countdown && <CountdownDisplay />}
 			<div className="relative flex size-full items-center justify-center transition-all">
 				<div className="flex size-full max-w-[95%] md:max-w-[1000px] items-center transition-all">

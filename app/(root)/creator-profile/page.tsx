@@ -1,10 +1,10 @@
 import Profile from '@/components/creator/Profile'
 import React from 'react'
 
-const page = () => {
+const CreatorProfile = () => {
   return (
     <Profile />
   )
 }
 
-export default page
+export default CreatorProfile

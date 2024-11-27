@@ -33,7 +33,7 @@ const EndCallButton = () => {
 		await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
 			status: "payment pending",
 		});
-		await call?.endCall().catch((err) => console.warn(err));
+		await call?.endCall();
 
 		trackEvent("BookCall_Chat_Ended", {
 			Client_ID: call.state.createdBy?.id,

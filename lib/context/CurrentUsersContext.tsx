@@ -35,6 +35,8 @@ interface CurrentUsersContextValue {
 	fetchingUser: boolean;
 	creatorURL: string;
 	updateCreatorURL: (url: any) => void;
+	ongoingCallStatus: string;
+	setOngoingCallStatus: any;
 }
 
 // Create the context with a default value of null
@@ -66,7 +68,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const [userType, setUserType] = useState<string | null>(null);
 	const [authToken, setAuthToken] = useState<string | null>(null);
 	const [creatorURL, setCreatorURL] = useState("");
-
+	const [ongoingCallStatus, setOngoingCallStatus] = useState("");
 	const { toast } = useToast();
 	const router = useRouter();
 
@@ -81,6 +83,32 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		setCreatorURL(url);
 		localStorage.setItem("creatorURL", url);
 	};
+
+	const checkFirestoreSession = (userId: string) => {
+		const sessionDocRef = doc(db, "sessions", userId);
+		const unsubscribe = onSnapshot(sessionDocRef, (sessionDoc) => {
+			if (sessionDoc.exists()) {
+				const { ongoingCall } = sessionDoc.data();
+
+				if (ongoingCall && ongoingCall.status) {
+					setOngoingCallStatus(ongoingCall.status);
+				}
+			}
+		});
+
+		return unsubscribe;
+	};
+
+	useEffect(() => {
+		if (clientUser?._id) {
+			const unsubscribe = checkFirestoreSession(clientUser._id);
+			return () => {
+				unsubscribe();
+			};
+		}
+	}, [clientUser?._id]);
+
+	console.log(ongoingCallStatus);
 
 	useEffect(() => {
 		// Initialize the creatorURL from localStorage on component mount
@@ -278,6 +306,8 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				fetchingUser,
 				creatorURL,
 				updateCreatorURL,
+				ongoingCallStatus,
+				setOngoingCallStatus,
 			}}
 		>
 			{children}
