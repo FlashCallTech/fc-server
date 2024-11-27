@@ -109,7 +109,7 @@ export const handlePendingTransaction = async (
 	}
 
 	const callEndedAt = call?.state?.endedAt;
-	const callStartsAt = call?.state?.startsAt;
+	const callStartsAt = call?.state?.startedAt || call?.state?.startsAt;
 	const isVideoCall = call?.type === "default";
 
 	const expert = call?.state?.members?.find(

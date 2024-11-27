@@ -108,8 +108,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		}
 	}, [clientUser?._id]);
 
-	console.log(ongoingCallStatus);
-
 	useEffect(() => {
 		// Initialize the creatorURL from localStorage on component mount
 		const storedURL = localStorage.getItem("creatorURL");

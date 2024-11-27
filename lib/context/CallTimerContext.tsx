@@ -106,7 +106,6 @@ export const CallTimerProvider = ({
 			return;
 		}
 
-		const callStartedTime = new Date(callStartedAt);
 		const updateFirestoreTimer = async (
 			timeLeft: number,
 			timeUtilized: number
@@ -134,7 +133,7 @@ export const CallTimerProvider = ({
 		const intervalId = setInterval(() => {
 			if (isTimerRunning) {
 				const now = new Date();
-				const timeUtilized = (now.getTime() - callStartedTime.getTime()) / 1000;
+				const timeUtilized = (now.getTime() - callStartedAt.getTime()) / 1000;
 
 				const newTimeLeft = maxCallDuration - timeUtilized;
 				const clampedTimeLeft = newTimeLeft > 0 ? newTimeLeft : 0;
