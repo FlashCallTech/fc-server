@@ -242,7 +242,6 @@ const MyCallUI = () => {
 		};
 
 		const handleCallAccepted = async () => {
-			setShowCallUI(false);
 			setConnecting(true);
 			setRedirecting(true);
 			setConnectingCall(outgoingCall);
@@ -270,25 +269,10 @@ const MyCallUI = () => {
 				},
 			});
 
-			// router.replace(`/meeting/${outgoingCall.id}`);
-			// setConnecting(false);
-			// setRedirecting(false);
-
-			try {
-				await outgoingCall
-					.leave()
-					.then(() => router.replace(`/meeting/${outgoingCall.id}`))
-					.catch((err) => console.log("redirection error ", err));
-			} catch (err) {
-				console.warn("unable to leave client user ... ", err);
-			} finally {
-				await outgoingCall
-					.leave()
-					.then(() => router.replace(`/meeting/${outgoingCall.id}`))
-					.catch((err) => console.log("redirection error ", err));
-				setConnecting(false);
-				setRedirecting(false);
-			}
+			router.replace(`/meeting/${outgoingCall.id}`);
+			setShowCallUI(false);
+			setConnecting(false);
+			setRedirecting(false);
 		};
 
 		const handleCallRejected = async () => {
