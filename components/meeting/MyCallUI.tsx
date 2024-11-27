@@ -162,12 +162,12 @@ const MyCallUI = () => {
 			setShowCallUI(false);
 		};
 
-		incomingCall.on("call.session_participant_joined", handleCallAccepted);
+		incomingCall.on("call.accepted", handleCallAccepted);
 		incomingCall.on("call.ended", handleCallEnded);
 		incomingCall.on("call.rejected", () => handleCallRejected());
 
 		return () => {
-			incomingCall.off("call.session_participant_joined", handleCallAccepted);
+			incomingCall.off("call.accepted", handleCallAccepted);
 			incomingCall.off("call.ended", handleCallEnded);
 			incomingCall.off("call.rejected", () => handleCallRejected());
 		};
@@ -376,12 +376,12 @@ const MyCallUI = () => {
 			clearTimeout(autoDeclineTimeout);
 		}
 
-		outgoingCall.on("call.session_participant_joined", handleCallAccepted);
+		outgoingCall.on("call.accepted", handleCallAccepted);
 		outgoingCall.on("call.rejected", handleCallRejected);
 		outgoingCall.on("call.ended", handleCallEnded);
 
 		return () => {
-			outgoingCall.off("call.session_participant_joined", handleCallAccepted);
+			outgoingCall.off("call.accepted", handleCallAccepted);
 			outgoingCall.off("call.rejected", handleCallRejected);
 			outgoingCall.off("call.ended", handleCallEnded);
 			clearTimeout(autoDeclineTimeout);
