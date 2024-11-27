@@ -153,7 +153,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				client_first_seen: formattedDate,
 				creator_first_seen: creator.createdAt.toString().split("T")[0],
 				client_balance: clientUser.walletBalance,
-				rate: creator.chatRate,
 				status: "pending",
 				chatId: chatId,
 				chatRate,
@@ -171,10 +170,21 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 						`Incoming Chat Request`,
 						`Chat Request from ${clientUser.username}`,
 						{
-							clientName: chatRequestData.clientName,
 							clientId: chatRequestData.clientId,
+							clientName: chatRequestData.clientName,
+							clientPhone: chatRequestData.clientPhone,
+							clientImg: chatRequestData.clientImg,
+							creatorId: chatRequestData.creatorId,
+							creatorName: chatRequestData.creatorName,
+							creatorPhone: chatRequestData.creatorPhone,
+							creatorImg: chatRequestData.creatorImg,
 							chatId: chatRequestData.chatId,
 							chatRequestId: chatRequestData.id,
+							callId: chatRequestData.callId,
+							chatRate: chatRequestData.chatRate,
+							client_first_seen: chatRequestData.client_first_seen,
+							creator_first_seen: chatRequestData.creator_first_seen,
+							createdAt: chatRequestData.createdAt
 						},
 						`https:flashcall.me/`
 					);
