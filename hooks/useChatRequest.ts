@@ -59,11 +59,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	function maskPhoneNumber(phoneNumber: string) {
 		// Remove the '+91' prefix
 		if (phoneNumber) {
-
-			let cleanedNumber = phoneNumber.replace('+91', '');
+			let cleanedNumber = phoneNumber.replace("+91", "");
 
 			// Mask the next 5 digits, leaving the first 2 digits unmasked
-			let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
+			let maskedNumber =
+				cleanedNumber.substring(0, 2) + "*****" + cleanedNumber.substring(7);
 
 			return maskedNumber;
 		}
@@ -71,7 +71,9 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 	const getUserData = async (userId: string) => {
 		try {
-			const response = await axios.get(`${backendBaseUrl}/creator/getUser/${userId}`);
+			const response = await axios.get(
+				`${backendBaseUrl}/creator/getUser/${userId}`
+			);
 			console.log("User data:", response.data.chatRate);
 			return response.data.chatRate;
 		} catch (error) {
@@ -84,7 +86,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		if (!clientUser) router.push("sign-in");
 
 		let maxCallDuration = (walletBalance / parseInt(creator.chatRate, 10)) * 60;
-		maxCallDuration = maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
+		maxCallDuration =
+			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
 		if (maxCallDuration < 300) {
 			toast({
@@ -143,12 +146,16 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				id: newChatRequestRef.id,
 				callId,
 				creatorId: creator?._id,
-				creatorName: creator.fullName ? creator.fullName : maskPhoneNumber(creator.phone),
+				creatorName: creator.fullName
+					? creator.fullName
+					: maskPhoneNumber(creator.phone),
 				creatorPhone: creator.phone,
 				creatorImg: creator.photo,
 				clientId: clientUser?._id,
 				clientPhone: clientUser?.phone,
-				clientName: clientUser?.fullName ? clientUser.fullName : maskPhoneNumber(clientUser.phone),
+				clientName: clientUser?.fullName
+					? clientUser.fullName
+					: maskPhoneNumber(clientUser.phone),
 				clientImg: clientUser?.photo,
 				client_first_seen: formattedDate,
 				creator_first_seen: creator.createdAt.toString().split("T")[0],
@@ -184,7 +191,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 							chatRate: chatRequestData.chatRate,
 							client_first_seen: chatRequestData.client_first_seen,
 							creator_first_seen: chatRequestData.creator_first_seen,
-							createdAt: chatRequestData.createdAt
+							createdAt: chatRequestData.createdAt,
 						},
 						`https:flashcall.me/`
 					);
@@ -203,12 +210,13 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					if (data?.status === "pending") {
 						// If the status is still "pending", update it to "ended"
 						await setDoc(chatRequestDoc, { status: "ended" }, { merge: true });
-						console.log("Chat request status updated to 'ended' due to timeout");
+						console.log(
+							"Chat request status updated to 'ended' due to timeout"
+						);
 					}
 					// localStorage.removeItem("chatRequestId");
 				}
-			}, 30000);  // 60 seconds
-
+			}, 30000); // 60 seconds
 
 			// Save chatRequest document ID in local storage
 			localStorage.setItem("chatRequestId", newChatRequestRef.id);
@@ -344,7 +352,9 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					User_First_Seen: chatRequest.client_first_seen,
 					chatId: chatRequest.chatId,
 					requestId: chatRequest.id,
-					fullName: response.firstName ? response.firstName + " " + response.lastname : undefined,
+					fullName: response.firstName
+						? response.firstName + " " + response.lastname
+						: undefined,
 					phone: response.phone,
 					photo: response.photo,
 				})
