@@ -162,12 +162,12 @@ const MyCallUI = () => {
 			setShowCallUI(false);
 		};
 
-		incomingCall.on("call.session_participant_joined", handleCallAccepted);
+		incomingCall.on("call.accepted", handleCallAccepted);
 		incomingCall.on("call.ended", handleCallEnded);
 		incomingCall.on("call.rejected", () => handleCallRejected());
 
 		return () => {
-			incomingCall.off("call.session_participant_joined", handleCallAccepted);
+			incomingCall.off("call.accepted", handleCallAccepted);
 			incomingCall.off("call.ended", handleCallEnded);
 			incomingCall.off("call.rejected", () => handleCallRejected());
 		};
@@ -270,9 +270,25 @@ const MyCallUI = () => {
 				},
 			});
 
-			router.replace(`/meeting/${outgoingCall.id}`);
-			setConnecting(false);
-			setRedirecting(false);
+			// router.replace(`/meeting/${outgoingCall.id}`);
+			// setConnecting(false);
+			// setRedirecting(false);
+
+			try {
+				await outgoingCall
+					.leave()
+					.then(() => router.replace(`/meeting/${outgoingCall.id}`))
+					.catch((err) => console.log("redirection error ", err));
+			} catch (err) {
+				console.warn("unable to leave client user ... ", err);
+			} finally {
+				await outgoingCall
+					.leave()
+					.then(() => router.replace(`/meeting/${outgoingCall.id}`))
+					.catch((err) => console.log("redirection error ", err));
+				setConnecting(false);
+				setRedirecting(false);
+			}
 		};
 
 		const handleCallRejected = async () => {
@@ -376,12 +392,12 @@ const MyCallUI = () => {
 			clearTimeout(autoDeclineTimeout);
 		}
 
-		outgoingCall.on("call.session_participant_joined", handleCallAccepted);
+		outgoingCall.on("call.accepted", handleCallAccepted);
 		outgoingCall.on("call.rejected", handleCallRejected);
 		outgoingCall.on("call.ended", handleCallEnded);
 
 		return () => {
-			outgoingCall.off("call.session_participant_joined", handleCallAccepted);
+			outgoingCall.off("call.accepted", handleCallAccepted);
 			outgoingCall.off("call.rejected", handleCallRejected);
 			outgoingCall.off("call.ended", handleCallEnded);
 			clearTimeout(autoDeclineTimeout);
