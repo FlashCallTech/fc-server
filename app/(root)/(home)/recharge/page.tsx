@@ -57,14 +57,15 @@ const Recharge: React.FC = () => {
 	}, []);
 
 	useEffect(() => {
-		trackEvent("Recharge_Page_Cart_review_Impression", {
-			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-			Creator_ID: creator?._id,
-			Recharge_value: amount,
-			Walletbalace_Available: clientUser?.walletBalance,
-		});
-	}, []);
+		if (creator)
+			trackEvent("Recharge_Page_Cart_review_Impression", {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+				Creator_ID: creator?._id,
+				Recharge_value: amount,
+				Walletbalace_Available: clientUser?.walletBalance,
+			});
+	}, [creator]);
 
 	const PaymentHandler = async (
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -133,9 +134,12 @@ const Recharge: React.FC = () => {
 							headers: { "Content-Type": "application/json" },
 						});
 
-						trackEvent("Recharge_Successful", {
+						trackEvent("Recharge_Successfull", {
 							Client_ID: clientUser?._id,
+							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+							Creator_ID: creator?._id,
 							Recharge_value: amount,
+							Walletbalace_Available: clientUser?.walletBalance,
 						});
 
 						router.push("/success");
@@ -163,6 +167,13 @@ const Recharge: React.FC = () => {
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Payment request failed:", error);
+			trackEvent("Recharge_Failed", {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+				Creator_ID: creator?._id,
+				Recharge_value: amount,
+				Walletbalace_Available: clientUser?.walletBalance,
+			})
 			setLoading(false);
 			router.push("/payment");
 			toast({
@@ -259,8 +270,8 @@ const Recharge: React.FC = () => {
 										key={app.name}
 										onClick={() => setMethod(app.name.toLowerCase())}
 										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${method === app.name.toLowerCase()
-												? "bg-gray-300 dark:bg-gray-600 !important"
-												: ""
+											? "bg-gray-300 dark:bg-gray-600 !important"
+											: ""
 											}`}
 									>
 										<Image
