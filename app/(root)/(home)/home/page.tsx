@@ -178,6 +178,7 @@ const HomePage = () => {
 								className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 2xl:gap-7 items-center overflow-hidden`}
 								style={{
 									WebkitTransform: "translateZ(0)",
+									transform: "translate3d(0, 0, 0)",
 								}}
 							>
 								{creators?.pages?.map((page: any, pageIndex: any) =>
