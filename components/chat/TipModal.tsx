@@ -95,7 +95,7 @@ const TipModal: React.FC<Props> = ({
 			try {
 				setLoading(true);
 				await Promise.all([
-					fetch(`${backendBaseUrl}/payout/addMoney`, {
+					fetch(`${backendBaseUrl}/wallet/payout`, {
 						method: "POST",
 						body: JSON.stringify({
 							userId: clientId,

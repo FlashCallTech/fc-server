@@ -44,13 +44,14 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	}, []);
 
 	useEffect(() => {
-		trackEvent("Recharge_Page_Impression", {
-			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-			Creator_ID: creator?._id,
-			Walletbalace_Available: clientUser?.walletBalance,
-		});
-	}, []);
+		if (creator)
+			trackEvent("Recharge_Page_Impression", {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+				Creator_ID: creator?._id,
+				Walletbalace_Available: clientUser?.walletBalance,
+			});
+	}, [creator]);
 
 	const getRateForCallType = () => {
 		let rate: number | undefined;
@@ -83,8 +84,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		const rate = getRateForCallType();
 		return rate
 			? [5, 10, 15, 30, 40, 60].map((multiplier) =>
-					(rate * multiplier).toFixed(2)
-			  )
+				(rate * multiplier).toFixed(2)
+			)
 			: ["50", "99", "199", "499", "999", "1999", "2999", "3999", "49999"];
 	};
 
@@ -93,7 +94,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			Client_ID: clientUser?._id,
 			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 			Creator_ID: creator?._id,
-			Tile_Number: index,
+			Tile_Number: index + 1,
 			Walletbalace_Available: clientUser?.walletBalance,
 		});
 	};
@@ -117,6 +118,14 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	) {
 		event.preventDefault();
 		const rechargeAmount = Number(values.rechargeAmount);
+
+		trackEvent("Recharge_Page_RechargeClicked", {
+			Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+			Creator_ID: creator?._id,
+			Recharge_value: rechargeAmount,
+			Walletbalace_Available: clientUser?.walletBalance,
+		})
 
 		router.push(`/recharge?amount=${rechargeAmount}`);
 
@@ -227,10 +236,9 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						{generateAmounts().map((amount, index) => (
 							<button
 								key={amount}
-								className={`capitalize text-sm font-medium p-2.5 rounded-md border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${
-									amount === form.getValues("rechargeAmount") &&
+								className={`capitalize text-sm font-medium p-2.5 rounded-md border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${amount === form.getValues("rechargeAmount") &&
 									"bg-green-1 text-white"
-								}`}
+									}`}
 								onClick={() => {
 									form.setValue("rechargeAmount", amount);
 									tileClicked(index);
@@ -246,10 +254,9 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						onClick={(event: any) =>
 							form.handleSubmit((values) => onSubmit(event, values))(event)
 						}
-						className={`${
-							(!rechargeAmount || rechargeAmount === "0") &&
+						className={`${(!rechargeAmount || rechargeAmount === "0") &&
 							"!cursor-not-allowed opacity-80"
-						} w-full max-w-md mt-2 bg-green-1 text-white mx-auto hoverScaleDownEffect`}
+							} w-full max-w-md mt-2 bg-green-1 text-white mx-auto hoverScaleDownEffect`}
 					>
 						Recharge
 					</Button>
