@@ -604,37 +604,6 @@ export const fetchFCMToken = async (phone: string) => {
 	return fcmTokenDoc.exists() ? fcmTokenDoc.data().token : null;
 };
 
-// Function to track events
-export const trackCallEvents = (
-	callType: string,
-	clientUser: any,
-	creator: any
-) => {
-	const createdAtDate = clientUser?.createdAt
-		? new Date(clientUser.createdAt)
-		: new Date();
-	const formattedDate = createdAtDate.toISOString().split("T")[0];
-
-	if (callType === "audio") {
-		trackEvent("BookCall_Audio_Clicked", {
-			Client_ID: clientUser._id,
-			User_First_Seen: formattedDate,
-			Creator_ID: creator._id,
-		});
-	} else {
-		trackEvent("BookCall_Video_initiated", {
-			Client_ID: clientUser._id,
-			User_First_Seen: formattedDate,
-			Creator_ID: creator._id,
-		});
-	}
-
-	logEvent(analytics, "call_initiated", {
-		clientId: clientUser?._id,
-		creatorId: creator._id,
-	});
-};
-
 // Function to send notification
 export const sendNotification = async (
 	token: string,

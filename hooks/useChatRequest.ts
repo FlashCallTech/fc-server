@@ -163,6 +163,24 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 			if (docSnap.exists()) {
 				const chatRequestData = docSnap.data();
+
+				console.log({
+					clientId: chatRequestData.clientId,
+					clientName: chatRequestData.clientName,
+					clientPhone: chatRequestData.clientPhone,
+					clientImg: chatRequestData.clientImg,
+					creatorId: chatRequestData.creatorId,
+					creatorName: chatRequestData.creatorName,
+					creatorPhone: chatRequestData.creatorPhone,
+					creatorImg: chatRequestData.creatorImg,
+					chatId: chatRequestData.chatId,
+					chatRequestId: chatRequestData.id,
+					callId: chatRequestData.callId,
+					chatRate: chatRequestData.chatRate,
+					client_first_seen: chatRequestData.client_first_seen,
+					creator_first_seen: chatRequestData.creator_first_seen,
+					createdAt: String(chatRequestData.createdAt)
+				})
 				const fcmToken = await fetchFCMToken(creator.phone);
 				if (fcmToken) {
 					sendNotification(
@@ -184,7 +202,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 							chatRate: chatRequestData.chatRate,
 							client_first_seen: chatRequestData.client_first_seen,
 							creator_first_seen: chatRequestData.creator_first_seen,
-							createdAt: chatRequestData.createdAt
+							createdAt: String(chatRequestData.createdAt)
 						},
 						`https:flashcall.me/`
 					);
