@@ -5,9 +5,8 @@ import { creatorUser } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
-import { logEvent } from "firebase/analytics";
 import { doc, updateDoc, onSnapshot } from "firebase/firestore";
-import { analytics, db } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import {
 	Sheet,
 	SheetContent,
@@ -220,7 +219,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						) {
 							setChatState(data.status);
 							unsubscribe();
-							console.log("Chat Accepted");
+							trackEvent("BookCall_Chat_Connected", {
+								Client_ID: data.clientId,
+								User_First_Seen: data.client_first_seen,
+								Creator_ID: data.creatorId,
+								Time_Duration_Available: data.maxCallDuration,
+								Walletbalance_Available: clientUser?.walletBalance,
+							})
 							// updateExpertStatus(data.creatorPhone as string, "Busy");
 							setTimeout(() => {
 								router.replace(
@@ -292,11 +297,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
-					? `Video Call With Expert ${creator.username}`
-					: `Audio Call With Expert ${creator.username}`
-			}`;
+			const description = `${callType === "video"
+				? `Video Call With Expert ${creator.username}`
+				: `Audio Call With Expert ${creator.username}`
+				}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -446,7 +450,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleChatClick = async () => {
-		console.log("Chat now clicked");
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",
@@ -459,9 +462,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		if (clientUser) {
 			// updateExpertStatus(creator.phone as string, "Busy");
 			trackEvent("BookCall_Chat_Clicked", {
-				utm_source: "google",
-				creator_id: creator._id,
+				Creator_ID: creator._id,
 				status: onlineStatus,
+				Walletbalace_Available: clientUser?.walletBalance,
 			});
 			setChatReqSent(true);
 			handleChat(creator, clientUser);
@@ -587,13 +590,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					<button
 						disabled={!service.enabled}
 						key={service.type}
-						className={`callOptionContainer ${
-							(isProcessing ||
-								!service.enabled ||
-								onlineStatus === "Busy" ||
-								isClientBusy) &&
+						className={`callOptionContainer ${(isProcessing ||
+							!service.enabled ||
+							onlineStatus === "Busy" ||
+							isClientBusy) &&
 							"!cursor-not-allowed"
-						}`}
+							}`}
 						onClick={service.onClick}
 					>
 						<div className={`flex gap-4 items-center font-bold text-white`}>
@@ -601,13 +603,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							{service.label}
 						</div>
 						<p
-							className={`font-medium tracking-widest rounded-[18px] w-[100px] h-[36px] text-[15px] text-black flex items-center justify-center ${
-								(isProcessing ||
-									!service.enabled ||
-									onlineStatus === "Busy" ||
-									isClientBusy) &&
+							className={`font-medium tracking-widest rounded-[18px] w-[100px] h-[36px] text-[15px] text-black flex items-center justify-center ${(isProcessing ||
+								!service.enabled ||
+								onlineStatus === "Busy" ||
+								isClientBusy) &&
 								"border border-white/50 text-white"
-							}`}
+								}`}
 							style={{
 								backgroundColor:
 									isProcessing || !service.enabled || onlineStatus === "Busy"

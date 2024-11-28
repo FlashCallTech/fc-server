@@ -71,12 +71,13 @@ const ChatFeedback = ({
 	}, []);
 
 	useEffect(() => {
-		trackEvent("Feedback_bottomsheet_impression", {
-			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-			Creator_ID: creator?._id,
-			Walletbalace_Available: clientUser?.walletBalance,
-		});
+		if (clientUser?._id && clientUser?.createdAt?.toString().split("T")[0] && creator?._id && clientUser?.walletBalance)
+			trackEvent("Feedback_bottomsheet_impression", {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+				Creator_ID: creator?._id,
+				Walletbalace_Available: clientUser?.walletBalance,
+			});
 	}, []);
 
 	const handleSliderChange = (value: any) => {
@@ -101,8 +102,7 @@ const ChatFeedback = ({
 
 	const handleSubmitFeedback = async () => {
 		console.log("trying to submit feedback");
-		if (!currentUser || !chat) 
-		{
+		if (!currentUser || !chat) {
 			console.log("Missing fields");
 			return;
 		}
@@ -118,7 +118,7 @@ const ChatFeedback = ({
 			});
 
 			const userId = currentUser?._id as string;
-			
+
 			await axios.post(`${backendBaseUrl}/feedback/call/create`, {
 				creatorId: chat.creatorId as string,
 				clientId: userId,

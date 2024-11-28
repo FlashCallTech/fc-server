@@ -19,6 +19,8 @@ interface User2 {
 }
 
 interface Chat {
+	clientId: string;
+	creatorId: string;
 	startedAt: number;
 	callId?: string;
 	endedAt?: number;
@@ -46,6 +48,7 @@ const useEndChat = () => {
 	const [loading, setLoading] = useState(false);
 	const hasChatEnded = useRef(false);
 	const [creatorPhone, setCreatorPhone] = useState("");
+	const [flag, setFlag] = useState(false);
 
 	// Function to update expert's status
 	// const updateExpertStatus = async (phone: string, status: string) => {
@@ -95,6 +98,7 @@ const useEndChat = () => {
 					setChatEnded(res.data()?.status === "ended");
 					if (res.data()?.status === "ended") {
 						setEndedAt(res.data().endedAt); // Update endedAt using useState
+						unSub();
 					}
 				}
 			);
@@ -111,9 +115,22 @@ const useEndChat = () => {
 			// updateExpertStatus(creatorPhone, "Online");
 			if (userType === "creator") router.replace(`/home`);
 			else {
+				if (!flag) {
+					console.log("hehe");
+					const endedBy = localStorage.getItem("EndedBy");
+					trackEvent("BookCall_Chat_Ended", {
+						Client_ID: chat?.clientId,
+						Creator_ID: chat?.creatorId,
+						User_First_Seen: user2?.User_First_Seen,
+						Time_Duration_Consumed: chat?.endedAt ? (chat?.endedAt - chat?.startedAt) / 1000 : null,
+						EndedBy: endedBy ? "client" : "creator",
+					})
+				}
 				localStorage.removeItem("chatRequestId");
 				localStorage.removeItem("chatId");
 				localStorage.removeItem("user2");
+				localStorage.removeItem("EndedBy");
+				setFlag(true);
 				router.replace(`/chat-ended/${chatId}/${chat?.callId}/${user2?.clientId}`);
 			}
 		}
@@ -125,6 +142,8 @@ const useEndChat = () => {
 			setUser2(JSON.parse(storedUser));
 		}
 	}, [chatId]);
+
+	console.log("chatEnded: ", chatEnded, hasChatEnded);
 
 	const handleEnd = async (
 		chatId: string | string[],
@@ -151,20 +170,6 @@ const useEndChat = () => {
 			localStorage.removeItem("chatRequestId");
 			localStorage.removeItem("chatId");
 			localStorage.removeItem("user2");
-
-			trackEvent("BookCall_Chat_Ended", {
-				Client_ID: user2?.clientId,
-				User_First_Seen: user2?.User_First_Seen,
-				Creator_ID: user2?.creatorId,
-				Time_Duration_Available: (endedAt! - startedAt!).toString(),
-				Walletbalace_Available: currentUser?.walletBalance,
-				Endedby: endedBy,
-			});
-
-			// logEvent(analytics, "call_ended", {
-			// 	userId: currentUser?._id,
-			// 	// creatorId: creator._id,
-			// });
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error ending chat:", error);
