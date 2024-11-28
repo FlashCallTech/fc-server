@@ -79,32 +79,26 @@ const Recharge: React.FC = () => {
 			Walletbalace_Available: clientUser?.walletBalance,
 		});
 
-		logEvent(analytics, "wallet_recharge", {
-			userId: currentUser?._id,
-			// creatorId: creator._id,
-		});
-
 		if (typeof window.Razorpay === "undefined") {
 			console.error("Razorpay SDK is not loaded");
-			setLoading(false); // Set loading state to false on error
+			setLoading(false);
 			return;
 		}
 
-		const totalPayableInPaise: number = totalPayable! * 100;
-		const rechargeAmount: number = parseInt(totalPayableInPaise.toFixed(2));
-		const currency: string = "INR";
+		const totalPayableInPaise = totalPayable! * 100;
+		const rechargeAmount = parseInt(totalPayableInPaise.toFixed(2));
+		const currency = "INR";
 
 		try {
-			const response: Response = await fetch("/api/v1/order", {
+			const orderResponse = await fetch("/api/v1/order", {
 				method: "POST",
 				body: JSON.stringify({ amount: rechargeAmount, currency }),
 				headers: { "Content-Type": "application/json" },
 			});
-
-			const order = await response.json();
+			const order = await orderResponse.json();
 
 			const options: RazorpayOptions = {
-				key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string,
+				key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
 				rechargeAmount,
 				currency,
 				name: "FlashCall.me",
@@ -112,63 +106,36 @@ const Recharge: React.FC = () => {
 				image: `${backendBaseIconUrl}/logo_icon.png`,
 				order_id: order.id,
 				handler: async (response: PaymentResponse): Promise<void> => {
-					const body: PaymentResponse = { ...response };
+					setLoading(true);
 
 					try {
-						setLoading(true); // Set loading state to true
-
-						const paymentId = body.razorpay_order_id;
-
 						await fetch("/api/v1/payment", {
 							method: "POST",
-							body: paymentId,
+							body: response.razorpay_order_id,
 							headers: { "Content-Type": "text/plain" },
 						});
-					} catch (error) {
-						Sentry.captureException(error);
 
-						console.log(error);
-						setLoading(false); // Set loading state to false on error
-					}
+						const validateRes = await fetch("/api/v1/order/validate", {
+							method: "POST",
+							body: JSON.stringify(response),
+							headers: { "Content-Type": "application/json" },
+						});
 
-					try {
-						const validateRes: Response = await fetch(
-							"/api/v1/order/validate",
-							{
-								method: "POST",
-								body: JSON.stringify(body),
-								headers: { "Content-Type": "application/json" },
-							}
-						);
-
-						const jsonRes: any = await validateRes.json();
-
-						// Add money to user wallet upon successful validation
-						const userId = currentUser?._id as string; // Replace with actual user ID
-						const userType = "Client"; // Replace with actual user type
-
+						const userId = currentUser?._id!;
 						await fetch(`${backendBaseUrl}/wallet/addMoney`, {
 							method: "POST",
 							body: JSON.stringify({
 								userId,
-								userType,
+								userType: "Client",
 								amount: parseFloat(amountInt!.toFixed(2)),
 								category: "Recharge",
 							}),
 							headers: { "Content-Type": "application/json" },
 						});
 
-						logEvent(analytics, "wallet_recharge_done", {
-							userId: currentUser?._id,
-							amount: amount,
-						});
-
-						trackEvent("Recharge_Successfull", {
+						trackEvent("Recharge_Successful", {
 							Client_ID: clientUser?._id,
-							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-							Creator_ID: creator?._id,
 							Recharge_value: amount,
-							Walletbalace_Available: clientUser?.walletBalance,
 						});
 
 						router.push("/success");
@@ -181,39 +148,22 @@ const Recharge: React.FC = () => {
 					}
 				},
 				prefill: {
-					name: currentUser?.firstName + " " + currentUser?.lastName,
-					email: "",
+					name: `${currentUser?.firstName} ${currentUser?.lastName}`,
 					contact: currentUser?.phone as string,
-					method: method,
 				},
-				notes: {
-					address: "Razorpay Corporate Office",
-				},
-				theme: {
-					color: "#50A65C",
-				},
+				theme: { color: "#50A65C" },
 			};
 
-			const rzp1 = new window.Razorpay(options);
-			rzp1.on("payment.failed", (response: PaymentFailedResponse): void => {
+			const rzp = new window.Razorpay(options);
+			rzp.on("payment.failed", (response: PaymentFailedResponse): void => {
 				alert(response.error.code);
-				alert(response.error.metadata.payment_id);
-				setLoading(false); // Set loading state to false on error
+				setLoading(false);
 			});
-
-			rzp1.open();
+			rzp.open();
 		} catch (error) {
 			Sentry.captureException(error);
-
-			trackEvent("Recharge_Failed", {
-				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-				Creator_ID: creator?._id,
-				Recharge_value: amount,
-				Walletbalace_Available: clientUser?.walletBalance,
-			});
 			console.error("Payment request failed:", error);
-			setLoading(false); // Set loading state to false on error
+			setLoading(false);
 			router.push("/payment");
 			toast({
 				variant: "destructive",
@@ -308,11 +258,10 @@ const Recharge: React.FC = () => {
 									<button
 										key={app.name}
 										onClick={() => setMethod(app.name.toLowerCase())}
-										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${
-											method === app.name.toLowerCase()
+										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${method === app.name.toLowerCase()
 												? "bg-gray-300 dark:bg-gray-600 !important"
 												: ""
-										}`}
+											}`}
 									>
 										<Image
 											src={app.icon}

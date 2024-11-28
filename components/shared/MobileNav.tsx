@@ -43,15 +43,6 @@ const MobileNav = () => {
 		}
 	}, []);
 
-	useEffect(() => {
-		trackEvent("Menu_Clicked", {
-			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-			Creator_ID: creator?._id,
-			Walletbalace_Available: clientUser?.walletBalance,
-		});
-	}, []);
-
 	const sidebarItems = useMemo(() => {
 		return userType === "creator" ? sidebarLinksCreator : sidebarLinks;
 	}, [userType]);
@@ -83,22 +74,11 @@ const MobileNav = () => {
 		}
 	};
 
-	const handleSheetOpenChange = (open: boolean) => {
-		if (open) {
-			trackEvent("Menu_Clicked", {
-				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-				Creator_ID: creator?._id,
-				Walletbalace_Available: clientUser?.walletBalance,
-			});
-		}
-	};
-
 	const imageSrc = getImageSource(currentUser as clientUser | creatorUser);
 
 	return (
 		<section className="flex items-center justify-center w-fit relative">
-			<Sheet onOpenChange={handleSheetOpenChange}>
+			<Sheet>
 				<SheetTrigger asChild>
 					<Image
 						src={imageSrc}

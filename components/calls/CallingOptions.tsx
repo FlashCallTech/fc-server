@@ -25,7 +25,6 @@ import {
 	backendBaseUrl,
 	isValidHexColor,
 	updateFirestoreSessions,
-	trackCallEvents,
 	getDisplayName,
 } from "@/lib/utils";
 import useChat from "@/hooks/useChat";
@@ -348,7 +347,23 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				.then(async () => {
 					localStorage.removeItem("hasVisitedFeedbackPage");
 
-					trackCallEvents(callType, clientUser, creator);
+					if (callType === "audio") {
+						trackEvent("BookCall_Audio_Initiated", {
+							utm_source: "google",
+							Creator_ID: creator._id,
+							status: onlineStatus,
+							Time_Duration_Available: maxCallDuration,
+							Walletbalace_Available: clientUser?.walletBalance,
+						});
+					} else {
+						trackEvent("BookCall_Video_Initiated", {
+							utm_source: "google",
+							Creator_ID: creator._id,
+							status: onlineStatus,
+							Time_Duration_Available: maxCallDuration,
+							Walletbalace_Available: clientUser?.walletBalance,
+						});
+					}
 
 					await fetch(`${backendBaseUrl}/calls/registerCall`, {
 						method: "POST",
@@ -396,32 +411,22 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		try {
 			if (callType === "audio") {
-				logEvent(analytics, "audio_now_click", {
-					clientId: clientUser?._id,
-					creatorId: creator._id,
-				});
 				trackEvent("BookCall_Audio_Clicked", {
 					utm_source: "google",
 					Creator_ID: creator._id,
 					status: onlineStatus,
+					Walletbalace_Available: clientUser?.walletBalance,
 				});
 			} else {
-				logEvent(analytics, "video_now_click", {
-					clientId: clientUser?._id,
-					creatorId: creator._id,
-				});
 				trackEvent("BookCall_Video_Clicked", {
 					utm_source: "google",
 					Creator_ID: creator._id,
 					status: onlineStatus,
+					Walletbalace_Available: clientUser?.walletBalance,
 				});
 			}
 			if (clientUser && !storedCallId) {
 				createMeeting(callType);
-				logEvent(analytics, "call_click", {
-					clientId: clientUser?._id,
-					creatorId: creator._id,
-				});
 			} else if (clientUser && storedCallId) {
 				toast({
 					variant: "destructive",

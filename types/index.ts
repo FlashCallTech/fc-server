@@ -292,11 +292,11 @@ export interface RazorpayOptions {
 	handler: (response: PaymentResponse) => Promise<void>;
 	prefill: {
 		name: string;
-		email: string;
+		email?: string;
 		contact: string;
-		method: string;
+		method?: string;
 	};
-	notes: {
+	notes?: {
 		address: string;
 	};
 	theme: {
