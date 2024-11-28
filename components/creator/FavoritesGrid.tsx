@@ -121,7 +121,7 @@ const FavoritesGrid = ({
 	const imageSrc = getImageSource(creator);
 
 	return (
-		<section className="relative flex flex-col items-center justify-center rounded-xl w-full h-[202px] xl:h-80 group">
+		<section className="relative group flex flex-col items-center justify-center rounded-xl w-full h-[202px] xl:h-80 group">
 			<Link
 				href={creator?.username}
 				className="flex flex-col items-center justify-center size-full hoverScaleDownEffect"
@@ -171,7 +171,7 @@ const FavoritesGrid = ({
 				</div>
 			</Link>
 
-			<div className="absolute top-0 right-0 flex flex-col items-end justify-center gap-2">
+			<div className="absolute transition-all duration-500 ease-in-out group-hover:top-2 group-hover:right-2 top-0 right-0 flex flex-col items-end justify-center gap-2">
 				<Favorites
 					setMarkedFavorite={setMarkedFavorite}
 					markedFavorite={markedFavorite}
