@@ -71,11 +71,12 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 				alt={creator.firstName || creator.username}
 				width={500}
 				height={500}
-				className="w-full h-full absolute top-0 object-cover rounded-xl"
+				className="w-full h-full absolute top-0 object-cover object-center rounded-xl"
 				placeholder="blur"
 				blurDataURL="/icons/blurryPlaceholder.png"
 				priority
 			/>
+
 			<div className="text-white flex flex-col items-start w-full creatorsGirdHighlight">
 				{/* Username */}
 				<p className="font-semibold text-base sm:text-2xl max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">
