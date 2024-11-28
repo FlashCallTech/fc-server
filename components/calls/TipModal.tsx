@@ -289,16 +289,14 @@ const TipModal = ({
 							<SheetHeader className="flex flex-col items-center justify-center">
 								<SheetTitle>Provide Tip to Expert</SheetTitle>
 								<SheetDescription>
-									<p>
-										Balance Left
-										<span
-											className={`ml-2 ${
-												hasLowBalance ? "text-red-500" : "text-green-1"
-											}`}
-										>
-											₹ {adjustedWalletBalance.toFixed(2)}
-										</span>
-									</p>
+									Balance Left
+									<span
+										className={`ml-2 ${
+											hasLowBalance ? "text-red-500" : "text-green-1"
+										}`}
+									>
+										₹ {adjustedWalletBalance.toFixed(2)}
+									</span>
 								</SheetDescription>
 							</SheetHeader>
 							<section

@@ -269,7 +269,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 			{/* About, Services and Reviews */}
 			<section className="size-full rounded-t-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5">
-				{creator?.bio && (
+				{creator?.bio && creator.bio !== "Enter your bio here" ? (
 					<>
 						{/* About Creator */}
 						<section className="flex flex-col items-start justify-start gap-2">
@@ -281,6 +281,8 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 						{/* Divider */}
 						<div className="w-full border border-white" />
 					</>
+				) : (
+					<div className="pb-2" />
 				)}
 				{/* Call Buttons */}
 				<CallingOptions creator={creator} />
