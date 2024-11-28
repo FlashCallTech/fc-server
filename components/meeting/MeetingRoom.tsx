@@ -176,9 +176,8 @@ const MeetingRoom = () => {
 					return;
 				}
 				if (callingState === CallingState.IDLE) {
-					userType === "creator" && (await call?.accept());
+					// userType === "creator" && (await call?.accept());
 					await call?.join();
-
 					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
 				}
