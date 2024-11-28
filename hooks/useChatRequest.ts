@@ -74,7 +74,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			const response = await axios.get(
 				`${backendBaseUrl}/creator/getUser/${userId}`
 			);
-			console.log("User data:", response.data.chatRate);
 			return response.data.chatRate;
 		} catch (error) {
 			console.error("Error fetching user data:", error);
@@ -90,6 +89,13 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
 		if (maxCallDuration < 300) {
+			trackEvent("MinimumBalance_NotAvailable", {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+				Creator_ID: creator._id,
+				Time_Duration_Available: maxCallDuration,
+				Walletbalance_Available: clientUser?.walletBalance,
+			});
 			toast({
 				variant: "destructive",
 				title: "Insufficient Balance",
@@ -99,9 +105,15 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			return;
 		}
 
-		console.log("Trying to set the callID");
+		trackEvent("MinimumBalance_Available", {
+			Client_ID: clientUser?._id,
+			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+			Creator_ID: creator._id,
+			Time_Duration_Available: maxCallDuration,
+			Walletbalance_Available: clientUser?.walletBalance,
+		});
+
 		const callId = crypto.randomUUID();
-		console.log("CallId: ", callId);
 		localStorage.setItem("CallId", callId);
 
 		setSheetOpen(true);
@@ -163,6 +175,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				status: "pending",
 				chatId: chatId,
 				chatRate,
+				maxCallDuration,
 				createdAt: Date.now(),
 			});
 
@@ -196,7 +209,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 						`https:flashcall.me/`
 					);
 				}
-				console.log("Document data:", chatRequestData);
 			} else {
 				console.log("No such document!");
 			}

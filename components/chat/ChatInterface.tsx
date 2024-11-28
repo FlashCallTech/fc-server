@@ -377,6 +377,7 @@ const ChatInterface: React.FC = () => {
 	};
 
 	const handleDecisionDialog = async () => {
+		localStorage.setItem("EndedBy", 'client');
 		await handleEnd(chatId as string, user2, userType as string);
 		setShowDialog(false);
 	};
