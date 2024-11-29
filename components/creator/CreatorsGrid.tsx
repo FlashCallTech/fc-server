@@ -72,7 +72,7 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 					alt={creator.firstName || creator.username}
 					width={500}
 					height={500}
-					className="absolute inset-0 w-full h-full object-center rounded-xl"
+					className="absolute inset-0 w-full h-full object-fit rounded-xl"
 					placeholder="blur"
 					blurDataURL="/icons/blurryPlaceholder.png"
 					priority
