@@ -148,61 +148,63 @@ const HomePage = () => {
 							Failed to fetch creators
 							<span className="text-lg">Please try again later</span>
 						</div>
-					) : creators?.pages.flatMap((page: any) => page.users).length ===
-					  0 ? (
-						<div className="size-full flex flex-col gap-4 items-center justify-center text-center text-gray-500">
-							<h2 className="text-2xl font-bold">No Creators Found</h2>
-							<p className="text-lg text-gray-400 px-5">
-								{selectedProfession !== "All"
-									? `No results found in the "${selectedProfession}" category.`
-									: "No creators are available at the moment. Please check back later."}
-							</p>
-							{selectedProfession !== "All" && (
-								<Button
-									className="px-6 py-2 rounded-lg bg-green-1 text-white font-semibold hoverScaleDownEffect"
-									onClick={() => setSelectedProfession("All")}
-								>
-									Reset Filters
-								</Button>
-							)}
-						</div>
 					) : (
-						<section className="grid grid-cols-1 px-4 lg:px-0">
+						<section className="grid grid-rows-[auto,1fr] grid-cols-1 size-full px-4 lg:px-0">
 							<section className="sticky top-0 md:top-[76px] bg-white z-30">
 								<HomepageFilter
 									selectedProfession={selectedProfession}
 									handleProfessionChange={handleProfessionChange}
 								/>
 							</section>
-							<section
-								className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 2xl:gap-7 items-center overflow-hidden`}
-								style={{
-									WebkitTransform: "translateZ(0)",
-									transform: "translate3d(0, 0, 0)",
-								}}
-							>
-								{creators?.pages?.map((page: any, pageIndex: any) =>
-									page?.users?.map((creator: creatorUser, index: number) => (
-										<section
-											key={creator._id}
-											className="w-full cursor-pointer"
-											onClick={() =>
-												handleCreatorCardClick(
-													creator.phone,
-													creator.username,
-													creator.themeSelected,
-													creator._id
-												)
-											}
+							{creators?.pages.flatMap((page: any) => page.users).length ===
+							0 ? (
+								<div className="size-full flex flex-col gap-4 items-center justify-center text-center text-gray-500">
+									<h2 className="text-2xl font-bold">No Creators Found</h2>
+									<p className="text-lg text-gray-400 px-5">
+										{selectedProfession !== "All"
+											? `No results found in the "${selectedProfession}" category.`
+											: "No creators are available at the moment. Please check back later."}
+									</p>
+									{selectedProfession !== "All" && (
+										<Button
+											className="px-6 py-2 rounded-lg bg-green-1 text-white font-semibold hoverScaleDownEffect"
+											onClick={() => setSelectedProfession("All")}
 										>
-											<CreatorsGrid
-												key={`${pageIndex}-${index}`}
-												creator={creator}
-											/>
-										</section>
-									))
-								)}
-							</section>
+											Reset Filters
+										</Button>
+									)}
+								</div>
+							) : (
+								<section
+									className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 2xl:gap-7 items-center overflow-hidden`}
+									style={{
+										WebkitTransform: "translateZ(0)",
+										transform: "translate3d(0, 0, 0)",
+									}}
+								>
+									{creators?.pages?.map((page: any, pageIndex: any) =>
+										page?.users?.map((creator: creatorUser, index: number) => (
+											<section
+												key={creator._id}
+												className="w-full cursor-pointer"
+												onClick={() =>
+													handleCreatorCardClick(
+														creator.phone,
+														creator.username,
+														creator.themeSelected,
+														creator._id
+													)
+												}
+											>
+												<CreatorsGrid
+													key={`${pageIndex}-${index}`}
+													creator={creator}
+												/>
+											</section>
+										))
+									)}
+								</section>
+							)}
 						</section>
 					)}
 
