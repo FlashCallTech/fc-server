@@ -72,7 +72,7 @@ const RechargeModal = ({
 
 		try {
 			setOnGoingPayment(true);
-			const response: Response = await fetch("/api/v1/order", {
+			const response: Response = await fetch(`${backendBaseUrl}/order/create-order`, {
 				method: "POST",
 				body: JSON.stringify({ amount, currency, receipt: receiptId }),
 				headers: { "Content-Type": "application/json" },
@@ -85,8 +85,8 @@ const RechargeModal = ({
 				rechargeAmount: amount,
 				currency,
 				name: "FlashCall.me",
-				description: "Test Transaction",
-				image: "https://example.com/your_logo",
+				description: "Wallet Recharge",
+				image: "https://backend.flashcall.me/logo_icon.png",
 				order_id: order.id,
 				handler: async (response: PaymentResponse): Promise<void> => {
 					const body: PaymentResponse = { ...response };
@@ -94,7 +94,7 @@ const RechargeModal = ({
 					try {
 						const paymentId = body.razorpay_order_id;
 
-						await fetch("/api/v1/payment", {
+						await fetch(`${backendBaseUrl}/order/create-payment`, {
 							method: "POST",
 							body: paymentId,
 							headers: { "Content-Type": "text/plain" },
@@ -106,7 +106,7 @@ const RechargeModal = ({
 
 					try {
 						const validateRes: Response = await fetch(
-							"/api/v1/order/validate",
+							`${backendBaseUrl}/order/validate`,
 							{
 								method: "POST",
 								body: JSON.stringify(body),
