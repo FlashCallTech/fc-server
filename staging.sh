@@ -1,0 +1,4 @@
+if [ "$VERCEL_GIT_COMMIT_REF" != "staging" ]; then
+  echo "Skipping deploy for branch $VERCEL_GIT_COMMIT_REF"
+  exit 0
+fi
