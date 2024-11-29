@@ -65,17 +65,19 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 	}, [creator._id, creator.phone]);
 
 	return (
-		<div className="relative flex flex-col items-center justify-center rounded-xl w-full h-[202px] xl:h-80 transition-all duration-300 hover:scale-95">
-			<Image
-				src={imageSrc}
-				alt={creator.firstName || creator.username}
-				width={500}
-				height={500}
-				className="w-full h-full absolute top-0 object-cover object-center rounded-xl"
-				placeholder="blur"
-				blurDataURL="/icons/blurryPlaceholder.png"
-				priority
-			/>
+		<div className="relative flex flex-col items-center justify-center rounded-xl w-full  h-[202px] sm:h-64 md:h-80 transition-all duration-300 hover:scale-95">
+			<div className="aspect-square size-full absolute top-0 left-0 bg-slate-300 rounded-xl overflow-clip">
+				<Image
+					src={imageSrc}
+					alt={creator.firstName || creator.username}
+					width={500}
+					height={500}
+					className="size-full object-cover object-center rounded-xl"
+					placeholder="blur"
+					blurDataURL="/icons/blurryPlaceholder.png"
+					priority
+				/>
+			</div>
 
 			<div className="text-white flex flex-col items-start w-full creatorsGirdHighlight">
 				{/* Username */}

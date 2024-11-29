@@ -97,7 +97,7 @@ const Transactions = () => {
 	const creatorURL = localStorage.getItem("creatorURL");
 
 	return (
-		<>
+		<section className="size-full grid grid-cols-1 grid-rows-[auto,auto,1fr]">
 			{/* Transaction History Section */}
 			<section
 				className={`sticky top-0 md:top-[76px] bg-white z-30 p-4 flex flex-col items-start justify-start gap-4 w-full h-fit`}
@@ -130,7 +130,7 @@ const Transactions = () => {
 					<h1 className="text-xl md:text-3xl font-bold">Transaction History</h1>
 				</section>
 			</section>
-			<section className="flex space-x-2 text-xs font-bold leading-4 w-fit px-4 pb-4">
+			<section className="flex space-x-2 text-xs font-bold leading-4 size-full h-fit px-4 pb-4">
 				{["all", "credit", "debit"].map((filter) => (
 					<button
 						key={filter}
@@ -148,13 +148,13 @@ const Transactions = () => {
 			<ul className="space-y-4 w-full px-4 pt-2 pb-7">
 				{!isLoading || !currentUser ? (
 					isError ? (
-						<div className="size-full h-[60vh] flex flex-col items-center justify-center text-2xl xl:text-2xl font-semibold text-center text-red-500">
+						<div className="size-full  flex flex-col items-center justify-center text-2xl xl:text-2xl font-semibold text-center text-red-500">
 							Failed to fetch Transactions
 							<span className="text-lg">Please try again later.</span>
 						</div>
 					) : Object.keys(groupedTransactions).length === 0 ? (
 						<section
-							className={`size-full h-[60vh] flex flex-col gap-4 items-center justify-center text-xl font-semibold text-center text-gray-500`}
+							className={`size-full  flex flex-col gap-4 items-center justify-center text-xl font-semibold text-center text-gray-500`}
 						>
 							<Image
 								src={"/images/noTransaction.png"}
@@ -312,7 +312,7 @@ const Transactions = () => {
 						})
 					)
 				) : (
-					<div className="size-full h-[60vh] flex flex-col gap-2 items-center justify-center">
+					<div className="size-full  flex flex-col gap-2 items-center justify-center">
 						<ContentLoading />
 					</div>
 				)}
@@ -340,7 +340,7 @@ const Transactions = () => {
 				)}
 
 			{hasNextPage && <div ref={ref} className=" pt-10 w-full" />}
-		</>
+		</section>
 	);
 };
 
