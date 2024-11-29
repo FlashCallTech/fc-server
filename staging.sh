@@ -8,3 +8,16 @@ fi
 
 # If it's the 'staging' branch, continue with the deployment
 echo "Deploying to staging branch"
+
+# Run the build process to generate the .next folder
+echo "Building the app..."
+npm run build
+
+# Check if the build was successful
+if [ $? -eq 0 ]; then
+  echo "Build completed successfully"
+else
+  echo "Build failed"
+  exit 1  # Exit with a non-zero status to indicate failure
+fi
+
