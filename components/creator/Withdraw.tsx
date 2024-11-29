@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { Button } from "@/components/ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -31,7 +31,8 @@ const Withdraw: React.FC = () => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [withdrawAmount, setWithdrawAmount] = useState<string>("");
-	const [isStickyVisible, setIsStickyVisible] = useState(false);
+	const [isStickyVisible, setIsStickyVisible] = useState(true);
+	const topRef = useRef(null);
 
 	const openModal = () => setIsModalOpen(true);
 	const closeModal = () => {
@@ -68,16 +69,20 @@ const Withdraw: React.FC = () => {
 	};
 
 	useEffect(() => {
-		const handleScroll = () => {
-			if (window.scrollY > 0 && Object.keys(groupedTransactions).length > 0) {
-				setIsStickyVisible(false);
-			} else {
-				setIsStickyVisible(true);
-			}
-		};
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				setIsStickyVisible(entry.isIntersecting);
+			},
+			{ threshold: 0 }
+		);
 
-		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
+		if (topRef.current) {
+			observer.observe(topRef.current);
+		}
+
+		return () => {
+			if (topRef.current) observer.unobserve(topRef.current);
+		};
 	}, []);
 
 	const { ref, inView } = useInView({
@@ -146,14 +151,13 @@ const Withdraw: React.FC = () => {
 
 	return (
 		<>
-			<section className="flex flex-col pt-3  text-gray-800 w-full h-full rounded-xl ">
+			<div ref={topRef} style={{ position: "absolute", top: 0 }}></div>
+			<section className="size-full grid grid-cols-1 grid-rows-[auto,auto,1fr]">
 				<section className="grid grid-cols-1 items-center sticky top-0 md:top-[76px] z-40 bg-white p-4 ">
 					{/* Sticky Balance and Recharge Section */}
-					<section
-						className={`flex flex-col gap-5 items-center justify-center md:items-start`}
-					>
+					<section className="flex flex-col gap-5 items-center justify-center md:items-start">
 						{/* Balance Section */}
-						{isStickyVisible && (
+						{isStickyVisible ? (
 							<div className="w-full flex flex-col items-center justify-center">
 								<p>
 									Welcome,
@@ -163,57 +167,52 @@ const Withdraw: React.FC = () => {
 									{creatorUser?.firstName} {creatorUser?.lastName}
 								</p>
 							</div>
-						)}
+						) : null}
 
 						{/* Recharge Section */}
 						<div className="flex flex-col gap-5 w-full items-center justify-center md:items-start">
-							<div
-								className={`w-full flex justify-between items-center font-normal leading-5 border-[1px] rounded-lg p-3 bg-white shadow ${
-									!isStickyVisible ? "flex-row" : "flex-col"
-								} relative`}
-							>
-								<div
-									className={
-										!isStickyVisible
-											? "flex flex-col items-start pl-1"
-											: "flex flex-col items-center"
-									}
-								>
-									<span className={`text-[13px] `}>Wallet Balance</span>
-									<p
-										className={`text-green-600 ${
-											!isStickyVisible
-												? "text-[20px] font-bold"
-												: "text-[25px] font-extrabold"
-										} ${!isStickyVisible ? "p-0" : "p-2"} `}
-									>
-										₹ {walletBalance.toFixed(2)}
-									</p>
-								</div>
-								{!isStickyVisible && (
+							{/* When isStickyVisible is FALSE */}
+							{!isStickyVisible && (
+								<div className="w-full flex flex-row justify-between items-center font-normal leading-5 border-[1px] rounded-lg p-3 bg-white shadow relative">
+									<div className="flex flex-col items-start pl-1">
+										<span className="text-[13px]">Wallet Balance</span>
+										<p className="text-green-600 text-[20px] font-bold p-0">
+											₹ {walletBalance.toFixed(2)}
+										</p>
+									</div>
 									<Button
-										onClick={() => openModal()}
+										onClick={openModal}
 										className="right-0 w-auto px-4 py-3 shadow bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
 									>
 										Withdraw
 									</Button>
-								)}
-							</div>
+								</div>
+							)}
+
+							{/* When isStickyVisible is TRUE */}
 							{isStickyVisible && (
-								<Button
-									onClick={() => openModal()}
-									className="w-full px-4 bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
-								>
-									Withdraw
-								</Button>
+								<>
+									<div className="w-full flex flex-col items-center font-normal leading-5 border-[1px] rounded-lg p-3 bg-white shadow">
+										<div className="flex flex-col items-center">
+											<span className="text-[13px]">Wallet Balance</span>
+											<p className="text-green-600 text-[25px] font-extrabold p-2">
+												₹ {walletBalance.toFixed(2)}
+											</p>
+										</div>
+									</div>
+									<Button
+										onClick={openModal}
+										className="w-full px-4 bg-green-600 text-white font-bold leading-4 text-sm rounded-[6px] hover:bg-green-700"
+									>
+										Withdraw
+									</Button>
+								</>
 							)}
 						</div>
 					</section>
 
 					{/* Transaction History Section */}
-					<section
-						className={`w-full ${!isStickyVisible ? "py-4" : "py-2.5 px-4"}`}
-					>
+					<section className={`w-full ${!isStickyVisible ? "py-4" : "p-2"}`}>
 						<div className="flex flex-col items-start justify-start gap-2 w-full h-fit">
 							{isStickyVisible && (
 								<h2 className="text-gray-500 text-xl pt-5 font-normal leading-7">
@@ -402,7 +401,7 @@ const Withdraw: React.FC = () => {
 							)
 						)
 					) : (
-						<div className="size-full h-[60vh] flex flex-col gap-2 items-center justify-center">
+						<div className="size-full flex flex-col gap-2 items-center justify-center">
 							<ContentLoading />
 						</div>
 					)}
