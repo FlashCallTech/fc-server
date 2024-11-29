@@ -126,16 +126,18 @@ const FavoritesGrid = ({
 				href={creator?.username}
 				className="flex flex-col items-center justify-center size-full hoverScaleDownEffect"
 			>
-				<Image
-					src={imageSrc}
-					alt={creator.firstName || creator.username}
-					width={500}
-					height={500}
-					className="w-full h-full absolute top-0 object-cover rounded-xl"
-					placeholder="blur"
-					blurDataURL="/icons/blurryPlaceholder.png"
-					priority
-				/>
+				<div className="w-full h-full absolute top-0 left-0 bg-gradient-to-r from-gray-500 to-gray-800 rounded-xl">
+					<Image
+						src={imageSrc}
+						alt={creator.firstName || creator.username}
+						width={500}
+						height={500}
+						className="absolute inset-0 w-full h-full object-center rounded-xl"
+						placeholder="blur"
+						blurDataURL="/icons/blurryPlaceholder.png"
+						priority
+					/>
+				</div>
 				<div className="text-white flex flex-col items-start w-full creatorsGirdHighlight">
 					{/* Username */}
 					<p className="font-semibold text-base sm:text-2xl max-w-[90%] text-ellipsis whitespace-nowrap overflow-hidden">

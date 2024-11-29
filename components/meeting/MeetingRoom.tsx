@@ -126,7 +126,7 @@ const MeetingRoom = () => {
 	const [hasVisited, setHasVisited] = useState(false);
 	const firestore = getFirestore();
 
-	const countdownDuration = ongoingCallStatus === "initiated" ? 30 : 15;
+	const countdownDuration = ongoingCallStatus === "initiated" ? 60 : 15;
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
 		navigator.sendBeacon(

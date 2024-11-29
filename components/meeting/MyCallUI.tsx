@@ -238,7 +238,7 @@ const MyCallUI = () => {
 					console.log("Auto-declining call due to timeout...");
 					await handleCallIgnored();
 				}
-			}, 30000);
+			}, 60000);
 		};
 
 		const handleCallAccepted = async () => {
