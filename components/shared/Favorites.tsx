@@ -154,10 +154,8 @@ const Favorites = ({
 						)}
 					</button>
 				</TooltipTrigger>
-				<TooltipContent className="bg-green-1 border-none text-white z-40">
-					<p>{`${
-						markedFavorite ? "Remove as Favorite" : "Add to Favorites"
-					} `}</p>
+				<TooltipContent className="bg-green-1 border-none text-white">
+					<p>{`${markedFavorite ? "Remove" : "Add"} `}</p>
 				</TooltipContent>
 			</Tooltip>
 		</>
