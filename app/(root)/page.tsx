@@ -40,7 +40,7 @@ const HomePage = () => {
 			{/* Share Link Section */}
 			<ShareLink />
 			{/* Making Money */}
-			<MakingMoney />
+			{/* <MakingMoney /> */}
 			{/* Own App Section */}
 			<OwnApp />
 			{/* Accordion Section */}
