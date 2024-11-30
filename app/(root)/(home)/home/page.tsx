@@ -88,20 +88,19 @@ const HomePage = () => {
 	useEffect(() => {
 		const restoreScrollPosition = () => {
 			const storedScrollPosition = sessionStorage.getItem("scrollPosition");
-
 			if (storedScrollPosition) {
-				window.scrollTo({
-					top: parseInt(storedScrollPosition, 10),
-					behavior: "auto",
-				});
-				sessionStorage.removeItem("scrollPosition");
+				setTimeout(() => {
+					window.scrollTo({
+						top: parseInt(storedScrollPosition, 10),
+						behavior: "auto",
+					});
+					sessionStorage.removeItem("scrollPosition");
+				}, 100);
 			}
 		};
 
-		if (!isLoading && !loadingCard && !isFetching) {
-			restoreScrollPosition();
-		}
-	}, [isLoading, loadingCard, isFetching]);
+		restoreScrollPosition();
+	}, []);
 
 	useEffect(() => {
 		if (inView && hasNextPage && !isFetching) {
