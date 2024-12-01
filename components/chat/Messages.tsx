@@ -61,7 +61,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 	};
 
 	return (
-		<div className="flex-1 p-4">
+		<div className="flex-1 p-4 ">
 			<div className="mb-4 text-left">
 				{chat?.messages?.map((message, index) => {
 					const isCurrentUserMessage =
@@ -96,14 +96,16 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 
 							<div
 								className={`${isCurrentUserMessage
-										? "bg-[#DCF8C6] p-[5px] max-w-[60%] min-w-[40%] lg:min-w-[10%] lg:max-w-[40%] w-fit rounded-lg rounded-tr-none ml-auto text-black text-sm relative"
-										: "bg-white p-[5px] max-w-[60%] min-w-[40%] lg:min-w-[10%] lg:max-w-[40%] w-fit rounded-lg rounded-tl-none text-black text-sm leading-5 relative"
+									? `p-[5px] max-w-[60%] ${message.tip? "min-w-[60%] lg:min-w-[35%]" : "min-w-[25%]"} lg:max-w-[35%] w-fit rounded-lg rounded-tr-none ml-auto text-black text-sm relative 
+            ${message.tip ? "bg-gray-400" : "bg-[#DCF8C6]"}`
+									: `p-[5px] max-w-[60%] ${message.tip? "min-w-[60%] lg:min-w-[35%]" : "min-w-[25%]"} lg:max-w-[35%] w-fit rounded-lg rounded-tl-none text-black text-sm leading-5 relative 
+            ${message.tip ? "bg-gray-400" : "bg-white"}`
 									} ${marginBottom}`}
 								style={{ wordBreak: "break-word", justifyContent: "center" }}
 							>
 								{message.img && (
 									<div
-										className="relative mb-2"
+										className="relative mb-3"
 										style={{ display: "inline-block" }}
 									>
 										<img
@@ -112,8 +114,8 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 											className="cursor-pointer rounded-md"
 											onClick={() => handleImageClick(message.img)}
 											style={{
-												width: "200px",
-												height: "250px",
+												// width: "200px",
+												// height: "250px",
 												objectFit: "cover",
 											}} // Define your desired width and height here
 										/>
@@ -136,7 +138,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 								)}
 
 								{/* Message Text */}
-								<div className="flex flex-col items-start">
+								<div className="flex flex-col items-start mb-[1px]">
 									{message.text && (
 										<div
 											style={{ wordBreak: "break-word", marginBottom: "12px" }}
@@ -148,47 +150,44 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 									{/* Tip Field */}
 									{message.tip && (
 										<div
-											className="flex w-full items-center justify-between p-2 rounded-md mt-2 bg-gray-600"
-											style={{
-												border: "1px solid #25D366",
-												boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-											}}
+											className="flex-grow w-full items-center border rounded-md"
 										>
-											<span className="flex items-center">
-												{/* <Image
-													src="/tip-icon.svg" // Replace with your icon path
-													alt="Tip"
-													width={20}
-													height={20}
-													className="mr-2"
-												/> */}
-												<span className="text-black font-bold">
-													{`Sent to ${isCurrentUserMessage? "creator" : "you" }: ₹${message.tip}`}
-												</span>
-											</span>
-											<span className="text-[8px] text-gray-600 mt-3">
-												{formatTime(message.createdAt)}
-											</span>
+											<div className="flex flex-col items-center justify-center text-white text-[17px] lg:text-4xl bg-black p-1">
+												{`₹ ${message.tip}`}
+											</div>
+											<div className="flex flex-row gap-1 items-center justify-start text-white text-xs bg-gray-400 p-1">
+												{/* SVG inserted here */}
+												<Image src={"/rupee_logo.svg"} width={1000} height={1000} alt="rupee" className="size-5" />
+												<div className="flex flex-col items-start justify-start text-white text-[10px] lg:text-xs">
+													<span>
+														{`Sent to ${isCurrentUserMessage ? "Creator" : "You"}`}
+													</span>
+													<span className="text-[#00FF00] flex items-center">
+														Completed
+													</span>
+												</div>
+											</div>
 										</div>
 									)}
+
 								</div>
 
 								<div
 									className={
 										message.senderId === (currentUser?._id as string)
-											? "rotate-90 absolute right-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] border-l-[#DCF8C6] border-r-0 border-solid border-transparent"
-											: "rotate-90 absolute left-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] border-l-white border-r-0 border-solid border-transparent"
+											? `rotate-90 absolute right-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] ${message.tip ? "border-l-gray-400" : "border-l-[#DCF8C6]"} border-r-0 border-solid border-transparent`
+											: `rotate-90 absolute left-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] ${message.tip ? "border-l-gray-400" : "border-l-white"} border-r-0 border-solid border-transparent`
 									}
 								></div>
 
 								<div
 									className={
 										message.senderId === (currentUser?._id as string)
-											? "w-full flex justify-end items-center absolute bottom-1 right-1"
+											? "w-fit flex justify-end items-center absolute bottom-1 right-1"
 											: "w-full flex justify-end items-center absolute bottom-1 right-1"
 									}
 								>
-									<span className="text-[10px] text-gray-500 mr-2">
+									<span className="text-[10px] text-gray-700 mr-2">
 										{formatTime(message.createdAt)}
 									</span>
 

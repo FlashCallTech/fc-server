@@ -15,6 +15,7 @@
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.678.0",
 		"@aws-sdk/lib-storage": "^3.678.0",
+		"@cashfreepayments/cashfree-js": "^1.0.5",
 		"@ffmpeg/ffmpeg": "^0.12.10",
 		"@hookform/resolvers": "^3.4.2",
 		"@next/bundle-analyzer": "^15.0.1",
@@ -43,6 +44,7 @@
 		"@types/react-datepicker": "^6.2.0",
 		"axios": "^1.7.0",
 		"browser-image-compression": "^2.0.2",
+		"cashfree-sdk": "^0.1.1",
 		"class-variance-authority": "^0.7.0",
 		"clsx": "^2.1.1",
 		"cors": "^2.8.5",

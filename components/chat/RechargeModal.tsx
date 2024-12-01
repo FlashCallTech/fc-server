@@ -90,15 +90,17 @@ const RechargeModal = ({
 				order_id: order.id,
 				handler: async (response: PaymentResponse): Promise<void> => {
 					const body: PaymentResponse = { ...response };
+					let paymentResult;
 
 					try {
-						const paymentId = body.razorpay_order_id;
-
-						await fetch(`${backendBaseUrl}/order/create-payment`, {
+						const paymentResponse = await fetch(`${backendBaseUrl}/order/create-payment`, {
 							method: "POST",
-							body: paymentId,
-							headers: { "Content-Type": "text/plain" },
+							body: JSON.stringify({order_id: response.razorpay_order_id}),
+							headers: { "Content-Type": "application/json" },
 						});
+
+						paymentResult = await paymentResponse.json();
+
 					} catch (error) {
 						Sentry.captureException(error);
 						console.log(error);
@@ -125,9 +127,10 @@ const RechargeModal = ({
 							method: "POST",
 							body: JSON.stringify({
 								userId: userId,
-								userType: "Creator",
+								userType,
 								amount: rechargeAmount,
 								category: "Recharge",
+								method: paymentResult.paymentMethod,
 							}),
 							headers: { "Content-Type": "application/json" },
 						});
@@ -192,7 +195,7 @@ const RechargeModal = ({
 			<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
 				<SheetTrigger asChild>
 					<Button
-						className="bg-[rgba(35,35,5,1)] text-white mt-2 w-full hoverScaleEffect"
+						className="bg-[rgba(35,35,5,1)] text-white w-full hoverScaleEffect"
 						onClick={() => setIsSheetOpen(true)}
 					>
 						Recharge

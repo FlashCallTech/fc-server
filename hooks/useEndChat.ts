@@ -116,7 +116,6 @@ const useEndChat = () => {
 			if (userType === "creator") router.replace(`/home`);
 			else {
 				if (!flag) {
-					console.log("hehe");
 					const endedBy = localStorage.getItem("EndedBy");
 					trackEvent("BookCall_Chat_Ended", {
 						Client_ID: chat?.clientId,
@@ -142,8 +141,6 @@ const useEndChat = () => {
 			setUser2(JSON.parse(storedUser));
 		}
 	}, [chatId]);
-
-	console.log("chatEnded: ", chatEnded, hasChatEnded);
 
 	const handleEnd = async (
 		chatId: string | string[],
