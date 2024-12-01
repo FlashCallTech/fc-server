@@ -21,7 +21,7 @@ const HomePage = () => {
 	}, []);
 	return (
 		<main className="grid grid-cols-1 items-center">
-			{/* Navbar web */}
+			{/* Navbar Landing Page */}
 			{
 				<NavbarWeb
 					currentUser={currentUser}
@@ -40,7 +40,7 @@ const HomePage = () => {
 			{/* Share Link Section */}
 			<ShareLink />
 			{/* Making Money */}
-			<MakingMoney />
+			{/* <MakingMoney /> */}
 			{/* Own App Section */}
 			<OwnApp />
 			{/* Accordion Section */}
