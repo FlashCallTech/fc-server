@@ -191,7 +191,7 @@ const TipModal: React.FC<Props> = ({
 			>
 				<SheetTrigger asChild>
 					<button
-						className="bg-black/40 text-white p-2 rounded-lg text-[10px] md:text-lg hoverScaleDownEffect"
+						className="bg-black/40 text-white p-2 rounded-lg text-[10px] md:text-sm hoverScaleDownEffect"
 						onClick={() => setIsSheetOpen(true)}
 					>
 						Give Tip
