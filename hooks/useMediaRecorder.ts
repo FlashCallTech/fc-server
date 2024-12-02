@@ -38,7 +38,6 @@ const useMediaRecorder = () => {
 		}
 	};
 
-
 	const startRecording = () => {
 		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 			navigator.mediaDevices
@@ -51,7 +50,7 @@ const useMediaRecorder = () => {
 					mediaRecorderRef.current.ondataavailable = (e: BlobEvent) => {
 						audioChunksRef.current.push(e.data);
 					};
-					mediaRecorderRef.current.onstop = async() => {
+					mediaRecorderRef.current.onstop = async () => {
 						const AudioBlob = new Blob(audioChunksRef.current, {
 							type: "audio/webm", // Ensure consistent type here
 						});
@@ -59,7 +58,6 @@ const useMediaRecorder = () => {
 							try {
 								const result: Blob = await uploadAudioBlob(AudioBlob);
 								setMp3Blob(result);
-								console.log("Conversion result:", result); // Handle the conversion result as needed
 							} catch (error) {
 								console.error("Error during upload:", error);
 							}

@@ -116,22 +116,25 @@ const useEndChat = () => {
 			if (userType === "creator") router.replace(`/home`);
 			else {
 				if (!flag) {
-					console.log("hehe");
 					const endedBy = localStorage.getItem("EndedBy");
 					trackEvent("BookCall_Chat_Ended", {
 						Client_ID: chat?.clientId,
 						Creator_ID: chat?.creatorId,
 						User_First_Seen: user2?.User_First_Seen,
-						Time_Duration_Consumed: chat?.endedAt ? (chat?.endedAt - chat?.startedAt) / 1000 : null,
+						Time_Duration_Consumed: chat?.endedAt
+							? (chat?.endedAt - chat?.startedAt) / 1000
+							: null,
 						EndedBy: endedBy ? "client" : "creator",
-					})
+					});
 				}
 				localStorage.removeItem("chatRequestId");
 				localStorage.removeItem("chatId");
 				localStorage.removeItem("user2");
 				localStorage.removeItem("EndedBy");
 				setFlag(true);
-				router.replace(`/chat-ended/${chatId}/${chat?.callId}/${user2?.clientId}`);
+				router.replace(
+					`/chat-ended/${chatId}/${chat?.callId}/${user2?.clientId}`
+				);
 			}
 		}
 	}, [chatEnded]);
@@ -142,8 +145,6 @@ const useEndChat = () => {
 			setUser2(JSON.parse(storedUser));
 		}
 	}, [chatId]);
-
-	console.log("chatEnded: ", chatEnded, hasChatEnded);
 
 	const handleEnd = async (
 		chatId: string | string[],

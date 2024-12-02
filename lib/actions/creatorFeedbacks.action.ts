@@ -51,8 +51,6 @@ export async function createFeedback({
 						feedback.feedback === feedbackText
 				);
 
-				console.log(existingFeedbackIndex);
-
 				if (existingFeedbackIndex > -1) {
 					if (!showFeedback) {
 						// Remove the existing feedback entry if showFeedback is false
@@ -84,7 +82,6 @@ export async function createFeedback({
 	} catch (error: any) {
 		Sentry.captureException(error);
 		handleError(error);
-		console.log("Error Adding/Updating Feedback ... ", error);
 		return { success: false, error: error.message };
 	}
 }
@@ -142,7 +139,6 @@ export async function getCreatorFeedback(
 		return JSON.parse(JSON.stringify(creatorFeedbacks[0].feedbacks));
 	} catch (error: any) {
 		Sentry.captureException(error);
-		console.log(error);
 		return { success: false, error: error.message };
 	}
 }

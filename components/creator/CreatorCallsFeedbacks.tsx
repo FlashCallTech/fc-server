@@ -228,8 +228,6 @@ const CreatorCallsFeedbacks = ({
 					}
 				})
 			);
-
-			console.log("Changed feedback positions updated successfully.");
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error updating feedback positions:", error);

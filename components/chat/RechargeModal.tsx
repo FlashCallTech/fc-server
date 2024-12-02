@@ -72,11 +72,14 @@ const RechargeModal = ({
 
 		try {
 			setOnGoingPayment(true);
-			const response: Response = await fetch(`${backendBaseUrl}/order/create-order`, {
-				method: "POST",
-				body: JSON.stringify({ amount, currency, receipt: receiptId }),
-				headers: { "Content-Type": "application/json" },
-			});
+			const response: Response = await fetch(
+				`${backendBaseUrl}/order/create-order`,
+				{
+					method: "POST",
+					body: JSON.stringify({ amount, currency, receipt: receiptId }),
+					headers: { "Content-Type": "application/json" },
+				}
+			);
 
 			const order = await response.json();
 
@@ -101,7 +104,6 @@ const RechargeModal = ({
 						});
 					} catch (error) {
 						Sentry.captureException(error);
-						console.log(error);
 					}
 
 					try {

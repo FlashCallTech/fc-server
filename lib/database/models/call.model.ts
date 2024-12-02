@@ -35,8 +35,6 @@ const CallSchema = new Schema<CallDocument>({
 	amount: { type: Number },
 });
 
-console.log(models)
-
 const Call = models.Call || model<CallDocument>("Call", CallSchema);
 
 export default Call;

@@ -52,7 +52,10 @@ const PaymentSettings = () => {
 				);
 				const result = await response.json();
 				if (result.success) {
-					const method = result.data.paymentMode === "BANK_TRANSFER" ? "bankTransfer" : "UPI";
+					const method =
+						result.data.paymentMode === "BANK_TRANSFER"
+							? "bankTransfer"
+							: "UPI";
 					const details = {
 						upiId: result.data.upiId || "",
 						ifscCode: result.data.bankDetails?.ifsc || "",
@@ -89,16 +92,16 @@ const PaymentSettings = () => {
 
 		// Options for formatting date and time
 		const options: any = {
-			year: 'numeric',
-			month: 'long',    // "December"
-			day: 'numeric',   // "13"
-			hour: '2-digit',  // "04" (12-hour clock)
-			minute: '2-digit',// "49"
-			second: '2-digit',// "25"
-			hour12: true,     // "PM" instead of 24-hour format
+			year: "numeric",
+			month: "long", // "December"
+			day: "numeric", // "13"
+			hour: "2-digit", // "04" (12-hour clock)
+			minute: "2-digit", // "49"
+			second: "2-digit", // "25"
+			hour12: true, // "PM" instead of 24-hour format
 		};
 
-		return date.toLocaleString('en-US', options);
+		return date.toLocaleString("en-US", options);
 	}
 
 	const isValidUpiId = useCallback(
@@ -115,21 +118,32 @@ const PaymentSettings = () => {
 	);
 
 	const handleChange = async (method: string) => {
-		if (bankDetails.accountNumber !== "" || bankDetails.ifscCode !== "" || bankDetails.upiId !== "") setBankDetails(initialBankDetails);
-		if ((initialBankDetails.accountNumber === "" || initialBankDetails.ifscCode === "") && method === "bankTransfer") return;
+		if (
+			bankDetails.accountNumber !== "" ||
+			bankDetails.ifscCode !== "" ||
+			bankDetails.upiId !== ""
+		)
+			setBankDetails(initialBankDetails);
+		if (
+			(initialBankDetails.accountNumber === "" ||
+				initialBankDetails.ifscCode === "") &&
+			method === "bankTransfer"
+		)
+			return;
 		if (initialBankDetails.upiId === "" && method === "UPI") return;
 
 		const details = {
-			method: method==="UPI"? "upi": "banktransfer",
-			userId: currentUser?._id
-		}
+			method: method === "UPI" ? "upi" : "banktransfer",
+			userId: currentUser?._id,
+		};
 
-		const response = await axios.post(`${backendBaseUrl}/paymentSetting/updateMethod`, {
-			details, // Sending `details` object in the body
-		});
-
-		console.log('Response:', response.data);
-	}
+		const response = await axios.post(
+			`${backendBaseUrl}/paymentSetting/updateMethod`,
+			{
+				details, // Sending `details` object in the body
+			}
+		);
+	};
 
 	const handleSave = async () => {
 		let hasError = false;
@@ -181,27 +195,32 @@ const PaymentSettings = () => {
 
 			try {
 				setIsLoading(true);
-				if (paymentData.paymentMode === 'UPI') {
+				if (paymentData.paymentMode === "UPI") {
 					if (!otpGenerated) {
-						const response = await fetch(`${backendBaseUrl}/paymentSetting/generateVpaOtp`, {
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/json'
-							},
-							body: JSON.stringify({
-								userId: currentUser?._id,
-								vpa: paymentData.upiId,
-							})
-						})
+						const response = await fetch(
+							`${backendBaseUrl}/paymentSetting/generateVpaOtp`,
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									userId: currentUser?._id,
+									vpa: paymentData.upiId,
+								}),
+							}
+						);
 
 						const result = await response.json();
-						console.log(result);
 
 						if (!response.ok) {
 							toast({
 								variant: "destructive",
 								title: "Failed",
-								description: result.message + " " + formatToHumanReadable(result.retryAfter),
+								description:
+									result.message +
+									" " +
+									formatToHumanReadable(result.retryAfter),
 							});
 							setIsLoading(false);
 							return;
@@ -216,19 +235,21 @@ const PaymentSettings = () => {
 							return;
 						}
 					} else {
-						const response = await fetch(`${backendBaseUrl}/paymentSetting/verifyVpaOtp`, {
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/json'
-							},
-							body: JSON.stringify({
-								userId: currentUser?._id,
-								otp,
-							})
-						})
+						const response = await fetch(
+							`${backendBaseUrl}/paymentSetting/verifyVpaOtp`,
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									userId: currentUser?._id,
+									otp,
+								}),
+							}
+						);
 
 						const result = await response.json();
-						console.log(result);
 
 						if (!response.ok) {
 							toast({
@@ -239,14 +260,14 @@ const PaymentSettings = () => {
 							setIsLoading(false);
 							return;
 						} else {
-							setInitialPaymentMethod('UPI');
+							setInitialPaymentMethod("UPI");
 							setOtpSubmitted(true);
 							setOtpGenerated(false);
 							const currentDetails = {
 								upiId: bankDetails.upiId,
 								ifscCode: initialBankDetails.ifscCode,
 								accountNumber: initialBankDetails.accountNumber,
-							}
+							};
 							setInitialBankDetails(currentDetails);
 							// setInitialBankDetails()
 							toast({
@@ -257,34 +278,35 @@ const PaymentSettings = () => {
 							setIsLoading(false);
 						}
 					}
-				}
-				else if (paymentData.paymentMode === 'BANK_TRANSFER') {
-					const response = await fetch(`${backendBaseUrl}/paymentSetting/verifyBank`, {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							userId: currentUser?._id,
-							bank_account: paymentData.bankDetails.accountNumber,
-							ifsc: paymentData.bankDetails.ifsc
-						})
-					})
+				} else if (paymentData.paymentMode === "BANK_TRANSFER") {
+					const response = await fetch(
+						`${backendBaseUrl}/paymentSetting/verifyBank`,
+						{
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								userId: currentUser?._id,
+								bank_account: paymentData.bankDetails.accountNumber,
+								ifsc: paymentData.bankDetails.ifsc,
+							}),
+						}
+					);
 
 					const result = await response.json();
-					if (result.data.account_status !== 'VALID') {
-						console.error('Something wrong with Bank Details');
+					if (result.data.account_status !== "VALID") {
+						console.error("Something wrong with Bank Details");
 						alert("Failed to save payment details.");
 						setIsLoading(false);
 						return;
-					}
-					else {
-						setInitialPaymentMethod('bankTransfer');
+					} else {
+						setInitialPaymentMethod("bankTransfer");
 						const currentDetails = {
 							upiId: initialBankDetails.upiId,
 							ifscCode: result.details.ifsc,
 							accountNumber: result.details.bank_account,
-						}
+						};
 						setInitialBankDetails(currentDetails);
 						toast({
 							variant: "destructive",
@@ -304,14 +326,8 @@ const PaymentSettings = () => {
 	};
 
 	const hasChanges = () => {
-		return (
-			JSON.stringify(bankDetails) !== JSON.stringify(initialBankDetails)
-		);
+		return JSON.stringify(bankDetails) !== JSON.stringify(initialBankDetails);
 	};
-
-	console.log("Initial", initialBankDetails);
-	console.log("Final", bankDetails);
-	console.log("Changes", hasChanges());
 
 	if (isLoading) {
 		return <Loader />;
@@ -334,7 +350,9 @@ const PaymentSettings = () => {
 								name="paymentMethod"
 								value="UPI"
 								checked={paymentMethod === "UPI"}
-								onChange={() => { handleChange("UPI"), setPaymentMethod("UPI") }}
+								onChange={() => {
+									handleChange("UPI"), setPaymentMethod("UPI");
+								}}
 								className="mr-2"
 							/>
 							UPI
@@ -345,7 +363,10 @@ const PaymentSettings = () => {
 								name="paymentMethod"
 								value="bankTransfer"
 								checked={paymentMethod === "bankTransfer"}
-								onChange={() => { handleChange("bankTransfer"), setPaymentMethod("bankTransfer") }}
+								onChange={() => {
+									handleChange("bankTransfer"),
+										setPaymentMethod("bankTransfer");
+								}}
 								className="mr-2"
 							/>
 							Bank Transfer/NEFT
@@ -373,8 +394,7 @@ const PaymentSettings = () => {
 							{errors.upiId && (
 								<p className="text-red-500 text-sm mt-1">{errors.upiId}</p>
 							)}
-							{
-								otpGenerated && !otpSubmitted &&
+							{otpGenerated && !otpSubmitted && (
 								<div className="mt-2">
 									<label
 										className="block text-sm font-semibold mb-1"
@@ -390,7 +410,7 @@ const PaymentSettings = () => {
 										className="w-full border p-2 text-sm rounded-lg"
 									/>
 								</div>
-							}
+							)}
 						</div>
 					)}
 
@@ -449,17 +469,18 @@ const PaymentSettings = () => {
 						</>
 					)}
 				</div>
-				{
-					hasChanges() && <button
+				{hasChanges() && (
+					<button
 						onClick={handleSave}
-						className={`w-full py-2 px-4 rounded-lg text-white ${hasChanges()
-							? "bg-black hover:bg-gray-900"
-							: "bg-gray-400 cursor-not-allowed"
-							}`}
+						className={`w-full py-2 px-4 rounded-lg text-white ${
+							hasChanges()
+								? "bg-black hover:bg-gray-900"
+								: "bg-gray-400 cursor-not-allowed"
+						}`}
 					>
 						Save
 					</button>
-				}
+				)}
 			</div>
 		</div>
 	);

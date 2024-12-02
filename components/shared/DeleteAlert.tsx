@@ -70,7 +70,6 @@ const DeleteAlert = () => {
 				const querySnapshot = await getDocs(q);
 				querySnapshot.forEach(async (document) => {
 					await deleteDoc(doc(firestore, col, document.id));
-					console.log(`Deleted document from ${col} with ID:`, document.id);
 				});
 			}
 
@@ -90,7 +89,6 @@ const DeleteAlert = () => {
 				const querySnapshot = await getDocs(q);
 				querySnapshot.forEach(async (document) => {
 					await deleteDoc(doc(firestore, col, document.id));
-					console.log(`Deleted document from ${col} with ID:`, document.id);
 				});
 			}
 		} catch (error) {
@@ -113,7 +111,6 @@ const DeleteAlert = () => {
 
 			const data = await response.json();
 			if (response.ok) {
-				console.log("User deleted successfully:", data);
 				await deleteFirestoreDocs(
 					currentUser._id as string,
 					currentUser.phone as string

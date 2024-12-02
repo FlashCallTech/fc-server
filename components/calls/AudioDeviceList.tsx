@@ -45,8 +45,6 @@ const AudioDeviceList = ({
 		}
 	};
 
-	console.log(!micEnabled || showAudioDeviceList);
-
 	return (
 		<>
 			<button

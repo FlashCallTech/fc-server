@@ -87,8 +87,6 @@ export const handleInterruptedCall = async (
 				call: callData,
 			}),
 		});
-
-		console.log("Call Transaction done and status updated");
 	} catch (error) {
 		console.error("Error handling interrupted call:", error);
 	}
@@ -178,8 +176,6 @@ export const handlePendingTransaction = async (
 
 				localStorage.removeItem("activeCallId");
 				localStorage.removeItem(localSessionKey);
-
-				console.log("Call Transaction done and status updated");
 			}
 		} catch (error) {
 			console.error("Error handling interrupted call:", error);

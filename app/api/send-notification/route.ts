@@ -35,7 +35,6 @@ if (!admin.apps.length) {
 
 export async function POST(request: NextRequest) {
 	const { token, title, message, link, data } = await request.json();
-	console.log(data);
 	try {
 		const payload: Message = {
 			token,

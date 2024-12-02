@@ -49,8 +49,6 @@ const OTPVerification = ({
 				});
 				setResendTime(30); // Reset timer after resending
 				changeError({});
-
-				console.log("OTP resent:", response.data.message);
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error resending OTP:", error);

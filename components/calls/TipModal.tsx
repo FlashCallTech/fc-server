@@ -187,7 +187,6 @@ const TipModal = ({
 				},
 				{ merge: true }
 			);
-			console.log("Latest tip added/updated successfully in Firestore.");
 
 			setWalletBalance((prev) => prev + parseInt(rechargeAmount));
 			setTipPaid(true);

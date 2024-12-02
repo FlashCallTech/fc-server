@@ -151,8 +151,6 @@ const AuthenticateViaOTP = ({
 
 			const decodedToken = jwt.decode(sessionToken) as { user?: any };
 
-			console.log("OTP verified and token saved:");
-
 			setVerificationSuccess(true);
 
 			// Use the user data from the decoded session token
@@ -162,7 +160,6 @@ const AuthenticateViaOTP = ({
 			if (user._id || !user.error) {
 				// Existing user found
 				resolvedUserType = user.userType || "client";
-				console.log("current usertype: ", resolvedUserType);
 				localStorage.setItem("currentUserID", user._id);
 				if (resolvedUserType === "client") {
 					trackEvent("Login_Success", {
@@ -176,10 +173,7 @@ const AuthenticateViaOTP = ({
 						Platform: getDevicePlatform(),
 					});
 				}
-				console.log("Existing user found. Proceeding as an existing user.");
 			} else {
-				// No user found, proceed as new user
-				console.log("No user found. Proceeding as a new user.");
 				firstLoginRef.current = true;
 				let newUser: CreateCreatorParams | CreateUserParams;
 

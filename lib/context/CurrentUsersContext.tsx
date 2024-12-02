@@ -209,7 +209,6 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					handleSignout();
 				}
 			} else {
-				console.error("Error fetching current user:", error);
 				toast({
 					variant: "destructive",
 					title: "Network Error",

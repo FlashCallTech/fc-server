@@ -39,8 +39,6 @@ export async function createFeedback({
 				position: position || -1,
 			};
 
-			console.log(JSON.stringify(feedbackEntry));
-
 			// Use findOneAndUpdate to create or update the feedback
 			const result = await CallFeedbacks.findOneAndUpdate(
 				{ callId },
@@ -114,7 +112,6 @@ export async function getCallFeedbacks(callId?: string, creatorId?: string) {
 		return JSON.parse(JSON.stringify(feedbacks));
 	} catch (error: any) {
 		Sentry.captureException(error);
-		console.log(error);
 		return { success: false, error: error.message };
 	}
 }

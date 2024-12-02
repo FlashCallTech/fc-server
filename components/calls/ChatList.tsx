@@ -75,8 +75,6 @@ const ChatList = () => {
 		);
 	}
 
-	console.log(chats);
-
 	return (
 		<>
 			{chats && chats.length > 0 ? (

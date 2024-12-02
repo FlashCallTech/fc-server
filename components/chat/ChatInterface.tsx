@@ -37,7 +37,12 @@ const ChatInterface: React.FC = () => {
 		url: "",
 	});
 	const [messages, setMessages] = useState<
-		{ text: string | null; img: string | null; audio: string | null, tip: string | null }[]
+		{
+			text: string | null;
+			img: string | null;
+			audio: string | null;
+			tip: string | null;
+		}[]
 	>([]);
 
 	useUserStatus();
@@ -133,7 +138,6 @@ const ChatInterface: React.FC = () => {
 
 	const handleCapturedImg = (e: any) => {
 		if (e.target.files && e.target.files[0]) {
-			console.log("hehe");
 			setImg({
 				file: e.target.files[0],
 				url: URL.createObjectURL(e.target.files[0]),
@@ -143,9 +147,7 @@ const ChatInterface: React.FC = () => {
 	};
 
 	const handleImg = (e: any) => {
-		console.log("hehe");
 		if (e.target.files && e.target.files[0]) {
-			console.log("hehe2");
 			setImg({
 				file: e.target.files[0],
 				url: URL.createObjectURL(e.target.files[0]),
@@ -163,13 +165,11 @@ const ChatInterface: React.FC = () => {
 
 	const handleSendTip = async (tipAmt: string) => {
 		if (!tipAmt) {
-			console.log("Got nothing");
-			return
-		};
+			return;
+		}
 
 		try {
 			if (!chatId) {
-				console.log("invalid chatId");
 				return;
 			}
 			await updateDoc(doc(db, "chats", chatId as string), {
@@ -208,20 +208,16 @@ const ChatInterface: React.FC = () => {
 		} finally {
 			setText("");
 		}
-	}
+	};
 
 	const handleSend = async () => {
-		console.log("Triggered");
 		if (text === "" && !img.file && !audio.file) {
-			console.log("Got nothing");
-			return
-		};
-		console.log(text);
+			return;
+		}
 		let imgUrl: string | null = null;
 		let audioUrl: string | null = null;
 		try {
 			if (!chatId) {
-				console.log("invalid chatId");
 				return;
 			}
 			if (img.file) {
@@ -377,7 +373,7 @@ const ChatInterface: React.FC = () => {
 	};
 
 	const handleDecisionDialog = async () => {
-		localStorage.setItem("EndedBy", 'client');
+		localStorage.setItem("EndedBy", "client");
 		await handleEnd(chatId as string, user2, userType as string);
 		setShowDialog(false);
 	};
@@ -397,11 +393,11 @@ const ChatInterface: React.FC = () => {
 	function maskPhoneNumber(phoneNumber: string) {
 		// Remove the '+91' prefix
 		if (phoneNumber) {
-
-			let cleanedNumber = phoneNumber.replace('+91', '');
+			let cleanedNumber = phoneNumber.replace("+91", "");
 
 			// Mask the next 5 digits, leaving the first 2 digits unmasked
-			let maskedNumber = cleanedNumber.substring(0, 2) + '*****' + cleanedNumber.substring(7);
+			let maskedNumber =
+				cleanedNumber.substring(0, 2) + "*****" + cleanedNumber.substring(7);
 
 			return maskedNumber;
 		}
@@ -422,11 +418,18 @@ const ChatInterface: React.FC = () => {
 	}, []);
 
 	return (
-		<div className={`flex flex-col h-screen justify-between w-screen bg-cover bg-center overflow-y-auto scrollbar-hide`} style={{ backgroundImage: 'url(/back.png)' }} >
+		<div
+			className={`flex flex-col h-screen justify-between w-screen bg-cover bg-center overflow-y-auto scrollbar-hide`}
+			style={{ backgroundImage: "url(/back.png)" }}
+		>
 			<div className="fixed top-0 left-0 w-full flex justify-between items-center px-4 py-[2px] bg-gray-500 z-30">
 				<div className="flex items-center gap-2">
 					<Image
-						src={`${user2?.photo ? user2?.photo : 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'}`}
+						src={`${
+							user2?.photo
+								? user2?.photo
+								: "https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0"
+						}`}
 						alt="profile"
 						width={1000}
 						height={1000}
@@ -434,7 +437,9 @@ const ChatInterface: React.FC = () => {
 					/>
 					<div className="flex flex-col">
 						<div className="text-white font-bold text-xs md:text-lg">
-							{user2?.fullName ? user2?.fullName : maskPhoneNumber(user2?.phone as string)}
+							{user2?.fullName
+								? user2?.fullName
+								: maskPhoneNumber(user2?.phone as string)}
 						</div>
 						{userType === "client" && <ChatTimer />}
 						{userType === "creator" && (
@@ -446,10 +451,7 @@ const ChatInterface: React.FC = () => {
 					</div>
 				</div>
 				<div className="flex gap-2">
-					<Tip
-						handleSendTip={handleSendTip}
-						setText={setText}
-					/>
+					<Tip handleSendTip={handleSendTip} setText={setText} />
 					<button
 						onClick={endCall}
 						className="bg-[rgba(255,81,81,1)] text-white p-2 md:px-4 md:py-2 text-[10px] md:text-lg rounded-lg"
@@ -471,7 +473,10 @@ const ChatInterface: React.FC = () => {
 				</div>
 
 				{/* Sticky Chat Input at the Bottom */}
-				<div className="fixed bottom-0 w-full z-30 bg-cover bg-center p-safe-bottom" style={{ backgroundImage: 'url(/back.png)' }}>
+				<div
+					className="fixed bottom-0 w-full z-30 bg-cover bg-center p-safe-bottom"
+					style={{ backgroundImage: "url(/back.png)" }}
+				>
 					<ChatInput
 						isRecording={isRecording}
 						discardAudio={discardAudio}

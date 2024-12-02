@@ -26,8 +26,6 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 
 	const checkFeedback = async () => {
 		if (!callId) {
-			console.log("Error: CallId is not Valid.");
-
 			setFeedbackExists(false);
 
 			return;
@@ -43,7 +41,6 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 			setUserFeedback(data);
 		} catch (error) {
 			Sentry.captureException(error);
-			console.log("Error checking feedback:", error);
 			setFeedbackExists(false);
 		}
 	};

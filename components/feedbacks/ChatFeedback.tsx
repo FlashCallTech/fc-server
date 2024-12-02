@@ -71,7 +71,12 @@ const ChatFeedback = ({
 	}, []);
 
 	useEffect(() => {
-		if (clientUser?._id && clientUser?.createdAt?.toString().split("T")[0] && creator?._id && clientUser?.walletBalance)
+		if (
+			clientUser?._id &&
+			clientUser?.createdAt?.toString().split("T")[0] &&
+			creator?._id &&
+			clientUser?.walletBalance
+		)
 			trackEvent("Feedback_bottomsheet_impression", {
 				Client_ID: clientUser?._id,
 				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
@@ -101,13 +106,10 @@ const ChatFeedback = ({
 	};
 
 	const handleSubmitFeedback = async () => {
-		console.log("trying to submit feedback");
 		if (!currentUser || !chat) {
-			console.log("Missing fields");
 			return;
 		}
 		try {
-			console.log("Inside try block");
 			trackEvent("Feedback_bottomsheet_submitted", {
 				Client_ID: clientUser?._id,
 				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],

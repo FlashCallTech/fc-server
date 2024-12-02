@@ -25,7 +25,6 @@ const Experiment = () => {
 		const messagingResolve = await messaging;
 		if (messagingResolve) {
 			onMessage(messagingResolve, (payload: MessagePayload) => {
-				console.log("Message received. ", payload); // Log the payload to see its structure
 				setNotificationPayload([{ data: payload, open: true }]);
 				setTimeout(() => setNotificationPayload([{ open: false }]), 6000);
 			});
@@ -37,7 +36,6 @@ const Experiment = () => {
 			.then((firebaseToken: string | undefined) => {
 				if (firebaseToken) {
 					udpateFCMtoken(currentUser?.phone as string, firebaseToken);
-					console.log(firebaseToken);
 				}
 			})
 			.catch((error) => console.log(error));

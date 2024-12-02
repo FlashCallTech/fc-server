@@ -81,9 +81,7 @@ const UserFeedback = ({
 	);
 
 	const handleSubmitFeedback = async () => {
-		console.log("trying to submit feedback");
 		if (!currentUser || !call) {
-			console.log("Something got wrong");
 			return;
 		}
 
