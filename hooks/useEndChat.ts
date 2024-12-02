@@ -37,7 +37,7 @@ interface Chat {
 
 const useEndChat = () => {
 	const router = useRouter();
-	const { currentUser, userType } = useCurrentUsersContext();
+	const { userType } = useCurrentUsersContext();
 	const { chatId } = useParams();
 	const [user2, setUser2] = useState<User2>();
 	const [chat, setChat] = useState<Chat | undefined>();
@@ -47,8 +47,7 @@ const useEndChat = () => {
 	const [startedAt, setStartedAt] = useState<number>();
 	const [loading, setLoading] = useState(false);
 	const hasChatEnded = useRef(false);
-	const [creatorPhone, setCreatorPhone] = useState("");
-	const [flag, setFlag] = useState(false);
+
 
 	// Function to update expert's status
 	// const updateExpertStatus = async (phone: string, status: string) => {
@@ -80,7 +79,6 @@ const useEndChat = () => {
 				const parsedCreator: creatorUser = JSON.parse(storedCreator);
 				if (parsedCreator.chatRate) {
 					setChatRatePerMinute(parseInt(parsedCreator.chatRate, 10));
-					setCreatorPhone(parsedCreator?.phone);
 				}
 			}
 		};
@@ -93,47 +91,41 @@ const useEndChat = () => {
 			const unSub = onSnapshot(
 				doc(db, "chats", chatId as string),
 				(res: any) => {
-					setChat(res.data());
-					setStartedAt(res.data().startedAt as number);
-					setChatEnded(res.data()?.status === "ended");
-					if (res.data()?.status === "ended") {
-						setEndedAt(res.data().endedAt); // Update endedAt using useState
-						unSub();
+					const data = res.data();
+					setChat(data);
+					setStartedAt(data.startedAt as number);
+
+					if (data?.status === "ended") {
+						setChatEnded(true);
+						setEndedAt(data.endedAt);
+						unSub(); // Unsubscribe the listener
 					}
 				}
 			);
-			return () => unSub();
+
+			return () => {
+				unSub();
+			};
 		}
-	}, [chatId]);
+	}, [chatId]); // Dependency array to trigger only on chatId changes
+
 
 	useEffect(() => {
-		if (hasChatEnded.current === true) return;
-
-		if (chatEnded) {
+		if (chatEnded && !hasChatEnded.current) {
 			hasChatEnded.current = true;
-			// if (userType === 'client')
-			// updateExpertStatus(creatorPhone, "Online");
 			if (userType === "creator") router.replace(`/home`);
 			else {
-				if (!flag) {
-					const endedBy = localStorage.getItem("EndedBy");
-					trackEvent("BookCall_Chat_Ended", {
-						Client_ID: chat?.clientId,
-						Creator_ID: chat?.creatorId,
-						User_First_Seen: user2?.User_First_Seen,
-						Time_Duration_Consumed: chat?.endedAt ? (chat?.endedAt - chat?.startedAt) / 1000 : null,
-						EndedBy: endedBy ? "client" : "creator",
-					})
-				}
+				const endedBy = localStorage.getItem("EndedBy");
 				localStorage.removeItem("chatRequestId");
 				localStorage.removeItem("chatId");
 				localStorage.removeItem("user2");
 				localStorage.removeItem("EndedBy");
-				setFlag(true);
 				router.replace(`/chat-ended/${chatId}/${chat?.callId}/${user2?.clientId}`);
+
 			}
 		}
 	}, [chatEnded]);
+
 
 	useEffect(() => {
 		const storedUser = localStorage.getItem("user2");
@@ -162,6 +154,14 @@ const useEndChat = () => {
 			});
 			await updateDoc(doc(db, "userchats", user2?.creatorId as string), {
 				online: false,
+			});
+
+			trackEvent("BookCall_Chat_Ended", {
+				Client_ID: chat?.clientId,
+				Creator_ID: chat?.creatorId,
+				User_First_Seen: user2?.User_First_Seen,
+				Time_Duration_Consumed: chat?.startedAt ? (now - chat?.startedAt) / 1000 : null,
+				EndedBy: endedBy,
 			});
 
 			localStorage.removeItem("chatRequestId");

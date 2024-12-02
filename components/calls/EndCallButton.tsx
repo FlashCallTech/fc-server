@@ -27,24 +27,10 @@ const EndCallButton = () => {
 	};
 
 	const handleDecisionDialog = async () => {
-		const callDocRef = doc(db, "calls", call.id);
-		const docSnap = await getDoc(callDocRef);
-
 		await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
 			status: "payment pending",
 		});
 		await call?.endCall();
-
-		trackEvent("BookCall_Chat_Ended", {
-			Client_ID: call.state.createdBy?.id,
-			// User_First_Seen: user2?.User_First_Seen,
-			Creator_ID: call.state.members.find(
-				(member) => member.role === "call_member"
-			)?.user_id,
-			Time_Duration_Available: docSnap.data()?.timeUtilized,
-			Walletbalace_Available: currentUser?.walletBalance,
-			Endedby: call.state.endedBy?.role === "admin" ? "Client" : "Creator",
-		});
 		setShowDialog(false);
 	};
 
