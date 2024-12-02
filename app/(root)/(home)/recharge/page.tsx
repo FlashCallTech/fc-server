@@ -402,7 +402,7 @@ const Recharge: React.FC = () => {
 					<button
 						className="w-4/5 md:w-1/3 mx-auto py-3 text-black bg-white rounded-lg border-2 border-black hover:bg-green-1 hover:text-white font-semibold fixed bottom-3"
 						style={{ boxShadow: "3px 3px black" }}
-						onClick={cashfreeHandler}
+						onClick={PaymentHandler}
 						disabled={loading} // Disable the button when loading
 					>
 						Proceed to Payment
