@@ -124,7 +124,7 @@ const PrivacyPolicy = () => {
 
 				<a
 					href="mailto:support@Flashcall.me"
-					className="text-[#50a65c] hoverScaleDownEffect"
+					className="text-[#50A65C] hoverScaleDownEffect"
 				>
 					support@Flashcall.me
 				</a>

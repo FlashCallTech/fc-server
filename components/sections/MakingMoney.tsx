@@ -2,7 +2,7 @@ import React from "react";
 import { makeMoneyPointers } from "@/constants";
 import { Button } from "../ui/button";
 const MakingMoney = () => {
-	const theme = `5px 5px 0px 0px #50a65c`;
+	const theme = `5px 5px 0px 0px #50A65C`;
 	return (
 		<section className="w-full h-fit py-10 pb-14 lg:pb-20 bg-white grid grid-cols-1 gap-2 lg:gap-5 items-center justify-center lg:px-14 xl:px-24 max-lg:px-2">
 			{/* heading */}
@@ -17,7 +17,7 @@ const MakingMoney = () => {
 			{/* content description */}
 			<section className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] items-center mx-auto mt-5 lg:mt-10 lg:gap-10">
 				{/* left side */}
-				<div className="bg-[#50a65c33] size-full py-5 lg:scale-125 w-full rounded-b-none lg:rounded-b-[28px] rounded-[28px] text-center flex flex-col items-center justify-center">
+				<div className="bg-[#50A65C33] size-full py-5 lg:scale-125 w-full rounded-b-none lg:rounded-b-[28px] rounded-[28px] text-center flex flex-col items-center justify-center">
 					{/* heading */}
 					<h2 className="text-green-1 text-4xl  font-semibold !leading-relaxed text-center ">
 						{makeMoneyPointers.title}
@@ -33,7 +33,7 @@ const MakingMoney = () => {
 				<ul
 					className="relative w-full h-full flex flex-col item-center justify-center gap-5 border border-t-0 lg:border-t lg:border-l-0 border-green-1 rounded-t-none rounded-3xl  lg:rounded-tl-none lg:rounded-bl-none py-7 pr-7"
 					style={{
-						boxShadow: `0px 10px 0px 0px #50a65c80`,
+						boxShadow: `0px 10px 0px 0px #50A65C80`,
 					}}
 				>
 					{makeMoneyPointers.points.map((point, index) => (

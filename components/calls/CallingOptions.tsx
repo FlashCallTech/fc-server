@@ -129,7 +129,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 								setOnlineStatus("Busy");
 							} else {
 								setOnlineStatus(
-									statusData.status === "Online" ? "Online" : "Offline"
+									hasActiveService && statusData.status === "Online"
+										? "Online"
+										: "Offline"
 								);
 							}
 						} else if (statusData.loginStatus === false) {

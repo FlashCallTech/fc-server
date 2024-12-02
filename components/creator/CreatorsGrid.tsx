@@ -37,7 +37,9 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 								setStatus("Busy");
 							} else {
 								setStatus(
-									statusData.status === "Online" ? "Online" : "Offline"
+									hasActiveService && statusData.status === "Online"
+										? "Online"
+										: "Offline"
 								);
 							}
 						} else if (statusData.loginStatus === false) {

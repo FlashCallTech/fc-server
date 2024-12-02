@@ -178,7 +178,7 @@ const Favorites = () => {
 					/>
 
 					<section
-						className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 2xl:gap-7 items-center overflow-hidden`}
+						className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 2xl:gap-7 items-start overflow-hidden`}
 						style={{
 							WebkitTransform: "translateZ(0)",
 						}}
@@ -208,7 +208,7 @@ const Favorites = () => {
 			)}
 			{currentUser &&
 				walletBalance > 0 &&
-				favorites.length >= 6 &&
+				favorites.length > 4 &&
 				!hasNextPage &&
 				!isFetching && (
 					<div className="text-center text-gray-500  pb-4">
