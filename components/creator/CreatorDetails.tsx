@@ -237,7 +237,9 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 							{fullName}
 						</p>
 						<span className="text-sm">
-							{creator?.profession ? creator?.profession : "Expert"}
+							{creator?.profession
+								? creator?.profession
+								: "Please update your profession details"}
 						</span>
 					</section>
 				</section>

@@ -354,26 +354,23 @@ export const getDarkHexCode = (lightHex: string): string | null => {
 	return colorMap[formattedLightHex] || "#88D8C0";
 };
 
-export const getDisplayName = (
-	creator: {
-		fullName?: string;
-		firstName?: string;
-		lastName?: string;
-		username: string;
-	},
-	maxNameLength: number = 50
-): string => {
+export const getDisplayName = (creator: {
+	fullName?: string;
+	firstName?: string;
+	lastName?: string;
+	username: string;
+}): string => {
 	const fullName = creator?.fullName?.trim();
 
 	const combinedName = `${creator?.firstName || ""} ${
 		creator?.lastName || ""
 	}`.trim();
 
-	if (fullName && fullName.length <= maxNameLength) {
+	if (fullName) {
 		return fullName;
 	}
 
-	if (combinedName && combinedName.length <= maxNameLength) {
+	if (combinedName) {
 		return combinedName;
 	}
 
