@@ -6,10 +6,7 @@ import Razorpay from "razorpay";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import * as Sentry from "@sentry/nextjs";
-
-import { logEvent } from "firebase/analytics";
-import { analytics } from "@/lib/firebase";
-import { trackEvent } from "./mixpanel";
+import "@cashfreepayments/cashfree-js";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { Call } from "@stream-io/video-react-sdk";
 import { clientUser, creatorUser } from "@/types";
@@ -27,6 +24,14 @@ export const razorpay = new Razorpay({
 	key_id: key_id,
 	key_secret: key_secret,
 });
+
+export const initializeCashfree = (mode: 'sandbox' | 'production') => {
+	if (typeof window !== "undefined" && (window as any).Cashfree) {
+		return (window as any).Cashfree.init({ mode });
+	} else {
+		throw new Error("Cashfree SDK not loaded. Ensure it is imported correctly.");
+	}
+};
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -358,9 +363,8 @@ export const getDisplayName = (
 ): string => {
 	const fullName = creator?.fullName?.trim();
 
-	const combinedName = `${creator?.firstName || ""} ${
-		creator?.lastName || ""
-	}`.trim();
+	const combinedName = `${creator?.firstName || ""} ${creator?.lastName || ""
+		}`.trim();
 
 	if (fullName && fullName.length <= maxNameLength) {
 		return fullName;
@@ -612,8 +616,8 @@ export const sendNotification = async (
 		// Convert all data values to strings
 		const stringifiedData = data
 			? Object.fromEntries(
-					Object.entries(data).map(([key, value]) => [key, String(value)])
-			  )
+				Object.entries(data).map(([key, value]) => [key, String(value)])
+			)
 			: {};
 
 		const response = await fetch("/api/send-notification", {
