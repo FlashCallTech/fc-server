@@ -175,7 +175,7 @@ const HomePage = () => {
 								</div>
 							) : (
 								<section
-									className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 2xl:gap-7 items-center overflow-hidden`}
+									className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 2xl:gap-7 items-start overflow-hidden`}
 									style={{
 										WebkitTransform: "translateZ(0)",
 										transform: "translate3d(0, 0, 0)",
@@ -220,7 +220,7 @@ const HomePage = () => {
 					{!hasNextPage &&
 						!isFetching &&
 						creators &&
-						creators.pages.flatMap((page: any) => page.users).length >= 6 && (
+						creators.pages.flatMap((page: any) => page.users).length > 4 && (
 							<div className="text-center text-gray-500 py-4">
 								You have reached the end of the list
 							</div>

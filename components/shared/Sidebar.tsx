@@ -148,7 +148,7 @@ const Sidebar = () => {
 					style={{
 						backgroundColor: isExpertPath
 							? (getDarkHexCode(currentTheme) as string)
-							: "#50a65c",
+							: "#50A65C",
 					}}
 					size="lg"
 				>

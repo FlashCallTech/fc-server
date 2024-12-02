@@ -2,7 +2,6 @@ import { backendBaseUrl } from "@/lib/utils";
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 
-import { Button } from "../ui/button";
 const HomepageFilter = ({
 	selectedProfession,
 	handleProfessionChange,
@@ -15,7 +14,6 @@ const HomepageFilter = ({
 	const [toggleFilter, setToggleFilter] = useState(false);
 	const professionRefs = useRef<(HTMLDivElement | null)[]>([]);
 	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-
 	const dropdownRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
@@ -50,6 +48,8 @@ const HomepageFilter = ({
 				block: "center",
 				inline: "center",
 			});
+		} else {
+			scrollContainerRef.current?.scrollTo({ left: 0, behavior: "smooth" });
 		}
 	}, [selectedProfession, professions]);
 

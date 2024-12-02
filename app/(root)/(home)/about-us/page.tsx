@@ -15,7 +15,7 @@ const AboutUs = () => {
 					</span>
 					<Link
 						href="/privacy-policy"
-						className="mx-1 text-[#50a65c] hover:underline underline-offset-2"
+						className="mx-1 text-[#50A65C] hover:underline underline-offset-2"
 					>
 						Privacy Policy
 					</Link>

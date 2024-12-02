@@ -164,7 +164,7 @@ const UserReviews = ({
 									alt="flashcall"
 									width={1000}
 									height={1000}
-									className="w-[100px] h-[40px]"
+									className="aspect-square w-[100px] h-[40px]"
 								/>
 							</section>
 						</section>

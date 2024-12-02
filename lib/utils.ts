@@ -25,11 +25,13 @@ export const razorpay = new Razorpay({
 	key_secret: key_secret,
 });
 
-export const initializeCashfree = (mode: 'sandbox' | 'production') => {
+export const initializeCashfree = (mode: "sandbox" | "production") => {
 	if (typeof window !== "undefined" && (window as any).Cashfree) {
 		return (window as any).Cashfree.init({ mode });
 	} else {
-		throw new Error("Cashfree SDK not loaded. Ensure it is imported correctly.");
+		throw new Error(
+			"Cashfree SDK not loaded. Ensure it is imported correctly."
+		);
 	}
 };
 
@@ -342,14 +344,14 @@ export const getDarkHexCode = (lightHex: string): string | null => {
 		"#FFBEE9": "#B30A79",
 		"#BEF3FF": "#0B8FAC",
 		"#A6FCDF": "#1AB17E",
-		"#50A65C": "#50A65C",
+		"#50A65C": "#369B7D",
 	};
 
 	const formattedLightHex = lightHex.startsWith("#")
 		? lightHex.toUpperCase()
 		: `#${lightHex.toUpperCase()}`;
 
-	return colorMap[formattedLightHex] || "#50A65C";
+	return colorMap[formattedLightHex] || "#88D8C0";
 };
 
 export const getDisplayName = (
@@ -363,8 +365,9 @@ export const getDisplayName = (
 ): string => {
 	const fullName = creator?.fullName?.trim();
 
-	const combinedName = `${creator?.firstName || ""} ${creator?.lastName || ""
-		}`.trim();
+	const combinedName = `${creator?.firstName || ""} ${
+		creator?.lastName || ""
+	}`.trim();
 
 	if (fullName && fullName.length <= maxNameLength) {
 		return fullName;
@@ -616,8 +619,8 @@ export const sendNotification = async (
 		// Convert all data values to strings
 		const stringifiedData = data
 			? Object.fromEntries(
-				Object.entries(data).map(([key, value]) => [key, String(value)])
-			)
+					Object.entries(data).map(([key, value]) => [key, String(value)])
+			  )
 			: {};
 
 		const response = await fetch("/api/send-notification", {

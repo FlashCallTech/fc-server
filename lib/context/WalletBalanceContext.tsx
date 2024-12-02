@@ -39,8 +39,7 @@ export const WalletBalanceProvider = ({
 }: {
 	children: ReactNode;
 }) => {
-	const { currentUser, userType, authenticationSheetOpen } =
-		useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 	const [walletBalance, setWalletBalance] = useState<number>(
 		currentUser?.walletBalance ?? -1
 	);
@@ -67,26 +66,21 @@ export const WalletBalanceProvider = ({
 		}
 	};
 
-	const fetchAndSetWalletBalance = async () => {
+	useEffect(() => {
 		if (currentUser) {
 			setWalletBalance(currentUser.walletBalance ?? 0);
 		}
-	};
-
-	useEffect(() => {
-		fetchAndSetWalletBalance();
-	}, [userType, authenticationSheetOpen, isCreator]);
+	}, [isCreator]);
 
 	useEffect(() => {
 		if (!currentUser) return;
+
 		const creatorId =
 			userType === "client"
 				? JSON.parse(localStorage.getItem("currentCreator") || "{}")?._id
 				: currentUser._id;
 
-		if (!creatorId) {
-			return;
-		}
+		if (!creatorId) return;
 
 		const creatorRef = doc(db, "transactions", creatorId);
 		const unsubscribe = onSnapshot(
@@ -104,11 +98,17 @@ export const WalletBalanceProvider = ({
 			}
 		);
 
-		return () => unsubscribe();
-	}, [currentUser]);
+		return () => {
+			unsubscribe();
+		};
+	}, []);
 
 	const updateWalletBalance = async () => {
-		await updateAndSetWalletBalance();
+		try {
+			await updateAndSetWalletBalance();
+		} catch (error) {
+			console.error("Failed to update wallet balance:", error);
+		}
 	};
 
 	return (

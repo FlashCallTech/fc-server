@@ -18,7 +18,11 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { trackEvent } from "@/lib/mixpanel";
-import { backendBaseIconUrl, backendBaseUrl, initializeCashfree } from "@/lib/utils";
+import {
+	backendBaseIconUrl,
+	backendBaseUrl,
+	initializeCashfree,
+} from "@/lib/utils";
 import axios from "axios";
 
 const Recharge: React.FC = () => {
@@ -69,7 +73,6 @@ const Recharge: React.FC = () => {
 
 	const cashfreeHandler = async () => {
 		try {
-
 			const options = {
 				order_id: 123,
 				order_amount: totalPayable,
@@ -79,12 +82,16 @@ const Recharge: React.FC = () => {
 					customer_phone: currentUser?.phone,
 				},
 				order_note: "Wallet Recharge",
-			}
-			const response = await axios.post(`${backendBaseUrl}/order/cashfree/create-order`, options, {
-				headers: {
-					"Content-Type": "application/json"
+			};
+			const response = await axios.post(
+				`${backendBaseUrl}/order/cashfree/create-order`,
+				options,
+				{
+					headers: {
+						"Content-Type": "application/json",
+					},
 				}
-			})
+			);
 
 			const paymentSessionId = response.data.payment_session_id;
 
@@ -119,7 +126,7 @@ const Recharge: React.FC = () => {
 		} catch (error) {
 			console.log(error);
 		}
-	}
+	};
 
 	const PaymentHandler = async (
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -145,11 +152,14 @@ const Recharge: React.FC = () => {
 		const currency = "INR";
 
 		try {
-			const orderResponse = await fetch(`${backendBaseUrl}/order/create-order`, {
-				method: "POST",
-				body: JSON.stringify({ amount: rechargeAmount, currency }),
-				headers: { "Content-Type": "application/json" },
-			});
+			const orderResponse = await fetch(
+				`${backendBaseUrl}/order/create-order`,
+				{
+					method: "POST",
+					body: JSON.stringify({ amount: rechargeAmount, currency }),
+					headers: { "Content-Type": "application/json" },
+				}
+			);
 			const order = await orderResponse.json();
 
 			const options: RazorpayOptions = {
@@ -164,19 +174,25 @@ const Recharge: React.FC = () => {
 					setLoading(true);
 
 					try {
-						const paymentResponse = await fetch(`${backendBaseUrl}/order/create-payment`, {
-							method: "POST",
-							body: JSON.stringify({ order_id: response.razorpay_order_id }),
-							headers: { "Content-Type": "application/json" },
-						});
+						const paymentResponse = await fetch(
+							`${backendBaseUrl}/order/create-payment`,
+							{
+								method: "POST",
+								body: JSON.stringify({ order_id: response.razorpay_order_id }),
+								headers: { "Content-Type": "application/json" },
+							}
+						);
 
 						const paymentResult = await paymentResponse.json();
 
-						const validateRes = await fetch(`${backendBaseUrl}/order/validate`, {
-							method: "POST",
-							body: JSON.stringify(response),
-							headers: { "Content-Type": "application/json" },
-						});
+						const validateRes = await fetch(
+							`${backendBaseUrl}/order/validate`,
+							{
+								method: "POST",
+								body: JSON.stringify(response),
+								headers: { "Content-Type": "application/json" },
+							}
+						);
 
 						const userId = currentUser?._id!;
 						await fetch(`${backendBaseUrl}/wallet/addMoney`, {
@@ -230,7 +246,7 @@ const Recharge: React.FC = () => {
 				Creator_ID: creator?._id,
 				Recharge_value: amount,
 				Walletbalace_Available: clientUser?.walletBalance,
-			})
+			});
 			setLoading(false);
 			router.push("/payment");
 			toast({
@@ -326,10 +342,11 @@ const Recharge: React.FC = () => {
 									<button
 										key={app.name}
 										onClick={() => setMethod(app.name.toLowerCase())}
-										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${method === app.name.toLowerCase()
-											? "bg-gray-300 dark:bg-gray-600 !important"
-											: ""
-											}`}
+										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${
+											method === app.name.toLowerCase()
+												? "bg-gray-300 dark:bg-gray-600 !important"
+												: ""
+										}`}
 									>
 										<Image
 											src={app.icon}

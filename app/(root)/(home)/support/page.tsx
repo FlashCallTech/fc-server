@@ -4,7 +4,7 @@ import React from "react";
 const SupportPage = () => {
 	return (
 		<section className="w-full h-fit flex flex-col gap-6 items-start justify-start p-4 lg:p-8">
-			<h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-[#50a65c]">
+			<h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-[#50A65C]">
 				Hey we&apos;re here to help
 			</h2>
 			<p className="text-base text-gray-700">

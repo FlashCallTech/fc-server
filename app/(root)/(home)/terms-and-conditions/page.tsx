@@ -63,14 +63,14 @@ const TermsOfServices = () => {
 				</span>
 				<Link
 					href="/privacy-policy"
-					className="mx-1 text-[#50a65c] hover:underline underline-offset-2"
+					className="mx-1 text-[#50A65C] hover:underline underline-offset-2"
 				>
 					Privacy Policy
 				</Link>
 				{","}
 				<Link
 					href="/platform-guidelines"
-					className="mx-1 text-[#50a65c] hover:underline underline-offset-2"
+					className="mx-1 text-[#50A65C] hover:underline underline-offset-2"
 				>
 					Platform Guidelines
 				</Link>
@@ -121,7 +121,7 @@ const TermsOfServices = () => {
 					{tableOfContents.contents.map((content, index) => (
 						<li
 							key={index}
-							className="text-[#50a65c] hover:underline underline-offset-2"
+							className="text-[#50A65C] hover:underline underline-offset-2"
 						>
 							<Link href={`#${content.split(". ")[0]}`}>{content}</Link>
 						</li>
@@ -152,7 +152,7 @@ const TermsOfServices = () => {
 					{A.para4}{" "}
 					<Link
 						href="/privacy-policy"
-						className="mx-1 text-[#50a65c] hover:underline underline-offset-2"
+						className="mx-1 text-[#50A65C] hover:underline underline-offset-2"
 					>
 						Privacy Policy
 					</Link>
@@ -583,7 +583,7 @@ const TermsOfServices = () => {
 
 				<a
 					href="mailto:support@Flashcall.me"
-					className="text-[#50a65c] hoverScaleDownEffect"
+					className="text-[#50A65C] hoverScaleDownEffect"
 				>
 					support@Flashcall.me
 				</a>
