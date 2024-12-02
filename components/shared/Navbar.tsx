@@ -61,7 +61,7 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 			router.push("/authenticate?usertype=creator");
 		} else {
 			trackEvent("Login_TopNav_Clicked", {
-				utm_source: "google",
+				// utm_source: "google",
 				Creator_ID: creator?._id,
 			});
 			setIsAuthSheetOpen(true);
