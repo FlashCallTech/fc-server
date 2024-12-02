@@ -360,28 +360,44 @@ export const getDisplayName = (creator: {
 	lastName?: string;
 	username: string;
 }): string => {
+	const maskNumbers = (input: string): string =>
+		input.replace(/\d{4,}/g, (match) => {
+			if (match.length <= 4) {
+				return match.replace(/\d/g, "*");
+			}
+			return match.slice(0, 2) + "*".repeat(match.length - 4) + match.slice(-2);
+		});
+
 	const fullName = creator?.fullName?.trim();
+	const maskedFullName = fullName ? maskNumbers(fullName) : undefined;
 
 	const combinedName = `${creator?.firstName || ""} ${
 		creator?.lastName || ""
 	}`.trim();
+	const maskedCombinedName = combinedName
+		? maskNumbers(combinedName)
+		: undefined;
 
-	if (fullName) {
-		return fullName;
+	const maskedUsername = creator?.username.startsWith("+91")
+		? creator.username.replace(
+				/(\+91)(\d+)/,
+				(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+		  )
+		: maskNumbers(creator?.username || "");
+
+	if (maskedFullName) {
+		return maskedFullName;
 	}
 
-	if (combinedName) {
-		return combinedName;
+	if (maskedCombinedName) {
+		return maskedCombinedName;
 	}
 
-	if (creator?.username?.startsWith("+91")) {
-		return creator.username.replace(
-			/(\+91)(\d+)/,
-			(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-		);
+	if (maskedUsername) {
+		return maskedUsername;
 	}
 
-	return creator?.username || "Flashcall User";
+	return "Flashcall User";
 };
 
 export const handleError = (error: unknown) => {

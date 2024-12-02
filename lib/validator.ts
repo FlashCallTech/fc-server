@@ -4,12 +4,12 @@ const usernameRegex = /^[a-zA-Z0-9_-]+$/;
 export const UpdateProfileFormSchema = z.object({
 	firstName: z
 		.string()
-		.min(3, "First Name be at least 3 characters")
-		.max(10, "First Name must be at most 10 characters"),
+		.min(3, "First Name must be at least 3 characters")
+		.regex(/^[^\d]+$/, "First Name cannot contain numbers"),
 	lastName: z
 		.string()
-		.min(3, "Last name must be at least 3 characters")
-		.max(20, "Last Name must be at most 20 characters"),
+		.min(3, "Last Name must be at least 3 characters")
+		.regex(/^[^\d]+$/, "Last Name cannot contain numbers"),
 	username: z
 		.string()
 		.min(4, "Username must be at least 4 characters")
@@ -18,7 +18,10 @@ export const UpdateProfileFormSchema = z.object({
 			usernameRegex,
 			"Username can only contain letters, numbers, underscores, and hyphens"
 		),
-	profession: z.string().min(3, "Profession must be at least 3 characters"),
+	profession: z
+		.string()
+		.min(3, "Profession must be at least 3 characters")
+		.regex(/^[^\d]+$/, "Last Name cannot contain numbers"),
 	themeSelected: z.string().min(6, "Profile Theme must be a valid hexcode"),
 	photo: z.string().optional(),
 	bio: z.string().optional(),
@@ -30,12 +33,12 @@ export const UpdateProfileFormSchema = z.object({
 export const UpdateProfileFormSchemaClient = z.object({
 	firstName: z
 		.string()
-		.min(3, "First Name be at least 3 characters")
-		.max(10, "First Name must be at most 10 characters"),
+		.min(3, "First Name must be at least 3 characters")
+		.regex(/^[^\d]+$/, "First Name cannot contain numbers"),
 	lastName: z
 		.string()
-		.min(3, "Last name must be at least 3 characters")
-		.max(20, "Last Name must be at most 20 characters"),
+		.min(3, "Last Name must be at least 3 characters")
+		.regex(/^[^\d]+$/, "Last Name cannot contain numbers"),
 	username: z
 		.string()
 		.min(4, "Username must be at least 4 characters")
