@@ -25,6 +25,7 @@ import {
 	updateFirestoreSessions,
 } from "@/lib/utils";
 import useWarnOnUnload from "@/hooks/useWarnOnUnload";
+import { trackEvent } from "@/lib/mixpanel";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -160,6 +161,17 @@ const CallEnded = ({ toast, router, call }: any) => {
 
 		if (isMeetingOwner && !transactionHandled.current) {
 			stopMediaStreams();
+			call.type === "default" ? trackEvent("BookCall_Video_Ended", {
+				Client_ID: currentUser?._id,
+				User_First_Seen: currentUser?.createdAt?.toString().split('T')[0],
+				Walletbalace_Available: currentUser?.walletBalance,
+				Creator_ID: call.state.members[0].user_id
+			}) : trackEvent("BookCall_Audio_Ended", {
+				Client_ID: currentUser?._id,
+				User_First_Seen: currentUser?.createdAt?.toString().split('T')[0],
+				Walletbalace_Available: currentUser?.walletBalance,
+				Creator_ID: call.state.members[0].user_id
+			});
 			handleCallEnd();
 		} else if (!isMeetingOwner) {
 			stopMediaStreams();

@@ -21,6 +21,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, getDoc, increment, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { backendBaseUrl } from "@/lib/utils";
+import axios from "axios";
 
 interface Props {
 	walletBalance: number,
@@ -94,6 +95,8 @@ const TipModal: React.FC<Props> = ({
 		} else {
 			try {
 				setLoading(true);
+				const response = await axios.get(`${backendBaseUrl}/creator/getUser/${creatorId}`);
+				const data = response.data;
 				await Promise.all([
 					fetch(`${backendBaseUrl}/wallet/payout`, {
 						method: "POST",
@@ -110,7 +113,7 @@ const TipModal: React.FC<Props> = ({
 						body: JSON.stringify({
 							userId: creatorId,
 							userType: "Creator",
-							amount: (parseInt(tipAmount, 10) * 0.8).toFixed(1),
+							amount: (parseInt(tipAmount, 10) * (1 - Number(data.commission) / 100)).toFixed(2),
 							category: "Tip",
 						}),
 						headers: { "Content-Type": "application/json" },
@@ -200,9 +203,8 @@ const TipModal: React.FC<Props> = ({
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className={`flex flex-col items-center justify-center ${
-						!loading ? "px-10 py-7" : "px-4"
-					} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
+					className={`flex flex-col items-center justify-center ${!loading ? "px-10 py-7" : "px-4"
+						} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
 				>
 					{loading ? (
 						<ContentLoading />
@@ -214,9 +216,8 @@ const TipModal: React.FC<Props> = ({
 									<p>
 										Balance Left
 										<span
-											className={`ml-2 ${
-												hasLowBalance ? "text-red-500" : "text-green-1"
-											}`}
+											className={`ml-2 ${hasLowBalance ? "text-red-500" : "text-green-1"
+												}`}
 										>
 											₹ {adjustedWalletBalance.toFixed(2)}
 										</span>
@@ -253,10 +254,9 @@ const TipModal: React.FC<Props> = ({
 										<Button
 											key={amount}
 											onClick={() => handlePredefinedAmountClick(amount)}
-											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${
-												tipAmount === amount &&
+											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${tipAmount === amount &&
 												"bg-green-1 text-white hover:bg-green-1"
-											}`}
+												}`}
 										>
 											₹{amount}
 										</Button>
