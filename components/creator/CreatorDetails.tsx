@@ -152,11 +152,11 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		<section className="size-full xl:w-[704px] md:mx-auto md:pt-4 flex flex-col items-center">
 			{/* Creator Details */}
 			<section
-				className={`h-fit px-4 w-full flex flex-col md:flex-row gap-4 items-start md:items-center justify-center p-5 md:rounded-[16px]`}
+				className={`size-full px-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-center p-5 md:rounded-t-[16px] overflow-hidden`}
 				style={{ backgroundColor: themeColor }}
 			>
 				{/* Creator Info */}
-				<section className="w-full h-fit flex items-center justify-start gap-4 ">
+				<section className="w-full h-fit flex items-center justify-start gap-4">
 					{/* 1. Creator Status and Image */}
 					<section
 						className="relative flex item-center justify-center rounded-full min-h-[94px] min-w-[94px]"
@@ -232,7 +232,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 					</section>
 
 					{/* 2. Creator Info */}
-					<section className="size-full flex flex-col items-start justify-center">
+					<section className="size-full flex flex-col items-start justify-center overflow-hidden">
 						<p className="font-semibold text-2xl max-w-[92%] text-ellipsis whitespace-nowrap overflow-hidden capitalize">
 							{fullName}
 						</p>
