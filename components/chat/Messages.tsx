@@ -96,10 +96,8 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 
 							<div
 								className={`${isCurrentUserMessage
-									? `p-[5px] max-w-[60%] ${message.tip? "min-w-[60%] lg:min-w-[35%]" : "min-w-[25%]"} lg:max-w-[35%] w-fit rounded-lg rounded-tr-none ml-auto text-black text-sm relative 
-            ${message.tip ? "bg-gray-400" : "bg-[#DCF8C6]"}`
-									: `p-[5px] max-w-[60%] ${message.tip? "min-w-[60%] lg:min-w-[35%]" : "min-w-[25%]"} lg:max-w-[35%] w-fit rounded-lg rounded-tl-none text-black text-sm leading-5 relative 
-            ${message.tip ? "bg-gray-400" : "bg-white"}`
+									? `bg-[#DCF8C6] p-[5px] max-w-[60%] ${message.tip? "min-w-[60%] lg:min-w-[35%]" : "min-w-[25%]"} lg:max-w-[35%] w-fit rounded-lg rounded-tr-none ml-auto text-black text-sm relative`
+									: `bg-white p-[5px] max-w-[60%] ${message.tip? "min-w-[60%] lg:min-w-[35%]" : "min-w-[25%]"} lg:max-w-[35%] w-fit rounded-lg rounded-tl-none text-black text-sm leading-5 relative`
 									} ${marginBottom}`}
 								style={{ wordBreak: "break-word", justifyContent: "center" }}
 							>
@@ -150,15 +148,15 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 									{/* Tip Field */}
 									{message.tip && (
 										<div
-											className="flex-grow w-full items-center border rounded-md"
+											className="flex-grow w-full items-center rounded-md"
 										>
-											<div className="flex flex-col items-center justify-center text-white text-[17px] lg:text-4xl bg-black p-1">
+											<div className="flex flex-col items-center justify-center text-black font-bold text-[17px] lg:text-4xl border-l-[#DCF8C6] p-1">
 												{`₹ ${message.tip}`}
 											</div>
-											<div className="flex flex-row gap-1 items-center justify-start text-white text-xs bg-gray-400 p-1">
+											<div className="flex flex-row gap-1 items-center justify-start text-white text-xs border-l-[#DCF8C6] p-1">
 												{/* SVG inserted here */}
 												<Image src={"/rupee_logo.svg"} width={1000} height={1000} alt="rupee" className="size-5" />
-												<div className="flex flex-col items-start justify-start text-white text-[10px] lg:text-xs">
+												<div className="flex flex-col items-start justify-start text-black text-[10px] lg:text-xs">
 													<span>
 														{`Sent to ${isCurrentUserMessage ? "Creator" : "You"}`}
 													</span>
@@ -175,8 +173,8 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 								<div
 									className={
 										message.senderId === (currentUser?._id as string)
-											? `rotate-90 absolute right-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] ${message.tip ? "border-l-gray-400" : "border-l-[#DCF8C6]"} border-r-0 border-solid border-transparent`
-											: `rotate-90 absolute left-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] ${message.tip ? "border-l-gray-400" : "border-l-white"} border-r-0 border-solid border-transparent`
+											? `rotate-90 absolute right-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] border-l-[#DCF8C6] border-r-0 border-solid border-transparent`
+											: `rotate-90 absolute left-[-4px] top-[-4px] w-0 h-0 rounded-full border-[8px] border-l-white border-r-0 border-solid border-transparent`
 									}
 								></div>
 

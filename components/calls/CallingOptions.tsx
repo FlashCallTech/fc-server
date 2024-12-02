@@ -354,17 +354,17 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 					if (callType === "audio") {
 						trackEvent("BookCall_Audio_Initiated", {
-							utm_source: "google",
+							Client_ID: clientUser._id,
+							User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
 							Creator_ID: creator._id,
-							status: onlineStatus,
 							Time_Duration_Available: maxCallDuration,
 							Walletbalace_Available: clientUser?.walletBalance,
 						});
 					} else {
 						trackEvent("BookCall_Video_Initiated", {
-							utm_source: "google",
+							Client_ID: clientUser._id,
+							User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
 							Creator_ID: creator._id,
-							status: onlineStatus,
 							Time_Duration_Available: maxCallDuration,
 							Walletbalace_Available: clientUser?.walletBalance,
 						});

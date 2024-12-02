@@ -18,6 +18,7 @@ import {
 import { useGetCallById } from "@/hooks/useGetCallById";
 import axios from "axios";
 import MyCallConnectingUI from "./MyCallConnectigUI";
+import { trackEvent } from "@/lib/mixpanel";
 
 const MyCallUI = () => {
 	const calls = useCalls();
@@ -248,7 +249,19 @@ const MyCallUI = () => {
 
 			outgoingCall?.state.setCallingState(CallingState.IDLE);
 
-			logEvent(analytics, "call_accepted", { callId: outgoingCall.id });
+			outgoingCall.type === "default" ?
+				trackEvent("BookCall_Video_Connected", {
+					Client_ID: currentUser?._id,
+					User_First_Seen: currentUser?.createdAt?.toString().split('T')[0],
+					Walletbalace_Available: currentUser?.walletBalance,
+					Creator_ID: outgoingCall.state.members[0].user_id
+				}) : trackEvent("BookCall_Audio_Connected", {
+					Client_ID: currentUser?._id,
+					User_First_Seen: currentUser?.createdAt?.toString().split('T')[0],
+					Walletbalace_Available: currentUser?.walletBalance,
+					Creator_ID: outgoingCall.state.members[0].user_id
+				});
+
 
 			await updateExpertStatus(
 				outgoingCall.state.createdBy?.custom?.phone as string,

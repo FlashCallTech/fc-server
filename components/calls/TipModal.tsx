@@ -27,6 +27,7 @@ import {
 } from "firebase/firestore";
 import RechargeModal from "./RechargeModal";
 import SinglePostLoader from "../shared/SinglePostLoader";
+import axios from "axios";
 
 // Custom hook to track screen size
 const useScreenSize = () => {
@@ -147,6 +148,8 @@ const TipModal = ({
 
 		try {
 			setLoading(true);
+			const response = await axios.get(`${backendBaseUrl}/creator/getUser/${creatorId}`);
+			const data = response.data;
 			await Promise.all([
 				fetch(`${backendBaseUrl}/wallet/payout`, {
 					method: "POST",
@@ -163,7 +166,7 @@ const TipModal = ({
 					body: JSON.stringify({
 						userId: creatorId,
 						userType: "Creator",
-						amount: (parseInt(rechargeAmount) * 0.8).toFixed(2),
+						amount: (parseInt(rechargeAmount) * (1 - Number(data.commission) / 100)).toFixed(2),
 						category: "Tip",
 					}),
 					headers: { "Content-Type": "application/json" },
@@ -277,9 +280,8 @@ const TipModal = ({
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className={`flex flex-col items-center justify-center ${
-						!loading ? "px-7 py-5" : "px-4"
-					}  border-none rounded-t-xl bg-white mx-auto overflow-scroll no-scrollbar min-h-[350px] max-h-fit w-full h-dvh sm:max-w-[444px]`}
+					className={`flex flex-col items-center justify-center ${!loading ? "px-7 py-5" : "px-4"
+						}  border-none rounded-t-xl bg-white mx-auto overflow-scroll no-scrollbar min-h-[350px] max-h-fit w-full h-dvh sm:max-w-[444px]`}
 				>
 					{loading ? (
 						<SinglePostLoader />
@@ -290,18 +292,16 @@ const TipModal = ({
 								<SheetDescription>
 									Balance Left
 									<span
-										className={`ml-2 ${
-											hasLowBalance ? "text-red-500" : "text-green-1"
-										}`}
+										className={`ml-2 ${hasLowBalance ? "text-red-500" : "text-green-1"
+											}`}
 									>
 										₹ {adjustedWalletBalance.toFixed(2)}
 									</span>
 								</SheetDescription>
 							</SheetHeader>
 							<section
-								className={`grid ${
-									errorMessage ? "py-2 gap-2 " : "py-4 gap-4"
-								} w-full`}
+								className={`grid ${errorMessage ? "py-2 gap-2 " : "py-4 gap-4"
+									} w-full`}
 							>
 								<span className="text-sm">Enter Desired amount in INR</span>
 								<section className="relative flex flex-col justify-center items-center">
@@ -325,11 +325,10 @@ const TipModal = ({
 										</section>
 									) : (
 										<Button
-											className={`absolute right-2 bg-green-1 text-white hoverScaleDownEffect ${
-												(!rechargeAmount ||
-													parseInt(rechargeAmount) > adjustedWalletBalance) &&
+											className={`absolute right-2 bg-green-1 text-white hoverScaleDownEffect ${(!rechargeAmount ||
+												parseInt(rechargeAmount) > adjustedWalletBalance) &&
 												"cursor-not-allowed"
-											}`}
+												}`}
 											onClick={handleTransaction}
 											disabled={
 												!rechargeAmount ||
@@ -353,20 +352,18 @@ const TipModal = ({
 								<span className="text-sm">Predefined Options</span>
 								{
 									<div
-										className={`${
-											!isMobile
-												? "grid grid-cols-4 gap-4 mt-4 w-full"
-												: "flex justify-start items-center mt-4 space-x-4 w-full overflow-x-scroll overflow-y-hidden no-scrollbar"
-										}`}
+										className={`${!isMobile
+											? "grid grid-cols-4 gap-4 mt-4 w-full"
+											: "flex justify-start items-center mt-4 space-x-4 w-full overflow-x-scroll overflow-y-hidden no-scrollbar"
+											}`}
 									>
 										{predefinedOptions.map((amount) => (
 											<Button
 												key={amount}
 												onClick={() => handlePredefinedAmountClick(amount)}
-												className={`w-20 bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${
-													rechargeAmount === amount &&
+												className={`w-20 bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${rechargeAmount === amount &&
 													"bg-green-1 text-white hover:bg-green-1"
-												}`}
+													}`}
 											>
 												₹{amount}
 											</Button>
