@@ -361,7 +361,7 @@ export const getDisplayName = (
 		lastName?: string;
 		username: string;
 	},
-	maxNameLength: number = 20
+	maxNameLength: number = 50
 ): string => {
 	const fullName = creator?.fullName?.trim();
 

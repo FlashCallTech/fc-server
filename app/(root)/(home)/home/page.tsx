@@ -175,7 +175,7 @@ const HomePage = () => {
 								</div>
 							) : (
 								<section
-									className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-auto gap-3.5 lg:gap-5 2xl:gap-7 items-start overflow-hidden`}
+									className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-fit gap-3.5 lg:gap-5 2xl:gap-7 items-start overflow-hidden`}
 									style={{
 										WebkitTransform: "translateZ(0)",
 										transform: "translate3d(0, 0, 0)",
