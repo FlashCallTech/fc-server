@@ -13,13 +13,13 @@ import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
-import { logEvent } from "firebase/analytics";
-import { analytics } from "@/lib/firebase";
+
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { trackEvent } from "@/lib/mixpanel";
-import { backendBaseIconUrl, backendBaseUrl } from "@/lib/utils";
+import { backendBaseIconUrl, backendBaseUrl, initializeCashfree } from "@/lib/utils";
+import axios from "axios";
 
 const Recharge: React.FC = () => {
 	const { updateWalletBalance } = useWalletBalanceContext();
@@ -67,6 +67,60 @@ const Recharge: React.FC = () => {
 			});
 	}, [creator]);
 
+	const cashfreeHandler = async () => {
+		try {
+
+			const options = {
+				order_id: 123,
+				order_amount: totalPayable,
+				order_currency: "INR",
+				customer_details: {
+					customer_id: currentUser?._id,
+					customer_phone: currentUser?.phone,
+				},
+				order_note: "Wallet Recharge",
+			}
+			const response = await axios.post(`${backendBaseUrl}/order/cashfree/create-order`, options, {
+				headers: {
+					"Content-Type": "application/json"
+				}
+			})
+
+			const paymentSessionId = response.data.payment_session_id;
+
+			const cashfree = initializeCashfree("production"); // or "production"
+
+			let checkoutOptions = {
+				paymentSessionId,
+				redirectTarget: document.getElementById("cf_checkout"),
+				appearance: {
+					width: "425px",
+					height: "700px",
+				},
+			};
+			cashfree.checkout(checkoutOptions).then((result: any) => {
+				if (result.error) {
+					// This will be true when there is any error during the payment
+					console.log("There is some payment error, Check for Payment Status");
+					console.log(result.error);
+				}
+				if (result.redirect) {
+					// This will be true when the payment redirection page couldnt be opened in the same window
+					// This is an exceptional case only when the page is opened inside an inAppBrowser
+					// In this case the customer will be redirected to return url once payment is completed
+					console.log("Payment will be redirected");
+				}
+				if (result.paymentDetails) {
+					// This will be called whenever the payment is completed irrespective of transaction status
+					console.log("Payment has been completed, Check for Payment Status");
+					console.log(result.paymentDetails.paymentMessage);
+				}
+			});
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
 	const PaymentHandler = async (
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>
 	): Promise<void> => {
@@ -91,7 +145,7 @@ const Recharge: React.FC = () => {
 		const currency = "INR";
 
 		try {
-			const orderResponse = await fetch("/api/v1/order", {
+			const orderResponse = await fetch(`${backendBaseUrl}/order/create-order`, {
 				method: "POST",
 				body: JSON.stringify({ amount: rechargeAmount, currency }),
 				headers: { "Content-Type": "application/json" },
@@ -110,13 +164,15 @@ const Recharge: React.FC = () => {
 					setLoading(true);
 
 					try {
-						await fetch("/api/v1/payment", {
+						const paymentResponse = await fetch(`${backendBaseUrl}/order/create-payment`, {
 							method: "POST",
-							body: response.razorpay_order_id,
-							headers: { "Content-Type": "text/plain" },
+							body: JSON.stringify({ order_id: response.razorpay_order_id }),
+							headers: { "Content-Type": "application/json" },
 						});
 
-						const validateRes = await fetch("/api/v1/order/validate", {
+						const paymentResult = await paymentResponse.json();
+
+						const validateRes = await fetch(`${backendBaseUrl}/order/validate`, {
 							method: "POST",
 							body: JSON.stringify(response),
 							headers: { "Content-Type": "application/json" },
@@ -130,6 +186,7 @@ const Recharge: React.FC = () => {
 								userType: "Client",
 								amount: parseFloat(amountInt!.toFixed(2)),
 								category: "Recharge",
+								method: paymentResult.paymentMethod,
 							}),
 							headers: { "Content-Type": "application/json" },
 						});
@@ -207,7 +264,7 @@ const Recharge: React.FC = () => {
 			) : (
 				<div className="overflow-y-scroll p-4 pt-0 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center justify-center w-full">
 					<Script src="https://checkout.razorpay.com/v1/checkout.js" />
-					{/* <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" /> */}
+					<Script src="https://sdk.cashfree.com/js/v3/cashfree.js" />
 
 					{/* Payment Information */}
 					<section className="w-full py-5 sticky">
