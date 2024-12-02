@@ -104,7 +104,6 @@ const RechargeModal = ({
 						});
 					} catch (error) {
 						Sentry.captureException(error);
-						console.log(error);
 					}
 
 					try {

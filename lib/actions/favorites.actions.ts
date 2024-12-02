@@ -45,7 +45,6 @@ export async function toggleFavorite({
 		return { success: "Favorites updated successfully" };
 	} catch (error: any) {
 		Sentry.captureException(error);
-		console.log("Error updating favorites ... ", error);
 		return { success: false, error: error.message };
 	}
 }
@@ -67,7 +66,6 @@ export async function getFavorites(clientId: string) {
 		return JSON.parse(JSON.stringify(favorites));
 	} catch (error: any) {
 		Sentry.captureException(error);
-		console.log("Error Fetching Favorites ... ", error);
 		return { success: false, error: error.message };
 	}
 }

@@ -52,8 +52,6 @@ export async function addMoney({
 			{ new: true, upsert: true }
 		);
 
-		console.log(method);
-
 		// Create a transaction record
 		numericAmount > 0 &&
 			(await Transaction.create({

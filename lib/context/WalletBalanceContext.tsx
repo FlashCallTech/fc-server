@@ -93,7 +93,6 @@ export const WalletBalanceProvider = ({
 			creatorRef,
 			(snapshot) => {
 				if (snapshot.exists()) {
-					console.log("Updating Wallet");
 					updateWalletBalance();
 				} else {
 					console.warn("Document does not exist");

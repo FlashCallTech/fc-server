@@ -406,8 +406,6 @@ const EditProfile = ({
 					dob: updatedUser.dob,
 				};
 
-				console.log(userData);
-
 				setUserData(newUserDetails);
 
 				toast({

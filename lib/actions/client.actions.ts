@@ -69,7 +69,7 @@ export async function createUser(user: CreateUserParams) {
 			}
 		}
 		Sentry.captureException(error);
-		console.log(error);
+
 		return { error: "An unexpected error occurred" };
 	}
 }
@@ -84,7 +84,7 @@ export async function getUserById(userId: string) {
 		return JSON.parse(JSON.stringify(user));
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
+
 		return { error: "An unexpected error occurred" };
 	}
 }
@@ -99,7 +99,6 @@ export async function getUsers() {
 		return JSON.parse(JSON.stringify(users));
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
 	}
 }
 
@@ -134,7 +133,6 @@ export async function updateUser(userId: string, user: UpdateUserParams) {
 				}
 			);
 		}
-		console.log(user, updatedUser);
 		// if (!updatedUser) throw new Error("User update failed");
 		return JSON.parse(JSON.stringify({ updatedUser }));
 	} catch (error) {
@@ -163,7 +161,7 @@ export async function deleteClientUser(userId: string) {
 			: { error: "Failed to delete user" };
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
+
 		return { error: "An unexpected error occurred" };
 	}
 }

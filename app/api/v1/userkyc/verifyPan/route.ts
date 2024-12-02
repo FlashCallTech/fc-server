@@ -121,9 +121,8 @@ export async function POST(request: NextRequest) {
 									}),
 								}
 							);
-							
+
 							const userResult = await userResponse.json();
-							console.log(userResult);
 
 							const kyc = {
 								userId: userId,
@@ -145,9 +144,11 @@ export async function POST(request: NextRequest) {
 							let reason: string;
 
 							if (!faceMatchResult.success) {
-								reason = "The face in the Aadhaar and the selfie do not match. Our team will contact you for manual verification, which may take up to 2 business days."
+								reason =
+									"The face in the Aadhaar and the selfie do not match. Our team will contact you for manual verification, which may take up to 2 business days.";
 							} else {
-								reason = "The name in the PAN and the Aadhaar do not match. Our team will contact you for manual verification, which may take up to 2 business days."
+								reason =
+									"The name in the PAN and the Aadhaar do not match. Our team will contact you for manual verification, which may take up to 2 business days.";
 							}
 
 							const userResponse = await fetch(
@@ -165,7 +166,6 @@ export async function POST(request: NextRequest) {
 							);
 
 							const userResult = await userResponse.json();
-							console.log(userResult);
 
 							const kyc = {
 								userId: userId,
@@ -174,13 +174,11 @@ export async function POST(request: NextRequest) {
 							};
 
 							const final = await createUserKyc(kyc, "status");
-							console.log(final);
 
 							return NextResponse.json({
 								success: true,
 								kycStatus: false,
-								message:
-									final.reason,
+								message: final.reason,
 							});
 						}
 					} else {

@@ -235,7 +235,6 @@ const MyCallUI = () => {
 				}
 
 				if (outgoingCall?.state?.callingState === CallingState.RINGING) {
-					console.log("Auto-declining call due to timeout...");
 					await handleCallIgnored();
 				}
 			}, 60000);

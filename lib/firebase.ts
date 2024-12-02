@@ -97,7 +97,7 @@ export const getFirebaseToken = async () => {
 			);
 		}
 	} catch (error) {
-		console.log("An error occurred while retrieving token. ", error);
+		console.warn("An error occurred while retrieving token. ", error);
 	}
 };
 

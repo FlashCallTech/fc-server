@@ -12,19 +12,17 @@ export async function createCall(call: RegisterCallParams | any) {
 		return newCall.toJSON();
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
 	}
 }
 
 export async function createChat(chat: any) {
 	try {
-		console.log(chat);
 		await connectToDatabase();
 		const newChat = await Chat.create(chat);
 		return newChat.toJSON();
 	} catch (error) {
 		Sentry.captureException(error);
-		// console.log(error);
+		//
 	}
 }
 
@@ -55,7 +53,6 @@ export async function updateChat(
 	} catch (error) {
 		Sentry.captureException(error);
 		console.error(error);
-		console.log(error);
 	}
 }
 
@@ -66,7 +63,6 @@ export async function getChat(chatId: string) {
 		return chats;
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
 	}
 }
 
@@ -80,7 +76,6 @@ export async function getCalls() {
 		return calls.map((call) => call.toJSON());
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
 	}
 }
 
@@ -96,7 +91,6 @@ export async function getUserCalls(userId: string) {
 		return calls.map((call) => call.toJSON());
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
 	}
 }
 
@@ -122,7 +116,6 @@ export async function getUserCallsPaginated(
 		return calls && calls.map((call) => call.toJSON());
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
 	}
 }
 
@@ -138,7 +131,6 @@ export async function getUserChats(userId: string) {
 		return chats.map((chat) => chat.toJSON());
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
 	}
 }
 
@@ -152,7 +144,6 @@ export async function getCallById(callId: string) {
 		return call.toJSON();
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
 	}
 }
 
@@ -170,6 +161,5 @@ export async function updateCall(callId: string, call: UpdateCallParams) {
 		return updatedCall.toJSON(); // No need to stringify and parse
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
 	}
 }

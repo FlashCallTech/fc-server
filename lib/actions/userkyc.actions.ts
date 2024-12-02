@@ -6,7 +6,13 @@ import * as Sentry from "@sentry/nextjs";
 
 export async function createUserKyc(
 	kyc: any,
-	type: "pan" | "aadhaar" | "liveliness" | "name_match" | "face_match" | "status"
+	type:
+		| "pan"
+		| "aadhaar"
+		| "liveliness"
+		| "name_match"
+		| "face_match"
+		| "status"
 ) {
 	try {
 		// Ensure the MongoDB connection is established
@@ -16,16 +22,23 @@ export async function createUserKyc(
 		const existingUserKyc = await UserKyc.findOne({ userId: kyc.userId });
 
 		// Check for duplicate PAN or Aadhaar before updating/creating
-		if (type === "pan" && kyc.pan ) {
-			const duplicatePan = await UserKyc.findOne({ 'pan.pan_number': kyc.pan.pan_number });
-			console.log(duplicatePan);
+		if (type === "pan" && kyc.pan) {
+			const duplicatePan = await UserKyc.findOne({
+				"pan.pan_number": kyc.pan.pan_number,
+			});
 			if (duplicatePan && duplicatePan.userId !== kyc.userId) {
-				throw new Error("This PAN number is already associated with another account.");
+				throw new Error(
+					"This PAN number is already associated with another account."
+				);
 			}
 		} else if (type === "aadhaar" && kyc.aadhaar) {
-			const duplicateAadhaar = await UserKyc.findOne({ 'aadhaar.aadhaar_number': kyc.aadhaar.aadhaar_number });
+			const duplicateAadhaar = await UserKyc.findOne({
+				"aadhaar.aadhaar_number": kyc.aadhaar.aadhaar_number,
+			});
 			if (duplicateAadhaar && duplicateAadhaar.userId !== kyc.userId) {
-				throw new Error("This Aadhaar number is already associated with another account.");
+				throw new Error(
+					"This Aadhaar number is already associated with another account."
+				);
 			}
 		}
 
@@ -41,9 +54,9 @@ export async function createUserKyc(
 				existingUserKyc.set("name_match", kyc.name_match);
 			} else if (type === "face_match" && kyc.face_match) {
 				existingUserKyc.set("face_match", kyc.face_match);
-			} else if (type === 'status' && kyc.kyc_status) {
+			} else if (type === "status" && kyc.kyc_status) {
 				existingUserKyc.set("kyc_status", kyc.kyc_status);
-				if(kyc.reason) existingUserKyc.set("reason", kyc.reason);
+				if (kyc.reason) existingUserKyc.set("reason", kyc.reason);
 			} else {
 				console.warn("No matching type or missing data for update");
 			}
@@ -53,10 +66,9 @@ export async function createUserKyc(
 			return updatedUserKyc.toJSON();
 		} else {
 			// If the user does not exist, create a new document
-			console.log("Creating new User KYC entry"); // Log when creating a new entry
 			const newUserKyc = new UserKyc({
 				userId: kyc.userId,
-				kyc_status: 'PENDING',
+				kyc_status: "PENDING",
 				pan: type === "pan" ? kyc.pan : undefined,
 				aadhaar: type === "aadhaar" ? kyc.aadhaar : undefined,
 				liveliness: type === "liveliness" ? kyc.liveliness : undefined,
@@ -77,8 +89,6 @@ export async function createUserKyc(
 		throw new Error(error.message);
 	}
 }
-
-
 
 export async function getUserKycs() {
 	try {

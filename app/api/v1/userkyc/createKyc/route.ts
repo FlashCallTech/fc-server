@@ -4,7 +4,6 @@ import UserKyc from "@/lib/database/models/userkyc.model"; // Adjust the import 
 export async function POST(request: NextRequest) {
 	try {
 		const { userId, verification_id, kyc_status } = await request.json();
-		console.log("Received data:", { userId, verification_id, kyc_status });
 
 		// Check if KYC details already exist for the user
 		const existingKyc = await UserKyc.findOne({ userId });

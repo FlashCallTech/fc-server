@@ -67,7 +67,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const fullName = getDisplayName(creator);
 
 	const handleTabClose = () => {
-		console.log("Tab Closed");
 		const chatRequestId = localStorage.getItem("chatRequestId");
 		const data = chatRequestId;
 		const url = `${backendBaseUrl}endChat/rejectChat`; // Example endpoint
@@ -193,7 +192,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					if (data) {
 						if (data.status === "ended" || data.status === "rejected") {
 							setSheetOpen(false);
-							console.log("Chat Request Ended or Rejected");
 							setChatReqSent(false);
 							setChatState(data.status);
 							if (data.status === "rejected") {
@@ -225,7 +223,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 								Creator_ID: data.creatorId,
 								Time_Duration_Available: data.maxCallDuration,
 								Walletbalance_Available: clientUser?.walletBalance,
-							})
+							});
 							// updateExpertStatus(data.creatorPhone as string, "Busy");
 							setTimeout(() => {
 								router.replace(
@@ -297,10 +295,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${callType === "video"
-				? `Video Call With Expert ${creator.username}`
-				: `Audio Call With Expert ${creator.username}`
-				}`;
+			const description = `${
+				callType === "video"
+					? `Video Call With Expert ${creator.username}`
+					: `Audio Call With Expert ${creator.username}`
+			}`;
 
 			const ratePerMinute =
 				callType === "video"
@@ -590,12 +589,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					<button
 						disabled={!service.enabled}
 						key={service.type}
-						className={`callOptionContainer ${(isProcessing ||
-							!service.enabled ||
-							onlineStatus === "Busy" ||
-							isClientBusy) &&
+						className={`callOptionContainer ${
+							(isProcessing ||
+								!service.enabled ||
+								onlineStatus === "Busy" ||
+								isClientBusy) &&
 							"!cursor-not-allowed"
-							}`}
+						}`}
 						onClick={service.onClick}
 					>
 						<div className={`flex gap-4 items-center font-bold text-white`}>
@@ -603,12 +603,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							{service.label}
 						</div>
 						<p
-							className={`font-medium tracking-widest rounded-[18px] w-[100px] h-[36px] text-[15px] text-black flex items-center justify-center ${(isProcessing ||
-								!service.enabled ||
-								onlineStatus === "Busy" ||
-								isClientBusy) &&
+							className={`font-medium tracking-widest rounded-[18px] w-[100px] h-[36px] text-[15px] text-black flex items-center justify-center ${
+								(isProcessing ||
+									!service.enabled ||
+									onlineStatus === "Busy" ||
+									isClientBusy) &&
 								"border border-white/50 text-white"
-								}`}
+							}`}
 							style={{
 								backgroundColor:
 									isProcessing || !service.enabled || onlineStatus === "Busy"

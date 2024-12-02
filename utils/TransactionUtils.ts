@@ -47,7 +47,6 @@ export const handleTransaction = async ({
 		const activeCallId = localStorage.getItem("activeCallId");
 		if (activeCallId) {
 			localStorage.removeItem("activeCallId");
-			console.log("activeCallId removed successfully");
 		} else {
 			console.warn("activeCallId was not found in localStorage");
 		}

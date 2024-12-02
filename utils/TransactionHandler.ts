@@ -42,7 +42,6 @@ export const transactionHandler = async ({
 	const existingTransaction = await transactionResponse.json();
 	// If a transaction exists and any of the callDetails have isDone: true, return early
 	if (existingTransaction) {
-		console.log("Transaction for this callId has already been completed.");
 		await updateFirestoreTransactionStatus(callId);
 		await updateFirestoreSessions(clientId, {
 			status: "ended",

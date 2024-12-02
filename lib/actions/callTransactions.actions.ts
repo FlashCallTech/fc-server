@@ -11,7 +11,6 @@ export async function createCallTransaction(transaction: any) {
 		return JSON.parse(JSON.stringify(newTransaction));
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
 		handleError(error);
 	}
 }
@@ -41,7 +40,6 @@ export async function getCallTransaction(callId: string) {
 		return transaction;
 	} catch (error) {
 		Sentry.captureException(error);
-		console.log(error);
 		handleError(error);
 	}
 }

@@ -169,8 +169,6 @@ const CallFeedback = ({
 			</>
 		);
 
-	console.log(callDuration);
-
 	return (
 		<Sheet
 			open={isOpen}

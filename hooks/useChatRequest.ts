@@ -48,8 +48,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			if (!response.ok) {
 				throw new Error(data.message || "Failed to update status");
 			}
-
-			console.log("Expert status updated to:", status);
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error updating expert status:", error);
@@ -204,7 +202,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 							chatRate: chatRequestData.chatRate,
 							client_first_seen: chatRequestData.client_first_seen,
 							creator_first_seen: chatRequestData.creator_first_seen,
-							createdAt: String(chatRequestData.createdAt)
+							createdAt: String(chatRequestData.createdAt),
 						},
 						`https:flashcall.me/`
 					);
@@ -222,9 +220,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					if (data?.status === "pending") {
 						// If the status is still "pending", update it to "ended"
 						await setDoc(chatRequestDoc, { status: "ended" }, { merge: true });
-						console.log(
-							"Chat request status updated to 'ended' due to timeout"
-						);
 					}
 					// localStorage.removeItem("chatRequestId");
 				}
@@ -282,7 +277,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	};
 
 	const handleAcceptChat = async (chatRequest: any) => {
-		console.log("Trying to accept the chat");
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
 		const response = await getUserById(chatRequest.clientId as string);
