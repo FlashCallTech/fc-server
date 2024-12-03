@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import React from "react";
 
 const SupportPage = () => {
@@ -12,14 +13,28 @@ const SupportPage = () => {
 				reach out to our support team.
 			</p>
 
-			<section className="flex flex-col items-start justify-start gap-2">
+			<section className="flex flex-col items-start justify-start gap-3.5">
 				<span className="text-gray-600 text-base mr-2">Reach out to us at</span>
-				<a
-					href="mailto:support@Flashcall.me"
-					className="text-base font-medium hoverScaleDownEffect text-green-1"
-				>
-					support@flashcall.me
-				</a>
+				<section className="flex items-center justify-start gap-4">
+					<a
+						href="mailto:support@Flashcall.me"
+						className="text-base font-medium hoverScaleDownEffect text-green-1"
+					>
+						support@flashcall.me
+					</a>
+					<span className="text-xs text-gray-500">Or</span>
+					<Link
+						target="_blank"
+						href="https://wa.me/919019082682"
+						className="flex items-center justify-center hoverScaleDownEffect"
+					>
+						<img
+							src="/images/whatsappSupport.png"
+							alt=""
+							className="h-10 w-full"
+						/>
+					</Link>
+				</section>
 			</section>
 		</section>
 	);
