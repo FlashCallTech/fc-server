@@ -170,7 +170,10 @@ const CallListMobileCreator = ({
 																	viewBox="0 0 24 24"
 																	strokeWidth={1.5}
 																	stroke="currentColor"
-																	className="size-4"
+																	className={`${
+																		userCall.status !== "Ended" &&
+																		"text-red-600"
+																	} size-4`}
 																>
 																	<path
 																		strokeLinecap="round"
