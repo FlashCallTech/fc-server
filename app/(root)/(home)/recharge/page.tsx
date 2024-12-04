@@ -2,40 +2,27 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Script from "next/script";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
 	creatorUser,
-	PaymentFailedResponse,
-	PaymentResponse,
-	RazorpayOptions,
 } from "@/types";
-import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import Link from "next/link";
-import { useToast } from "@/components/ui/use-toast";
-
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { trackEvent } from "@/lib/mixpanel";
-import {
-	backendBaseIconUrl,
-	backendBaseUrl,
-	initializeCashfree,
-} from "@/lib/utils";
-import axios from "axios";
+import useRecharge from "@/hooks/recharge";
 
 const Recharge: React.FC = () => {
 	const { updateWalletBalance } = useWalletBalanceContext();
 	const { currentUser, clientUser } = useCurrentUsersContext();
-	const { toast } = useToast();
+	const { pgHandler, loading } = useRecharge();
 	const [creator, setCreator] = useState<creatorUser>();
 	const [method, setMethod] = useState("");
-	const [loading, setLoading] = useState(false);
 	const searchParams = useSearchParams();
 	const amount = searchParams.get("amount");
 
-	const router = useRouter();
 	const amountInt: number | null = amount ? parseFloat(amount) : null;
 
 	const subtotal: number | null =
@@ -71,192 +58,6 @@ const Recharge: React.FC = () => {
 			});
 	}, [creator]);
 
-	const cashfreeHandler = async () => {
-		try {
-			const options = {
-				order_id: 123,
-				order_amount: totalPayable,
-				order_currency: "INR",
-				customer_details: {
-					customer_id: currentUser?._id,
-					customer_phone: currentUser?.phone,
-				},
-				order_note: "Wallet Recharge",
-			};
-			const response = await axios.post(
-				`${backendBaseUrl}/order/cashfree/create-order`,
-				options,
-				{
-					headers: {
-						"Content-Type": "application/json",
-					},
-				}
-			);
-
-			const paymentSessionId = response.data.payment_session_id;
-
-			const cashfree = initializeCashfree("production"); // or "production"
-
-			let checkoutOptions = {
-				paymentSessionId,
-				redirectTarget: document.getElementById("cf_checkout"),
-				appearance: {
-					width: "425px",
-					height: "700px",
-				},
-			};
-			cashfree.checkout(checkoutOptions).then((result: any) => {
-				if (result.error) {
-					// This will be true when there is any error during the payment
-					console.log("There is some payment error, Check for Payment Status");
-					console.log(result.error);
-				}
-				if (result.redirect) {
-					// This will be true when the payment redirection page couldnt be opened in the same window
-					// This is an exceptional case only when the page is opened inside an inAppBrowser
-					// In this case the customer will be redirected to return url once payment is completed
-					console.log("Payment will be redirected");
-				}
-				if (result.paymentDetails) {
-					// This will be called whenever the payment is completed irrespective of transaction status
-					console.log("Payment has been completed, Check for Payment Status");
-					console.log(result.paymentDetails.paymentMessage);
-				}
-			});
-		} catch (error) {
-			console.log(error);
-		}
-	};
-
-	const PaymentHandler = async (
-		e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-	): Promise<void> => {
-		e.preventDefault();
-
-		trackEvent("Recharge_Page_Proceed_Clicked", {
-			Client_ID: clientUser?._id,
-			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-			Creator_ID: creator?._id,
-			Recharge_value: amount,
-			Walletbalace_Available: clientUser?.walletBalance,
-		});
-
-		if (typeof window.Razorpay === "undefined") {
-			console.error("Razorpay SDK is not loaded");
-			setLoading(false);
-			return;
-		}
-
-		const totalPayableInPaise = totalPayable! * 100;
-		const rechargeAmount = parseInt(totalPayableInPaise.toFixed(2));
-		const currency = "INR";
-
-		try {
-			const orderResponse = await fetch(
-				`${backendBaseUrl}/order/create-order`,
-				{
-					method: "POST",
-					body: JSON.stringify({ amount: rechargeAmount, currency }),
-					headers: { "Content-Type": "application/json" },
-				}
-			);
-			const order = await orderResponse.json();
-
-			const options: RazorpayOptions = {
-				key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
-				rechargeAmount,
-				currency,
-				name: "FlashCall.me",
-				description: "Wallet Recharge",
-				image: `${backendBaseIconUrl}/logo_icon.png`,
-				order_id: order.id,
-				handler: async (response: PaymentResponse): Promise<void> => {
-					setLoading(true);
-
-					try {
-						const paymentResponse = await fetch(
-							`${backendBaseUrl}/order/create-payment`,
-							{
-								method: "POST",
-								body: JSON.stringify({ order_id: response.razorpay_order_id }),
-								headers: { "Content-Type": "application/json" },
-							}
-						);
-
-						const paymentResult = await paymentResponse.json();
-
-						const validateRes = await fetch(
-							`${backendBaseUrl}/order/validate`,
-							{
-								method: "POST",
-								body: JSON.stringify(response),
-								headers: { "Content-Type": "application/json" },
-							}
-						);
-
-						const userId = currentUser?._id!;
-						await fetch(`${backendBaseUrl}/wallet/addMoney`, {
-							method: "POST",
-							body: JSON.stringify({
-								userId,
-								userType: "Client",
-								amount: parseFloat(amountInt!.toFixed(2)),
-								category: "Recharge",
-								method: paymentResult.paymentMethod,
-							}),
-							headers: { "Content-Type": "application/json" },
-						});
-
-						trackEvent("Recharge_Successfull", {
-							Client_ID: clientUser?._id,
-							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-							Creator_ID: creator?._id,
-							Recharge_value: amount,
-							Walletbalace_Available: clientUser?.walletBalance,
-						});
-
-						router.push("/success");
-					} catch (error) {
-						Sentry.captureException(error);
-						console.error("Validation request failed:", error);
-						setLoading(false);
-					} finally {
-						updateWalletBalance();
-					}
-				},
-				prefill: {
-					name: `${currentUser?.firstName} ${currentUser?.lastName}`,
-					contact: currentUser?.phone as string,
-				},
-				theme: { color: "#50A65C" },
-			};
-
-			const rzp = new window.Razorpay(options);
-			rzp.on("payment.failed", (response: PaymentFailedResponse): void => {
-				alert(response.error.code);
-				setLoading(false);
-			});
-			rzp.open();
-		} catch (error) {
-			Sentry.captureException(error);
-			console.error("Payment request failed:", error);
-			trackEvent("Recharge_Failed", {
-				Client_ID: clientUser?._id,
-				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
-				Creator_ID: creator?._id,
-				Recharge_value: amount,
-				Walletbalace_Available: clientUser?.walletBalance,
-			});
-			setLoading(false);
-			router.push("/payment");
-			toast({
-				variant: "destructive",
-				title: "Payment Failed",
-				description: "Redirecting ...",
-			});
-		}
-	};
-
 	const creatorURL = localStorage.getItem("creatorURL");
 
 	return (
@@ -280,7 +81,9 @@ const Recharge: React.FC = () => {
 			) : (
 				<div className="overflow-y-scroll p-4 pt-0 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center justify-center w-full">
 					<Script src="https://checkout.razorpay.com/v1/checkout.js" />
-					<Script src="https://sdk.cashfree.com/js/v3/cashfree.js" />
+					<Script src="https://sdk.cashfree.com/js/v3/cashfree.js" onLoad={() => {
+						console.log("Cashfree SDK loaded successfully.");
+					}} />
 
 					{/* Payment Information */}
 					<section className="w-full py-5 sticky">
@@ -342,11 +145,10 @@ const Recharge: React.FC = () => {
 									<button
 										key={app.name}
 										onClick={() => setMethod(app.name.toLowerCase())}
-										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${
-											method === app.name.toLowerCase()
-												? "bg-gray-300 dark:bg-gray-600 !important"
-												: ""
-										}`}
+										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${method === app.name.toLowerCase()
+											? "bg-gray-300 dark:bg-gray-600 !important"
+											: ""
+											}`}
 									>
 										<Image
 											src={app.icon}
@@ -402,7 +204,7 @@ const Recharge: React.FC = () => {
 					<button
 						className="w-4/5 md:w-1/3 mx-auto py-3 text-black bg-white rounded-lg border-2 border-black hover:bg-green-1 hover:text-white font-semibold fixed bottom-3"
 						style={{ boxShadow: "3px 3px black" }}
-						onClick={cashfreeHandler}
+						onClick={() => pgHandler(currentUser?._id as string, currentUser?.phone as string, creator?._id as string, amount as string, totalPayable as number, clientUser?.createdAt?.toString().split("T")[0] as string, currentUser?.walletBalance as number)}
 						disabled={loading} // Disable the button when loading
 					>
 						Proceed to Payment

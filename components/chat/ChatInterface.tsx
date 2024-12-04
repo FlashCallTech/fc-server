@@ -406,7 +406,7 @@ const ChatInterface: React.FC = () => {
 	useEffect(() => {
 		const handleResize = () => {
 			const height = window.innerHeight;
-			document.documentElement.style.setProperty("--vh", `${height * 0.01}px`);
+			document.documentElement.style.setProperty("--dvh", `${height * 0.01}px`);
 		};
 
 		window.addEventListener("resize", handleResize);
