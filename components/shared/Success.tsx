@@ -1,6 +1,7 @@
 "use client";
 
 import { success } from "@/constants/icons";
+import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
@@ -18,7 +19,10 @@ const Success = ({
 	const router = useRouter();
 	const creatorURL = localStorage.getItem("creatorURL");
 	const redirectURL = `/${redirect}`;
+	const {updateWalletBalance} = useWalletBalanceContext()
 	useEffect(() => {
+		localStorage.removeItem("cashfree_order_id");
+		updateWalletBalance();
 		setTimeout(() => {
 			router.push(`${creatorURL ? creatorURL : redirectURL}`);
 		}, 1000);

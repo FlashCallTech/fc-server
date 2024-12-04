@@ -291,7 +291,7 @@ export interface RazorpayOptions {
 	order_id: string;
 	handler: (response: PaymentResponse) => Promise<void>;
 	prefill: {
-		name: string;
+		name?: string;
 		email?: string;
 		contact: string;
 		method?: string;

@@ -6,7 +6,6 @@ import Razorpay from "razorpay";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import * as Sentry from "@sentry/nextjs";
-import "@cashfreepayments/cashfree-js";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { Call } from "@stream-io/video-react-sdk";
 import { clientUser, creatorUser } from "@/types";
@@ -24,16 +23,6 @@ export const razorpay = new Razorpay({
 	key_id: key_id,
 	key_secret: key_secret,
 });
-
-export const initializeCashfree = (mode: "sandbox" | "production") => {
-	if (typeof window !== "undefined" && (window as any).Cashfree) {
-		return (window as any).Cashfree.init({ mode });
-	} else {
-		throw new Error(
-			"Cashfree SDK not loaded. Ensure it is imported correctly."
-		);
-	}
-};
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
