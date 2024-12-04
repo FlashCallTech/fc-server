@@ -418,18 +418,17 @@ const ChatInterface: React.FC = () => {
 	}, []);
 
 	return (
-		<div
-			className={`flex flex-col h-screen justify-between w-screen bg-cover bg-center overflow-y-auto scrollbar-hide`}
-			style={{ backgroundImage: "url(/back.png)", height: "calc(var(--dvh, 1vh) * 100)", }}
-		>
-			<div className="fixed top-0 left-0 w-full mb-[50px] flex justify-between items-center px-4 py-[2px] bg-gray-500 z-30">
+		<div className={`relative flex flex-col h-screen justify-between bg-white w-screen overflow-y-auto scrollbar-hide`}>
+			<div className="sticky size-full top-0 left-0 h-screen">
+				<Image src={"/back.png"} alt="background" width={1000} height={1000} className="object-cover size-full" />
+			</div>
+			<div className="fixed top-0 left-0 w-full flex justify-between items-center px-4 py-[2px] bg-gray-500 z-30">
 				<div className="flex items-center gap-2">
 					<Image
-						src={`${
-							user2?.photo
-								? user2?.photo
-								: "https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0"
-						}`}
+						src={`${user2?.photo
+							? user2?.photo
+							: "https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0"
+							}`}
 						alt="profile"
 						width={1000}
 						height={1000}
@@ -466,35 +465,35 @@ const ChatInterface: React.FC = () => {
 					setShowDialog={handleCloseDialog}
 				/>
 			)}
-			<div className="mt-[50px] flex flex-1">
+			<div className="absolute top-[50px] flex flex-1">
 				{/* Chat Messages */}
 				<div className="mb-[70px] mt-auto flex flex-1">
 					<Messages chat={chat!} img={img} isImgUploading={isImgUploading} />
 				</div>
 
-				{/* Sticky Chat Input at the Bottom */}
-				<div
-					className="fixed bottom-0 w-full z-30 bg-cover bg-center p-safe-bottom"
-					style={{ backgroundImage: "url(/back.png)" }}
-				>
-					<ChatInput
-						isRecording={isRecording}
-						discardAudio={discardAudio}
-						text={text}
-						setText={setText}
-						handleImg={handleImg}
-						handleSend={handleSend}
-						toggleRecording={toggleRecording}
-						img={img}
-						audio={audio}
-						audioStream={audioStream!}
-						// audioContext={audioContext}
-						handleCapturedImg={handleCapturedImg}
-						isImgUploading={isImgUploading}
-						isAudioUploading={isAudioUploading}
-						discardImage={discardImage}
-					/>
-				</div>
+			</div>
+			{/* Sticky Chat Input at the Bottom */}
+			<div
+				className="fixed bottom-0 w-full z-30 bg-cover bg-center p-safe-bottom"
+				style={{ backgroundImage: "url(/back.png)" }}
+			>
+				<ChatInput
+					isRecording={isRecording}
+					discardAudio={discardAudio}
+					text={text}
+					setText={setText}
+					handleImg={handleImg}
+					handleSend={handleSend}
+					toggleRecording={toggleRecording}
+					img={img}
+					audio={audio}
+					audioStream={audioStream!}
+					// audioContext={audioContext}
+					handleCapturedImg={handleCapturedImg}
+					isImgUploading={isImgUploading}
+					isAudioUploading={isAudioUploading}
+					discardImage={discardImage}
+				/>
 			</div>
 		</div>
 	);
