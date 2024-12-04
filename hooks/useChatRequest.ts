@@ -203,6 +203,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 							client_first_seen: chatRequestData.client_first_seen,
 							creator_first_seen: chatRequestData.creator_first_seen,
 							createdAt: String(chatRequestData.createdAt),
+							notificationType: "chat.ring",
 						},
 						`https:flashcall.me/`
 					);
