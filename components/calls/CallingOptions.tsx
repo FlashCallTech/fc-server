@@ -25,6 +25,8 @@ import {
 	isValidHexColor,
 	updateFirestoreSessions,
 	getDisplayName,
+	fetchFCMToken,
+	sendNotification,
 } from "@/lib/utils";
 import useChat from "@/hooks/useChat";
 import Loader from "../shared/Loader";
@@ -355,7 +357,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					if (callType === "audio") {
 						trackEvent("BookCall_Audio_Initiated", {
 							Client_ID: clientUser._id,
-							User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 							Creator_ID: creator._id,
 							Time_Duration_Available: maxCallDuration,
 							Walletbalace_Available: clientUser?.walletBalance,
@@ -363,12 +365,27 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					} else {
 						trackEvent("BookCall_Video_Initiated", {
 							Client_ID: clientUser._id,
-							User_First_Seen: clientUser?.createdAt?.toString().split('T')[0],
+							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 							Creator_ID: creator._id,
 							Time_Duration_Available: maxCallDuration,
 							Walletbalace_Available: clientUser?.walletBalance,
 						});
 					}
+
+					// const fcmToken = await fetchFCMToken(creator.phone);
+					// if (fcmToken) {
+					// 	sendNotification(
+					// 		fcmToken,
+					// 		`Incoming ${callType} Request`,
+					// 		`Call Request from ${clientUser.username}`,
+					// 		{
+					// 			created_by_display_name: clientUser.username,
+					// 			callType: call.type,
+					// 			callId: call.id,
+					// 			notificationType: "call.ring",
+					// 		}
+					// 	);
+					// }
 
 					await fetch(`${backendBaseUrl}/calls/registerCall`, {
 						method: "POST",
@@ -605,7 +622,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							{service.label}
 						</div>
 						<p
-							className={`font-medium tracking-widest rounded-[18px] w-[100px] h-[36px] text-[15px] text-black flex items-center justify-center ${
+							className={`font-medium tracking-widest rounded-[18px] px-2 min-w-[100px] h-[36px] text-[15px] text-black flex items-center justify-center ${
 								(isProcessing ||
 									!service.enabled ||
 									onlineStatus === "Busy" ||

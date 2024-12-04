@@ -277,9 +277,8 @@ const EditProfile = ({
 				`${backendBaseUrl}/user/getAllUsernames?username=${username}`
 			);
 
-			// Check the response status directly
 			if (response.status === 200) {
-				setUsernameError(null); // Username is available
+				setUsernameError(null);
 			} else if (response.status === 409) {
 				setUsernameError("Username is already taken");
 			}
@@ -288,8 +287,9 @@ const EditProfile = ({
 			if (error.response && error.response.status === 409) {
 				setUsernameError("Username is already taken");
 			} else {
-				console.error("Error checking username availability", error);
-				setUsernameError("Error checking username availability");
+				setUsernameError(
+					error.response.data.error || "Error checking username availability"
+				);
 			}
 		}
 	};
@@ -443,7 +443,7 @@ const EditProfile = ({
 	return (
 		<Form {...form}>
 			<section
-				className={`sticky top-0 md:top-[76px] bg-white z-30 p-4 flex flex-col items-start justify-start gap-4 w-full h-fit`}
+				className={`sticky top-0 md:top-[76px] bg-white z-30 p-4 pl-0 flex flex-col items-start justify-start gap-4 w-full h-fit`}
 			>
 				<section className="flex items-center gap-4">
 					{pathname.includes("/profile") && (
