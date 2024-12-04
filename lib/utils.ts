@@ -378,7 +378,7 @@ export const getDisplayName = (creator: {
 		? maskNumbers(combinedName)
 		: undefined;
 
-	const maskedUsername = creator?.username.startsWith("+91")
+	const maskedUsername = creator?.username?.startsWith("+91")
 		? creator.username.replace(
 				/(\+91)(\d+)/,
 				(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
