@@ -403,20 +403,6 @@ const ChatInterface: React.FC = () => {
 		}
 	}
 
-	useEffect(() => {
-		const handleResize = () => {
-			const height = window.innerHeight;
-			document.documentElement.style.setProperty("--dvh", `${height * 0.01}px`);
-		};
-
-		window.addEventListener("resize", handleResize);
-		handleResize();
-
-		return () => {
-			window.removeEventListener("resize", handleResize);
-		};
-	}, []);
-
 	return (
 		<div className={`relative flex flex-col h-screen justify-between bg-white w-screen overflow-y-auto scrollbar-hide`}>
 			<div className="sticky size-full top-0 left-0 h-screen">
