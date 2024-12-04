@@ -8,7 +8,11 @@ import { logEvent } from "firebase/analytics";
 import { analytics, db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { increment, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
-import { updateFirestoreCallServices } from "@/lib/utils";
+import {
+	fetchFCMToken,
+	sendNotification,
+	updateFirestoreCallServices,
+} from "@/lib/utils";
 import {
 	backendBaseUrl,
 	handleInterruptedCall,
@@ -249,19 +253,19 @@ const MyCallUI = () => {
 
 			outgoingCall?.state.setCallingState(CallingState.IDLE);
 
-			outgoingCall.type === "default" ?
-				trackEvent("BookCall_Video_Connected", {
-					Client_ID: currentUser?._id,
-					User_First_Seen: currentUser?.createdAt?.toString().split('T')[0],
-					Walletbalace_Available: currentUser?.walletBalance,
-					Creator_ID: outgoingCall.state.members[0].user_id
-				}) : trackEvent("BookCall_Audio_Connected", {
-					Client_ID: currentUser?._id,
-					User_First_Seen: currentUser?.createdAt?.toString().split('T')[0],
-					Walletbalace_Available: currentUser?.walletBalance,
-					Creator_ID: outgoingCall.state.members[0].user_id
-				});
-
+			outgoingCall.type === "default"
+				? trackEvent("BookCall_Video_Connected", {
+						Client_ID: currentUser?._id,
+						User_First_Seen: currentUser?.createdAt?.toString().split("T")[0],
+						Walletbalace_Available: currentUser?.walletBalance,
+						Creator_ID: outgoingCall.state.members[0].user_id,
+				  })
+				: trackEvent("BookCall_Audio_Connected", {
+						Client_ID: currentUser?._id,
+						User_First_Seen: currentUser?.createdAt?.toString().split("T")[0],
+						Walletbalace_Available: currentUser?.walletBalance,
+						Creator_ID: outgoingCall.state.members[0].user_id,
+				  });
 
 			await updateExpertStatus(
 				outgoingCall.state.createdBy?.custom?.phone as string,
@@ -346,6 +350,21 @@ const MyCallUI = () => {
 			setShowCallUI(false);
 			setConnecting(false);
 			setRedirecting(false);
+
+			// const fcmToken = await fetchFCMToken(expert?.custom?.phone);
+			// if (fcmToken) {
+			// 	sendNotification(
+			// 		fcmToken,
+			// 		`Incoming ${outgoingCall.type} Request`,
+			// 		`Call Request from ${outgoingCall?.state?.createdBy?.name}`,
+			// 		{
+			// 			created_by_display_name: outgoingCall?.state?.createdBy?.name,
+			// 			callType: outgoingCall.type,
+			// 			callId: outgoingCall.id,
+			// 			notificationType: "call.ring",
+			// 		}
+			// 	);
+			// }
 
 			const defaultMessage = {
 				title: `${expert?.custom?.name || "User"} is not answering`,
