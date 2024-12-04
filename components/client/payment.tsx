@@ -127,6 +127,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			Walletbalace_Available: clientUser?.walletBalance,
 		})
 
+		localStorage.removeItem("cashfree_order_id");
+
 		router.push(`/recharge?amount=${rechargeAmount}`);
 
 		return;
