@@ -56,6 +56,12 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			localStorage.setItem("creatorURL", `/${creator?.username}`);
 		}
 
+		trackPixelEvent("Creator Page View", {
+			creatorId: creator._id,
+			creatorName: fullName,
+			creatorUsername: creator.username,
+		});
+
 		setCurrentTheme(themeColor);
 		updateCreatorURL(creatorURL);
 		setBodyBackgroundColor("#121319");
