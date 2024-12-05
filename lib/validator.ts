@@ -59,9 +59,12 @@ export const UpdateProfileFormSchemaClient = z.object({
 export const enterAmountSchema = z.object({
 	rechargeAmount: z
 		.string()
-		.regex(/^\d+$/, "Amount must be a numeric value")
-		.min(1, "Amount must be at least 1 rupees")
-		.max(6, "Amount must be at most 1,00,000 rupees"),
+		.regex(/^\d+(\.\d{1,2})?$/, "Amount must be a valid numeric value")
+		.refine((val) => parseFloat(val) >= 1, "Amount must be at least 1 rupee")
+		.refine(
+			(val) => parseFloat(val) <= 100000,
+			"Amount must be at most 1,00,000 rupees"
+		),
 });
 
 export const enterTipAmountSchema = z.object({
