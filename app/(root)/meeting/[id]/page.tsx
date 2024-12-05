@@ -19,7 +19,6 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import {
 	backendBaseUrl,
 	getDarkHexCode,
-	handleInterruptedCall,
 	stopMediaStreams,
 	updateExpertStatus,
 	updateFirestoreSessions,
@@ -70,6 +69,28 @@ const MeetingPage = () => {
 		}
 	}, [isCallLoading, call, router, toast]);
 
+	useEffect(() => {
+		if (!isCallLoading && call) {
+			const expert = call.state?.members?.find(
+				(member: any) => member.custom.type === "expert"
+			);
+			const isAuthorized =
+				currentUser?._id === call.state?.createdBy?.id ||
+				currentUser?._id === expert?.user_id;
+
+			if (!isAuthorized) {
+				toast({
+					variant: "destructive",
+					title: "Access Denied",
+					description: "You are not authorized to join this meeting.",
+				});
+				setTimeout(() => {
+					router.replace(`${creatorURL ? creatorURL : "/home"}`);
+				}, 1000);
+			}
+		}
+	}, [isCallLoading, call, currentUser, toast, router, creatorURL]);
+
 	if (isCallLoading) return <Loader />;
 
 	if (!call) {
@@ -108,9 +129,10 @@ const CallEnded = ({ toast, router, call }: any) => {
 	const transactionHandled = useRef(false);
 	const { currentUser, currentTheme, userType } = useCurrentUsersContext();
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
-	const expertPhone = call.state?.members?.find(
+	const expert = call.state?.members?.find(
 		(member: any) => member.custom.type === "expert"
-	)?.custom?.phone;
+	);
+	const expertPhone = expert?.custom?.phone;
 
 	useEffect(() => {
 		const handleCallEnd = async () => {
@@ -128,17 +150,6 @@ const CallEnded = ({ toast, router, call }: any) => {
 				await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
 					status: "payment pending",
 				});
-
-				// await handleInterruptedCall(
-				// 	currentUser?._id as string,
-				// 	call.id,
-				// 	call as Call,
-				// 	currentUser?.phone as string,
-				// 	userType as "client" | "expert",
-				// 	backendBaseUrl as string,
-				// 	expertPhone,
-				// 	currentUser?.phone as string
-				// );
 
 				const creatorURL = localStorage.getItem("creatorURL");
 				const hasVisitedFeedbackPage = localStorage.getItem(
@@ -161,17 +172,19 @@ const CallEnded = ({ toast, router, call }: any) => {
 
 		if (isMeetingOwner && !transactionHandled.current) {
 			stopMediaStreams();
-			call.type === "default" ? trackEvent("BookCall_Video_Ended", {
-				Client_ID: currentUser?._id,
-				User_First_Seen: currentUser?.createdAt?.toString().split('T')[0],
-				Walletbalace_Available: currentUser?.walletBalance,
-				Creator_ID: call.state.members[0].user_id
-			}) : trackEvent("BookCall_Audio_Ended", {
-				Client_ID: currentUser?._id,
-				User_First_Seen: currentUser?.createdAt?.toString().split('T')[0],
-				Walletbalace_Available: currentUser?.walletBalance,
-				Creator_ID: call.state.members[0].user_id
-			});
+			call.type === "default"
+				? trackEvent("BookCall_Video_Ended", {
+						Client_ID: currentUser?._id,
+						User_First_Seen: currentUser?.createdAt?.toString().split("T")[0],
+						Walletbalace_Available: currentUser?.walletBalance,
+						Creator_ID: call.state.members[0].user_id,
+				  })
+				: trackEvent("BookCall_Audio_Ended", {
+						Client_ID: currentUser?._id,
+						User_First_Seen: currentUser?.createdAt?.toString().split("T")[0],
+						Walletbalace_Available: currentUser?.walletBalance,
+						Creator_ID: call.state.members[0].user_id,
+				  });
 			handleCallEnd();
 		} else if (!isMeetingOwner) {
 			stopMediaStreams();

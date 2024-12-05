@@ -23,6 +23,7 @@ import ShareButton from "../shared/ShareButton";
 import axios from "axios";
 import Link from "next/link";
 import Image from "next/image";
+import { trackPixelEvent } from "@/lib/analytics/pixel";
 
 const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const {
@@ -54,6 +55,13 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		if (userType !== "creator" && creator?.username) {
 			localStorage.setItem("creatorURL", `/${creator?.username}`);
 		}
+
+		trackPixelEvent("Creator Page View", {
+			creatorId: creator._id,
+			creatorName: fullName,
+			creatorUsername: creator.username,
+		});
+
 		setCurrentTheme(themeColor);
 		updateCreatorURL(creatorURL);
 		setBodyBackgroundColor("#121319");
@@ -122,6 +130,11 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		const clientId = clientUser?._id;
 		setAddingFavorite(true);
 		try {
+			trackPixelEvent("Favorite Toggled", {
+				clientId: clientId as string,
+				creatorId: creator?._id,
+				markedFavorite: !markedFavorite,
+			});
 			const response = await axios.post(
 				`${backendBaseUrl}/favorites/upsertFavorite`,
 				{
@@ -152,7 +165,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		<section className="size-full xl:w-[704px] md:mx-auto md:pt-4 flex flex-col items-center">
 			{/* Creator Details */}
 			<section
-				className={`size-full px-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-center p-5 md:rounded-t-[16px] overflow-hidden`}
+				className={`size-full h-fit px-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-center p-5 md:rounded-t-[16px] overflow-hidden`}
 				style={{ backgroundColor: themeColor }}
 			>
 				{/* Creator Info */}
@@ -172,12 +185,6 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 							}`,
 						}}
 					>
-						{/* Creator Image */}
-						{/* <div
-							className="w-full h-auto rounded-full"
-							style={backgroundImageStyle}
-						/> */}
-
 						<Image
 							src={imageSrc}
 							alt={creator?.firstName || creator?.username}
@@ -272,7 +279,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			</section>
 
 			{/* About, Services and Reviews */}
-			<section className="size-full rounded-t-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5">
+			<section className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5">
 				{creator?.bio && creator.bio !== "Enter your bio here" ? (
 					<>
 						{/* About Creator */}

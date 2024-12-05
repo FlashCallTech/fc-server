@@ -7,7 +7,7 @@ const AnalyticsIntegrationSchema = new Schema({
 		required: true,
 	},
 	pixelId: { type: String, required: true, default: "" },
-	conversionToken: { type: String, required: true, default: "" },
+	accessToken: { type: String, required: true, default: "" },
 });
 
 const AnalyticsIntegration =

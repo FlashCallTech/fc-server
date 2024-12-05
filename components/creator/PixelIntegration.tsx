@@ -11,6 +11,10 @@ import {
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
+import axios from "axios";
+import { backendBaseUrl } from "@/lib/utils";
+import Image from "next/image";
+import { useToast } from "../ui/use-toast";
 
 const formSchema = z.object({
 	pixelId: z
@@ -28,45 +32,102 @@ const formSchema = z.object({
 		.max(200, "Access Token cannot exceed 200 characters."),
 });
 
-const PixelIntegration = () => {
+const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 	const [isChanged, setIsChanged] = useState(false);
+	const [loadingData, setLoadingData] = useState(true);
+	const [updatingData, setUpdatingData] = useState(false);
+	const [pixelId, setPixelId] = useState("");
+	const [accessToken, setAccessToken] = useState("");
+	const { toast } = useToast();
 
-	// Explicitly define the type for initialState
 	const initialState: {
 		pixelId: string;
 		accessToken: string;
 	} = {
-		pixelId: "",
-		accessToken: "",
+		pixelId: pixelId,
+		accessToken: accessToken,
 	};
 
-	// Use the same type for form values
 	const form = useForm<z.infer<typeof formSchema>>({
 		mode: "onChange",
 		resolver: zodResolver(formSchema),
-		defaultValues: {
-			pixelId: "",
-			accessToken: "",
-		},
+		defaultValues: initialState,
 	});
 
-	function onSubmit(values: z.infer<typeof formSchema>) {
-		console.log(values);
+	const { formState } = form;
+	const { isValid } = formState;
+
+	useEffect(() => {
+		const fetchAnalyticsInfo = async () => {
+			try {
+				setLoadingData(true);
+				const response = await axios.get(
+					`${backendBaseUrl}/creator/analytics/${creatorId}`
+				);
+
+				if (response.data?.data) {
+					form.reset({
+						pixelId: response.data.data.pixelId || "",
+						accessToken: response.data.data.accessToken || "",
+					});
+
+					setPixelId(response.data.data.pixelId || "");
+					setAccessToken(response.data.data.accessToken || "");
+				}
+			} catch (error) {
+				console.error("Failed to fetch analytics info:", error);
+			} finally {
+				setLoadingData(false);
+			}
+		};
+		fetchAnalyticsInfo();
+	}, [creatorId, form, toast]);
+
+	async function onSubmit(values: z.infer<typeof formSchema>) {
+		try {
+			setUpdatingData(true);
+			await axios.post(`${backendBaseUrl}/creator/analytics/update`, {
+				userId: creatorId,
+				pixelId: values.pixelId,
+				accessToken: values.accessToken,
+			});
+
+			setPixelId(values.pixelId);
+			setAccessToken(values.accessToken);
+
+			toast({
+				variant: "destructive",
+				title: "Analytics Updated",
+				description:
+					"Your analytics information has been successfully updated.",
+			});
+
+			form.reset({
+				pixelId: values.pixelId,
+				accessToken: values.accessToken,
+			});
+
+			setIsChanged(false);
+		} catch (error: any) {
+			console.warn(error);
+			toast({
+				variant: "destructive",
+				title: "Error Updating Analytics",
+				description:
+					"An error occurred while updating your analytics. Please try again later.",
+			});
+		} finally {
+			setUpdatingData(false);
+		}
 	}
 
-	const { formState } = form;
-	const { errors, isValid } = formState;
-
-	// Explicitly type watchedValues to match the form's field types
 	const watchedValues = useWatch({ control: form.control }) as {
 		pixelId: string;
 		accessToken: string;
 	};
 
 	useEffect(() => {
-		// Use a typed object for comparison
 		const hasChanged = Object.keys(watchedValues).some((key) => {
-			// TypeScript now understands this comparison
 			return (
 				watchedValues[key as keyof typeof watchedValues] !==
 				initialState[key as keyof typeof initialState]
@@ -74,6 +135,8 @@ const PixelIntegration = () => {
 		});
 		setIsChanged(hasChanged);
 	}, [watchedValues, initialState]);
+
+	console.log(watchedValues, initialState);
 
 	return (
 		<section className="flex flex-col justify-between border rounded-lg bg-white p-4 shadow-sm">
@@ -102,7 +165,7 @@ const PixelIntegration = () => {
 										{...field}
 									/>
 								</FormControl>
-								<FormMessage />
+								<FormMessage className="pl-1" />
 							</FormItem>
 						)}
 					/>
@@ -119,16 +182,27 @@ const PixelIntegration = () => {
 										{...field}
 									/>
 								</FormControl>
-								<FormMessage />
+								<FormMessage className="pl-1" />
 							</FormItem>
 						)}
 					/>
-					{isChanged && isValid && (
+					{isValid && isChanged && (
 						<Button
 							className="text-base bg-green-1 hoverScaleDownEffect w-3/4 !mx-auto text-white"
 							type="submit"
+							disabled={loadingData || updatingData}
 						>
-							Submit
+							{updatingData ? (
+								<Image
+									src="/icons/loading-circle.svg"
+									alt="Loading..."
+									width={24}
+									height={24}
+									priority
+								/>
+							) : (
+								"Confirm Details"
+							)}
 						</Button>
 					)}
 				</form>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { creatorUser } from "@/types";
 import { getUserByUsername } from "@/lib/actions/creator.actions";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -9,6 +9,12 @@ import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import CreatorDetails from "./CreatorDetails";
+import {
+	fetchCreatorDataAndInitializePixel,
+	trackPixelEvent,
+} from "@/lib/analytics/pixel";
+import axios from "axios";
+import { backendBaseUrl } from "@/lib/utils";
 
 const CreatorCard = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
@@ -18,12 +24,27 @@ const CreatorCard = () => {
 	const { walletBalance } = useWalletBalanceContext();
 	const router = useRouter();
 
+	const initializedPixelId = useRef<string | null>(null);
+	const lastTrackedCallId = useRef<string | null>(null);
+
 	useEffect(() => {
-		const fetchCreator = async () => {
+		// Redirect if the current user is a creator
+		if (currentUser && userType === "creator") {
+			router.replace("/home");
+			return;
+		}
+
+		const fetchCreatorData = async () => {
 			setLoading(true);
 			try {
 				const response = await getUserByUsername(String(username));
 				setCreator(response || null);
+
+				// Initialize Pixel only for a new creator
+				if (response && initializedPixelId.current !== response._id) {
+					await fetchCreatorDataAndInitializePixel(response._id);
+					initializedPixelId.current = response._id;
+				}
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error fetching creator:", error);
@@ -32,12 +53,47 @@ const CreatorCard = () => {
 			}
 		};
 
-		if (currentUser && userType && userType === "creator") {
-			router.replace("/home");
-		} else {
-			fetchCreator();
-		}
-	}, [username, userType, router]);
+		if (username) fetchCreatorData();
+	}, [username, userType, currentUser, router]);
+
+	useEffect(() => {
+		const fetchAndTrackCall = async () => {
+			if (!currentUser || !userType) return;
+
+			try {
+				const response = await axios.get(
+					`${backendBaseUrl}/calls/getUserLatestCall`,
+					{
+						params: { userId: currentUser._id, userType },
+					}
+				);
+
+				const callData = response.data;
+				if (callData && lastTrackedCallId.current !== callData.callId) {
+					trackPixelEvent("Call_Details", {
+						callId: callData.callId,
+						chatId: callData.chatId,
+						type: callData.type,
+						status: callData.status,
+						creator: callData.creator,
+						duration: callData.duration,
+						amount: callData.amount,
+						startedAt: callData.startedAt,
+						endedAt: callData.endedAt,
+					});
+
+					lastTrackedCallId.current = callData.callId;
+				} else {
+					console.log("Duplicate call event skipped:", callData.callId);
+				}
+			} catch (error) {
+				Sentry.captureException(error);
+				console.error("Error tracking call event:", error);
+			}
+		};
+
+		fetchAndTrackCall();
+	}, [currentUser, userType]);
 
 	if (loading || (currentUser && walletBalance < 0)) {
 		return (
