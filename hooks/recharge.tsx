@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
-import { backendBaseIconUrl, backendBaseUrl } from "@/lib/utils";
+import { backendBaseUrl } from "@/lib/utils";
 import { trackEvent } from "@/lib/mixpanel";
 import { useState } from "react";
 import { PaymentFailedResponse, PaymentResponse, RazorpayOptions } from "@/types";
@@ -128,7 +128,7 @@ const useRecharge = () => {
                 currency,
                 name: "FlashCall.me",
                 description: "Wallet Recharge",
-                image: `${backendBaseIconUrl}/logo_icon.png`,
+                image: `https://backend.flashcall.me/logo_icon.png`,
                 order_id: order.id,
                 handler: async (response: PaymentResponse): Promise<void> => {
                     setLoading(true);
