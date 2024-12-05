@@ -61,6 +61,7 @@ const CreatorCard = () => {
 			if (!currentUser || !userType) return;
 
 			try {
+				// Fetch latest call data
 				const response = await axios.get(
 					`${backendBaseUrl}/calls/getUserLatestCall`,
 					{
@@ -68,9 +69,14 @@ const CreatorCard = () => {
 					}
 				);
 
-				const callData = response.data;
-				if (callData && lastTrackedCallId.current !== callData.callId) {
-					trackPixelEvent("Call_Details", {
+				const callData = response.data.call;
+
+				// Retrieve last tracked call ID from localStorage
+				const storedCallId = localStorage.getItem("lastTrackedCallId");
+
+				if (callData && storedCallId !== callData.callId) {
+					// Track event with Meta Pixel
+					trackPixelEvent("Latest_Call", {
 						callId: callData.callId,
 						chatId: callData.chatId,
 						type: callData.type,
@@ -82,8 +88,10 @@ const CreatorCard = () => {
 						endedAt: callData.endedAt,
 					});
 
-					lastTrackedCallId.current = callData.callId;
-				} else {
+					// Update last tracked call ID in localStorage
+					localStorage.setItem("lastTrackedCallId", callData.callId);
+					console.log("Tracked call event:", callData.callId);
+				} else if (callData) {
 					console.log("Duplicate call event skipped:", callData.callId);
 				}
 			} catch (error) {

@@ -11,7 +11,7 @@ let isPixelInitialized = false;
  */
 export const initializeMetaPixel = (pixelId: string) => {
 	ReactPixel.init(pixelId); // Initialize Pixel
-	ReactPixel.pageView(); // Track Page View
+	// ReactPixel.pageView(); // Track Page View
 	isPixelInitialized = true; // Set the flag to true
 	console.log(`Meta Pixel initialized with ID: ${pixelId}`);
 };
@@ -26,7 +26,8 @@ export const trackPixelEvent = (eventName: string, data: object = {}) => {
 		console.error("Meta Pixel not initialized. Event not tracked:", eventName);
 		return;
 	}
-	ReactPixel.track(eventName, data);
+
+	ReactPixel.trackCustom(eventName, data);
 	console.log(`Tracked event: ${eventName}`, data);
 };
 
