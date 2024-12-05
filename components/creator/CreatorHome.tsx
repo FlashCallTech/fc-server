@@ -452,7 +452,7 @@ const CreatorHome = () => {
 
 					<CreatorLinks />
 
-					{/* <PixelIntegration /> */}
+					<PixelIntegration creatorId={creatorUser?._id} />
 
 					<section className="flex items-center justify-center pt-4">
 						<div className="text-center text-[13px] text-gray-400">
