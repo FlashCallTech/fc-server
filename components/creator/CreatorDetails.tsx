@@ -152,7 +152,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		<section className="size-full xl:w-[704px] md:mx-auto md:pt-4 flex flex-col items-center">
 			{/* Creator Details */}
 			<section
-				className={`size-full px-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-center p-5 md:rounded-t-[16px] overflow-hidden`}
+				className={`size-full h-fit px-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-center p-5 md:rounded-t-[16px] overflow-hidden`}
 				style={{ backgroundColor: themeColor }}
 			>
 				{/* Creator Info */}
@@ -172,12 +172,6 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 							}`,
 						}}
 					>
-						{/* Creator Image */}
-						{/* <div
-							className="w-full h-auto rounded-full"
-							style={backgroundImageStyle}
-						/> */}
-
 						<Image
 							src={imageSrc}
 							alt={creator?.firstName || creator?.username}
