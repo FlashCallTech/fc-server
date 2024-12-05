@@ -372,20 +372,20 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						});
 					}
 
-					// const fcmToken = await fetchFCMToken(creator.phone);
-					// if (fcmToken) {
-					// 	sendNotification(
-					// 		fcmToken,
-					// 		`Incoming ${callType} Request`,
-					// 		`Call Request from ${clientUser.username}`,
-					// 		{
-					// 			created_by_display_name: clientUser.username,
-					// 			callType: call.type,
-					// 			callId: call.id,
-					// 			notificationType: "call.ring",
-					// 		}
-					// 	);
-					// }
+					const fcmToken = await fetchFCMToken(creator.phone);
+					if (fcmToken) {
+						sendNotification(
+							fcmToken,
+							`Incoming ${callType} Call`,
+							`Call Request from ${clientUser.username}`,
+							{
+								created_by_display_name: clientUser.username,
+								callType: call.type,
+								callId: call.id,
+								notificationType: "call.ring",
+							}
+						);
+					}
 
 					await fetch(`${backendBaseUrl}/calls/registerCall`, {
 						method: "POST",

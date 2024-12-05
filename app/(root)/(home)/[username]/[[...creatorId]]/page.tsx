@@ -8,16 +8,13 @@ import {
 	getImageSource,
 } from "@/lib/utils";
 
-// Function to generate metadata dynamically
 export async function generateMetadata({
 	params,
 }: {
 	params: { username: string };
 }): Promise<Metadata> {
-	// Decode the URL-encoded username
 	const decodedUsername = decodeURIComponent(params.username as string);
 
-	// Check if the username is valid and avoid processing reserved paths like "_next"
 	if (!decodedUsername || decodedUsername.startsWith("_next")) {
 		return {
 			title: "FlashCall",
@@ -25,7 +22,6 @@ export async function generateMetadata({
 		};
 	}
 
-	// Remove "@" from the beginning if it exists
 	const formattedUsername = decodedUsername.startsWith("@")
 		? decodedUsername.substring(1)
 		: decodedUsername;
@@ -69,7 +65,6 @@ export async function generateMetadata({
 		};
 	} catch (error) {
 		Sentry.captureException(error);
-		// Log any error that occurs during the API call
 		console.error("Error fetching creator data:", error);
 
 		return {

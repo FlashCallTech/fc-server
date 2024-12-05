@@ -79,6 +79,7 @@
 		"react-day-picker": "^8.10.1",
 		"react-dom": "^18",
 		"react-dropzone": "^14.2.3",
+		"react-facebook-pixel": "^1.0.4",
 		"react-h5-audio-player": "^3.9.3",
 		"react-headroom": "^3.2.1",
 		"react-hook-form": "^7.51.4",

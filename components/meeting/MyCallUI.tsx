@@ -297,6 +297,21 @@ const MyCallUI = () => {
 			setRedirecting(false);
 			clearTimeout(autoDeclineTimeout);
 
+			const fcmToken = await fetchFCMToken(expert?.custom?.phone);
+			if (fcmToken) {
+				sendNotification(
+					fcmToken,
+					`Incoming ${outgoingCall.type} Request`,
+					`Call Request from ${outgoingCall?.state?.createdBy?.name}`,
+					{
+						created_by_display_name: outgoingCall?.state?.createdBy?.name,
+						callType: outgoingCall.type,
+						callId: outgoingCall.id,
+						notificationType: "call.missed",
+					}
+				);
+			}
+
 			if (sessionStorage.getItem(`callRejected-${outgoingCall.id}`)) return;
 
 			sessionStorage.setItem(`callRejected-${outgoingCall.id}`, "true");
@@ -351,20 +366,20 @@ const MyCallUI = () => {
 			setConnecting(false);
 			setRedirecting(false);
 
-			// const fcmToken = await fetchFCMToken(expert?.custom?.phone);
-			// if (fcmToken) {
-			// 	sendNotification(
-			// 		fcmToken,
-			// 		`Incoming ${outgoingCall.type} Request`,
-			// 		`Call Request from ${outgoingCall?.state?.createdBy?.name}`,
-			// 		{
-			// 			created_by_display_name: outgoingCall?.state?.createdBy?.name,
-			// 			callType: outgoingCall.type,
-			// 			callId: outgoingCall.id,
-			// 			notificationType: "call.ring",
-			// 		}
-			// 	);
-			// }
+			const fcmToken = await fetchFCMToken(expert?.custom?.phone);
+			if (fcmToken) {
+				sendNotification(
+					fcmToken,
+					`Incoming ${outgoingCall.type} Request`,
+					`Call Request from ${outgoingCall?.state?.createdBy?.name}`,
+					{
+						created_by_display_name: outgoingCall?.state?.createdBy?.name,
+						callType: outgoingCall.type,
+						callId: outgoingCall.id,
+						notificationType: "call.missed",
+					}
+				);
+			}
 
 			const defaultMessage = {
 				title: `${expert?.custom?.name || "User"} is not answering`,
@@ -394,6 +409,21 @@ const MyCallUI = () => {
 				outgoingCall.state.createdBy?.custom?.phone as string,
 				"Idle"
 			);
+
+			const fcmToken = await fetchFCMToken(expert?.custom?.phone);
+			if (fcmToken) {
+				sendNotification(
+					fcmToken,
+					`Incoming ${outgoingCall.type} Request`,
+					`Call Request from ${outgoingCall?.state?.createdBy?.name}`,
+					{
+						created_by_display_name: outgoingCall?.state?.createdBy?.name,
+						callType: outgoingCall.type,
+						callId: outgoingCall.id,
+						notificationType: "call.missed",
+					}
+				);
+			}
 		};
 
 		if (outgoingCall?.state?.callingState === CallingState.RINGING) {
