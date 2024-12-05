@@ -61,18 +61,18 @@ export async function POST(request: NextRequest) {
 									beneficiary_instrument_details:
 										paymentSettingsResult.data.paymentMode === "UPI"
 											? {
-													vpa: getBeneficiaryResult.data
-														.beneficiary_instrument_details.vpa,
-											  }
+												vpa: getBeneficiaryResult.data
+													.beneficiary_instrument_details.vpa,
+											}
 											: {
-													bank_account_number:
-														getBeneficiaryResult.data
-															.beneficiary_instrument_details
-															.bank_account_number,
-													bank_ifsc:
-														getBeneficiaryResult.data
-															.beneficiary_instrument_details.bank_ifsc,
-											  },
+												bank_account_number:
+													getBeneficiaryResult.data
+														.beneficiary_instrument_details
+														.bank_account_number,
+												bank_ifsc:
+													getBeneficiaryResult.data
+														.beneficiary_instrument_details.bank_ifsc,
+											},
 									beneficiary_contact_details: {
 										beneficiary_phone: phone,
 									},
@@ -85,10 +85,8 @@ export async function POST(request: NextRequest) {
 								{
 									method: "POST",
 									headers: {
-										"x-client-id": process.env
-											.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
-										"x-client-secret": process.env
-											.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
+										'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID_Payout as string, // Replace with your client ID
+										'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET_Payout as string, // Replace with your client secret
 										"x-api-version": "2024-01-01",
 										"Content-Type": "application/json",
 									},
@@ -110,10 +108,8 @@ export async function POST(request: NextRequest) {
 								{
 									method: "GET",
 									headers: {
-										"x-client-id": process.env
-											.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
-										"x-client-secret": process.env
-											.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
+										'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID_Payout as string, // Replace with your client ID
+										'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET_Payout as string, // Replace with your client secret
 										"x-api-version": "2024-01-01",
 										"Content-Type": "application/json",
 									},

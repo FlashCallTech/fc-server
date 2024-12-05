@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
     const response = await fetch(`https://api.cashfree.com/payout/beneficiary?beneficiary_id=${beneficiary.beneficiary_id}`, {
       method: 'GET',
       headers: {
-        'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
-        'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
+        'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID_Payout as string, // Replace with your client ID
+        'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET_Payout as string, // Replace with your client secret
         'x-api-version': ' 2024-01-01',
         'Content-Type': 'application/json',
       }

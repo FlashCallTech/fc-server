@@ -16,9 +16,9 @@ export async function POST(request: NextRequest) {
 			{
 				method: "POST",
 				headers: {
-					"x-client-id": process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
+					"x-client-id": process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID_Verification_Suite as string, // Replace with your client ID
 					"x-client-secret": process.env
-						.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
+						.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET_Verification_Suite as string, // Replace with your client secret
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify(payload),
@@ -72,10 +72,8 @@ export async function POST(request: NextRequest) {
 						{
 							method: "POST",
 							headers: {
-								"x-client-id": process.env
-									.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
-								"x-client-secret": process.env
-									.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
+								'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID_Payout as string, // Replace with your client ID
+								'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET_Payout as string, // Replace with your client secret
 								"x-api-version": " 2024-01-01",
 								"Content-Type": "application/json",
 							},
@@ -166,10 +164,8 @@ export async function POST(request: NextRequest) {
 						headers: {
 							"Content-Type": "application/json",
 							"x-api-version": " 2024-01-01",
-							"x-client-id": process.env
-								.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
-							"x-client-secret": process.env
-								.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
+							'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID_Payout as string, // Replace with your client ID
+							'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET_Payout as string, // Replace with your client secret
 						},
 					}
 				);
@@ -182,10 +178,8 @@ export async function POST(request: NextRequest) {
 							headers: {
 								"Content-Type": "application/json",
 								"x-api-version": " 2024-01-01",
-								"x-client-id": process.env
-									.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
-								"x-client-secret": process.env
-									.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
+								'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID_Payout as string, // Replace with your client ID
+								'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET_Payout as string, // Replace with your client secret
 							},
 						}
 					);
@@ -222,10 +216,8 @@ export async function POST(request: NextRequest) {
 						{
 							method: "POST",
 							headers: {
-								"x-client-id": process.env
-									.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
-								"x-client-secret": process.env
-									.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
+								'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID_Payout as string, // Replace with your client ID
+								'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET_Payout as string, // Replace with your client secret
 								"x-api-version": " 2024-01-01",
 								"Content-Type": "application/json",
 							},

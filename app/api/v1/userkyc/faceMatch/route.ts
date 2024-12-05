@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
 				method: "POST",
 				body: formData,
 				headers: {
-					"x-client-id": process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID as string, // Replace with your client ID
+					"x-client-id": process.env.NEXT_PUBLIC_CASHFREE_CLIENT_ID_Verification_Suite as string, // Replace with your client ID
 					"x-client-secret": process.env
-						.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET as string, // Replace with your client secret
+						.NEXT_PUBLIC_CASHFREE_CLIENT_SECRET_Verification_Suite as string, // Replace with your client secret
 				},
 			}
 		);
