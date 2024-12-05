@@ -13,7 +13,7 @@ export const initializeMetaPixel = (pixelId: string) => {
 	ReactPixel.init(pixelId); // Initialize Pixel
 	// ReactPixel.pageView(); // Track Page View
 	isPixelInitialized = true; // Set the flag to true
-	console.log(`Meta Pixel initialized with ID: ${pixelId}`);
+	// console.log(`Meta Pixel initialized with ID: ${pixelId}`);
 };
 
 /**
@@ -28,7 +28,7 @@ export const trackPixelEvent = (eventName: string, data: object = {}) => {
 	}
 
 	ReactPixel.trackCustom(eventName, data);
-	console.log(`Tracked event: ${eventName}`, data);
+	// console.log(`Tracked event: ${eventName}`, data);
 };
 
 /**
@@ -45,7 +45,7 @@ export const trackStandardEvent = (eventName: string, data: object = {}) => {
 		return;
 	}
 	ReactPixel.trackCustom(eventName, data);
-	console.log(`Tracked standard event: ${eventName}`, data);
+	// console.log(`Tracked standard event: ${eventName}`, data);
 };
 
 /**
@@ -66,7 +66,7 @@ export const fetchCreatorDataAndInitializePixel = async (
 
 		if (pixelId) {
 			initializeMetaPixel(pixelId);
-			console.log(`Meta Pixel initialized for creator with ID: ${creatorId}`);
+			// console.log(`Meta Pixel initialized for creator with ID: ${creatorId}`);
 		} else {
 			console.error(
 				"No Pixel ID found for this creator. Meta Pixel not initialized."
