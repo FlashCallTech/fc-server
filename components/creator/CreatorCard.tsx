@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { creatorUser } from "@/types";
 import { getUserByUsername } from "@/lib/actions/creator.actions";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -9,6 +9,7 @@ import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import CreatorDetails from "./CreatorDetails";
+import { fetchCreatorDataAndInitializePixel } from "@/lib/analytics/pixel";
 
 const CreatorCard = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
@@ -18,12 +19,21 @@ const CreatorCard = () => {
 	const { walletBalance } = useWalletBalanceContext();
 	const router = useRouter();
 
+	const initializedPixelId = useRef<string | null>(null);
+
 	useEffect(() => {
 		const fetchCreator = async () => {
 			setLoading(true);
 			try {
 				const response = await getUserByUsername(String(username));
 				setCreator(response || null);
+
+				if (response) {
+					if (initializedPixelId.current !== response._id) {
+						await fetchCreatorDataAndInitializePixel(response._id);
+						initializedPixelId.current = response.id;
+					}
+				}
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error fetching creator:", error);

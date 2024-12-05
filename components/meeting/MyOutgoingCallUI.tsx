@@ -79,7 +79,6 @@ const MyOutgoingCallUI = ({
 						onClick={async () => {
 							setEndedByMe(true);
 							await call.leave({ reject: true, reason: "decline" });
-
 							await call.endCall();
 							return;
 						}}
