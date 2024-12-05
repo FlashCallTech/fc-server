@@ -22,8 +22,11 @@ import SignoutAlert from "./SignoutAlert";
 
 const MobileNav = () => {
 	const pathname = usePathname();
-	const { currentUser, userType, clientUser } = useCurrentUsersContext();
+	const { currentUser, userType, clientUser, creatorURL } =
+		useCurrentUsersContext();
 	const [creator, setCreator] = useState<creatorUser>();
+	const isExpertPath =
+		creatorURL && creatorURL !== "" && pathname.includes(`${creatorURL}`);
 	const fullName = getDisplayName({
 		fullName: currentUser?.fullName,
 		firstName: currentUser?.firstName,
@@ -143,29 +146,33 @@ const MobileNav = () => {
 										const isActive = pathname === item.route;
 
 										return (
-											<SheetClose asChild key={item.route}>
-												<Link
-													href={item.route}
-													key={item.label}
-													className={cn(
-														"flex gap-4 items-center p-4 rounded-lg w-full md:max-w-60 hover:bg-green-1",
-														{
-															"bg-green-1": isActive,
-														}
-													)}
-													onClick={() => handleClick(item.label)}
-												>
-													<Image
-														src={item.imgURL}
-														alt={item.label}
-														width={20}
-														height={20}
-														className="invert-0 brightness-200 w-6 h-6 object-cover"
-														priority
-													/>
-													<p className="font-semibold">{item.label}</p>
-												</Link>
-											</SheetClose>
+											<>
+												{!(item.route === "/home" && isExpertPath) && (
+													<SheetClose asChild key={item.route}>
+														<Link
+															href={item.route}
+															key={item.label}
+															className={cn(
+																"flex gap-4 items-center p-4 rounded-lg w-full md:max-w-60 hover:bg-green-1",
+																{
+																	"bg-green-1": isActive,
+																}
+															)}
+															onClick={() => handleClick(item.label)}
+														>
+															<Image
+																src={item.imgURL}
+																alt={item.label}
+																width={20}
+																height={20}
+																className="invert-0 brightness-200 w-6 h-6 object-cover"
+																priority
+															/>
+															<p className="font-semibold">{item.label}</p>
+														</Link>
+													</SheetClose>
+												)}
+											</>
 										);
 									})}
 								</section>
