@@ -30,6 +30,7 @@ import {
 } from "@/lib/utils";
 import useChat from "@/hooks/useChat";
 import Loader from "../shared/Loader";
+import { trackPixelEvent } from "@/lib/analytics/pixel";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -439,12 +440,24 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					status: onlineStatus,
 					Walletbalace_Available: clientUser?.walletBalance,
 				});
+
+				trackPixelEvent("Audio Call Booked", {
+					clientId: clientUser?._id as string,
+					creatorId: creator?._id,
+					rate: updatedCreator.audioRate,
+				});
 			} else {
 				trackEvent("BookCall_Video_Clicked", {
 					utm_source: "google",
 					Creator_ID: creator._id,
 					status: onlineStatus,
 					Walletbalace_Available: clientUser?.walletBalance,
+				});
+
+				trackPixelEvent("Video Call Booked", {
+					clientId: clientUser?._id as string,
+					creatorId: creator?._id,
+					rate: updatedCreator.videoRate,
 				});
 			}
 			if (clientUser && !storedCallId) {
@@ -484,6 +497,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				status: onlineStatus,
 				Walletbalace_Available: clientUser?.walletBalance,
 			});
+
+			trackPixelEvent("Chat Booked", {
+				clientId: clientUser?._id as string,
+				creatorId: creator?._id,
+				rate: updatedCreator.chatRate,
+			});
+
 			setChatReqSent(true);
 			handleChat(creator, clientUser);
 			let maxCallDuration =

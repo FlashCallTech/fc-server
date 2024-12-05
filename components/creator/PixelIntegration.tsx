@@ -201,7 +201,7 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 									priority
 								/>
 							) : (
-								"Submit"
+								"Confirm Details"
 							)}
 						</Button>
 					)}

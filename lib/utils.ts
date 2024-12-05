@@ -113,8 +113,7 @@ export const handlePendingTransaction = async (
 	const clientId = call?.state?.createdBy?.id;
 
 	// Calculate call duration
-	// Check if both callEndedAt and callStartsAt are defined
-	let duration = "N/A"; // Default value for duration
+	let duration = "N/A";
 
 	if (callEndedAt && callStartsAt) {
 		const callEndedTime = new Date(callEndedAt);
