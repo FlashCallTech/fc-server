@@ -62,7 +62,7 @@ const CreatorCard = () => {
 
 			try {
 				const response = await axios.get(
-					`${backendBaseUrl}/user/getUserLatestCall`,
+					`${backendBaseUrl}/calls/getUserLatestCall`,
 					{
 						params: { userId: currentUser._id, userType },
 					}
