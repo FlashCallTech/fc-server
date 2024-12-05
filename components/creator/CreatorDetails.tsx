@@ -23,6 +23,7 @@ import ShareButton from "../shared/ShareButton";
 import axios from "axios";
 import Link from "next/link";
 import Image from "next/image";
+import { trackPixelEvent } from "@/lib/analytics/pixel";
 
 const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const {
@@ -54,6 +55,13 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		if (userType !== "creator" && creator?.username) {
 			localStorage.setItem("creatorURL", `/${creator?.username}`);
 		}
+
+		trackPixelEvent("Creator Page View", {
+			creatorId: creator._id,
+			creatorName: fullName,
+			creatorUsername: creator.username,
+		});
+
 		setCurrentTheme(themeColor);
 		updateCreatorURL(creatorURL);
 		setBodyBackgroundColor("#121319");
@@ -122,6 +130,11 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		const clientId = clientUser?._id;
 		setAddingFavorite(true);
 		try {
+			trackPixelEvent("Favorite Toggled", {
+				clientId: clientId as string,
+				creatorId: creator?._id,
+				markedFavorite: !markedFavorite,
+			});
 			const response = await axios.post(
 				`${backendBaseUrl}/favorites/upsertFavorite`,
 				{
