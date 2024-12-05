@@ -80,55 +80,52 @@ const Sidebar = () => {
 						pathname === item.route || pathname.startsWith(`${item.route}/`);
 
 					return (
-						<>
-							{!(item.route === "/home" && isExpertPath) && (
-								<Tooltip key={item.label + index}>
-									<TooltipTrigger asChild>
-										<Link
-											href={
-												item.protected
-													? currentUser
-														? item.route
-														: userType === "creator"
-														? "/authenticate?usertype=creator"
-														: "/authenticate"
-													: item.route
-											}
-											key={item.label}
-											className={`flex w-full gap-4 items-center p-4 rounded-lg justify-center lg:justify-start 
-													group ${
-														isExpertPath
-															? "text-white bg-[#333333] hoverScaleDownEffect"
-															: "text-black hover:bg-green-1"
-													} ${isActive && " bg-green-1 text-white"}`}
-											onClick={() => handleLogEvent(item)}
-										>
-											<Image
-												src={item.imgURL}
-												alt={item.label}
-												width={100}
-												height={100}
-												className={`w-6 h-6 object-cover invert group-hover:invert-0 group-hover:brightness-200 ${
-													(isActive || isExpertPath) &&
-													"invert-0 brightness-200"
-												}`}
-												priority
-											/>
+						!(item.route === "/home" && isExpertPath) && (
+							<Tooltip key={item.label + index}>
+								<TooltipTrigger asChild>
+									<Link
+										href={
+											item.protected
+												? currentUser
+													? item.route
+													: userType === "creator"
+													? "/authenticate?usertype=creator"
+													: "/authenticate"
+												: item.route
+										}
+										className={`flex w-full gap-4 items-center p-4 rounded-lg justify-center lg:justify-start 
+                  group ${
+										isExpertPath
+											? "text-white bg-[#333333] hoverScaleDownEffect"
+											: "text-black hover:bg-green-1"
+									} ${isActive && " bg-green-1 text-white"}`}
+										onClick={() => handleLogEvent(item)}
+									>
+										<Image
+											src={item.imgURL}
+											alt={item.label}
+											width={100}
+											height={100}
+											className={`w-6 h-6 object-cover invert group-hover:invert-0 group-hover:brightness-200 ${
+												(isActive || isExpertPath) && "invert-0 brightness-200"
+											}`}
+											priority
+										/>
 
-											<p className="text-base max-lg:hidden group-hover:text-white">
-												{item.label}
-											</p>
-										</Link>
-									</TooltipTrigger>
-									<TooltipContent>
-										<p className="text-black">{item.label}</p>
-									</TooltipContent>
-								</Tooltip>
-							)}
-						</>
+										<p className="text-base max-lg:hidden group-hover:text-white">
+											{item.label}
+										</p>
+									</Link>
+								</TooltipTrigger>
+								<TooltipContent>
+									<p className="text-black">{item.label}</p>
+								</TooltipContent>
+							</Tooltip>
+						)
 					);
 				})}
 			</div>
+
 			{currentUser ? (
 				<Tooltip>
 					<TooltipTrigger asChild>
