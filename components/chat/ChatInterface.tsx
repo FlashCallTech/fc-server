@@ -176,7 +176,7 @@ const ChatInterface: React.FC = () => {
 				messages: arrayUnion({
 					senderId: currentUser?._id as string,
 					createdAt: Date.now(),
-					seen: false,
+					seen: true,
 					text,
 					tip: tipAmt,
 					img: null,
@@ -234,7 +234,7 @@ const ChatInterface: React.FC = () => {
 				messages: arrayUnion({
 					senderId: currentUser?._id as string,
 					createdAt: Date.now(),
-					seen: false,
+					seen: true,
 					text,
 					img: imgUrl,
 					audio: audioUrl,
@@ -298,7 +298,7 @@ const ChatInterface: React.FC = () => {
 				messages: arrayUnion({
 					senderId: currentUser?._id as string,
 					createdAt: Date.now(),
-					seen: false,
+					seen: true,
 					text: null,
 					img: imgUrl,
 					audio: audioUploadUrl,
@@ -420,7 +420,7 @@ const ChatInterface: React.FC = () => {
 	return (
 		<div
 			className={`flex flex-col h-screen justify-between w-screen bg-cover bg-center overflow-y-auto scrollbar-hide`}
-			style={{ backgroundImage: "url(/back.png)" }}
+			style={{ backgroundImage: "url(/back.png)", height: "calc(var(--dvh, 1vh) * 100)", }}
 		>
 			<div className="fixed top-0 left-0 w-full mb-[50px] flex justify-between items-center px-4 py-[2px] bg-gray-500 z-30">
 				<div className="flex items-center gap-2">
