@@ -324,7 +324,7 @@ export const getDarkHexCode = (lightHex: string): string | null => {
 		"#ADF7B6": "#288533",
 		"#AAE9E5": "#00958B",
 		"#87C7F1": "#006DD0",
-		"#FEFEFE": "#FEFEFE",
+		"#FEFEFE": "#B4B4B4",
 		"#FFEDA9": "#D0AF00",
 		"#EACFFF": "#5F07A4",
 		"#FFBEBE": "#EB4F4F",

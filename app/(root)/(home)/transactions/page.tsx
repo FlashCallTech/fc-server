@@ -1,6 +1,5 @@
 "use client";
 
-import InvoiceModal from "@/components/client/invoiceModal";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -11,6 +10,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { parseISO, isValid, format } from "date-fns";
 import { useInView } from "react-intersection-observer";
+import InvoiceModal from "@/components/client/invoiceModal";
 interface Transaction {
 	_id: string;
 	amount: number;
