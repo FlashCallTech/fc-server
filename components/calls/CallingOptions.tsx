@@ -31,6 +31,7 @@ import {
 import useChat from "@/hooks/useChat";
 import Loader from "../shared/Loader";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
+import NotifyConsentSheet from "../client/NotifyConsentSheet";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -47,6 +48,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [isSheetOpen, setSheetOpen] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
+	const [isConsentSheetOpen, setIsConsentSheetOpen] = useState(false);
 	const { handleChat, chatRequestsRef } = useChatRequest();
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
@@ -419,9 +421,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleClickOption = async (callType: string) => {
-		if (isProcessing) return;
-		setIsProcessing(true);
-
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",
@@ -432,51 +431,68 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			return;
 		}
 
-		try {
-			if (callType === "audio") {
-				trackEvent("BookCall_Audio_Clicked", {
-					utm_source: "google",
-					Creator_ID: creator._id,
-					status: onlineStatus,
-					Walletbalace_Available: clientUser?.walletBalance,
-				});
+		if (!clientUser) {
+			setIsAuthSheetOpen(true);
+			return;
+		}
 
-				trackPixelEvent("Audio Call Booked", {
-					clientId: clientUser?._id as string,
-					creatorId: creator?._id,
-					rate: updatedCreator.audioRate,
-				});
-			} else {
-				trackEvent("BookCall_Video_Clicked", {
-					utm_source: "google",
-					Creator_ID: creator._id,
-					status: onlineStatus,
-					Walletbalace_Available: clientUser?.walletBalance,
-				});
+		if (onlineStatus === "Offline") {
+			setIsConsentSheetOpen(true);
+		} else if (onlineStatus === "Busy") {
+			toast({
+				variant: "destructive",
+				title: "Creator is Busy",
+				description: "Can't Initiate the Call",
+			});
+		} else {
+			try {
+				if (isProcessing) return;
+				setIsProcessing(true);
+				if (callType === "audio") {
+					trackEvent("BookCall_Audio_Clicked", {
+						utm_source: "google",
+						Creator_ID: creator._id,
+						status: onlineStatus,
+						Walletbalace_Available: clientUser?.walletBalance,
+					});
 
-				trackPixelEvent("Video Call Booked", {
-					clientId: clientUser?._id as string,
-					creatorId: creator?._id,
-					rate: updatedCreator.videoRate,
-				});
+					trackPixelEvent("Audio Call Booked", {
+						clientId: clientUser?._id as string,
+						creatorId: creator?._id,
+						rate: updatedCreator.audioRate,
+					});
+				} else {
+					trackEvent("BookCall_Video_Clicked", {
+						utm_source: "google",
+						Creator_ID: creator._id,
+						status: onlineStatus,
+						Walletbalace_Available: clientUser?.walletBalance,
+					});
+
+					trackPixelEvent("Video Call Booked", {
+						clientId: clientUser?._id as string,
+						creatorId: creator?._id,
+						rate: updatedCreator.videoRate,
+					});
+				}
+				if (clientUser && !storedCallId) {
+					createMeeting(callType);
+				} else if (clientUser && storedCallId) {
+					toast({
+						variant: "destructive",
+						title: "Ongoing Call or Transaction Pending",
+						description: "Redirecting you back ...",
+					});
+					router.replace(`/meeting/${storedCallId}`);
+				} else {
+					setIsAuthSheetOpen(true);
+				}
+			} catch (error) {
+				Sentry.captureException(error);
+				console.error("Error in handleClickOption:", error);
+			} finally {
+				setIsProcessing(false); // Reset processing state after completion
 			}
-			if (clientUser && !storedCallId) {
-				createMeeting(callType);
-			} else if (clientUser && storedCallId) {
-				toast({
-					variant: "destructive",
-					title: "Ongoing Call or Transaction Pending",
-					description: "Redirecting you back ...",
-				});
-				router.replace(`/meeting/${storedCallId}`);
-			} else {
-				setIsAuthSheetOpen(true);
-			}
-		} catch (error) {
-			Sentry.captureException(error);
-			console.error("Error in handleClickOption:", error);
-		} finally {
-			setIsProcessing(false); // Reset processing state after completion
 		}
 	};
 
@@ -490,7 +506,21 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			return;
 		}
-		if (clientUser) {
+
+		if (!clientUser) {
+			setIsAuthSheetOpen(true);
+			return;
+		}
+
+		if (onlineStatus === "Offline") {
+			setIsConsentSheetOpen(true);
+		} else if (onlineStatus === "Busy") {
+			toast({
+				variant: "destructive",
+				title: "Creator is Busy",
+				description: "Can't Initiate the Call",
+			});
+		} else {
 			// updateExpertStatus(creator.phone as string, "Busy");
 			trackEvent("BookCall_Chat_Clicked", {
 				Creator_ID: creator._id,
@@ -514,97 +544,49 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			if (maxCallDuration > 300) {
 				setSheetOpen(true);
 			}
-
-			// sendPushNotification();
-		} else {
-			setIsAuthSheetOpen(true);
 		}
 	};
 
 	const services = [
 		{
 			type: "video",
-			enabled:
-				!updatedCreator?.blocked?.some(
-					(clientId) => clientId === clientUser?._id
-				) &&
-				!isClientBusy &&
-				onlineStatus === "Online" &&
-				updatedCreator.videoAllowed &&
-				parseInt(updatedCreator.videoRate, 10) > 0,
-			rate: updatedCreator.videoRate,
 			label: "Video Call",
 			icon: video,
-			onClick: () => {
-				if (clientUser && onlineStatus !== "Busy") {
-					handleClickOption("video");
-				} else if (clientUser && onlineStatus === "Busy") {
-					toast({
-						variant: "destructive",
-						title: "Creator is Busy",
-						description: "Can't Initiate the Call",
-					});
-					return;
-				} else {
-					setIsAuthSheetOpen(true);
-				}
-			},
+			rate: updatedCreator.videoRate,
+			enabled:
+				!updatedCreator?.blocked?.includes(clientUser?._id) &&
+				!isClientBusy &&
+				onlineStatus !== "Busy" &&
+				updatedCreator.videoAllowed &&
+				parseInt(updatedCreator.videoRate, 10) > 0,
+			onClick: () => handleClickOption("video"),
 		},
 		{
 			type: "audio",
-			enabled:
-				!updatedCreator?.blocked?.some(
-					(clientId) => clientId === clientUser?._id
-				) &&
-				!isClientBusy &&
-				onlineStatus === "Online" &&
-				updatedCreator.audioAllowed &&
-				parseInt(updatedCreator.audioRate, 10) > 0,
-			rate: updatedCreator.audioRate,
 			label: "Audio Call",
 			icon: audio,
-			onClick: () => {
-				if (clientUser && onlineStatus !== "Busy") {
-					handleClickOption("audio");
-				} else if (clientUser && onlineStatus === "Busy") {
-					toast({
-						variant: "destructive",
-						title: "Creator is Busy",
-						description: "Can't Initiate the Call",
-					});
-					return;
-				} else {
-					setIsAuthSheetOpen(true);
-				}
-			},
+			rate: updatedCreator.audioRate,
+			enabled:
+				!updatedCreator?.blocked?.includes(clientUser?._id) &&
+				!isClientBusy &&
+				onlineStatus !== "Busy" &&
+				updatedCreator.audioAllowed &&
+				parseInt(updatedCreator.audioRate, 10) > 0,
+			onClick: () => handleClickOption("audio"),
 		},
+
 		{
 			type: "chat",
-			enabled:
-				!updatedCreator?.blocked?.some(
-					(clientId) => clientId === clientUser?._id
-				) &&
-				!isClientBusy &&
-				onlineStatus === "Online" &&
-				updatedCreator.chatAllowed &&
-				parseInt(updatedCreator.chatRate, 10) > 0,
-			rate: updatedCreator.chatRate,
 			label: "Chat Now",
 			icon: chat,
-			onClick: () => {
-				if (clientUser && onlineStatus !== "Busy") {
-					handleChatClick();
-				} else if (clientUser && onlineStatus === "Busy") {
-					toast({
-						variant: "destructive",
-						title: "Creator is Busy",
-						description: "Can't Initiate the Call",
-					});
-					return;
-				} else {
-					setIsAuthSheetOpen(true);
-				}
-			},
+			rate: updatedCreator.chatRate,
+			enabled:
+				!updatedCreator?.blocked?.includes(clientUser?._id) &&
+				!isClientBusy &&
+				onlineStatus !== "Busy" &&
+				updatedCreator.chatAllowed &&
+				parseInt(updatedCreator.chatRate, 10) > 0,
+			onClick: () => handleChatClick(),
 		},
 	];
 
@@ -629,10 +611,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						disabled={!service.enabled}
 						key={service.type}
 						className={`callOptionContainer ${
-							(isProcessing ||
-								!service.enabled ||
-								onlineStatus === "Busy" ||
-								isClientBusy) &&
+							(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
 							"!cursor-not-allowed"
 						}`}
 						onClick={service.onClick}
@@ -643,15 +622,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						</div>
 						<p
 							className={`font-medium tracking-widest rounded-[18px] px-2 min-w-[100px] h-[36px] text-[15px] text-black flex items-center justify-center ${
-								(isProcessing ||
-									!service.enabled ||
-									onlineStatus === "Busy" ||
-									isClientBusy) &&
+								(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
 								"border border-white/50 text-white"
 							}`}
 							style={{
 								backgroundColor:
-									isProcessing || !service.enabled || onlineStatus === "Busy"
+									!service.enabled || onlineStatus === "Busy"
 										? "transparent"
 										: themeColor,
 							}}
@@ -707,6 +683,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				<AuthenticationSheet
 					isOpen={isAuthSheetOpen}
 					onOpenChange={setIsAuthSheetOpen} // Handle sheet close
+				/>
+			)}
+
+			{isConsentSheetOpen && (
+				<NotifyConsentSheet
+					clientId={(clientUser?._id as string) || ""}
+					creatorId={creator._id}
+					isOpen={isConsentSheetOpen}
+					onOpenChange={setIsConsentSheetOpen} // Handle sheet close
 				/>
 			)}
 		</>

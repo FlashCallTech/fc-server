@@ -146,6 +146,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			if (response.status === 200) {
 				setMarkedFavorite((prev) => !prev);
 				toast({
+					variant: "destructive",
 					title: "List Updated",
 					description: `${
 						markedFavorite ? "Removed From Favorites" : "Added to Favorites"
