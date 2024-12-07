@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
 
 		const userResponse = await getUserByPhone(phone);
 
-		if (amount >= 100) {
+		if (amount >= 500) {
 			if (userResponse[0].walletBalance >= amount) {
 				const paymentSettingsResponse = await fetch(
 					`https://flashcall.me/api/v1/creator/getPayment?userId=${userId}`,
@@ -267,7 +267,7 @@ export async function POST(request: NextRequest) {
 		} else {
 			return NextResponse.json({
 				success: false,
-				message: "Minimum withdraw amount required is 100",
+				message: "Minimum withdraw amount required is 500",
 			});
 		}
 	} catch (error) {
