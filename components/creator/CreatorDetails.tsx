@@ -147,7 +147,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				setMarkedFavorite((prev) => !prev);
 				toast({
 					title: `${
-						markedFavorite
+						!markedFavorite
 							? `You are now following ${fullName}`
 							: `You have unfollowed ${fullName}`
 					}`,
