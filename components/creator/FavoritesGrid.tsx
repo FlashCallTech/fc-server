@@ -106,9 +106,10 @@ const FavoritesGrid = ({
 				onFavoriteToggle(creator, isFavorited);
 				toast({
 					variant: "destructive",
-					title: "List Updated",
-					description: `${
-						isFavorited ? "Added to Favorites" : "Removed From Favorites"
+					title: `${
+						isFavorited
+							? `You are now following ${fullName}`
+							: `You have unfollowed ${fullName}`
 					}`,
 				});
 			}
