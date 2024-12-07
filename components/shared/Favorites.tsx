@@ -91,6 +91,7 @@ const Favorites = ({
 				setShowUnfollowDialog={setShowUnfollowDialog}
 				handleConfirmUnfollow={handleConfirmUnfollow}
 				loading={loading}
+				creator={creator}
 			/>
 			<Tooltip>
 				<TooltipTrigger asChild>

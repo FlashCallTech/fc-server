@@ -1,10 +1,10 @@
 export const sidebarLinks = [
-	{
-		imgURL: "/icons/Home.svg",
-		route: "/home",
-		label: "Home",
-		protected: false,
-	},
+	// {
+	// 	imgURL: "/icons/Home.svg",
+	// 	route: "/home",
+	// 	label: "Home",
+	// 	protected: false,
+	// },
 	{
 		imgURL: "/icons/orderHistory.svg",
 		route: "/previous",
@@ -32,12 +32,12 @@ export const sidebarLinks = [
 ];
 
 export const sidebarLinksCreator = [
-	{
-		imgURL: "/icons/Home.svg",
-		route: "/home",
-		label: "Home",
-		protected: false,
-	},
+	// {
+	// 	imgURL: "/icons/Home.svg",
+	// 	route: "/home",
+	// 	label: "Home",
+	// 	protected: false,
+	// },
 	{
 		imgURL: "/icons/orderHistory.svg",
 		route: "/previous",
