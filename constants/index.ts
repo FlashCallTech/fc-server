@@ -57,6 +57,12 @@ export const sidebarLinksCreator = [
 		protected: true,
 	},
 	{
+		imgURL: "/icons/notifications.svg",
+		route: "/notifications",
+		label: "Notifications",
+		protected: true,
+	},
+	{
 		imgURL: "/icons/kyc.svg",
 		route: "/kyc",
 		label: "KYC",
@@ -72,6 +78,12 @@ export const sidebarLinksCreator = [
 		imgURL: "/icons/paymentSettings.svg",
 		route: "/payment-settings",
 		label: "Payment Settings",
+		protected: true,
+	},
+	{
+		imgURL: "/icons/metaPixel.svg",
+		route: "/meta-analytics",
+		label: "Meta Pixel Analytics",
 		protected: true,
 	},
 	{

@@ -177,6 +177,37 @@ export const useGetBlockedClients = (userId: string) => {
 	});
 };
 
+export const useGetCreatorNotifications = (userId: string) => {
+	const limit = 10;
+
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_CREATOR_NOTIFICATION, userId],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(
+				`${backendBaseUrl}/user/notification/getNotifications`,
+				{
+					params: {
+						page: pageParam,
+						limit,
+						creatorId: userId,
+					},
+				}
+			);
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching creator notifications");
+			}
+		},
+		getNextPageParam: (lastPage) => {
+			const totalPages = Math.ceil(lastPage.totalBlocked / limit);
+			return lastPage.page < totalPages ? lastPage.page + 1 : null;
+		},
+		initialPageParam: 1,
+	});
+};
+
 // ============================================================
 // FEEDBACK QUERIES
 // ============================================================

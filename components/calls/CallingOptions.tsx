@@ -32,6 +32,7 @@ import useChat from "@/hooks/useChat";
 import Loader from "../shared/Loader";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import NotifyConsentSheet from "../client/NotifyConsentSheet";
+import { Cursor, Typewriter } from "react-simple-typewriter";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -50,6 +51,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [isConsentSheetOpen, setIsConsentSheetOpen] = useState(false);
 	const { handleChat, chatRequestsRef } = useChatRequest();
+	const [callInitiated, setcallInitiated] = useState(false);
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
@@ -431,68 +433,82 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			return;
 		}
 
-		if (!clientUser) {
-			setIsAuthSheetOpen(true);
-			return;
-		}
+		try {
+			setcallInitiated(true);
 
-		if (onlineStatus === "Offline") {
-			setIsConsentSheetOpen(true);
-		} else if (onlineStatus === "Busy") {
-			toast({
-				variant: "destructive",
-				title: "Creator is Busy",
-				description: "Can't Initiate the Call",
-			});
-		} else {
-			try {
-				if (isProcessing) return;
-				setIsProcessing(true);
-				if (callType === "audio") {
-					trackEvent("BookCall_Audio_Clicked", {
-						utm_source: "google",
-						Creator_ID: creator._id,
-						status: onlineStatus,
-						Walletbalace_Available: clientUser?.walletBalance,
-					});
-
-					trackPixelEvent("Audio Call Booked", {
-						clientId: clientUser?._id as string,
-						creatorId: creator?._id,
-						rate: updatedCreator.audioRate,
-					});
-				} else {
-					trackEvent("BookCall_Video_Clicked", {
-						utm_source: "google",
-						Creator_ID: creator._id,
-						status: onlineStatus,
-						Walletbalace_Available: clientUser?.walletBalance,
-					});
-
-					trackPixelEvent("Video Call Booked", {
-						clientId: clientUser?._id as string,
-						creatorId: creator?._id,
-						rate: updatedCreator.videoRate,
-					});
-				}
-				if (clientUser && !storedCallId) {
-					createMeeting(callType);
-				} else if (clientUser && storedCallId) {
-					toast({
-						variant: "destructive",
-						title: "Ongoing Call or Transaction Pending",
-						description: "Redirecting you back ...",
-					});
-					router.replace(`/meeting/${storedCallId}`);
-				} else {
-					setIsAuthSheetOpen(true);
-				}
-			} catch (error) {
-				Sentry.captureException(error);
-				console.error("Error in handleClickOption:", error);
-			} finally {
-				setIsProcessing(false); // Reset processing state after completion
+			if (!clientUser) {
+				setIsAuthSheetOpen(true);
+				return;
 			}
+
+			if (onlineStatus === "Offline") {
+				setIsConsentSheetOpen(true);
+			} else if (onlineStatus === "Busy") {
+				toast({
+					variant: "destructive",
+					title: "Creator is Busy",
+					description: "Can't Initiate the Call",
+				});
+			} else if (
+				(callType === "audio" && updatedCreator?.audioAllowed) ||
+				(callType === "video" && updatedCreator?.videoAllowed)
+			) {
+				try {
+					if (isProcessing) return;
+					setIsProcessing(true);
+					if (callType === "audio") {
+						trackEvent("BookCall_Audio_Clicked", {
+							utm_source: "google",
+							Creator_ID: creator._id,
+							status: onlineStatus,
+							Walletbalace_Available: clientUser?.walletBalance,
+						});
+
+						trackPixelEvent("Audio Call Booked", {
+							clientId: clientUser?._id as string,
+							creatorId: creator?._id,
+							rate: updatedCreator.audioRate,
+						});
+					} else {
+						trackEvent("BookCall_Video_Clicked", {
+							utm_source: "google",
+							Creator_ID: creator._id,
+							status: onlineStatus,
+							Walletbalace_Available: clientUser?.walletBalance,
+						});
+
+						trackPixelEvent("Video Call Booked", {
+							clientId: clientUser?._id as string,
+							creatorId: creator?._id,
+							rate: updatedCreator.videoRate,
+						});
+					}
+					if (clientUser && !storedCallId) {
+						createMeeting(callType);
+					} else if (clientUser && storedCallId) {
+						toast({
+							variant: "destructive",
+							title: "Ongoing Call or Transaction Pending",
+							description: "Redirecting you back ...",
+						});
+						router.replace(`/meeting/${storedCallId}`);
+					} else {
+						setIsAuthSheetOpen(true);
+					}
+				} catch (error) {
+					Sentry.captureException(error);
+					console.error("Error in handleClickOption:", error);
+				} finally {
+					setIsProcessing(false); // Reset processing state after completion
+				}
+			} else {
+				return;
+			}
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error in handleClickOption:", error);
+		} finally {
+			setcallInitiated(false);
 		}
 	};
 
@@ -520,8 +536,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				title: "Creator is Busy",
 				description: "Can't Initiate the Call",
 			});
-		} else {
-			// updateExpertStatus(creator.phone as string, "Busy");
+		} else if (updatedCreator?.chatAllowed) {
 			trackEvent("BookCall_Chat_Clicked", {
 				Creator_ID: creator._id,
 				status: onlineStatus,
@@ -557,7 +572,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				!updatedCreator?.blocked?.includes(clientUser?._id) &&
 				!isClientBusy &&
 				onlineStatus !== "Busy" &&
-				updatedCreator.videoAllowed &&
 				parseInt(updatedCreator.videoRate, 10) > 0,
 			onClick: () => handleClickOption("video"),
 		},
@@ -570,7 +584,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				!updatedCreator?.blocked?.includes(clientUser?._id) &&
 				!isClientBusy &&
 				onlineStatus !== "Busy" &&
-				updatedCreator.audioAllowed &&
 				parseInt(updatedCreator.audioRate, 10) > 0,
 			onClick: () => handleClickOption("audio"),
 		},
@@ -584,7 +597,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				!updatedCreator?.blocked?.includes(clientUser?._id) &&
 				!isClientBusy &&
 				onlineStatus !== "Busy" &&
-				updatedCreator.chatAllowed &&
 				parseInt(updatedCreator.chatRate, 10) > 0,
 			onClick: () => handleChatClick(),
 		},
@@ -682,17 +694,68 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			{isAuthSheetOpen && (
 				<AuthenticationSheet
 					isOpen={isAuthSheetOpen}
-					onOpenChange={setIsAuthSheetOpen} // Handle sheet close
+					onOpenChange={setIsAuthSheetOpen}
 				/>
 			)}
 
 			{isConsentSheetOpen && (
 				<NotifyConsentSheet
+					isOpen={isConsentSheetOpen}
+					onOpenChange={setIsConsentSheetOpen}
 					clientId={(clientUser?._id as string) || ""}
 					creatorId={creator._id}
-					isOpen={isConsentSheetOpen}
-					onOpenChange={setIsConsentSheetOpen} // Handle sheet close
+					creatorName={fullName}
 				/>
+			)}
+
+			{callInitiated && (
+				<div
+					className="fixed inset-0 bg-black/50 z-50 size-full flex items-center justify-center"
+					onClick={(e) => e.stopPropagation()}
+				>
+					<div className="text-center bg-dark-2 text-white h-full sm:h-fit w-full sm:max-w-sm flex flex-col items-center justify-between py-10 sm:rounded-xl gap-5">
+						<h1 className="font-bold text-xl mb-2">Please Wait ...</h1>
+						<div className="size-full flex flex-col items-center justify-center gap-10">
+							<img
+								src={creator?.photo || "/icons/logo_icon_dark.png"}
+								alt=""
+								className="rounded-full w-28 h-28 object-cover bg-white"
+								onError={(e) => {
+									e.currentTarget.src = "/images/defaultProfileImage.png";
+								}}
+							/>
+							<div className="flex flex-col items-center justify-center gap-2">
+								<p className="text-xs">Connecting Call With </p>
+								<p className="font-semibold text-xl">
+									{creator?.username?.startsWith("+91")
+										? creator?.username?.replace(
+												/(\+91)(\d+)/,
+												(match, p1, p2) =>
+													`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+										  )
+										: creator?.username}
+								</p>
+							</div>
+						</div>
+						<div className="w-full h-fit flex items-center justify-center">
+							<h1
+								className="text-xl md:text-lg font-semibold"
+								style={{ color: "#ffffff" }}
+							>
+								<Typewriter
+									words={["Connecting  to the expert", "Hang tight"]}
+									loop={true}
+									cursor
+									cursorStyle="_"
+									typeSpeed={50}
+									deleteSpeed={50}
+									delaySpeed={2000}
+								/>
+								<Cursor cursorColor="#ffffff" />
+							</h1>
+						</div>
+					</div>
+				</div>
 			)}
 		</>
 	);

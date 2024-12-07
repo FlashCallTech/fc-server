@@ -74,7 +74,7 @@ const Sidebar = () => {
 				backgroundColor: isExpertPath ? "transparent" : "#ffffff",
 			}}
 		>
-			<div className="flex flex-1 flex-col gap-3.5 max-h-[88%] overflow-y-scroll no-scrollbar">
+			<div className="flex flex-1 flex-col gap-2.5 max-h-[88%] overflow-y-scroll no-scrollbar">
 				{sidebarItems.map((item, index) => {
 					const isActive =
 						pathname === item.route || pathname.startsWith(`${item.route}/`);
