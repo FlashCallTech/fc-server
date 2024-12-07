@@ -146,9 +146,10 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			if (response.status === 200) {
 				setMarkedFavorite((prev) => !prev);
 				toast({
-					title: "List Updated",
-					description: `${
-						markedFavorite ? "Removed From Favorites" : "Added to Favorites"
+					title: `${
+						markedFavorite
+							? `You are now following ${fullName}`
+							: `You have unfollowed ${fullName}`
 					}`,
 				});
 			}
