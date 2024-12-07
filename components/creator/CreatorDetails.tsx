@@ -147,9 +147,10 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				setMarkedFavorite((prev) => !prev);
 				toast({
 					variant: "destructive",
-					title: "List Updated",
-					description: `${
-						markedFavorite ? "Removed From Favorites" : "Added to Favorites"
+					title: `${
+						!markedFavorite
+							? `You are now following ${fullName}`
+							: `You have unfollowed ${fullName}`
 					}`,
 				});
 			}

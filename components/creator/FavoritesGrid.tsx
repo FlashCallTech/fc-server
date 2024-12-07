@@ -10,7 +10,6 @@ import * as Sentry from "@sentry/nextjs";
 import { usePathname } from "next/navigation";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { trackEvent } from "@/lib/mixpanel";
 import axios from "axios";
 
 const FavoritesGrid = ({
@@ -106,9 +105,10 @@ const FavoritesGrid = ({
 				onFavoriteToggle(creator, isFavorited);
 				toast({
 					variant: "destructive",
-					title: "List Updated",
-					description: `${
-						isFavorited ? "Added to Favorites" : "Removed From Favorites"
+					title: `${
+						isFavorited
+							? `You are now following ${fullName}`
+							: `You have unfollowed ${fullName}`
 					}`,
 				});
 			}

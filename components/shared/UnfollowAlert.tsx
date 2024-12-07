@@ -16,19 +16,24 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
+import { creatorUser } from "@/types";
+import { getDisplayName } from "@/lib/utils";
 
 const UnfollowAlert = ({
 	showUnfollowDialog,
 	setShowUnfollowDialog,
 	handleConfirmUnfollow,
 	loading,
+	creator,
 }: {
 	showUnfollowDialog: boolean;
 	setShowUnfollowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 	handleConfirmUnfollow: () => Promise<void>;
 	loading: boolean;
+	creator: creatorUser;
 }) => {
 	const [isMobileView, setIsMobileView] = useState(false);
+	const fullName = getDisplayName(creator);
 
 	useEffect(() => {
 		// Set the initial value and listen for window resize to adjust the view
@@ -55,10 +60,10 @@ const UnfollowAlert = ({
 			<SheetContent side="bottom" className=" bg-white rounded-t-xl ">
 				<SheetHeader>
 					<SheetTitle className="text-red-500 !text-start">
-						Unfollow User
+						Unfollow {fullName}
 					</SheetTitle>
 					<SheetDescription className="!text-start">
-						Are you sure you want to unfollow this user?
+						Are you sure you want to unfollow {fullName}?
 					</SheetDescription>
 				</SheetHeader>
 				<div className="w-full flex items-center justify-start gap-2 mt-7">
@@ -83,10 +88,10 @@ const UnfollowAlert = ({
 			<DialogContent className="bg-white max-w-[92%] md:max-w-sm rounded-[8px]">
 				<DialogHeader>
 					<DialogTitle className="text-red-500 !text-start">
-						Unfollow User
+						Unfollow {fullName}
 					</DialogTitle>
 					<DialogDescription className=" text-sm !text-start">
-						Are you sure you want to unfollow this user?
+						Are you sure you want to unfollow {fullName}?
 					</DialogDescription>
 				</DialogHeader>
 

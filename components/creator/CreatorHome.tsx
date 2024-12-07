@@ -25,7 +25,6 @@ import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
-import PixelIntegration from "./PixelIntegration";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
@@ -451,8 +450,6 @@ const CreatorHome = () => {
 					</section>
 
 					<CreatorLinks />
-
-					<PixelIntegration creatorId={creatorUser?._id} />
 
 					<section className="flex items-center justify-center pt-4">
 						<div className="text-center text-[13px] text-gray-400">

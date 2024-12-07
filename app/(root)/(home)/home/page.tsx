@@ -75,13 +75,11 @@ const HomePage = () => {
 		const docSnap = await getDoc(creatorDocRef);
 
 		trackEvent("Page_View", {
-			// UTM_Source: "google",
 			Creator_ID: id,
 			status: docSnap.data()?.status,
 			Wallet_Balance: currentUser?.walletBalance,
 		});
 
-		// Trigger the route change immediately
 		router.push(`/${username}`);
 	};
 

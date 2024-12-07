@@ -32,7 +32,7 @@ const SupportPage = () => {
 						<img
 							src="/images/whatsappSupport.png"
 							alt=""
-							className="h-10 w-full"
+							className="h-10 w-full object-cover object-center"
 						/>
 					</a>
 				</section>
