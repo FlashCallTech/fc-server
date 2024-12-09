@@ -7,6 +7,7 @@ import CustomAudioPlayer from "@/lib/CustomAudioPlayer";
 import usePlatform from "@/hooks/usePlatform";
 
 interface Chat {
+	creatorName: string;
 	messages: {
 		senderId: string;
 		text: string;
@@ -158,7 +159,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 												<Image src={"/rupee_logo.svg"} width={1000} height={1000} alt="rupee" className="size-5" />
 												<div className="flex flex-col items-start justify-start text-black text-[10px] lg:text-xs">
 													<span>
-														{`Sent to ${isCurrentUserMessage ? "Creator" : "You"}`}
+														{`Sent to ${isCurrentUserMessage ? chat.creatorName ?? "Creator" : "You"}`}
 													</span>
 													<span className="text-[#00FF00] flex items-center">
 														Completed
