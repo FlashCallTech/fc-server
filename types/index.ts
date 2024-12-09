@@ -13,6 +13,18 @@ export type CreateUserParams = {
 	bio?: string;
 };
 
+export type CreateForeignUserParams = {
+	username: string;
+	email: string;
+	fullName?: string;
+	phone?: string;
+	photo: string;
+	role: string;
+	bio?: string;
+	walletBalance: number;
+	indian: boolean;  
+};
+
 export type UpdateUserParams = {
 	id?: string;
 	fullName?: string;
@@ -42,7 +54,8 @@ export type clientUser = {
 	lastName: string;
 	username: string;
 	photo: string;
-	phone: string;
+	phone?: string;
+	email?: string;
 	walletBalance: number;
 	bio: string;
 	gender?: string;
@@ -56,6 +69,7 @@ export type clientUser = {
 	referralAmount?: number;
 	restricted?: boolean;
 	blocked?: any[];
+	indian?: boolean;
 };
 
 // Creator Params
@@ -67,7 +81,8 @@ export type creatorUser = {
 	lastName: string;
 	username: string;
 	photo: string;
-	phone: string;
+	phone?: string;
+	email?: string;
 	profession: string;
 	themeSelected: string;
 	gender: string;
@@ -90,6 +105,7 @@ export type creatorUser = {
 	createdAt?: string;
 	restricted?: boolean;
 	blocked?: any[];
+	indian?: boolean;
 };
 
 export type CreateCreatorParams = {
