@@ -15,6 +15,17 @@ import { Cursor, Typewriter } from "react-simple-typewriter";
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	const [isOnline, setIsOnline] = useState(true);
 	const [isMounted, setIsMounted] = useState(false);
+	const [region, setRegion] = useState<"India" | "Global" | null>(null);
+
+	useEffect(() => {
+		// Calculate the region based on timezone
+		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+		setRegion(
+			timezone === "Asia/Calcutta" || timezone === "Asia/Kolkata"
+				? "Global"
+				: "Global"
+		);
+	}, []);
 
 	useEffect(() => {
 		const handleOnline = throttle(() => setIsOnline(true), 500);
@@ -105,7 +116,7 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 
 	return (
 		<QueryProvider>
-			<CurrentUsersProvider>
+			<CurrentUsersProvider region={region as string}>
 				<StreamVideoProvider>
 					<WalletBalanceProvider>
 						<ChatRequestProvider>

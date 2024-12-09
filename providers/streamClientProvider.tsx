@@ -33,7 +33,9 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 					userId,
 					fullName,
 					currentUser.photo,
-					currentUser.phone
+					currentUser.phone,
+					currentUser.indian,
+					currentUser.email,
 				);
 
 				const client = new StreamVideoClient({

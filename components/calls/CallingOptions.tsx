@@ -28,8 +28,6 @@ import {
 	fetchFCMToken,
 	sendNotification,
 } from "@/lib/utils";
-import useChat from "@/hooks/useChat";
-import Loader from "../shared/Loader";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 
 interface CallingOptions {
@@ -39,9 +37,8 @@ interface CallingOptions {
 const CallingOptions = ({ creator }: CallingOptions) => {
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
-	const { loading } = useChat();
 	const client = useStreamVideoClient();
-	const { clientUser, userType, setAuthenticationSheetOpen } =
+	const { clientUser, userType, setAuthenticationSheetOpen, region } =
 		useCurrentUsersContext();
 	const { toast } = useToast();
 	const [isSheetOpen, setSheetOpen] = useState(false);
@@ -96,7 +93,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		let clientStatusDocRef: any;
 		if (clientUser) {
-			clientStatusDocRef = doc(db, "userStatus", clientUser.phone);
+			const docId = clientUser.indian === false ? clientUser.email : clientUser.phone;
+			clientStatusDocRef = doc(db, "userStatus", docId as string);
 		}
 
 		const unsubscribe = onSnapshot(creatorRef, (doc) => {
@@ -373,7 +371,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						});
 					}
 
-					const fcmToken = await fetchFCMToken(creator.phone);
+					const fcmToken = await fetchFCMToken(creator.phone as string);
 					if (fcmToken) {
 						sendNotification(
 							fcmToken,
@@ -617,10 +615,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		return priority[a.type] - priority[b.type];
 	});
 
-	if (loading) {
-		return <Loader />;
-	}
-
 	return (
 		<>
 			<div className="flex flex-col w-full items-center justify-center gap-4">
@@ -656,7 +650,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 										: themeColor,
 							}}
 						>
-							Rs.<span>{service.rate}</span>/min
+							{region === "India" ? "Rs." : "$"}<span>{service.rate}</span>/min
 						</p>
 					</button>
 				))}

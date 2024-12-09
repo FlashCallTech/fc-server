@@ -13,10 +13,12 @@ import { clientUser, creatorUser } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 import { usePathname, useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { backendBaseUrl, frontendBaseUrl } from "../utils";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import Image from "next/image";
 
 // Define the shape of the context value
 interface CurrentUsersContextValue {
@@ -37,6 +39,7 @@ interface CurrentUsersContextValue {
 	updateCreatorURL: (url: any) => void;
 	ongoingCallStatus: string;
 	setOngoingCallStatus: any;
+	region: string;
 }
 
 // Create the context with a default value of null
@@ -59,7 +62,7 @@ export const useCurrentUsersContext = () => {
 const isBrowser = () => typeof window !== "undefined";
 
 // Provider component to hold the state and provide it to its children
-export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
+export const CurrentUsersProvider = ({ children, region }: { children: ReactNode, region: string }) => {
 	const [clientUser, setClientUser] = useState<clientUser | null>(null);
 	const [creatorUser, setCreatorUser] = useState<creatorUser | null>(null);
 	const [currentTheme, setCurrentTheme] = useState("");
@@ -69,6 +72,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const [authToken, setAuthToken] = useState<string | null>(null);
 	const [creatorURL, setCreatorURL] = useState("");
 	const [ongoingCallStatus, setOngoingCallStatus] = useState("");
+	const [userFetched, setUserFetched] = useState(false);
 	const { toast } = useToast();
 	const router = useRouter();
 
@@ -143,28 +147,36 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 	// Function to handle user signout
 	const handleSignout = async () => {
-		if (!currentUser) return;
-		localStorage.removeItem("currentUserID");
-		localStorage.removeItem("authToken");
-		const creatorStatusDocRef = doc(
-			db,
-			"userStatus",
-			currentUser?.phone as string
-		);
-		const creatorStatusDoc = await getDoc(creatorStatusDocRef);
-		if (creatorStatusDoc.exists()) {
-			await updateDoc(creatorStatusDocRef, {
-				status: "Offline",
-				loginStatus: false,
-			});
+		if (!currentUser || !region) return;
+
+		if (region !== "India") {
+			await signOut(auth);
+			localStorage.removeItem("currentUserID");
+			setClientUser(null);
+			setCreatorUser(null);
+		} else {
+			localStorage.removeItem("currentUserID");
+			localStorage.removeItem("authToken");
+			const creatorStatusDocRef = doc(
+				db,
+				"userStatus",
+				currentUser?.phone as string
+			);
+			const creatorStatusDoc = await getDoc(creatorStatusDocRef);
+			if (creatorStatusDoc.exists()) {
+				await updateDoc(creatorStatusDocRef, {
+					status: "Offline",
+					loginStatus: false,
+				});
+			}
+			// Clear user data and local storage
+			await axios.post(`${backendBaseUrl}/user/endSession`);
+
+			localStorage.setItem("userType", "client");
+
+			setClientUser(null);
+			setCreatorUser(null);
 		}
-		// Clear user data and local storage
-		await axios.post(`${backendBaseUrl}/user/endSession`);
-
-		localStorage.setItem("userType", "client");
-
-		setClientUser(null);
-		setCreatorUser(null);
 	};
 
 	// Function to fetch the current user
@@ -217,16 +229,71 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 			}
 		} finally {
 			setFetchingUser(false);
+			setUserFetched(true);
 		}
 	};
 
+	const fetchGlobalCurrentUser = async (email: string) => {
+		try {
+			setFetchingUser(true);
+
+			if (email) {
+				const response = await axios.post(`${backendBaseUrl}/client/getGlobalUserByEmail/${email}`);
+
+				const data = response.data;
+
+				if (data.role === 'client') {
+					setClientUser(data);
+					setCreatorUser(null);
+					setUserType("client");
+				}
+				localStorage.setItem("userType", data.role);
+			} else console.error("Email not provided");
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setFetchingUser(false);
+			setUserFetched(true);
+		}
+	}
+
 	useEffect(() => {
-		fetchCurrentUser();
-	}, []);
+		if (!region) return;
+
+		// Return early if region is not set or not "India"
+		if (region === "India") {
+			fetchCurrentUser();
+			return;
+		}
+
+		// Initialize listener only if region is "India"
+		const unsubscribe = onAuthStateChanged(auth, (user) => {
+			if (user && user.email) {
+				fetchGlobalCurrentUser(user.email);
+			} else {
+				console.error("Unauthorized");
+				localStorage.removeItem("currentUserID");
+				setClientUser(null);
+				setCreatorUser(null);
+				setUserFetched(true);
+			}
+		});
+
+		return () => {
+			// Cleanup the listener on unmount
+			unsubscribe();
+		};
+	}, [region]);
+
 
 	// Function to refresh the current user data
 	const refreshCurrentUser = async () => {
-		await fetchCurrentUser();
+		if (region === "India") await fetchCurrentUser();
+		else {
+			const email = auth.currentUser?.email;
+			console.log(email);
+			if (email) await fetchGlobalCurrentUser(email);
+		};
 	};
 
 	// Redirect to /updateDetails if username is missing
@@ -245,44 +312,61 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 
 	// real-time session monitoring
 	useEffect(() => {
-		if (!currentUser) {
+		if (!currentUser || !region) {
 			return;
 		}
 
-		const userAuthRef = doc(db, "authToken", currentUser.phone);
+		if (region === "India") {
+			const userAuthRef = doc(db, "authToken", currentUser.phone as string);
 
-		const unsubscribe = onSnapshot(
-			userAuthRef,
-			(doc) => {
-				try {
-					if (doc.exists()) {
-						const data = doc.data();
-						if (isBrowser()) {
-							if (data?.token && data.token !== authToken) {
-								handleSignout();
-								toast({
-									variant: "destructive",
-									title: "Another Session Detected",
-									description: "Logging Out...",
-								});
+			const unsubscribe = onSnapshot(
+				userAuthRef,
+				(doc) => {
+					try {
+						if (doc.exists()) {
+							const data = doc.data();
+							if (isBrowser()) {
+								if (data?.token && data.token !== authToken) {
+									handleSignout();
+									toast({
+										variant: "destructive",
+										title: "Another Session Detected",
+										description: "Logging Out...",
+									});
+								}
 							}
 						}
+					} catch (error) {
+						Sentry.captureException(error);
+						console.error("Error processing the document: ", error);
 					}
-				} catch (error) {
-					Sentry.captureException(error);
-					console.error("Error processing the document: ", error);
+				},
+				(error) => {
+					console.error("Error fetching document: ", error);
 				}
-			},
-			(error) => {
-				console.error("Error fetching document: ", error);
-			}
-		);
+			);
 
-		// Cleanup function to clear heartbeat and update status to "Offline"
-		return () => {
-			unsubscribe();
-		};
+			// Cleanup function to clear heartbeat and update status to "Offline"
+			return () => {
+				unsubscribe();
+			};
+		}
 	}, [currentUser?._id, authToken]);
+
+	if (!userFetched) {
+		// Render splash screen while loading
+		return (
+			<section className="absolute bg-[#121319] top-0 left-0 flex justify-center items-center h-screen w-full z-40">
+				<Image
+					src="/icons/logo_splashScreen.png"
+					alt="Loading..."
+					width={500}
+					height={500}
+					className="w-36 h-36 animate-pulse"
+				/>
+			</section>
+		);
+	}
 
 	// Provide the context value to children
 	return (
@@ -305,6 +389,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				updateCreatorURL,
 				ongoingCallStatus,
 				setOngoingCallStatus,
+				region,
 			}}
 		>
 			{children}

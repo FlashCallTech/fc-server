@@ -30,7 +30,6 @@ interface User2 {
 }
 
 const useChat = () => {
-	const [chat, setChat] = useState<Chat | undefined>();
 	const [chatEnded, setChatEnded] = useState(false);
 	const [startedAt, setStartedAt] = useState<number>();
 	const [creator, setCreator] = useState<creatorUser>();
@@ -38,16 +37,11 @@ const useChat = () => {
 	const [endedAt, setEndedAt] = useState<number | undefined>();
 	const [duration, setDuration] = useState<number | undefined>();
 	const [amount, setAmount] = useState<number | undefined>(); // Use state for amount
-	const [rejected, setRejected] = useState<boolean>(false);
 	const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
 	const [user2, setUser2] = useState<User2 | undefined>();
-	const [flag, setFlag] = useState(true);
-	const [ended, setEnded] = useState<boolean>(false);
-	const [chatRejected, setChatRejected] = useState<boolean>(false);
 	const [chatRequestId, setChatRequestId] = useState<string>();
 	const [localChatId, setLocalChatId] = useState<string>("");
 	const { chatId } = useParams();
-	const [loading, setLoading] = useState<boolean>(false);
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -73,7 +67,7 @@ const useChat = () => {
 				setClient(response);
 			};
 			getClient();
-		} else if (userType === "creator" && rejected === true) {
+		} else if (userType === "creator") {
 			const clientId = user2?.clientId;
 			const getClient = async () => {
 				const response = await getUserById(clientId as string);
@@ -81,7 +75,7 @@ const useChat = () => {
 			};
 			getClient();
 		}
-	}, [chatId, rejected]);
+	}, [chatId]);
 
 	const members: MemberRequest[] = [
 		{
@@ -144,7 +138,6 @@ const useChat = () => {
 			const unSub = onSnapshot(
 				doc(db, "chats", chatId as string),
 				(res: any) => {
-					setChat(res.data());
 					setStartedAt(res.data().startedAt as number);
 					setChatEnded(res.data()?.status === "ended");
 					if (res.data()?.status === "ended") {
@@ -157,29 +150,16 @@ const useChat = () => {
 	}, [chatId]);
 
 	useEffect(() => {
-		if (chatRequestId) {
-			const unSub = onSnapshot(
-				doc(db, "chatRequests", chatRequestId as string),
-				(res: any) => {
-					setChatRejected(res.data()?.status === "rejected");
-				}
-			);
-			return () => unSub();
-		}
-	}, [chatRequestId]);
-
-	useEffect(() => {
 		if (chatEnded && startedAt && endedAt) {
 			const chatDuration = endedAt - startedAt;
 			setDuration(chatDuration);
 			const chatDurationMinutes = chatDuration / (1000 * 60); // Convert milliseconds to minutes
 			const calculatedAmount = chatDurationMinutes * chatRatePerMinute;
 			setAmount(calculatedAmount);
-			setEnded(true);
 		}
 	}, [chatEnded, startedAt, endedAt, chatRatePerMinute]);
 
-	return { duration, amount, loading };
+	return { duration, amount };
 };
 
 export default useChat;

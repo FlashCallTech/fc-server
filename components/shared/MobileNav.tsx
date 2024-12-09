@@ -117,8 +117,10 @@ const MobileNav = () => {
 												(match, p1, p2) => `${p1} ${p2}`
 											) || `@${fullName}`}
 										</span>
-										<section className="flex items-center justify-between w-fit gap-4">
-											<span className="text-sm text-green-1">{fullName}</span>
+										<section className="flex items-center justify-start w-full gap-4 overflow-hidden max-w-[92%]">
+											<span className="text-sm text-green-1  overflow-hidden text-ellipsis whitespace-nowrap w-fit">
+												{fullName}
+											</span>
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
 												fill="none"
@@ -141,7 +143,7 @@ const MobileNav = () => {
 						<div className="w-full border border-gray-500 my-5" />
 						<SheetClose asChild>
 							<section className="flex size-full items-start flex-col overflow-y-scroll no-scrollbar mb-5">
-								<section className="flex flex-1 flex-col gap-3.5 w-full h-full text-white">
+								<section className="flex flex-1 flex-col gap-2.5 w-full h-full text-white">
 									{sidebarItems.map((item) => {
 										const isActive = pathname === item.route;
 
