@@ -61,6 +61,7 @@ const CreatorCard = () => {
 			if (!currentUser || !userType) return;
 
 			try {
+				console.log(currentUser, userType);
 				// Fetch latest call data
 				const response = await axios.get(
 					`${backendBaseUrl}/calls/getUserLatestCall`,

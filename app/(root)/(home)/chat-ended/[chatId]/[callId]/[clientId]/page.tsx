@@ -53,7 +53,7 @@ const ChatFeedbackPage = () => {
 	return (
 		<section
 			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
-			className="w-full flex items-center justify-center"
+			className="w-full flex items-center justify-center bg-"
 		>
 			{clientId === currentUser?._id && (
 					<ChatFeedback
