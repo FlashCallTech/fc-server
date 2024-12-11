@@ -45,6 +45,14 @@ export const WalletBalanceProvider = ({
 	);
 	const isCreator = userType === "creator";
 
+	useEffect(() => {
+		console.log("Wallet balance context mounted or updated." , Math.random());
+	
+		return () => {
+			console.log("Wallet balance context unmounted.");
+		};
+	}, []);
+
 	const updateAndSetWalletBalance = async () => {
 		if (currentUser?._id) {
 			try {
