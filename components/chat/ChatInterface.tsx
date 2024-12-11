@@ -297,6 +297,7 @@ const ChatInterface: React.FC = () => {
 				url: "",
 			});
 			setText("");
+			setIsTyping(false);
 		}
 	};
 
