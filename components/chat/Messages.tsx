@@ -47,7 +47,7 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 
 	useEffect(() => {
 		if (userType) {
-			const id = userType === "client" ? chat?.creatorId as string : chat.clientId as string;
+			const id = userType === "client" ? chat?.creatorId as string : chat?.clientId as string;
 
 			if (id) {
 				const userchatDocRef = doc(db, "userchats", id as string);
@@ -55,7 +55,6 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 				// Listen for updates to the `isTyping` field
 				const unsubscribe = onSnapshot(userchatDocRef, (doc) => {
 					if (doc.exists()) {
-						console.log(doc.data());
 						setIsTyping(doc.data().isTyping || false);
 					}
 				});

@@ -34,14 +34,6 @@ export const ChatRequestProvider = ({
 	let collectionUnsubscribe: (() => void) | undefined;
 	let docUnsubscribe: (() => void) | undefined;
 
-	useEffect(() => {
-		console.log("chat mounted or updated.");
-	
-		return () => {
-			console.log("chat unmounted.");
-		};
-	}, []);
-
 	// Collection-level listener to find a pending chat request
 	useEffect(() => {
 		if (!creatorUser || chatRequest) return;
