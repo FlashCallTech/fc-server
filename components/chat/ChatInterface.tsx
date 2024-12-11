@@ -28,6 +28,8 @@ const ChatInterface: React.FC = () => {
 	const [isAudioUploading, setIsAudioUploading] = useState(false);
 	const [showDialog, setShowDialog] = useState(false);
 	const [receiverId, setReceiverId] = useState(null);
+	const [isTyping, setIsTyping] = useState(false);
+	const typingTimeout = 2000; // Time in milliseconds to wait before resetting isTyping
 	const [img, setImg] = useState({
 		file: null,
 		url: "",
@@ -135,6 +137,31 @@ const ChatInterface: React.FC = () => {
 		);
 		return () => unsubscribe();
 	}, [receiverId, db]);
+
+	useEffect(() => {
+		const typing = async () => {
+			if (!chatId) return;
+
+			if (userType) {
+				const id = userType === "client" ? chat?.clientId as string : chat?.creatorId as string;
+				console.log(id);
+	
+				if (id) {
+					const userchatDocRef = doc(db, "userchats", id as string);
+					const userchatDocSnap = await getDoc(userchatDocRef);
+		
+					if (userchatDocSnap.exists()) {
+						await updateDoc(userchatDocRef, {
+							isTyping
+						})
+					}
+				}
+
+			}
+		}
+
+		typing();
+	}, [isTyping])
 
 	const handleCapturedImg = (e: any) => {
 		if (e.target.files && e.target.files[0]) {
@@ -479,11 +506,12 @@ const ChatInterface: React.FC = () => {
 						img={img}
 						audio={audio}
 						audioStream={audioStream!}
-						// audioContext={audioContext}
 						handleCapturedImg={handleCapturedImg}
 						isImgUploading={isImgUploading}
 						isAudioUploading={isAudioUploading}
 						discardImage={discardImage}
+						isTyping={isTyping}
+						setIsTyping={setIsTyping}
 					/>
 				</div>
 			</div>

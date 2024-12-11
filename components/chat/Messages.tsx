@@ -1,13 +1,17 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import ImageModal from "@/lib/imageModal";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { format, isSameDay } from "date-fns";
 import CustomAudioPlayer from "@/lib/CustomAudioPlayer";
 import usePlatform from "@/hooks/usePlatform";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface Chat {
 	creatorName: string;
+	creatorId: string;
+	clientId: string;
 	messages: {
 		senderId: string;
 		text: string;
@@ -31,13 +35,37 @@ interface Props {
 }
 
 const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
-	const { currentUser } = useCurrentUsersContext();
 	const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
-	const { getDevicePlatform } = usePlatform();
-	const textSizeClass = getDevicePlatform() === "iOS" ? "text-base" : "text-sm";
 	const [hasScrolled, setHasScrolled] = useState<boolean>(false);
+	const [isTyping, setIsTyping] = useState(false); // Track typing status
+	const { currentUser, userType } = useCurrentUsersContext();
+	const { getDevicePlatform } = usePlatform();
+
+	const textSizeClass = getDevicePlatform() === "iOS" ? "text-base" : "text-sm";
 
 	const endRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		if (userType) {
+			const id = userType === "client" ? chat?.creatorId as string : chat.clientId as string;
+
+			if (id) {
+				const userchatDocRef = doc(db, "userchats", id as string);
+
+				// Listen for updates to the `isTyping` field
+				const unsubscribe = onSnapshot(userchatDocRef, (doc) => {
+					if (doc.exists()) {
+						console.log(doc.data());
+						setIsTyping(doc.data().isTyping || false);
+					}
+				});
+
+				// Cleanup listener on component unmount
+				return () => unsubscribe();
+			}
+		}
+	}, [chat?.clientId]);
+
 	const handleImageClick = (imageUrl: string) => {
 		setFullImageUrl(imageUrl);
 	};
@@ -97,8 +125,8 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 
 							<div
 								className={`${isCurrentUserMessage
-									? `bg-[#DCF8C6] p-[5px] max-w-[60%] ${message.tip? "min-w-[60%] lg:min-w-[35%]" : "min-w-[25%]"} lg:max-w-[35%] w-fit rounded-lg rounded-tr-none ml-auto text-black text-sm relative`
-									: `bg-white p-[5px] max-w-[60%] ${message.tip? "min-w-[60%] lg:min-w-[35%]" : "min-w-[25%]"} lg:max-w-[35%] w-fit rounded-lg rounded-tl-none text-black text-sm leading-5 relative`
+									? `bg-[#DCF8C6] p-[5px] max-w-[60%] ${message.tip ? "min-w-[60%] lg:min-w-[35%]" : "min-w-[25%]"} lg:max-w-[35%] w-fit rounded-lg rounded-tr-none ml-auto text-black text-sm relative`
+									: `bg-white p-[5px] max-w-[60%] ${message.tip ? "min-w-[60%] lg:min-w-[35%]" : "min-w-[25%]"} lg:max-w-[35%] w-fit rounded-lg rounded-tl-none text-black text-sm leading-5 relative`
 									} ${marginBottom}`}
 								style={{ wordBreak: "break-word", justifyContent: "center" }}
 							>
@@ -205,6 +233,17 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 					);
 				})}
 				<div ref={endRef}></div>
+				{/* Typing Indicator */}
+				{isTyping && (
+					<div className="inline-flex items-center space-x-2 p-2 bg-gray-200 rounded-full shadow-md animate-pulse">
+						<div className="flex space-x-1">
+							<span className="w-2 h-2 bg-green-500 rounded-full animate-bounce delay-75"></span>
+							<span className="w-2 h-2 bg-green-500 rounded-full animate-bounce delay-150"></span>
+							<span className="w-2 h-2 bg-green-500 rounded-full animate-bounce delay-225"></span>
+						</div>
+					</div>
+
+				)}
 			</div>
 		</div>
 	);
