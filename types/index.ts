@@ -22,7 +22,7 @@ export type CreateForeignUserParams = {
 	role: string;
 	bio?: string;
 	walletBalance: number;
-	indian: boolean;  
+	global: boolean;  
 };
 
 export type UpdateUserParams = {
@@ -69,7 +69,7 @@ export type clientUser = {
 	referralAmount?: number;
 	restricted?: boolean;
 	blocked?: any[];
-	indian?: boolean;
+	global?: boolean;
 };
 
 // Creator Params
@@ -91,6 +91,9 @@ export type creatorUser = {
 	videoRate: string;
 	audioRate: string;
 	chatRate: string;
+	globalVideoRate: string;
+	globalAudioRate: string;
+	globalChatRate: string;
 	videoAllowed: boolean;
 	audioAllowed: boolean;
 	chatAllowed: boolean;
@@ -105,7 +108,7 @@ export type creatorUser = {
 	createdAt?: string;
 	restricted?: boolean;
 	blocked?: any[];
-	indian?: boolean;
+	global?: boolean;
 };
 
 export type CreateCreatorParams = {

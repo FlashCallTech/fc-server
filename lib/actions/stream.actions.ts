@@ -11,14 +11,14 @@ export const tokenProvider = async (
 	username: string | undefined,
 	photo: string | undefined,
 	phone: string | undefined,
-	indian: boolean | undefined,
+	global: boolean | undefined,
 	email: string | undefined,
 ) => {
 	if (!STREAM_API_KEY) throw new Error("Stream API key secret is missing");
 	if (!STREAM_API_SECRET) throw new Error("Stream API secret is missing");
 
 	const streamClient = new StreamClient(STREAM_API_KEY, STREAM_API_SECRET);
-	const fcmToken = await fetchFCMToken(indian === false ? email ?? "" : phone ?? "");
+	const fcmToken = await fetchFCMToken(global === true ? email ?? "" : phone ?? "");
 
 	// Register the user in Stream
 	const userData = {

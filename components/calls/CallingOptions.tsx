@@ -56,9 +56,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 	const [updatedCreator, setUpdatedCreator] = useState<creatorUser>({
 		...creator,
-		videoRate: creator.videoRate,
-		audioRate: creator.audioRate,
-		chatRate: creator.chatRate,
+		videoRate: region === "Global" ? creator.globalVideoRate : creator.videoRate,
+		audioRate: region === "Global" ? creator.globalAudioRate : creator.audioRate,
+		chatRate: region === "Global" ? creator.globalChatRate : creator.chatRate,
 		videoAllowed: creator.videoAllowed,
 		audioAllowed: creator.audioAllowed,
 		chatAllowed: creator.chatAllowed,
@@ -93,7 +93,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		let clientStatusDocRef: any;
 		if (clientUser) {
-			const docId = clientUser.indian === false ? clientUser.email : clientUser.phone;
+			const docId = clientUser.global === true ? clientUser.email : clientUser.phone;
 			clientStatusDocRef = doc(db, "userStatus", docId as string);
 		}
 
@@ -107,9 +107,9 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				// Update creator services in state
 				setUpdatedCreator((prev) => ({
 					...prev,
-					videoRate: prices?.videoCall ?? "",
-					audioRate: prices?.audioCall ?? "",
-					chatRate: prices?.chat ?? "",
+					videoRate: region === "Global" ? prices?.globalVideoRate ?? creator.globalVideoRate : prices?.videoCall ?? "",
+					audioRate: region === "Global" ? prices?.globalAudioRate ?? creator.globalAudioRate :prices?.audioCall ?? "",
+					chatRate: region === "Global" ? prices?.globalChatRate ?? creator.globalChatRate :prices?.chat ?? "",
 					videoAllowed: services?.videoCall ?? false,
 					audioAllowed: services?.audioCall ?? false,
 					chatAllowed: services?.chat ?? false,
@@ -529,7 +529,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				!isClientBusy &&
 				onlineStatus === "Online" &&
 				updatedCreator.videoAllowed &&
-				parseInt(updatedCreator.videoRate, 10) > 0,
+				Number(updatedCreator.videoRate) > 0,
 			rate: updatedCreator.videoRate,
 			label: "Video Call",
 			icon: video,
@@ -557,7 +557,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				!isClientBusy &&
 				onlineStatus === "Online" &&
 				updatedCreator.audioAllowed &&
-				parseInt(updatedCreator.audioRate, 10) > 0,
+				Number(updatedCreator.audioRate) > 0,
 			rate: updatedCreator.audioRate,
 			label: "Audio Call",
 			icon: audio,
@@ -585,7 +585,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				!isClientBusy &&
 				onlineStatus === "Online" &&
 				updatedCreator.chatAllowed &&
-				parseInt(updatedCreator.chatRate, 10) > 0,
+				Number(updatedCreator.chatRate) > 0,
 			rate: updatedCreator.chatRate,
 			label: "Chat Now",
 			icon: chat,
