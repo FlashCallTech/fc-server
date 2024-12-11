@@ -154,7 +154,6 @@ const ChatInterface: React.FC = () => {
 						})
 					}
 				}
-
 			}
 		}
 
