@@ -227,7 +227,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					}
 					// localStorage.removeItem("chatRequestId");
 				}
-			}, 30000); // 60 seconds
+			}, 60000); // 60 seconds
 
 			// Save chatRequest document ID in local storage
 			localStorage.setItem("chatRequestId", newChatRequestRef.id);

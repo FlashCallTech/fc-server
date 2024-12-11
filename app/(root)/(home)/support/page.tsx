@@ -23,9 +23,10 @@ const SupportPage = () => {
 						support@flashcall.me
 					</a>
 					<span className="text-xs text-gray-500">Or</span>
-					<Link
+					<a
+						href="https://api.whatsapp.com/send?phone=919019082682"
 						target="_blank"
-						href="https://wa.me/919019082682"
+						rel="noopener noreferrer"
 						className="flex items-center justify-center hoverScaleDownEffect"
 					>
 						<img
@@ -33,7 +34,7 @@ const SupportPage = () => {
 							alt=""
 							className="h-10 w-full"
 						/>
-					</Link>
+					</a>
 				</section>
 			</section>
 		</section>

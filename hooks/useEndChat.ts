@@ -21,6 +21,7 @@ interface User2 {
 interface Chat {
 	clientId: string;
 	creatorId: string;
+	creatorName: string;
 	startedAt: number;
 	callId?: string;
 	endedAt?: number;
