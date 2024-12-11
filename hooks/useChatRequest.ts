@@ -338,7 +338,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					clientName: chatRequest.clientName,
 					maxChatDuration,
 					chatId: chatRequest.chatId,
-					global: chatRequest.global,
+					global: chatRequest?.global,
 					clientBalance: response.walletBalance ?? "",
 					timerSet: false,
 				});
