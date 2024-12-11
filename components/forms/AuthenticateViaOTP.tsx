@@ -332,7 +332,7 @@ const AuthenticateViaOTP = ({
 					role: "client",
 					bio: "",
 					walletBalance: 0,
-					indian: false,
+					global: true,
 				};
 
 				const createUserResponse = await axios.post(

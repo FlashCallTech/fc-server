@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { backendBaseUrl, updateFirestoreCallServices } from "@/lib/utils";
 import * as Sentry from "@sentry/nextjs";

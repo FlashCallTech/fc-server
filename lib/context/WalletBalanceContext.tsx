@@ -39,18 +39,26 @@ export const WalletBalanceProvider = ({
 }: {
 	children: ReactNode;
 }) => {
-	const { currentUser, userType, region } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 	const [walletBalance, setWalletBalance] = useState<number>(
 		currentUser?.walletBalance ?? -1
 	);
 	const isCreator = userType === "creator";
 
+	useEffect(() => {
+		console.log("Wallet balance context mounted or updated.");
+	
+		return () => {
+			console.log("Wallet balance context unmounted.");
+		};
+	}, []);
+
 	const updateAndSetWalletBalance = async () => {
 		if (currentUser?._id) {
 			try {
 				const response = isCreator
-					? region === 'Global' ? await axios.post(`${backendBaseUrl}/creator/getGlobalUserByEmail/${currentUser.email}`) : await axios.get(`${backendBaseUrl}/creator/getUser/${currentUser._id}`)
-					: region === 'Global' ? await axios.post(`${backendBaseUrl}/client/getGlobalUserByEmail/${currentUser.email}`) : await axios.get(`${backendBaseUrl}/client/getUser/${currentUser._id}`);
+					? currentUser.global ? await axios.post(`${backendBaseUrl}/creator/getGlobalUserByEmail/${currentUser.email}`) : await axios.get(`${backendBaseUrl}/creator/getUser/${currentUser._id}`)
+					: currentUser.global ? await axios.post(`${backendBaseUrl}/client/getGlobalUserByEmail/${currentUser.email}`) : await axios.get(`${backendBaseUrl}/client/getUser/${currentUser._id}`);
 				const data = response.data;
 				setWalletBalance(data.walletBalance ?? NaN);
 			} catch (error) {
@@ -62,12 +70,11 @@ export const WalletBalanceProvider = ({
 	};
 
 	useEffect(() => {
+		console.log("Initial wallet balance set: ", currentUser?.walletBalance);
 		if (currentUser) {
-			// console.log("userType:", userType);
-			// console.log("Walletbalance: ", currentUser);
 			setWalletBalance(currentUser.walletBalance ?? 0);
 		}
-	}, [isCreator]);
+	}, [currentUser, isCreator]);
 
 	useEffect(() => {
 		if (!currentUser) return;

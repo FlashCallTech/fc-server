@@ -22,6 +22,7 @@ import usePlatform from "./usePlatform";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { backendBaseUrl, fetchFCMToken, sendNotification } from "@/lib/utils";
 import axios from "axios";
+import { clientUser, creatorUser } from "@/types";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
@@ -67,22 +68,25 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	}
 
-	const getUserData = async (userId: string) => {
+	const getUserData = async (userId: string, global: boolean) => {
 		try {
 			const response = await axios.get(
 				`${backendBaseUrl}/creator/getUser/${userId}`
 			);
-			return response.data.chatRate;
+			return (global ? Number(response.data.globalChatRate) : parseInt(response.data.chatRate, 10));
 		} catch (error) {
 			console.error("Error fetching user data:", error);
 			throw error;
 		}
 	};
 
-	const handleChat = async (creator: any, clientUser: any) => {
-		if (!clientUser) router.push("sign-in");
+	const handleChat = async (creator: creatorUser, clientUser: clientUser) => {
+		if (!clientUser || !clientUser.global) router.push("sign-in");
 
-		let maxCallDuration = (walletBalance / parseInt(creator.chatRate, 10)) * 60;
+		const chatRate = await getUserData(creator._id, clientUser.global ?? false);
+		console.log(chatRate);
+
+		let maxCallDuration = (walletBalance / chatRate * 60);
 		maxCallDuration =
 			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
@@ -150,30 +154,29 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				: new Date();
 			const formattedDate = createdAtDate.toISOString().split("T")[0];
 
-			const chatRate = await getUserData(creator._id);
-
 			await setDoc(newChatRequestRef, {
 				id: newChatRequestRef.id,
 				callId,
 				creatorId: creator?._id,
 				creatorName: creator.fullName
 					? creator.fullName
-					: maskPhoneNumber(creator.phone),
+					: maskPhoneNumber(creator.phone as string),
 				creatorPhone: creator.phone,
 				creatorImg: creator.photo,
 				clientId: clientUser?._id,
-				clientPhone: clientUser?.phone,
+				clientPhone: clientUser?.phone ?? "",
 				clientName: clientUser?.fullName
 					? clientUser.fullName
-					: maskPhoneNumber(clientUser.phone),
+					: maskPhoneNumber(clientUser.phone as string),
 				clientImg: clientUser?.photo,
 				client_first_seen: formattedDate,
-				creator_first_seen: creator.createdAt.toString().split("T")[0],
+				creator_first_seen: creator.createdAt ? creator.createdAt.toString().split("T")[0] : "",
 				client_balance: clientUser.walletBalance,
 				status: "pending",
 				chatId: chatId,
 				chatRate,
 				maxCallDuration,
+				global: currentUser?.global ?? false,
 				createdAt: Date.now(),
 			});
 
@@ -181,7 +184,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 			if (docSnap.exists()) {
 				const chatRequestData = docSnap.data();
-				const fcmToken = await fetchFCMToken(creator.phone);
+				const fcmToken = await fetchFCMToken(creator.phone as string);
 				if (fcmToken) {
 					sendNotification(
 						fcmToken,
@@ -304,6 +307,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					messages: [],
 					timerSet: false,
 					chatRate: chatRequest.rate,
+					global: chatRequest.global,
 				});
 
 				const creatorChatUpdate = updateDoc(

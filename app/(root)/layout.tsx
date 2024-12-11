@@ -18,6 +18,14 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	const [region, setRegion] = useState<"India" | "Global" | null>(null);
 
 	useEffect(() => {
+		console.log("Layout mounted or updated.");
+
+		return () => {
+			console.log("Layout unmounted.");
+		};
+	}, []);
+
+	useEffect(() => {
 		// Calculate the region based on timezone
 		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 		setRegion(
@@ -117,15 +125,15 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	return (
 		<QueryProvider>
 			<CurrentUsersProvider region={region as string}>
-				<StreamVideoProvider>
-					<WalletBalanceProvider>
-						<ChatRequestProvider>
+				<WalletBalanceProvider>
+					<ChatRequestProvider>
+						<StreamVideoProvider>
 							<div className="relative min-h-screen w-full">
 								{renderContent()}
 							</div>
-						</ChatRequestProvider>
-					</WalletBalanceProvider>
-				</StreamVideoProvider>
+						</StreamVideoProvider>
+					</ChatRequestProvider>
+				</WalletBalanceProvider>
 			</CurrentUsersProvider>
 		</QueryProvider>
 	);

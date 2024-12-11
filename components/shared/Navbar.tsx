@@ -34,6 +34,8 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 		setAuthenticationSheetOpen,
 		currentTheme,
 		creatorURL,
+		userFetched,
+		ongoingCallStatus,
 	} = useCurrentUsersContext();
 	const router = useRouter();
 	const [creator, setCreator] = useState<creatorUser>();
@@ -55,7 +57,7 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 			}
 		}
 	}, []);
-
+	
 	const handleRouting = () => {
 		if (userType === "creator") {
 			router.push("/authenticate?usertype=creator");
@@ -67,9 +69,9 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 			setIsAuthSheetOpen(true);
 		}
 	};
-
+	
 	const { walletBalance } = useWalletBalanceContext();
-
+	
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
 	}, [isAuthSheetOpen]);
@@ -173,7 +175,7 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 				<AppLink />
 			)}
 
-			{fetchingUser ? (
+			{fetchingUser? (
 				<NavLoader />
 			) : currentUser ? (
 				<div className="flex justify-end items-center gap-4 h-full text-white">
@@ -212,7 +214,7 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 								}`}
 							/>
 							<span className="w-full mt-[2px] text-center align-middle text-xs font-semibold">
-								{`Rs. ${Math.round(walletBalance)}`}
+								{`${currentUser.global ? "$" : "Rs." } ${Math.round(walletBalance)}`}
 							</span>
 						</Link>
 					) : (
