@@ -143,9 +143,7 @@ const ChatInterface: React.FC = () => {
 			if (!chatId) return;
 
 			if (userType) {
-				const id = userType === "client" ? chat?.clientId as string : chat?.creatorId as string;
-				console.log(id);
-	
+				const id = userType === "client" ? chat?.clientId as string : chat?.creatorId as string;	
 				if (id) {
 					const userchatDocRef = doc(db, "userchats", id as string);
 					const userchatDocSnap = await getDoc(userchatDocRef);
