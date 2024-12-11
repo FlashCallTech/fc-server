@@ -58,10 +58,10 @@ const ChatInput: React.FC<Props> = ({
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setText(e.target.value);
-        if (!isTyping && e.target.value !== " ") {
+        if (!isTyping && e.target.value !== "") {
             setIsTyping(true);
         }
-        if(!e.target.value) {
+        if(!e.target.value || text === "") {
             setIsTyping(false);
         }
     };

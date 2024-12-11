@@ -241,7 +241,6 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 							<span className="w-2 h-2 bg-green-500 rounded-full animate-bounce delay-225"></span>
 						</div>
 					</div>
-
 				)}
 			</div>
 		</div>
