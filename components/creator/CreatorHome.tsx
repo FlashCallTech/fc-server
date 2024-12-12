@@ -46,6 +46,11 @@ const CreatorHome = () => {
 		audioCall: "0",
 		chat: "0",
 	});
+	const [globalPrices, setGlobalPrices] = useState({
+		videoCall: "0",
+		audioCall: "0",
+		chat: "0",
+	})
 
 	useEffect(() => {
 		if (creatorUser) {
@@ -54,6 +59,13 @@ const CreatorHome = () => {
 				audioCall: creatorUser.audioRate,
 				chat: creatorUser.chatRate,
 			});
+			setGlobalPrices(
+				{
+				videoCall: creatorUser.globalVideoRate,
+				audioCall: creatorUser.globalAudioRate,
+				chat: creatorUser.globalChatRate,
+				}
+			)
 		}
 	}, [creatorUser]);
 
@@ -311,7 +323,7 @@ const CreatorHome = () => {
 							creatorLink ?? `https://flashcall.me/${creatorUser?.username}`
 						}
 						username={
-							creatorUser.username ? creatorUser.username : creatorUser.phone
+							creatorUser.username ? creatorUser.username : creatorUser.phone as string
 						}
 						profession={creatorUser.profession ?? "Astrologer"}
 						gender={creatorUser.gender ?? ""}
@@ -470,6 +482,7 @@ const CreatorHome = () => {
 						onClose={() => setIsPriceEditOpen(false)}
 						onSave={handleSavePrices}
 						currentPrices={prices}
+						currentGlobalPrices={globalPrices}
 					/>
 				)}
 			</div>
