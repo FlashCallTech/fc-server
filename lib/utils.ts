@@ -196,7 +196,8 @@ export const updateFirestoreCallServices = async (
 	creatorUser: any,
 	services?: Services,
 	prices?: Prices,
-	status?: Status
+	status?: Status,
+	global?: boolean,
 ) => {
 	if (creatorUser) {
 		try {
@@ -211,20 +212,37 @@ export const updateFirestoreCallServices = async (
 					...services,
 				};
 
-				const updatedPrices = {
-					...existingData.prices,
-					...prices,
-				};
-
-				await updateDoc(callServicesDocRef, {
-					services: updatedServices,
-					prices: updatedPrices,
-				});
+				if (global) {
+					const updatedPrices = {
+						...existingData.globalPrices,
+						...prices,
+					};
+					await updateDoc(callServicesDocRef, {
+						services: updatedServices,
+						globalPrices: updatedPrices,
+					});
+				} else {
+					const updatedPrices = {
+						...existingData.prices,
+						...prices,
+					};
+					await updateDoc(callServicesDocRef, {
+						services: updatedServices,
+						prices: updatedPrices,
+					});
+				}
 			} else {
-				await setDoc(callServicesDocRef, {
-					services: services || {},
-					prices: prices || {},
-				});
+				if (global) {
+					await setDoc(callServicesDocRef, {
+						services: services || {},
+						globalPrices: prices || {},
+					});
+				} else {
+					await setDoc(callServicesDocRef, {
+						services: services || {},
+						prices: prices || {},
+					});
+				}
 			}
 
 			const isOnline =
@@ -358,18 +376,17 @@ export const getDisplayName = (creator: {
 	const fullName = creator?.fullName?.trim();
 	const maskedFullName = fullName ? maskNumbers(fullName) : undefined;
 
-	const combinedName = `${creator?.firstName || ""} ${
-		creator?.lastName || ""
-	}`.trim();
+	const combinedName = `${creator?.firstName || ""} ${creator?.lastName || ""
+		}`.trim();
 	const maskedCombinedName = combinedName
 		? maskNumbers(combinedName)
 		: undefined;
 
 	const maskedUsername = creator?.username?.startsWith("+91")
 		? creator.username.replace(
-				/(\+91)(\d+)/,
-				(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-		  )
+			/(\+91)(\d+)/,
+			(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+		)
 		: maskNumbers(creator?.username || "");
 
 	if (maskedFullName) {
@@ -619,8 +636,8 @@ export const sendNotification = async (
 		// Convert all data values to strings
 		const stringifiedData = data
 			? Object.fromEntries(
-					Object.entries(data).map(([key, value]) => [key, String(value)])
-			  )
+				Object.entries(data).map(([key, value]) => [key, String(value)])
+			)
 			: {};
 
 		const response = await fetch("/api/send-notification", {

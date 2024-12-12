@@ -46,6 +46,11 @@ const CreatorHome = () => {
 		audioCall: "0",
 		chat: "0",
 	});
+	const [globalPrices, setGlobalPrices] = useState({
+		videoCall: "0",
+		audioCall: "0",
+		chat: "0",
+	})
 
 	useEffect(() => {
 		if (creatorUser) {
@@ -54,6 +59,13 @@ const CreatorHome = () => {
 				audioCall: creatorUser.audioRate,
 				chat: creatorUser.chatRate,
 			});
+			setGlobalPrices(
+				{
+					videoCall: creatorUser.globalVideoRate,
+					audioCall: creatorUser.globalAudioRate,
+					chat: creatorUser.globalChatRate,
+				}
+			)
 		}
 	}, [creatorUser]);
 
@@ -142,20 +154,57 @@ const CreatorHome = () => {
 
 	const theme = creatorUser?.themeSelected;
 
-	const handleSavePrices = async (newPrices: {
-		videoCall: string;
-		audioCall: string;
-		chat: string;
-	}) => {
+	const handleSavePrices = async (
+		global: boolean,
+		newPrices: {
+			videoCall: string;
+			audioCall: string;
+			chat: string;
+		}) => {
 		try {
-			await axios.put(
-				`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
-				{
-					videoRate: newPrices.videoCall,
-					audioRate: newPrices.audioCall,
-					chatRate: newPrices.chat,
-				}
-			);
+			if (global) {
+				await axios.put(
+					`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
+					{
+						globalVideoRate: newPrices.videoCall,
+						globalAudioRate: newPrices.audioCall,
+						globalChatRate: newPrices.chat,
+					}
+				);
+				setGlobalPrices(newPrices);
+				updateFirestoreCallServices(
+					creatorUser,
+					{
+						myServices: services.myServices,
+						videoCall: services.videoCall,
+						audioCall: services.audioCall,
+						chat: services.chat,
+					},
+					newPrices,
+					undefined, // Explicitly set `status` if not applicable
+					global,
+				);
+			} else {
+				await axios.put(
+					`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
+					{
+						videoRate: newPrices.videoCall,
+						audioRate: newPrices.audioCall,
+						chatRate: newPrices.chat,
+					}
+				);
+				setPrices(newPrices);
+				updateFirestoreCallServices(
+					creatorUser,
+					{
+						myServices: services.myServices,
+						videoCall: services.videoCall,
+						audioCall: services.audioCall,
+						chat: services.chat,
+					},
+					newPrices
+				);
+			}
 			if (newPrices.audioCall !== prices.audioCall) {
 				trackEvent("Creator_Audio_Price_Updated", {
 					Creator_ID: creatorUser?._id,
@@ -180,22 +229,12 @@ const CreatorHome = () => {
 					Price: newPrices.chat,
 				});
 			}
-			setPrices(newPrices);
 			toast({
 				variant: "destructive",
 				title: "Rates Updated",
 				description: "Values are updated...",
 			});
-			updateFirestoreCallServices(
-				creatorUser,
-				{
-					myServices: services.myServices,
-					videoCall: services.videoCall,
-					audioCall: services.audioCall,
-					chat: services.chat,
-				},
-				newPrices
-			);
+
 		} catch (error) {
 			Sentry.captureException(error);
 			console.log(error);
@@ -404,20 +443,17 @@ const CreatorHome = () => {
 								<input
 									disabled={services.isRestricted}
 									type="checkbox"
-									className={`${
-										services.isRestricted && "!cursor-not-allowed"
-									} toggle-checkbox absolute w-0 h-0 opacity-0`}
+									className={`${services.isRestricted && "!cursor-not-allowed"
+										} toggle-checkbox absolute w-0 h-0 opacity-0`}
 									checked={services.myServices}
 									onChange={() => handleToggle("myServices")}
 								/>
 								<p
-									className={`toggle-label block overflow-hidden h-6 rounded-full ${
-										services.myServices ? "bg-green-600" : "bg-gray-500"
-									} ${
-										services.isRestricted
+									className={`toggle-label block overflow-hidden h-6 rounded-full ${services.myServices ? "bg-green-600" : "bg-gray-500"
+										} ${services.isRestricted
 											? "!cursor-not-allowed"
 											: "cursor-pointer"
-									} servicesCheckbox`}
+										} servicesCheckbox`}
 									style={{
 										justifyContent: services.myServices
 											? "flex-end"
@@ -447,6 +483,7 @@ const CreatorHome = () => {
 							isRestricted={services.isRestricted}
 							handleToggle={handleToggle}
 							prices={prices}
+							globalPrices={globalPrices}
 						/>
 					</section>
 
@@ -470,6 +507,7 @@ const CreatorHome = () => {
 						onClose={() => setIsPriceEditOpen(false)}
 						onSave={handleSavePrices}
 						currentPrices={prices}
+						currentGlobalPrices={globalPrices}
 					/>
 				)}
 			</div>

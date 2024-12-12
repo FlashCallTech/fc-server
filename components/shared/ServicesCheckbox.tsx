@@ -10,6 +10,7 @@ const ServicesCheckbox = ({
 	isRestricted,
 	handleToggle,
 	prices,
+	globalPrices,
 }: any) => {
 	const { creatorUser } = useCurrentUsersContext();
 	const { getDevicePlatform } = usePlatform();
@@ -24,6 +25,8 @@ const ServicesCheckbox = ({
 		});
 	}
 
+	console.log(globalPrices);
+
 	return (
 		<div className="flex flex-col gap-2 mt-2">
 			{Object.keys(services).map((service) => (
@@ -35,6 +38,7 @@ const ServicesCheckbox = ({
 						<span>{service}</span>
 						<div className="flex flex-row gap-2">
 							<p className="font-normal text-xs text-gray-400">{`Rs ${prices[service]}/min`}</p>
+							<p className="font-normal text-xs text-gray-400">{`$ ${globalPrices[service]}/min`}</p>
 							<button onClick={() => setIsPriceEditOpen(true)}>
 								<Image
 									src={"/edit.svg"}
