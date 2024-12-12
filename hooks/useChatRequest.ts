@@ -280,6 +280,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	};
 
 	const handleAcceptChat = async (chatRequest: any) => {
+		console.log(chatRequest);
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
 		const response = await getUserById(chatRequest.clientId as string);
@@ -296,8 +297,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					chatId: chatRequest.chatId,
 					clientId: chatRequest.clientId,
 					clientName: chatRequest.clientName,
-					clientPhone: response?.phone,
-					clientImg: response.photo,
+					clientPhone: chatRequest.clientPhone ?? "",
+					clientImg: chatRequest.clientImg,
 					creatorId: chatRequest.creatorId,
 					creatorName: chatRequest.creatorName,
 					creatorPhone: chatRequest.creatorPhone,
@@ -305,8 +306,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					status: "active",
 					messages: [],
 					timerSet: false,
-					chatRate: chatRequest.rate,
-					global: chatRequest.global,
+					chatRate: chatRequest.chatRate,
 				});
 
 				const creatorChatUpdate = updateDoc(
@@ -341,7 +341,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					clientName: chatRequest.clientName,
 					maxChatDuration,
 					chatId: chatRequest.chatId,
-					clientBalance: response.walletBalance,
+					global: chatRequest.global ?? false,
+					clientBalance: response.walletBalance ?? "",
 					timerSet: false,
 				});
 			}
@@ -365,7 +366,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					fullName: response.firstName
 						? response.firstName + " " + response.lastname
 						: undefined,
-					phone: response.phone,
+					phone: response.phone ?? "",
 					photo: response.photo,
 				})
 			);
