@@ -76,6 +76,9 @@ export type creatorUser = {
 	videoRate: string;
 	audioRate: string;
 	chatRate: string;
+	globalVideoRate: string;
+	globalAudioRate: string;
+	globalChatRate: string;
 	videoAllowed: boolean;
 	audioAllowed: boolean;
 	chatAllowed: boolean;
