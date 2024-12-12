@@ -351,9 +351,7 @@ const AuthenticateViaOTP = ({
 					refreshCurrentUser();
 				}
 			}
-
-			console.log("Login successfull");
-
+			
 			// Refresh and close authentication modal
 			setAuthenticationSheetOpen(false);
 			onOpenChange && onOpenChange(false);

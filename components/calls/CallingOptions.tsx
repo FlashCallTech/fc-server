@@ -101,15 +101,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const data = doc.data();
 
 			if (data) {
-				const prices = data.prices;
+				const prices = region === "Global" ? data.globalPrices : data.prices;
 				const services = data.services;
 
 				// Update creator services in state
 				setUpdatedCreator((prev) => ({
 					...prev,
-					videoRate: region === "Global" ? prices?.globalVideoRate ?? creator.globalVideoRate : prices?.videoCall ?? "",
-					audioRate: region === "Global" ? prices?.globalAudioRate ?? creator.globalAudioRate :prices?.audioCall ?? "",
-					chatRate: region === "Global" ? prices?.globalChatRate ?? creator.globalChatRate :prices?.chat ?? "",
+					videoRate: region === "Global" ? prices?.videoCall ?? creator.globalVideoRate : prices?.videoCall ?? creator.videoRate,
+					audioRate: region === "Global" ? prices?.audioCall ?? creator.globalAudioRate :prices?.audioCall ?? creator.audioRate,
+					chatRate: region === "Global" ? prices?.chat ?? creator.globalChatRate :prices?.chat ?? creator.chatRate,
 					videoAllowed: services?.videoCall ?? false,
 					audioAllowed: services?.audioCall ?? false,
 					chatAllowed: services?.chat ?? false,
@@ -605,6 +605,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			},
 		},
 	];
+
+	console.log(isClientBusy);
 
 	// Sort services based on priority and enabled status
 	const sortedServices = services.sort((a, b) => {

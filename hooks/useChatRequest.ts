@@ -84,7 +84,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		if (!clientUser || !clientUser.global) router.push("sign-in");
 
 		const chatRate = await getUserData(creator._id, clientUser.global ?? false);
-		console.log(chatRate);
 
 		let maxCallDuration = (walletBalance / chatRate * 60);
 		maxCallDuration =
@@ -297,7 +296,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					chatId: chatRequest.chatId,
 					clientId: chatRequest.clientId,
 					clientName: chatRequest.clientName,
-					clientPhone: response.phone,
+					clientPhone: response?.phone,
 					clientImg: response.photo,
 					creatorId: chatRequest.creatorId,
 					creatorName: chatRequest.creatorName,
