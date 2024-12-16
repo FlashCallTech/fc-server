@@ -51,7 +51,7 @@ const ServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 						<SheetTitle>Create and Customize Your Service</SheetTitle>
 						<SheetDescription className="text-start mb-5 pr-5">
 							Define your service details, pricing, and set flexible discount
-							rules tailored to your customers' needs.
+							rules tailored to your customers&apos; needs.
 						</SheetDescription>
 					</SheetHeader>
 					<ServicesForm />
@@ -69,7 +69,7 @@ const ServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 						<DialogTitle>Create and Customize Your Service</DialogTitle>
 						<DialogDescription className="text-start mb-5 pr-5">
 							Define your service details, pricing, and set flexible discount
-							rules tailored to your customers' needs.
+							rules tailored to your customers&apos; needs.
 						</DialogDescription>
 					</DialogHeader>
 					<ServicesForm />
