@@ -42,16 +42,19 @@ export const WalletBalanceProvider = ({
 	const { currentUser, userType } = useCurrentUsersContext();
 	const [walletBalance, setWalletBalance] = useState<number>(-1);
 	const isCreator = userType === "creator";
-	const isFirstMount = useRef(true); // To prevent redundant effects on double mount
 
+	// Prevent double initialization in development mode due to React.StrictMode
+	const isMounted = useRef(false);
+
+	// Effect to log mount/unmount for debugging purposes
 	useEffect(() => {
 		if (process.env.NODE_ENV === "development") {
-			console.log("Wallet balance mounted.");
+			console.log("Wallet balance provider mounted.");
 		}
 
 		return () => {
 			if (process.env.NODE_ENV === "development") {
-				console.log("Wallet balance unmounted.");
+				console.log("Wallet balance provider unmounted.");
 			}
 		};
 	}, []);
@@ -78,8 +81,9 @@ export const WalletBalanceProvider = ({
 	};
 
 	useEffect(() => {
-		if (isFirstMount.current) {
-			isFirstMount.current = false;
+		// Prevent this effect from running during the second mount in development
+		if (!isMounted.current) {
+			isMounted.current = true;
 			if (currentUser) {
 				setWalletBalance(currentUser.walletBalance ?? 0);
 			}
