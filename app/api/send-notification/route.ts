@@ -38,13 +38,14 @@ export async function POST(request: NextRequest) {
 	try {
 		const payload: Message = {
 			token,
-			notification: {
+			data: {
 				title: title,
 				body: message,
-			},
-			data: {
 				...(link && { link }),
 				...data,
+			},
+			android: {
+				priority: "high",
 			},
 			apns: {
 				headers: {
@@ -59,9 +60,6 @@ export async function POST(request: NextRequest) {
 						sound: "default",
 					},
 				},
-			},
-			android: {
-				priority: "high",
 			},
 		};
 

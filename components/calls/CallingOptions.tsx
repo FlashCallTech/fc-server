@@ -587,7 +587,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					  !isClientBusy &&
 					  onlineStatus !== "Busy" &&
 					  updatedCreator.videoAllowed &&
-					  parseInt(updatedCreator.videoRate, 10) > 0,
+					  Number(updatedCreator.videoRate) > 0,
 			onClick: () => handleClickOption("video"),
 		},
 		{
@@ -602,7 +602,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					  !isClientBusy &&
 					  onlineStatus !== "Busy" &&
 					  updatedCreator.audioAllowed &&
-					  parseInt(updatedCreator.audioRate, 10) > 0,
+					  Number(updatedCreator.audioRate) > 0,
 			onClick: () => handleClickOption("audio"),
 		},
 
@@ -618,7 +618,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					  !isClientBusy &&
 					  onlineStatus !== "Busy" &&
 					  updatedCreator.chatAllowed &&
-					  parseInt(updatedCreator.chatRate, 10) > 0,
+					  Number(updatedCreator.chatRate) > 0,
 			onClick: () => handleChatClick(),
 		},
 	];

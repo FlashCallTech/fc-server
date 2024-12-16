@@ -22,6 +22,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import Image from "next/image";
 
 const discountRuleSchema = z.object({
 	conditions: z
@@ -76,11 +77,14 @@ const ServicesForm = () => {
 		console.log(values);
 	}
 
+	const { formState } = form;
+	const { isValid } = formState;
+
 	return (
 		<Form {...form}>
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
-				className="space-y-8 size-full"
+				className="space-y-8 size-full relative"
 			>
 				{/* Title */}
 				<FormField
@@ -105,7 +109,11 @@ const ServicesForm = () => {
 						<FormItem>
 							<FormLabel>Description</FormLabel>
 							<FormControl>
-								<Textarea placeholder="Describe your service" {...field} />
+								<Textarea
+									className="flex flex-1 px-4 py-3  focus-visible:ring-transparent max-h-32"
+									placeholder="Describe your service"
+									{...field}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>
@@ -138,7 +146,7 @@ const ServicesForm = () => {
 								<SelectTrigger>
 									<SelectValue placeholder="Select service type" />
 								</SelectTrigger>
-								<SelectContent>
+								<SelectContent className="!bg-white">
 									<SelectItem value="all">All</SelectItem>
 									<SelectItem value="audio">Audio</SelectItem>
 									<SelectItem value="video">Video</SelectItem>
@@ -176,9 +184,9 @@ const ServicesForm = () => {
 								<SelectTrigger>
 									<SelectValue placeholder="Select currency" />
 								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="USD">USD</SelectItem>
+								<SelectContent className="!bg-white">
 									<SelectItem value="INR">INR</SelectItem>
+									<SelectItem value="USD">USD</SelectItem>
 								</SelectContent>
 							</Select>
 							<FormMessage />
@@ -190,7 +198,10 @@ const ServicesForm = () => {
 				<div className="space-y-4">
 					<FormLabel>Discount Rules</FormLabel>
 					{fields.map((field, index) => (
-						<div key={field.id} className="space-y-2 border p-4 rounded-md">
+						<div
+							key={field.id}
+							className="grid grid-cols-1 gap-4 border p-4 rounded-md"
+						>
 							<FormField
 								control={form.control}
 								name={`discountRules.${index}.conditions`}
@@ -207,23 +218,7 @@ const ServicesForm = () => {
 									</FormItem>
 								)}
 							/>
-							<FormField
-								control={form.control}
-								name={`discountRules.${index}.discountAmount`}
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Discount Amount</FormLabel>
-										<FormControl>
-											<Input
-												type="number"
-												placeholder="Discount amount"
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+
 							<FormField
 								control={form.control}
 								name={`discountRules.${index}.discountType`}
@@ -237,7 +232,7 @@ const ServicesForm = () => {
 											<SelectTrigger>
 												<SelectValue placeholder="Select type" />
 											</SelectTrigger>
-											<SelectContent>
+											<SelectContent className="!bg-white">
 												<SelectItem value="percentage">Percentage</SelectItem>
 												<SelectItem value="flat">Flat</SelectItem>
 											</SelectContent>
@@ -259,7 +254,7 @@ const ServicesForm = () => {
 											<SelectTrigger>
 												<SelectValue placeholder="Select currency" />
 											</SelectTrigger>
-											<SelectContent>
+											<SelectContent className="!bg-white">
 												<SelectItem value="USD">USD</SelectItem>
 												<SelectItem value="INR">INR</SelectItem>
 											</SelectContent>
@@ -268,12 +263,34 @@ const ServicesForm = () => {
 									</FormItem>
 								)}
 							/>
-							<Button variant="destructive" onClick={() => remove(index)}>
+							<FormField
+								control={form.control}
+								name={`discountRules.${index}.discountAmount`}
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Discount Amount</FormLabel>
+										<FormControl>
+											<Input
+												type="number"
+												placeholder="Discount amount"
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<Button
+								className="text-sm bg-red-500 hoverScaleDownEffect w-fit text-white ml-auto mt-2"
+								variant="destructive"
+								onClick={() => remove(index)}
+							>
 								Remove Rule
 							</Button>
 						</div>
 					))}
 					<Button
+						className="text-sm bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
 						onClick={() =>
 							append({
 								conditions: [""],
@@ -294,14 +311,37 @@ const ServicesForm = () => {
 						<FormItem>
 							<FormLabel>Extra Details</FormLabel>
 							<FormControl>
-								<Textarea placeholder="Additional information" {...field} />
+								<Textarea
+									className="flex flex-1 px-4 py-3  focus-visible:ring-transparent max-h-32"
+									placeholder="Additional information"
+									{...field}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}
 				/>
 
-				<Button type="submit">Submit</Button>
+				{isValid && (
+					<Button
+						className="text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
+						type="submit"
+						disabled={!isValid || form.formState.isSubmitting}
+					>
+						{form.formState.isSubmitting ? (
+							<Image
+								src="/icons/loading-circle.svg"
+								alt="Loading..."
+								width={24}
+								height={24}
+								className=""
+								priority
+							/>
+						) : (
+							"Submit Details"
+						)}
+					</Button>
+				)}
 			</form>
 		</Form>
 	);
