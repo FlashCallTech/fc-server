@@ -8,7 +8,7 @@ import React, { useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Button } from "../ui/button";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { getDarkHexCode, getImageSource } from "@/lib/utils";
+import { getDarkHexCode, getDisplayName, getImageSource } from "@/lib/utils";
 import { clientUser, creatorUser } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
 
@@ -16,8 +16,19 @@ const Sidebar = () => {
 	const [creator, setCreator] = useState<creatorUser>();
 	const pathname = usePathname();
 
-	const { currentUser, userType, currentTheme, creatorURL } =
-		useCurrentUsersContext();
+	const {
+		currentUser,
+		userType,
+		currentTheme,
+		creatorURL,
+		pendingNotifications,
+	} = useCurrentUsersContext();
+	const fullName = getDisplayName({
+		fullName: currentUser?.fullName,
+		firstName: currentUser?.firstName,
+		lastName: currentUser?.lastName,
+		username: currentUser?.username as string,
+	});
 	const isExpertPath =
 		creatorURL && creatorURL !== "" && pathname.includes(`${creatorURL}`);
 
@@ -74,11 +85,12 @@ const Sidebar = () => {
 				backgroundColor: isExpertPath ? "transparent" : "#ffffff",
 			}}
 		>
-			<div className="flex flex-1 flex-col gap-3.5 max-h-[88%] overflow-y-scroll no-scrollbar">
+			<div className="flex flex-1 flex-col gap-2.5 max-h-[88%] overflow-y-scroll no-scrollbar">
 				{sidebarItems.map((item, index) => {
 					const isActive =
 						pathname === item.route || pathname.startsWith(`${item.route}/`);
-
+					const showBadge =
+						item.label === "Notifications" && pendingNotifications > 0;
 					return (
 						!(item.route === "/home" && isExpertPath) && (
 							<Tooltip key={item.label + index}>
@@ -112,8 +124,13 @@ const Sidebar = () => {
 											priority
 										/>
 
-										<p className="text-base max-lg:hidden group-hover:text-white">
+										<p className="text-base max-lg:hidden group-hover:text-white flex items-center">
 											{item.label}
+											{showBadge && (
+												<span className="ml-2 flex items-center justify-center bg-red-500 rounded-full text-white p-1 text-xs size-5">
+													{pendingNotifications}
+												</span>
+											)}
 										</p>
 									</Link>
 								</TooltipTrigger>
@@ -131,7 +148,7 @@ const Sidebar = () => {
 					<TooltipTrigger asChild>
 						<Link
 							href={`/profile/${currentUser?._id}`}
-							className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start hoverScaleDownEffect ${
+							className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start hoverScaleDownEffect overflow-hidden ${
 								userType === "client" && isExpertPath && "bg-[#333333] py-2.5"
 							}  ${pathname.includes("/profile/") && "opacity-80"}`}
 						>
@@ -142,29 +159,36 @@ const Sidebar = () => {
 								height={1000}
 								className="rounded-full w-11 h-11 object-cover bg-white"
 							/>
-							<div className="flex flex-col items-start justify-center max-lg:hidden ">
+							<div className="flex flex-col w-full items-start justify-center max-lg:hidden">
 								<span
 									className={`${
-										isExpertPath ? "text-white" : "text-black"
-									} text-lg capitalize font-medium`}
+										isExpertPath && "text-white"
+									} text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap`}
 								>
-									{currentUser?.username || "Hello User"}
+									{fullName}
 								</span>
-								<span
-									className="text-xs font-medium"
-									style={{
-										color: getDarkHexCode(currentTheme) as string,
-									}}
-								>
-									{currentUser.phone
-										? currentUser.phone.replace(
-												/(\+91)(\d+)/,
-												(match, p1, p2) => `${p1} ${p2}`
-										  )
-										: currentUser.username
-										? `@${currentUser.username}`
-										: "@guest"}
-								</span>
+								<section className="flex items-center justify-between w-fit gap-2">
+									<span className="text-sm text-green-1">
+										{currentUser?.phone?.replace(
+											/(\+91)(\d+)/,
+											(match, p1, p2) => `${p1} ${p2}`
+										) || `@${fullName}`}
+									</span>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										strokeWidth={2.5}
+										stroke="currentColor"
+										className="size-3.5 text-green-1"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											d="m8.25 4.5 7.5 7.5-7.5 7.5"
+										/>
+									</svg>
+								</section>
 							</div>
 						</Link>
 					</TooltipTrigger>

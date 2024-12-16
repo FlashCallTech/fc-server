@@ -126,7 +126,7 @@ const MeetingRoom = () => {
 	const [hasVisited, setHasVisited] = useState(false);
 	const firestore = getFirestore();
 
-	const countdownDuration = ongoingCallStatus === "initiated" ? 60 : 15;
+	const countdownDuration = ongoingCallStatus === "ongoing" ? 30 : 15;
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
 		navigator.sendBeacon(
@@ -171,6 +171,7 @@ const MeetingRoom = () => {
 						variant: "destructive",
 						title: "Already in Call",
 						description: "You are already in this meeting in another tab.",
+						toastStatus: "positive",
 					});
 					router.replace("/home");
 					return;

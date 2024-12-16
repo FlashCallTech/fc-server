@@ -51,6 +51,7 @@ const CallTimer = ({
 					variant: "destructive",
 					title: "Call Ended ...",
 					description: "Time Limit Exceeded",
+					toastStatus: "negative",
 				});
 			setIsToastShown(true);
 

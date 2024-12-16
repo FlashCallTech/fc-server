@@ -10,7 +10,6 @@ import * as Sentry from "@sentry/nextjs";
 import { usePathname } from "next/navigation";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { trackEvent } from "@/lib/mixpanel";
 import axios from "axios";
 
 const FavoritesGrid = ({
@@ -111,6 +110,7 @@ const FavoritesGrid = ({
 							? `You are now following ${fullName}`
 							: `You have unfollowed ${fullName}`
 					}`,
+					toastStatus: isFavorited ? "negative" : "positive",
 				});
 			}
 		} catch (error) {

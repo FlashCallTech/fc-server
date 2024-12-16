@@ -9,6 +9,7 @@ import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
 import { getImageSource } from "@/lib/utils";
 import DeleteAlert from "@/components/shared/DeleteAlert";
+import Link from "next/link";
 
 const UserProfilePage = () => {
 	const { currentUser, userType, refreshCurrentUser } =
@@ -55,6 +56,8 @@ const UserProfilePage = () => {
 
 	const imageSrc = getImageSource(currentUser as clientUser | creatorUser);
 
+	const creatorURL = localStorage.getItem("creatorURL");
+
 	return (
 		<div className="flex justify-start items-center size-full flex-col gap-7 text-black mb-7 2xl:max-w-[69%] mx-auto">
 			{isInitialState ? (
@@ -70,6 +73,33 @@ const UserProfilePage = () => {
 						} p-4 flex flex-col items-center justify-center w-full gap-10 
 					`}
 					>
+						<section className="w-full flex items-center justify-start gap-4 -ml-1">
+							<Link
+								href={`${creatorURL ? creatorURL : "/home"}`}
+								className="text-xl font-bold hoverScaleDownEffect"
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									strokeWidth={1.5}
+									stroke="currentColor"
+									className="size-6"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										d="M15.75 19.5 8.25 12l7.5-7.5"
+									/>
+								</svg>
+							</Link>
+							<h1 className="text-xl md:text-2xl font-bold">
+								{creatorURL
+									? `Explore ${creatorURL.split("/")[1]}'s Profile`
+									: "Return Home"}
+							</h1>
+						</section>
+
 						{/* user profile picture */}
 
 						<section className="flex flex-col items-center justify-center  gap-2">
@@ -155,7 +185,6 @@ const UserProfilePage = () => {
 								initialState={initialState}
 								setEditData={setEditData}
 								userType={userType}
-								closeButton={true}
 							/>
 						</div>
 					)}

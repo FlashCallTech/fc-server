@@ -102,10 +102,8 @@ const Favorites = () => {
 				variant: "destructive",
 				title: `No creators found in the ${selectedProfession} category`,
 				description: "Try adjusting your filters",
+				toastStatus: "negative",
 			});
-			// setTimeout(() => {
-			// 	setSelectedProfession("All");
-			// }, 1000);
 		}
 	}, [userFavorites, selectedProfession, isLoading]);
 
@@ -117,7 +115,7 @@ const Favorites = () => {
 
 	return (
 		<section className="flex size-full flex-col">
-			<div
+			<section
 				className={`sticky flex w-full items-center justify-between top-0 md:top-[76px] bg-white z-30 px-2 lg:pl-0.5 p-4 pb-0 transition-all duration-300`}
 			>
 				<section className="flex items-center gap-4">
@@ -140,9 +138,9 @@ const Favorites = () => {
 							/>
 						</svg>
 					</Link>
-					<h1 className="text-xl md:text-3xl font-bold">Favorites</h1>
+					<h1 className="text-xl md:text-2xl font-bold">Favorites</h1>
 				</section>
-			</div>
+			</section>
 
 			{isLoading || (currentUser && walletBalance < 0) ? (
 				<section className={`w-full h-full flex items-center justify-center`}>

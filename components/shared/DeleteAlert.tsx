@@ -121,6 +121,7 @@ const DeleteAlert = () => {
 					variant: "destructive",
 					title: "User deleted successfully",
 					description: `Redirecting back to HomePage`,
+					toastStatus: "positive",
 				});
 				router.push("/home");
 			} else {

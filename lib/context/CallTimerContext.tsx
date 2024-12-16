@@ -158,6 +158,7 @@ export const CallTimerProvider = ({
 							variant: "destructive",
 							title: "Call Will End Soon",
 							description: "Client's wallet balance is low.",
+							toastStatus: "negative",
 						});
 					}
 				} else if (clampedTimeLeft > lowBalanceThreshold) {

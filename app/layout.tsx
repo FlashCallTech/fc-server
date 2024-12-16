@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React from "react";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import "@smastrom/react-rating/style.css";
 import "slick-carousel/slick/slick.css";

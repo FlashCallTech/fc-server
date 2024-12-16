@@ -27,6 +27,8 @@ const SheetOverlay = React.forwardRef<
 						? "bg-transparent h-fit"
 						: pathname.includes("/feedback")
 						? "bg-black"
+						: pathname.includes("/chat-ended")
+						? "bg-black"
 						: "bg-black/40"
 				}  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 outline-none`,
 				className

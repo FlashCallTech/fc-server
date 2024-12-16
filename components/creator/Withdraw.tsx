@@ -43,10 +43,9 @@ const Withdraw: React.FC = () => {
 	const { toast } = useToast();
 	const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value;
-		// Check if input is a valid number
 		if (/^\d*$/.test(value)) {
 			setWithdrawAmount(value);
-			setError(null); // Clear error if the input is valid
+			setError(null);
 		} else {
 			setError("Please enter a valid number.");
 		}
@@ -105,10 +104,9 @@ const Withdraw: React.FC = () => {
 		}
 	}, [inView, hasNextPage, isFetching]);
 
-	// Group transactions by date
 	const groupTransactionsByDate = (transactionsList: Transaction[]) => {
 		return transactionsList.reduce((acc, transaction) => {
-			const date = new Date(transaction.createdAt).toISOString().split("T")[0]; // Get only the date part (YYYY-MM-DD)
+			const date = new Date(transaction.createdAt).toISOString().split("T")[0];
 			if (!acc[date]) {
 				acc[date] = [];
 			}
@@ -141,13 +139,13 @@ const Withdraw: React.FC = () => {
 				toast({
 					variant: "destructive",
 					title: "Transaction ID Copied",
+					toastStatus: "positive",
 				});
 			})
 			.catch((err) => {
 				console.error("Failed to copy ID: ", err);
 			});
 	};
-	const creatorURL = localStorage.getItem("creatorURL");
 
 	return (
 		<>
@@ -421,7 +419,7 @@ const Withdraw: React.FC = () => {
 					!hasNextPage &&
 					!isFetching &&
 					creatorUser &&
-					userTransactions?.pages[0]?.totalTransactions !== 0 && (
+					userTransactions?.pages[0]?.totalTransactions > 4 && (
 						<div className="text-center text-gray-500 py-4">
 							You have reached the end of the list.
 						</div>
