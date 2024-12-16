@@ -3,9 +3,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Script from "next/script";
 import { useSearchParams } from "next/navigation";
-import {
-	creatorUser,
-} from "@/types";
+import { creatorUser } from "@/types";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import Link from "next/link";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -81,9 +79,12 @@ const Recharge: React.FC = () => {
 			) : (
 				<div className="overflow-y-scroll p-4 pt-0 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center justify-center w-full">
 					<Script src="https://checkout.razorpay.com/v1/checkout.js" />
-					<Script src="https://sdk.cashfree.com/js/v3/cashfree.js" onLoad={() => {
-						console.log("Cashfree SDK loaded successfully.");
-					}} />
+					<Script
+						src="https://sdk.cashfree.com/js/v3/cashfree.js"
+						onLoad={() => {
+							console.log("Cashfree SDK loaded successfully.");
+						}}
+					/>
 
 					{/* Payment Information */}
 					<section className="w-full py-5 sticky">
@@ -107,7 +108,7 @@ const Recharge: React.FC = () => {
 									/>
 								</svg>
 							</Link>
-							<h1 className="text-xl md:text-3xl font-bold">
+							<h1 className="text-xl md:text-2xl font-bold">
 								Payment Information{" "}
 							</h1>
 						</section>
@@ -145,10 +146,11 @@ const Recharge: React.FC = () => {
 									<button
 										key={app.name}
 										onClick={() => setMethod(app.name.toLowerCase())}
-										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${method === app.name.toLowerCase()
-											? "bg-gray-300 dark:bg-gray-600 !important"
-											: ""
-											}`}
+										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${
+											method === app.name.toLowerCase()
+												? "bg-gray-300 dark:bg-gray-600 !important"
+												: ""
+										}`}
 									>
 										<Image
 											src={app.icon}
@@ -204,7 +206,17 @@ const Recharge: React.FC = () => {
 					<button
 						className="w-4/5 md:w-1/3 mx-auto py-3 text-black bg-white rounded-lg border-2 border-black hover:bg-green-1 hover:text-white font-semibold fixed bottom-3"
 						style={{ boxShadow: "3px 3px black" }}
-						onClick={() => pgHandler(currentUser?._id as string, currentUser?.phone as string, creator?._id as string, amount as string, totalPayable as number, clientUser?.createdAt?.toString().split("T")[0] as string, currentUser?.walletBalance as number)}
+						onClick={() =>
+							pgHandler(
+								currentUser?._id as string,
+								currentUser?.phone as string,
+								creator?._id as string,
+								amount as string,
+								totalPayable as number,
+								clientUser?.createdAt?.toString().split("T")[0] as string,
+								currentUser?.walletBalance as number
+							)
+						}
 						disabled={loading} // Disable the button when loading
 					>
 						Proceed to Payment

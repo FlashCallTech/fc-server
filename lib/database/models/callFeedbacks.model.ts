@@ -9,7 +9,7 @@ const FeedbackEntrySchema = new Schema(
 			required: true,
 		},
 		rating: { type: Number, required: true },
-		feedback: { type: String },
+		feedback: { type: String, default: "No Feedback" },
 		showFeedback: { type: Boolean, default: false },
 		createdAt: { type: Date, default: Date.now },
 		position: { type: Number, default: -1 },

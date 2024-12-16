@@ -110,6 +110,7 @@ const FavoritesGrid = ({
 							? `You are now following ${fullName}`
 							: `You have unfollowed ${fullName}`
 					}`,
+					toastStatus: isFavorited ? "negative" : "positive",
 				});
 			}
 		} catch (error) {

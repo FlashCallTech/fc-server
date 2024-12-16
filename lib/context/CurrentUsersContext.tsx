@@ -7,6 +7,7 @@ import {
 	useEffect,
 	useState,
 	useMemo,
+	useRef,
 } from "react";
 
 import { clientUser, creatorUser } from "@/types";
@@ -14,9 +15,9 @@ import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
-import { backendBaseUrl, frontendBaseUrl } from "../utils";
+import { backendBaseUrl } from "../utils";
 
 // Define the shape of the context value
 interface CurrentUsersContextValue {
@@ -37,6 +38,10 @@ interface CurrentUsersContextValue {
 	updateCreatorURL: (url: any) => void;
 	ongoingCallStatus: string;
 	setOngoingCallStatus: any;
+	pendingNotifications: number;
+	setPendingNotifications: any;
+	setPreviousPendingNotifications: any;
+	fetchNotificationsOnce: any;
 }
 
 // Create the context with a default value of null
@@ -69,6 +74,10 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const [authToken, setAuthToken] = useState<string | null>(null);
 	const [creatorURL, setCreatorURL] = useState("");
 	const [ongoingCallStatus, setOngoingCallStatus] = useState("");
+	const [pendingNotifications, setPendingNotifications] = useState(0);
+	const [previousPendingNotifications, setPreviousPendingNotifications] =
+		useState<number | null>(null);
+
 	const { toast } = useToast();
 	const router = useRouter();
 
@@ -141,6 +150,76 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 		}
 	}, [currentUser?._id]);
 
+	const listenerRef = useRef<(() => void) | null>(null);
+
+	const initializeNotificationsListener = (creatorId: string) => {
+		if (!creatorId) return;
+
+		if (listenerRef.current) {
+			listenerRef.current();
+		}
+
+		let lastNotificationCount = previousPendingNotifications ?? 0;
+
+		const docRef = doc(db, "notifications", `notifications_${creatorId}`);
+		listenerRef.current = onSnapshot(docRef, (docSnap) => {
+			if (docSnap.exists()) {
+				const data = docSnap.data();
+				const totalNotifications = data.notifications.length;
+
+				// Play notification sound if the count has increased
+				if (totalNotifications > lastNotificationCount) {
+					const notificationSound = new Audio(
+						"/sounds/pendingNotification.wav"
+					);
+					notificationSound.play();
+				}
+
+				// Update local and state variables
+				lastNotificationCount = totalNotifications;
+				setPendingNotifications(totalNotifications);
+				setPreviousPendingNotifications(totalNotifications);
+			} else {
+				// Reset states if the document doesn't exist
+				setPendingNotifications(0);
+				setPreviousPendingNotifications(0);
+			}
+		});
+	};
+
+	const fetchNotificationsOnce = async (creatorId: string) => {
+		try {
+			const response = await axios.get(
+				`${backendBaseUrl}/user/notification/getNotifications`,
+				{
+					params: { page: 1, limit: 10, creatorId },
+				}
+			);
+
+			if (response.status === 200) {
+				const totalNotifications = response.data.totalNotifications || 0;
+				setPendingNotifications(totalNotifications);
+				setPreviousPendingNotifications(totalNotifications);
+			}
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error fetching notifications:", error);
+		}
+	};
+
+	useEffect(() => {
+		if (!creatorUser?._id) return;
+
+		initializeNotificationsListener(creatorUser._id);
+
+		return () => {
+			if (listenerRef.current) {
+				listenerRef.current();
+				listenerRef.current = null;
+			}
+		};
+	}, [creatorUser?._id]);
+
 	// Function to handle user signout
 	const handleSignout = async () => {
 		if (!currentUser) return;
@@ -196,6 +275,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					variant: "destructive",
 					title: "Sign-out",
 					description: "You have been signed out. Please log in again.",
+					toastStatus: "positive",
 				});
 			}
 		} catch (error: any) {
@@ -213,6 +293,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					variant: "destructive",
 					title: "Network Error",
 					description: "A network error occurred. Please try again later.",
+					toastStatus: "negative",
 				});
 			}
 		} finally {
@@ -238,6 +319,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 					variant: "destructive",
 					title: "Greetings Friend",
 					description: "Complete Your Profile Details...",
+					toastStatus: "positive",
 				});
 			}, 1000);
 		}
@@ -264,6 +346,7 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 									variant: "destructive",
 									title: "Another Session Detected",
 									description: "Logging Out...",
+									toastStatus: "positive",
 								});
 							}
 						}
@@ -305,9 +388,15 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 				updateCreatorURL,
 				ongoingCallStatus,
 				setOngoingCallStatus,
+				pendingNotifications,
+				setPendingNotifications,
+				setPreviousPendingNotifications,
+				fetchNotificationsOnce,
 			}}
 		>
 			{children}
 		</CurrentUsersContext.Provider>
 	);
 };
+
+export default CurrentUsersProvider;

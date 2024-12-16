@@ -102,6 +102,7 @@ const Favorites = () => {
 				variant: "destructive",
 				title: `No creators found in the ${selectedProfession} category`,
 				description: "Try adjusting your filters",
+				toastStatus: "negative",
 			});
 		}
 	}, [userFavorites, selectedProfession, isLoading]);
@@ -137,7 +138,7 @@ const Favorites = () => {
 							/>
 						</svg>
 					</Link>
-					<h1 className="text-xl md:text-3xl font-bold">Favorites</h1>
+					<h1 className="text-xl md:text-2xl font-bold">Favorites</h1>
 				</section>
 			</section>
 

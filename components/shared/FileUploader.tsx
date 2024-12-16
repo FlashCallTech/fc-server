@@ -9,6 +9,9 @@ import Image from "next/image";
 import imageCompression from "browser-image-compression";
 import * as Sentry from "@sentry/nextjs";
 import { usePathname } from "next/navigation";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { storage } from "@/lib/firebase";
 
 type FileUploaderProps = {
 	fieldChange: (url: string) => void;
@@ -26,6 +29,7 @@ const FileUploader = ({
 	const [newFileUrl, setNewFileUrl] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
+	const { currentUser } = useCurrentUsersContext();
 
 	// S3 client setup
 	const s3Client = new S3Client({
@@ -41,22 +45,31 @@ const FileUploader = ({
 			setLoading(true);
 
 			try {
-				let file = acceptedFiles[0];
+				const file = acceptedFiles[0];
 
-				// Compress and convert the image to WebP format
+				// Compress and convert to WebP
 				const options = {
 					maxSizeMB: 0.1,
 					maxWidthOrHeight: 1920,
 					useWebWorker: true,
 					fileType: "image/webp",
 				};
+
 				const compressedFile = await imageCompression(file, options);
-				onFileSelect(compressedFile);
+				let fileName = "";
+				// Rename the file to have the .webp extension
+				if (currentUser?._id) {
+					fileName = `${currentUser._id}.webp`;
+				} else {
+					fileName = `${Date.now()}_${compressedFile.name.replace(
+						/\.[^.]+$/,
+						".webp"
+					)}`;
+				}
 
-				const fileName = `${Date.now()}_${compressedFile.name}`;
-				const fileStream = compressedFile.stream(); // Use the stream directly
+				const fileStream = compressedFile.stream();
 
-				// S3 bucket params
+				// S3 upload params
 				const s3Params = {
 					Bucket: "flashcall.me",
 					Key: `uploads/${fileName}`,
@@ -64,7 +77,6 @@ const FileUploader = ({
 					ContentType: compressedFile.type,
 				};
 
-				// Create an instance of the Upload utility
 				const upload = new Upload({
 					client: s3Client,
 					params: s3Params,
@@ -72,13 +84,29 @@ const FileUploader = ({
 					leavePartsOnError: false,
 				});
 
-				// Execute the upload
+				// Execute upload
 				await upload.done();
 
 				// Generate CloudFront URL
 				const cloudFrontUrl = `https://dxvnlnyzij172.cloudfront.net/uploads/${fileName}`;
 
-				// Update UI and state
+				// Upload to Firebase Storage
+				if (currentUser?._id) {
+					const firebaseStorageRef = ref(
+						storage,
+						`notifications/${currentUser._id}`
+					);
+
+					const snapshot = await uploadBytes(
+						firebaseStorageRef,
+						compressedFile
+					);
+					const firebaseUrl = await getDownloadURL(snapshot.ref);
+
+					console.log("Firebase URL:", firebaseUrl);
+				}
+
+				// Update state
 				if (pathname === "/updateDetails") {
 					setFileUrl(cloudFrontUrl);
 				} else {
@@ -89,12 +117,13 @@ const FileUploader = ({
 
 				setLoading(false);
 			} catch (error) {
-				console.error("Upload error:", error); // Log the error for debugging
+				console.error("Upload error:", error);
 				Sentry.captureException(error);
 				toast({
 					variant: "destructive",
 					title: "Unable to Upload Image",
 					description: "Please Try Again...",
+					toastStatus: "negative",
 				});
 				setLoading(false);
 			}
@@ -155,7 +184,7 @@ const FileUploader = ({
 					</Button>
 				</div>
 			) : (
-				<div className="relative flex justify-center items-center">
+				<div className="relative flex justify-center items-center size-20 md:size-32">
 					{/* Overlay */}
 					<div className="absolute inset-0 bg-black/30 rounded-full flex justify-center items-center">
 						{/* Icon */}
@@ -185,7 +214,7 @@ const FileUploader = ({
 						<img
 							src={fileUrl}
 							alt="Current image"
-							className={`size-20 md:w-32 md:h-32 rounded-full border-2 border-white object-cover`}
+							className={`size-20 md:size-32 rounded-full border-2 border-white object-cover`}
 						/>
 					)}
 
@@ -194,7 +223,7 @@ const FileUploader = ({
 						<img
 							src={newFileUrl}
 							alt="New image preview"
-							className={`w-20 h-20 md:w-32 md:h-32 object-cover rounded-full border-2 border-green-500`}
+							className={`w-20 h-20 md:size-32 object-cover rounded-full border-2 border-green-500`}
 						/>
 					)}
 				</div>

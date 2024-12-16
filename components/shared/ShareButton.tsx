@@ -45,6 +45,7 @@ const ShareButton = ({
 					variant: "destructive",
 					title: "Failed to share",
 					description: `There was an error sharing the content. Please try again.`,
+					toastStatus: "negative",
 				});
 			}
 		} else {
@@ -53,6 +54,7 @@ const ShareButton = ({
 				title: "Sharing not supported",
 				description:
 					"Your device or browser does not support the share feature.",
+				toastStatus: "negative",
 			});
 		}
 	};

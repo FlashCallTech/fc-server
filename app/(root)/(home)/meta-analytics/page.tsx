@@ -52,7 +52,7 @@ const MetaAnalytics = () => {
 							/>
 						</svg>
 					</Link>
-					<h1 className="text-xl md:text-3xl font-bold">
+					<h1 className="text-xl md:text-2xl font-bold">
 						Meta Pixel Analytics
 					</h1>
 				</section>

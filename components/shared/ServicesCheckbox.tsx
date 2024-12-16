@@ -14,7 +14,6 @@ const ServicesCheckbox = ({
 	const { creatorUser } = useCurrentUsersContext();
 	const { getDevicePlatform } = usePlatform();
 
-	// console.log(services)
 	if (services.videoCall) {
 		trackEvent("Creator_Video_Online", {
 			Creator_ID: creatorUser?._id,

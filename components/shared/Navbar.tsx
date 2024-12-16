@@ -13,7 +13,6 @@ import AuthenticationSheet from "../shared/AuthenticationSheet";
 import { trackEvent } from "@/lib/mixpanel";
 import { creatorUser } from "@/types";
 import { getDarkHexCode } from "@/lib/utils";
-import NotifyNotifications from "../creator/NotifyNotifications";
 
 const NavLoader = () => {
 	return (
