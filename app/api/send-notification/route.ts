@@ -34,28 +34,50 @@ if (!admin.apps.length) {
 }
 
 export async function POST(request: NextRequest) {
-	const { token, title, message, link, data } = await request.json();
-	try {
-		const payload: Message = {
-			token,
-			data: {
-				title: title,
-				body: message,
-				...(link && { link }),
-				...data,
-			},
-			android: {
-				priority: "high",
-			},
-		};
+  const { token, title, message, link, data } = await request.json();
 
-		await admin.messaging().send(payload);
-		return NextResponse.json({ success: true, message: "Data message sent!" });
-	} catch (error: any) {
-		console.error("Error sending data message:", error);
-		return NextResponse.json({
-			success: false,
-			error: error.message || "Unknown error",
-		});
-	}
+  try {
+    const payload: Message = {
+      token,
+      data: {
+        title,
+        body: message,
+        ...(link && { link }),
+        ...data,
+      },
+      android: {
+        priority: "high",
+        notification: {
+          title,
+          body: message,
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
+            alert: {
+              title,
+              body: message,
+            },
+            sound: "default",
+            badge: 1,
+          },
+        },
+        headers: {
+          "apns-priority": "10",
+        },
+      },
+    };
+
+    await admin.messaging().send(payload);
+
+    return NextResponse.json({ success: true, message: "Notification sent!" });
+  } catch (error: any) {
+    console.error("Error sending notification:", error);
+    return NextResponse.json({
+      success: false,
+      error: error.message || "Unknown error",
+    });
+  }
 }
+

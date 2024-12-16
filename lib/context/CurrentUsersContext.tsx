@@ -86,79 +86,79 @@ export const CurrentUsersProvider = ({ children, region }: { children: ReactNode
 		};
 	}, []);
 
-	const previousValues = useRef({
-		clientUser,
-		creatorUser,
-		currentTheme,
-		authenticationSheetOpen,
-		fetchingUser,
-		userType,
-		authToken,
-		creatorURL,
-		ongoingCallStatus,
-		userFetched,
-		region
-	});
+	// const previousValues = useRef({
+	// 	clientUser,
+	// 	creatorUser,
+	// 	currentTheme,
+	// 	authenticationSheetOpen,
+	// 	fetchingUser,
+	// 	userType,
+	// 	authToken,
+	// 	creatorURL,
+	// 	ongoingCallStatus,
+	// 	userFetched,
+	// 	region
+	// });
 
-	useEffect(() => {
-		const changedVariables: { [key: string]: any } = {};
+	// useEffect(() => {
+	// 	const changedVariables: { [key: string]: any } = {};
 
-		// Compare current state with previous state and find changes
-		if (previousValues.current.region !== region)
-			changedVariables.region = { from: previousValues.current.region, to: region };
-		if (previousValues.current.clientUser !== clientUser)
-			changedVariables.clientUser = { from: previousValues.current.clientUser, to: clientUser };
-		if (previousValues.current.creatorUser !== creatorUser)
-			changedVariables.creatorUser = { from: previousValues.current.creatorUser, to: creatorUser };
-		if (previousValues.current.currentTheme !== currentTheme)
-			changedVariables.currentTheme = { from: previousValues.current.currentTheme, to: currentTheme };
-		if (previousValues.current.authenticationSheetOpen !== authenticationSheetOpen)
-			changedVariables.authenticationSheetOpen = { from: previousValues.current.authenticationSheetOpen, to: authenticationSheetOpen };
-		if (previousValues.current.fetchingUser !== fetchingUser)
-			changedVariables.fetchingUser = { from: previousValues.current.fetchingUser, to: fetchingUser };
-		if (previousValues.current.userType !== userType)
-			changedVariables.userType = { from: previousValues.current.userType, to: userType };
-		if (previousValues.current.authToken !== authToken)
-			changedVariables.authToken = { from: previousValues.current.authToken, to: authToken };
-		if (previousValues.current.creatorURL !== creatorURL)
-			changedVariables.creatorURL = { from: previousValues.current.creatorURL, to: creatorURL };
-		if (previousValues.current.ongoingCallStatus !== ongoingCallStatus)
-			changedVariables.ongoingCallStatus = { from: previousValues.current.ongoingCallStatus, to: ongoingCallStatus };
-		if (previousValues.current.userFetched !== userFetched)
-			changedVariables.userFetched = { from: previousValues.current.userFetched, to: userFetched };
+	// 	// Compare current state with previous state and find changes
+	// 	if (previousValues.current.region !== region)
+	// 		changedVariables.region = { from: previousValues.current.region, to: region };
+	// 	if (previousValues.current.clientUser !== clientUser)
+	// 		changedVariables.clientUser = { from: previousValues.current.clientUser, to: clientUser };
+	// 	if (previousValues.current.creatorUser !== creatorUser)
+	// 		changedVariables.creatorUser = { from: previousValues.current.creatorUser, to: creatorUser };
+	// 	if (previousValues.current.currentTheme !== currentTheme)
+	// 		changedVariables.currentTheme = { from: previousValues.current.currentTheme, to: currentTheme };
+	// 	if (previousValues.current.authenticationSheetOpen !== authenticationSheetOpen)
+	// 		changedVariables.authenticationSheetOpen = { from: previousValues.current.authenticationSheetOpen, to: authenticationSheetOpen };
+	// 	if (previousValues.current.fetchingUser !== fetchingUser)
+	// 		changedVariables.fetchingUser = { from: previousValues.current.fetchingUser, to: fetchingUser };
+	// 	if (previousValues.current.userType !== userType)
+	// 		changedVariables.userType = { from: previousValues.current.userType, to: userType };
+	// 	if (previousValues.current.authToken !== authToken)
+	// 		changedVariables.authToken = { from: previousValues.current.authToken, to: authToken };
+	// 	if (previousValues.current.creatorURL !== creatorURL)
+	// 		changedVariables.creatorURL = { from: previousValues.current.creatorURL, to: creatorURL };
+	// 	if (previousValues.current.ongoingCallStatus !== ongoingCallStatus)
+	// 		changedVariables.ongoingCallStatus = { from: previousValues.current.ongoingCallStatus, to: ongoingCallStatus };
+	// 	if (previousValues.current.userFetched !== userFetched)
+	// 		changedVariables.userFetched = { from: previousValues.current.userFetched, to: userFetched };
 
-		// Log changes
-		if (Object.keys(changedVariables).length > 0) {
-			console.log("State Changes:", changedVariables);
-		}
+	// 	// Log changes
+	// 	if (Object.keys(changedVariables).length > 0) {
+	// 		console.log("State Changes:", changedVariables);
+	// 	}
 
-		// Update previous values to current values
-		previousValues.current = {
-			region,
-			clientUser,
-			creatorUser,
-			currentTheme,
-			authenticationSheetOpen,
-			fetchingUser,
-			userType,
-			authToken,
-			creatorURL,
-			ongoingCallStatus,
-			userFetched,
-		};
-	}, [
-		region,
-		clientUser,
-		creatorUser,
-		currentTheme,
-		authenticationSheetOpen,
-		fetchingUser,
-		userType,
-		authToken,
-		creatorURL,
-		ongoingCallStatus,
-		userFetched,
-	]);
+	// 	// Update previous values to current values
+	// 	previousValues.current = {
+	// 		region,
+	// 		clientUser,
+	// 		creatorUser,
+	// 		currentTheme,
+	// 		authenticationSheetOpen,
+	// 		fetchingUser,
+	// 		userType,
+	// 		authToken,
+	// 		creatorURL,
+	// 		ongoingCallStatus,
+	// 		userFetched,
+	// 	};
+	// }, [
+	// 	region,
+	// 	clientUser,
+	// 	creatorUser,
+	// 	currentTheme,
+	// 	authenticationSheetOpen,
+	// 	fetchingUser,
+	// 	userType,
+	// 	authToken,
+	// 	creatorURL,
+	// 	ongoingCallStatus,
+	// 	userFetched,
+	// ]);
 
 	// Define the unified currentUser state
 	const currentUser = useMemo(
@@ -352,6 +352,7 @@ export const CurrentUsersProvider = ({ children, region }: { children: ReactNode
 
 		// Initialize listener only if region is "India"
 		const unsubscribe = onAuthStateChanged(auth, (user) => {
+			console.log(user);
 			if (user && user.email) {
 				fetchGlobalCurrentUser(user.email);
 			} else {

@@ -18,6 +18,7 @@ interface Transaction {
 	type: "credit" | "debit";
 	category: string;
 	callType?: string;
+	global?: boolean;
 }
 
 const Transactions = () => {
@@ -292,8 +293,8 @@ const Transactions = () => {
 													} `}
 												>
 													{transaction?.type === "credit"
-														? `+ ₹${transaction?.amount?.toFixed(2)}`
-														: `- ₹${transaction?.amount?.toFixed(2)}`}
+														? `+ ${currentUser?.global ? "$" : "₹" }${transaction?.amount?.toFixed(2)}`
+														: `- ${currentUser?.global ? "$" : "₹" }${transaction?.amount?.toFixed(2)}`}
 												</span>
 
 												{transaction.type === "credit" && (

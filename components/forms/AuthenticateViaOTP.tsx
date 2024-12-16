@@ -291,7 +291,6 @@ const AuthenticateViaOTP = ({
 	const handleGoogleSignIn = async () => {
 		try {
 			const result = await signInWithPopup(auth, provider);
-			console.log(result.user);
 			const email = result.user.email as string;
 
 			const fcmToken: any = await getFCMToken();

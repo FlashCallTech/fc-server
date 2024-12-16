@@ -306,8 +306,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			const ratePerMinute =
 				callType === "video"
-					? parseInt(creator?.videoRate, 10)
-					: parseInt(creator?.audioRate, 10);
+					? parseInt(clientUser.global ? creator.globalVideoRate : creator?.videoRate, 10)
+					: parseInt(clientUser.global ? creator.globalAudioRate : creator?.audioRate, 10);
 			let maxCallDuration = (walletBalance / ratePerMinute) * 60;
 			maxCallDuration =
 				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
@@ -347,6 +347,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						members: members,
 						custom: {
 							description,
+							global: clientUser?.global ?? false,
 						},
 					},
 				})
@@ -405,7 +406,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						expertId: creator._id,
 						isVideoCall: callType,
 						creatorPhone: creator.phone,
-						clientPhone: clientUser?.phone,
+						clientPhone: clientUser?.global ? clientUser?.email : clientUser?.phone,
+						global: clientUser?.global ?? false,
 					});
 				})
 				.catch((err) => console.log("Unable to create Meeting", err));
@@ -605,8 +607,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			},
 		},
 	];
-
-	console.log(isClientBusy);
 
 	// Sort services based on priority and enabled status
 	const sortedServices = services.sort((a, b) => {
