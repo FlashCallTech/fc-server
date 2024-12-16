@@ -11,6 +11,7 @@ import React, { useEffect, useState } from "react";
 import { parseISO, isValid, format } from "date-fns";
 import { useInView } from "react-intersection-observer";
 import InvoiceModal from "@/components/client/InvoiceModal";
+
 interface Transaction {
 	_id: string;
 	amount: number;
