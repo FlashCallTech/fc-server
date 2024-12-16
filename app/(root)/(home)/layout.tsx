@@ -7,7 +7,6 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { resetBodyBackgroundColor, setBodyBackgroundColor } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import Headroom from "react-headroom";
-import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 // Custom hook to track screen size
 const useScreenSize = () => {
@@ -29,7 +28,6 @@ const useScreenSize = () => {
 const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 	const pathname = usePathname();
 	const { creatorURL } = useCurrentUsersContext();
-	const { walletBalance } = useWalletBalanceContext();
 
 	const isMobile = useScreenSize();
 
