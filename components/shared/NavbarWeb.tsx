@@ -102,7 +102,7 @@ const NavbarWeb = ({
 									</Button>
 								</Link>
 								{/* Login Button */}
-								{/* <Link href="/home">
+								<Link href="/home">
 									<Button
 										className="uppercase bg-white hover:bg-white rounded-[6px] hoverScaleDownEffect text-xs border border-black md:!px-7"
 										style={{
@@ -111,7 +111,7 @@ const NavbarWeb = ({
 									>
 										Discover
 									</Button>
-								</Link> */}
+								</Link>
 							</>
 						)}
 					</div>

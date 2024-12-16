@@ -40,7 +40,6 @@ const CreatorSchema = new Schema(
 		restricted: { type: Boolean, default: false },
 		blocked: [{ type: Schema.Types.ObjectId, ref: "Client" }],
 		commission: { type: String, default: "20.00" },
-		discountRate: { type: String, default: "10.00" },
 	},
 	{
 		timestamps: true,
