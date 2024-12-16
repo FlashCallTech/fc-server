@@ -16,7 +16,6 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import ServicesForm from "../shared/ServicesForm";
-import { useToast } from "../ui/use-toast";
 
 interface DiscountConsentSheetProps {
 	isOpen: boolean;
@@ -28,7 +27,6 @@ const ServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 	onOpenChange,
 }) => {
 	const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 584);
-	const { toast } = useToast();
 	useEffect(() => {
 		const handleResize = () => {
 			setIsMobileView(window.innerWidth <= 584);
