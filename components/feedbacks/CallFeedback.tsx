@@ -95,6 +95,7 @@ const CallFeedback = ({
 				variant: "destructive",
 				title: "Give it another try",
 				description: "Something went wrong",
+				toastStatus: "negative",
 			});
 			return;
 		}
@@ -102,6 +103,7 @@ const CallFeedback = ({
 			toast({
 				variant: "destructive",
 				title: "Feedback Rating is Required",
+				toastStatus: "negative",
 			});
 			return;
 		}
@@ -124,12 +126,14 @@ const CallFeedback = ({
 				variant: "destructive",
 				title: "Feedback Submitted Successfully",
 				description: "Edit or Review at Order History",
+				toastStatus: "positive",
 			});
 		} catch (error: any) {
 			toast({
 				variant: "destructive",
 				title: "Failed to Submit Feedback",
 				description: "Add new at Order History",
+				toastStatus: "negative",
 			});
 			console.error("Error submitting feedback:", error);
 		} finally {

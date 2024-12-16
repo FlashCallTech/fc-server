@@ -34,40 +34,36 @@ if (!admin.apps.length) {
 }
 
 export async function POST(request: NextRequest) {
-  const { token, title, message, link, data } = await request.json();
-
-  try {
-    const payload: Message = {
-      token,
-      data: {
-        title,
-        body: message,
-        ...(link && { link }),
-        ...data,
-      },
-      android: {
-        priority: "high",
-        notification: {
-          title,
-          body: message,
-        },
-      },
-      apns: {
-        payload: {
-          aps: {
-            alert: {
-              title,
-              body: message,
-            },
-            sound: "default",
-            badge: 1,
-          },
-        },
-        headers: {
-          "apns-priority": "10",
-        },
-      },
-    };
+	const { token, title, message, link, data } = await request.json();
+	try {
+		const payload: Message = {
+			token,
+			notification: {
+				title: title,
+				body: message,
+			},
+			data: {
+				...(link && { link }),
+				...data,
+			},
+			apns: {
+				headers: {
+					"apns-priority": "10",
+				},
+				payload: {
+					aps: {
+						alert: {
+							title: title,
+							body: message,
+						},
+						sound: "default",
+					},
+				},
+			},
+			android: {
+				priority: "high",
+			},
+		};
 
     await admin.messaging().send(payload);
 

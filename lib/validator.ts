@@ -1,5 +1,5 @@
 import * as z from "zod";
-const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+const usernameRegex = /^[a-zA-Z0-9_\-+]+$/;
 
 export const UpdateProfileFormSchema = z.object({
 	firstName: z
@@ -59,7 +59,6 @@ export const UpdateProfileFormSchemaClient = z.object({
 export const enterAmountSchema = z.object({
 	rechargeAmount: z
 		.string()
-		.regex(/^\d+(\.\d{1,2})?$/, "Amount must be a valid numeric value")
 		.refine((val) => parseFloat(val) >= 1, "Amount must be at least 1 rupee")
 		.refine(
 			(val) => parseFloat(val) <= 100000,

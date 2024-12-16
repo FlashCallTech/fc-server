@@ -1,6 +1,5 @@
 "use client";
 
-import InvoiceModal from "@/components/client/invoiceModal";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -11,6 +10,8 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { parseISO, isValid, format } from "date-fns";
 import { useInView } from "react-intersection-observer";
+import InvoiceModal from "@/components/client/InvoiceModal";
+
 interface Transaction {
 	_id: string;
 	amount: number;
@@ -89,6 +90,7 @@ const Transactions = () => {
 				toast({
 					variant: "destructive",
 					title: "Transaction ID Copied",
+					toastStatus: "positive",
 				});
 			})
 			.catch((err) => {
@@ -128,7 +130,7 @@ const Transactions = () => {
 							/>
 						</svg>
 					</Link>
-					<h1 className="text-xl md:text-3xl font-bold">Transaction History</h1>
+					<h1 className="text-xl md:text-2xl font-bold">Transaction History</h1>
 				</section>
 			</section>
 			<section className="flex space-x-2 text-xs font-bold leading-4 size-full h-fit px-4 pb-4">

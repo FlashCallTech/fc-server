@@ -10,11 +10,11 @@ const ServicesCheckbox = ({
 	isRestricted,
 	handleToggle,
 	prices,
+	globalPrices,
 }: any) => {
 	const { creatorUser } = useCurrentUsersContext();
 	const { getDevicePlatform } = usePlatform();
 
-	// console.log(services)
 	if (services.videoCall) {
 		trackEvent("Creator_Video_Online", {
 			Creator_ID: creatorUser?._id,
@@ -23,6 +23,8 @@ const ServicesCheckbox = ({
 			Status: "Online",
 		});
 	}
+
+	console.log(globalPrices);
 
 	return (
 		<div className="flex flex-col gap-2 mt-2">
@@ -35,6 +37,7 @@ const ServicesCheckbox = ({
 						<span>{service}</span>
 						<div className="flex flex-row gap-2">
 							<p className="font-normal text-xs text-gray-400">{`Rs ${prices[service]}/min`}</p>
+							<p className="font-normal text-xs text-gray-400">{`$ ${globalPrices[service]}/min`}</p>
 							<button onClick={() => setIsPriceEditOpen(true)}>
 								<Image
 									src={"/edit.svg"}

@@ -69,7 +69,6 @@ export type EditProfileProps = {
 	initialState: any;
 	setEditData?: React.Dispatch<React.SetStateAction<boolean>>;
 	userType: string | null;
-	closeButton?: boolean;
 };
 
 const EditProfile = ({
@@ -78,7 +77,6 @@ const EditProfile = ({
 	initialState,
 	setEditData,
 	userType,
-	closeButton,
 }: EditProfileProps) => {
 	const pathname = usePathname();
 	const { toast } = useToast();
@@ -283,7 +281,6 @@ const EditProfile = ({
 				setUsernameError("Username is already taken");
 			}
 		} catch (error: any) {
-			// Handle cases where the error is not 409 (e.g., network issues, server errors)
 			if (error.response && error.response.status === 409) {
 				setUsernameError("Username is already taken");
 			} else {
@@ -390,6 +387,7 @@ const EditProfile = ({
 					variant: "destructive",
 					title: "Unable to Edit Details",
 					description: `${response.error}`,
+					toastStatus: "negative",
 				});
 			} else {
 				const updatedUser = response.updatedUser;
@@ -412,6 +410,7 @@ const EditProfile = ({
 					variant: "destructive",
 					title: "Details Edited Successfully",
 					description: "Changes are now visible ...",
+					toastStatus: "positive",
 				});
 
 				setEditData && setEditData((prev) => !prev);
@@ -423,6 +422,7 @@ const EditProfile = ({
 				variant: "destructive",
 				title: "Unable to Edit Details",
 				description: "Try Again Editing your Details",
+				toastStatus: "negative",
 			});
 		} finally {
 			setLoading(false);
@@ -443,7 +443,9 @@ const EditProfile = ({
 	return (
 		<Form {...form}>
 			<section
-				className={`sticky top-0 md:top-[76px] bg-white z-30 p-4 pl-0 flex flex-col items-start justify-start gap-4 w-full h-fit`}
+				className={`sticky ${
+					pathname.includes("/updateDetails") ? "top-0" : "top-0 md:top-[76px]"
+				}  bg-white z-30 p-4 pl-0 flex flex-col items-start justify-start gap-4 w-full h-fit`}
 			>
 				<section className="flex items-center gap-4">
 					{pathname.includes("/profile") && (
@@ -470,7 +472,7 @@ const EditProfile = ({
 							</svg>
 						</section>
 					)}
-					<h1 className="text-xl md:text-3xl font-bold">Edit User Details</h1>
+					<h1 className="text-xl md:text-2xl font-bold">Edit User Details</h1>
 				</section>
 			</section>
 
@@ -1068,23 +1070,12 @@ const EditProfile = ({
 				)}
 				<section
 					className={`${
-						isChanged && isValid && !formError && !usernameError
+						isChanged && isValid && !formError
 							? "grid-cols-1 w-full"
 							: "grid-cols-1 w-3/4 lg:w-1/2"
 					} sticky bottom-2 right-0 grid  gap-4 items-center justify-center `}
 				>
-					{/* {closeButton && (
-						<Button
-							className="text-base rounded-lg border border-gray-300  hoverScaleDownEffect bg-gray-400 text-white"
-							onClick={() => {
-								form.reset();
-								setEditData && setEditData((prev) => !prev);
-							}}
-						>
-							Close
-						</Button>
-					)} */}
-					{isChanged && isValid && !formError && !usernameError && (
+					{isChanged && isValid && !formError && (
 						<Button
 							className="text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
 							type="submit"

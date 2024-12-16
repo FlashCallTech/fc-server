@@ -146,6 +146,7 @@ export const ChatTimerProvider = ({
 							toast({
 								title: "Chat Will End Soon",
 								description: "Client's wallet balance is low.",
+								toastStatus: "negative",
 							});
 						}
 					} else if (clampedTimeLeft > lowBalanceThreshold) {

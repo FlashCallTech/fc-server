@@ -62,6 +62,7 @@ const MeetingPage = () => {
 				variant: "destructive",
 				title: "Call Not Found",
 				description: "Redirecting Back...",
+				toastStatus: "negative",
 			});
 			setTimeout(() => {
 				router.replace(`${creatorURL ? creatorURL : "/home"}`);
@@ -83,6 +84,7 @@ const MeetingPage = () => {
 					variant: "destructive",
 					title: "Access Denied",
 					description: "You are not authorized to join this meeting.",
+					toastStatus: "negative",
 				});
 				setTimeout(() => {
 					router.replace(`${creatorURL ? creatorURL : "/home"}`);

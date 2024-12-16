@@ -72,18 +72,38 @@ ToastAction.displayName = ToastPrimitives.Action.displayName;
 
 const ToastClose = React.forwardRef<
 	React.ElementRef<typeof ToastPrimitives.Close>,
-	React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>
->(({ className, ...props }, ref) => (
+	React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close> &
+		VariantProps<typeof toastVariants> & { toastStatus?: string }
+>(({ className, toastStatus, ...props }, ref) => (
 	<ToastPrimitives.Close
 		ref={ref}
 		className={cn(
-			"w-fit rounded-full p-[1px] mt-0.5 bg-red-500 text-black  hoverScaleDownEffect hover:text-white",
+			`w-fit rounded-full p-[1px] mt-0.5 ${
+				toastStatus === "positive" ? "bg-green-1" : "bg-red-500"
+			} text-white  hoverScaleDownEffect p-1`,
 			className
 		)}
 		toast-close=""
 		{...props}
 	>
-		<X className="size-4" />
+		{toastStatus === "positive" ? (
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				strokeWidth={1.5}
+				stroke="currentColor"
+				className="size-4"
+			>
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					d="m4.5 12.75 6 6 9-13.5"
+				/>
+			</svg>
+		) : (
+			<X className="size-4" />
+		)}
 	</ToastPrimitives.Close>
 ));
 ToastClose.displayName = ToastPrimitives.Close.displayName;

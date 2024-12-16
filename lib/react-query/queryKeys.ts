@@ -5,4 +5,5 @@ export enum QUERY_KEYS {
 	GET_USER_TRANSACTIONS = "get_user_transactions",
 	GET_USER_CALLS = "get_user_calls",
 	GET_BLOCKED_CLIENTS = "get_blocked_clients",
+	GET_CREATOR_NOTIFICATION = "get_creator_notification",
 }
