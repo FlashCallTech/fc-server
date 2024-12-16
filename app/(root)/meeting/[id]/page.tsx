@@ -142,7 +142,7 @@ const CallEnded = ({ toast, router, call }: any) => {
 				setLoading(true);
 
 				if (userType === "client") {
-					await updateExpertStatus(currentUser?.phone as string, "Idle");
+					await updateExpertStatus(currentUser?.global ? currentUser?.email as string : currentUser?.phone as string, "Idle");
 				}
 
 				await updateExpertStatus(expertPhone, "Online");

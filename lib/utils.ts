@@ -37,6 +37,7 @@ export const backendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL_BACKEND;
 // Function to handle interrupted calls and update the user's status
 export const handleInterruptedCall = async (
 	currentUserId: string,
+	global: boolean,
 	callId: string | null,
 	call: Call,
 	currentUserPhone: string,
@@ -53,6 +54,7 @@ export const handleInterruptedCall = async (
 	// Extract relevant fields from the call object
 	const callData = {
 		id: call.id,
+		global,
 		endedAt: call.state.endedAt,
 		startedAt: call.state.startsAt,
 		isVideoCall: call.type === "default",
@@ -63,6 +65,8 @@ export const handleInterruptedCall = async (
 		expertPhone,
 		clientPhone,
 	};
+
+	console.log(callData);
 
 	try {
 		// Update the user's status based on the type
@@ -525,6 +529,7 @@ type UpdateSessionParams = {
 	isVideoCall?: string;
 	creatorPhone?: string;
 	clientPhone?: string;
+	global?: boolean;
 };
 
 export const updateFirestoreSessions = async (

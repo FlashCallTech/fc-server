@@ -237,7 +237,7 @@ const CallListMobile = ({
 																{/* User Amount */}
 																<span className="flex items-center gap-1">
 																	{/* Amount */}
-																	{`₹ ${userCall?.amount?.toFixed(0) ?? 0}`}
+																	{`${currentUser?.global ? "$" : "₹"} ${userCall?.amount?.toFixed(2) ?? 0}`}
 																</span>
 															</>
 														</section>

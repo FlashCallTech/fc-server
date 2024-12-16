@@ -21,6 +21,8 @@ import { creatorUser } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import Script from "next/script";
+import { backendBaseUrl } from "@/lib/utils";
 
 interface PaymentProps {
 	callType?: string;
@@ -86,7 +88,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			? [5, 10, 15, 30, 40, 60].map((multiplier) =>
 				(rate * multiplier).toFixed(2)
 			)
-			: ["50", "99", "199", "499", "999", "1999", "2999", "3999", "49999"];
+			: currentUser?.global ? ["1", "2", "5", "10", "15", "20", "30", "40", "50"] : ["50", "99", "199", "499", "999", "1999", "2999", "3999", "49999"];
 	};
 
 	const tileClicked = (index: any) => {
@@ -129,7 +131,33 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 		localStorage.removeItem("cashfree_order_id");
 
-		router.push(`/recharge?amount=${rechargeAmount}`);
+		if (currentUser?.global) {
+			// Open PayPal Standard Checkout
+			const paypal = (window as any).paypal;
+			if (paypal) {
+				paypal.Buttons({
+					async createOrder() {
+						const response = await fetch(`${backendBaseUrl}/order/paypal/createOrder`, {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								amount: rechargeAmount,
+							})
+						});
+
+						const order = await response.json();
+
+						return order.orderId;
+					},
+				}).render("#paypal-button-container");
+			} else {
+				console.error("PayPal SDK not loaded");
+			}
+		} else {
+			router.push(`/recharge?amount=${rechargeAmount}`);
+		}
 
 		return;
 	}
@@ -150,6 +178,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 	return (
 		<div className="sticky top-0 md:top-[76px] bg-white z-30 flex flex-col  text-gray-800 w-full h-full p-4 gap-5">
+			<Script src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID as string}&buyer-country=US`} onLoad={() => {
+				console.log("Paypal SDK loaded successfully.");
+			}} />
+			{currentUser?.global && <div id="paypal-button-container" className="mt-4"></div>}
 			<section className="flex items-center gap-4 -ml-1">
 				<Link
 					href={`${creatorURL ? creatorURL : "/home"}`}
@@ -181,7 +213,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 							Total Balance
 						</h2>
 						<span className="w-fit text-3xl text-green-1 leading-7 font-bold">
-							Rs. {walletBalance.toFixed(2)}
+							{`${currentUser.global ? "$" : "Rs."} ${walletBalance.toFixed(2)}`}
 						</span>
 					</>
 				) : (
@@ -201,7 +233,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 				<h2 className="w-fit text-gray-500 font-normal leading-5">Add Money</h2>
 				<Form {...form}>
 					<form className="w-full flex items-center justify-center text-center text-3xl leading-7 font-bold text-green-1">
-						<span className="text-3xl">₹</span>
+						<span className="text-3xl">{`${currentUser?.global ? "$" : "₹"}`}</span>
 
 						<FormField
 							control={form.control}
@@ -229,7 +261,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						{/* Display the amount due message if there's an amount due */}
 						{amountToBeDisplayed() !== undefined && (
 							<p className="text-red-500">
-								₹{amountToBeDisplayed()?.toFixed(2)} more required for 5 minutes
+								{`${currentUser?.global ? "$" : "₹"} ${amountToBeDisplayed()?.toFixed(2)}`} more required for 5 minutes
 								of {callType}
 							</p>
 						)}
@@ -246,7 +278,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 									tileClicked(index);
 								}}
 							>
-								₹ {amount}
+								{`${currentUser?.global ? "$" : "₹"} ${amount}`}
 							</button>
 						))}
 					</div>
