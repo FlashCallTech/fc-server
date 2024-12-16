@@ -14,7 +14,7 @@ import { clientUser, creatorUser } from "@/types";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import TransactionInvoice from "../creator/transactionInvoice";
 import FeedbackCheck from "../feedbacks/FeedbackCheck";
-import CallInvoiceModal from "../client/callInvoiceModal";
+import CallInvoiceModal from "../client/CallInvoiceModal";
 
 const OptionsList = ({
 	callId,
