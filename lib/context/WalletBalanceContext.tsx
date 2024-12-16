@@ -1,10 +1,10 @@
-// WalletBalanceContext.tsx
 import React, {
 	createContext,
 	useContext,
 	useState,
 	ReactNode,
 	useEffect,
+	useRef,
 } from "react";
 
 import { useCurrentUsersContext } from "./CurrentUsersContext";
@@ -42,6 +42,7 @@ export const WalletBalanceProvider = ({
 	const { currentUser, userType } = useCurrentUsersContext();
 	const [walletBalance, setWalletBalance] = useState<number>(-1);
 	const isCreator = userType === "creator";
+	const isFirstMount = useRef(true); // To prevent redundant effects on double mount
 
 	useEffect(() => {
 		if (process.env.NODE_ENV === "development") {
@@ -77,8 +78,11 @@ export const WalletBalanceProvider = ({
 	};
 
 	useEffect(() => {
-		if (currentUser) {
-			setWalletBalance(currentUser.walletBalance ?? 0);
+		if (isFirstMount.current) {
+			isFirstMount.current = false;
+			if (currentUser) {
+				setWalletBalance(currentUser.walletBalance ?? 0);
+			}
 		}
 	}, [currentUser]);
 
@@ -111,7 +115,7 @@ export const WalletBalanceProvider = ({
 		return () => {
 			unsubscribe();
 		};
-	}, []);
+	}, [currentUser, userType]);
 
 	const updateWalletBalance = async () => {
 		try {
