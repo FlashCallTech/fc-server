@@ -15,8 +15,8 @@ const ChatFeedbackPage = () => {
 	const [loadingFeedback, setLoadingFeedback] = useState(false);
 	const [showFeedback, setShowFeedback] = useState(true);
 	const creatorURL = localStorage.getItem("creatorURL");
-  const { chatId, callId, clientId } = useParams();
-  const { currentUser } = useCurrentUsersContext();
+	const { chatId, callId, clientId } = useParams();
+	const { currentUser } = useCurrentUsersContext();
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -38,6 +38,7 @@ const ChatFeedbackPage = () => {
 			variant: "destructive",
 			title: "Thanks For The Feedback",
 			description: "Hope to See You Again ...",
+			toastStatus: "positive",
 		});
 		router.replace(`${creatorURL ? creatorURL : "/home"}`);
 	};
@@ -56,13 +57,13 @@ const ChatFeedbackPage = () => {
 			className="w-full flex items-center justify-center bg-"
 		>
 			{clientId === currentUser?._id && (
-					<ChatFeedback
-						chatId={chatId as string}
-						callId={callId as string}
-						isOpen={showFeedback}
-						onOpenChange={handleFeedbackClose}
-					/>
-				)}
+				<ChatFeedback
+					chatId={chatId as string}
+					callId={callId as string}
+					isOpen={showFeedback}
+					onOpenChange={handleFeedbackClose}
+				/>
+			)}
 		</section>
 	);
 };

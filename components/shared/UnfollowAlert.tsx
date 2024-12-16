@@ -34,6 +34,7 @@ const UnfollowAlert = ({
 }) => {
 	const [isMobileView, setIsMobileView] = useState(false);
 	const fullName = getDisplayName(creator);
+
 	useEffect(() => {
 		// Set the initial value and listen for window resize to adjust the view
 		const handleResize = () => {
@@ -87,10 +88,10 @@ const UnfollowAlert = ({
 			<DialogContent className="bg-white max-w-[92%] md:max-w-sm rounded-[8px]">
 				<DialogHeader>
 					<DialogTitle className="text-red-500 !text-start">
-						Unfollow User
+						Unfollow {fullName}
 					</DialogTitle>
 					<DialogDescription className=" text-sm !text-start">
-						Are you sure you want to unfollow this user?
+						Are you sure you want to unfollow {fullName}?
 					</DialogDescription>
 				</DialogHeader>
 

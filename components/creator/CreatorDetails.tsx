@@ -151,6 +151,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 							? `You are now following ${fullName}`
 							: `You have unfollowed ${fullName}`
 					}`,
+					toastStatus: markedFavorite ? "negative" : "positive",
 				});
 			}
 		} catch (error) {

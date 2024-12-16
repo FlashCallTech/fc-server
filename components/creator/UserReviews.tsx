@@ -73,6 +73,7 @@ const UserReviews = ({
 			variant: "destructive",
 			title: "Error",
 			description: "Failed to fetch feedbacks.",
+			toastStatus: "negative",
 		});
 	}
 

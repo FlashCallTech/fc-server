@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 	const [status, setStatus] = useState<string>("Offline");
 	const fullName = getDisplayName(creator);
-
 	const imageSrc = getImageSource(creator);
 
 	useEffect(() => {

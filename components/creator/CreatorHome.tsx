@@ -25,7 +25,7 @@ import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
-import PixelIntegration from "./PixelIntegration";
+import ServicesSheet from "./ServicesSheet";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
@@ -38,6 +38,7 @@ const CreatorHome = () => {
 	);
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
 	const [loading, setLoading] = useState(true);
+	const [isServicesSheetOpen, setIsServicesSheetOpen] = useState(false);
 	const [creatorLink, setCreatorLink] = useState<string | null>(null);
 	const [todaysEarning, setTodaysEarning] = useState(0);
 	const [isPriceEditOpen, setIsPriceEditOpen] = useState(false);
@@ -233,6 +234,7 @@ const CreatorHome = () => {
 				variant: "destructive",
 				title: "Rates Updated",
 				description: "Values are updated...",
+				toastStatus: "positive",
 			});
 
 		} catch (error) {
@@ -242,6 +244,7 @@ const CreatorHome = () => {
 				variant: "destructive",
 				title: "Rates were Not Updated",
 				description: "Something went wrong...",
+				toastStatus: "negative",
 			});
 		} finally {
 			refreshCurrentUser();
@@ -487,9 +490,21 @@ const CreatorHome = () => {
 						/>
 					</section>
 
-					<CreatorLinks />
+					{/* <section
+						className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer"
+						onClick={() => setIsServicesSheetOpen((prev) => !prev)}
+					>
+						{isServicesSheetOpen ? "Services Sheet Visible" : "Add Services"}
+					</section> */}
 
-					<PixelIntegration creatorId={creatorUser?._id} />
+					{/* {isServicesSheetOpen && (
+						<ServicesSheet
+							isOpen={isServicesSheetOpen}
+							onOpenChange={setIsServicesSheetOpen}
+						/>
+					)} */}
+
+					<CreatorLinks />
 
 					<section className="flex items-center justify-center pt-4">
 						<div className="text-center text-[13px] text-gray-400">

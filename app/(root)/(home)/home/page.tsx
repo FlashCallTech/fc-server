@@ -75,13 +75,11 @@ const HomePage = () => {
 		const docSnap = await getDoc(creatorDocRef);
 
 		trackEvent("Page_View", {
-			// UTM_Source: "google",
 			Creator_ID: id,
 			status: docSnap.data()?.status,
 			Wallet_Balance: currentUser?.walletBalance,
 		});
 
-		// Trigger the route change immediately
 		router.push(`/${username}`);
 	};
 
@@ -118,6 +116,7 @@ const HomePage = () => {
 				variant: "destructive",
 				title: `No creators found in the ${selectedProfession} category`,
 				description: "Try adjusting your filters",
+				toastStatus: "negative",
 			});
 		}
 	}, [creators, selectedProfession, isLoading]);

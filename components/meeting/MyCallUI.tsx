@@ -156,6 +156,7 @@ const MyCallUI = () => {
 				variant: "destructive",
 				title: message.title,
 				description: message.description,
+				toastStatus: "negative",
 			});
 
 			setShowCallUI(false);
@@ -186,6 +187,18 @@ const MyCallUI = () => {
 		const expert = outgoingCall.state?.members?.find(
 			(member) => member.custom.type === "expert"
 		);
+
+		const callType = outgoingCall.type === "default" ? "video" : "audio";
+
+		const maskNumbers = (input: string): string => {
+			if (input.startsWith("+91")) {
+				return input.replace(
+					/(\+91)(\d{10})/,
+					(match, p1, p2) => `${p1} ${p2.slice(0, 5)}xxxxx`
+				);
+			}
+			return input ?? "";
+		};
 
 		const sessionTriggeredRef = doc(
 			db,
@@ -301,11 +314,15 @@ const MyCallUI = () => {
 			if (fcmToken) {
 				sendNotification(
 					fcmToken,
-					`Incoming ${outgoingCall.type} Request`,
-					`Call Request from ${outgoingCall?.state?.createdBy?.name}`,
+					`Missed ${callType} Call Request`,
+					`Call Request from ${maskNumbers(
+						outgoingCall?.state?.createdBy?.name || "Flashcall User"
+					)}`,
 					{
-						created_by_display_name: outgoingCall?.state?.createdBy?.name,
-						callType: outgoingCall.type,
+						created_by_display_name: maskNumbers(
+							outgoingCall?.state?.createdBy?.name || "Flashcall User"
+						),
+						callType: callType,
 						callId: outgoingCall.id,
 						notificationType: "call.missed",
 					}
@@ -348,6 +365,7 @@ const MyCallUI = () => {
 					variant: "destructive",
 					title: message.title,
 					description: message.description,
+					toastStatus: "negative",
 				});
 
 				await axios.post(`${backendBaseUrl}/calls/updateCall`, {
@@ -370,11 +388,13 @@ const MyCallUI = () => {
 			if (fcmToken) {
 				sendNotification(
 					fcmToken,
-					`Incoming ${outgoingCall.type} Request`,
+					`Missed ${callType} Call Request`,
 					`Call Request from ${outgoingCall?.state?.createdBy?.name}`,
 					{
-						created_by_display_name: outgoingCall?.state?.createdBy?.name,
-						callType: outgoingCall.type,
+						created_by_display_name: maskNumbers(
+							outgoingCall?.state?.createdBy?.name || "Flashcall User"
+						),
+						callType: callType,
 						callId: outgoingCall.id,
 						notificationType: "call.missed",
 					}
@@ -392,6 +412,7 @@ const MyCallUI = () => {
 				variant: "destructive",
 				title: message.title,
 				description: message.description,
+				toastStatus: "negative",
 			});
 
 			await axios.post(`${backendBaseUrl}/calls/updateCall`, {
@@ -414,11 +435,13 @@ const MyCallUI = () => {
 			if (fcmToken) {
 				sendNotification(
 					fcmToken,
-					`Incoming ${outgoingCall.type} Request`,
+					`Missed ${callType} Call Request`,
 					`Call Request from ${outgoingCall?.state?.createdBy?.name}`,
 					{
-						created_by_display_name: outgoingCall?.state?.createdBy?.name,
-						callType: outgoingCall.type,
+						created_by_display_name: maskNumbers(
+							outgoingCall?.state?.createdBy?.name || "Flashcall User"
+						),
+						callType: callType,
 						callId: outgoingCall.id,
 						notificationType: "call.missed",
 					}

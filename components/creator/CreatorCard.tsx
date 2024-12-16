@@ -25,7 +25,9 @@ const CreatorCard = () => {
 	const router = useRouter();
 
 	const initializedPixelId = useRef<string | null>(null);
-	const lastTrackedCallId = useRef<string | null>(null);
+	const [lastCallTracked, setLastCallTracked] = useState(
+		() => localStorage.getItem("lastTrackedCallId") || null
+	);
 
 	useEffect(() => {
 		// Redirect if the current user is a creator
@@ -57,26 +59,26 @@ const CreatorCard = () => {
 	}, [username, userType, currentUser, router]);
 
 	useEffect(() => {
+		let isMounted = true;
+
 		const fetchAndTrackCall = async () => {
-			if (!currentUser || !userType) return;
+			if (!creator || !currentUser || !userType) return;
 
 			try {
-				console.log(currentUser, userType);
-				// Fetch latest call data
 				const response = await axios.get(
 					`${backendBaseUrl}/calls/getUserLatestCall`,
 					{
-						params: { userId: currentUser._id, userType },
+						params: {
+							userId: currentUser._id,
+							expertId: creator._id,
+							userType,
+						},
 					}
 				);
 
 				const callData = response.data.call;
 
-				// Retrieve last tracked call ID from localStorage
-				const storedCallId = localStorage.getItem("lastTrackedCallId");
-
-				if (callData && storedCallId !== callData.callId) {
-					// Track event with Meta Pixel
+				if (callData && callData.callId !== lastCallTracked) {
 					trackPixelEvent("Latest_Call", {
 						callId: callData.callId,
 						chatId: callData.chatId,
@@ -89,8 +91,11 @@ const CreatorCard = () => {
 						endedAt: callData.endedAt,
 					});
 
-					// Update last tracked call ID in localStorage
-					localStorage.setItem("lastTrackedCallId", callData.callId);
+					if (isMounted) {
+						setLastCallTracked(callData.callId);
+						localStorage.setItem("lastTrackedCallId", callData.callId);
+					}
+
 					console.log("Tracked call event:", callData.callId);
 				} else if (callData) {
 					console.log("Duplicate call event skipped:", callData.callId);
@@ -102,7 +107,11 @@ const CreatorCard = () => {
 		};
 
 		fetchAndTrackCall();
-	}, [currentUser, userType]);
+
+		return () => {
+			isMounted = false; // Cleanup
+		};
+	}, [currentUser, userType, lastCallTracked]);
 
 	if (loading || (currentUser && walletBalance < 0)) {
 		return (

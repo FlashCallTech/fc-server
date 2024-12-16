@@ -75,11 +75,14 @@ const RechargeModal = ({
 
 		try {
 			setOnGoingPayment(true);
-			const response: Response = await fetch(`${backendBaseUrl}/order/create-order`, {
-				method: "POST",
-				body: JSON.stringify({ amount, currency, receipt: receiptId }),
-				headers: { "Content-Type": "application/json" },
-			});
+			const response: Response = await fetch(
+				`${backendBaseUrl}/order/create-order`,
+				{
+					method: "POST",
+					body: JSON.stringify({ amount, currency, receipt: receiptId }),
+					headers: { "Content-Type": "application/json" },
+				}
+			);
 
 			const order = await response.json();
 
@@ -98,11 +101,14 @@ const RechargeModal = ({
 					try {
 						const paymentId = body.razorpay_order_id;
 
-						const paymentResponse = await fetch(`${backendBaseUrl}/order/create-payment`, {
-							method: "POST",
-							body: JSON.stringify({ order_id: response.razorpay_order_id }),
-							headers: { "Content-Type": "application/json" },
-						});
+						const paymentResponse = await fetch(
+							`${backendBaseUrl}/order/create-payment`,
+							{
+								method: "POST",
+								body: JSON.stringify({ order_id: response.razorpay_order_id }),
+								headers: { "Content-Type": "application/json" },
+							}
+						);
 
 						paymentResult = await paymentResponse.json();
 					} catch (error) {
@@ -143,6 +149,7 @@ const RechargeModal = ({
 								rechargeAmount,
 								10
 							)} to your balance`,
+							toastStatus: "positive",
 						});
 						setRechargeAmount("");
 					} catch (error) {
@@ -152,6 +159,7 @@ const RechargeModal = ({
 							variant: "destructive",
 							title: "Something Went Wrong",
 							description: `Please enter a valid amount`,
+							toastStatus: "negative",
 						});
 					}
 				},
@@ -196,9 +204,11 @@ const RechargeModal = ({
 			<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
 				<SheetTrigger asChild>
 					<Button
-						className={`${pathname.includes("meeting") ? "bg-green-1" : "bg-red-500"
-							} text-white ${inTipModal ? "mt-0" : "mt-2"
-							}  w-full hoverScaleEffect rounded-[20px]`}
+						className={`${
+							pathname.includes("meeting") ? "bg-green-1" : "bg-red-500"
+						} text-white ${
+							inTipModal ? "mt-0" : "mt-2"
+						}  w-full hoverScaleEffect rounded-[20px]`}
 						onClick={() => setIsSheetOpen(true)}
 					>
 						Recharge

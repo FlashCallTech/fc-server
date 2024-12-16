@@ -33,7 +33,7 @@ const formSchema = z.object({
 		.string()
 		.min(10, { message: "Must be exactly 10 digits." })
 		.max(10, { message: "Must be exactly 10 digits." })
-		.regex(/^\d{10}$/, { message: "Must contain only digits." }),
+		.regex(/^[6-9][0-9]{9}$/, { message: "Invalid phone number." }),
 });
 
 const FormSchemaOTP = z.object({
@@ -229,7 +229,8 @@ const AuthenticateViaOTP = ({
 					toast({
 						variant: "destructive",
 						title: "Error Registering User",
-						description: `${error.response.data.error}`,
+						description: `${error.response.data.error} || "Something went wrong`,
+						toastStatus: "negative",
 					});
 					resetState();
 					return;

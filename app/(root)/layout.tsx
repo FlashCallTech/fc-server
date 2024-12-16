@@ -1,38 +1,28 @@
 "use client";
 
-import { ChatRequestProvider } from "@/lib/context/ChatRequestContext";
-import { CurrentUsersProvider } from "@/lib/context/CurrentUsersContext";
-import { WalletBalanceProvider } from "@/lib/context/WalletBalanceContext";
+import React, { ReactNode, useEffect, useState, Suspense, lazy } from "react";
+
+import StreamVideoProvider from "@/providers/streamClientProvider";
+import CurrentUsersProvider from "@/lib/context/CurrentUsersContext";
+
+const WalletBalanceProvider = lazy(
+	() => import("@/lib/context/WalletBalanceContext")
+);
+const ChatRequestProvider = lazy(
+	() => import("@/lib/context/ChatRequestContext")
+);
 import { initMixpanel } from "@/lib/mixpanel";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
-import StreamVideoProvider from "@/providers/streamClientProvider";
 import axios from "axios";
-import { throttle } from "lodash";
 import Image from "next/image";
-import React, { ReactNode, useEffect, useState } from "react";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {
-	const [isOnline, setIsOnline] = useState(true);
 	const [isMounted, setIsMounted] = useState(false);
 
 	useEffect(() => {
-		const handleOnline = throttle(() => setIsOnline(true), 500);
-		const handleOffline = throttle(() => setIsOnline(false), 500);
-
-		window.addEventListener("online", handleOnline);
-		window.addEventListener("offline", handleOffline);
-
-		return () => {
-			window.removeEventListener("online", handleOnline);
-			window.removeEventListener("offline", handleOffline);
-		};
-	}, []);
-
-	// Set mounted state once the component is mounted
-	useEffect(() => {
 		setIsMounted(true);
-		initMixpanel(); // Initialize Mixpanel
+		initMixpanel();
 		axios.defaults.withCredentials = true;
 	}, []);
 
@@ -51,7 +41,7 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 			);
 		}
 
-		if (!isOnline) {
+		if (!navigator.onLine) {
 			return (
 				<section className="w-full h-screen flex flex-col items-center justify-center gap-4">
 					<div className="flex flex-col justify-center items-start gap-5 rounded-lg p-6 max-w-lg h-fit w-full mx-auto animate-pulse">
@@ -107,13 +97,27 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 		<QueryProvider>
 			<CurrentUsersProvider>
 				<StreamVideoProvider>
-					<WalletBalanceProvider>
-						<ChatRequestProvider>
-							<div className="relative min-h-screen w-full">
-								{renderContent()}
-							</div>
-						</ChatRequestProvider>
-					</WalletBalanceProvider>
+					<Suspense
+						fallback={
+							<section className="absolute bg-[#121319] top-0 left-0 flex justify-center items-center h-screen w-full z-40">
+								<Image
+									src="/icons/logo_splashScreen.png"
+									alt="Loading..."
+									width={500}
+									height={500}
+									className="w-36 h-36 animate-pulse"
+								/>
+							</section>
+						}
+					>
+						<WalletBalanceProvider>
+							<ChatRequestProvider>
+								<div className="relative min-h-screen w-full">
+									{renderContent()}
+								</div>
+							</ChatRequestProvider>
+						</WalletBalanceProvider>
+					</Suspense>
 				</StreamVideoProvider>
 			</CurrentUsersProvider>
 		</QueryProvider>

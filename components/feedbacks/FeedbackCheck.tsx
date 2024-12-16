@@ -105,9 +105,9 @@ const FeedbackCheck = ({ callId }: { callId: string }) => {
 								transition="zoom"
 								readOnly
 							/>
-							<div className="pl-2 flex flex-col items-start justify-center gap-2">
+							<div className="size-full pl-2 flex flex-col items-start justify-center gap-2 overflow-hidden">
 								<span
-									className={`w-full text-start ${
+									className={`overflow-scroll no-scrollbar w-full text-start ${
 										!userFeedback.feedback && "text-gray-400 text-xs"
 									}`}
 								>
