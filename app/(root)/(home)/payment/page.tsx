@@ -1,6 +1,6 @@
 "use client";
 
-import Payment from "@/components/client/payment";
+import Payment from "@/components/client/Payment";
 import Withdraw from "@/components/creator/Withdraw";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useSearchParams } from "next/navigation";
