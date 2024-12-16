@@ -22,8 +22,14 @@ import SignoutAlert from "./SignoutAlert";
 
 const MobileNav = () => {
 	const pathname = usePathname();
-	const { currentUser, userType, clientUser, creatorURL } =
-		useCurrentUsersContext();
+	const {
+		currentUser,
+		creatorUser,
+		userType,
+		clientUser,
+		creatorURL,
+		pendingNotifications,
+	} = useCurrentUsersContext();
 	const [creator, setCreator] = useState<creatorUser>();
 	const isExpertPath =
 		creatorURL && creatorURL !== "" && pathname.includes(`${creatorURL}`);
@@ -83,13 +89,20 @@ const MobileNav = () => {
 		<section className="flex items-center justify-center w-fit relative">
 			<Sheet>
 				<SheetTrigger asChild>
-					<Image
-						src={imageSrc}
-						alt="Profile"
-						width={1000}
-						height={1000}
-						className="rounded-full w-11 h-11 object-cover cursor-pointer hoverScaleDownEffect bg-white"
-					/>
+					<section className="relative size-full">
+						<Image
+							src={imageSrc}
+							alt="Profile"
+							width={1000}
+							height={1000}
+							className="rounded-full w-11 h-11 object-cover cursor-pointer hoverScaleDownEffect bg-white"
+						/>
+						{creatorUser && pendingNotifications > 0 && (
+							<span className="absolute -top-1 -right-1 flex items-center justify-center bg-red-500 rounded-full text-white p-1 text-xs size-5">
+								{pendingNotifications}
+							</span>
+						)}
+					</section>
 				</SheetTrigger>
 				<SheetContent
 					side="right"
@@ -146,6 +159,9 @@ const MobileNav = () => {
 								<section className="flex flex-1 flex-col gap-2.5 w-full h-full text-white">
 									{sidebarItems.map((item) => {
 										const isActive = pathname === item.route;
+										const showBadge =
+											item.label === "Notifications" &&
+											pendingNotifications > 0;
 
 										return (
 											!(item.route === "/home" && isExpertPath) && (
@@ -168,7 +184,14 @@ const MobileNav = () => {
 															className="invert-0 brightness-200 w-6 h-6 object-cover"
 															priority
 														/>
-														<p className="font-semibold">{item.label}</p>
+														<p className="font-semibold flex items-center">
+															{item.label}
+															{showBadge && (
+																<span className="ml-2 flex items-center justify-center bg-red-500 rounded-full text-white p-1 text-xs size-5">
+																	{pendingNotifications}
+																</span>
+															)}
+														</p>
 													</Link>
 												</SheetClose>
 											)

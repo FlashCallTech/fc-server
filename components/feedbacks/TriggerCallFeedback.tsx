@@ -28,6 +28,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 						variant: "destructive",
 						title: "Feedback Already Exists",
 						description: "Returning back ...",
+						toastStatus: "positive",
 					});
 					router.push(`${creatorURL ? creatorURL : "/home"}`);
 				} else {
@@ -40,6 +41,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 					variant: "destructive",
 					title: "Error",
 					description: "An error occurred while fetching feedbacks",
+					toastStatus: "negative",
 				});
 			} finally {
 				setLoadingFeedback(false);
@@ -55,6 +57,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
 			variant: "destructive",
 			title: "Thanks For The Feedback",
 			description: "Hope to See You Again ...",
+			toastStatus: "positive",
 		});
 		router.push(`${creatorURL ? creatorURL : "/home"}`);
 	};

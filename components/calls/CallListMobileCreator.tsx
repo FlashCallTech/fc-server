@@ -218,7 +218,7 @@ const CallListMobileCreator = ({
 																{/* User Amount */}
 																<span className="flex items-center gap-1">
 																	{/* Amount */}
-																	{`₹ ${userCall?.amount?.toFixed(0) ?? 0}`}
+																	{`₹ ${userCall?.global ? userCall?.amountINR?.toFixed(2) ?? 0 : userCall?.amount?.toFixed(2) ?? 0}`}
 																</span>
 															</>
 														</section>

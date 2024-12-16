@@ -27,6 +27,7 @@ const CopyToClipboard = ({
 				toast({
 					variant: "destructive",
 					title: "Creator Link Copied",
+					toastStatus: "positive",
 				});
 			})
 			.catch((err) => {
@@ -63,6 +64,7 @@ const CopyToClipboard = ({
 					variant: "destructive",
 					title: "Failed to share",
 					description: `There was an error sharing the content. Please try again.`,
+					toastStatus: "negative",
 				});
 			}
 		} else {
@@ -71,6 +73,7 @@ const CopyToClipboard = ({
 				title: "Sharing not supported",
 				description:
 					"Your device or browser does not support the share feature.",
+				toastStatus: "negative",
 			});
 		}
 	};

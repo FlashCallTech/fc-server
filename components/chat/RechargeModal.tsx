@@ -96,14 +96,16 @@ const RechargeModal = ({
 					let paymentResult;
 
 					try {
-						const paymentResponse = await fetch(`${backendBaseUrl}/order/create-payment`, {
-							method: "POST",
-							body: JSON.stringify({order_id: response.razorpay_order_id}),
-							headers: { "Content-Type": "application/json" },
-						});
+						const paymentResponse = await fetch(
+							`${backendBaseUrl}/order/create-payment`,
+							{
+								method: "POST",
+								body: JSON.stringify({ order_id: response.razorpay_order_id }),
+								headers: { "Content-Type": "application/json" },
+							}
+						);
 
 						paymentResult = await paymentResponse.json();
-
 					} catch (error) {
 						Sentry.captureException(error);
 					}
@@ -144,6 +146,7 @@ const RechargeModal = ({
 								rechargeAmount,
 								10
 							)} to your balance`,
+							toastStatus: "positive",
 						});
 						setRechargeAmount("");
 					} catch (error) {
@@ -153,6 +156,7 @@ const RechargeModal = ({
 							variant: "destructive",
 							title: "Something Went Wrong",
 							description: `Please enter a valid amount`,
+							toastStatus: "negative",
 						});
 					}
 				},

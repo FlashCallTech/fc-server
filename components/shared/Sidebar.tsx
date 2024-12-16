@@ -16,8 +16,13 @@ const Sidebar = () => {
 	const [creator, setCreator] = useState<creatorUser>();
 	const pathname = usePathname();
 
-	const { currentUser, userType, currentTheme, creatorURL } =
-		useCurrentUsersContext();
+	const {
+		currentUser,
+		userType,
+		currentTheme,
+		creatorURL,
+		pendingNotifications,
+	} = useCurrentUsersContext();
 	const fullName = getDisplayName({
 		fullName: currentUser?.fullName,
 		firstName: currentUser?.firstName,
@@ -83,7 +88,8 @@ const Sidebar = () => {
 				{sidebarItems.map((item, index) => {
 					const isActive =
 						pathname === item.route || pathname.startsWith(`${item.route}/`);
-
+					const showBadge =
+						item.label === "Notifications" && pendingNotifications > 0;
 					return (
 						!(item.route === "/home" && isExpertPath) && (
 							<Tooltip key={item.label + index}>
@@ -115,8 +121,13 @@ const Sidebar = () => {
 											priority
 										/>
 
-										<p className="text-base max-lg:hidden group-hover:text-white">
+										<p className="text-base max-lg:hidden group-hover:text-white flex items-center">
 											{item.label}
+											{showBadge && (
+												<span className="ml-2 flex items-center justify-center bg-red-500 rounded-full text-white p-1 text-xs size-5">
+													{pendingNotifications}
+												</span>
+											)}
 										</p>
 									</Link>
 								</TooltipTrigger>
@@ -134,8 +145,9 @@ const Sidebar = () => {
 					<TooltipTrigger asChild>
 						<Link
 							href={`/profile/${currentUser?._id}`}
-							className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start hoverScaleDownEffect overflow-hidden ${userType === "client" && isExpertPath && "bg-[#333333] py-2.5"
-								}  ${pathname.includes("/profile/") && "opacity-80"}`}
+							className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start hoverScaleDownEffect overflow-hidden ${
+								userType === "client" && isExpertPath && "bg-[#333333] py-2.5"
+							}  ${pathname.includes("/profile/") && "opacity-80"}`}
 						>
 							<Image
 								src={imageSrc}
@@ -145,7 +157,11 @@ const Sidebar = () => {
 								className="rounded-full w-11 h-11 object-cover bg-white"
 							/>
 							<div className="flex flex-col w-full items-start justify-center max-lg:hidden">
-								<span className="text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap">
+								<span
+									className={`${
+										isExpertPath && "text-white"
+									} text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap`}
+								>
 									{fullName}
 								</span>
 								<section className="flex items-center justify-between w-fit gap-2">

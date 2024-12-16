@@ -93,6 +93,7 @@ const CallListMobile = ({
 											variant: "destructive",
 											title: "Invalid Username",
 											description: "Missing Creator Info",
+											toastStatus: "negative",
 										});
 										console.error("Invalid creator username");
 									}

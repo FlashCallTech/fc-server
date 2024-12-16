@@ -7,10 +7,8 @@ import {
 	doc,
 	getDoc,
 	onSnapshot,
-	query,
 	setDoc,
 	updateDoc,
-	where,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -101,6 +99,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				variant: "destructive",
 				title: "Insufficient Balance",
 				description: "Your balance is below the minimum amount.",
+				toastStatus: "negative",
 			});
 			router.push("/payment?callType=chat");
 			return;
@@ -143,9 +142,25 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				if (existingChat) {
 					existingChatId = existingChat.chatId;
 				}
+			} else {
+				try {
+					await setDoc(userChatsDocSnapshot.ref, {
+						isTyping: false
+					}, { merge: true });
+
+					await setDoc(creatorChatsDocSnapshot.ref, {
+						isTyping: false
+					}, { merge: true });
+				} catch (error) {
+					console.error("Error updating isTyping field: ", error);
+				}
 			}
 
 			const chatId = existingChatId || doc(chatRef).id;
+			await setDoc(doc(db, "chats", chatId), {
+				clientId: clientUser?._id,
+				creatorId: creator?._id
+			}, { merge: true });
 			localStorage.setItem("chatId", chatId);
 			const newChatRequestRef = doc(chatRequestsRef);
 			const createdAtDate = clientUser?.createdAt
@@ -275,7 +290,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
-			toast({ variant: "destructive", title: "Failed to send chat request" });
+			toast({
+				variant: "destructive",
+				title: "Failed to send chat request",
+				toastStatus: "negative",
+			});
 		}
 	};
 
@@ -400,7 +419,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
-			toast({ variant: "destructive", title: "Failed to accept chat request" });
+			toast({
+				variant: "destructive",
+				title: "Failed to accept chat request",
+				toastStatus: "negative",
+			});
 		}
 	};
 
@@ -463,7 +486,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
-			toast({ variant: "destructive", title: "Failed to reject chat request" });
+			toast({
+				variant: "destructive",
+				title: "Failed to reject chat request",
+				toastStatus: "negative",
+			});
 		}
 	};
 

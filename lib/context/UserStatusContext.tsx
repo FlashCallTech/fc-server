@@ -59,6 +59,7 @@ export const UserStatusProvider: React.FC<{ children: React.ReactNode }> = ({
 									variant: "destructive",
 									title: `${username} is now online`,
 									description: `Visit ${username} to book your Call`,
+									toastStatus: "positive",
 								});
 
 								// Update notifyList both in state and localStorage

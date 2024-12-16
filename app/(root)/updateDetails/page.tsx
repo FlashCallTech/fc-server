@@ -62,7 +62,7 @@ const UpdateProfilePage = () => {
 		);
 
 	return (
-		<section className="flex w-full h-full flex-col items-center justify-start pt-5 pb-14">
+		<section className="flex w-full h-full flex-col items-center justify-start pb-14">
 			<div className="px-4 flex flex-col w-full 2xl:max-w-[69%] items-start justify-center gap-7 mt-4">
 				<EditProfile
 					userData={userData}

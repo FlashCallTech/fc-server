@@ -11,9 +11,7 @@ let isPixelInitialized = false;
  */
 export const initializeMetaPixel = (pixelId: string) => {
 	ReactPixel.init(pixelId); // Initialize Pixel
-	// ReactPixel.pageView(); // Track Page View
 	isPixelInitialized = true; // Set the flag to true
-	// console.log(`Meta Pixel initialized with ID: ${pixelId}`);
 };
 
 /**
@@ -23,12 +21,10 @@ export const initializeMetaPixel = (pixelId: string) => {
  */
 export const trackPixelEvent = (eventName: string, data: object = {}) => {
 	if (!isPixelInitialized) {
-		console.error("Meta Pixel not initialized. Event not tracked:", eventName);
 		return;
 	}
 
 	ReactPixel.trackCustom(eventName, data);
-	// console.log(`Tracked event: ${eventName}`, data);
 };
 
 /**
@@ -38,14 +34,10 @@ export const trackPixelEvent = (eventName: string, data: object = {}) => {
  */
 export const trackStandardEvent = (eventName: string, data: object = {}) => {
 	if (!isPixelInitialized) {
-		console.error(
-			"Meta Pixel not initialized. Standard event not tracked:",
-			eventName
-		);
 		return;
 	}
+
 	ReactPixel.trackCustom(eventName, data);
-	// console.log(`Tracked standard event: ${eventName}`, data);
 };
 
 /**
@@ -62,18 +54,12 @@ export const fetchCreatorDataAndInitializePixel = async (
 		);
 
 		const pixelId = response.data.data.pixelId || "";
-		const accessToken = response.data.data.accessToken || "";
 
 		if (pixelId) {
 			initializeMetaPixel(pixelId);
-			// console.log(`Meta Pixel initialized for creator with ID: ${creatorId}`);
-		} else {
-			console.error(
-				"No Pixel ID found for this creator. Meta Pixel not initialized."
-			);
 		}
 	} catch (error) {
-		console.error("Error initializing Meta Pixel for creator:", error);
+		console.warn("Error initializing Meta Pixel for creator:");
 	}
 };
 

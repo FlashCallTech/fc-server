@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "../ui/sheet";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { createFeedback } from "@/lib/actions/feedback.actions";
 import { useToast } from "../ui/use-toast";
 import { success } from "@/constants/icons";
 import { Button } from "../ui/button";
@@ -12,12 +11,13 @@ import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import useGetChatById from "@/hooks/useGetChatById";
 import { logEvent } from "firebase/analytics";
-import { analytics } from "@/lib/firebase";
+import { analytics, db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { trackEvent } from "@/lib/mixpanel";
 import { creatorUser } from "@/types";
 import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
+import { doc, getDoc } from "firebase/firestore";
 
 const ChatFeedback = ({
 	chatId,
@@ -34,6 +34,7 @@ const ChatFeedback = ({
 	const [feedbackMessage, setFeedbackMessage] = useState("");
 	const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 	const [creator, setCreator] = useState<creatorUser>();
+	const [duration, setDuration] = useState("00:00");
 	const { toast } = useToast();
 	const pathname = usePathname();
 	const { chat, isChatLoading } = useGetChatById(chatId as string);
@@ -138,11 +139,13 @@ const ChatFeedback = ({
 			toast({
 				variant: "destructive",
 				title: "Feedback Submitted Successfully",
+				toastStatus: "positive",
 			});
 		} catch (error: any) {
 			toast({
 				variant: "destructive",
 				title: "Failed to Submit Feedback",
+				toastStatus: "negative",
 			});
 			console.error("Error submitting feedback:", error);
 		} finally {
@@ -150,6 +153,18 @@ const ChatFeedback = ({
 			setFeedbackMessage("");
 		}
 	};
+
+	useEffect(() => {
+		const chatDuration = async () => {
+			const timerDocRef = doc(db, "callTimer", chatId);
+			const docSnap = await getDoc(timerDocRef);
+			if (docSnap.exists()) {
+				setDuration(docSnap.data().timeUtilized);
+			}
+		};
+
+		chatDuration();
+	}, []);
 
 	if (!currentUser?._id || isChatLoading)
 		return (
@@ -193,6 +208,14 @@ const ChatFeedback = ({
 				side="bottom"
 				className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto"
 			>
+				{/* Display the call duration */}
+				<section className="fixed top-[76px] grid items-center gap-2 text-white">
+					<div className="text-center text-2xl font-semibold mt-2">
+						{parseInt(duration, 10).toFixed(2)}
+					</div>
+					<span>Chat Ended</span>
+				</section>
+
 				{!feedbackSubmitted ? (
 					<div className="relative flex flex-col items-center gap-7">
 						<div className="flex items-center absolute -top-20 text-[4rem]">

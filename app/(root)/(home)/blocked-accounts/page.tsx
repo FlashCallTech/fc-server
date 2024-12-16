@@ -17,7 +17,7 @@ const BlockedClients = () => {
 				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4 pb-2 flex flex-row flex-wrap md:items-center justify-between transition-all duration-300`}
 			>
 				<section className="flex items-center gap-4 w-fit">
-					<h1 className="text-2xl md:text-3xl font-bold flex-shrink-0">
+					<h1 className="text-2xl md:text-2xl font-bold flex-shrink-0">
 						{clientListType} Clients
 					</h1>
 				</section>

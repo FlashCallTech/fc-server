@@ -25,7 +25,7 @@ import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
-import PixelIntegration from "./PixelIntegration";
+import ServicesSheet from "./ServicesSheet";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
@@ -38,6 +38,7 @@ const CreatorHome = () => {
 	);
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
 	const [loading, setLoading] = useState(true);
+	const [isServicesSheetOpen, setIsServicesSheetOpen] = useState(false);
 	const [creatorLink, setCreatorLink] = useState<string | null>(null);
 	const [todaysEarning, setTodaysEarning] = useState(0);
 	const [isPriceEditOpen, setIsPriceEditOpen] = useState(false);
@@ -50,7 +51,7 @@ const CreatorHome = () => {
 		videoCall: "0",
 		audioCall: "0",
 		chat: "0",
-	})
+	});
 
 	useEffect(() => {
 		if (creatorUser) {
@@ -59,13 +60,11 @@ const CreatorHome = () => {
 				audioCall: creatorUser.audioRate,
 				chat: creatorUser.chatRate,
 			});
-			setGlobalPrices(
-				{
+			setGlobalPrices({
 				videoCall: creatorUser.globalVideoRate,
 				audioCall: creatorUser.globalAudioRate,
 				chat: creatorUser.globalChatRate,
-				}
-			)
+			});
 		}
 	}, [creatorUser]);
 
@@ -154,20 +153,58 @@ const CreatorHome = () => {
 
 	const theme = creatorUser?.themeSelected;
 
-	const handleSavePrices = async (newPrices: {
-		videoCall: string;
-		audioCall: string;
-		chat: string;
-	}) => {
+	const handleSavePrices = async (
+		global: boolean,
+		newPrices: {
+			videoCall: string;
+			audioCall: string;
+			chat: string;
+		}
+	) => {
 		try {
-			await axios.put(
-				`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
-				{
-					videoRate: newPrices.videoCall,
-					audioRate: newPrices.audioCall,
-					chatRate: newPrices.chat,
-				}
-			);
+			if (global) {
+				await axios.put(
+					`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
+					{
+						globalVideoRate: newPrices.videoCall,
+						globalAudioRate: newPrices.audioCall,
+						globalChatRate: newPrices.chat,
+					}
+				);
+				setGlobalPrices(newPrices);
+				updateFirestoreCallServices(
+					creatorUser,
+					{
+						myServices: services.myServices,
+						videoCall: services.videoCall,
+						audioCall: services.audioCall,
+						chat: services.chat,
+					},
+					newPrices,
+					undefined, // Explicitly set `status` if not applicable
+					global
+				);
+			} else {
+				await axios.put(
+					`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
+					{
+						videoRate: newPrices.videoCall,
+						audioRate: newPrices.audioCall,
+						chatRate: newPrices.chat,
+					}
+				);
+				setPrices(newPrices);
+				updateFirestoreCallServices(
+					creatorUser,
+					{
+						myServices: services.myServices,
+						videoCall: services.videoCall,
+						audioCall: services.audioCall,
+						chat: services.chat,
+					},
+					newPrices
+				);
+			}
 			if (newPrices.audioCall !== prices.audioCall) {
 				trackEvent("Creator_Audio_Price_Updated", {
 					Creator_ID: creatorUser?._id,
@@ -192,22 +229,12 @@ const CreatorHome = () => {
 					Price: newPrices.chat,
 				});
 			}
-			setPrices(newPrices);
 			toast({
 				variant: "destructive",
 				title: "Rates Updated",
 				description: "Values are updated...",
+				toastStatus: "positive",
 			});
-			updateFirestoreCallServices(
-				creatorUser,
-				{
-					myServices: services.myServices,
-					videoCall: services.videoCall,
-					audioCall: services.audioCall,
-					chat: services.chat,
-				},
-				newPrices
-			);
 		} catch (error) {
 			Sentry.captureException(error);
 			console.log(error);
@@ -215,6 +242,7 @@ const CreatorHome = () => {
 				variant: "destructive",
 				title: "Rates were Not Updated",
 				description: "Something went wrong...",
+				toastStatus: "negative",
 			});
 		} finally {
 			refreshCurrentUser();
@@ -459,12 +487,25 @@ const CreatorHome = () => {
 							isRestricted={services.isRestricted}
 							handleToggle={handleToggle}
 							prices={prices}
+							globalPrices={globalPrices}
 						/>
 					</section>
 
-					<CreatorLinks />
+					{/* <section
+						className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer"
+						onClick={() => setIsServicesSheetOpen((prev) => !prev)}
+					>
+						{isServicesSheetOpen ? "Services Sheet Visible" : "Add Services"}
+					</section>
 
-					<PixelIntegration creatorId={creatorUser?._id} />
+					{isServicesSheetOpen && (
+						<ServicesSheet
+							isOpen={isServicesSheetOpen}
+							onOpenChange={setIsServicesSheetOpen}
+						/>
+					)} */}
+
+					<CreatorLinks />
 
 					<section className="flex items-center justify-center pt-4">
 						<div className="text-center text-[13px] text-gray-400">

@@ -71,7 +71,7 @@ const PreviousPage = () => {
 							/>
 						</svg>
 					</Link>
-					<h1 className="text-xl md:text-3xl font-bold">Order History</h1>
+					<h1 className="text-xl md:text-2xl font-bold">Order History</h1>
 				</section>
 				<div className="hidden xl:flex items-center justify-center w-fit gap-2">
 					{options.map((option) => (

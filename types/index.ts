@@ -248,6 +248,8 @@ export type RegisterCallParams = {
 	feedbacks?: CreatorFeedback[];
 	creatorDetails?: creatorUser;
 	amount?: number;
+	global?: boolean;
+	amountINR?: number;
 };
 
 export type RegisterChatParams = {
