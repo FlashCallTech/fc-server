@@ -491,7 +491,7 @@ const CreatorHome = () => {
 						/>
 					</section>
 
-					<section
+					{/* <section
 						className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer"
 						onClick={() => setIsServicesSheetOpen((prev) => !prev)}
 					>
@@ -503,7 +503,7 @@ const CreatorHome = () => {
 							isOpen={isServicesSheetOpen}
 							onOpenChange={setIsServicesSheetOpen}
 						/>
-					)}
+					)} */}
 
 					<CreatorLinks />
 

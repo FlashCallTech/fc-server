@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import ContentLoading from "@/components/shared/ContentLoading";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
