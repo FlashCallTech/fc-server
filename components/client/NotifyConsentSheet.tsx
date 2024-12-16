@@ -220,7 +220,7 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 							{success}
 
 							<span className="w-full font-semibold text-lg text-green-1 text-center">
-								You'll be notified by {creatorName}.
+								You&apos;ll be notified by {creatorName}.
 							</span>
 						</div>
 					)}
@@ -285,7 +285,7 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 						{success}
 
 						<span className="w-full font-semibold text-lg text-green-1 text-center">
-							You'll be notified by {creatorName}.
+							You&apos;ll be notified by {creatorName}.
 						</span>
 					</div>
 				)}
