@@ -94,3 +94,5 @@ export const ChatRequestProvider = ({
 		</ChatRequestContext.Provider>
 	);
 };
+
+export default ChatRequestProvider;

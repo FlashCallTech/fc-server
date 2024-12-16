@@ -70,6 +70,7 @@ export const handleTransaction = async ({
 				variant: "destructive",
 				title: "Transaction Already Done",
 				description: "Redirecting ...",
+				toastStatus: "positive",
 			});
 
 			removeActiveCallId();
@@ -145,6 +146,7 @@ export const handleTransaction = async ({
 			variant: "destructive",
 			title: "Error",
 			description: "An error occurred while processing the Transactions",
+			toastStatus: "negative",
 		});
 		router.push(`${creatorURL ? creatorURL : "/home"}`);
 	} finally {

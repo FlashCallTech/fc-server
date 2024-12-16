@@ -98,6 +98,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				variant: "destructive",
 				title: "Insufficient Balance",
 				description: "Your balance is below the minimum amount.",
+				toastStatus: "negative",
 			});
 			router.push("/payment?callType=chat");
 			return;
@@ -273,7 +274,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
-			toast({ variant: "destructive", title: "Failed to send chat request" });
+			toast({
+				variant: "destructive",
+				title: "Failed to send chat request",
+				toastStatus: "negative",
+			});
 		}
 	};
 
@@ -396,7 +401,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
-			toast({ variant: "destructive", title: "Failed to accept chat request" });
+			toast({
+				variant: "destructive",
+				title: "Failed to accept chat request",
+				toastStatus: "negative",
+			});
 		}
 	};
 
@@ -459,7 +468,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
-			toast({ variant: "destructive", title: "Failed to reject chat request" });
+			toast({
+				variant: "destructive",
+				title: "Failed to reject chat request",
+				toastStatus: "negative",
+			});
 		}
 	};
 

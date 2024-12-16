@@ -16,7 +16,7 @@ export const tokenProvider = async (
 	if (!STREAM_API_SECRET) throw new Error("Stream API secret is missing");
 
 	const streamClient = new StreamClient(STREAM_API_KEY, STREAM_API_SECRET);
-	const fcmToken = await fetchFCMToken(phone ?? "");
+	const fcmToken = await fetchFCMToken(phone ?? "", "voip");
 
 	// Register the user in Stream
 	const userData = {
@@ -25,7 +25,14 @@ export const tokenProvider = async (
 		image: photo,
 		phone: phone,
 		role: "admin",
-		devices: fcmToken ? [{ id: fcmToken, push_provider: "Flash" }] : [],
+		devices: [
+			...(fcmToken.token
+				? [{ id: fcmToken.token, push_provider: "firebase" }]
+				: []),
+			...(fcmToken.voip_token
+				? [{ id: fcmToken.voip_token, push_provider: "FlashcallNotification" }]
+				: []),
+		],
 	};
 
 	const users = {

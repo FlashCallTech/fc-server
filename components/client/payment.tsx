@@ -84,8 +84,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		const rate = getRateForCallType();
 		return rate
 			? [5, 10, 15, 30, 40, 60].map((multiplier) =>
-				(rate * multiplier).toFixed(2)
-			)
+					(rate * multiplier).toFixed(2)
+			  )
 			: ["50", "99", "199", "499", "999", "1999", "2999", "3999", "49999"];
 	};
 
@@ -125,7 +125,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			Creator_ID: creator?._id,
 			Recharge_value: rechargeAmount,
 			Walletbalace_Available: clientUser?.walletBalance,
-		})
+		});
 
 		localStorage.removeItem("cashfree_order_id");
 
@@ -170,7 +170,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						/>
 					</svg>
 				</Link>
-				<h1 className="text-xl md:text-3xl font-bold">User Wallet</h1>
+				<h1 className="text-xl md:text-2xl font-bold">User Wallet</h1>
 			</section>
 
 			{/* Balance Section */}
@@ -238,9 +238,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						{generateAmounts().map((amount, index) => (
 							<button
 								key={amount}
-								className={`capitalize text-sm font-medium p-2.5 rounded-md border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${amount === form.getValues("rechargeAmount") &&
+								className={`capitalize text-sm font-medium p-2.5 rounded-md border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${
+									amount === form.getValues("rechargeAmount") &&
 									"bg-green-1 text-white"
-									}`}
+								}`}
 								onClick={() => {
 									form.setValue("rechargeAmount", amount);
 									tileClicked(index);
@@ -256,9 +257,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 						onClick={(event: any) =>
 							form.handleSubmit((values) => onSubmit(event, values))(event)
 						}
-						className={`${(!rechargeAmount || rechargeAmount === "0") &&
+						className={`${
+							(!rechargeAmount || rechargeAmount === "0") &&
 							"!cursor-not-allowed opacity-80"
-							} w-full max-w-md mt-2 bg-green-1 text-white mx-auto hoverScaleDownEffect`}
+						} w-full max-w-md mt-2 bg-green-1 text-white mx-auto hoverScaleDownEffect`}
 					>
 						Recharge
 					</Button>

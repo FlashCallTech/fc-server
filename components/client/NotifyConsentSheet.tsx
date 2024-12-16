@@ -18,7 +18,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "../ui/use-toast";
-import { backendBaseUrl } from "@/lib/utils";
+import { addOrUpdateNotification, backendBaseUrl } from "@/lib/utils";
+import ContentLoading from "../shared/ContentLoading";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 interface NotifyConsentSheetProps {
 	isOpen: boolean;
@@ -37,8 +39,11 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 }) => {
 	const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 584);
 	const [isLoading, setIsLoading] = useState(false);
-	const [consent, setConsent] = useState<boolean | null>(null);
+	const [isPreviousLoading, setIsPreviousLoading] = useState(false);
+	const [consent, setConsent] = useState<boolean | null>(true);
 	const [hasPreviousConsent, setHasPreviousConsent] = useState(false);
+	const { fetchNotificationsOnce } = useCurrentUsersContext();
+
 	const { toast } = useToast();
 
 	useEffect(() => {
@@ -57,22 +62,25 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 	useEffect(() => {
 		const fetchPreviousConsent = async () => {
 			try {
+				setIsPreviousLoading(true);
+
 				const response = await axios.get(
 					`${backendBaseUrl}/user/notification/client`,
 					{
 						params: { creatorId, clientId },
 					}
 				);
-				console.log(response);
 				if (response.data && response.data.clientData.consent !== undefined) {
 					setHasPreviousConsent(true);
 				}
 			} catch (error) {
 				console.error("Error fetching previous consent:", error);
+			} finally {
+				setIsPreviousLoading(false);
 			}
 		};
 
-		if (creatorId && clientId) {
+		if (creatorId && clientId && !hasPreviousConsent) {
 			fetchPreviousConsent();
 		}
 	}, [creatorId, clientId]);
@@ -84,6 +92,7 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 				variant: "destructive",
 				title: "Invalid Input",
 				description: `Please select your consent option.`,
+				toastStatus: "negative",
 			});
 			return;
 		}
@@ -96,11 +105,16 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 				clientId,
 				consent,
 			});
+
+			await addOrUpdateNotification(creatorId, clientId, consent);
+
 			toast({
 				variant: "destructive",
-				title: "Submitted successfully",
+				title: "You'll be notified",
 				description: `Your consent has been submitted successfully.`,
+				toastStatus: "positive",
 			});
+			fetchNotificationsOnce(creatorId);
 			onOpenChange(false);
 		} catch (error: any) {
 			console.error("Error submitting consent:", error);
@@ -110,11 +124,40 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 				description:
 					`${error.response.data.message}` ||
 					"An error occurred while submitting your consent.",
+				toastStatus: "negative",
 			});
 		} finally {
 			setIsLoading(false);
 		}
 	};
+
+	if (isPreviousLoading) {
+		if (isMobileView) {
+			return (
+				<Sheet open={isOpen} onOpenChange={onOpenChange}>
+					<SheetContent
+						onOpenAutoFocus={(e) => e.preventDefault()}
+						side="bottom"
+						className="flex flex-col items-center justify-center w-full outline-none border-none rounded-t-xl bg-white mx-auto px-7 py-5"
+					>
+						<div className="size-full flex flex-col gap-2 items-center justify-center">
+							<ContentLoading />
+						</div>
+					</SheetContent>
+				</Sheet>
+			);
+		} else {
+			return (
+				<Dialog open={isOpen} onOpenChange={onOpenChange}>
+					<DialogContent className="flex flex-col items-center justify-center w-fit border-none rounded-xl bg-white mx-auto p-7">
+						<div className="size-full min-w-[20rem] flex flex-col gap-2 items-center justify-center">
+							<ContentLoading />
+						</div>
+					</DialogContent>
+				</Dialog>
+			);
+		}
+	}
 
 	// Render for mobile view
 	if (isMobileView) {
@@ -165,7 +208,7 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 								className={`${
 									consent === null
 										? "opacity-50 bg-gray-100 text-black"
-										: "bg-black text-white"
+										: "border border-gray-300 bg-black/80 text-white"
 								} text-sm mt-4  hoverScaleDownEffect w-3/4 mx-auto `}
 								onClick={handleConsentSubmit}
 							>
@@ -176,8 +219,8 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 						<div className="flex flex-col items-center justify-center min-w-full h-full gap-7">
 							{success}
 
-							<span className="font-semibold text-lg text-green-1">
-								You'll be notified by {creatorName} when they go online.
+							<span className="w-full font-semibold text-lg text-green-1 text-center">
+								You'll be notified by {creatorName}.
 							</span>
 						</div>
 					)}
@@ -230,7 +273,7 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 							className={`${
 								consent === null
 									? "opacity-50 bg-gray-100 text-black"
-									: "bg-black text-white"
+									: "border border-gray-300 bg-black/80 text-white"
 							} text-sm mt-4  hoverScaleDownEffect w-3/4 mx-auto `}
 							onClick={handleConsentSubmit}
 						>
@@ -241,8 +284,8 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 					<div className="flex flex-col items-center justify-center min-w-full h-full gap-7">
 						{success}
 
-						<span className="font-semibold text-lg text-green-1">
-							You'll be notified by {creatorName} when they go online.
+						<span className="w-full font-semibold text-lg text-green-1 text-center">
+							You'll be notified by {creatorName}.
 						</span>
 					</div>
 				)}

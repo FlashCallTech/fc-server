@@ -69,9 +69,13 @@ export const handleTransaction = async ({
 					method: "POST",
 					body: JSON.stringify({
 						callId: chatId,
-						amountPaid: amountToBePaid,
-						isDone: true,
-						callDuration: parseInt(duration, 10),
+						callDetails: [
+							{
+								amountPaid: amountToBePaid,
+								isDone: true,
+								callDuration: parseInt(duration, 10),
+							},
+						],
 					}),
 					headers: { "Content-Type": "application/json" },
 				});
@@ -106,6 +110,7 @@ export const handleTransaction = async ({
 			variant: "destructive",
 			title: "Error",
 			description: "An error occurred while processing the Transactions",
+			toastStatus: "negative",
 		});
 		router.push("/home");
 	} finally {

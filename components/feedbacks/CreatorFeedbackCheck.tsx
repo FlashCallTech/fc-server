@@ -38,11 +38,13 @@ const CreatorFeedbackCheck = ({ feedback }: { feedback: UserFeedback }) => {
 					>
 						{feedback.feedback}
 					</span>
-					{!isExpanded && feedback.feedback.length > 100 && (
-						<button onClick={toggleReadMore} className="text-green-1 text-sm">
-							Read More
-						</button>
-					)}
+					{!isExpanded &&
+						feedback?.feedback !== null &&
+						feedback?.feedback?.length > 100 && (
+							<button onClick={toggleReadMore} className="text-green-1 text-sm">
+								Read More
+							</button>
+						)}
 					{isExpanded && (
 						<button onClick={toggleReadMore} className="text-red-500 text-sm">
 							Show Less

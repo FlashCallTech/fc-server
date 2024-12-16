@@ -207,11 +207,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 								toast({
 									variant: "destructive",
 									title: "The user is busy, please try again later",
+									toastStatus: "negative",
 								});
 							} else {
 								toast({
 									variant: "destructive",
 									title: "User is not answering please try again later",
+									toastStatus: "negative",
 								});
 							}
 							localStorage.removeItem("user2");
@@ -331,6 +333,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					variant: "destructive",
 					title: "Insufficient Balance",
 					description: "Your balance is below the minimum amount.",
+					toastStatus: "negative",
 				});
 				router.push(`/payment?callType=${callType}`);
 				return;
@@ -418,7 +421,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
-			toast({ variant: "destructive", title: "Failed to create Meeting" });
+			toast({
+				variant: "destructive",
+				title: "Failed to create Meeting",
+				toastStatus: "negative",
+			});
 		}
 	};
 
@@ -428,6 +435,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				variant: "destructive",
 				title: "Unable to Create Meeting",
 				description: "You are a Creator",
+				toastStatus: "negative",
 			});
 
 			return;
@@ -448,6 +456,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					variant: "destructive",
 					title: "Creator is Busy",
 					description: "Can't Initiate the Call",
+					toastStatus: "negative",
 				});
 			} else if (
 				(callType === "audio" && updatedCreator?.audioAllowed) ||
@@ -490,6 +499,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							variant: "destructive",
 							title: "Ongoing Call or Transaction Pending",
 							description: "Redirecting you back ...",
+							toastStatus: "negative",
 						});
 						router.replace(`/meeting/${storedCallId}`);
 					} else {
@@ -518,6 +528,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				variant: "destructive",
 				title: "Unable to Initiate Chat",
 				description: "You are a Creator",
+				toastStatus: "negative",
 			});
 
 			return;
@@ -535,6 +546,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				variant: "destructive",
 				title: "Creator is Busy",
 				description: "Can't Initiate the Call",
+				toastStatus: "negative",
 			});
 		} else if (updatedCreator?.chatAllowed) {
 			trackEvent("BookCall_Chat_Clicked", {
@@ -569,10 +581,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			icon: video,
 			rate: updatedCreator.videoRate,
 			enabled:
-				!updatedCreator?.blocked?.includes(clientUser?._id) &&
-				!isClientBusy &&
-				onlineStatus !== "Busy" &&
-				parseInt(updatedCreator.videoRate, 10) > 0,
+				onlineStatus === "Offline"
+					? true
+					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
+					  !isClientBusy &&
+					  onlineStatus !== "Busy" &&
+					  updatedCreator.videoAllowed &&
+					  parseInt(updatedCreator.videoRate, 10) > 0,
 			onClick: () => handleClickOption("video"),
 		},
 		{
@@ -581,10 +596,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			icon: audio,
 			rate: updatedCreator.audioRate,
 			enabled:
-				!updatedCreator?.blocked?.includes(clientUser?._id) &&
-				!isClientBusy &&
-				onlineStatus !== "Busy" &&
-				parseInt(updatedCreator.audioRate, 10) > 0,
+				onlineStatus === "Offline"
+					? true
+					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
+					  !isClientBusy &&
+					  onlineStatus !== "Busy" &&
+					  updatedCreator.audioAllowed &&
+					  parseInt(updatedCreator.audioRate, 10) > 0,
 			onClick: () => handleClickOption("audio"),
 		},
 
@@ -594,10 +612,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			icon: chat,
 			rate: updatedCreator.chatRate,
 			enabled:
-				!updatedCreator?.blocked?.includes(clientUser?._id) &&
-				!isClientBusy &&
-				onlineStatus !== "Busy" &&
-				parseInt(updatedCreator.chatRate, 10) > 0,
+				onlineStatus === "Offline"
+					? true
+					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
+					  !isClientBusy &&
+					  onlineStatus !== "Busy" &&
+					  updatedCreator.chatAllowed &&
+					  parseInt(updatedCreator.chatRate, 10) > 0,
 			onClick: () => handleChatClick(),
 		},
 	];

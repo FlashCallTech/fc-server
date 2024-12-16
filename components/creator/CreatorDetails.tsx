@@ -146,12 +146,12 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			if (response.status === 200) {
 				setMarkedFavorite((prev) => !prev);
 				toast({
-					variant: "destructive",
 					title: `${
 						!markedFavorite
 							? `You are now following ${fullName}`
 							: `You have unfollowed ${fullName}`
 					}`,
+					toastStatus: markedFavorite ? "negative" : "positive",
 				});
 			}
 		} catch (error) {

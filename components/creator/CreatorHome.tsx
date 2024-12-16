@@ -25,6 +25,7 @@ import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
+import ServicesSheet from "./ServicesSheet";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
@@ -37,6 +38,7 @@ const CreatorHome = () => {
 	);
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
 	const [loading, setLoading] = useState(true);
+	const [isServicesSheetOpen, setIsServicesSheetOpen] = useState(false);
 	const [creatorLink, setCreatorLink] = useState<string | null>(null);
 	const [todaysEarning, setTodaysEarning] = useState(0);
 	const [isPriceEditOpen, setIsPriceEditOpen] = useState(false);
@@ -184,6 +186,7 @@ const CreatorHome = () => {
 				variant: "destructive",
 				title: "Rates Updated",
 				description: "Values are updated...",
+				toastStatus: "positive",
 			});
 			updateFirestoreCallServices(
 				creatorUser,
@@ -202,6 +205,7 @@ const CreatorHome = () => {
 				variant: "destructive",
 				title: "Rates were Not Updated",
 				description: "Something went wrong...",
+				toastStatus: "negative",
 			});
 		} finally {
 			refreshCurrentUser();
@@ -448,6 +452,20 @@ const CreatorHome = () => {
 							prices={prices}
 						/>
 					</section>
+
+					{/* <section
+						className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer"
+						onClick={() => setIsServicesSheetOpen((prev) => !prev)}
+					>
+						{isServicesSheetOpen ? "Services Sheet Visible" : "Add Services"}
+					</section> */}
+
+					{/* {isServicesSheetOpen && (
+						<ServicesSheet
+							isOpen={isServicesSheetOpen}
+							onOpenChange={setIsServicesSheetOpen}
+						/>
+					)} */}
 
 					<CreatorLinks />
 

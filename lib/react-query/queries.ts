@@ -154,9 +154,10 @@ export const useGetBlockedClients = (userId: string) => {
 		queryKey: [QUERY_KEYS.GET_BLOCKED_CLIENTS, userId],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
-				`${backendBaseUrl}/creator/${userId}/blocked`,
+				`${backendBaseUrl}/creator/getBlockedUser`,
 				{
 					params: {
+						userId: userId,
 						page: pageParam,
 						limit,
 					},

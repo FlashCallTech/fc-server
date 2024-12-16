@@ -3,12 +3,20 @@ import { twMerge } from "tailwind-merge";
 import { format } from "date-fns";
 
 import Razorpay from "razorpay";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import {
+	arrayUnion,
+	doc,
+	getDoc,
+	onSnapshot,
+	setDoc,
+	updateDoc,
+} from "firebase/firestore";
 import { db } from "./firebase";
 import * as Sentry from "@sentry/nextjs";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { Call } from "@stream-io/video-react-sdk";
 import { clientUser, creatorUser } from "@/types";
+import { getDownloadURL, ref } from "firebase/storage";
 
 const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 const key_secret = process.env.NEXT_PUBLIC_RAZORPAY_SECRET;
@@ -338,7 +346,7 @@ export const getDarkHexCode = (lightHex: string): string | null => {
 		? lightHex.toUpperCase()
 		: `#${lightHex.toUpperCase()}`;
 
-	return colorMap[formattedLightHex] || "#88D8C0";
+	return colorMap[formattedLightHex] || "#50A65C";
 };
 
 export const getDisplayName = (creator: {
@@ -352,7 +360,7 @@ export const getDisplayName = (creator: {
 			if (match.length <= 4) {
 				return match.replace(/\d/g, "*");
 			}
-			return match.slice(0, 2) + "*".repeat(match.length - 4) + match.slice(-2);
+			return match.slice(0, match.length - 5) + "*".repeat(5) + match.slice(-5);
 		});
 
 	const fullName = creator?.fullName?.trim();
@@ -408,11 +416,11 @@ export const formatDateTime = (dateString: Date) => {
 export const calculateTotalEarnings = (transactions: any) => {
 	return transactions.reduce((total: number, transaction: any) => {
 		if (transaction.type === "credit") {
-			return total + transaction.amount;
+			total += transaction.amount;
 		} else if (transaction.type === "debit") {
-			return total - transaction.amount;
+			total -= transaction.amount;
 		}
-		return total.toFixed(2); // Default case if type is invalid
+		return total < 0 ? 0 : parseFloat(total.toFixed(2));
 	}, 0);
 };
 
@@ -484,7 +492,7 @@ export const getImageSource = (creator: creatorUser | clientUser) => {
 			console.warn(
 				`No valid photo or placeholder found for creator: ${creator?.username}`
 			);
-			return "/images/defaultProfileImage.png";
+			return "https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7";
 		}
 	}
 };
@@ -601,10 +609,14 @@ export const stopMediaStreams = () => {
 // calling options helper functions
 
 // Function to fetch the FCM token
-export const fetchFCMToken = async (phone: string) => {
+export const fetchFCMToken = async (phone: string, tokenType?: string) => {
 	const fcmTokenRef = doc(db, "FCMtoken", phone);
 	const fcmTokenDoc = await getDoc(fcmTokenRef);
-	return fcmTokenDoc.exists() ? fcmTokenDoc.data().token : null;
+	return fcmTokenDoc.exists()
+		? tokenType === "voip"
+			? fcmTokenDoc.data()
+			: fcmTokenDoc.data().token
+		: null;
 };
 
 // Function to send notification
@@ -630,7 +642,7 @@ export const sendNotification = async (
 				token,
 				title,
 				message: body,
-				data: stringifiedData, // Use the stringified data
+				data: stringifiedData, 
 				link,
 			}),
 		});
@@ -642,3 +654,131 @@ export const sendNotification = async (
 		console.error("Error sending notification:", error);
 	}
 };
+
+// method to add notifications to firestore
+
+export const addOrUpdateNotification = async (
+	creatorId: string,
+	clientId: string,
+	consent: boolean
+) => {
+	const docRef = doc(db, "notifications", `notifications_${creatorId}`);
+	const newNotification = {
+		clientId,
+		consent,
+		timestamp: new Date().toISOString(),
+	};
+
+	try {
+		const docSnap = await getDoc(docRef);
+
+		if (docSnap.exists()) {
+			// Update existing document by appending to the array
+			await updateDoc(docRef, {
+				notifications: arrayUnion(newNotification),
+			});
+		} else {
+			// Create a new document
+			await setDoc(docRef, {
+				creatorId,
+				notifications: [newNotification],
+			});
+		}
+
+		console.log("Notification added or updated successfully.");
+	} catch (error) {
+		console.error("Error adding/updating notification:", error);
+	}
+};
+
+// handler to get notifications count for creator
+
+export const getNotificationCount = async (creatorId: string) => {
+	const docRef = doc(db, "notifications", `notifications_${creatorId}`);
+
+	try {
+		const docSnap = await getDoc(docRef);
+
+		if (docSnap.exists()) {
+			const data = docSnap.data();
+			return data.notifications.length; // Total notifications for the creator
+		} else {
+			return 0; // No notifications exist
+		}
+	} catch (error) {
+		console.error("Error fetching notification count:", error);
+		return 0;
+	}
+};
+
+// listening to realtime notification changes
+
+const listenForNotifications = (creatorId: string, callback: any) => {
+	const docRef = doc(db, "notifications", `notifications_${creatorId}`);
+
+	const unsubscribe = onSnapshot(docRef, (docSnap) => {
+		if (docSnap.exists()) {
+			const data = docSnap.data();
+			callback(data.notifications);
+		} else {
+			callback([]);
+		}
+	});
+
+	return unsubscribe;
+};
+
+export const removeNotificationFromFirebase = async (
+	creatorId: string,
+	clientId: string
+) => {
+	if (!creatorId || !clientId) return;
+
+	const docRef = doc(db, "notifications", `notifications_${creatorId}`);
+	try {
+		const docSnap = await getDoc(docRef);
+
+		if (docSnap.exists()) {
+			const data = docSnap.data();
+			const updatedNotifications = data.notifications.filter(
+				(notification: any) => notification.clientId !== clientId
+			);
+
+			// Update Firestore document
+			await updateDoc(docRef, { notifications: updatedNotifications });
+		}
+	} catch (error) {
+		console.error("Error removing notification from Firebase:", error);
+	}
+};
+
+// fetch creator's image from firebase notification folder
+
+export async function fetchCreatorImage(
+	storage: any,
+	creatorId: string,
+	imageFormats = ["jpg", "png", "webp"],
+	defaultImageUrl = "https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7"
+) {
+	let creatorImageUrl = defaultImageUrl;
+
+	for (let i = 0; i < imageFormats.length; i++) {
+		const imageRef = ref(storage, `notifications/${creatorId}}`);
+
+		try {
+			creatorImageUrl = await getDownloadURL(imageRef);
+			console.log(
+				`Trying to fetch image: notifications/${creatorId}.${imageFormats[i]}`
+			);
+
+			break;
+		} catch (error) {
+			console.error(
+				`Failed to fetch image for format ${imageFormats[i]}:`,
+				error
+			);
+		}
+	}
+
+	return creatorImageUrl;
+}

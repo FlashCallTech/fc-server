@@ -7,6 +7,8 @@ import { useToast } from "../ui/use-toast";
 import Image from "next/image";
 import imageCompression from "browser-image-compression";
 import * as Sentry from "@sentry/nextjs";
+import { storage } from "@/lib/firebase";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 type FileUploaderProps = {
 	fieldChange: (url: string) => void;
@@ -51,10 +53,20 @@ const FileUploaderHome = ({
 				const compressedFile = await imageCompression(file, options);
 				onFileSelect(compressedFile);
 
-				const fileName = `${Date.now()}_${compressedFile.name}`;
-				const fileStream = compressedFile.stream(); // Use the stream directly
+				let fileName = "";
+				// Rename the file to have the .webp extension
+				if (creatorUser?._id) {
+					fileName = `${creatorUser._id}.webp`;
+				} else {
+					fileName = `${Date.now()}_${compressedFile.name.replace(
+						/\.[^.]+$/,
+						".webp"
+					)}`;
+				}
 
-				// S3 bucket params
+				const fileStream = compressedFile.stream();
+
+				// S3 upload params
 				const s3Params = {
 					Bucket: "flashcall.me",
 					Key: `uploads/${fileName}`,
@@ -62,7 +74,6 @@ const FileUploaderHome = ({
 					ContentType: compressedFile.type,
 				};
 
-				// Create an instance of the Upload utility
 				const upload = new Upload({
 					client: s3Client,
 					params: s3Params,
@@ -70,11 +81,27 @@ const FileUploaderHome = ({
 					leavePartsOnError: false,
 				});
 
-				// Execute the upload
+				// Execute upload
 				await upload.done();
 
 				// Generate CloudFront URL
 				const cloudFrontUrl = `https://dxvnlnyzij172.cloudfront.net/uploads/${fileName}`;
+
+				// Upload to Firebase Storage
+				if (creatorUser?._id) {
+					const firebaseStorageRef = ref(
+						storage,
+						`notifications/${creatorUser._id}`
+					);
+
+					const snapshot = await uploadBytes(
+						firebaseStorageRef,
+						compressedFile
+					);
+					const firebaseUrl = await getDownloadURL(snapshot.ref);
+
+					console.log("Firebase URL:", firebaseUrl);
+				}
 
 				// Update UI and state
 				setNewFileUrl(cloudFrontUrl);
@@ -88,6 +115,7 @@ const FileUploaderHome = ({
 					variant: "destructive",
 					title: "Unable to Upload Image",
 					description: "Please Try Again...",
+					toastStatus: "negative",
 				});
 				setLoading(false);
 			}

@@ -1,5 +1,5 @@
 import * as z from "zod";
-const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+const usernameRegex = /^[a-zA-Z0-9_\-+]+$/;
 
 export const UpdateProfileFormSchema = z.object({
 	firstName: z

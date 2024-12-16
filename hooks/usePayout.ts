@@ -34,6 +34,7 @@ const usePayout = () => {
 				variant: "destructive",
 				title: "Withdraw Failed",
 				description: "Any amount deducted will be returned",
+				toastStatus: "negative",
 			});
 		}
 
@@ -42,6 +43,7 @@ const usePayout = () => {
 				variant: "destructive",
 				title: "Withdraw Initiated Successfully",
 				description: result.message,
+				toastStatus: "positive",
 			});
 			refreshCurrentUser();
 		} else {
@@ -50,12 +52,14 @@ const usePayout = () => {
 					variant: "destructive",
 					title: "Withdraw Failed",
 					description: "Minimum wallet balance required is 500",
+					toastStatus: "negative",
 				});
 			else if (result.message === "Payment Setting Not Found") {
 				toast({
 					variant: "destructive",
 					title: "Withdraw Failed",
 					description: "Payment Setting Not Found",
+					toastStatus: "negative",
 				});
 				router.push("/payment-settings");
 			} else if (result.message === "KYC Verification Not Completed") {
@@ -63,6 +67,7 @@ const usePayout = () => {
 					variant: "destructive",
 					title: "Withdraw Failed",
 					description: "KYC Verification Not Completed",
+					toastStatus: "negative",
 				});
 				router.push("/kyc");
 			} else
@@ -70,6 +75,7 @@ const usePayout = () => {
 					variant: "destructive",
 					title: "Withdraw Failed",
 					description: result.message,
+					toastStatus: "negative",
 				});
 		}
 		setLoading(false);

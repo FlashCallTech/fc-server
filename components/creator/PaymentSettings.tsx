@@ -221,6 +221,7 @@ const PaymentSettings = () => {
 									result.message +
 									" " +
 									formatToHumanReadable(result.retryAfter),
+								toastStatus: "negative",
 							});
 							setIsLoading(false);
 							return;
@@ -228,6 +229,7 @@ const PaymentSettings = () => {
 							toast({
 								variant: "destructive",
 								title: "OTP Generated",
+								toastStatus: "positive",
 							});
 							setShowOtp(true);
 							setOtpGenerated(true);
@@ -256,6 +258,7 @@ const PaymentSettings = () => {
 								variant: "destructive",
 								title: "Failed",
 								description: result,
+								toastStatus: "negative",
 							});
 							setIsLoading(false);
 							return;
@@ -274,6 +277,7 @@ const PaymentSettings = () => {
 								variant: "destructive",
 								title: "Success",
 								description: "Payment Details Saved",
+								toastStatus: "positive",
 							});
 							setIsLoading(false);
 						}
@@ -312,6 +316,7 @@ const PaymentSettings = () => {
 							variant: "destructive",
 							title: "Success",
 							description: "Payment Details Saved",
+							toastStatus: "positive",
 						});
 						setIsLoading(false);
 					}

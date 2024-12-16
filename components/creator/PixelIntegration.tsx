@@ -75,7 +75,7 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 					setAccessToken(response.data.data.accessToken || "");
 				}
 			} catch (error) {
-				console.error("Failed to fetch analytics info:", error);
+				console.warn("Failed to fetch analytics info");
 			} finally {
 				setLoadingData(false);
 			}
@@ -100,6 +100,7 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 				title: "Analytics Updated",
 				description:
 					"Your analytics information has been successfully updated.",
+				toastStatus: "positive",
 			});
 
 			form.reset({
@@ -115,6 +116,7 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 				title: "Error Updating Analytics",
 				description:
 					"An error occurred while updating your analytics. Please try again later.",
+				toastStatus: "negative",
 			});
 		} finally {
 			setUpdatingData(false);

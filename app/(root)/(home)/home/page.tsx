@@ -116,6 +116,7 @@ const HomePage = () => {
 				variant: "destructive",
 				title: `No creators found in the ${selectedProfession} category`,
 				description: "Try adjusting your filters",
+				toastStatus: "negative",
 			});
 		}
 	}, [creators, selectedProfession, isLoading]);

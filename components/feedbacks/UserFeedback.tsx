@@ -104,6 +104,7 @@ const UserFeedback = ({
 			toast({
 				variant: "destructive",
 				title: "Failed to Submit Feedback",
+				toastStatus: "negative",
 			});
 			console.error("Error submitting feedback:", error);
 		} finally {
