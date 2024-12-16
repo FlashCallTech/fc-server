@@ -51,7 +51,7 @@ const CreatorHome = () => {
 		videoCall: "0",
 		audioCall: "0",
 		chat: "0",
-	})
+	});
 
 	useEffect(() => {
 		if (creatorUser) {
@@ -60,13 +60,11 @@ const CreatorHome = () => {
 				audioCall: creatorUser.audioRate,
 				chat: creatorUser.chatRate,
 			});
-			setGlobalPrices(
-				{
-					videoCall: creatorUser.globalVideoRate,
-					audioCall: creatorUser.globalAudioRate,
-					chat: creatorUser.globalChatRate,
-				}
-			)
+			setGlobalPrices({
+				videoCall: creatorUser.globalVideoRate,
+				audioCall: creatorUser.globalAudioRate,
+				chat: creatorUser.globalChatRate,
+			});
 		}
 	}, [creatorUser]);
 
@@ -161,7 +159,8 @@ const CreatorHome = () => {
 			videoCall: string;
 			audioCall: string;
 			chat: string;
-		}) => {
+		}
+	) => {
 		try {
 			if (global) {
 				await axios.put(
@@ -183,7 +182,7 @@ const CreatorHome = () => {
 					},
 					newPrices,
 					undefined, // Explicitly set `status` if not applicable
-					global,
+					global
 				);
 			} else {
 				await axios.put(
@@ -236,7 +235,6 @@ const CreatorHome = () => {
 				description: "Values are updated...",
 				toastStatus: "positive",
 			});
-
 		} catch (error) {
 			Sentry.captureException(error);
 			console.log(error);
@@ -446,17 +444,20 @@ const CreatorHome = () => {
 								<input
 									disabled={services.isRestricted}
 									type="checkbox"
-									className={`${services.isRestricted && "!cursor-not-allowed"
-										} toggle-checkbox absolute w-0 h-0 opacity-0`}
+									className={`${
+										services.isRestricted && "!cursor-not-allowed"
+									} toggle-checkbox absolute w-0 h-0 opacity-0`}
 									checked={services.myServices}
 									onChange={() => handleToggle("myServices")}
 								/>
 								<p
-									className={`toggle-label block overflow-hidden h-6 rounded-full ${services.myServices ? "bg-green-600" : "bg-gray-500"
-										} ${services.isRestricted
+									className={`toggle-label block overflow-hidden h-6 rounded-full ${
+										services.myServices ? "bg-green-600" : "bg-gray-500"
+									} ${
+										services.isRestricted
 											? "!cursor-not-allowed"
 											: "cursor-pointer"
-										} servicesCheckbox`}
+									} servicesCheckbox`}
 									style={{
 										justifyContent: services.myServices
 											? "flex-end"
@@ -490,19 +491,19 @@ const CreatorHome = () => {
 						/>
 					</section>
 
-					{/* <section
+					<section
 						className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer"
 						onClick={() => setIsServicesSheetOpen((prev) => !prev)}
 					>
 						{isServicesSheetOpen ? "Services Sheet Visible" : "Add Services"}
-					</section> */}
+					</section>
 
-					{/* {isServicesSheetOpen && (
+					{isServicesSheetOpen && (
 						<ServicesSheet
 							isOpen={isServicesSheetOpen}
 							onOpenChange={setIsServicesSheetOpen}
 						/>
-					)} */}
+					)}
 
 					<CreatorLinks />
 
