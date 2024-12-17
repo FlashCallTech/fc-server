@@ -27,13 +27,15 @@ const useRecharge = () => {
 	};
 
 	const pgHandler = async (
+		pg: string | undefined,
 		clientId: string,
 		clientPhone: string,
 		creatorId: string,
 		amount: string,
 		totalPayable: number,
 		User_First_Seen: string,
-		Walletbalace_Available: number
+		Walletbalace_Available: number,
+		method: string
 	) => {
 		trackEvent("Recharge_Page_Proceed_Clicked", {
 			Client_ID: clientId,
@@ -47,18 +49,7 @@ const useRecharge = () => {
 			setLoading(false);
 			return;
 		}
-		console.log(
-			clientId,
-			clientPhone,
-			creatorId,
-			amount,
-			totalPayable,
-			User_First_Seen,
-			Walletbalace_Available
-		);
-		const response = await axios.get(`${backendBaseUrl}/order/getPg`);
-		const data = response.data;
-		if (data.activePg === "razorpay") {
+		if (pg === "razorpay" || pg === undefined) {
 			localStorage.removeItem("cashfree_order_id");
 			PaymentHandler(
 				clientId,
@@ -67,7 +58,8 @@ const useRecharge = () => {
 				amount,
 				totalPayable,
 				User_First_Seen,
-				Walletbalace_Available
+				Walletbalace_Available,
+				method,
 			);
 		} else
 			cashfreeHandler(
@@ -160,7 +152,8 @@ const useRecharge = () => {
 		amount: string,
 		totalPayable: number,
 		User_First_Seen: string,
-		Walletbalace_Available: number
+		Walletbalace_Available: number,
+		method: string,
 	): Promise<void> => {
 		const totalPayableInPaise = totalPayable! * 100;
 		const rechargeAmount = parseInt(totalPayableInPaise.toFixed(2));
@@ -183,7 +176,7 @@ const useRecharge = () => {
 				currency,
 				name: "FlashCall.me",
 				description: "Wallet Recharge",
-				image: `https://backend.flashcall.me/logo_icon.png`,
+				image: `https://backend.flashcall.me/icons/logo_icon.png`,
 				order_id: order.id,
 				handler: async (response: PaymentResponse): Promise<void> => {
 					setLoading(true);
@@ -237,6 +230,7 @@ const useRecharge = () => {
 				},
 				prefill: {
 					contact: clientPhone as string,
+					method
 				},
 				theme: { color: "#50A65C" },
 			};
