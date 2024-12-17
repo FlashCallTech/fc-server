@@ -577,15 +577,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const services = [
 		{
 			type: "video",
-			enabled:
-				!updatedCreator?.blocked?.some(
-					(clientId) => clientId === clientUser?._id
-				) &&
-				!isClientBusy &&
-				onlineStatus === "Online" &&
-				updatedCreator.videoAllowed &&
-				Number(updatedCreator.videoRate) > 0,
-			rate: updatedCreator.videoRate,
 			label: "Video Call",
 			icon: video,
 			rate: updatedCreator.videoRate,
@@ -596,20 +587,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					  !isClientBusy &&
 					  onlineStatus !== "Busy" &&
 					  updatedCreator.videoAllowed &&
-					  parseInt(updatedCreator.videoRate, 10) > 0,
+					  Number(updatedCreator.videoRate) > 0,
 			onClick: () => handleClickOption("video"),
 		},
 		{
 			type: "audio",
-			enabled:
-				!updatedCreator?.blocked?.some(
-					(clientId) => clientId === clientUser?._id
-				) &&
-				!isClientBusy &&
-				onlineStatus === "Online" &&
-				updatedCreator.audioAllowed &&
-				Number(updatedCreator.audioRate) > 0,
-			rate: updatedCreator.audioRate,
 			label: "Audio Call",
 			icon: audio,
 			rate: updatedCreator.audioRate,
@@ -620,21 +602,12 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					  !isClientBusy &&
 					  onlineStatus !== "Busy" &&
 					  updatedCreator.audioAllowed &&
-					  parseInt(updatedCreator.audioRate, 10) > 0,
+					  Number(updatedCreator.audioRate) > 0,
 			onClick: () => handleClickOption("audio"),
 		},
 
 		{
 			type: "chat",
-			enabled:
-				!updatedCreator?.blocked?.some(
-					(clientId) => clientId === clientUser?._id
-				) &&
-				!isClientBusy &&
-				onlineStatus === "Online" &&
-				updatedCreator.chatAllowed &&
-				Number(updatedCreator.chatRate) > 0,
-			rate: updatedCreator.chatRate,
 			label: "Chat Now",
 			icon: chat,
 			rate: updatedCreator.chatRate,
@@ -645,7 +618,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					  !isClientBusy &&
 					  onlineStatus !== "Busy" &&
 					  updatedCreator.chatAllowed &&
-					  parseInt(updatedCreator.chatRate, 10) > 0,
+					  Number(updatedCreator.chatRate) > 0,
 			onClick: () => handleChatClick(),
 		},
 	];

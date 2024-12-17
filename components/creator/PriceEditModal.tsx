@@ -13,14 +13,12 @@ interface PriceEditModalProps {
 	) => void;
 	currentPrices: { videoCall: string; audioCall: string; chat: string };
 	currentGlobalPrices: { videoCall: string; audioCall: string; chat: string };
-	currentGlobalPrices: { videoCall: string; audioCall: string; chat: string };
 }
 
 const PriceEditModal: React.FC<PriceEditModalProps> = ({
 	onClose,
 	onSave,
 	currentPrices,
-	currentGlobalPrices,
 	currentGlobalPrices,
 }) => {
 	const [prices, setPrices] = useState(currentPrices);
@@ -208,7 +206,6 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 						<Button
 							disabled={notSaved}
 							onClick={handleSave}
-							className={`${notSaved
 							className={`${notSaved
 									? "bg-black/20 !cursor-not-allowed"
 									: "bg-green-600 text-white hoverScaleDownEffect"
