@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { creatorUser } from "@/types";
 import { getUserByUsername } from "@/lib/actions/creator.actions";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -21,13 +21,15 @@ const CreatorCard = () => {
 	const [loading, setLoading] = useState(true);
 	const { username } = useParams();
 	const { currentUser, userType } = useCurrentUsersContext();
-	const { walletBalance } = useWalletBalanceContext();
+	const { isInitialized } = useWalletBalanceContext();
 	const router = useRouter();
 
 	const initializedPixelId = useRef<string | null>(null);
 	const [lastCallTracked, setLastCallTracked] = useState(
 		() => localStorage.getItem("lastTrackedCallId") || null
 	);
+
+	const memoizedCreator = useMemo(() => creator, [creator]);
 
 	useEffect(() => {
 		// Redirect if the current user is a creator
@@ -40,7 +42,9 @@ const CreatorCard = () => {
 			setLoading(true);
 			try {
 				const response = await getUserByUsername(String(username));
-				setCreator(response || null);
+				setCreator((prev) =>
+					JSON.stringify(prev) === JSON.stringify(response) ? prev : response
+				);
 
 				// Initialize Pixel only for a new creator
 				if (response && initializedPixelId.current !== response._id) {
@@ -56,7 +60,7 @@ const CreatorCard = () => {
 		};
 
 		if (username) fetchCreatorData();
-	}, [username, userType, currentUser, router]);
+	}, [username, router]);
 
 	useEffect(() => {
 		let isMounted = true;
@@ -109,11 +113,11 @@ const CreatorCard = () => {
 		fetchAndTrackCall();
 
 		return () => {
-			isMounted = false; // Cleanup
+			isMounted = false;
 		};
 	}, [currentUser, userType, lastCallTracked]);
 
-	if (loading || (currentUser && walletBalance < 0)) {
+	if (loading || !isInitialized) {
 		return (
 			<div className="size-full flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
@@ -121,7 +125,7 @@ const CreatorCard = () => {
 		);
 	}
 
-	if (!creator) {
+	if (!creator || !memoizedCreator) {
 		return (
 			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
 				No creators found.
@@ -131,7 +135,7 @@ const CreatorCard = () => {
 
 	return (
 		<section className="size-full grid grid-cols-1 items-start justify-center">
-			<CreatorDetails creator={creator} />
+			<CreatorDetails creator={memoizedCreator} />
 		</section>
 	);
 };
