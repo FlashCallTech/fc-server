@@ -69,9 +69,9 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 			setIsAuthSheetOpen(true);
 		}
 	};
-	
-	const { walletBalance } = useWalletBalanceContext();
-	
+
+	const { walletBalance, isInitialized } = useWalletBalanceContext();
+
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
 	}, [isAuthSheetOpen]);
@@ -179,7 +179,7 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 				<NavLoader />
 			) : currentUser ? (
 				<div className="flex justify-end items-center gap-4 h-full text-white">
-					{walletBalance >= 0 ? (
+					{isInitialized ? (
 						<Link
 							href="/payment"
 							className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] ${

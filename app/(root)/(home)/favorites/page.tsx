@@ -20,7 +20,7 @@ const Favorites = () => {
 	const [favorites, setFavorites] = useState<any[]>([]);
 	const [selectedProfession, setSelectedProfession] = useState("All");
 	const { currentUser, clientUser } = useCurrentUsersContext();
-	const { walletBalance } = useWalletBalanceContext();
+	const { isInitialized } = useWalletBalanceContext();
 	const { ref, inView } = useInView({
 		threshold: 0.1,
 		triggerOnce: false,
@@ -142,7 +142,7 @@ const Favorites = () => {
 				</section>
 			</section>
 
-			{isLoading || (currentUser && walletBalance < 0) ? (
+			{isLoading || !isInitialized ? (
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
 				</section>
@@ -204,15 +204,11 @@ const Favorites = () => {
 					className="mx-auto invert my-5 mt-10 z-20"
 				/>
 			)}
-			{currentUser &&
-				walletBalance > 0 &&
-				favorites.length > 4 &&
-				!hasNextPage &&
-				!isFetching && (
-					<div className="text-center text-gray-500  pb-4">
-						You have reached the end of the list.
-					</div>
-				)}
+			{currentUser && favorites.length > 4 && !hasNextPage && !isFetching && (
+				<div className="text-center text-gray-500  pb-4">
+					You have reached the end of the list.
+				</div>
+			)}
 			{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
 		</section>
 	);

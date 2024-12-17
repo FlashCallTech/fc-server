@@ -16,6 +16,7 @@ import { backendBaseUrl } from "../utils";
 
 interface WalletBalanceContextProps {
 	walletBalance: number;
+	isInitialized: boolean;
 	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
 	updateWalletBalance: () => Promise<void>;
 }
@@ -41,17 +42,22 @@ export const WalletBalanceProvider = ({
 }) => {
 	const { currentUser, userType } = useCurrentUsersContext();
 	const [walletBalance, setWalletBalance] = useState<number>(-1);
-	const isCreator = userType === "creator";
-	const isFirstMount = useRef(true); // To prevent redundant effects on double mount
+	const [isInitialized, setIsInitialized] = useState(false);
 
+	const isCreator = userType === "creator";
+
+	// Prevent double initialization in development mode due to React.StrictMode
+	const isMounted = useRef(false);
+
+	// Effect to log mount/unmount for debugging purposes
 	useEffect(() => {
 		if (process.env.NODE_ENV === "development") {
-			console.log("Wallet balance mounted.");
+			console.log("Wallet balance provider mounted.");
 		}
 
 		return () => {
 			if (process.env.NODE_ENV === "development") {
-				console.log("Wallet balance unmounted.");
+				console.log("Wallet balance provider unmounted.");
 			}
 		};
 	}, []);
@@ -63,22 +69,27 @@ export const WalletBalanceProvider = ({
 					? currentUser.global ? await axios.post(`${backendBaseUrl}/creator/getGlobalUserByEmail/${currentUser.email}`) : await axios.get(`${backendBaseUrl}/creator/getUser/${currentUser._id}`)
 					: currentUser.global ? await axios.post(`${backendBaseUrl}/client/getGlobalUserByEmail/${currentUser.email}`) : await axios.get(`${backendBaseUrl}/client/getUser/${currentUser._id}`);
 				const data = response.data;
-				setWalletBalance(data.walletBalance ?? NaN);
+				setWalletBalance((prev) =>
+					prev === data.walletBalance ? prev : data.walletBalance
+				);
+				setIsInitialized(true);
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error fetching current user:", error);
 				setWalletBalance(NaN);
+				setIsInitialized(true);
 			}
 		}
 	};
 
 	useEffect(() => {
-		if (isFirstMount.current) {
-			isFirstMount.current = false;
-			if (currentUser) {
-				setWalletBalance(currentUser.walletBalance ?? 0);
-			}
+		if (!isMounted.current) {
+			isMounted.current = true;
+			setWalletBalance(currentUser ? currentUser.walletBalance ?? 0 : -1);
+		} else if (isMounted.current && !currentUser) {
+			setWalletBalance(-1);
 		}
+		setIsInitialized(true);
 	}, [currentUser]);
 
 	useEffect(() => {
@@ -122,7 +133,12 @@ export const WalletBalanceProvider = ({
 
 	return (
 		<WalletBalanceContext.Provider
-			value={{ walletBalance, setWalletBalance, updateWalletBalance }}
+			value={{
+				walletBalance,
+				isInitialized,
+				setWalletBalance,
+				updateWalletBalance,
+			}}
 		>
 			{children}
 		</WalletBalanceContext.Provider>
