@@ -297,7 +297,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	};
 
 	const handleAcceptChat = async (chatRequest: any) => {
-		console.log(chatRequest);
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
 		const response = await getUserById(chatRequest.clientId as string);
@@ -308,7 +307,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
-			if (!existingChatDoc.exists()) {
+			if (!existingChatDoc.data()?.status) {
 				await setDoc(doc(db, "chats", chatId), {
 					callId: chatRequest.callId,
 					chatId: chatRequest.chatId,
@@ -355,12 +354,21 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			} else {
 				await updateDoc(doc(db, "chats", chatId), {
 					callId: chatRequest.callId,
-					clientName: chatRequest.clientName,
-					maxChatDuration,
 					chatId: chatRequest.chatId,
+					clientId: chatRequest.clientId,
+					clientName: chatRequest.clientName,
+					clientPhone: chatRequest.clientPhone ?? "",
+					clientImg: chatRequest.clientImg,
+					creatorId: chatRequest.creatorId,
+					creatorName: chatRequest.creatorName,
+					creatorPhone: chatRequest.creatorPhone,
+					creatorImg: chatRequest.creatorImg,
+					status: "active",
+					timerSet: false,
+					chatRate: chatRequest.chatRate,
+					maxChatDuration,
 					global: chatRequest.global ?? false,
 					clientBalance: response.walletBalance ?? "",
-					timerSet: false,
 				});
 			}
 
