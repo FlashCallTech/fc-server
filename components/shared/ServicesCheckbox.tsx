@@ -24,8 +24,6 @@ const ServicesCheckbox = ({
 		});
 	}
 
-	console.log(globalPrices);
-
 	return (
 		<div className="flex flex-col gap-2 mt-2">
 			{Object.keys(services).map((service) => (
