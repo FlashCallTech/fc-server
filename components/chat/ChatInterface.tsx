@@ -221,7 +221,7 @@ const ChatInterface: React.FC = () => {
 					const chatIndex = userChatsData.chats.findIndex(
 						(c: { chatId: string | string[] }) => c.chatId === chatId
 					);
-					userChatsData.chats[chatIndex].updatedAt = Date.now();
+					// userChatsData.chats[chatIndex].updatedAt = Date.now();
 					await updateDoc(userChatsRef, {
 						chats: userChatsData.chats,
 					});
@@ -278,7 +278,7 @@ const ChatInterface: React.FC = () => {
 					const chatIndex = userChatsData.chats.findIndex(
 						(c: { chatId: string | string[] }) => c.chatId === chatId
 					);
-					userChatsData.chats[chatIndex].updatedAt = Date.now();
+					// userChatsData.chats[chatIndex].updatedAt = Date.now();
 					await updateDoc(userChatsRef, {
 						chats: userChatsData.chats,
 					});
@@ -341,7 +341,7 @@ const ChatInterface: React.FC = () => {
 					const chatIndex = userChatsData.chats.findIndex(
 						(c: { chatId: string | string[] }) => c.chatId === chatId
 					);
-					userChatsData.chats[chatIndex].updatedAt = Date.now();
+					// userChatsData.chats[chatIndex].updatedAt = Date.now();
 					await updateDoc(userChatsRef, {
 						chats: userChatsData.chats,
 					});
