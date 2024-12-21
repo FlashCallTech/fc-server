@@ -66,6 +66,16 @@ export const enterAmountSchema = z.object({
 		),
 });
 
+export const enterGlobalAmountSchema = z.object({
+	rechargeAmount: z
+		.string()
+		.refine((val) => parseFloat(val) >= 0.1, "Amount must be at least 0.1 dollar")
+		.refine(
+			(val) => parseFloat(val) <= 100000,
+			"Amount must be at most 1,00,000 dollars"
+		),
+});
+
 export const enterTipAmountSchema = z.object({
 	amount: z
 		.string()
