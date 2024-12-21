@@ -1,0 +1,371 @@
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import jwt from "jsonwebtoken";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import Image from "next/image";
+import { success } from "@/constants/icons";
+import { usePathname, useRouter } from "next/navigation";
+import { useToast } from "../ui/use-toast";
+import { CreateCreatorParams, CreateUserParams } from "@/types";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import * as Sentry from "@sentry/nextjs";
+import { backendBaseUrl } from "@/lib/utils";
+import GetRandomImage from "@/utils/GetRandomImage";
+import { getFCMToken } from "@/lib/firebase";
+import OTPVerification from "./OTPVerification";
+
+const formSchema = z.object({
+	phone: z
+		.string()
+		.min(10, { message: "Must be exactly 10 digits." })
+		.max(10, { message: "Must be exactly 10 digits." })
+		.regex(/^[6-9][0-9]{9}$/, { message: "Invalid phone number." }),
+});
+
+const FormSchemaOTP = z.object({
+	pin: z.string().min(6, {
+		message: "Your one-time password must be 6 characters.",
+	}),
+});
+
+const AuthenticateViaOTP = ({
+	userType,
+	onOpenChange,
+}: {
+	userType: string;
+	onOpenChange?: (isOpen: boolean) => void;
+}) => {
+	const router = useRouter();
+	const { refreshCurrentUser, setAuthenticationSheetOpen } =
+		useCurrentUsersContext();
+
+	const [showOTP, setShowOTP] = useState(false);
+	const [phoneNumber, setPhoneNumber] = useState("");
+	const [isSendingOTP, setIsSendingOTP] = useState(false);
+	const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
+	const [verificationSuccess, setVerificationSuccess] = useState(false);
+
+	const firstLoginRef = useRef(false);
+	const [error, setError] = useState({});
+	const { toast } = useToast();
+
+	const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 584);
+
+	useEffect(() => {
+		const handleResize = () => {
+			setIsMobileView(window.innerWidth <= 584);
+			const height = window.innerHeight;
+			document.documentElement.style.setProperty("--vh", `${height * 0.01}px`);
+		};
+
+		window.addEventListener("resize", handleResize);
+		handleResize();
+
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
+
+	const signUpForm = useForm<z.infer<typeof formSchema>>({
+		resolver: zodResolver(formSchema),
+		defaultValues: {
+			phone: "",
+		},
+	});
+
+	const otpForm = useForm<z.infer<typeof FormSchemaOTP>>({
+		resolver: zodResolver(FormSchemaOTP),
+		defaultValues: {
+			pin: "",
+		},
+	});
+
+	const handleSignUpSubmit = async (values: z.infer<typeof formSchema>) => {
+		setIsSendingOTP(true);
+		try {
+			await axios.post(`${backendBaseUrl}/otp/send-otp`, {
+				phone: values.phone,
+			});
+			setPhoneNumber(values.phone);
+			setShowOTP(true);
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error sending OTP:", error);
+		} finally {
+			setIsSendingOTP(false);
+		}
+	};
+
+	// Handle OTP submission
+	const handleOTPSubmit = async (values: z.infer<typeof FormSchemaOTP>) => {
+		try {
+			setIsVerifyingOTP(true);
+			// Retrieve the FCM token
+			const fcmToken: any = await getFCMToken();
+
+			console.log("hello there welcome");
+
+			const response = await axios.post(`${backendBaseUrl}/otp/verify-otp`, {
+				phone: phoneNumber,
+				otp: values.pin,
+				fcmToken,
+				source: "official",
+			});
+
+			const { sessionToken, message } = response.data;
+
+			if (!sessionToken) {
+				throw new Error(
+					message || "OTP verification failed. No session token provided."
+				);
+			}
+
+			const decodedToken = jwt.decode(sessionToken) as { user?: any };
+
+			setVerificationSuccess(true);
+
+			const user = decodedToken.user || {};
+			let resolvedUserType = userType;
+
+			if (user._id || !user.error) {
+				resolvedUserType = user.userType || "official_client";
+				localStorage.setItem("currentUserID", user._id);
+			} else {
+				firstLoginRef.current = true;
+				let newUser: CreateCreatorParams | CreateUserParams;
+
+				const formattedPhone = phoneNumber.startsWith("+91")
+					? phoneNumber
+					: `+91${phoneNumber}`;
+
+				if (userType === "official_creator") {
+					newUser = {
+						firstName: "",
+						lastName: "",
+						fullName: "",
+						username: formattedPhone as string,
+						photo: "",
+						phone: formattedPhone,
+						profession: "Influencer",
+						themeSelected: "#88D8C0",
+						videoRate: "10",
+						audioRate: "10",
+						chatRate: "10",
+						walletBalance: 0,
+					};
+				} else {
+					newUser = {
+						firstName: "",
+						lastName: "",
+						username: formattedPhone as string,
+						photo: GetRandomImage() || "",
+						phone: formattedPhone,
+						role: "client",
+						bio: "",
+						walletBalance: 0,
+					};
+				}
+
+				try {
+					if (userType === "official_creator") {
+						await axios.post(
+							`${backendBaseUrl}/official/creator/createUser`,
+							newUser as CreateCreatorParams
+						);
+					} else {
+						await axios.post(
+							`${backendBaseUrl}/official/client/createUser`,
+							newUser as CreateUserParams
+						);
+					}
+				} catch (error: any) {
+					toast({
+						variant: "destructive",
+						title: "Error Registering User",
+						description: `${error.response.data.error} || "Something went wrong`,
+						toastStatus: "negative",
+					});
+					resetState();
+					return;
+				}
+			}
+
+			setAuthenticationSheetOpen(false);
+			onOpenChange && onOpenChange(false);
+			setIsVerifyingOTP(false);
+
+			if (resolvedUserType === "official_client") {
+				localStorage.setItem("userType", resolvedUserType);
+				refreshCurrentUser();
+			} else if (resolvedUserType === "official_creator") {
+				localStorage.setItem("userType", resolvedUserType);
+
+				refreshCurrentUser();
+			}
+		} catch (error: any) {
+			console.error("Error verifying OTP:", error);
+			let newErrors = { ...error };
+			newErrors.otpVerificationError = error.message;
+			setError(newErrors);
+			otpForm.reset(); // Reset OTP form
+			setIsVerifyingOTP(false);
+		}
+	};
+
+	// Auto-submit OTP when all digits are entered
+	const handleOTPChange = (value: string) => {
+		if (value.length === 6) {
+			otpForm.setValue("pin", value);
+			handleOTPSubmit({ pin: value });
+		}
+	};
+
+	// Edit phone number
+	const handleEditNumber = () => {
+		setShowOTP(false);
+	};
+
+	// Watch the phone number input value
+	const phone = signUpForm.watch("phone");
+
+	// Reset the state and forms
+	const resetState = () => {
+		setShowOTP(false);
+		setPhoneNumber("");
+		setVerificationSuccess(false);
+		signUpForm.reset(); // Reset sign-up form
+		otpForm.reset(); // Reset OTP form
+	};
+
+	return (
+		<section className="relative bg-[#F8F8F8] rounded-t-3xl sm:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-2 shadow-lg w-screen h-fit sm:w-full sm:min-w-[24rem] sm:max-w-sm mx-auto">
+			{!showOTP && !verificationSuccess ? (
+				// SignUp form
+				<>
+					<div className="flex flex-col items-center justify-enter gap-2 text-center">
+						<Image
+							src="/icons/logo_new_light.png"
+							width={1000}
+							height={1000}
+							alt="flashcall logo"
+							className={`flex items-center justify-center w-40 h-16 -ml-2 `}
+						/>
+
+						<h2 className="text-black text-lg font-semibold">
+							Login or Signup
+						</h2>
+						<p className="text-sm text-[#707070] mb-2.5">
+							Get started with your first consultation <br /> and start earning
+						</p>
+					</div>
+					<Form {...signUpForm}>
+						<form
+							onSubmit={signUpForm.handleSubmit(handleSignUpSubmit)}
+							className="space-y-4 w-full"
+						>
+							<FormField
+								control={signUpForm.control}
+								name="phone"
+								render={({ field }) => (
+									<FormItem>
+										<div className="flex items-center border-none pl-2 pr-1 py-1 rounded bg-gray-100">
+											<FormControl>
+												<div className="w-full flex justify-between items-center">
+													<div className="flex w-full items-center jusitfy-center">
+														<span className="text-gray-400">+91</span>
+														<span className="px-2 pr-0 text-lg text-gray-300 text-center self-center flex items-center">
+															│
+														</span>
+														<Input
+															placeholder="Enter a Valid Number"
+															{...field}
+															className="w-full font-semibold bg-transparent border-none text-black focus-visible:ring-offset-0 placeholder:text-gray-400 placeholder:font-normal rounded-xl pr-4 pl-2 mx-1 py-3 focus-visible:ring-transparent hover:bg-transparent !important"
+														/>
+													</div>
+
+													<Button
+														type="submit"
+														disabled={phone.length !== 10 || isSendingOTP}
+														className="w-fit text-[12px] font-semibold !px-2 bg-green-1 text-white hover:bg-green-1/80"
+													>
+														{isSendingOTP ? (
+															<Image
+																src="/icons/loading-circle.svg"
+																alt="Loading..."
+																width={24}
+																height={24}
+																className=""
+																priority
+															/>
+														) : (
+															"Get OTP"
+														)}
+													</Button>
+												</div>
+											</FormControl>
+										</div>
+										<FormMessage className="text-center" />
+									</FormItem>
+								)}
+							/>
+						</form>
+					</Form>
+				</>
+			) : verificationSuccess ? (
+				<div className="flex flex-col items-center justify-center w-full sm:min-w-[24rem] sm:max-w-[24rem]  gap-4 pt-7 pb-14">
+					{success}
+					<span className="text-black font-semibold text-lg">
+						Login Successfully
+					</span>
+				</div>
+			) : (
+				// OTPVerification form
+				<OTPVerification
+					phoneNumber={phoneNumber}
+					onEditNumber={handleEditNumber}
+					otpForm={otpForm}
+					onOTPChange={handleOTPChange}
+					onSubmit={otpForm.handleSubmit(handleOTPSubmit)}
+					isVerifyingOTP={isVerifyingOTP}
+					errors={error}
+					changeError={setError}
+				/>
+			)}
+
+			{!verificationSuccess && (
+				<p className="text-xs text-gray-400 text-center pb-2 w-3/4 leading-loose">
+					By signing up you agree to our <br />
+					<Link
+						href="https://flashcall.me/terms-and-conditions"
+						target="_blank"
+						className="underline hover:text-green-1 text-black"
+					>
+						Terms of Services
+					</Link>{" "}
+					and{" "}
+					<Link
+						href="https://flashcall.me/privacy-policy"
+						target="_blank"
+						className="underline hover:text-green-1 text-black"
+					>
+						Privacy Policy
+					</Link>
+				</p>
+			)}
+		</section>
+	);
+};
+
+export default AuthenticateViaOTP;

@@ -368,11 +368,14 @@ const EditProfile = ({
 
 			let response;
 			if (userType === "creator") {
-				response = await updateCreatorUser(userData.id!, {
-					...commonValues,
-					...creatorProfileDetails,
-					creatorId: `@${values.username || userData.username}`,
-				} as UpdateCreatorParams);
+				response = await axios.put(
+					`${backendBaseUrl}/creator/updateUser/${userData.id}`,
+					{
+						...commonValues,
+						...creatorProfileDetails,
+						creatorId: `@${values.username || userData.username}`,
+					} as UpdateCreatorParams
+				);
 			} else {
 				response = await updateUser(
 					userData.id!,

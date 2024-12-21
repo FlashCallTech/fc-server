@@ -23,10 +23,29 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import Image from "next/image";
+import FileUploader from "./FileUploader";
+import { useState } from "react";
+import axios from "axios";
+import { backendBaseUrl } from "@/lib/utils";
+import { useToast } from "../ui/use-toast";
+import SinglePostLoader from "./SinglePostLoader";
+
+const predefinedConditions = [
+	"New User",
+	"Seasonal Offer",
+	"30 Minutes Call",
+	"60 Minutes Call",
+] as const;
 
 const discountRuleSchema = z.object({
 	conditions: z
-		.array(z.string())
+		.array(z.enum(predefinedConditions), {
+			errorMap: () => ({
+				message: `Conditions must be one of the following: ${predefinedConditions.join(
+					", "
+				)}`,
+			}),
+		})
 		.nonempty("At least one condition is required."),
 	discountAmount: z.number().min(0, "Discount amount must be at least 0."),
 	discountType: z.enum(["percentage", "flat"], {
@@ -52,7 +71,14 @@ const formSchema = z.object({
 	extraDetails: z.string().optional(),
 });
 
-const ServicesForm = () => {
+const ServicesForm = ({
+	sheetOpen,
+}: {
+	sheetOpen: (isOpen: boolean) => void;
+}) => {
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [loading, setLoading] = useState(false);
+	const { toast } = useToast();
 	const form = useForm<z.infer<typeof formSchema>>({
 		mode: "onChange",
 		resolver: zodResolver(formSchema),
@@ -73,12 +99,46 @@ const ServicesForm = () => {
 		control: form.control,
 	});
 
-	function onSubmit(values: z.infer<typeof formSchema>) {
-		console.log(values);
+	async function onSubmit(values: z.infer<typeof formSchema>) {
+		setLoading(true);
+		try {
+			const payload = {
+				...values,
+				photo: selectedFile,
+			};
+
+			await axios.post(`${backendBaseUrl}/services/creator/create`, payload);
+
+			toast({
+				variant: "destructive",
+				title: "Service Created Successfully",
+				description: "It's now live!",
+				toastStatus: "positive",
+			});
+			form.reset();
+			sheetOpen(false);
+		} catch (error: any) {
+			toast({
+				variant: "destructive",
+				title: "Unable to Edit Details",
+				description: `${error.message || "Something went wrong."}`,
+				toastStatus: "negative",
+			});
+			form.reset();
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	const { formState } = form;
 	const { isValid } = formState;
+
+	if (loading)
+		return (
+			<section className={`size-full flex items-center justify-center`}>
+				<SinglePostLoader />
+			</section>
+		);
 
 	return (
 		<Form {...form}>
@@ -120,19 +180,27 @@ const ServicesForm = () => {
 					)}
 				/>
 
-				{/* Photo */}
+				{/* Thumbnail Photo */}
 				<FormField
 					control={form.control}
 					name="photo"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Photo URL</FormLabel>
-							<FormControl>
-								<Input placeholder="Photo URL (optional)" {...field} />
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
+					render={({ field }) => {
+						const mediaUrl =
+							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7";
+
+						return (
+							<FormItem className="w-full">
+								<FormControl>
+									<FileUploader
+										fieldChange={field.onChange}
+										mediaUrl={mediaUrl}
+										onFileSelect={setSelectedFile}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						);
+					}}
 				/>
 
 				{/* Type */}
@@ -211,7 +279,13 @@ const ServicesForm = () => {
 										<FormControl>
 											<Input
 												placeholder="Condition (comma-separated)"
-												{...field}
+												value={field.value?.join(", ") || ""}
+												onChange={(e) => {
+													const conditions = e.target.value
+														.split(",")
+														.map((item) => item.trim());
+													field.onChange(conditions);
+												}}
 											/>
 										</FormControl>
 										<FormMessage />
@@ -293,7 +367,7 @@ const ServicesForm = () => {
 						className="text-sm bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
 						onClick={() =>
 							append({
-								conditions: [""],
+								conditions: [predefinedConditions[0]],
 								discountAmount: 0,
 								discountType: "percentage",
 							})

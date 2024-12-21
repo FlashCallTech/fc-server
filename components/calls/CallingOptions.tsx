@@ -729,7 +729,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				/>
 			)}
 
-			{callInitiated && (
+			{(callInitiated || isProcessing) && (
 				<div
 					className="fixed inset-0 bg-black/50 z-50 size-full flex items-center justify-center"
 					onClick={(e) => e.stopPropagation()}

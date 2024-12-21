@@ -1,0 +1,67 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import jwt from "jsonwebtoken";
+
+const secret =
+	process.env.JWT_SECRET ||
+	"FLASH_35903f1f6bb15fd5f27a5e323921efe4eac0f254991218c135950d3d4f1e27a2cb85f1199da4a20f039189d9c576180183cba36ae7a019de511b7b6b145a4db6";
+
+export function middleware(req: NextRequest) {
+	const url = req.nextUrl.clone();
+
+	const authToken = req.cookies.get("authToken")?.value;
+
+	const publicPaths = [
+		"/home",
+		"/",
+		"/authenticate",
+		"/authenticate/official",
+	];
+	const isDynamicUsernamePath = url.pathname.match(/^\/[^/]+$/);
+
+	if (
+		publicPaths.includes(url.pathname) ||
+		isDynamicUsernamePath ||
+		url.pathname.startsWith("/_next/")
+	) {
+		return NextResponse.next();
+	}
+
+	if (!authToken) {
+		// url.pathname = "/not-authorized";
+		url.pathname = "/";
+		return NextResponse.redirect(url);
+	}
+
+	try {
+		const decodedToken: any = jwt.verify(authToken, secret);
+
+		const source = decodedToken.source;
+
+		if (source === "official") {
+			if (!url.pathname.includes("official")) {
+				// url.pathname = "/not-authorized";
+				url.pathname = "/";
+				return NextResponse.redirect(url);
+			}
+		} else {
+			if (url.pathname.includes("official")) {
+				// url.pathname = "/not-authorized";
+				url.pathname = "/";
+				return NextResponse.redirect(url);
+			}
+		}
+
+		return NextResponse.next();
+	} catch (error) {
+		console.error("Invalid or expired token:", error);
+
+		// url.pathname = "/not-authorized";
+		url.pathname = "/";
+		return NextResponse.redirect(url);
+	}
+}
+
+export const config = {
+	matcher: ["/:path*"],
+};

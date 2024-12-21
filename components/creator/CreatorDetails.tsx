@@ -164,7 +164,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 
 	return (
 		// Wrapper Section
-		<section className="size-full xl:w-[704px] md:mx-auto md:pt-4 flex flex-col items-center">
+		<section className="size-full xl:w-[704px] md:mx-auto md:pt-8 flex flex-col items-center">
 			{/* Creator Details */}
 			<section
 				className={`size-full h-fit px-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-center p-5 md:rounded-t-[16px] overflow-hidden`}
