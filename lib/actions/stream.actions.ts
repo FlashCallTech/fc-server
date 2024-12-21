@@ -11,8 +11,8 @@ export const tokenProvider = async (
 	username: string | undefined,
 	photo: string | undefined,
 	phone: string | undefined,
-	global: boolean | undefined,
-	email: string | undefined,
+	global?: boolean | undefined,
+	email?: string | undefined,
 ) => {
 	if (!STREAM_API_KEY) throw new Error("Stream API key secret is missing");
 	if (!STREAM_API_SECRET) throw new Error("Stream API secret is missing");
