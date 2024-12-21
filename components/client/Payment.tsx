@@ -15,7 +15,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { enterAmountSchema } from "@/lib/validator";
+import { enterAmountSchema, enterGlobalAmountSchema } from "@/lib/validator";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
@@ -67,10 +67,12 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 									currency_code: "USD",
 									value: rechargeAmount
 								}
-							}]
+							}],
+							application_context: {
+								shipping_preference: "NO_SHIPPING",
+							}
 						});
 
-						console.log(details);
 						return details;
 					},
 					async onApprove(data: any, actions: any) {
@@ -211,10 +213,12 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		});
 	};
 
+	const schema = currentUser?.global ? enterGlobalAmountSchema : enterAmountSchema;
+
 	// 1. Define your form.
-	const form = useForm<z.infer<typeof enterAmountSchema>>({
+	const form = useForm<z.infer<typeof schema>>({
 		mode: "onChange",
-		resolver: zodResolver(enterAmountSchema),
+		resolver: zodResolver(schema),
 		defaultValues: {
 			rechargeAmount: "",
 		},
@@ -226,7 +230,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	// 3. Define a submit handler.
 	async function onSubmit(
 		event: React.FormEvent<HTMLFormElement>,
-		values: z.infer<typeof enterAmountSchema>
+		values: z.infer<typeof schema>
 	) {
 		event.preventDefault();
 		const rechargeAmount = Number(values.rechargeAmount);
