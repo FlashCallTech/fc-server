@@ -188,7 +188,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				client_balance: clientUser.walletBalance,
 				status: "pending",
 				chatId: chatId,
-				chatRate,
+				chatRate: String(chatRate),
 				maxCallDuration,
 				global: currentUser?.global ?? false,
 				createdAt: Date.now(),
