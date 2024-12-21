@@ -299,7 +299,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	};
 
 	const handleAcceptChat = async (chatRequest: any) => {
-		console.log(chatRequest);
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
 		const response = await getUserById(chatRequest.clientId as string);
@@ -310,7 +309,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
-			if (!existingChatDoc.exists()) {
+			if (!existingChatDoc.data()?.status) {
 				await setDoc(doc(db, "chats", chatId), {
 					callId: chatRequest.callId,
 					chatId: chatRequest.chatId,
