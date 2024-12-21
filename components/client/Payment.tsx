@@ -62,7 +62,12 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 					},
 					async createOrder(data: any, actions: any) {
 						const details = await actions.order.create({
-							purchase_units: [{ amount: { value: rechargeAmount } }]
+							purchase_units: [{
+								amount: {
+									currency_code: "USD",
+									value: rechargeAmount
+								}
+							}]
 						});
 
 						console.log(details);
@@ -131,10 +136,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	}, [showPayPal]);
 
 	useEffect(() => {
-		const getPg = async() => {
+		const getPg = async () => {
 			const response = await axios.get(`${backendBaseUrl}/order/getPg`);
 			const data = response.data;
-			if(data.activePg) setPg(data.activePg)
+			if (data.activePg) setPg(data.activePg)
 		}
 
 		getPg();
