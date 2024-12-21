@@ -35,7 +35,7 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 		setRegion(
 			timezone === "Asia/Calcutta" || timezone === "Asia/Kolkata"
-				? "Global"
+				? "India"
 				: "Global"
 		);
 	}, []);

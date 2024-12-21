@@ -115,7 +115,7 @@ const OptionsList = ({
 					<DropdownMenuLabel className="!sr-only">
 						Options List
 					</DropdownMenuLabel>
-					<DropdownMenuItem>
+					{userCall.status === "Ended" && <DropdownMenuItem>
 						<button
 							onClick={() => handleOpenInvoice(userCall)}
 							className="w-full flex items-center justify-start gap-2 "
@@ -136,7 +136,8 @@ const OptionsList = ({
 							<span>View Call Invoice</span>
 						</button>
 					</DropdownMenuItem>
-					<DropdownMenuSeparator />
+					}
+					{userCall.status === "Ended" && <DropdownMenuSeparator />}
 					{userType === "creator" && (
 						<DropdownMenuItem>
 							<button

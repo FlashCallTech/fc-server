@@ -566,6 +566,8 @@ export const updateFirestoreSessions = async (
 		const SessionDoc = await getDoc(SessionDocRef);
 		const ongoingCallUpdate: { [key: string]: any } = {};
 
+		console.log(params);
+
 		if (params.callId) ongoingCallUpdate.callId = params.callId;
 		if (params.status) ongoingCallUpdate.status = params.status;
 		if (params.clientId) ongoingCallUpdate.clientId = params.clientId;
@@ -573,7 +575,8 @@ export const updateFirestoreSessions = async (
 		if (params.isVideoCall) ongoingCallUpdate.isVideoCall = params.isVideoCall;
 		if (params.creatorPhone)
 			ongoingCallUpdate.creatorPhone = params.creatorPhone;
-		if (params.clientPhone) ongoingCallUpdate.clientPhone = params.clientPhone;
+		if (params?.clientPhone) ongoingCallUpdate.clientPhone = params.clientPhone;
+		if(params?.global) ongoingCallUpdate.global = params.global ?? false;
 
 		if (SessionDoc.exists()) {
 			await updateDoc(SessionDocRef, {

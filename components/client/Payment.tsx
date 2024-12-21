@@ -23,6 +23,8 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import Script from "next/script";
 import { backendBaseUrl } from "@/lib/utils";
+import axios from "axios";
+import useRecharge from "@/hooks/recharge";
 
 interface PaymentProps {
 	callType?: string;
@@ -30,11 +32,13 @@ interface PaymentProps {
 
 const Payment: React.FC<PaymentProps> = ({ callType }) => {
 	const [creator, setCreator] = useState<creatorUser>();
+	const [showPayPal, setShowPayPal] = useState(false);
+	const [pg, setPg] = useState<string>("");
 	const { walletBalance } = useWalletBalanceContext();
 	const { currentUser } = useCurrentUsersContext();
-	const router = useRouter();
 	const { clientUser } = useCurrentUsersContext();
-	const [showPayPal, setShowPayPal] = useState(false);
+	const { pgHandler, loading } = useRecharge();
+	const router = useRouter();
 
 	useEffect(() => {
 		if (showPayPal) {
@@ -126,6 +130,15 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		}
 	}, [showPayPal]);
 
+	useEffect(() => {
+		const getPg = async() => {
+			const response = await axios.get(`${backendBaseUrl}/order/getPg`);
+			const data = response.data;
+			if(data.activePg) setPg(data.activePg)
+		}
+
+		getPg();
+	}, [])
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -226,7 +239,15 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		if (currentUser?.global) {
 			setShowPayPal(true)
 		} else {
-			router.push(`/recharge?amount=${rechargeAmount}`);
+			pgHandler(
+				pg,
+				currentUser?._id as string,
+				currentUser?.phone as string,
+				creator?._id as string,
+				rechargeAmount,
+				clientUser?.createdAt?.toString().split("T")[0] as string,
+				currentUser?.walletBalance as number,
+			)
 		}
 
 		return;

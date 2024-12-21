@@ -325,6 +325,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					status: "active",
 					messages: [],
 					timerSet: false,
+					global: chatRequest.global ?? false,
 					chatRate: chatRequest.chatRate,
 				});
 
@@ -357,12 +358,21 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			} else {
 				await updateDoc(doc(db, "chats", chatId), {
 					callId: chatRequest.callId,
-					clientName: chatRequest.clientName,
-					maxChatDuration,
 					chatId: chatRequest.chatId,
+					clientId: chatRequest.clientId,
+					clientName: chatRequest.clientName,
+					clientPhone: chatRequest.clientPhone ?? "",
+					clientImg: chatRequest.clientImg,
+					creatorId: chatRequest.creatorId,
+					creatorName: chatRequest.creatorName,
+					creatorPhone: chatRequest.creatorPhone,
+					creatorImg: chatRequest.creatorImg,
+					status: "active",
+					timerSet: false,
+					chatRate: chatRequest.chatRate,
+					maxChatDuration,
 					global: chatRequest.global ?? false,
 					clientBalance: response.walletBalance ?? "",
-					timerSet: false,
 				});
 			}
 
