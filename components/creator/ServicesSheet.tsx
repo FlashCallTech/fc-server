@@ -54,7 +54,7 @@ const ServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 							rules tailored to your customers&apos; needs.
 						</SheetDescription>
 					</SheetHeader>
-					<ServicesForm />
+					<ServicesForm sheetOpen={onOpenChange} />
 				</SheetContent>
 			</Sheet>
 		);
@@ -72,7 +72,7 @@ const ServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 							rules tailored to your customers&apos; needs.
 						</DialogDescription>
 					</DialogHeader>
-					<ServicesForm />
+					<ServicesForm sheetOpen={onOpenChange} />
 				</DialogContent>
 			</Dialog>
 		);

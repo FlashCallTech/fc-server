@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 
@@ -301,5 +301,28 @@ export const useGetUserTransactionsByType = (
 		},
 		enabled: !!userId && !!type,
 		initialPageParam: 1,
+	});
+};
+
+// ============================================================
+// USER AVAILABILITY QUERIES
+// ============================================================
+
+export const useGetUserAvailability = (userId: string) => {
+	return useQuery({
+		queryKey: [QUERY_KEYS.GET_USER_AVAILABILITY, userId],
+		queryFn: async () => {
+			const response = await axios.get(
+				`${backendBaseUrl}/availability/user/weekly`,
+				{ params: { userId } }
+			);
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Failed to fetch user availability");
+			}
+		},
+		enabled: !!userId,
 	});
 };

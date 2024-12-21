@@ -23,8 +23,13 @@ const HomePage = () => {
 	const [loadingCard, setLoadingCard] = useState(false);
 	const [selectedProfession, setSelectedProfession] = useState("All");
 
-	const { currentUser, userType, setCurrentTheme, updateCreatorURL } =
-		useCurrentUsersContext();
+	const {
+		currentUser,
+		userType,
+		setCurrentTheme,
+		updateCreatorURL,
+		fetchingUser,
+	} = useCurrentUsersContext();
 	const router = useRouter();
 	const { toast } = useToast();
 	const pathname = usePathname();
@@ -125,7 +130,7 @@ const HomePage = () => {
 		localStorage.removeItem("creatorURL");
 	}, [router, pathname]);
 
-	if (isLoading || loadingCard) {
+	if (isLoading || loadingCard || fetchingUser) {
 		return (
 			<div className="size-full flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
@@ -133,103 +138,104 @@ const HomePage = () => {
 		);
 	}
 
-	return (
-		<main
-			className={`flex flex-col ${
-				userType === "creator" ? "pt-0 md:pt-5" : "pt-0"
-			}  size-full`}
-		>
-			{!currentUser || userType === "client" ? (
+	if (userType === "creator") {
+		return (
+			<main className="size-full flex flex-col pt-0 md:pt-5">
 				<Suspense fallback={<PostLoader count={6} />}>
-					{isError ? (
-						<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
-							Failed to fetch creators
-							<span className="text-lg">Please try again later</span>
-						</div>
-					) : (
-						<section className="grid grid-rows-[auto,1fr] grid-cols-1 size-full px-4 lg:px-0">
-							<section className="sticky top-0 md:top-[76px] bg-white z-30">
-								<HomepageFilter
-									selectedProfession={selectedProfession}
-									handleProfessionChange={handleProfessionChange}
-								/>
-							</section>
-							{creators?.pages.flatMap((page: any) => page.users).length ===
-							0 ? (
-								<div className="size-full flex flex-col gap-4 items-center justify-center text-center text-gray-500">
-									<h2 className="text-2xl font-bold">No Creators Found</h2>
-									<p className="text-lg text-gray-400 px-5">
-										{selectedProfession !== "All"
-											? `No results found in the "${selectedProfession}" category.`
-											: "No creators are available at the moment. Please check back later."}
-									</p>
-									{selectedProfession !== "All" && (
-										<Button
-											className="px-6 py-2 rounded-lg bg-green-1 text-white font-semibold hoverScaleDownEffect"
-											onClick={() => setSelectedProfession("All")}
-										>
-											Reset Filters
-										</Button>
-									)}
-								</div>
-							) : (
-								<section
-									className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-fit gap-3.5 lg:gap-5 2xl:gap-7 items-start overflow-hidden`}
-									style={{
-										WebkitTransform: "translateZ(0)",
-										transform: "translate3d(0, 0, 0)",
-									}}
-								>
-									{creators?.pages?.map((page: any, pageIndex: any) =>
-										page?.users?.map((creator: creatorUser, index: number) => (
-											<section
-												key={creator._id}
-												className="w-full cursor-pointer"
-												onClick={() =>
-													handleCreatorCardClick(
-														creator.phone,
-														creator.username,
-														creator.themeSelected,
-														creator._id
-													)
-												}
-											>
-												<CreatorsGrid
-													key={`${pageIndex}-${index}`}
-													creator={creator}
-												/>
-											</section>
-										))
-									)}
-								</section>
-							)}
-						</section>
-					)}
-
-					{hasNextPage && isFetching && (
-						<Image
-							src="/icons/loading-circle.svg"
-							alt="Loading..."
-							width={50}
-							height={50}
-							className="mx-auto invert my-5 mt-10 z-20"
-						/>
-					)}
-
-					{!hasNextPage &&
-						!isFetching &&
-						creators &&
-						creators.pages.flatMap((page: any) => page.users).length > 4 && (
-							<div className="text-center text-gray-500 py-4">
-								You have reached the end of the list
-							</div>
-						)}
-
-					{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
+					<CreatorHome />;
 				</Suspense>
-			) : (
-				<CreatorHome />
-			)}
+			</main>
+		);
+	}
+
+	return (
+		<main className={`flex flex-col pt-0 size-full`}>
+			<Suspense fallback={<PostLoader count={6} />}>
+				{isError ? (
+					<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
+						Failed to fetch creators
+						<span className="text-lg">Please try again later</span>
+					</div>
+				) : (
+					<section className="grid grid-rows-[auto,1fr] grid-cols-1 size-full px-4 lg:px-0">
+						<section className="sticky top-0 md:top-[76px] bg-white z-30">
+							<HomepageFilter
+								selectedProfession={selectedProfession}
+								handleProfessionChange={handleProfessionChange}
+							/>
+						</section>
+						{creators?.pages.flatMap((page: any) => page.users).length === 0 ? (
+							<div className="size-full flex flex-col gap-4 items-center justify-center text-center text-gray-500">
+								<h2 className="text-2xl font-bold">No Creators Found</h2>
+								<p className="text-lg text-gray-400 px-5">
+									{selectedProfession !== "All"
+										? `No results found in the "${selectedProfession}" category.`
+										: "No creators are available at the moment. Please check back later."}
+								</p>
+								{selectedProfession !== "All" && (
+									<Button
+										className="px-6 py-2 rounded-lg bg-green-1 text-white font-semibold hoverScaleDownEffect"
+										onClick={() => setSelectedProfession("All")}
+									>
+										Reset Filters
+									</Button>
+								)}
+							</div>
+						) : (
+							<section
+								className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-fit gap-3.5 lg:gap-5 2xl:gap-7 items-start overflow-hidden`}
+								style={{
+									WebkitTransform: "translateZ(0)",
+									transform: "translate3d(0, 0, 0)",
+								}}
+							>
+								{creators?.pages?.map((page: any, pageIndex: any) =>
+									page?.users?.map((creator: creatorUser, index: number) => (
+										<section
+											key={creator._id}
+											className="w-full cursor-pointer"
+											onClick={() =>
+												handleCreatorCardClick(
+													creator.phone,
+													creator.username,
+													creator.themeSelected,
+													creator._id
+												)
+											}
+										>
+											<CreatorsGrid
+												key={`${pageIndex}-${index}`}
+												creator={creator}
+											/>
+										</section>
+									))
+								)}
+							</section>
+						)}
+					</section>
+				)}
+
+				{hasNextPage && isFetching && (
+					<Image
+						src="/icons/loading-circle.svg"
+						alt="Loading..."
+						width={50}
+						height={50}
+						className="mx-auto invert my-5 mt-10 z-20"
+					/>
+				)}
+
+				{!hasNextPage &&
+					!isFetching &&
+					creators &&
+					creators.pages.flatMap((page: any) => page.users).length > 4 && (
+						<div className="text-center text-gray-500 py-4">
+							You have reached the end of the list
+						</div>
+					)}
+
+				{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
+			</Suspense>
 		</main>
 	);
 };

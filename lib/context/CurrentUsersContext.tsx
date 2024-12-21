@@ -19,7 +19,6 @@ import { useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { backendBaseUrl } from "../utils";
 
-// Define the shape of the context value
 interface CurrentUsersContextValue {
 	clientUser: clientUser | null;
 	creatorUser: creatorUser | null;
@@ -60,10 +59,8 @@ export const useCurrentUsersContext = () => {
 	return context;
 };
 
-// Utility function to check if we're in the browser
 const isBrowser = () => typeof window !== "undefined";
 
-// Provider component to hold the state and provide it to its children
 export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const [clientUser, setClientUser] = useState<clientUser | null>(null);
 	const [creatorUser, setCreatorUser] = useState<creatorUser | null>(null);
@@ -81,13 +78,11 @@ export const CurrentUsersProvider = ({ children }: { children: ReactNode }) => {
 	const { toast } = useToast();
 	const router = useRouter();
 
-	// Define the unified currentUser state
 	const currentUser = useMemo(
 		() => creatorUser || clientUser,
 		[creatorUser, clientUser]
 	);
 
-	// Function to update both localStorage and context
 	const updateCreatorURL = (url: any) => {
 		setCreatorURL(url);
 		localStorage.setItem("creatorURL", url);

@@ -20,7 +20,7 @@ const CreatorCard = () => {
 	const [creator, setCreator] = useState<creatorUser | null>(null);
 	const [loading, setLoading] = useState(true);
 	const { username } = useParams();
-	const { currentUser, userType } = useCurrentUsersContext();
+	const { currentUser, userType, fetchingUser } = useCurrentUsersContext();
 	const { isInitialized } = useWalletBalanceContext();
 	const router = useRouter();
 
@@ -32,7 +32,6 @@ const CreatorCard = () => {
 	const memoizedCreator = useMemo(() => creator, [creator]);
 
 	useEffect(() => {
-		// Redirect if the current user is a creator
 		if (currentUser && userType === "creator") {
 			router.replace("/home");
 			return;
@@ -41,15 +40,21 @@ const CreatorCard = () => {
 		const fetchCreatorData = async () => {
 			setLoading(true);
 			try {
-				const response = await getUserByUsername(String(username));
-				setCreator((prev) =>
-					JSON.stringify(prev) === JSON.stringify(response) ? prev : response
+				const response = await axios.post(
+					`${backendBaseUrl}/user/getUserByUsername`,
+					{
+						username,
+					}
 				);
 
-				// Initialize Pixel only for a new creator
-				if (response && initializedPixelId.current !== response._id) {
-					await fetchCreatorDataAndInitializePixel(response._id);
-					initializedPixelId.current = response._id;
+				const data = response.data;
+				setCreator((prev) =>
+					JSON.stringify(prev) === JSON.stringify(response) ? prev : data
+				);
+
+				if (response && initializedPixelId.current !== data._id) {
+					await fetchCreatorDataAndInitializePixel(data._id);
+					initializedPixelId.current = data._id;
 				}
 			} catch (error) {
 				Sentry.captureException(error);
@@ -117,7 +122,7 @@ const CreatorCard = () => {
 		};
 	}, [currentUser, userType, lastCallTracked]);
 
-	if (loading || !isInitialized) {
+	if (loading || !isInitialized || fetchingUser) {
 		return (
 			<div className="size-full flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
