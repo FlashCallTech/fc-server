@@ -22,37 +22,71 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+
 import Image from "next/image";
-import FileUploader from "./FileUploader";
+import FileUploaderServices from "../uploaders/FileUploaderServices";
 import { useState } from "react";
 import axios from "axios";
-import { backendBaseUrl } from "@/lib/utils";
+import { backendBaseUrl, cn } from "@/lib/utils";
 import { useToast } from "../ui/use-toast";
-import SinglePostLoader from "./SinglePostLoader";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const predefinedConditions = [
 	"New User",
 	"Seasonal Offer",
-	"30 Minutes Call",
-	"60 Minutes Call",
+	"30+ Minutes Call",
+	"60+ Minutes Call",
 ] as const;
 
-const discountRuleSchema = z.object({
-	conditions: z
-		.array(z.enum(predefinedConditions), {
-			errorMap: () => ({
-				message: `Conditions must be one of the following: ${predefinedConditions.join(
-					", "
-				)}`,
+const discountRuleSchema = z
+	.object({
+		conditions: z
+			.array(z.string(), {
+				errorMap: () => ({
+					message: "Conditions must be valid selection.",
+				}),
+			})
+			.nonempty("At least one condition is required."),
+		discountAmount: z
+			.union([
+				z.number({
+					required_error: "Discount amount is required.",
+				}),
+				z.literal(null),
+			])
+			.refine((val) => val !== null && val > 0, {
+				message: "Discount amount must be a valid number greater than 0.",
 			}),
-		})
-		.nonempty("At least one condition is required."),
-	discountAmount: z.number().min(0, "Discount amount must be at least 0."),
-	discountType: z.enum(["percentage", "flat"], {
-		required_error: "Discount type is required.",
-	}),
-	discountCurrency: z.enum(["INR", "USD"]).optional(),
-});
+		discountType: z.enum(["percentage", "flat"], {
+			required_error: "Discount type is required.",
+		}),
+		// discountCurrency: z.enum(["INR", "USD"]).optional(),
+	})
+	.superRefine((data, ctx) => {
+		if (data.discountAmount === null) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["discountAmount"],
+				message: "Discount amount is required and cannot be null.",
+			});
+			return;
+		}
+
+		if (data.discountType === "percentage" && data.discountAmount > 100) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["discountAmount"],
+				message: "Percentage discount cannot exceed 100.",
+			});
+		}
+		if (data.discountType === "flat" && data.discountAmount > 10000) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["discountAmount"],
+				message: "Flat discount cannot exceed 10,000.",
+			});
+		}
+	});
 
 const formSchema = z.object({
 	title: z.string().min(2, "Title must be at least 2 characters."),
@@ -63,7 +97,7 @@ const formSchema = z.object({
 	type: z.enum(["all", "audio", "video", "chat"], {
 		required_error: "Service type is required.",
 	}),
-	basePrice: z.number().min(1, "Base price must be at least 1."),
+	// basePrice: z.number().min(1, "Base price must be at least 1."),
 	currency: z.enum(["INR", "USD"], {
 		required_error: "Currency is required.",
 	}),
@@ -77,7 +111,7 @@ const ServicesForm = ({
 	sheetOpen: (isOpen: boolean) => void;
 }) => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
-	const [loading, setLoading] = useState(false);
+	const { currentUser } = useCurrentUsersContext();
 	const { toast } = useToast();
 	const form = useForm<z.infer<typeof formSchema>>({
 		mode: "onChange",
@@ -87,9 +121,16 @@ const ServicesForm = ({
 			description: "",
 			photo: "",
 			type: "all",
-			basePrice: 10,
+			// basePrice: 10,
 			currency: "INR",
-			discountRules: [],
+			discountRules: [
+				{
+					conditions: ["New User"],
+					discountType: "percentage",
+					discountAmount: 10,
+					// discountCurrency: "INR",
+				},
+			],
 			extraDetails: "",
 		},
 	});
@@ -100,14 +141,17 @@ const ServicesForm = ({
 	});
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
-		setLoading(true);
 		try {
 			const payload = {
 				...values,
 				photo: selectedFile,
 			};
 
-			await axios.post(`${backendBaseUrl}/services/creator/create`, payload);
+			await axios.post(`${backendBaseUrl}/services/creator/create`, payload, {
+				params: {
+					creatorId: currentUser?._id,
+				},
+			});
 
 			toast({
 				variant: "destructive",
@@ -121,31 +165,45 @@ const ServicesForm = ({
 			toast({
 				variant: "destructive",
 				title: "Unable to Edit Details",
-				description: `${error.message || "Something went wrong."}`,
+				description: `${"Something went wrong."}`,
 				toastStatus: "negative",
 			});
 			form.reset();
-		} finally {
-			setLoading(false);
 		}
 	}
 
 	const { formState } = form;
 	const { isValid } = formState;
 
-	if (loading)
-		return (
-			<section className={`size-full flex items-center justify-center`}>
-				<SinglePostLoader />
-			</section>
-		);
-
 	return (
 		<Form {...form}>
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
-				className="space-y-8 size-full relative"
+				className="space-y-8 size-full relative mt-5"
 			>
+				{/* Thumbnail Photo */}
+				<FormField
+					control={form.control}
+					name="photo"
+					render={({ field }) => {
+						const mediaUrl =
+							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7";
+
+						return (
+							<FormItem className="w-full">
+								<FormControl>
+									<FileUploaderServices
+										fieldChange={field.onChange}
+										mediaUrl={mediaUrl}
+										onFileSelect={setSelectedFile}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						);
+					}}
+				/>
+
 				{/* Title */}
 				<FormField
 					control={form.control}
@@ -180,29 +238,6 @@ const ServicesForm = ({
 					)}
 				/>
 
-				{/* Thumbnail Photo */}
-				<FormField
-					control={form.control}
-					name="photo"
-					render={({ field }) => {
-						const mediaUrl =
-							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7";
-
-						return (
-							<FormItem className="w-full">
-								<FormControl>
-									<FileUploader
-										fieldChange={field.onChange}
-										mediaUrl={mediaUrl}
-										onFileSelect={setSelectedFile}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						);
-					}}
-				/>
-
 				{/* Type */}
 				<FormField
 					control={form.control}
@@ -215,10 +250,30 @@ const ServicesForm = ({
 									<SelectValue placeholder="Select service type" />
 								</SelectTrigger>
 								<SelectContent className="!bg-white">
-									<SelectItem value="all">All</SelectItem>
-									<SelectItem value="audio">Audio</SelectItem>
-									<SelectItem value="video">Video</SelectItem>
-									<SelectItem value="chat">Chat</SelectItem>
+									<SelectItem
+										className="cursor-pointer hover:bg-gray-50"
+										value="all"
+									>
+										All
+									</SelectItem>
+									<SelectItem
+										className="cursor-pointer hover:bg-gray-50"
+										value="audio"
+									>
+										Audio
+									</SelectItem>
+									<SelectItem
+										className="cursor-pointer hover:bg-gray-50"
+										value="video"
+									>
+										Video
+									</SelectItem>
+									<SelectItem
+										className="cursor-pointer hover:bg-gray-50"
+										value="chat"
+									>
+										Chat
+									</SelectItem>
 								</SelectContent>
 							</Select>
 							<FormMessage />
@@ -227,19 +282,25 @@ const ServicesForm = ({
 				/>
 
 				{/* Base Price */}
-				<FormField
+				{/* <FormField
 					control={form.control}
 					name="basePrice"
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Base Price</FormLabel>
 							<FormControl>
-								<Input type="number" placeholder="Base price" {...field} />
+								<Input
+									type="number"
+									min={0}
+									placeholder="Base price"
+									{...field}
+									onChange={(e) => field.onChange(Number(e.target.value))}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}
-				/>
+				/> */}
 
 				{/* Currency */}
 				<FormField
@@ -253,8 +314,18 @@ const ServicesForm = ({
 									<SelectValue placeholder="Select currency" />
 								</SelectTrigger>
 								<SelectContent className="!bg-white">
-									<SelectItem value="INR">INR</SelectItem>
-									<SelectItem value="USD">USD</SelectItem>
+									<SelectItem
+										className="cursor-pointer hover:bg-gray-50"
+										value="INR"
+									>
+										INR
+									</SelectItem>
+									<SelectItem
+										className="cursor-pointer hover:bg-gray-50"
+										value="USD"
+									>
+										USD
+									</SelectItem>
 								</SelectContent>
 							</Select>
 							<FormMessage />
@@ -277,16 +348,38 @@ const ServicesForm = ({
 									<FormItem>
 										<FormLabel>Conditions</FormLabel>
 										<FormControl>
-											<Input
-												placeholder="Condition (comma-separated)"
-												value={field.value?.join(", ") || ""}
-												onChange={(e) => {
-													const conditions = e.target.value
-														.split(",")
-														.map((item) => item.trim());
-													field.onChange(conditions);
-												}}
-											/>
+											<div className="grid grid-cols-2 gap-4">
+												{" "}
+												{/* Grid layout for cards */}
+												{predefinedConditions.map((condition) => {
+													const isSelected =
+														field.value?.includes(condition) || false;
+
+													return (
+														<section
+															key={condition}
+															className={cn(
+																"cursor-pointer p-4 border transition-all rounded-lg",
+																isSelected
+																	? "bg-gray-100 border border-gray-300"
+																	: "hover:bg-gray-50"
+															)}
+															onClick={() => {
+																const updatedConditions = isSelected
+																	? field.value?.filter(
+																			(item) => item !== condition
+																	  )
+																	: [...(field.value || []), condition];
+																field.onChange(updatedConditions);
+															}}
+														>
+															<section className="flex items-center justify-center text-sm font-medium">
+																{condition}
+															</section>
+														</section>
+													);
+												})}
+											</div>
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -307,15 +400,25 @@ const ServicesForm = ({
 												<SelectValue placeholder="Select type" />
 											</SelectTrigger>
 											<SelectContent className="!bg-white">
-												<SelectItem value="percentage">Percentage</SelectItem>
-												<SelectItem value="flat">Flat</SelectItem>
+												<SelectItem
+													className="cursor-pointer hover:bg-gray-50"
+													value="percentage"
+												>
+													Percentage
+												</SelectItem>
+												<SelectItem
+													className="cursor-pointer hover:bg-gray-50"
+													value="flat"
+												>
+													Flat
+												</SelectItem>
 											</SelectContent>
 										</Select>
 										<FormMessage />
 									</FormItem>
 								)}
 							/>
-							<FormField
+							{/* <FormField
 								control={form.control}
 								name={`discountRules.${index}.discountCurrency`}
 								render={({ field }) => (
@@ -329,33 +432,80 @@ const ServicesForm = ({
 												<SelectValue placeholder="Select currency" />
 											</SelectTrigger>
 											<SelectContent className="!bg-white">
-												<SelectItem value="USD">USD</SelectItem>
-												<SelectItem value="INR">INR</SelectItem>
+												<SelectItem className="cursor-pointer hover:bg-gray-50" value="USD">USD</SelectItem>
+												<SelectItem className="cursor-pointer hover:bg-gray-50" value="INR">INR</SelectItem>
 											</SelectContent>
 										</Select>
 										<FormMessage />
 									</FormItem>
 								)}
-							/>
+							/> */}
 							<FormField
 								control={form.control}
 								name={`discountRules.${index}.discountAmount`}
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Discount Amount</FormLabel>
-										<FormControl>
-											<Input
-												type="number"
-												placeholder="Discount amount"
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
+								render={({ field }) => {
+									const discountType = form.watch(
+										`discountRules.${index}.discountType`
+									);
+									const discountCurrency = form.watch(`currency`);
+
+									const placeholder =
+										discountType === "percentage"
+											? "e.g. 10%"
+											: discountCurrency === "INR"
+											? "e.g. ₹100"
+											: "e.g. $100";
+
+									return (
+										<FormItem>
+											<FormLabel className="block mb-2 text-sm font-medium text-gray-700">
+												Discount Amount
+											</FormLabel>
+											<FormControl>
+												<section className="flex items-center w-full space-x-2 bg-gray-50 border border-gray-300 rounded-lg px-3 py-2">
+													{discountType === "flat" &&
+														(discountCurrency === "INR" ? (
+															<span className="text-gray-500">₹</span>
+														) : (
+															<span className="text-gray-500">$</span>
+														))}
+													<Input
+														type="number"
+														min={0}
+														max={discountType === "percentage" ? 100 : 10000}
+														placeholder={placeholder}
+														className={`w-full ${
+															discountType === "percentage" && "!px-0"
+														} py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0`}
+														{...field}
+														value={field.value ?? ""}
+														onChange={(e) => {
+															const rawValue = e.target.value;
+															const sanitizedValue = rawValue.replace(
+																/^0+(?!$)/,
+																""
+															);
+															field.onChange(
+																sanitizedValue !== ""
+																	? Number(sanitizedValue)
+																	: null
+															);
+														}}
+													/>
+													{discountType === "percentage" && (
+														<span className="text-gray-500">%</span>
+													)}
+												</section>
+											</FormControl>
+											<FormMessage className="mt-1 text-sm text-red-500" />
+										</FormItem>
+									);
+								}}
 							/>
+
 							<Button
-								className="text-sm bg-red-500 hoverScaleDownEffect w-fit text-white ml-auto mt-2"
+								type="button"
+								className="text-sm bg-red-500 hoverScaleDownEffect w-fit text-white mt-2"
 								variant="destructive"
 								onClick={() => remove(index)}
 							>
@@ -364,14 +514,20 @@ const ServicesForm = ({
 						</div>
 					))}
 					<Button
-						className="text-sm bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
-						onClick={() =>
+						type="button"
+						className="text-sm bg-black hoverScaleDownEffect w-full mx-auto text-white"
+						onClick={() => {
+							const randomIndex = Math.floor(
+								Math.random() * predefinedConditions.length
+							);
+							const randomCondition = predefinedConditions[randomIndex];
+
 							append({
-								conditions: [predefinedConditions[0]],
-								discountAmount: 0,
+								conditions: [randomCondition],
 								discountType: "percentage",
-							})
-						}
+								discountAmount: 10,
+							});
+						}}
 					>
 						Add Discount Rule
 					</Button>
@@ -398,7 +554,7 @@ const ServicesForm = ({
 
 				{isValid && (
 					<Button
-						className="text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
+						className="sticky -bottom-2.5 text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
 						type="submit"
 						disabled={!isValid || form.formState.isSubmitting}
 					>
