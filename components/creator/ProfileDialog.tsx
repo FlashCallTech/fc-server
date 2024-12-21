@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { creatorUser } from "@/types";
-import FileUploaderHome from "../shared/FileUploaderHome";
+import FileUploaderHome from "../uploaders/FileUploaderHome";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import Image from "next/image";
 import { editIcons } from "@/constants/icons";
