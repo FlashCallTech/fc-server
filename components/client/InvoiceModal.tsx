@@ -43,21 +43,22 @@ const InvoiceModal = ({ isOpen, onClose, transaction }: { isOpen: any, onClose: 
     <div className="fixed inset-0 top-20 w-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 ">
       <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 max-w-lg max-h-full overflow-y-auto scrollbar-hide">
         <div id="invoice-content" className="space-y-4">
-          <div className="text-center border-b pb-4">
-            <Image src="/icons/logo_new_light.png" width={1000} height={1000} alt="logo" className="w-20 h-11 mx-auto mb-2" />
-            <div className="text-xl font-bold">FLASHCALL</div>
-            <div className="text-md font-semibold">Invoice</div>
+          <div className="flex flex-col items-center justify-center text-center border-b pb-4">
+            <Image src="/icons/logo_new_light.png" width={1000} height={1000} alt="logo" className="w-24 h-auto mx-auto" />
+            <div className="text-md font-bold">FLASHCALL</div>
+            <div className="text-sm font-semibold">Invoice</div>
           </div>
 
           <div className="flex justify-between text-sm font-medium text-gray-700">
-            <div>Invoice Number: INV-001</div>
+            <div>{`Invoice Number: ${transaction._id}`}</div>
             <div>Date: {new Date().toLocaleDateString()}</div>
           </div>
 
           <div className="border-t pt-4">
             <div className="text-sm font-medium">Bill To:</div>
-            {clientUser?.firstName && <div className="text-sm">Customer Name: {clientUser?.firstName}</div>}
-            <div className="text-sm">Customer Phone Number: {clientUser?.phone}</div>
+            {clientUser?.fullName && <div className="text-sm">Customer Name: {clientUser?.fullName}</div>}
+            {clientUser?.email && <div className="text-sm">Customer Email: {clientUser?.email}</div>}
+            {clientUser?.phone && <div className="text-sm">Customer Phone Number: {clientUser?.phone}</div>}
           </div>
 
           <table className="w-full border border-gray-300 text-sm text-center mt-4">
@@ -73,22 +74,21 @@ const InvoiceModal = ({ isOpen, onClose, transaction }: { isOpen: any, onClose: 
               <tr>
                 <td className="p-2 border border-gray-300">Wallet Recharge</td>
                 <td className="p-2 border border-gray-300">1</td>
-                <td className="p-2 border border-gray-300">INR {transaction.amount}</td>
-                <td className="p-2 border border-gray-300">INR {transaction.amount}</td>
+                <td className="p-2 border border-gray-300">{`${clientUser?.global ? "$" : "INR"} ${transaction.amount}`}</td>
+                <td className="p-2 border border-gray-300">{`${clientUser?.global ? "$" : "INR"} ${transaction.amount}`}</td>
               </tr>
             </tbody>
           </table>
 
           <div className="flex text-sm font-medium pt-4">
             <div>
-              <div>Subtotal: INR {transaction.amount}</div>
-              <div>{`GST (18%): INR ${transaction.amount * 0.18}`}</div>
-              <div>Total Amount Due: INR {transaction.amount + transaction.amount * 0.18}</div>
+              <div>{`Subtotal: ${clientUser?.global ? "$" : "INR"} ${transaction.amount}`}</div>
+              <div>{`Total Amount Due: ${clientUser?.global ? "$" : "INR"} ${transaction.amount}`}</div>
             </div>
           </div>
 
           <div className="border-t pt-4 text-sm font-medium">
-            <div>Payment Method: {transaction.method}</div>
+            {!clientUser?.global && <div>Payment Method: {transaction.method}</div>}
             <div>Transaction ID: {transaction._id}</div>
           </div>
 
@@ -98,7 +98,7 @@ const InvoiceModal = ({ isOpen, onClose, transaction }: { isOpen: any, onClose: 
           <div className="text-xs text-center text-gray-600 pt-2 pb-2">
             Thank you for your recharge!<br />
             For assistance, contact us at <a href="mailto:support@flashcall.me">support@flashcall.me</a>
-            </div>
+          </div>
         </div>
 
         <div className="flex justify-end space-x-4 mt-4">

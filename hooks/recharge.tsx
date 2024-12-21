@@ -31,17 +31,15 @@ const useRecharge = () => {
 		clientId: string,
 		clientPhone: string,
 		creatorId: string,
-		amount: string,
 		totalPayable: number,
 		User_First_Seen: string,
 		Walletbalace_Available: number,
-		method: string
 	) => {
 		trackEvent("Recharge_Page_Proceed_Clicked", {
 			Client_ID: clientId,
 			User_First_Seen,
 			Creator_ID: creatorId,
-			Recharge_value: amount,
+			Recharge_value: totalPayable,
 			Walletbalace_Available,
 		});
 		if (typeof window.Razorpay === "undefined") {
@@ -55,18 +53,15 @@ const useRecharge = () => {
 				clientId,
 				clientPhone,
 				creatorId,
-				amount,
 				totalPayable,
 				User_First_Seen,
 				Walletbalace_Available,
-				method,
 			);
 		} else
 			cashfreeHandler(
 				clientId,
 				clientPhone,
 				creatorId,
-				amount,
 				totalPayable,
 				User_First_Seen,
 				Walletbalace_Available
@@ -77,7 +72,6 @@ const useRecharge = () => {
 		clientId: string,
 		clientPhone: string,
 		creatorId: string,
-		amount: string,
 		totalPayable: number,
 		User_First_Seen: string,
 		Walletbalace_Available: number
@@ -149,11 +143,9 @@ const useRecharge = () => {
 		clientId: string,
 		clientPhone: string,
 		creatorId: string,
-		amount: string,
 		totalPayable: number,
 		User_First_Seen: string,
 		Walletbalace_Available: number,
-		method: string,
 	): Promise<void> => {
 		const totalPayableInPaise = totalPayable! * 100;
 		const rechargeAmount = parseInt(totalPayableInPaise.toFixed(2));
@@ -205,7 +197,7 @@ const useRecharge = () => {
 							body: JSON.stringify({
 								userId,
 								userType: "Client",
-								amount: parseFloat(amount),
+								amount: totalPayable,
 								category: "Recharge",
 								method: paymentResult.paymentMethod,
 							}),
@@ -216,7 +208,7 @@ const useRecharge = () => {
 							Client_ID: clientId,
 							User_First_Seen,
 							Creator_ID: creatorId,
-							Recharge_value: amount,
+							Recharge_value: totalPayable,
 							Walletbalace_Available,
 							PG: "Razorpay",
 						});
@@ -230,7 +222,6 @@ const useRecharge = () => {
 				},
 				prefill: {
 					contact: clientPhone as string,
-					method
 				},
 				theme: { color: "#50A65C" },
 			};
@@ -252,7 +243,7 @@ const useRecharge = () => {
 				Client_ID: clientId,
 				User_First_Seen,
 				Creator_ID: creatorId,
-				Recharge_value: amount,
+				Recharge_value: totalPayable,
 				Walletbalace_Available,
 				PG: "Razorpay",
 			});

@@ -210,19 +210,6 @@ const Recharge: React.FC = () => {
 					<button
 						className="w-4/5 md:w-1/3 mx-auto py-3 text-black bg-white rounded-lg border-2 border-black font-semibold fixed bottom-3"
 						style={{ boxShadow: "3px 3px black" }}
-						onClick={() =>
-							pgHandler(
-								pg,
-								currentUser?._id as string,
-								currentUser?.phone as string,
-								creator?._id as string,
-								amount as string,
-								totalPayable as number,
-								clientUser?.createdAt?.toString().split("T")[0] as string,
-								currentUser?.walletBalance as number,
-								method,
-							)
-						}
 						disabled={loading} // Disable the button when loading
 					>
 						Proceed to Payment
