@@ -97,7 +97,7 @@ const KycForm: React.FC = () => {
 				},
 				body: JSON.stringify({
 					name: currentUser?.firstName + " " + currentUser?.lastName,
-					phone: currentUser?.phone.replace(/^\+91/, ""),
+					phone: currentUser?.phone?.replace(/^\+91/, ""),
 					template_name: "Test",
 					verification_id: verificationId,
 				}),
