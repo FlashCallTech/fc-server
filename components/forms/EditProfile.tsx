@@ -525,6 +525,7 @@ const EditProfile = ({
 										userType === "creator" ? " w-fit gap-2.5" : "w-full"
 									}`}
 								>
+									{/* empty placeholder for creator's username */}
 									{userType === "creator" && (
 										<span className="text-gray-400 pl-2">
 											https://flashcall.me/

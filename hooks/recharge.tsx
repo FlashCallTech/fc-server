@@ -27,19 +27,19 @@ const useRecharge = () => {
 	};
 
 	const pgHandler = async (
+		pg: string | undefined,
 		clientId: string,
 		clientPhone: string,
 		creatorId: string,
-		amount: string,
 		totalPayable: number,
 		User_First_Seen: string,
-		Walletbalace_Available: number
+		Walletbalace_Available: number,
 	) => {
 		trackEvent("Recharge_Page_Proceed_Clicked", {
 			Client_ID: clientId,
 			User_First_Seen,
 			Creator_ID: creatorId,
-			Recharge_value: amount,
+			Recharge_value: totalPayable,
 			Walletbalace_Available,
 		});
 		if (typeof window.Razorpay === "undefined") {
@@ -47,34 +47,21 @@ const useRecharge = () => {
 			setLoading(false);
 			return;
 		}
-		console.log(
-			clientId,
-			clientPhone,
-			creatorId,
-			amount,
-			totalPayable,
-			User_First_Seen,
-			Walletbalace_Available
-		);
-		const response = await axios.get(`${backendBaseUrl}/order/getPg`);
-		const data = response.data;
-		if (data.activePg === "razorpay") {
+		if (pg === "razorpay" || pg === undefined) {
 			localStorage.removeItem("cashfree_order_id");
 			PaymentHandler(
 				clientId,
 				clientPhone,
 				creatorId,
-				amount,
 				totalPayable,
 				User_First_Seen,
-				Walletbalace_Available
+				Walletbalace_Available,
 			);
 		} else
 			cashfreeHandler(
 				clientId,
 				clientPhone,
 				creatorId,
-				amount,
 				totalPayable,
 				User_First_Seen,
 				Walletbalace_Available
@@ -85,7 +72,6 @@ const useRecharge = () => {
 		clientId: string,
 		clientPhone: string,
 		creatorId: string,
-		amount: string,
 		totalPayable: number,
 		User_First_Seen: string,
 		Walletbalace_Available: number
@@ -157,10 +143,9 @@ const useRecharge = () => {
 		clientId: string,
 		clientPhone: string,
 		creatorId: string,
-		amount: string,
 		totalPayable: number,
 		User_First_Seen: string,
-		Walletbalace_Available: number
+		Walletbalace_Available: number,
 	): Promise<void> => {
 		const totalPayableInPaise = totalPayable! * 100;
 		const rechargeAmount = parseInt(totalPayableInPaise.toFixed(2));
@@ -183,7 +168,7 @@ const useRecharge = () => {
 				currency,
 				name: "FlashCall.me",
 				description: "Wallet Recharge",
-				image: `https://backend.flashcall.me/logo_icon.png`,
+				image: `https://backend.flashcall.me/icons/logo_icon.png`,
 				order_id: order.id,
 				handler: async (response: PaymentResponse): Promise<void> => {
 					setLoading(true);
@@ -212,7 +197,7 @@ const useRecharge = () => {
 							body: JSON.stringify({
 								userId,
 								userType: "Client",
-								amount: parseFloat(amount),
+								amount: totalPayable,
 								category: "Recharge",
 								method: paymentResult.paymentMethod,
 							}),
@@ -223,7 +208,7 @@ const useRecharge = () => {
 							Client_ID: clientId,
 							User_First_Seen,
 							Creator_ID: creatorId,
-							Recharge_value: amount,
+							Recharge_value: totalPayable,
 							Walletbalace_Available,
 							PG: "Razorpay",
 						});
@@ -258,7 +243,7 @@ const useRecharge = () => {
 				Client_ID: clientId,
 				User_First_Seen,
 				Creator_ID: creatorId,
-				Recharge_value: amount,
+				Recharge_value: totalPayable,
 				Walletbalace_Available,
 				PG: "Razorpay",
 			});

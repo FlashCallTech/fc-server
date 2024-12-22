@@ -34,6 +34,8 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 		setAuthenticationSheetOpen,
 		currentTheme,
 		creatorURL,
+		userFetched,
+		ongoingCallStatus,
 	} = useCurrentUsersContext();
 	const router = useRouter();
 	const [creator, setCreator] = useState<creatorUser>();

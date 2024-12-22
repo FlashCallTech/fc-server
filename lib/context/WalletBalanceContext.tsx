@@ -52,10 +52,15 @@ export const WalletBalanceProvider = ({
 		setIsInitialized(false);
 		if (currentUser?._id) {
 			try {
-				const response = await axios.get(
-					`${backendBaseUrl}/${isCreator ? "creator" : "client"}/getUser/${
-						currentUser._id
-					}`
+				const userType = isCreator ? "creator" : "client";
+				const endpoint = currentUser.global
+					? `getGlobalUserByEmail/${currentUser.email}`
+					: `getUser/${currentUser._id}`;
+
+				const method = currentUser.global ? "post" : "get";
+
+				const response = await axios[method](
+					`${backendBaseUrl}/${userType}/${endpoint}`
 				);
 				const data = response.data;
 

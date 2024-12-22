@@ -77,9 +77,8 @@ const Sidebar = () => {
 	return (
 		<section
 			id="sidebar"
-			className={`sticky left-0 top-[76px] flex h-screen flex-col justify-between p-6  max-md:hidden lg:w-[264px] shadow-md ${
-				isExpertPath && "border-r border-white/20"
-			}`}
+			className={`sticky left-0 top-[76px] flex h-screen flex-col justify-between p-6  max-md:hidden lg:w-[264px] shadow-md ${isExpertPath && "border-r border-white/20"
+				}`}
 			style={{
 				maxHeight: `calc(100dvh - 76px)`,
 				backgroundColor: isExpertPath ? "transparent" : "#ffffff",
@@ -101,16 +100,15 @@ const Sidebar = () => {
 												? currentUser
 													? item.route
 													: userType === "creator"
-													? "/authenticate?usertype=creator"
-													: "/authenticate"
+														? "/authenticate?usertype=creator"
+														: "/authenticate"
 												: item.route
 										}
 										className={`flex w-full gap-4 items-center p-4 rounded-lg justify-center lg:justify-start 
-                  group ${
-										isExpertPath
-											? "text-white bg-[#333333] hoverScaleDownEffect"
-											: "text-black hover:bg-green-1"
-									} ${isActive && " bg-green-1 text-white"}`}
+                  group ${isExpertPath
+												? "text-white bg-[#333333] hoverScaleDownEffect"
+												: "text-black hover:bg-green-1"
+											} ${isActive && " bg-green-1 text-white"}`}
 										onClick={() => handleLogEvent(item)}
 									>
 										<Image
@@ -118,9 +116,8 @@ const Sidebar = () => {
 											alt={item.label}
 											width={100}
 											height={100}
-											className={`w-6 h-6 object-cover invert group-hover:invert-0 group-hover:brightness-200 ${
-												(isActive || isExpertPath) && "invert-0 brightness-200"
-											}`}
+											className={`w-6 h-6 object-cover invert group-hover:invert-0 group-hover:brightness-200 ${(isActive || isExpertPath) && "invert-0 brightness-200"
+												}`}
 											priority
 										/>
 

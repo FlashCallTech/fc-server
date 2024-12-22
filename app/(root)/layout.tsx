@@ -16,10 +16,31 @@ import { QueryProvider } from "@/lib/react-query/QueryProvider";
 import axios from "axios";
 import Image from "next/image";
 import { Cursor, Typewriter } from "react-simple-typewriter";
+import Script from "next/script";
 
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	const [isMounted, setIsMounted] = useState(false);
+	const [region, setRegion] = useState<"India" | "Global" | null>(null);
 
+	useEffect(() => {
+		console.log("Layout mounted or updated.");
+
+		return () => {
+			console.log("Layout unmounted.");
+		};
+	}, []);
+
+	useEffect(() => {
+		// Calculate the region based on timezone
+		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+		setRegion(
+			timezone === "Asia/Calcutta" || timezone === "Asia/Kolkata"
+				? "India"
+				: "Global"
+		);
+	}, []);
+
+	// Set mounted state once the component is mounted
 	useEffect(() => {
 		setIsMounted(true);
 		initMixpanel();
@@ -95,30 +116,33 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 
 	return (
 		<QueryProvider>
-			<CurrentUsersProvider>
-				<StreamVideoProvider>
-					<Suspense
-						fallback={
-							<section className="absolute bg-[#121319] top-0 left-0 flex justify-center items-center h-screen w-full z-40">
-								<Image
-									src="/icons/logo_splashScreen.png"
-									alt="Loading..."
-									width={500}
-									height={500}
-									className="w-36 h-36 animate-pulse"
-								/>
-							</section>
-						}
-					>
-						<WalletBalanceProvider>
-							<ChatRequestProvider>
+			<CurrentUsersProvider region={region as string}>
+				<Suspense
+					fallback={
+						<section className="absolute bg-[#121319] top-0 left-0 flex justify-center items-center h-screen w-full z-40">
+							<Image
+								src="/icons/logo_splashScreen.png"
+								alt="Loading..."
+								width={500}
+								height={500}
+								className="w-36 h-36 animate-pulse"
+							/>
+						</section>
+					}
+				>
+					<WalletBalanceProvider>
+						<ChatRequestProvider>
+							<StreamVideoProvider>
 								<div className="relative min-h-screen w-full">
+									<Script src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD`} />
+									<Script src="https://checkout.razorpay.com/v1/checkout.js" />
+									<Script src="https://sdk.cashfree.com/js/v3/cashfree.js" />
 									{renderContent()}
 								</div>
-							</ChatRequestProvider>
-						</WalletBalanceProvider>
-					</Suspense>
-				</StreamVideoProvider>
+							</StreamVideoProvider>
+						</ChatRequestProvider>
+					</WalletBalanceProvider>
+				</Suspense>
 			</CurrentUsersProvider>
 		</QueryProvider>
 	);
