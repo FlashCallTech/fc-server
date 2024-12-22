@@ -30,7 +30,7 @@ export const tokenProvider = async (
 				? [{ id: fcmToken.token, push_provider: "firebase" }]
 				: []),
 			...(fcmToken.voip_token
-				? [{ id: fcmToken.voip_token, push_provider: "VoIP" }]
+				? [{ id: fcmToken.voip_token, push_provider: "FlashcallNotification" }]
 				: []),
 		],
 	};

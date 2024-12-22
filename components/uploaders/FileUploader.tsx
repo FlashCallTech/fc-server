@@ -26,7 +26,6 @@ const FileUploader = ({
 }: FileUploaderProps) => {
 	const pathname = usePathname();
 	const [fileUrl, setFileUrl] = useState(mediaUrl);
-	const [newFileUrl, setNewFileUrl] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
@@ -111,7 +110,6 @@ const FileUploader = ({
 					setFileUrl(cloudFrontUrl);
 				} else {
 					setFileUrl(mediaUrl);
-					setNewFileUrl(cloudFrontUrl);
 					fieldChange(cloudFrontUrl);
 				}
 
@@ -139,8 +137,12 @@ const FileUploader = ({
 	});
 
 	useEffect(() => {
-		fieldChange(fileUrl);
-	}, [fileUrl, fieldChange]);
+		if (fileUrl) {
+			fieldChange(fileUrl);
+		} else {
+			fieldChange(mediaUrl);
+		}
+	}, [fileUrl, mediaUrl, fieldChange]);
 
 	if (loading)
 		return (
@@ -167,7 +169,7 @@ const FileUploader = ({
 		>
 			<input {...getInputProps()} className="cursor-pointer" />
 
-			{!fileUrl && !loading && !newFileUrl ? (
+			{!fileUrl && !loading ? (
 				<div className="file_uploader-box">
 					<img
 						src="/icons/file-upload.svg"
@@ -185,9 +187,7 @@ const FileUploader = ({
 				</div>
 			) : (
 				<div className="relative flex justify-center items-center size-20 md:size-32">
-					{/* Overlay */}
 					<div className="absolute inset-0 bg-black/30 rounded-full flex justify-center items-center">
-						{/* Icon */}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
@@ -210,20 +210,11 @@ const FileUploader = ({
 					</div>
 
 					{/* Old Image */}
-					{fileUrl && !newFileUrl && (
+					{fileUrl && (
 						<img
 							src={fileUrl}
 							alt="Current image"
 							className={`size-20 md:size-32 rounded-full border-2 border-white object-cover`}
-						/>
-					)}
-
-					{/* New Image Preview */}
-					{newFileUrl && (
-						<img
-							src={newFileUrl}
-							alt="New image preview"
-							className={`w-20 h-20 md:size-32 object-cover rounded-full border-2 border-green-500`}
 						/>
 					)}
 				</div>
