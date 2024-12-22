@@ -45,6 +45,7 @@ export const backendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL_BACKEND;
 // Function to handle interrupted calls and update the user's status
 export const handleInterruptedCall = async (
 	currentUserId: string,
+	global: boolean,
 	callId: string | null,
 	call: Call,
 	currentUserPhone: string,
@@ -61,6 +62,7 @@ export const handleInterruptedCall = async (
 	// Extract relevant fields from the call object
 	const callData = {
 		id: call.id,
+		global,
 		endedAt: call.state.endedAt,
 		startedAt: call.state.startsAt,
 		isVideoCall: call.type === "default",
@@ -71,6 +73,8 @@ export const handleInterruptedCall = async (
 		expertPhone,
 		clientPhone,
 	};
+
+	console.log(callData);
 
 	try {
 		// Update the user's status based on the type
@@ -551,6 +555,7 @@ type UpdateSessionParams = {
 	isVideoCall?: string;
 	creatorPhone?: string;
 	clientPhone?: string;
+	global?: boolean;
 };
 
 export const updateFirestoreSessions = async (
@@ -562,6 +567,8 @@ export const updateFirestoreSessions = async (
 		const SessionDoc = await getDoc(SessionDocRef);
 		const ongoingCallUpdate: { [key: string]: any } = {};
 
+		console.log(params);
+
 		if (params.callId) ongoingCallUpdate.callId = params.callId;
 		if (params.status) ongoingCallUpdate.status = params.status;
 		if (params.clientId) ongoingCallUpdate.clientId = params.clientId;
@@ -569,7 +576,8 @@ export const updateFirestoreSessions = async (
 		if (params.isVideoCall) ongoingCallUpdate.isVideoCall = params.isVideoCall;
 		if (params.creatorPhone)
 			ongoingCallUpdate.creatorPhone = params.creatorPhone;
-		if (params.clientPhone) ongoingCallUpdate.clientPhone = params.clientPhone;
+		if (params?.clientPhone) ongoingCallUpdate.clientPhone = params.clientPhone;
+		if(params?.global) ongoingCallUpdate.global = params.global ?? false;
 
 		if (SessionDoc.exists()) {
 			await updateDoc(SessionDocRef, {

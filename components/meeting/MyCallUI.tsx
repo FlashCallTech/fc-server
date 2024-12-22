@@ -72,20 +72,21 @@ const MyCallUI = () => {
 			)?.custom?.phone;
 
 			if (userType === "client") {
-				await updateExpertStatus(currentUser?.phone as string, "Idle");
+				await updateExpertStatus(currentUser?.global ? currentUser?.email as string : currentUser?.phone as string, "Idle");
 			} else {
 				await updateExpertStatus(expertPhone, "Online");
 			}
 
 			await handleInterruptedCall(
 				currentUser?._id as string,
+				currentUser?.global ?? false,
 				updatedCall.id,
 				updatedCall as Call,
-				currentUser?.phone as string,
+				currentUser?.global ? currentUser.email as string : currentUser?.phone as string,
 				userType as "client" | "expert",
 				backendBaseUrl as string,
 				expertPhone,
-				currentUser?.phone as string
+				currentUser?.global ? currentUser.email as string : currentUser?.phone as string
 			);
 		} catch (error) {
 			console.error("Error handling interrupted call:", error);
@@ -281,7 +282,7 @@ const MyCallUI = () => {
 				  });
 
 			await updateExpertStatus(
-				outgoingCall.state.createdBy?.custom?.phone as string,
+				currentUser?.global ? currentUser?.email as string : currentUser?.phone as string,
 				"Busy"
 			);
 

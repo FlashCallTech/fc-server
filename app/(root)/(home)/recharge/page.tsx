@@ -11,13 +11,16 @@ import { Cursor, Typewriter } from "react-simple-typewriter";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { trackEvent } from "@/lib/mixpanel";
 import useRecharge from "@/hooks/recharge";
+import axios from "axios";
+import { backendBaseUrl } from "@/lib/utils";
 
 const Recharge: React.FC = () => {
+	const [creator, setCreator] = useState<creatorUser>();
+	const [method, setMethod] = useState("");
+	const [pg, setPg] = useState<string>("");
 	const { updateWalletBalance } = useWalletBalanceContext();
 	const { currentUser, clientUser } = useCurrentUsersContext();
 	const { pgHandler, loading } = useRecharge();
-	const [creator, setCreator] = useState<creatorUser>();
-	const [method, setMethod] = useState("");
 	const searchParams = useSearchParams();
 	const amount = searchParams.get("amount");
 
@@ -35,6 +38,16 @@ const Recharge: React.FC = () => {
 			? parseFloat((subtotal + gstAmount).toFixed(2))
 			: null;
 
+	useEffect(() => {
+		const getPg = async() => {
+			const response = await axios.get(`${backendBaseUrl}/order/getPg`);
+			const data = response.data;
+			if(data.activePg) setPg(data.activePg)
+		}
+
+		getPg();
+	}, [])
+	
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
@@ -78,14 +91,6 @@ const Recharge: React.FC = () => {
 				</section>
 			) : (
 				<div className="overflow-y-scroll p-4 pt-0 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center justify-center w-full">
-					<Script src="https://checkout.razorpay.com/v1/checkout.js" />
-					<Script
-						src="https://sdk.cashfree.com/js/v3/cashfree.js"
-						onLoad={() => {
-							console.log("Cashfree SDK loaded successfully.");
-						}}
-					/>
-
 					{/* Payment Information */}
 					<section className="w-full py-5 sticky">
 						<section className="flex items-center gap-2 mb-2">
@@ -146,11 +151,10 @@ const Recharge: React.FC = () => {
 									<button
 										key={app.name}
 										onClick={() => setMethod(app.name.toLowerCase())}
-										className={`flex flex-col items-center bg-white dark:bg-gray-700 p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 ${
-											method === app.name.toLowerCase()
-												? "bg-gray-300 dark:bg-gray-600 !important"
-												: ""
-										}`}
+										className={`flex flex-col items-center bg-white hover:bg-gray-300  ${method === app.name.toLowerCase()
+												? "bg-gray-300"
+												: "bg-white"
+											}`}
 									>
 										<Image
 											src={app.icon}
@@ -204,19 +208,8 @@ const Recharge: React.FC = () => {
 
 					{/* Payment Button */}
 					<button
-						className="w-4/5 md:w-1/3 mx-auto py-3 text-black bg-white rounded-lg border-2 border-black hover:bg-green-1 hover:text-white font-semibold fixed bottom-3"
+						className="w-4/5 md:w-1/3 mx-auto py-3 text-black bg-white rounded-lg border-2 border-black font-semibold fixed bottom-3"
 						style={{ boxShadow: "3px 3px black" }}
-						onClick={() =>
-							pgHandler(
-								currentUser?._id as string,
-								currentUser?.phone as string,
-								creator?._id as string,
-								amount as string,
-								totalPayable as number,
-								clientUser?.createdAt?.toString().split("T")[0] as string,
-								currentUser?.walletBalance as number
-							)
-						}
 						disabled={loading} // Disable the button when loading
 					>
 						Proceed to Payment

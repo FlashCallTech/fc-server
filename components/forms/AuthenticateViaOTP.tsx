@@ -19,14 +19,16 @@ import Image from "next/image";
 import { success } from "@/constants/icons";
 import { usePathname, useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
-import { CreateCreatorParams, CreateUserParams } from "@/types";
+import { CreateCreatorParams, CreateForeignUserParams, CreateUserParams } from "@/types";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import { backendBaseUrl } from "@/lib/utils";
 import GetRandomImage from "@/utils/GetRandomImage";
-import { getFCMToken } from "@/lib/firebase";
+import { auth, getFCMToken, provider } from "@/lib/firebase";
+import { signInWithPopup, signOut } from "firebase/auth";
+import { headers } from "next/headers";
 
 const formSchema = z.object({
 	phone: z
@@ -52,7 +54,7 @@ const AuthenticateViaOTP = ({
 	onOpenChange?: (isOpen: boolean) => void;
 }) => {
 	const router = useRouter();
-	const { refreshCurrentUser, setAuthenticationSheetOpen } =
+	const { refreshCurrentUser, setAuthenticationSheetOpen, region } =
 		useCurrentUsersContext();
 
 	const [showOTP, setShowOTP] = useState(false);
@@ -287,6 +289,78 @@ const AuthenticateViaOTP = ({
 		otpForm.reset(); // Reset OTP form
 	};
 
+	const handleGoogleSignIn = async () => {
+		try {
+			const result = await signInWithPopup(auth, provider);
+			const email = result.user.email as string;
+
+			const fcmToken: any = await getFCMToken();
+			const payload = {
+				fcmToken,
+			}
+
+			let userExists = true;
+
+			try {
+				// Check if the user exists
+				const response = await axios.post(`${backendBaseUrl}/client/getGlobalUserByEmail/${email}`,
+					payload,
+					{
+						headers: { "Content-Type": "application/json" }
+					}
+				);
+				localStorage.setItem("currentUserID", response.data._id);
+				userExists = response.status !== 404; // User exists if no 404
+			} catch (error: any) {
+				// If 404, set userExists to false
+				if (error.response?.status === 404) {
+					userExists = false;
+				} else {
+					// Rethrow other errors
+					throw error;
+				}
+			}
+
+			// If user does not exist, create a new one
+			if (!userExists) {
+				const newUser: CreateForeignUserParams = {
+					username: result.user.uid,
+					photo: GetRandomImage() || "",
+					phone: result.user.phoneNumber ?? "",
+					fullName: result.user.displayName ?? "",
+					email,
+					role: "client",
+					bio: "",
+					walletBalance: 0,
+					global: true,
+				};
+
+				const createUserResponse = await axios.post(
+					`${backendBaseUrl}/client/createGlobalUser`,
+					newUser,
+					{
+						headers: {
+							"Content-Type": "application/json",
+						},
+					}
+				);
+
+				if (createUserResponse.status === 201) {
+					localStorage.setItem("currentUserID", createUserResponse.data.client_id);
+					console.log("New user created successfully.");
+					refreshCurrentUser();
+				}
+			}
+			
+			// Refresh and close authentication modal
+			setAuthenticationSheetOpen(false);
+			onOpenChange && onOpenChange(false);
+		} catch (error) {
+			console.error("Error during sign-in:", error);
+		}
+	};
+
+
 	return (
 		<section className="relative bg-[#F8F8F8] rounded-t-3xl sm:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-2 shadow-lg w-screen h-fit sm:w-full sm:min-w-[24rem] sm:max-w-sm mx-auto">
 			{!showOTP && !verificationSuccess ? (
@@ -308,58 +382,75 @@ const AuthenticateViaOTP = ({
 							Get started with your first consultation <br /> and start earning
 						</p>
 					</div>
-					<Form {...signUpForm}>
-						<form
-							onSubmit={signUpForm.handleSubmit(handleSignUpSubmit)}
-							className="space-y-4 w-full"
-						>
-							<FormField
-								control={signUpForm.control}
-								name="phone"
-								render={({ field }) => (
-									<FormItem>
-										<div className="flex items-center border-none pl-2 pr-1 py-1 rounded bg-gray-100">
-											<FormControl>
-												<div className="w-full flex justify-between items-center">
-													<div className="flex w-full items-center jusitfy-center">
-														<span className="text-gray-400">+91</span>
-														<span className="px-2 pr-0 text-lg text-gray-300 text-center self-center flex items-center">
-															│
-														</span>
-														<Input
-															placeholder="Enter a Valid Number"
-															{...field}
-															className="w-full font-semibold bg-transparent border-none text-black focus-visible:ring-offset-0 placeholder:text-gray-400 placeholder:font-normal rounded-xl pr-4 pl-2 mx-1 py-3 focus-visible:ring-transparent hover:bg-transparent !important"
-														/>
-													</div>
-
-													<Button
-														type="submit"
-														disabled={phone.length !== 10 || isSendingOTP}
-														className="w-fit text-[12px] font-semibold !px-2 bg-green-1 text-white hover:bg-green-1/80"
-													>
-														{isSendingOTP ? (
-															<Image
-																src="/icons/loading-circle.svg"
-																alt="Loading..."
-																width={24}
-																height={24}
-																className=""
-																priority
+					{region === "India" && userType === "client" ? (
+						<Form {...signUpForm}>
+							<form
+								onSubmit={signUpForm.handleSubmit(handleSignUpSubmit)}
+								className="space-y-4 w-full"
+							>
+								<FormField
+									control={signUpForm.control}
+									name="phone"
+									render={({ field }) => (
+										<FormItem>
+											<div className="flex items-center border-none pl-2 pr-1 py-1 rounded bg-gray-100">
+												<FormControl>
+													<div className="w-full flex justify-between items-center">
+														<div className="flex w-full items-center jusitfy-center">
+															<span className="text-gray-400">+91</span>
+															<span className="px-2 pr-0 text-lg text-gray-300 text-center self-center flex items-center">
+																│
+															</span>
+															<Input
+																placeholder="Enter a Valid Number"
+																{...field}
+																className="w-full font-semibold bg-transparent border-none text-black focus-visible:ring-offset-0 placeholder:text-gray-400 placeholder:font-normal rounded-xl pr-4 pl-2 mx-1 py-3 focus-visible:ring-transparent hover:bg-transparent !important"
 															/>
-														) : (
-															"Get OTP"
-														)}
-													</Button>
-												</div>
-											</FormControl>
-										</div>
-										<FormMessage className="text-center" />
-									</FormItem>
-								)}
+														</div>
+
+														<Button
+															type="submit"
+															disabled={phone.length !== 10 || isSendingOTP}
+															className="w-fit text-[12px] font-semibold !px-2 bg-green-1 text-white hover:bg-green-1/80"
+														>
+															{isSendingOTP ? (
+																<Image
+																	src="/icons/loading-circle.svg"
+																	alt="Loading..."
+																	width={24}
+																	height={24}
+																	className=""
+																	priority
+																/>
+															) : (
+																"Get OTP"
+															)}
+														</Button>
+													</div>
+												</FormControl>
+											</div>
+											<FormMessage className="text-center" />
+										</FormItem>
+									)}
+								/>
+							</form>
+						</Form>
+					) : (
+						<Button
+							className="w-[80%] p-2 text-black text-sm bg-white rounded-md flex items-center justify-center gap-2 border shadow-sm"
+							onClick={handleGoogleSignIn}
+						>
+							<Image
+								src="/google.svg" // Replace with your Google logo image path
+								alt="Google Logo"
+								width={1000}
+								height={1000}
+								className="size-5"
 							/>
-						</form>
-					</Form>
+							Continue with Google
+						</Button>
+					)}
+
 				</>
 			) : verificationSuccess ? (
 				<div className="flex flex-col items-center justify-center w-full sm:min-w-[24rem] sm:max-w-[24rem]  gap-4 pt-7 pb-14">

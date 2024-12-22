@@ -376,7 +376,7 @@ const CreatorHome = () => {
 							creatorLink ?? `https://flashcall.me/${creatorUser?.username}`
 						}
 						username={
-							creatorUser.username ? creatorUser.username : creatorUser.phone
+							creatorUser.username ? creatorUser.username : creatorUser.phone as string
 						}
 						profession={creatorUser.profession ?? "Astrologer"}
 						gender={creatorUser.gender ?? ""}
