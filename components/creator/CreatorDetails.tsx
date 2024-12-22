@@ -24,6 +24,12 @@ import axios from "axios";
 import Link from "next/link";
 import Image from "next/image";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
+import { motion } from "framer-motion";
+
+const fadeInVariants = {
+	hidden: { opacity: 0, y: 20 },
+	visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
 
 const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const {
@@ -185,6 +191,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 									? "#fb923c"
 									: "#f87171"
 							}`,
+							transition: "border-color 0.3s ease-in-out",
 						}}
 					>
 						<Image
@@ -281,7 +288,12 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			</section>
 
 			{/* About, Services and Reviews */}
-			<section className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5">
+			<motion.section
+				className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5"
+				initial="hidden"
+				animate="visible"
+				variants={fadeInVariants}
+			>
 				{creator?.bio && creator.bio !== "Enter your bio here" ? (
 					<>
 						{/* About Creator */}
@@ -346,7 +358,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 						creatorId={creator?._id}
 					/>
 				</section>
-			</section>
+			</motion.section>
 
 			{isAuthSheetOpen && (
 				<AuthenticationSheet

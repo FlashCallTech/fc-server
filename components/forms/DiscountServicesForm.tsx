@@ -105,7 +105,7 @@ const formSchema = z.object({
 	extraDetails: z.string().optional(),
 });
 
-const ServicesForm = ({
+const DiscountServicesForm = ({
 	sheetOpen,
 }: {
 	sheetOpen: (isOpen: boolean) => void;
@@ -156,7 +156,7 @@ const ServicesForm = ({
 			toast({
 				variant: "destructive",
 				title: "Service Created Successfully",
-				description: "It's now live!",
+				description: "You can review or edit the service",
 				toastStatus: "positive",
 			});
 			form.reset();
@@ -577,4 +577,4 @@ const ServicesForm = ({
 	);
 };
 
-export default ServicesForm;
+export default DiscountServicesForm;

@@ -14,7 +14,7 @@ import {
 	getImageSource,
 	updateFirestoreCallServices,
 } from "@/lib/utils";
-import ServicesCheckbox from "../shared/ServicesCheckbox";
+import ServicesCheckbox from "../creatorServices/ServicesCheckbox";
 import CopyToClipboard from "../shared/CopyToClipboard";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -26,12 +26,14 @@ import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
-import ServicesSheet from "./ServicesSheet";
+import ServicesSheet from "../creatorServices/DiscountServicesSheet";
+import Loader from "../shared/Loader";
+import DiscountServiceCards from "../creatorServices/DiscountServiceCards";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser, fetchingUser } =
 		useCurrentUsersContext();
-	const { isInitialized, updateWalletBalance } = useWalletBalanceContext();
+	const { updateWalletBalance } = useWalletBalanceContext();
 	const { services, handleToggle, setServices } = useServices();
 	const { getDevicePlatform } = usePlatform();
 	const { toast } = useToast();
@@ -99,7 +101,7 @@ const CreatorHome = () => {
 	useEffect(() => {
 		setTimeout(() => {
 			setLoading(false);
-		}, 1000);
+		}, 500);
 	}, []);
 
 	const fetchTransactions = async () => {
@@ -292,10 +294,10 @@ const CreatorHome = () => {
 		}
 	}, [creatorUser]);
 
-	const isLoading = loading || !isInitialized;
+	const isLoading = loading || fetchingUser;
 	const isAuthenticated = !!creatorUser;
 
-	if (isLoading || fetchingUser || !isAuthenticated) {
+	if (isLoading) {
 		return (
 			<section className="w-full h-full flex flex-col items-center justify-center">
 				{/* Loading State */}
@@ -325,6 +327,16 @@ const CreatorHome = () => {
 					</span>
 				)}
 			</section>
+		);
+	}
+
+	if (!isAuthenticated) {
+		return !isLoading ? (
+			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
+				No creators found.
+			</div>
+		) : (
+			<Loader />
 		);
 	}
 
@@ -517,6 +529,8 @@ const CreatorHome = () => {
 							onOpenChange={setIsServicesSheetOpen}
 						/>
 					)}
+
+					<DiscountServiceCards />
 
 					<CreatorLinks />
 
