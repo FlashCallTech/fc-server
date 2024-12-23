@@ -79,7 +79,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	};
 
 	const handleChat = async (creator: creatorUser, clientUser: clientUser) => {
-		if (!clientUser || !clientUser.global) router.push("sign-in");
+		if (!clientUser) router.push("sign-in");
 
 		const chatRate = await getUserData(creator._id, clientUser.global ?? false);
 
