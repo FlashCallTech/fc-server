@@ -12,13 +12,16 @@ export const tokenProvider = async (
 	photo: string | undefined,
 	phone: string | undefined,
 	global?: boolean | undefined,
-	email?: string | undefined,
+	email?: string | undefined
 ) => {
 	if (!STREAM_API_KEY) throw new Error("Stream API key secret is missing");
 	if (!STREAM_API_SECRET) throw new Error("Stream API secret is missing");
 
 	const streamClient = new StreamClient(STREAM_API_KEY, STREAM_API_SECRET);
-	const fcmToken = await fetchFCMToken(global === true ? email ?? "" : phone ?? "", "voip");
+	const fcmToken = await fetchFCMToken(
+		global === true ? email ?? "" : phone ?? "",
+		"voip"
+	);
 
 	// Register the user in Stream
 	const userData = {
@@ -32,7 +35,7 @@ export const tokenProvider = async (
 				? [{ id: fcmToken.token, push_provider: "firebase" }]
 				: []),
 			...(fcmToken.voip_token
-				? [{ id: fcmToken.voip_token, push_provider: "FlashcallNotification" }]
+				? [{ id: fcmToken.voip_token, push_provider: "voip" }]
 				: []),
 		],
 	};

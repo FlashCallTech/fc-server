@@ -7,7 +7,7 @@ import { clientUser, creatorUser } from "@/types";
 import axios from "axios";
 import Image from "next/image";
 import React, { useState } from "react";
-import NotifyUserAlert from "../shared/NotifyUserAlert";
+import NotifyUserAlert from "../alerts/NotifyUserAlert";
 import { useToast } from "../ui/use-toast";
 import useServices from "@/hooks/useServices";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";

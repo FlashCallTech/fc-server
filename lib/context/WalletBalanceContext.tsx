@@ -97,8 +97,11 @@ export const WalletBalanceProvider = ({
 
 		const creatorId =
 			userType === "client"
-				? JSON.parse(localStorage.getItem("currentCreator") || "{}")?._id
-				: currentUser._id;
+				? (() => {
+						const storedValue = localStorage.getItem("currentCreator");
+						return storedValue ? JSON.parse(storedValue)?._id : null;
+				  })()
+				: currentUser?._id;
 
 		if (!creatorId) return;
 
