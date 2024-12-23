@@ -10,10 +10,11 @@ import { useToast } from "../ui/use-toast";
 import {
 	backendBaseUrl,
 	calculateTotalEarnings,
+	getDisplayName,
 	getImageSource,
 	updateFirestoreCallServices,
 } from "@/lib/utils";
-import ServicesCheckbox from "../shared/ServicesCheckbox";
+import ServicesCheckbox from "../creatorServices/ServicesCheckbox";
 import CopyToClipboard from "../shared/CopyToClipboard";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -25,11 +26,14 @@ import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
-import ServicesSheet from "./ServicesSheet";
+import ServicesSheet from "../creatorServices/DiscountServicesSheet";
+import Loader from "../shared/Loader";
+import DiscountServiceCards from "../creatorServices/DiscountServiceCards";
 
 const CreatorHome = () => {
-	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
-	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
+	const { creatorUser, refreshCurrentUser, fetchingUser } =
+		useCurrentUsersContext();
+	const { updateWalletBalance } = useWalletBalanceContext();
 	const { services, handleToggle, setServices } = useServices();
 	const { getDevicePlatform } = usePlatform();
 	const { toast } = useToast();
@@ -39,6 +43,7 @@ const CreatorHome = () => {
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [isServicesSheetOpen, setIsServicesSheetOpen] = useState(false);
+
 	const [creatorLink, setCreatorLink] = useState<string | null>(null);
 	const [todaysEarning, setTodaysEarning] = useState(0);
 	const [isPriceEditOpen, setIsPriceEditOpen] = useState(false);
@@ -96,7 +101,7 @@ const CreatorHome = () => {
 	useEffect(() => {
 		setTimeout(() => {
 			setLoading(false);
-		}, 1000);
+		}, 500);
 	}, []);
 
 	const fetchTransactions = async () => {
@@ -289,34 +294,54 @@ const CreatorHome = () => {
 		}
 	}, [creatorUser]);
 
-	if (!creatorUser || loading || walletBalance < 0)
+	const isLoading = loading || fetchingUser;
+	const isAuthenticated = !!creatorUser;
+
+	if (isLoading) {
 		return (
 			<section className="w-full h-full flex flex-col items-center justify-center">
-				<ContentLoading />
+				{/* Loading State */}
+				{isLoading && (
+					<>
+						<ContentLoading />
+						{loading && creatorUser && (
+							<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
+								Fetching Creator&apos;s Details{" "}
+								<Image
+									src="/icons/loading-circle.svg"
+									alt="Loading..."
+									width={24}
+									height={24}
+									className="invert"
+									priority
+								/>
+							</p>
+						)}
+					</>
+				)}
 
-				{!creatorUser && !loading && (
+				{/* User Authentication Required */}
+				{!isAuthenticated && !loading && !isLoading && (
 					<span className="text-red-500 font-semibold text-lg">
 						User Authentication Required
 					</span>
 				)}
-
-				{creatorUser && loading && (
-					<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
-						Fetching Creator&apos;s Details{" "}
-						<Image
-							src="/icons/loading-circle.svg"
-							alt="Loading..."
-							width={24}
-							height={24}
-							className="invert"
-							priority
-						/>
-					</p>
-				)}
 			</section>
 		);
+	}
+
+	if (!isAuthenticated) {
+		return !isLoading ? (
+			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
+				No creators found.
+			</div>
+		) : (
+			<Loader />
+		);
+	}
 
 	const imageSrc = getImageSource(creatorUser);
+	const fullName = getDisplayName(creatorUser);
 
 	return (
 		<>
@@ -332,17 +357,17 @@ const CreatorHome = () => {
 						Edit Profile
 					</Link>
 				</div>
-				<div className="flex flex-col items-center justify-center p-4">
+				<div className="flex flex-col items-center justify-center p-4 gap-2.5">
 					<ProfileDialog creator={creatorUser} imageSrc={imageSrc} />
-					<section className="flex flex-col items-center p-2">
-						<p className="font-medium text-base">
-							{creatorUser?.firstName} {creatorUser?.lastName}
+					<section className="size-full flex flex-col items-center justify-center overflow-hidden">
+						<p className="font-semibold text-2xl max-w-[92%] text-ellipsis whitespace-nowrap overflow-hidden capitalize">
+							{fullName}
 						</p>
-						<p className="font-medium text-sm">
+						<span className="text-sm">
 							{creatorUser?.creatorId?.startsWith("@")
 								? creatorUser.creatorId
 								: `@${creatorUser?.username}`}
-						</p>
+						</span>
 					</section>
 				</div>
 				<div className="flex-grow flex flex-col gap-4 bg-gray-50 rounded-t-3xl p-4">
@@ -504,6 +529,8 @@ const CreatorHome = () => {
 							onOpenChange={setIsServicesSheetOpen}
 						/>
 					)}
+
+					<DiscountServiceCards />
 
 					<CreatorLinks />
 

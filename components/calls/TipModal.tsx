@@ -16,7 +16,7 @@ import { creatorUser } from "@/types";
 import { success } from "@/constants/icons";
 import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { backendBaseUrl } from "@/lib/utils";
+import { backendBaseUrl, fetchExchangeRate } from "@/lib/utils";
 import {
 	getFirestore,
 	doc,
@@ -93,11 +93,20 @@ const TipModal = ({
 		if (storedCreator) {
 			const parsedCreator: creatorUser = JSON.parse(storedCreator);
 			setCreator(parsedCreator);
-			if (parsedCreator.audioRate) {
-				setAudioRatePerMinute(parseInt(parsedCreator.audioRate, 10));
-			}
-			if (parsedCreator.videoRate) {
-				setVideoRatePerMinute(parseInt(parsedCreator.videoRate, 10));
+			if (currentUser?.global) {
+				if (parsedCreator.globalAudioRate) {
+					setAudioRatePerMinute(parseInt(parsedCreator.globalAudioRate, 10));
+				} else setAudioRatePerMinute(0.5);
+				if (parsedCreator.globalVideoRate) {
+					setVideoRatePerMinute(parseInt(parsedCreator.globalVideoRate, 10));
+				} else setVideoRatePerMinute(0.5);
+			} else {
+				if (parsedCreator.audioRate) {
+					setAudioRatePerMinute(parseInt(parsedCreator.audioRate, 10));
+				} else setAudioRatePerMinute(10);
+				if (parsedCreator.videoRate) {
+					setVideoRatePerMinute(parseInt(parsedCreator.videoRate, 10));
+				} else setVideoRatePerMinute(10);
 			}
 		}
 	}, []);
@@ -153,6 +162,8 @@ const TipModal = ({
 				`${backendBaseUrl}/creator/getUser/${creatorId}`
 			);
 			const data = response.data;
+			const exchangeRate = await fetchExchangeRate();
+			const amountAdded = currentUser?.global ? (Number(rechargeAmount) * (1 - (Number(data?.commission ?? 20) / 100))) * exchangeRate : (Number(rechargeAmount) * (1 - (Number(data.commission ?? 20) / 100)));
 			await Promise.all([
 				fetch(`${backendBaseUrl}/wallet/payout`, {
 					method: "POST",
@@ -161,6 +172,7 @@ const TipModal = ({
 						userType: "Client",
 						amount: rechargeAmount,
 						category: "Tip",
+						global: currentUser?.global ?? false,
 					}),
 					headers: { "Content-Type": "application/json" },
 				}),
@@ -169,10 +181,7 @@ const TipModal = ({
 					body: JSON.stringify({
 						userId: creatorId,
 						userType: "Creator",
-						amount: (
-							parseInt(rechargeAmount) *
-							(1 - Number(data.commission) / 100)
-						).toFixed(2),
+						amount: amountAdded,
 						category: "Tip",
 					}),
 					headers: { "Content-Type": "application/json" },
@@ -287,9 +296,8 @@ const TipModal = ({
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className={`flex flex-col items-center justify-center ${
-						!loading ? "px-7 py-5" : "px-4"
-					}  border-none rounded-t-xl bg-white mx-auto overflow-scroll no-scrollbar min-h-[350px] max-h-fit w-full h-dvh sm:max-w-[444px]`}
+					className={`flex flex-col items-center justify-center ${!loading ? "px-7 py-5" : "px-4"
+						}  border-none rounded-t-xl bg-white mx-auto overflow-scroll no-scrollbar min-h-[350px] max-h-fit w-full h-dvh sm:max-w-[444px]`}
 				>
 					{loading ? (
 						<SinglePostLoader />
@@ -300,20 +308,18 @@ const TipModal = ({
 								<SheetDescription>
 									Balance Left
 									<span
-										className={`ml-2 ${
-											hasLowBalance ? "text-red-500" : "text-green-1"
-										}`}
+										className={`ml-2 ${hasLowBalance ? "text-red-500" : "text-green-1"
+											}`}
 									>
-										₹ {adjustedWalletBalance.toFixed(2)}
+										{`${currentUser?.global ? "$" : "₹"} ${adjustedWalletBalance.toFixed(2)}`}
 									</span>
 								</SheetDescription>
 							</SheetHeader>
 							<section
-								className={`grid ${
-									errorMessage ? "py-2 gap-2 " : "py-4 gap-4"
-								} w-full`}
+								className={`grid ${errorMessage ? "py-2 gap-2 " : "py-4 gap-4"
+									} w-full`}
 							>
-								<span className="text-sm">Enter Desired amount in INR</span>
+								<span className="text-sm">{`Enter Desired amount in ${currentUser?.global ? "Dollars" : "INR"}`}</span>
 								<section className="relative flex flex-col justify-center items-center">
 									<Input
 										id="rechargeAmount"
@@ -335,11 +341,10 @@ const TipModal = ({
 										</section>
 									) : (
 										<Button
-											className={`absolute right-2 bg-green-1 text-white hoverScaleDownEffect ${
-												(!rechargeAmount ||
+											className={`absolute right-2 bg-green-1 text-white hoverScaleDownEffect ${(!rechargeAmount ||
 													parseInt(rechargeAmount) > adjustedWalletBalance) &&
 												"cursor-not-allowed"
-											}`}
+												}`}
 											onClick={handleTransaction}
 											disabled={
 												!rechargeAmount ||
@@ -363,22 +368,20 @@ const TipModal = ({
 								<span className="text-sm">Predefined Options</span>
 								{
 									<div
-										className={`${
-											!isMobile
+										className={`${!isMobile
 												? "grid grid-cols-4 gap-4 mt-4 w-full"
 												: "flex justify-start items-center mt-4 space-x-4 w-full overflow-x-scroll overflow-y-hidden no-scrollbar"
-										}`}
+											}`}
 									>
 										{predefinedOptions.map((amount) => (
 											<Button
 												key={amount}
 												onClick={() => handlePredefinedAmountClick(amount)}
-												className={`w-20 bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${
-													rechargeAmount === amount &&
+												className={`w-20 bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${rechargeAmount === amount &&
 													"bg-green-1 text-white hover:bg-green-1"
-												}`}
+													}`}
 											>
-												₹{amount}
+												{`${currentUser?.global ? "$" : "₹"}${amount}`}
 											</Button>
 										))}
 									</div>

@@ -57,7 +57,7 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 			}
 		}
 	}, []);
-	
+
 	const handleRouting = () => {
 		if (userType === "creator") {
 			router.push("/authenticate?usertype=creator");
@@ -70,7 +70,7 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 		}
 	};
 
-	const { walletBalance, isInitialized } = useWalletBalanceContext();
+	const { walletBalance } = useWalletBalanceContext();
 
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
@@ -175,51 +175,46 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 				<AppLink />
 			)}
 
-			{fetchingUser? (
+			{fetchingUser ? (
 				<NavLoader />
 			) : currentUser ? (
 				<div className="flex justify-end items-center gap-4 h-full text-white">
-					{isInitialized ? (
-						<Link
-							href="/payment"
-							className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] ${
-								pathname.includes("/payment") && "!bg-green-1 !text-white"
+					<Link
+						href="/payment"
+						className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] ${
+							pathname.includes("/payment") && "!bg-green-1 !text-white"
+						}`}
+						style={{
+							boxShadow: `4px 4px 0px 0px #000000`,
+							color: `${
+								isMobile && followCreatorTheme ? "#000000" : followCreatorTheme
+							}`,
+							border: `1px solid #000000`,
+							backgroundColor: `${
+								isCreatorOrExpertPath
+									? isMobile
+										? currentTheme
+										: invertCreatorTheme
+									: "#ffffff"
+							}`,
+						}}
+					>
+						<Image
+							src="/wallet.svg"
+							width={100}
+							height={100}
+							alt="wallet"
+							className={`w-4 h-4 ${
+								(pathname.includes("/payment") ||
+									(isCreatorOrExpertPath && !isMobile)) &&
+								"invert"
 							}`}
-							style={{
-								boxShadow: `4px 4px 0px 0px #000000`,
-								color: `${
-									isMobile && followCreatorTheme
-										? "#000000"
-										: followCreatorTheme
-								}`,
-								border: `1px solid #000000`,
-								backgroundColor: `${
-									isCreatorOrExpertPath
-										? isMobile
-											? currentTheme
-											: invertCreatorTheme
-										: "#ffffff"
-								}`,
-							}}
-						>
-							<Image
-								src="/wallet.svg"
-								width={100}
-								height={100}
-								alt="wallet"
-								className={`w-4 h-4 ${
-									(pathname.includes("/payment") ||
-										(isCreatorOrExpertPath && !isMobile)) &&
-									"invert"
-								}`}
-							/>
-							<span className="w-full mt-[2px] text-center align-middle text-xs font-semibold">
-								{`${currentUser.global ? "$" : "Rs." } ${Math.round(walletBalance)}`}
-							</span>
-						</Link>
-					) : (
-						<NavLoader />
-					)}
+						/>
+						<span className="w-full mt-[2px] text-center align-middle text-xs font-semibold">
+							{`Rs. ${Math.round(walletBalance)}`}
+						</span>
+					</Link>
+
 					<MobileNav />
 				</div>
 			) : (

@@ -66,7 +66,7 @@ const NoParticipantsView = () => (
 const TipAnimation = ({ amount }: { amount: number }) => {
 	return (
 		<div className="absolute top-6 left-6 sm:top-4 sm:left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-[#ffffff4d] text-white flex items-center justify-center">
-			<p>Tip ₹ {amount}</p>
+			<p>Tip {`₹ ${amount}`}</p>
 		</div>
 	);
 };
@@ -177,7 +177,6 @@ const MeetingRoom = () => {
 					return;
 				}
 				if (callingState === CallingState.IDLE) {
-					// userType === "creator" && (await call?.accept());
 					await call?.join();
 					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
@@ -278,30 +277,29 @@ const MeetingRoom = () => {
 	};
 
 	const CallLayout = useMemo(() => {
-		switch (layout) {
-			case "grid":
-				return isVideoCall ? (
-					<PaginatedGridLayout />
-				) : (
-					<PaginatedGridLayout excludeLocalParticipant={true} />
-				);
-			default:
-				return isVideoCall ? (
-					<SpeakerLayout
-						participantsBarPosition="bottom"
-						ParticipantViewUIBar={<CustomParticipantViewUI />}
-						ParticipantViewUISpotlight={<CustomParticipantViewUI />}
-					/>
-				) : (
-					<SpeakerLayout
-						participantsBarPosition="bottom"
-						ParticipantViewUIBar={<CustomParticipantViewUI />}
-						ParticipantViewUISpotlight={<CustomParticipantViewUI />}
-						excludeLocalParticipant={true}
-					/>
-				);
+		if (layout === "grid") {
+			return isVideoCall ? (
+				<PaginatedGridLayout />
+			) : (
+				<PaginatedGridLayout excludeLocalParticipant={true} />
+			);
 		}
-	}, [layout]);
+
+		return isVideoCall ? (
+			<SpeakerLayout
+				participantsBarPosition="bottom"
+				ParticipantViewUIBar={<CustomParticipantViewUI />}
+				ParticipantViewUISpotlight={<CustomParticipantViewUI />}
+			/>
+		) : (
+			<SpeakerLayout
+				participantsBarPosition="bottom"
+				ParticipantViewUIBar={<CustomParticipantViewUI />}
+				ParticipantViewUISpotlight={<CustomParticipantViewUI />}
+				excludeLocalParticipant={true}
+			/>
+		);
+	}, [layout, isVideoCall]);
 
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 
@@ -347,6 +345,7 @@ const MeetingRoom = () => {
 				isVideoCall={isVideoCall}
 				isMeetingOwner={isMeetingOwner}
 				call={call}
+				participants={participants.length}
 			>
 				{!callHasEnded && isMeetingOwner && !showCountdown && call ? (
 					<CallTimer
@@ -397,16 +396,12 @@ const MeetingRoom = () => {
 					{isVideoCall && !showCountdown && <VideoToggleButton />}
 
 					{/* Switch Camera */}
-					{isVideoCall &&
-						isMobile &&
-						mobileDevice &&
-						!showCountdown &&
-						mobileDevice && (
-							<SwitchCameraType
-								toggleCamera={toggleCamera}
-								cameraEnabled={call?.camera?.enabled}
-							/>
-						)}
+					{isVideoCall && isMobile && mobileDevice && !showCountdown && (
+						<SwitchCameraType
+							toggleCamera={toggleCamera}
+							cameraEnabled={call?.camera?.enabled}
+						/>
+					)}
 
 					{!showCountdown && (
 						<Tooltip>

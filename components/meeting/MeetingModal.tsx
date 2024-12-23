@@ -40,7 +40,7 @@ const MeetingModal = ({
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent
-				className="rounded-xl flex w-full max-w-[92%] md:max-w-[520px] flex-col gap-6 border-none px-6 py-9  text-white"
+				className="rounded-xl flex w-full max-w-[92%] md:max-w-[520px] flex-col gap-6 border-none px-6 py-9 text-white"
 				style={{
 					background: theme,
 				}}

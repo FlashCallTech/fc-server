@@ -107,6 +107,11 @@ html {
 
 /* stream custom styles */
 
+.str-video__video-preview-container {
+	height: 250px !important;
+	width: 100% !important;
+}
+
 .str-video__speaker-layout .str-video__speaker-layout__spotlight {
 	display: flex;
 	justify-content: center;
@@ -223,6 +228,12 @@ html {
 
 	.str-video__video-placeholder .str-video__video-placeholder__avatar {
 		background: white !important;
+	}
+}
+
+@media (min-width: 768px) {
+	.str-video__video-preview-container {
+		height: 60vh !important;
 	}
 }
 

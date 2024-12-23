@@ -114,7 +114,7 @@ const MyIncomingCallUI = ({ call }: { call: Call }) => {
 					? "Redirecting Back ..."
 					: "Redirecting To Meeting"
 			}`,
-			toastStatus: "negative",
+			toastStatus: `${action === "declined" ? "negative" : "positive"}`,
 		});
 	};
 
