@@ -14,7 +14,10 @@ const Calender = () => {
 	const router = useRouter();
 	const { toast } = useToast();
 
-	// Handle currentUser processing and redirection
+	const { data, isLoading, isError } = useGetUserAvailability(
+		currentUser?._id ?? ""
+	);
+
 	useEffect(() => {
 		if (!fetchingUser) {
 			if (!currentUser) {
@@ -35,15 +38,6 @@ const Calender = () => {
 		}
 	}, [fetchingUser, currentUser, userType, toast, router]);
 
-	// Loading state while currentUser is being processed
-	if (fetchingUser) {
-		return (
-			<div className="size-full flex flex-col gap-2 items-center justify-center">
-				<SinglePostLoader />
-			</div>
-		);
-	}
-
 	if (fetchingUser) {
 		return (
 			<div className="size-full flex flex-col gap-2 items-center justify-center">
@@ -53,16 +47,31 @@ const Calender = () => {
 	}
 
 	if (!currentUser) {
-		return null;
+		return (
+			<div className="flex flex-col w-full items-center justify-center h-full">
+				<h1 className="text-2xl font-semibold text-red-500">No User Found</h1>
+				<h2 className="text-xl font-semibold text-red-500">
+					Please sign in to continue.
+				</h2>
+			</div>
+		);
 	}
 
-	// Display loader or data
-	const { data, isLoading } = useGetUserAvailability(currentUser?._id);
-
-	if (isLoading || !data) {
+	if (isLoading) {
 		return (
 			<div className="size-full flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
+			</div>
+		);
+	}
+
+	if (isError) {
+		return (
+			<div className="flex flex-col w-full items-center justify-center h-full">
+				<h1 className="text-2xl font-semibold text-red-500">No Data Found</h1>
+				<h2 className="text-xl font-semibold text-red-500">
+					Please Try Again.
+				</h2>
 			</div>
 		);
 	}
