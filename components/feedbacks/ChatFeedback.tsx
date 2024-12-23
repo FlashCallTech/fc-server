@@ -60,7 +60,7 @@ const ChatFeedback = ({
 			</div>
 		),
 	};
-
+	
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
@@ -69,6 +69,18 @@ const ChatFeedback = ({
 				setCreator(parsedCreator);
 			}
 		}
+	}, []);
+	
+	useEffect(() => {
+		const chatDuration = async () => {
+			const timerDocRef = doc(db, "callTimer", chatId);
+			const docSnap = await getDoc(timerDocRef);
+			if (docSnap.exists()) {
+				setDuration(docSnap.data().timeUtilized);
+			}
+		};
+
+		chatDuration();
 	}, []);
 
 	useEffect(() => {
@@ -154,17 +166,15 @@ const ChatFeedback = ({
 		}
 	};
 
-	useEffect(() => {
-		const chatDuration = async () => {
-			const timerDocRef = doc(db, "callTimer", chatId);
-			const docSnap = await getDoc(timerDocRef);
-			if (docSnap.exists()) {
-				setDuration(docSnap.data().timeUtilized);
-			}
-		};
+	// Calculate duration in seconds and format as MM:SS
+	const formatDuration = (durationInSeconds: number) => {
+		const minutes = Math.floor(durationInSeconds / 60)
+			.toString()
+			.padStart(2, "0");
+		const seconds = (durationInSeconds % 60).toString().padStart(2, "0");
+		return `${minutes}:${seconds}`;
+	};
 
-		chatDuration();
-	}, []);
 
 	if (!currentUser?._id || isChatLoading)
 		return (
@@ -211,7 +221,7 @@ const ChatFeedback = ({
 				{/* Display the call duration */}
 				<section className="fixed top-[76px] grid items-center gap-2 text-white">
 					<div className="text-center text-2xl font-semibold mt-2">
-						{parseInt(duration, 10).toFixed(2)}
+						{formatDuration(Math.ceil(Number(duration)))}
 					</div>
 					<span>Chat Ended</span>
 				</section>

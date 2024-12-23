@@ -77,11 +77,20 @@ export const CallTimerProvider = ({
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
 			const parsedCreator: creatorUser = JSON.parse(storedCreator);
-			if (parsedCreator.audioRate) {
-				setAudioRatePerMinute(parseInt(parsedCreator.audioRate, 10));
-			}
-			if (parsedCreator.videoRate) {
-				setVideoRatePerMinute(parseInt(parsedCreator.videoRate, 10));
+			if (call?.state.custom.global) {
+				if (parsedCreator.globalAudioRate) {
+					setAudioRatePerMinute(parseInt(parsedCreator.globalAudioRate, 10));
+				} else setAudioRatePerMinute(0.5);
+				if (parsedCreator.globalVideoRate) {
+					setVideoRatePerMinute(parseInt(parsedCreator.globalVideoRate, 10));
+				} else setVideoRatePerMinute(0.5);
+			} else {
+				if (parsedCreator.audioRate) {
+					setAudioRatePerMinute(parseInt(parsedCreator.audioRate, 10));
+				} else setAudioRatePerMinute(10);
+				if (parsedCreator.videoRate) {
+					setVideoRatePerMinute(parseInt(parsedCreator.videoRate, 10));
+				} else setVideoRatePerMinute(10);
 			}
 		}
 	}, []);
