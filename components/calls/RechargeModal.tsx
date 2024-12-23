@@ -132,6 +132,7 @@ const RechargeModal = ({
 						} catch (error) {
 							console.error("Error capturing payment:", error);
 						} finally {
+							setIsSheetOpen(false); // Close the sheet
 							setShowPayPal(false);
 							setOnGoingPayment(false);
 							resumeTimer();
@@ -146,6 +147,7 @@ const RechargeModal = ({
 							Walletbalace_Available: currentUser?.walletBalance,
 						});
 						alert("Payment was canceled. You can try again if you wish.");
+						setIsSheetOpen(false); // Close the sheet
 						setShowPayPal(false);
 						setOnGoingPayment(false);
 						resumeTimer();
@@ -157,6 +159,7 @@ const RechargeModal = ({
 							Error_Message: err.message,
 						});
 						alert("An error occurred with PayPal. Please try again.");
+						setIsSheetOpen(false); // Close the sheet
 						setShowPayPal(false);
 						setOnGoingPayment(false);
 						resumeTimer();
@@ -202,7 +205,13 @@ const RechargeModal = ({
 		<section>
 			<Script src="https://checkout.razorpay.com/v1/checkout.js" />
 
-			<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+			<Sheet open={isSheetOpen} onOpenChange={(isOpen) => {
+				setIsSheetOpen(isOpen);
+				if (!isOpen) {
+					setRechargeAmount("");
+					setShowPayPal(false); // Reset showPayPal when the sheet is closed
+				}
+			}}>
 				<SheetTrigger asChild>
 					<Button
 						className={`${pathname.includes("meeting") ? "bg-green-1" : "bg-red-500"
@@ -269,7 +278,6 @@ const RechargeModal = ({
 								<Button
 									onClick={() => {
 										PaymentHandler(); // Handle Razorpay or Cashfree
-										setIsSheetOpen(false); // Close the sheet
 									}}
 									className="bg-green-1 text-white"
 								>
