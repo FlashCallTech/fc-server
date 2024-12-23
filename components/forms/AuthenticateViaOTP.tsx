@@ -382,7 +382,7 @@ const AuthenticateViaOTP = ({
 							Get start with your first consultation <br /> and start earning
 						</p>
 					</div>
-					{region === "India" && userType === "client" ? (
+					{region === "India" ? (
 						<Form {...signUpForm}>
 							<form
 								onSubmit={signUpForm.handleSubmit(handleSignUpSubmit)}
