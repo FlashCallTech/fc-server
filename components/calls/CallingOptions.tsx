@@ -564,7 +564,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			setChatReqSent(true);
 			handleChat(creator, clientUser);
 			let maxCallDuration =
-				(walletBalance / parseInt(creator.chatRate, 10)) * 60;
+				(walletBalance / (clientUser?.global ? parseInt(creator.globalChatRate, 10) : parseInt(creator.chatRate, 10)) * 60);
 			maxCallDuration =
 				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
