@@ -59,8 +59,12 @@ const TipModal: React.FC<Props> = ({
 		if (storedCreator) {
 			const parsedCreator: creatorUser = JSON.parse(storedCreator);
 			setCreator(parsedCreator);
-			if (parsedCreator.chatRate) {
-				setChatRatePerMinute(parseInt(parsedCreator.chatRate, 10));
+			if (currentUser?.global) {
+				if (parsedCreator.globalChatRate) setChatRatePerMinute(parseInt(parsedCreator.globalChatRate, 10));
+				else setChatRatePerMinute(0.5);
+			} else {
+				if (parsedCreator.chatRate) setChatRatePerMinute(parseInt(parsedCreator.chatRate, 10));
+				else setChatRatePerMinute(10);
 			}
 		}
 	}, []);
@@ -72,7 +76,8 @@ const TipModal: React.FC<Props> = ({
 		const ratePerMinute = chatRatePerMinute;
 		const costOfTimeUtilized = (totalTimeUtilized / 60) * ratePerMinute;
 		const adjustedWalletBalance = walletBalance - costOfTimeUtilized;
-		setAdjustedWalletBalance(adjustedWalletBalance);
+		if (adjustedWalletBalance >= 0) setAdjustedWalletBalance(adjustedWalletBalance);
+		else setAdjustedWalletBalance(0);
 
 		const options = [10, 49, 99, 149, 199, 249, 299, 499, 999, 2999]
 			.filter((amount) => amount <= adjustedWalletBalance)
@@ -94,7 +99,7 @@ const TipModal: React.FC<Props> = ({
 				toastStatus: "negative",
 			});
 		} else {
-			let amountINR : number;
+			let amountINR: number;
 			try {
 				setLoading(true);
 				const response = await axios.get(
@@ -102,7 +107,7 @@ const TipModal: React.FC<Props> = ({
 				);
 				const data = response.data;
 				const exchangeRate = await fetchExchangeRate();
-				const amountAdded = currentUser?.global ? (Number(tipAmount) * (1 - (Number(data?.commission ?? 20) / 100))) * exchangeRate :(Number(tipAmount) * (1 - (Number(data.commission ?? 20) / 100)));
+				const amountAdded = currentUser?.global ? (Number(tipAmount) * (1 - (Number(data?.commission ?? 20) / 100))) * exchangeRate : (Number(tipAmount) * (1 - (Number(data.commission ?? 20) / 100)));
 				amountINR = currentUser?.global ? (Number(tipAmount) * exchangeRate) : (Number(tipAmount));
 				await Promise.all([
 					fetch(`${backendBaseUrl}/wallet/payout`, {
@@ -225,7 +230,7 @@ const TipModal: React.FC<Props> = ({
 							<SheetHeader className="flex flex-col items-center justify-center">
 								<SheetTitle>Provide Tip to Expert</SheetTitle>
 								<SheetDescription>
-									<p>
+									<div>
 										Balance Left
 										<span
 											className={`ml-2 ${hasLowBalance ? "text-red-500" : "text-green-1"
@@ -233,11 +238,11 @@ const TipModal: React.FC<Props> = ({
 										>
 											{`${currentUser?.global ? "$" : "₹"}${adjustedWalletBalance.toFixed(2)}`}
 										</span>
-									</p>
+									</div>
 								</SheetDescription>
 							</SheetHeader>
 							<div className="grid gap-4 py-4 w-full">
-								<span>Enter Desired amount in INR</span>
+								<span>{`Enter Desired amount in ${currentUser?.global ? "Dollars" : "INR"}`}</span>
 								<div className="flex flex-row justify-between rounded-lg border p-1">
 									<Input
 										id="tipAmount"
@@ -256,7 +261,7 @@ const TipModal: React.FC<Props> = ({
 									</Button>
 								</div>
 								{errorMessage && (
-									<p className="text-red-500 text-sm">{errorMessage}</p>
+									<span className="text-red-500 text-sm">{errorMessage}</span>
 								)}
 							</div>
 							<div className="flex flex-col items-start justify-center">

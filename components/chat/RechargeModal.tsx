@@ -46,6 +46,8 @@ const RechargeModal = ({
 
 	useEffect(() => {
 		const getPg = async () => {
+			if (currentUser?.global) return;
+
 			const response = await axios.get(`${backendBaseUrl}/order/getPg`);
 			const data = response.data;
 			if (data.activePg) setPg(data.activePg)
@@ -60,9 +62,9 @@ const RechargeModal = ({
 
 			// Ensure PayPal SDK is loaded
 			if (paypal) {
-				setOnGoingPayment(true);
 				// Cleanup any existing buttons
 				const paypalContainer = document.getElementById("paypal-button-container");
+				console.log(paypalContainer);
 				if (paypalContainer) paypalContainer.innerHTML = "";
 
 				// Render new PayPal buttons
@@ -143,6 +145,7 @@ const RechargeModal = ({
 							Error_Message: err.message,
 						});
 						alert("An error occurred with PayPal. Please try again.");
+						setShowPayPal(false);
 						setOnGoingPayment(false);
 						resumeTimer();
 					},
@@ -157,12 +160,12 @@ const RechargeModal = ({
 	}, [showPayPal]);
 
 	useEffect(() => {
-		if (isSheetOpen || onGoingPayment) {
+		if (isSheetOpen || onGoingPayment || showPayPal) {
 			pauseTimer();
 		} else {
 			resumeTimer();
 		}
-	}, [isSheetOpen, onGoingPayment, pauseTimer, resumeTimer]);
+	}, [isSheetOpen, onGoingPayment, pauseTimer, resumeTimer, showPayPal]);
 
 	const PaymentHandler = () => {
 		try {
@@ -193,7 +196,13 @@ const RechargeModal = ({
 
 	return (
 		<section>
-			<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+			<Sheet open={isSheetOpen} onOpenChange={(isOpen) => {
+				setIsSheetOpen(isOpen);
+				if (!isOpen) {
+					setRechargeAmount("");
+					setShowPayPal(false); // Reset showPayPal when the sheet is closed
+				}
+			}}>
 				<SheetTrigger asChild>
 					<Button
 						className="bg-[rgba(35,35,5,1)] text-white w-full hoverScaleEffect"
@@ -208,12 +217,11 @@ const RechargeModal = ({
 				>
 					<SheetHeader className="flex flex-col items-center justify-center">
 						<SheetTitle>Your balance is low.</SheetTitle>
-						<SheetDescription>
-							Recharge to continue this video call
-						</SheetDescription>
+						<SheetDescription>Recharge to continue this chat</SheetDescription>
 					</SheetHeader>
 					<div className="grid gap-4 py-4 w-full">
-						<Label htmlFor="rechargeAmount">{`Enter amount in ${currentUser?.global ? "$" : "INR"}`}</Label>
+						<Label htmlFor="rechargeAmount">{`Enter amount in ${currentUser?.global ? "Dollars" : "INR"
+							}`}</Label>
 						<Input
 							id="rechargeAmount"
 							type="number"
@@ -223,35 +231,48 @@ const RechargeModal = ({
 							disabled={showPayPal}
 						/>
 					</div>
-					{!showPayPal && <div className="grid grid-cols-3 gap-4 mt-4">
-						{["99", "199", "299", "499", "999", "2999"].map((amount) => (
-							<Button
-								key={amount}
-								onClick={() => handlePredefinedAmountClick(amount)}
-								className="w-full bg-gray-200 hover:bg-gray-300 hoverScaleEffect"
-							>
-								₹{amount}
-							</Button>
-						))}
-					</div>}
-					<div
-						className={`flex items-center justify-center shadow border border-gray-100 p-5 rounded-lg w-full ${showPayPal ? "block" : "hidden"
-							}`}
-					>
-						<div
-							id="paypal-button-container"
-							className={`w-full ${showPayPal ? "block" : "hidden"}`}
-						></div>
-					</div>
+					{!showPayPal && (
+						<div className="grid grid-cols-3 gap-4 mt-4">
+							{["99", "199", "299", "499", "999", "2999"].map((amount) => (
+								<Button
+									key={amount}
+									onClick={() => handlePredefinedAmountClick(amount)}
+									className="w-full bg-gray-200 hover:bg-gray-300 hoverScaleEffect"
+								>
+									{`${currentUser?.global ? "$" : "₹"}${amount}`}
+								</Button>
+							))}
+						</div>
+					)}
+					{showPayPal && (
+						<div className={`w-full ${showPayPal ? "block" : "hidden"}`}>
+							<div
+								id="paypal-button-container"
+								className={`w-full max-h-[60vh] overflow-y-auto scrollbar-hide ${showPayPal ? "block" : "hidden"}`}
+							></div>
+						</div>
+					)}
 					<SheetFooter className="mt-4">
-						<SheetClose asChild>
-							<Button
-								onClick={PaymentHandler}
+						{currentUser?.global ? (
+							!showPayPal && <Button
+								onClick={() => setShowPayPal(true)}
 								className="bg-green-1 text-white"
 							>
 								Recharge
 							</Button>
-						</SheetClose>
+						) : (
+							<SheetClose asChild>
+								<Button
+									onClick={() => {
+										PaymentHandler(); // Handle Razorpay or Cashfree
+										setIsSheetOpen(false); // Close the sheet
+									}}
+									className="bg-green-1 text-white"
+								>
+									Recharge
+								</Button>
+							</SheetClose>
+						)}
 					</SheetFooter>
 				</SheetContent>
 			</Sheet>
