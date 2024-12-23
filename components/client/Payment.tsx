@@ -171,13 +171,13 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		let rate: number | undefined;
 		switch (callType) {
 			case "video":
-				rate = creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
+				rate = currentUser?.global ? creator?.globalVideoRate ? parseFloat(creator.globalVideoRate) : undefined : creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
 				break;
 			case "audio":
-				rate = creator?.audioRate ? parseFloat(creator.audioRate) : undefined;
+				rate = currentUser?.global ? creator?.globalAudioRate ? parseFloat(creator.globalAudioRate) : undefined : creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
 				break;
 			case "chat":
-				rate = creator?.chatRate ? parseFloat(creator.chatRate) : undefined;
+				rate = currentUser?.global ? creator?.globalChatRate ? parseFloat(creator.globalChatRate) : undefined : creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
 				break;
 			default:
 				rate = 0;

@@ -15,14 +15,14 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import ServicesForm from "../shared/ServicesForm";
+import ServicesForm from "../forms/DiscountServicesForm";
 
 interface DiscountConsentSheetProps {
 	isOpen: boolean;
 	onOpenChange: (isOpen: boolean) => void;
 }
 
-const ServiceSheet: React.FC<DiscountConsentSheetProps> = ({
+const DiscountServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 	isOpen,
 	onOpenChange,
 }) => {
@@ -54,7 +54,7 @@ const ServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 							rules tailored to your customers&apos; needs.
 						</SheetDescription>
 					</SheetHeader>
-					<ServicesForm />
+					<ServicesForm sheetOpen={onOpenChange} />
 				</SheetContent>
 			</Sheet>
 		);
@@ -72,11 +72,11 @@ const ServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 							rules tailored to your customers&apos; needs.
 						</DialogDescription>
 					</DialogHeader>
-					<ServicesForm />
+					<ServicesForm sheetOpen={onOpenChange} />
 				</DialogContent>
 			</Dialog>
 		);
 	}
 };
 
-export default ServiceSheet;
+export default DiscountServiceSheet;

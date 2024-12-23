@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 
@@ -117,6 +117,27 @@ export const useGetClients = () => {
 // CREATOR QUERIES
 // ============================================================
 
+const fetchCreator = async (username: string) => {
+	const response = await axios.post(
+		`${backendBaseUrl}/user/getUserByUsername`,
+		{
+			username,
+		}
+	);
+	return response.data;
+};
+
+// Custom hook for React Query
+export const useCreatorQuery = (username: string | undefined) => {
+	return useQuery({
+		queryKey: [QUERY_KEYS.GET_CREATOR, username],
+		queryFn: () => fetchCreator(username!),
+		enabled: !!username,
+		staleTime: 60 * 60 * 1000,
+		refetchOnWindowFocus: false,
+	});
+};
+
 export const useGetCreators = (limit: number, profession: string) => {
 	return useInfiniteQuery({
 		queryKey: [QUERY_KEYS.GET_CREATORS, limit, profession],
@@ -206,6 +227,39 @@ export const useGetCreatorNotifications = (userId: string) => {
 			return lastPage.page < totalPages ? lastPage.page + 1 : null;
 		},
 		initialPageParam: 1,
+	});
+};
+
+// Hook for fetching user services
+export const useGetUserServices = (creatorId: string) => {
+	const limit = 10;
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_CREATOR_DISCOUNT_SERVICES, creatorId],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(
+				`${backendBaseUrl}/services/creatorServices`,
+				{
+					params: {
+						page: pageParam,
+						limit,
+						creatorId: creatorId,
+					},
+				}
+			);
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching user services");
+			}
+		},
+		getNextPageParam: (lastPage, allPages) => {
+			const totalPages = lastPage.pagination.pages;
+			const nextPage = allPages.length + 1;
+			return nextPage <= totalPages ? nextPage : null;
+		},
+		initialPageParam: 1,
+		enabled: !!creatorId,
 	});
 };
 
@@ -301,5 +355,28 @@ export const useGetUserTransactionsByType = (
 		},
 		enabled: !!userId && !!type,
 		initialPageParam: 1,
+	});
+};
+
+// ============================================================
+// USER AVAILABILITY QUERIES
+// ============================================================
+
+export const useGetUserAvailability = (userId: string) => {
+	return useQuery({
+		queryKey: [QUERY_KEYS.GET_USER_AVAILABILITY, userId],
+		queryFn: async () => {
+			const response = await axios.get(
+				`${backendBaseUrl}/availability/user/weekly`,
+				{ params: { userId } }
+			);
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Failed to fetch user availability");
+			}
+		},
+		enabled: !!userId,
 	});
 };

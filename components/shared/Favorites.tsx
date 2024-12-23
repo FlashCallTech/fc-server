@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Image from "next/image";
 import { creatorUser } from "@/types";
 import * as Sentry from "@sentry/nextjs";

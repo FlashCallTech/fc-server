@@ -24,6 +24,9 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { backendBaseUrl } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import useRecharge from "@/hooks/useRecharge";
+import axios from "axios";
+import { trackEvent } from "@/lib/mixpanel";
 
 const RechargeModal = ({
 	inTipModal,
@@ -37,10 +40,26 @@ const RechargeModal = ({
 	const [rechargeAmount, setRechargeAmount] = useState("");
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
 	const [onGoingPayment, setOnGoingPayment] = useState(false);
+	const [pg, setPg] = useState<string>("");
+	const [showPayPal, setShowPayPal] = useState(false);
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
 	const { pauseTimer, resumeTimer } = useCallTimerContext();
+	const { pgHandler } = useRecharge();
 	const pathname = usePathname();
+
+	useEffect(() => {
+		const getPg = async () => {
+			if (currentUser?.global) return;
+
+			const response = await axios.get(`${backendBaseUrl}/order/getPg`);
+			const data = response.data;
+			if (data.activePg) setPg(data.activePg)
+		}
+
+		getPg();
+	}, [])
+
 	useEffect(() => {
 		if (isSheetOpen || onGoingPayment) {
 			pauseTimer();
@@ -49,144 +68,126 @@ const RechargeModal = ({
 		}
 	}, [isSheetOpen, onGoingPayment, pauseTimer, resumeTimer]);
 
-	const subtotal: number | null =
-		rechargeAmount !== null ? parseInt(rechargeAmount) : null;
-	const gstRate: number = 18; // GST rate is 18%
-	const gstAmount: number | null =
-		subtotal !== null ? (subtotal * gstRate) / 100 : null;
-	const totalPayable: number | null =
-		subtotal !== null && gstAmount !== null ? subtotal + gstAmount : null;
+	useEffect(() => {
+		if (showPayPal) {
+			const paypal = (window as any).paypal;
 
-	const PaymentHandler = async (
-		e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-	): Promise<void> => {
-		e.preventDefault();
+			// Ensure PayPal SDK is loaded
+			if (paypal) {
+				// Cleanup any existing buttons
+				const paypalContainer = document.getElementById("paypal-button-container");
+				console.log(paypalContainer);
+				if (paypalContainer) paypalContainer.innerHTML = "";
 
-		if (typeof window.Razorpay === "undefined") {
-			console.error("Razorpay SDK is not loaded");
-			return;
+				// Render new PayPal buttons
+				paypal.Buttons({
+					style: {
+						layout: 'vertical', // Stack buttons vertically
+						color: 'gold',      // Button color
+						shape: 'rect',      // Button shape
+						label: 'paypal',    // Label type
+						height: 50,
+						disableMaxWidth: true
+					},
+					async createOrder(data: any, actions: any) {
+						const details = await actions.order.create({
+							purchase_units: [{
+								amount: {
+									currency_code: "USD",
+									value: rechargeAmount
+								}
+							}],
+							application_context: {
+								shipping_preference: "NO_SHIPPING",
+							}
+						});
+
+						return details;
+					},
+					async onApprove(data: any, actions: any) {
+						try {
+							const details = await actions.order.capture();
+							if (details.status === "COMPLETED") {
+								console.log("Payment completed:", details);
+								await fetch(`${backendBaseUrl}/wallet/addMoney`, {
+									method: "POST",
+									body: JSON.stringify({
+										userId: currentUser?._id,
+										userType: "Client",
+										amount: Number(details.purchase_units[0].amount.value),
+										category: "Recharge",
+										global: true,
+									}),
+									headers: { "Content-Type": "application/json" },
+								});
+								trackEvent("Recharge_Page_Payment_Completed", {
+									Client_ID: currentUser?._id,
+									// Creator_ID: creator?._id,
+									Recharge_value: rechargeAmount,
+									Walletbalace_Available: currentUser?.walletBalance,
+									Order_ID: details.id,
+								});
+
+							}
+						} catch (error) {
+							console.error("Error capturing payment:", error);
+						} finally {
+							setShowPayPal(false);
+							setOnGoingPayment(false);
+							resumeTimer();
+						}
+					},
+					onCancel(data: any) {
+						console.warn("Payment was canceled by the user", data);
+						trackEvent("Recharge_Page_Payment_Canceled", {
+							Client_ID: currentUser?._id,
+							// Creator_ID: creator?._id,
+							Recharge_value: rechargeAmount,
+							Walletbalace_Available: currentUser?.walletBalance,
+						});
+						alert("Payment was canceled. You can try again if you wish.");
+						setShowPayPal(false);
+						setOnGoingPayment(false);
+						resumeTimer();
+					},
+					onError(err: any) {
+						console.error("PayPal error:", err);
+						trackEvent("Recharge_Page_Payment_Error", {
+							Client_ID: currentUser?._id,
+							Error_Message: err.message,
+						});
+						alert("An error occurred with PayPal. Please try again.");
+						setShowPayPal(false);
+						setOnGoingPayment(false);
+						resumeTimer();
+					},
+				}).render("#paypal-button-container");
+			} else {
+				console.error("PayPal SDK not loaded");
+			}
+		} else {
+			const paypalContainer = document.getElementById("paypal-button-container");
+			if (paypalContainer) paypalContainer.innerHTML = "";
 		}
+	}, [showPayPal]);
 
-		setIsSheetOpen(false); // Close the sheet
-
-		const amount: number = totalPayable! * 100;
-		const currency: string = "INR";
-		const receiptId: string = "kuchbhi";
-
+	const PaymentHandler = async () => {
 		try {
 			setOnGoingPayment(true);
-			const response: Response = await fetch(
-				`${backendBaseUrl}/order/create-order`,
-				{
-					method: "POST",
-					body: JSON.stringify({ amount, currency, receipt: receiptId }),
-					headers: { "Content-Type": "application/json" },
-				}
-			);
-
-			const order = await response.json();
-
-			const options: RazorpayOptions = {
-				key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string,
-				rechargeAmount: amount,
-				currency,
-				name: "FlashCall.me",
-				description: "Test Transaction",
-				image: "https://example.com/your_logo",
-				order_id: order.id,
-				handler: async (response: PaymentResponse): Promise<void> => {
-					const body: PaymentResponse = { ...response };
-					let paymentResult;
-
-					try {
-						const paymentId = body.razorpay_order_id;
-
-						const paymentResponse = await fetch(
-							`${backendBaseUrl}/order/create-payment`,
-							{
-								method: "POST",
-								body: JSON.stringify({ order_id: response.razorpay_order_id }),
-								headers: { "Content-Type": "application/json" },
-							}
-						);
-
-						paymentResult = await paymentResponse.json();
-					} catch (error) {
-						Sentry.captureException(error);
-					}
-
-					try {
-						const validateRes: Response = await fetch(
-							`${backendBaseUrl}/order/validate`,
-							{
-								method: "POST",
-								body: JSON.stringify(body),
-								headers: { "Content-Type": "application/json" },
-							}
-						);
-
-						// Add money to user wallet upon successful validation
-						const userId = currentUser?._id as string; // Replace with actual user ID
-						const userType = "Client";
-						setWalletBalance((prev) => prev + parseInt(rechargeAmount));
-
-						fetch(`${backendBaseUrl}/wallet/addMoney`, {
-							method: "POST",
-							body: JSON.stringify({
-								userId: userId,
-								userType,
-								amount: rechargeAmount,
-								category: "Recharge",
-								method: paymentResult.paymentMethod,
-							}),
-							headers: { "Content-Type": "application/json" },
-						});
-
-						toast({
-							variant: "destructive",
-							title: "Recharge Successful",
-							description: `Credited Rs. ${parseInt(
-								rechargeAmount,
-								10
-							)} to your balance`,
-							toastStatus: "positive",
-						});
-						setRechargeAmount("");
-					} catch (error) {
-						Sentry.captureException(error);
-						console.error("Validation request failed:", error);
-						toast({
-							variant: "destructive",
-							title: "Something Went Wrong",
-							description: `Please enter a valid amount`,
-							toastStatus: "negative",
-						});
-					}
-				},
-				prefill: {
-					name: "",
-					email: "",
-					contact: "",
-					method: "",
-				},
-				notes: {
-					address: "Razorpay Corporate Office",
-				},
-				theme: {
-					color: "#F37254",
-				},
-			};
-
-			const rzp1 = new window.Razorpay(options);
-			rzp1.on("payment.failed", (response: PaymentFailedResponse): void => {
-				alert(response.error.code);
-				alert(response.error.metadata.payment_id);
-			});
-
-			rzp1.open();
+			if (currentUser?.global) {
+				setShowPayPal(true)
+			} else {
+				pgHandler(
+					pg,
+					currentUser?._id as string,
+					Number(rechargeAmount),
+					currentUser?.phone,
+					currentUser?.createdAt?.toString().split("T")[0],
+					currentUser?.walletBalance,
+				)
+			}
 		} catch (error) {
-			Sentry.captureException(error);
-			console.error("Payment request failed:", error);
+			console.log(error);
 		} finally {
 			setOnGoingPayment(false);
 			resumeTimer();
@@ -204,11 +205,9 @@ const RechargeModal = ({
 			<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
 				<SheetTrigger asChild>
 					<Button
-						className={`${
-							pathname.includes("meeting") ? "bg-green-1" : "bg-red-500"
-						} text-white ${
-							inTipModal ? "mt-0" : "mt-2"
-						}  w-full hoverScaleEffect rounded-[20px]`}
+						className={`${pathname.includes("meeting") ? "bg-green-1" : "bg-red-500"
+							} text-white ${inTipModal ? "mt-0" : "mt-2"
+							}  w-full hoverScaleEffect rounded-[20px]`}
 						onClick={() => setIsSheetOpen(true)}
 					>
 						Recharge
@@ -228,35 +227,56 @@ const RechargeModal = ({
 						</SheetDescription>
 					</SheetHeader>
 					<div className="grid gap-4 py-4 w-full">
-						<Label htmlFor="rechargeAmount">Enter amount in INR</Label>
+						<Label htmlFor="rechargeAmount">{`Enter amount in ${currentUser?.global ? "Dollars" : "INR"}`}</Label>
 						<Input
 							id="rechargeAmount"
 							type="number"
 							placeholder="Enter recharge amount"
 							value={rechargeAmount}
 							onChange={(e) => setRechargeAmount(e.target.value)}
+							disabled={showPayPal}
 						/>
 					</div>
-					<div className="grid grid-cols-3 gap-4 mt-4">
+					{!showPayPal && <div className="grid grid-cols-3 gap-4 mt-4">
 						{["99", "199", "299", "499", "999", "2999"].map((amount) => (
 							<Button
 								key={amount}
 								onClick={() => handlePredefinedAmountClick(amount)}
 								className="w-full bg-gray-200 hover:bg-gray-300 hoverScaleEffect"
 							>
-								₹{amount}
+								{`${currentUser?.global ? "$" : "₹"}${amount}`}
 							</Button>
 						))}
-					</div>
+					</div>}
+					{showPayPal && (
+						<div className={`w-full ${showPayPal ? "block" : "hidden"}`}>
+							<div
+								id="paypal-button-container"
+								className={`w-full max-h-[60vh] overflow-y-auto scrollbar-hide ${showPayPal ? "block" : "hidden"}`}
+							></div>
+						</div>
+					)}
 					<SheetFooter className="mt-4">
-						<SheetClose asChild>
-							<Button
-								onClick={PaymentHandler}
+						{currentUser?.global ? (
+							!showPayPal && <Button
+								onClick={() => setShowPayPal(true)}
 								className="bg-green-1 text-white"
 							>
 								Recharge
 							</Button>
-						</SheetClose>
+						) : (
+							<SheetClose asChild>
+								<Button
+									onClick={() => {
+										PaymentHandler(); // Handle Razorpay or Cashfree
+										setIsSheetOpen(false); // Close the sheet
+									}}
+									className="bg-green-1 text-white"
+								>
+									Recharge
+								</Button>
+							</SheetClose>
+						)}
 					</SheetFooter>
 				</SheetContent>
 			</Sheet>

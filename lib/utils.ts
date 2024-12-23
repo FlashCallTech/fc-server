@@ -209,7 +209,7 @@ export const updateFirestoreCallServices = async (
 	services?: Services,
 	prices?: Prices,
 	status?: Status,
-	global?: boolean,
+	global?: boolean
 ) => {
 	if (creatorUser) {
 		try {
@@ -388,17 +388,18 @@ export const getDisplayName = (creator: {
 	const fullName = creator?.fullName?.trim();
 	const maskedFullName = fullName ? maskNumbers(fullName) : undefined;
 
-	const combinedName = `${creator?.firstName || ""} ${creator?.lastName || ""
-		}`.trim();
+	const combinedName = `${creator?.firstName || ""} ${
+		creator?.lastName || ""
+	}`.trim();
 	const maskedCombinedName = combinedName
 		? maskNumbers(combinedName)
 		: undefined;
 
 	const maskedUsername = creator?.username?.startsWith("+91")
 		? creator.username.replace(
-			/(\+91)(\d+)/,
-			(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-		)
+				/(\+91)(\d+)/,
+				(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+		  )
 		: maskNumbers(creator?.username || "");
 
 	if (maskedFullName) {
@@ -656,8 +657,8 @@ export const sendNotification = async (
 		// Convert all data values to strings
 		const stringifiedData = data
 			? Object.fromEntries(
-				Object.entries(data).map(([key, value]) => [key, String(value)])
-			)
+					Object.entries(data).map(([key, value]) => [key, String(value)])
+			  )
 			: {};
 
 		const response = await fetch("/api/send-notification", {
@@ -667,7 +668,7 @@ export const sendNotification = async (
 				token,
 				title,
 				message: body,
-				data: stringifiedData, 
+				data: stringifiedData,
 				link,
 			}),
 		});
@@ -807,6 +808,85 @@ export async function fetchCreatorImage(
 
 	return creatorImageUrl;
 }
+
+// Function to fetch the time from Firestore
+export const fetchFirestoreTime = async (callId: string) => {
+	try {
+		const callDocRef = doc(db, "calls", callId);
+		const callDoc = await getDoc(callDocRef);
+		if (callDoc.exists()) {
+			const { timeLeft = 0, timeUtilized = 0 } = callDoc.data();
+			return { timeLeft, timeUtilized };
+		}
+		return { timeLeft: 0, timeUtilized: 0 };
+	} catch (error) {
+		Sentry.captureException(error);
+		console.error("Error fetching Firestore time: ", error);
+		return { timeLeft: 0, timeUtilized: 0 };
+	}
+};
+
+// Function to fetch the time from Firestore and calculate the duration
+export const fetchCallDuration = async (callId: string) => {
+	try {
+		const callDocRef = doc(db, "calls", callId);
+		const callDoc = await getDoc(callDocRef);
+
+		if (callDoc.exists()) {
+			const { timeUtilized = 0 } = callDoc.data();
+
+			// Ensure timeUtilized is rounded to an integer
+			const roundedTime = Math.floor(timeUtilized);
+
+			const minutes = Math.floor(roundedTime / 60)
+				.toString()
+				.padStart(2, "0");
+			const seconds = (roundedTime % 60).toString().padStart(2, "0");
+
+			return `${minutes}:${seconds}`;
+		}
+		return "00:00";
+	} catch (error) {
+		console.error("Error fetching call duration: ", error);
+		return "00:00";
+	}
+};
+
+// method to generate dynamic timeslots
+export const generateTimeSlots = (): string[] => {
+	const slots: string[] = [];
+	let start = new Date();
+	start.setHours(0, 0, 0, 0);
+
+	while (start.getDate() === new Date().getDate()) {
+		const hours = start.getHours();
+		const minutes = start.getMinutes();
+		const period = hours >= 12 ? "PM" : "AM";
+		const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+
+		// Format the time string
+		const timeString = `${displayHours}:${minutes
+			.toString()
+			.padStart(2, "0")} ${period}`;
+		slots.push(timeString);
+
+		start.setMinutes(start.getMinutes() + 15);
+	}
+
+	return slots;
+};
+
+// function to mask user number
+
+export const maskNumbers = (input: string): string => {
+	if (input.startsWith("+91")) {
+		return input.replace(
+			/(\+91)(\d{10})/,
+			(match, p1, p2) => `${p1} ${p2.slice(0, 5)}xxxxx`
+		);
+	}
+	return input ?? "";
+};
 
 export const fetchExchangeRate = async (): Promise<number> => {
 	const today = new Date();

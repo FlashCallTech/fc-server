@@ -31,7 +31,7 @@ const MeetingPage = () => {
 	const router = useRouter();
 	const { toast } = useToast();
 	const { call, isCallLoading } = useGetCallById(id);
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, fetchingUser } = useCurrentUsersContext();
 	const creatorURL = localStorage.getItem("creatorURL");
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
@@ -57,11 +57,24 @@ const MeetingPage = () => {
 	}, []);
 
 	useEffect(() => {
+		if (!currentUser && !fetchingUser) {
+			toast({
+				variant: "destructive",
+				title: "Meeting Not Available",
+				description: "You need to authenticate to join the meeting.",
+				toastStatus: "negative",
+			});
+
+			router.replace(`${creatorURL ? creatorURL : "/home"}`);
+		}
+	}, [currentUser, fetchingUser]);
+
+	useEffect(() => {
 		if (!isCallLoading && !call) {
 			toast({
 				variant: "destructive",
 				title: "Call Not Found",
-				description: "Redirecting Back...",
+				description: "The meeting you're looking for could not be found.",
 				toastStatus: "negative",
 			});
 			setTimeout(() => {
@@ -83,7 +96,7 @@ const MeetingPage = () => {
 				toast({
 					variant: "destructive",
 					title: "Access Denied",
-					description: "You are not authorized to join this meeting.",
+					description: "You do not have permission to join this meeting.",
 					toastStatus: "negative",
 				});
 				setTimeout(() => {
@@ -93,7 +106,13 @@ const MeetingPage = () => {
 		}
 	}, [isCallLoading, call, currentUser, toast, router, creatorURL]);
 
-	if (isCallLoading) return <Loader />;
+	// user or call information is still loading
+	if ((currentUser && isCallLoading) || fetchingUser)
+		return (
+			<div className="flex flex-col w-full items-center justify-center h-screen gap-7">
+				<SinglePostLoader />
+			</div>
+		);
 
 	if (!call) {
 		return (
