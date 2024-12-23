@@ -24,7 +24,7 @@ import { Button } from "../ui/button";
 import Script from "next/script";
 import { backendBaseUrl } from "@/lib/utils";
 import axios from "axios";
-import useRecharge from "@/hooks/recharge";
+import useRecharge from "@/hooks/useRecharge";
 
 interface PaymentProps {
 	callType?: string;
@@ -251,11 +251,11 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			pgHandler(
 				pg,
 				currentUser?._id as string,
-				currentUser?.phone as string,
-				creator?._id as string,
 				rechargeAmount,
-				clientUser?.createdAt?.toString().split("T")[0] as string,
-				currentUser?.walletBalance as number,
+				currentUser?.phone,
+				clientUser?.createdAt?.toString().split("T")[0],
+				currentUser?.walletBalance,
+				creator?._id,
 			)
 		}
 

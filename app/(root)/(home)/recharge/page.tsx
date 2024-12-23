@@ -10,7 +10,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { trackEvent } from "@/lib/mixpanel";
-import useRecharge from "@/hooks/recharge";
+import useRecharge from "@/hooks/useRecharge";
 import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 

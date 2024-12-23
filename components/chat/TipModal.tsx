@@ -20,7 +20,7 @@ import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, getDoc, increment, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { backendBaseUrl } from "@/lib/utils";
+import { backendBaseUrl, fetchExchangeRate } from "@/lib/utils";
 import axios from "axios";
 
 interface Props {
@@ -94,12 +94,16 @@ const TipModal: React.FC<Props> = ({
 				toastStatus: "negative",
 			});
 		} else {
+			let amountINR : number;
 			try {
 				setLoading(true);
 				const response = await axios.get(
 					`${backendBaseUrl}/creator/getUser/${creatorId}`
 				);
 				const data = response.data;
+				const exchangeRate = await fetchExchangeRate();
+				const amountAdded = currentUser?.global ? (Number(tipAmount) * (1 - (Number(data?.commission ?? 20) / 100))) * exchangeRate :(Number(tipAmount) * (1 - (Number(data.commission ?? 20) / 100)));
+				amountINR = currentUser?.global ? (Number(tipAmount) * exchangeRate) : (Number(tipAmount));
 				await Promise.all([
 					fetch(`${backendBaseUrl}/wallet/payout`, {
 						method: "POST",
@@ -108,6 +112,7 @@ const TipModal: React.FC<Props> = ({
 							userType: "Client",
 							amount: tipAmount,
 							category: "Tip",
+							global: currentUser?.global ?? false,
 						}),
 						headers: { "Content-Type": "application/json" },
 					}),
@@ -116,10 +121,7 @@ const TipModal: React.FC<Props> = ({
 						body: JSON.stringify({
 							userId: creatorId,
 							userType: "Creator",
-							amount: (
-								parseInt(tipAmount, 10) *
-								(1 - Number(data.commission) / 100)
-							).toFixed(2),
+							amount: amountAdded.toFixed(2),
 							category: "Tip",
 						}),
 						headers: { "Content-Type": "application/json" },
@@ -133,8 +135,10 @@ const TipModal: React.FC<Props> = ({
 				if (tipDoc.exists()) {
 					// If callId exists, increment amount; otherwise, add it
 					await updateDoc(tipRef, {
+						[`${callId}.totalAmountINR`]: increment(amountINR ?? parseInt(tipAmount)),
 						[`${callId}.totalAmount`]: increment(parseInt(tipAmount)),
 						[`${callId}.amount`]: parseInt(tipAmount),
+						[`${callId}.amountINR`]: (amountINR ?? parseInt(tipAmount)),
 					});
 				} else {
 					console.log("not exists");
@@ -142,7 +146,9 @@ const TipModal: React.FC<Props> = ({
 					await setDoc(tipRef, {
 						[callId as string]: {
 							amount: parseInt(tipAmount),
+							amountINR: amountINR ?? parseInt(tipAmount),
 							totalAmount: parseInt(tipAmount),
+							totalAmountINR: amountINR ?? parseInt(tipAmount)
 						},
 					});
 				}
@@ -209,9 +215,8 @@ const TipModal: React.FC<Props> = ({
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className={`flex flex-col items-center justify-center ${
-						!loading ? "px-10 py-7" : "px-4"
-					} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
+					className={`flex flex-col items-center justify-center ${!loading ? "px-10 py-7" : "px-4"
+						} border-none rounded-t-xl bg-white min-h-[350px] max-h-fit w-full sm:max-w-[444px] mx-auto`}
 				>
 					{loading ? (
 						<ContentLoading />
@@ -223,11 +228,10 @@ const TipModal: React.FC<Props> = ({
 									<p>
 										Balance Left
 										<span
-											className={`ml-2 ${
-												hasLowBalance ? "text-red-500" : "text-green-1"
-											}`}
+											className={`ml-2 ${hasLowBalance ? "text-red-500" : "text-green-1"
+												}`}
 										>
-											₹ {adjustedWalletBalance.toFixed(2)}
+											{`${currentUser?.global ? "$" : "₹"}${adjustedWalletBalance.toFixed(2)}`}
 										</span>
 									</p>
 								</SheetDescription>
@@ -262,12 +266,11 @@ const TipModal: React.FC<Props> = ({
 										<Button
 											key={amount}
 											onClick={() => handlePredefinedAmountClick(amount)}
-											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${
-												tipAmount === amount &&
+											className={`w-full bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${tipAmount === amount &&
 												"bg-green-1 text-white hover:bg-green-1"
-											}`}
+												}`}
 										>
-											₹{amount}
+											{`${currentUser?.global ? "$" : "₹"}${amount}`}
 										</Button>
 									))}
 								</div>

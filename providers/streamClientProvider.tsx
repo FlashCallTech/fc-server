@@ -20,14 +20,6 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 	let lastName = currentUser?.lastName || "";
 	let username = currentUser?.username || "";
 	const fullName = getDisplayName({ firstName, lastName, username });
-	
-	useEffect(() => {
-		console.log("Stream mounted or updated.");
-	
-		return () => {
-			console.log("Stream unmounted.");
-		};
-	}, []);
 
 	useEffect(() => {
 		const initializeVideoClient = async () => {

@@ -13,6 +13,8 @@ import useEndChat from "@/hooks/useEndChat";
 import { creatorUser } from "@/types";
 import { useCurrentUsersContext } from "./CurrentUsersContext";
 import { useWalletBalanceContext } from "./WalletBalanceContext";
+import axios from "axios";
+import { backendBaseUrl } from "../utils";
 
 interface ChatTimerContextProps {
 	timeLeft: string;
@@ -55,7 +57,7 @@ export const ChatTimerProvider = ({
 }: ChatTimerProviderProps) => {
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
 	const [timeLeft, setTimeLeft] = useState(0);
-	const [chatRatePerMinute, setChatRatePerMinute] = useState(0);
+	const [chatRatePerMinute, setChatRatePerMinute] = useState<number>(0);
 	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
 	const [hasLowBalance, setHasLowBalance] = useState(false);
 	const [isTimerRunning, setIsTimerRunning] = useState(true);
@@ -68,15 +70,19 @@ export const ChatTimerProvider = ({
 
 	const pauseTimer = () => setIsTimerRunning(false);
 	const resumeTimer = () => setIsTimerRunning(true);
+	
 	useEffect(() => {
-		const storedCreator = localStorage.getItem("currentCreator");
-		if (storedCreator) {
-			const parsedCreator: creatorUser = JSON.parse(storedCreator);
-			if (parsedCreator.chatRate) {
-				setChatRatePerMinute(parseInt(parsedCreator.chatRate, 10));
-			}
+		const getCreatorData = async() => {
+
+			const response = await axios.get(
+				`${backendBaseUrl}/creator/getUser/${creatorId}`
+			);
+			const chatRate = clientUser?.global? Number(response.data.globalChatRate) : Number(response.data.chatRate);
+			setChatRatePerMinute(chatRate);
 		}
-	}, []);
+
+		getCreatorData();
+	}, [])
 
 	useEffect(() => {
 		if (!chatId) {

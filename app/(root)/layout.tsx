@@ -23,19 +23,11 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	const [region, setRegion] = useState<"India" | "Global" | null>(null);
 
 	useEffect(() => {
-		console.log("Layout mounted or updated.");
-
-		return () => {
-			console.log("Layout unmounted.");
-		};
-	}, []);
-
-	useEffect(() => {
 		// Calculate the region based on timezone
 		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 		setRegion(
 			timezone === "Asia/Calcutta" || timezone === "Asia/Kolkata"
-				? "India"
+				? "Global"
 				: "Global"
 		);
 	}, []);
@@ -134,9 +126,6 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 						<ChatRequestProvider>
 							<StreamVideoProvider>
 								<div className="relative min-h-screen w-full">
-									<Script src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD`} />
-									<Script src="https://checkout.razorpay.com/v1/checkout.js" />
-									<Script src="https://sdk.cashfree.com/js/v3/cashfree.js" />
 									{renderContent()}
 								</div>
 							</StreamVideoProvider>
