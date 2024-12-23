@@ -22,48 +22,62 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 	const fullName = getDisplayName({ firstName, lastName, username });
 
 	useEffect(() => {
-		const initializeVideoClient = async () => {
+		const initializeVideoClient = async (retries = 3) => {
 			if (!currentUser || !userId) {
 				return;
 			}
 
 			if (!API_KEY) throw new Error("Stream API key is missing");
 
-			try {
-				const token = await tokenProvider(
-					userId,
-					fullName,
-					currentUser.photo,
-					currentUser?.phone,
-					currentUser?.global,
-					currentUser?.email,
-				);
+			let attempts = 0;
 
-				const client = new StreamVideoClient({
-					apiKey: API_KEY,
-					user: {
-						id: userId,
-						name: currentUser?.username.startsWith("+91")
-							? currentUser.username.replace(
-									/(\+91)(\d+)/,
-									(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-							  )
-							: currentUser.username,
-						image: currentUser?.photo as string,
-						custom: {
-							phone: currentUser?.phone as string,
+			while (attempts < retries) {
+				try {
+					const token = await tokenProvider(
+						userId,
+						fullName,
+						currentUser.photo,
+						currentUser.phone
+					);
+
+					const client = new StreamVideoClient({
+						apiKey: API_KEY,
+						user: {
+							id: userId,
+							name: currentUser?.username.startsWith("+91")
+								? currentUser.username.replace(
+										/(\+91)(\d+)/,
+										(match, p1, p2) =>
+											`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+								  )
+								: currentUser.username,
+							image: currentUser?.photo as string,
+							custom: {
+								phone: currentUser?.phone as string,
+							},
 						},
-					},
-					tokenProvider: async () => token,
-					options: {
-						timeout: 10000,
-						timeoutErrorMessage: "Connection Timed Out",
-					},
-				});
-				setVideoClient(client);
-			} catch (error) {
-				Sentry.captureException(error);
-				console.error("Failed to initialize StreamVideoClient:", error);
+						tokenProvider: async () => token,
+						options: {
+							timeout: 10000,
+							timeoutErrorMessage: "Connection Timed Out",
+						},
+					});
+					setVideoClient(client);
+					return;
+				} catch (error) {
+					attempts++;
+					console.error(
+						`Attempt ${attempts} failed to initialize StreamVideoClient:`,
+						error
+					);
+
+					if (attempts >= retries) {
+						Sentry.captureException(error);
+						throw new Error(
+							"Failed to initialize StreamVideoClient after retries"
+						);
+					}
+				}
 			}
 		};
 

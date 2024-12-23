@@ -41,57 +41,57 @@ export const WalletBalanceProvider = ({
 	children: ReactNode;
 }) => {
 	const { currentUser, userType } = useCurrentUsersContext();
-	const [walletBalance, setWalletBalance] = useState<number>(-1);
+	const [walletBalance, setWalletBalance] = useState<number>(0);
 	const [isInitialized, setIsInitialized] = useState(false);
 
 	const isCreator = userType === "creator";
 
-	// Prevent double initialization in development mode due to React.StrictMode
-	const isMounted = useRef(false);
-
-	// Effect to log mount/unmount for debugging purposes
-	useEffect(() => {
-		if (process.env.NODE_ENV === "development") {
-			console.log("Wallet balance provider mounted.");
-		}
-
-		return () => {
-			if (process.env.NODE_ENV === "development") {
-				console.log("Wallet balance provider unmounted.");
-			}
-		};
-	}, []);
+	const isFirstRender = useRef(true);
 
 	const updateAndSetWalletBalance = async () => {
+		setIsInitialized(false);
 		if (currentUser?._id) {
 			try {
-				const response = isCreator
-					? currentUser.global ? await axios.post(`${backendBaseUrl}/creator/getGlobalUserByEmail/${currentUser.email}`) : await axios.get(`${backendBaseUrl}/creator/getUser/${currentUser._id}`)
-					: currentUser.global ? await axios.post(`${backendBaseUrl}/client/getGlobalUserByEmail/${currentUser.email}`) : await axios.get(`${backendBaseUrl}/client/getUser/${currentUser._id}`);
+				const userType = isCreator ? "creator" : "client";
+				const endpoint = currentUser.global
+					? `getGlobalUserByEmail/${currentUser.email}`
+					: `getUser/${currentUser._id}`;
+
+				const method = currentUser.global ? "post" : "get";
+
+				const response = await axios[method](
+					`${backendBaseUrl}/${userType}/${endpoint}`
+				);
 				const data = response.data;
+
 				setWalletBalance((prev) =>
 					prev === data.walletBalance ? prev : data.walletBalance
 				);
-				setIsInitialized(true);
 			} catch (error) {
 				Sentry.captureException(error);
-				console.error("Error fetching current user:", error);
+				console.error("Error fetching wallet balance:", error);
 				setWalletBalance(NaN);
+			} finally {
 				setIsInitialized(true);
 			}
+		} else {
+			setWalletBalance(0);
+			setIsInitialized(true);
 		}
 	};
 
+	// Handle initial render logic
 	useEffect(() => {
-		if (!isMounted.current) {
-			isMounted.current = true;
-			setWalletBalance(currentUser ? currentUser.walletBalance ?? 0 : -1);
-		} else if (isMounted.current && !currentUser) {
-			setWalletBalance(-1);
+		if (isFirstRender.current) {
+			isFirstRender.current = false;
+			setWalletBalance(currentUser?.walletBalance ?? 0);
+			setIsInitialized(true);
+		} else {
+			updateAndSetWalletBalance();
 		}
-		setIsInitialized(true);
 	}, [currentUser]);
 
+	// Listen for real-time updates using Firebase
 	useEffect(() => {
 		if (!currentUser) return;
 
@@ -107,14 +107,14 @@ export const WalletBalanceProvider = ({
 			creatorRef,
 			(snapshot) => {
 				if (snapshot.exists()) {
-					updateWalletBalance();
+					updateAndSetWalletBalance();
 				} else {
 					console.warn("Document does not exist");
 				}
 			},
 			(error) => {
 				console.error("Error fetching transactions: ", error);
-				updateWalletBalance();
+				updateAndSetWalletBalance();
 			}
 		);
 
@@ -123,21 +123,13 @@ export const WalletBalanceProvider = ({
 		};
 	}, [currentUser, userType]);
 
-	const updateWalletBalance = async () => {
-		try {
-			await updateAndSetWalletBalance();
-		} catch (error) {
-			console.error("Failed to update wallet balance:", error);
-		}
-	};
-
 	return (
 		<WalletBalanceContext.Provider
 			value={{
 				walletBalance,
 				isInitialized,
 				setWalletBalance,
-				updateWalletBalance,
+				updateWalletBalance: updateAndSetWalletBalance,
 			}}
 		>
 			{children}

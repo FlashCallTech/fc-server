@@ -19,8 +19,7 @@ const Favorites = () => {
 	const [creator, setCreator] = useState<creatorUser>();
 	const [favorites, setFavorites] = useState<any[]>([]);
 	const [selectedProfession, setSelectedProfession] = useState("All");
-	const { currentUser, clientUser } = useCurrentUsersContext();
-	const { isInitialized } = useWalletBalanceContext();
+	const { currentUser, clientUser, fetchingUser } = useCurrentUsersContext();
 	const { ref, inView } = useInView({
 		threshold: 0.1,
 		triggerOnce: false,
@@ -142,7 +141,7 @@ const Favorites = () => {
 				</section>
 			</section>
 
-			{isLoading || !isInitialized ? (
+			{isLoading || !fetchingUser ? (
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
 				</section>

@@ -193,7 +193,7 @@ const AuthenticateViaOTP = ({
 						photo: "",
 						phone: formattedPhone,
 						profession: "Astrologer",
-						themeSelected: "#50A65C",
+						themeSelected: "#88D8C0",
 						videoRate: "10",
 						audioRate: "10",
 						chatRate: "10",
@@ -403,7 +403,7 @@ const AuthenticateViaOTP = ({
 							Login or Signup
 						</h2>
 						<p className="text-sm text-[#707070] mb-2.5">
-							Get start with your first consultation <br /> and start earning
+							Get started with your first consultation <br /> and start earning
 						</p>
 					</div>
 					{region === "India"? (
