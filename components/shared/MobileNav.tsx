@@ -18,7 +18,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useEffect, useMemo, useState } from "react";
 import { trackEvent } from "@/lib/mixpanel";
 import { clientUser, creatorUser } from "@/types";
-import SignoutAlert from "./SignoutAlert";
+import SignoutAlert from "../alerts/SignoutAlert";
 
 const MobileNav = () => {
 	const pathname = usePathname();

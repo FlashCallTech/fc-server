@@ -19,11 +19,17 @@ const CreatorCard = () => {
 	const { username } = useParams();
 	const { currentUser, userType, fetchingUser } = useCurrentUsersContext();
 	const router = useRouter();
-
+	const [loading, setLoading] = useState(true);
 	const initializedPixelId = useRef<string | null>(null);
 	const [lastCallTracked, setLastCallTracked] = useState(
 		() => localStorage.getItem("lastTrackedCallId") || null
 	);
+
+	useEffect(() => {
+		setTimeout(() => {
+			setLoading(false);
+		}, 1000);
+	}, []);
 
 	const {
 		data: creatorUser,
@@ -109,7 +115,7 @@ const CreatorCard = () => {
 		fetchingUser,
 	]);
 
-	if (fetchingUser || isLoading) {
+	if (fetchingUser || isLoading || loading) {
 		return (
 			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
 				{/* <Image
@@ -153,9 +159,11 @@ const CreatorCard = () => {
 	}
 
 	return (
-		<section className="size-full grid grid-cols-1 items-start justify-center">
-			<CreatorDetails creator={creatorUser} />
-		</section>
+		<React.Suspense fallback={<ContentLoading />}>
+			<section className="size-full grid grid-cols-1 items-start justify-center">
+				<CreatorDetails creator={creatorUser} />
+			</section>
+		</React.Suspense>
 	);
 };
 
