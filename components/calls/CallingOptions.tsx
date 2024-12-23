@@ -420,16 +420,17 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 								}
 							);
 
-							await axios.post(`${backendUrl}/send-notification`, {
-								deviceToken: fcmToken.voip_token,
-								message: `Incoming ${callType} Call Request from ${clientUser.username}`,
-								payload: {
-									created_by_display_name: clientUser.username,
-									callType: call.type,
-									callId: call.id,
-									notificationType: "call.ring",
-								},
-							});
+							fcmToken.voip_token &&
+								(await axios.post(`${backendUrl}/send-notification`, {
+									deviceToken: fcmToken.voip_token,
+									message: `Incoming ${callType} Call Request from ${clientUser.username}`,
+									payload: {
+										created_by_display_name: clientUser.username,
+										callType: call.type,
+										callId: call.id,
+										notificationType: "call.ring",
+									},
+								}));
 						} catch (error) {
 							console.warn(error);
 						}
@@ -607,7 +608,11 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			setChatReqSent(true);
 			handleChat(creator, clientUser);
 			let maxCallDuration =
-				(walletBalance / (clientUser?.global ? parseInt(creator.globalChatRate, 10) : parseInt(creator.chatRate, 10)) * 60);
+				(walletBalance /
+					(clientUser?.global
+						? parseInt(creator.globalChatRate, 10)
+						: parseInt(creator.chatRate, 10))) *
+				60;
 			maxCallDuration =
 				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
