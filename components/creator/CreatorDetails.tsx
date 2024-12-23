@@ -278,7 +278,11 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 					)}
 					{/* Share Button */}
 					<ShareButton
-						username={creator?.username ? creator?.username as string : creator?.phone as string}
+						username={
+							creator?.username
+								? (creator?.username as string)
+								: (creator?.phone as string)
+						}
 						profession={creator?.profession ?? "Astrologer"}
 						gender={creator?.gender ? creator?.gender.toLowerCase() : ""}
 						firstName={creator?.firstName}

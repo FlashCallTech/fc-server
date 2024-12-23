@@ -71,7 +71,9 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			const response = await axios.get(
 				`${backendBaseUrl}/creator/getUser/${userId}`
 			);
-			return (global ? Number(response.data.globalChatRate) : parseInt(response.data.chatRate, 10));
+			return global
+				? Number(response.data.globalChatRate)
+				: parseInt(response.data.chatRate, 10);
 		} catch (error) {
 			console.error("Error fetching user data:", error);
 			throw error;
@@ -80,10 +82,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 	const handleChat = async (creator: creatorUser, clientUser: clientUser) => {
 		if (!clientUser) router.push("sign-in");
+		if (!clientUser) router.push("sign-in");
 
 		const chatRate = await getUserData(creator._id, clientUser.global ?? false);
 
-		let maxCallDuration = (walletBalance / chatRate * 60);
+		let maxCallDuration = (walletBalance / chatRate) * 60;
 		maxCallDuration =
 			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
@@ -144,13 +147,21 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				}
 			} else {
 				try {
-					await setDoc(userChatsDocSnapshot.ref, {
-						isTyping: false
-					}, { merge: true });
+					await setDoc(
+						userChatsDocSnapshot.ref,
+						{
+							isTyping: false,
+						},
+						{ merge: true }
+					);
 
-					await setDoc(creatorChatsDocSnapshot.ref, {
-						isTyping: false
-					}, { merge: true });
+					await setDoc(
+						creatorChatsDocSnapshot.ref,
+						{
+							isTyping: false,
+						},
+						{ merge: true }
+					);
 				} catch (error) {
 					console.error("Error updating isTyping field: ", error);
 				}
@@ -161,10 +172,14 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				timeLeft: maxCallDuration,
 				timeUtilized: 0,
 			});
-			await setDoc(doc(db, "chats", chatId), {
-				clientId: clientUser?._id,
-				creatorId: creator?._id
-			}, { merge: true });
+			await setDoc(
+				doc(db, "chats", chatId),
+				{
+					clientId: clientUser?._id,
+					creatorId: creator?._id,
+				},
+				{ merge: true }
+			);
 			localStorage.setItem("chatId", chatId);
 			const newChatRequestRef = doc(chatRequestsRef);
 			const createdAtDate = clientUser?.createdAt
@@ -188,7 +203,9 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					: maskPhoneNumber(clientUser.phone as string),
 				clientImg: clientUser?.photo,
 				client_first_seen: formattedDate,
-				creator_first_seen: creator.createdAt ? creator.createdAt.toString().split("T")[0] : "",
+				creator_first_seen: creator.createdAt
+					? creator.createdAt.toString().split("T")[0]
+					: "",
 				client_balance: clientUser.walletBalance,
 				status: "pending",
 				chatId: chatId,

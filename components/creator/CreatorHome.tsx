@@ -26,7 +26,6 @@ import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
-import ServicesSheet from "../creatorServices/DiscountServicesSheet";
 import Loader from "../shared/Loader";
 import DiscountServiceCards from "../creatorServices/DiscountServiceCards";
 
@@ -101,7 +100,7 @@ const CreatorHome = () => {
 	useEffect(() => {
 		setTimeout(() => {
 			setLoading(false);
-		}, 500);
+		}, 1000);
 	}, []);
 
 	const fetchTransactions = async () => {
@@ -294,44 +293,28 @@ const CreatorHome = () => {
 		}
 	}, [creatorUser]);
 
-	const isLoading = loading || fetchingUser;
-	const isAuthenticated = !!creatorUser;
-
-	if (isLoading) {
+	if (fetchingUser || loading) {
 		return (
-			<section className="w-full h-full flex flex-col items-center justify-center">
-				{/* Loading State */}
-				{isLoading && (
-					<>
-						<ContentLoading />
-						{loading && creatorUser && (
-							<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
-								Fetching Creator&apos;s Details{" "}
-								<Image
-									src="/icons/loading-circle.svg"
-									alt="Loading..."
-									width={24}
-									height={24}
-									className="invert"
-									priority
-								/>
-							</p>
-						)}
-					</>
-				)}
-
-				{/* User Authentication Required */}
-				{!isAuthenticated && !loading && !isLoading && (
-					<span className="text-red-500 font-semibold text-lg">
-						User Authentication Required
-					</span>
-				)}
-			</section>
+			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
+				<ContentLoading />
+				<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
+					Fetching Creator&apos;s Details{" "}
+					<Image
+						src="/icons/loading-circle.svg"
+						alt="Loading..."
+						width={24}
+						height={24}
+						priority
+					/>
+				</p>
+			</div>
 		);
 	}
 
+	const isAuthenticated = !!creatorUser;
+
 	if (!isAuthenticated) {
-		return !isLoading ? (
+		return !fetchingUser ? (
 			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
 				No creators found.
 			</div>
@@ -376,7 +359,9 @@ const CreatorHome = () => {
 							creatorLink ?? `https://flashcall.me/${creatorUser?.username}`
 						}
 						username={
-							creatorUser.username ? creatorUser.username : creatorUser.phone as string
+							creatorUser.username
+								? creatorUser.username
+								: (creatorUser.phone as string)
 						}
 						profession={creatorUser.profession ?? "Astrologer"}
 						gender={creatorUser.gender ?? ""}
@@ -516,21 +501,7 @@ const CreatorHome = () => {
 						/>
 					</section>
 
-					<section
-						className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer"
-						onClick={() => setIsServicesSheetOpen((prev) => !prev)}
-					>
-						{isServicesSheetOpen ? "Services Sheet Visible" : "Add Services"}
-					</section>
-
-					{isServicesSheetOpen && (
-						<ServicesSheet
-							isOpen={isServicesSheetOpen}
-							onOpenChange={setIsServicesSheetOpen}
-						/>
-					)}
-
-					<DiscountServiceCards />
+					<DiscountServiceCards creator={creatorUser} />
 
 					<CreatorLinks />
 

@@ -4,7 +4,7 @@ import { creatorUser } from "@/types";
 import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
-import UnfollowAlert from "./UnfollowAlert";
+import UnfollowAlert from "../alerts/UnfollowAlert";
 
 interface FavoriteItem {
 	creatorId: creatorUser;
@@ -55,11 +55,9 @@ const Favorites = ({
 					`${backendBaseUrl}/favorites/${user?._id}`
 				);
 
-				// Check if response data is available
 				if (response.data && response.data.paginatedData) {
 					const favorites: FavoriteItem[] = response.data.paginatedData;
 
-					// Check if the current creator is in the favorites
 					const isFavorite = favorites.some(
 						(fav: any) => fav._id === creator?._id
 					);

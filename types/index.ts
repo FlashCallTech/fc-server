@@ -22,7 +22,7 @@ export type CreateForeignUserParams = {
 	role: string;
 	bio?: string;
 	walletBalance: number;
-	global: boolean;  
+	global: boolean;
 };
 
 export type UpdateUserParams = {
@@ -433,4 +433,26 @@ export interface UpdateCallTransactionParams {
 	amountPaid?: number;
 	isDone?: boolean;
 	callDuration?: number;
+}
+
+// Discount Service Type
+
+export interface DiscountRule {
+	_id: string;
+	conditions: string[];
+	discountAmount: number;
+	discountType: "percentage" | "flat";
+}
+
+export interface Service {
+	_id: string;
+	creatorId: string;
+	title: string;
+	description: string;
+	photo: string;
+	currency: "INR" | "USD";
+	discountRules: DiscountRule[];
+	extraDetails?: string;
+	createdAt: string;
+	updatedAt: string;
 }
