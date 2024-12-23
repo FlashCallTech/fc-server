@@ -62,7 +62,13 @@ const UserReviews = ({
 	if (isLoading) {
 		return (
 			<section className="w-full h-full flex items-center justify-center">
-				<SinglePostLoader />
+				<Image
+					src="/icons/loading-circle.svg"
+					alt="Loading..."
+					width={50}
+					height={50}
+					priority
+				/>
 			</section>
 		);
 	}

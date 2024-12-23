@@ -36,7 +36,7 @@ import {
 } from "@/lib/validator";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
-import FileUploader from "../shared/FileUploader";
+import FileUploader from "../uploaders/FileUploader";
 import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
 import { usePathname } from "next/navigation";
@@ -368,11 +368,14 @@ const EditProfile = ({
 
 			let response;
 			if (userType === "creator") {
-				response = await updateCreatorUser(userData.id!, {
-					...commonValues,
-					...creatorProfileDetails,
-					creatorId: `@${values.username || userData.username}`,
-				} as UpdateCreatorParams);
+				response = await axios.put(
+					`${backendBaseUrl}/creator/updateUser/${userData.id}`,
+					{
+						...commonValues,
+						...creatorProfileDetails,
+						creatorId: `@${values.username || userData.username}`,
+					} as UpdateCreatorParams
+				);
 			} else {
 				response = await updateUser(
 					userData.id!,

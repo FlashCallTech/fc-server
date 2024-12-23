@@ -21,7 +21,6 @@ import { backendBaseUrl } from "../utils";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import Image from "next/image";
 
-// Define the shape of the context value
 interface CurrentUsersContextValue {
 	clientUser: clientUser | null;
 	creatorUser: creatorUser | null;
@@ -64,11 +63,15 @@ export const useCurrentUsersContext = () => {
 	return context;
 };
 
-// Utility function to check if we're in the browser
 const isBrowser = () => typeof window !== "undefined";
 
-// Provider component to hold the state and provide it to its children
-export const CurrentUsersProvider = ({ children, region }: { children: ReactNode, region: string }) => {
+export const CurrentUsersProvider = ({
+	children,
+	region,
+}: {
+	children: ReactNode;
+	region: string;
+}) => {
 	const [clientUser, setClientUser] = useState<clientUser | null>(null);
 	const [creatorUser, setCreatorUser] = useState<creatorUser | null>(null);
 	const [currentTheme, setCurrentTheme] = useState("");
@@ -86,13 +89,11 @@ export const CurrentUsersProvider = ({ children, region }: { children: ReactNode
 	const { toast } = useToast();
 	const router = useRouter();
 
-	// Define the unified currentUser state
 	const currentUser = useMemo(
 		() => creatorUser || clientUser,
 		[creatorUser, clientUser]
 	);
 
-	// Function to update both localStorage and context
 	const updateCreatorURL = (url: any) => {
 		setCreatorURL(url);
 		localStorage.setItem("creatorURL", url);
@@ -320,11 +321,13 @@ export const CurrentUsersProvider = ({ children, region }: { children: ReactNode
 			setFetchingUser(true);
 
 			if (email) {
-				const response = await axios.post(`${backendBaseUrl}/client/getGlobalUserByEmail/${email}`);
+				const response = await axios.post(
+					`${backendBaseUrl}/client/getGlobalUserByEmail/${email}`
+				);
 
 				const data = response.data;
 
-				if (data.role === 'client') {
+				if (data.role === "client") {
 					setClientUser(data);
 					setCreatorUser(null);
 					setUserType("client");
@@ -337,7 +340,7 @@ export const CurrentUsersProvider = ({ children, region }: { children: ReactNode
 			setFetchingUser(false);
 			setUserFetched(true);
 		}
-	}
+	};
 
 	useEffect(() => {
 		if (!region) return;
@@ -367,7 +370,6 @@ export const CurrentUsersProvider = ({ children, region }: { children: ReactNode
 		};
 	}, [region]);
 
-
 	// Function to refresh the current user data
 	const refreshCurrentUser = async () => {
 		if (region === "India") await fetchCurrentUser();
@@ -375,7 +377,7 @@ export const CurrentUsersProvider = ({ children, region }: { children: ReactNode
 			const email = auth.currentUser?.email;
 			console.log(email);
 			if (email) await fetchGlobalCurrentUser(email);
-		};
+		}
 	};
 
 	// Redirect to /updateDetails if username is missing
@@ -415,7 +417,7 @@ export const CurrentUsersProvider = ({ children, region }: { children: ReactNode
 										variant: "destructive",
 										title: "Another Session Detected",
 										description: "Logging Out...",
-									toastStatus: "positive",
+										toastStatus: "positive",
 									});
 								}
 							}

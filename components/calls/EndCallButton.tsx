@@ -6,16 +6,12 @@ import { Button } from "../ui/button";
 
 import EndCallDecision from "./EndCallDecision";
 import Image from "next/image";
-import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { trackEvent } from "@/lib/mixpanel";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { updateFirestoreSessions } from "@/lib/utils";
 
 const EndCallButton = () => {
 	const call = useCall();
 	const [showDialog, setShowDialog] = useState(false);
-	const { currentUser } = useCurrentUsersContext();
+
 	if (!call) {
 		throw new Error(
 			"useStreamCall must be used within a StreamCall component."

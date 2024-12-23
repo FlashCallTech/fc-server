@@ -10,7 +10,7 @@ import { useGetCallById } from "@/hooks/useGetCallById";
 import { usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { backendBaseUrl } from "@/lib/utils";
+import { backendBaseUrl, fetchCallDuration } from "@/lib/utils";
 import axios from "axios";
 
 const CallFeedback = ({
@@ -52,28 +52,7 @@ const CallFeedback = ({
 		),
 	};
 
-	// Calculate duration in seconds and format as MM:SS
-	const formatDuration = (durationInSeconds: number) => {
-		const minutes = Math.floor(durationInSeconds / 60)
-			.toString()
-			.padStart(2, "0");
-		const seconds = (durationInSeconds % 60).toString().padStart(2, "0");
-		return `${minutes}:${seconds}`;
-	};
-
-	// Get duration and format it
-	const callEndedAt = call?.state?.endedAt;
-	const callStartsAt = call?.state?.startsAt;
-
-	let callDuration = "00:00";
-	if (callEndedAt && callStartsAt) {
-		const callEndedTime = new Date(callEndedAt);
-		const callStartsAtTime = new Date(callStartsAt);
-		const durationInSeconds = Math.floor(
-			(callEndedTime.getTime() - callStartsAtTime.getTime()) / 1000
-		);
-		callDuration = formatDuration(durationInSeconds);
-	}
+	let callDuration = fetchCallDuration(callId);
 
 	const handleSliderChange = (value: any) => {
 		setRating(value);
