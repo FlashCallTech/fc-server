@@ -25,6 +25,7 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	useEffect(() => {
 		// Calculate the region based on timezone
 		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+		console.log(timezone);
 		setRegion(
 			timezone === "Asia/Calcutta" || timezone === "Asia/Kolkata"
 				? "Global"
