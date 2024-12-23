@@ -120,6 +120,7 @@ const RechargeModal = ({
 						} catch (error) {
 							console.error("Error capturing payment:", error);
 						} finally {
+							setIsSheetOpen(false); // Close the sheet
 							setShowPayPal(false);
 							setOnGoingPayment(false);
 							resumeTimer();
@@ -134,6 +135,7 @@ const RechargeModal = ({
 							Walletbalace_Available: currentUser?.walletBalance,
 						});
 						alert("Payment was canceled. You can try again if you wish.");
+						setIsSheetOpen(false); // Close the sheet
 						setShowPayPal(false);
 						setOnGoingPayment(false);
 						resumeTimer();
@@ -145,6 +147,7 @@ const RechargeModal = ({
 							Error_Message: err.message,
 						});
 						alert("An error occurred with PayPal. Please try again.");
+						setIsSheetOpen(false); // Close the sheet
 						setShowPayPal(false);
 						setOnGoingPayment(false);
 						resumeTimer();
@@ -185,6 +188,7 @@ const RechargeModal = ({
 		} catch (error) {
 			console.log(error);
 		} finally {
+			setIsSheetOpen(false);
 			setOnGoingPayment(false);
 			resumeTimer();
 		}
