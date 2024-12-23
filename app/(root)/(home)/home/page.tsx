@@ -196,7 +196,7 @@ const HomePage = () => {
 											className="w-full cursor-pointer"
 											onClick={() =>
 												handleCreatorCardClick(
-													creator.phone,
+													(creator.phone as string) || "",
 													creator.username,
 													creator.themeSelected,
 													creator._id

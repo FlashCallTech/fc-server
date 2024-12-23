@@ -61,7 +61,7 @@ const Favorites = () => {
 
 	const removeFavorite = (creatorId: string) => {
 		setFavorites((prevFavorites) =>
-			prevFavorites.filter((favorite) => favorite._id !== creatorId)
+			prevFavorites.filter((favorite) => favorite.creatorId !== creatorId)
 		);
 	};
 

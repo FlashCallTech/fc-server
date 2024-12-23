@@ -25,11 +25,12 @@ import {
 
 import Image from "next/image";
 import FileUploaderServices from "../uploaders/FileUploaderServices";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { backendBaseUrl, cn } from "@/lib/utils";
 import { useToast } from "../ui/use-toast";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { Service } from "@/types";
 
 const predefinedConditions = [
 	"New User",
@@ -107,32 +108,54 @@ const formSchema = z.object({
 
 const DiscountServicesForm = ({
 	sheetOpen,
+	refetch,
+	sheetType,
+	service,
 }: {
 	sheetOpen: (isOpen: boolean) => void;
+	refetch: any;
+	sheetType: "Create" | "Update";
+	service: Service | null;
 }) => {
-	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [selectedFile, setSelectedFile] = useState<File | String>(
+		service?.photo ||
+			"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7"
+	);
 	const { currentUser } = useCurrentUsersContext();
 	const { toast } = useToast();
 	const form = useForm<z.infer<typeof formSchema>>({
 		mode: "onChange",
 		resolver: zodResolver(formSchema),
-		defaultValues: {
-			title: "",
-			description: "",
-			photo: "",
-			type: "all",
-			// basePrice: 10,
-			currency: "INR",
-			discountRules: [
-				{
-					conditions: ["New User"],
-					discountType: "percentage",
-					discountAmount: 10,
-					// discountCurrency: "INR",
-				},
-			],
-			extraDetails: "",
-		},
+		defaultValues:
+			sheetType === "Update" && service
+				? {
+						title: service.title,
+						description: service.description,
+						photo: service.photo,
+						type: "all",
+						currency: service.currency,
+						discountRules: service.discountRules.map((rule) => ({
+							conditions: rule.conditions,
+							discountType: rule.discountType,
+							discountAmount: rule.discountAmount,
+						})),
+						extraDetails: service.extraDetails,
+				  }
+				: {
+						title: "",
+						description: "",
+						photo: "",
+						type: "all",
+						currency: "INR",
+						discountRules: [
+							{
+								conditions: ["New User"],
+								discountType: "percentage",
+								discountAmount: 10,
+							},
+						],
+						extraDetails: "",
+				  },
 	});
 
 	const { fields, append, remove } = useFieldArray({
@@ -144,36 +167,68 @@ const DiscountServicesForm = ({
 		try {
 			const payload = {
 				...values,
-				photo: selectedFile,
+				photo: values.photo || service?.photo,
 			};
 
-			await axios.post(`${backendBaseUrl}/services/creator/create`, payload, {
-				params: {
-					creatorId: currentUser?._id,
-				},
-			});
+			// Determine URL and method based on sheetType
+			const url =
+				sheetType === "Create"
+					? `${backendBaseUrl}/services/creator/create`
+					: `${backendBaseUrl}/services/${service?._id}`;
+			const method = sheetType === "Create" ? axios.post : axios.put;
+			const params =
+				sheetType === "Create"
+					? { params: { creatorId: currentUser?._id } }
+					: undefined;
+
+			// Make the API call
+			await method(url, payload, params);
+
+			// Refetch data and reset form
+			refetch();
 
 			toast({
 				variant: "destructive",
-				title: "Service Created Successfully",
-				description: "You can review or edit the service",
+				title:
+					sheetType === "Create"
+						? "Service Created Successfully"
+						: "Service Updated Successfully",
+				description: "You can review or edit the service.",
 				toastStatus: "positive",
 			});
+
 			form.reset();
 			sheetOpen(false);
 		} catch (error: any) {
 			toast({
 				variant: "destructive",
-				title: "Unable to Edit Details",
-				description: `${"Something went wrong."}`,
+				title:
+					sheetType === "Create"
+						? "Unable to Create Service"
+						: "Unable to Update Service",
+				description: "Something went wrong.",
 				toastStatus: "negative",
 			});
+			console.warn(error);
 			form.reset();
 		}
 	}
 
 	const { formState } = form;
 	const { isValid } = formState;
+
+	const [hasChanges, setHasChanges] = useState(false);
+	const initialValues = useRef(form.getValues());
+
+	useEffect(() => {
+		const subscription = form.watch((values) => {
+			const currentValues = values;
+			setHasChanges(
+				JSON.stringify(currentValues) !== JSON.stringify(initialValues.current)
+			);
+		});
+		return () => subscription.unsubscribe();
+	}, [form]);
 
 	return (
 		<Form {...form}>
@@ -187,6 +242,7 @@ const DiscountServicesForm = ({
 					name="photo"
 					render={({ field }) => {
 						const mediaUrl =
+							service?.photo ||
 							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7";
 
 						return (
@@ -280,27 +336,6 @@ const DiscountServicesForm = ({
 						</FormItem>
 					)}
 				/>
-
-				{/* Base Price */}
-				{/* <FormField
-					control={form.control}
-					name="basePrice"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Base Price</FormLabel>
-							<FormControl>
-								<Input
-									type="number"
-									min={0}
-									placeholder="Base price"
-									{...field}
-									onChange={(e) => field.onChange(Number(e.target.value))}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/> */}
 
 				{/* Currency */}
 				<FormField
@@ -418,28 +453,7 @@ const DiscountServicesForm = ({
 									</FormItem>
 								)}
 							/>
-							{/* <FormField
-								control={form.control}
-								name={`discountRules.${index}.discountCurrency`}
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Discount Currency</FormLabel>
-										<Select
-											onValueChange={field.onChange}
-											defaultValue={field.value}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select currency" />
-											</SelectTrigger>
-											<SelectContent className="!bg-white">
-												<SelectItem className="cursor-pointer hover:bg-gray-50" value="USD">USD</SelectItem>
-												<SelectItem className="cursor-pointer hover:bg-gray-50" value="INR">INR</SelectItem>
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/> */}
+
 							<FormField
 								control={form.control}
 								name={`discountRules.${index}.discountAmount`}
@@ -462,7 +476,7 @@ const DiscountServicesForm = ({
 												Discount Amount
 											</FormLabel>
 											<FormControl>
-												<section className="flex items-center w-full space-x-2 bg-gray-50 border border-gray-300 rounded-lg px-3 py-2">
+												<section className="flex items-center w-full space-x-2 border border-gray-300 rounded-lg px-3 py-2">
 													{discountType === "flat" &&
 														(discountCurrency === "INR" ? (
 															<span className="text-gray-500">₹</span>
@@ -475,7 +489,7 @@ const DiscountServicesForm = ({
 														max={discountType === "percentage" ? 100 : 10000}
 														placeholder={placeholder}
 														className={`w-full ${
-															discountType === "percentage" && "!px-0"
+															discountType === "percentage" && "!px-1"
 														} py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0`}
 														{...field}
 														value={field.value ?? ""}
@@ -552,7 +566,7 @@ const DiscountServicesForm = ({
 					)}
 				/>
 
-				{isValid && (
+				{isValid && hasChanges && (
 					<Button
 						className="sticky -bottom-2.5 text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
 						type="submit"
@@ -567,8 +581,10 @@ const DiscountServicesForm = ({
 								className=""
 								priority
 							/>
-						) : (
+						) : sheetType === "Create" ? (
 							"Submit Details"
+						) : (
+							"Update Details"
 						)}
 					</Button>
 				)}

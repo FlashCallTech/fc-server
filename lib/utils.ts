@@ -40,6 +40,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const frontendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 export const backendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL_BACKEND;
+export const backendUrl = process.env.NEXT_PUBLIC_URL_BACKEND;
 // export const backendBaseUrl = "https://backend.flashcall.me/api/v1";
 
 // Function to handle interrupted calls and update the user's status
@@ -577,7 +578,7 @@ export const updateFirestoreSessions = async (
 		if (params.creatorPhone)
 			ongoingCallUpdate.creatorPhone = params.creatorPhone;
 		if (params?.clientPhone) ongoingCallUpdate.clientPhone = params.clientPhone;
-		if(params?.global) ongoingCallUpdate.global = params.global ?? false;
+		if (params?.global) ongoingCallUpdate.global = params.global ?? false;
 
 		if (SessionDoc.exists()) {
 			await updateDoc(SessionDocRef, {

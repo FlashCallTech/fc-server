@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "../ui/button";
 import { S3Client } from "@aws-sdk/client-s3";
@@ -9,9 +9,6 @@ import Image from "next/image";
 import imageCompression from "browser-image-compression";
 import * as Sentry from "@sentry/nextjs";
 import { usePathname } from "next/navigation";
-import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { storage } from "@/lib/firebase";
 
 type FileUploaderProps = {
 	fieldChange: (url: string) => void;
@@ -28,7 +25,6 @@ const FileUploader = ({
 	const [fileUrl, setFileUrl] = useState(mediaUrl);
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
-	const { currentUser } = useCurrentUsersContext();
 
 	// S3 client setup
 	const s3Client = new S3Client({
@@ -46,7 +42,6 @@ const FileUploader = ({
 			try {
 				const file = acceptedFiles[0];
 
-				// Compress and convert to WebP
 				const options = {
 					maxSizeMB: 0.1,
 					maxWidthOrHeight: 1920,
@@ -56,15 +51,11 @@ const FileUploader = ({
 
 				const compressedFile = await imageCompression(file, options);
 				let fileName = "";
-				// Rename the file to have the .webp extension
-				if (currentUser?._id) {
-					fileName = `${currentUser._id}.webp`;
-				} else {
-					fileName = `${Date.now()}_${compressedFile.name.replace(
-						/\.[^.]+$/,
-						".webp"
-					)}`;
-				}
+
+				fileName = `${Date.now()}_${compressedFile.name.replace(
+					/\.[^.]+$/,
+					".webp"
+				)}`;
 
 				const fileStream = compressedFile.stream();
 
@@ -89,27 +80,11 @@ const FileUploader = ({
 				// Generate CloudFront URL
 				const cloudFrontUrl = `https://dxvnlnyzij172.cloudfront.net/uploads/${fileName}`;
 
-				// Upload to Firebase Storage
-				if (currentUser?._id) {
-					const firebaseStorageRef = ref(
-						storage,
-						`notifications/${currentUser._id}`
-					);
-
-					const snapshot = await uploadBytes(
-						firebaseStorageRef,
-						compressedFile
-					);
-					const firebaseUrl = await getDownloadURL(snapshot.ref);
-
-					console.log("Firebase URL:", firebaseUrl);
-				}
-
 				// Update state
 				if (pathname === "/updateDetails") {
 					setFileUrl(cloudFrontUrl);
 				} else {
-					setFileUrl(mediaUrl);
+					setFileUrl(cloudFrontUrl);
 					fieldChange(cloudFrontUrl);
 				}
 
@@ -135,14 +110,6 @@ const FileUploader = ({
 			"image/*": [".png", ".jpeg", ".jpg"],
 		},
 	});
-
-	useEffect(() => {
-		if (fileUrl) {
-			fieldChange(fileUrl);
-		} else {
-			fieldChange(mediaUrl);
-		}
-	}, [fileUrl, mediaUrl, fieldChange]);
 
 	if (loading)
 		return (
