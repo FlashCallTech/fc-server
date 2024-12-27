@@ -62,6 +62,7 @@ export type clientUser = {
 	bio: string;
 	gender?: string;
 	dob?: string;
+	role?: string;
 	creatorId?: string;
 	profession?: string;
 	themeSelected?: string;

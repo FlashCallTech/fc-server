@@ -15,12 +15,31 @@ import MeetingRoom from "@/components/official/MeetingRoom";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 
 const MeetingPage = () => {
-	const { id } = useParams();
-	const { currentUser, fetchingUser } = useCurrentUsersContext();
-	const { call, isCallLoading } = useGetCallById(id);
-	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
+	const { meetingId, clientId } = useParams();
+	const { currentUser, fetchingUser, setClientUser } = useCurrentUsersContext();
+	const { call, isCallLoading } = useGetCallById(meetingId);
+
+	console.log(meetingId, clientId);
 
 	useEffect(() => {
+		// If currentUser is not present, set with hardcoded data
+		if (!currentUser) {
+			setClientUser({
+				_id: clientId as string,
+				username: `guest_${clientId}`,
+				phone: "+1234567890",
+				fullName: "Guest User",
+				firstName: "Guest",
+				lastName: "User",
+				photo: "https://example.com/defaultUserPhoto.png",
+				role: "client",
+				bio: "This is a guest user.",
+				walletBalance: 0,
+				gender: "unspecified",
+				dob: "2000-01-01",
+			});
+		}
+
 		const preventBackNavigation = () => {
 			history.pushState(null, "", window.location.href);
 		};
@@ -32,15 +51,7 @@ const MeetingPage = () => {
 		return () => {
 			window.removeEventListener("popstate", preventBackNavigation);
 		};
-	}, []);
-
-	useEffect(() => {
-		if (!currentUser && !fetchingUser) {
-			setIsAuthSheetOpen(true);
-		} else if (currentUser) {
-			setIsAuthSheetOpen(false);
-		}
-	}, [currentUser, fetchingUser]);
+	}, [currentUser, meetingId, clientId, setClientUser]);
 
 	if (!currentUser) {
 		return (
@@ -53,7 +64,7 @@ const MeetingPage = () => {
 						</p>
 						<button
 							className="px-6 py-3 bg-blue-600 text-white text-lg rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300"
-							onClick={() => setIsAuthSheetOpen(true)}
+							onClick={() => console.log("Nice")}
 						>
 							Authenticate
 						</button>
@@ -86,7 +97,7 @@ const MeetingPage = () => {
 	// user is allowed to join the call
 	const Allowed =
 		call.isCreatedByMe ||
-		call.state.members.find((m) => m.user.custom.phone === currentUser?.phone);
+		call.state.members.find((m) => m.user_id === currentUser?._id);
 
 	if (!Allowed)
 		return (

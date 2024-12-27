@@ -61,7 +61,6 @@ const discountRuleSchema = z
 		discountType: z.enum(["percentage", "flat"], {
 			required_error: "Discount type is required.",
 		}),
-		// discountCurrency: z.enum(["INR", "USD"]).optional(),
 	})
 	.superRefine((data, ctx) => {
 		if (data.discountAmount === null) {

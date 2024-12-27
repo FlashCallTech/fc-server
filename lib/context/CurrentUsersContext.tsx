@@ -269,7 +269,14 @@ export const CurrentUsersProvider = ({
 				withCredentials: true,
 			});
 
-			const { success, data, token } = response.data;
+			const { success, data, token, source } = response.data;
+
+			if (source === "official") {
+				setFetchingUser(false);
+				setUserFetched(true);
+				setCreatorUser(null);
+				setUserType("creator");
+			}
 
 			if (success && data) {
 				if (data.userType === "creator") {
@@ -353,7 +360,6 @@ export const CurrentUsersProvider = ({
 
 		// Initialize listener only if region is "India"
 		const unsubscribe = onAuthStateChanged(auth, (user) => {
-			console.log(user);
 			if (user && user.email) {
 				fetchGlobalCurrentUser(user.email);
 			} else {
@@ -366,10 +372,12 @@ export const CurrentUsersProvider = ({
 		});
 
 		return () => {
+			// Cleanup the listener on unmount
 			unsubscribe();
 		};
 	}, [region]);
 
+	// Function to refresh the current user data
 	const refreshCurrentUser = async () => {
 		if (region === "India") await fetchCurrentUser();
 		else {
@@ -379,6 +387,7 @@ export const CurrentUsersProvider = ({
 		}
 	};
 
+	// Redirect to /updateDetails if username is missing
 	useEffect(() => {
 		if (currentUser && userType === "creator" && !currentUser.firstName) {
 			router.replace("/updateDetails");
@@ -393,6 +402,7 @@ export const CurrentUsersProvider = ({
 		}
 	}, [router, userType, currentUser]);
 
+	// real-time session monitoring
 	useEffect(() => {
 		if (!currentUser || !region) {
 			return;
@@ -429,6 +439,7 @@ export const CurrentUsersProvider = ({
 				}
 			);
 
+			// Cleanup function to clear heartbeat and update status to "Offline"
 			return () => {
 				unsubscribe();
 			};
@@ -436,6 +447,7 @@ export const CurrentUsersProvider = ({
 	}, [currentUser?._id, authToken]);
 
 	if (!userFetched) {
+		// Render splash screen while loading
 		return (
 			<section className="absolute bg-[#121319] top-0 left-0 flex justify-center items-center h-screen w-full z-40">
 				<Image
@@ -449,6 +461,7 @@ export const CurrentUsersProvider = ({
 		);
 	}
 
+	// Provide the context value to children
 	return (
 		<CurrentUsersContext.Provider
 			value={{
