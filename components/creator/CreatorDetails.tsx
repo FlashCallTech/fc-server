@@ -24,12 +24,6 @@ import axios from "axios";
 import Link from "next/link";
 import Image from "next/image";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
-import { motion } from "framer-motion";
-
-const fadeInVariants = {
-	hidden: { opacity: 0, y: 20 },
-	visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-};
 
 const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const {
@@ -43,7 +37,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const [markedFavorite, setMarkedFavorite] = useState(false);
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 
-	const [status, setStatus] = useState<string>("");
+	const [status, setStatus] = useState<string>("Online");
 	const pathname = usePathname();
 	const { toast } = useToast();
 	const creatorURL = pathname || localStorage.getItem("creatorURL");
@@ -71,7 +65,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		setCurrentTheme(themeColor);
 		updateCreatorURL(creatorURL);
 		setBodyBackgroundColor("#121319");
-	}, [creator]);
+	}, []);
 
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
@@ -94,27 +88,32 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
 					const statusData = statusDoc.data();
 					if (statusData) {
-						// Prioritize loginStatus
+						let newStatus = "Offline"; // Default status
+
 						if (statusData.loginStatus === true) {
 							// Check Busy status if loginStatus is true
 							if (statusData.status === "Busy") {
-								setStatus("Busy");
+								newStatus = "Busy";
 							} else {
-								setStatus(
+								newStatus =
 									hasActiveService && statusData.status === "Online"
 										? "Online"
-										: "Offline"
-								);
+										: "Offline";
 							}
 						} else if (statusData.loginStatus === false) {
-							setStatus("Offline");
+							newStatus = "Offline";
 						} else {
 							// Fallback to services and status
 							if (statusData.status === "Busy") {
-								setStatus("Busy");
+								newStatus = "Busy";
 							} else {
-								setStatus(hasActiveService ? "Online" : "Offline");
+								newStatus = hasActiveService ? "Online" : "Offline";
 							}
+						}
+
+						// Only update status if it has changed
+						if (status !== newStatus) {
+							setStatus(newStatus);
 						}
 					}
 				});
@@ -122,11 +121,10 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				return () => unsubscribeStatus();
 			}
 		});
-
 		return () => {
 			unsubscribeServices();
 		};
-	}, [creator?._id, creator?.phone]);
+	}, []);
 
 	const handleToggleFavorite = async () => {
 		if (!clientUser) {
@@ -150,7 +148,9 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			);
 
 			if (response.status === 200) {
-				setMarkedFavorite((prev) => !prev);
+				if (markedFavorite !== !markedFavorite) {
+					setMarkedFavorite((prev) => !prev);
+				}
 				toast({
 					title: `${
 						!markedFavorite
@@ -292,12 +292,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			</section>
 
 			{/* About, Services and Reviews */}
-			<motion.section
-				className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5"
-				initial="hidden"
-				animate="visible"
-				variants={fadeInVariants}
-			>
+			<section className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5">
 				{creator?.bio && creator.bio !== "Enter your bio here" ? (
 					<>
 						{/* About Creator */}
@@ -362,12 +357,12 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 						creatorId={creator?._id}
 					/>
 				</section>
-			</motion.section>
+			</section>
 
 			{isAuthSheetOpen && (
 				<AuthenticationSheet
 					isOpen={isAuthSheetOpen}
-					onOpenChange={setIsAuthSheetOpen} // Handle sheet close
+					onOpenChange={setIsAuthSheetOpen}
 				/>
 			)}
 		</section>

@@ -9,6 +9,7 @@ import DiscountServiceSheet from "./DiscountServicesSheet";
 import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 import DeleteCreatorServiceAlert from "../alerts/DeleteCreatorServiceAlert";
+import { useToast } from "../ui/use-toast";
 
 const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 	const {
@@ -18,7 +19,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 		isFetching,
 		isLoading,
 		refetch,
-	} = useGetUserServices(creator?._id as string);
+	} = useGetUserServices(creator?._id as string, "all", true, "creator");
 
 	const [sheetType, setSheetType] = useState<"Create" | "Update">("Create");
 	const [userServices, setUserServices] = useState<Service[]>([]);
@@ -27,6 +28,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 		useState(false);
 	const [deletingService, setDeletingService] = useState(false);
 	const [showDeleteServiceAlert, setShowDeleteServiceAlert] = useState(false);
+	const { toast } = useToast();
 
 	const { ref, inView } = useInView({
 		threshold: 0.1,
@@ -59,6 +61,13 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 		try {
 			setDeletingService(true);
 			await axios.delete(`${backendBaseUrl}/services/${serviceId}`);
+			setShowDeleteServiceAlert(false);
+			toast({
+				variant: "destructive",
+				title: "Service deleted successfully",
+				description: "Service was removed...",
+				toastStatus: "positive",
+			});
 		} catch (error) {
 			console.warn(error);
 		} finally {
@@ -87,7 +96,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 				serviceId={selectedService?._id}
 			/>
 
-			<div className="grid grid-cols-1 size-full overflow-y-auto max-h-[35rem] gap-5 pb-4">
+			<div className="grid grid-cols-1 size-full overflow-y-auto no-scrollbar max-h-[35rem] gap-5 pb-4">
 				<section
 					className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer"
 					onClick={toggleDiscountServiceSheet}
