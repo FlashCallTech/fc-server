@@ -127,7 +127,7 @@ const CreatorCard = () => {
 	if (isError) {
 		console.error("Error fetching creator:", error);
 		return (
-			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-white">
+			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-400">
 				<p>Failed to load creator details.</p>
 			</div>
 		);
@@ -135,7 +135,7 @@ const CreatorCard = () => {
 
 	if (!creatorUser) {
 		return (
-			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-white">
+			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-400">
 				<p>No creators found.</p>
 			</div>
 		);
