@@ -13,7 +13,6 @@ import MeetingSetup from "@/components/meeting/MeetingSetup";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import MeetingRoom from "@/components/official/MeetingRoom";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
-import AuthenticationSheet from "@/components/official/AuthenticationSheet";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -46,10 +45,6 @@ const MeetingPage = () => {
 	if (!currentUser) {
 		return (
 			<>
-				<AuthenticationSheet
-					isOpen={isAuthSheetOpen}
-					onOpenChange={() => setIsAuthSheetOpen(false)}
-				/>
 				<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
 					<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
 						<h1 className="text-3xl font-semibold mb-4">Access Restricted</h1>

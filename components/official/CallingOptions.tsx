@@ -4,11 +4,9 @@ import { audio, video } from "@/constants/icons";
 import { creatorUser } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
-import { useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import AuthenticationSheet from "./AuthenticationSheet";
 
 import { isValidHexColor, getDisplayName, backendBaseUrl } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
@@ -19,7 +17,6 @@ interface CallingOptions {
 
 const CallingOptions = ({ creator }: CallingOptions) => {
 	const router = useRouter();
-	const client = useStreamVideoClient();
 	const { clientUser, userType, setAuthenticationSheetOpen } =
 		useCurrentUsersContext();
 	const { toast } = useToast();
@@ -66,7 +63,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
 	}, [isAuthSheetOpen, setAuthenticationSheetOpen]);
 
-	// Logic to show the updated creator services in real-time
 	useEffect(() => {
 		if (!creator?._id || !creator?.phone) return;
 
@@ -358,13 +354,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					</button>
 				))}
 			</div>
-
-			{isAuthSheetOpen && (
-				<AuthenticationSheet
-					isOpen={isAuthSheetOpen}
-					onOpenChange={setIsAuthSheetOpen}
-				/>
-			)}
 
 			{(callInitiated || isProcessing) && (
 				<div
