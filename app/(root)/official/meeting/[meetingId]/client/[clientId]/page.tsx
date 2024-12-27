@@ -27,7 +27,7 @@ const MeetingPage = () => {
 	} = useCurrentUsersContext();
 	const { call, isCallLoading } = useGetCallById(meetingId);
 
-	console.log(meetingId, clientId);
+	// console.log(meetingId, clientId);
 
 	useEffect(() => {
 		const fetchAuthToken = async (client: any, source: string) => {

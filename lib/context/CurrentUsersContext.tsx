@@ -462,7 +462,7 @@ export const CurrentUsersProvider = ({
 		);
 	}
 
-	console.log(authToken, currentUser, clientUser);
+	// console.log(authToken, currentUser, clientUser);
 
 	// Provide the context value to children
 	return (
