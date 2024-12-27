@@ -198,7 +198,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		// Clean up the services listener
 		return () => unsubscribe();
-	}, [creator._id, creator.phone, clientUser, isAuthSheetOpen]);
+	}, [creator._id, creator.phone, isAuthSheetOpen]);
 
 	useEffect(() => {
 		if (!chatReqSent) {

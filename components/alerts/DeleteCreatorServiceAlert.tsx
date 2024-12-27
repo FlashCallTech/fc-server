@@ -70,7 +70,7 @@ const DeleteCreatorServiceAlert = ({
 						Remove Service
 					</SheetTitle>
 					<SheetDescription className="!text-start">
-						Are you sure you want to continue?
+						Are you sure you want to remove service_{serviceId}?
 					</SheetDescription>
 				</SheetHeader>
 				<div className="w-full flex items-center justify-start gap-2 mt-7">
@@ -85,7 +85,7 @@ const DeleteCreatorServiceAlert = ({
 						disabled={loading}
 						className="border border-gray-300 bg-black text-white hoverScaleDownEffect"
 					>
-						{loading ? "Unfollowing..." : "Unfollow"}
+						{loading ? "Removing..." : "Remove"}
 					</Button>
 				</div>
 			</SheetContent>
@@ -97,9 +97,11 @@ const DeleteCreatorServiceAlert = ({
 		>
 			<DialogContent className="bg-white max-w-[92%] md:max-w-sm rounded-[8px]">
 				<DialogHeader>
-					<DialogTitle className="text-red-500 !text-start">remove</DialogTitle>
+					<DialogTitle className="text-red-500 !text-start">
+						Remove Service
+					</DialogTitle>
 					<DialogDescription className=" text-sm !text-start">
-						Are you sure you want to continue?
+						Are you sure you want to remove service_{serviceId}?
 					</DialogDescription>
 				</DialogHeader>
 
