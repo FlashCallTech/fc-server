@@ -11,6 +11,9 @@ const WalletBalanceProvider = lazy(
 const ChatRequestProvider = lazy(
 	() => import("@/lib/context/ChatRequestContext")
 );
+const SelectedServiceProvider = lazy(
+	() => import("@/lib/context/SelectedServiceContext")
+);
 import { initMixpanel } from "@/lib/mixpanel";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
 import axios from "axios";
@@ -50,6 +53,7 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 						width={500}
 						height={500}
 						className="w-36 h-36 animate-pulse"
+						priority
 					/>
 				</section>
 			);
@@ -125,11 +129,18 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 				>
 					<WalletBalanceProvider>
 						<ChatRequestProvider>
-							<StreamVideoProvider>
-								<div className="relative min-h-screen w-full">
-									{renderContent()}
-								</div>
-							</StreamVideoProvider>
+							<SelectedServiceProvider>
+								<StreamVideoProvider>
+									<div className="relative min-h-screen w-full">
+										<Script
+											src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD`}
+										/>
+										<Script src="https://checkout.razorpay.com/v1/checkout.js" />
+										<Script src="https://sdk.cashfree.com/js/v3/cashfree.js" />
+										{renderContent()}
+									</div>
+								</StreamVideoProvider>
+							</SelectedServiceProvider>
 						</ChatRequestProvider>
 					</WalletBalanceProvider>
 				</Suspense>

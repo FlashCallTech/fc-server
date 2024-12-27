@@ -40,8 +40,6 @@ const CreatorHome = () => {
 		services.isRestricted ?? false
 	);
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
-	const [loading, setLoading] = useState(true);
-	const [isServicesSheetOpen, setIsServicesSheetOpen] = useState(false);
 
 	const [creatorLink, setCreatorLink] = useState<string | null>(null);
 	const [todaysEarning, setTodaysEarning] = useState(0);
@@ -96,12 +94,6 @@ const CreatorHome = () => {
 			fetchLink();
 		}
 	}, [creatorUser?._id]);
-
-	useEffect(() => {
-		setTimeout(() => {
-			setLoading(false);
-		}, 1000);
-	}, []);
 
 	const fetchTransactions = async () => {
 		try {
@@ -293,7 +285,7 @@ const CreatorHome = () => {
 		}
 	}, [creatorUser]);
 
-	if (fetchingUser || loading) {
+	if (fetchingUser) {
 		return (
 			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
 				<ContentLoading />

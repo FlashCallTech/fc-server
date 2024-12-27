@@ -23,6 +23,8 @@ import { useGetCallById } from "@/hooks/useGetCallById";
 import axios from "axios";
 import MyCallConnectingUI from "./MyCallConnectigUI";
 import { trackEvent } from "@/lib/mixpanel";
+import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
+import { Service } from "@/types";
 
 const MyCallUI = () => {
 	const calls = useCalls();
@@ -37,7 +39,7 @@ const MyCallUI = () => {
 	const [connecting, setConnecting] = useState(false);
 	const [connectingCall, setConnectingCall] = useState<Call | null>(null);
 	const [redirecting, setRedirecting] = useState(false);
-
+	const { getFinalServices } = useSelectedServiceContext();
 	let autoDeclineTimeout: NodeJS.Timeout;
 	const router = useRouter();
 	const checkFirestoreSession = (userId: string) => {
@@ -72,21 +74,33 @@ const MyCallUI = () => {
 			)?.custom?.phone;
 
 			if (userType === "client") {
-				await updateExpertStatus(currentUser?.global ? currentUser?.email as string : currentUser?.phone as string, "Idle");
+				await updateExpertStatus(
+					currentUser?.global
+						? (currentUser?.email as string)
+						: (currentUser?.phone as string),
+					"Idle"
+				);
 			} else {
 				await updateExpertStatus(expertPhone, "Online");
 			}
+
+			let discounts = getFinalServices();
 
 			await handleInterruptedCall(
 				currentUser?._id as string,
 				currentUser?.global ?? false,
 				updatedCall.id,
 				updatedCall as Call,
-				currentUser?.global ? currentUser.email as string : currentUser?.phone as string,
+				currentUser?.global
+					? (currentUser.email as string)
+					: (currentUser?.phone as string),
 				userType as "client" | "expert",
 				backendBaseUrl as string,
 				expertPhone,
-				currentUser?.global ? currentUser.email as string : currentUser?.phone as string
+				currentUser?.global
+					? (currentUser.email as string)
+					: (currentUser?.phone as string),
+				discounts as Service[]
 			);
 		} catch (error) {
 			console.error("Error handling interrupted call:", error);
@@ -282,7 +296,9 @@ const MyCallUI = () => {
 				  });
 
 			await updateExpertStatus(
-				currentUser?.global ? currentUser?.email as string : currentUser?.phone as string,
+				currentUser?.global
+					? (currentUser?.email as string)
+					: (currentUser?.phone as string),
 				"Busy"
 			);
 
