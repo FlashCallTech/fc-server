@@ -493,7 +493,7 @@ const CreatorHome = () => {
 						/>
 					</section>
 
-					{/* <DiscountServiceCards creator={creatorUser} /> */}
+					<DiscountServiceCards creator={creatorUser} />
 
 					<CreatorLinks />
 

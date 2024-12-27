@@ -146,12 +146,12 @@ const CreatorCard = () => {
 			<section className="size-full grid grid-cols-1 items-start justify-center">
 				<CreatorDetails creator={creatorUser} />
 
-				{/* {currentUser && (
+				{currentUser && (
 					<ClientSideDiscountSheet
 						creatorId={creatorUser._id || ""}
 						theme={creatorUser?.themeSelected}
 					/>
-				)} */}
+				)}
 			</section>
 		</React.Suspense>
 	);
