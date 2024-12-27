@@ -14,7 +14,7 @@ import {
 	getImageSource,
 	updateFirestoreCallServices,
 } from "@/lib/utils";
-import ServicesCheckbox from "../shared/ServicesCheckbox";
+import ServicesCheckbox from "../creatorServices/ServicesCheckbox";
 import CopyToClipboard from "../shared/CopyToClipboard";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -26,12 +26,13 @@ import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "@/hooks/usePlatform";
 import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
-import ServicesSheet from "./ServicesSheet";
+import Loader from "../shared/Loader";
+import DiscountServiceCards from "../creatorServices/DiscountServiceCards";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser, fetchingUser } =
 		useCurrentUsersContext();
-	const { isInitialized, updateWalletBalance } = useWalletBalanceContext();
+	const { updateWalletBalance } = useWalletBalanceContext();
 	const { services, handleToggle, setServices } = useServices();
 	const { getDevicePlatform } = usePlatform();
 	const { toast } = useToast();
@@ -39,8 +40,6 @@ const CreatorHome = () => {
 		services.isRestricted ?? false
 	);
 	const [transactionsLoading, setTransactionsLoading] = useState(false);
-	const [loading, setLoading] = useState(true);
-	const [isServicesSheetOpen, setIsServicesSheetOpen] = useState(false);
 
 	const [creatorLink, setCreatorLink] = useState<string | null>(null);
 	const [todaysEarning, setTodaysEarning] = useState(0);
@@ -95,12 +94,6 @@ const CreatorHome = () => {
 			fetchLink();
 		}
 	}, [creatorUser?._id]);
-
-	useEffect(() => {
-		setTimeout(() => {
-			setLoading(false);
-		}, 1000);
-	}, []);
 
 	const fetchTransactions = async () => {
 		try {
@@ -292,39 +285,33 @@ const CreatorHome = () => {
 		}
 	}, [creatorUser]);
 
-	const isLoading = loading || !isInitialized;
+	if (fetchingUser) {
+		return (
+			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
+				<ContentLoading />
+				<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
+					Fetching Creator&apos;s Details{" "}
+					<Image
+						src="/icons/loading-circle.svg"
+						alt="Loading..."
+						width={24}
+						height={24}
+						priority
+					/>
+				</p>
+			</div>
+		);
+	}
+
 	const isAuthenticated = !!creatorUser;
 
-	if (isLoading || fetchingUser || !isAuthenticated) {
-		return (
-			<section className="w-full h-full flex flex-col items-center justify-center">
-				{/* Loading State */}
-				{isLoading && (
-					<>
-						<ContentLoading />
-						{loading && creatorUser && (
-							<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
-								Fetching Creator&apos;s Details{" "}
-								<Image
-									src="/icons/loading-circle.svg"
-									alt="Loading..."
-									width={24}
-									height={24}
-									className="invert"
-									priority
-								/>
-							</p>
-						)}
-					</>
-				)}
-
-				{/* User Authentication Required */}
-				{!isAuthenticated && !loading && !isLoading && (
-					<span className="text-red-500 font-semibold text-lg">
-						User Authentication Required
-					</span>
-				)}
-			</section>
+	if (!isAuthenticated) {
+		return !fetchingUser ? (
+			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-500">
+				No creators found.
+			</div>
+		) : (
+			<Loader />
 		);
 	}
 
@@ -364,7 +351,9 @@ const CreatorHome = () => {
 							creatorLink ?? `https://flashcall.me/${creatorUser?.username}`
 						}
 						username={
-							creatorUser.username ? creatorUser.username : creatorUser.phone
+							creatorUser.username
+								? creatorUser.username
+								: (creatorUser.phone as string)
 						}
 						profession={creatorUser.profession ?? "Astrologer"}
 						gender={creatorUser.gender ?? ""}
@@ -504,19 +493,7 @@ const CreatorHome = () => {
 						/>
 					</section>
 
-					<section
-						className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer"
-						onClick={() => setIsServicesSheetOpen((prev) => !prev)}
-					>
-						{isServicesSheetOpen ? "Services Sheet Visible" : "Add Services"}
-					</section>
-
-					{isServicesSheetOpen && (
-						<ServicesSheet
-							isOpen={isServicesSheetOpen}
-							onOpenChange={setIsServicesSheetOpen}
-						/>
-					)}
+					<DiscountServiceCards creator={creatorUser} />
 
 					<CreatorLinks />
 

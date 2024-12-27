@@ -209,7 +209,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							className={`${notSaved
 									? "bg-black/20 !cursor-not-allowed"
 									: "bg-green-600 text-white hoverScaleDownEffect"
-								} rounded-md px-8 w-full`}
+								}  rounded-md px-8 w-full`}
 						>
 							Save
 						</Button>

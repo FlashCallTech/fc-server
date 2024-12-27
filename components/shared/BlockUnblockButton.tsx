@@ -8,7 +8,7 @@ import {
 	QueryObserverResult,
 	RefetchOptions,
 } from "@tanstack/react-query";
-import BlockUnblockAlert from "./BlockUnblockAlert";
+import BlockUnblockAlert from "../alerts/BlockUnblockAlert";
 
 const BlockUnblockButton = ({
 	creatorId,

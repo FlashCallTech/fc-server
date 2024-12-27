@@ -117,6 +117,27 @@ export const useGetClients = () => {
 // CREATOR QUERIES
 // ============================================================
 
+const fetchCreator = async (username: string) => {
+	const response = await axios.post(
+		`${backendBaseUrl}/user/getUserByUsername`,
+		{
+			username,
+		}
+	);
+	return response.data;
+};
+
+// Custom hook for React Query
+export const useCreatorQuery = (username: string | undefined) => {
+	return useQuery({
+		queryKey: [QUERY_KEYS.GET_CREATOR, username],
+		queryFn: () => fetchCreator(username!),
+		enabled: !!username,
+		staleTime: 24 * 60 * 60 * 1000,
+		refetchOnWindowFocus: false,
+	});
+};
+
 export const useGetCreators = (limit: number, profession: string) => {
 	return useInfiniteQuery({
 		queryKey: [QUERY_KEYS.GET_CREATORS, limit, profession],
@@ -206,6 +227,55 @@ export const useGetCreatorNotifications = (userId: string) => {
 			return lastPage.page < totalPages ? lastPage.page + 1 : null;
 		},
 		initialPageParam: 1,
+	});
+};
+
+// Hook for fetching user services
+export const useGetUserServices = (
+	creatorId: string,
+	filter: "all" | "audio" | "video" | "chat" | "" = "all",
+	fetchAll: boolean = false,
+	requestFrom: "creator" | "client"
+) => {
+	const limit = 10;
+
+	return useInfiniteQuery({
+		queryKey: [
+			QUERY_KEYS.GET_CREATOR_DISCOUNT_SERVICES,
+			creatorId,
+			filter,
+			fetchAll,
+			requestFrom,
+		],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(
+				`${backendBaseUrl}/services/creatorServices`,
+				{
+					params: {
+						page: fetchAll ? undefined : pageParam,
+						limit: fetchAll ? undefined : limit,
+						creatorId,
+						filter,
+						fetchAll,
+						requestFrom,
+					},
+				}
+			);
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching user services");
+			}
+		},
+		getNextPageParam: (lastPage, allPages) => {
+			if (fetchAll) return null;
+			const totalPages = lastPage.pagination.pages;
+			const nextPage = allPages.length + 1;
+			return nextPage <= totalPages ? nextPage : null;
+		},
+		initialPageParam: 1,
+		enabled: !!creatorId,
 	});
 };
 

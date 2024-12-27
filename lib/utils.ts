@@ -15,7 +15,7 @@ import { db } from "./firebase";
 import * as Sentry from "@sentry/nextjs";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { Call } from "@stream-io/video-react-sdk";
-import { clientUser, creatorUser } from "@/types";
+import { clientUser, creatorUser, Service } from "@/types";
 import { getDownloadURL, ref } from "firebase/storage";
 
 const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
@@ -40,41 +40,47 @@ export function cn(...inputs: ClassValue[]) {
 
 export const frontendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 export const backendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL_BACKEND;
+export const backendUrl = process.env.NEXT_PUBLIC_URL_BACKEND;
 // export const backendBaseUrl = "https://backend.flashcall.me/api/v1";
 
 // Function to handle interrupted calls and update the user's status
 export const handleInterruptedCall = async (
 	currentUserId: string,
+	global: boolean,
 	callId: string | null,
 	call: Call,
 	currentUserPhone: string,
 	userType: "client" | "expert",
 	backendBaseUrl: string,
 	expertPhone: string,
-	clientPhone: string
+	clientPhone: string,
+	discounts?: Service[]
 ) => {
 	if (!callId || !currentUserPhone) {
 		console.error("Invalid callId or user phone");
 		return;
 	}
 
+	const validDiscounts = discounts && discounts.length > 0 ? discounts : [];
+
 	// Extract relevant fields from the call object
 	const callData = {
 		id: call.id,
+		global,
 		endedAt: call.state.endedAt,
 		startedAt: call.state.startsAt,
 		isVideoCall: call.type === "default",
+
 		expertId: call.state.members.find(
 			(member) => member.custom.type === "expert"
 		)?.user_id,
 		clientId: call.state.createdBy?.id,
 		expertPhone,
 		clientPhone,
+		discounts: validDiscounts,
 	};
 
 	try {
-		// Update the user's status based on the type
-
 		const localSessionKey = `meeting_${callId}_${currentUserId}`;
 
 		localStorage.removeItem("activeCallId");
@@ -551,6 +557,7 @@ type UpdateSessionParams = {
 	isVideoCall?: string;
 	creatorPhone?: string;
 	clientPhone?: string;
+	global?: boolean;
 };
 
 export const updateFirestoreSessions = async (
@@ -569,12 +576,14 @@ export const updateFirestoreSessions = async (
 		if (params.isVideoCall) ongoingCallUpdate.isVideoCall = params.isVideoCall;
 		if (params.creatorPhone)
 			ongoingCallUpdate.creatorPhone = params.creatorPhone;
-		if (params.clientPhone) ongoingCallUpdate.clientPhone = params.clientPhone;
+		if (params?.clientPhone) ongoingCallUpdate.clientPhone = params.clientPhone;
+		if (params?.global) ongoingCallUpdate.global = params.global ?? false;
 
 		if (SessionDoc.exists()) {
+			const existingOngoingCall = SessionDoc.data()?.ongoingCall || {};
 			await updateDoc(SessionDocRef, {
 				ongoingCall: {
-					...SessionDoc.data()?.ongoingCall,
+					...existingOngoingCall,
 					...ongoingCallUpdate,
 				},
 			});

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import PixelIntegration from "@/components/creator/PixelIntegration";
+import PixelIntegration from "@/components/creatorServices/PixelIntegration";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import Link from "next/link";

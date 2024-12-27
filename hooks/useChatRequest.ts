@@ -20,6 +20,7 @@ import usePlatform from "./usePlatform";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { backendBaseUrl, fetchFCMToken, sendNotification } from "@/lib/utils";
 import axios from "axios";
+import { clientUser, creatorUser } from "@/types";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
@@ -65,22 +66,26 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	}
 
-	const getUserData = async (userId: string) => {
+	const getUserData = async (userId: string, global: boolean) => {
 		try {
 			const response = await axios.get(
 				`${backendBaseUrl}/creator/getUser/${userId}`
 			);
-			return response.data.chatRate;
+			return global
+				? Number(response.data.globalChatRate)
+				: parseInt(response.data.chatRate, 10);
 		} catch (error) {
 			console.error("Error fetching user data:", error);
 			throw error;
 		}
 	};
 
-	const handleChat = async (creator: any, clientUser: any) => {
+	const handleChat = async (creator: creatorUser, clientUser: clientUser) => {
 		if (!clientUser) router.push("sign-in");
 
-		let maxCallDuration = (walletBalance / parseInt(creator.chatRate, 10)) * 60;
+		const chatRate = await getUserData(creator._id, clientUser.global ?? false);
+
+		let maxCallDuration = (walletBalance / chatRate) * 60;
 		maxCallDuration =
 			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
@@ -141,23 +146,35 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				}
 			} else {
 				try {
-					await setDoc(userChatsDocSnapshot.ref, {
-						isTyping: false
-					}, { merge: true });
+					await setDoc(
+						userChatsDocSnapshot.ref,
+						{
+							isTyping: false,
+						},
+						{ merge: true }
+					);
 
-					await setDoc(creatorChatsDocSnapshot.ref, {
-						isTyping: false
-					}, { merge: true });
+					await setDoc(
+						creatorChatsDocSnapshot.ref,
+						{
+							isTyping: false,
+						},
+						{ merge: true }
+					);
 				} catch (error) {
 					console.error("Error updating isTyping field: ", error);
 				}
 			}
 
 			const chatId = existingChatId || doc(chatRef).id;
-			await setDoc(doc(db, "chats", chatId), {
-				clientId: clientUser?._id,
-				creatorId: creator?._id
-			}, { merge: true });
+			await setDoc(
+				doc(db, "chats", chatId),
+				{
+					clientId: clientUser?._id,
+					creatorId: creator?._id,
+				},
+				{ merge: true }
+			);
 			localStorage.setItem("chatId", chatId);
 			const newChatRequestRef = doc(chatRequestsRef);
 			const createdAtDate = clientUser?.createdAt
@@ -165,30 +182,31 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				: new Date();
 			const formattedDate = createdAtDate.toISOString().split("T")[0];
 
-			const chatRate = await getUserData(creator._id);
-
 			await setDoc(newChatRequestRef, {
 				id: newChatRequestRef.id,
 				callId,
 				creatorId: creator?._id,
 				creatorName: creator.fullName
 					? creator.fullName
-					: maskPhoneNumber(creator.phone),
+					: maskPhoneNumber(creator.phone as string),
 				creatorPhone: creator.phone,
 				creatorImg: creator.photo,
 				clientId: clientUser?._id,
-				clientPhone: clientUser?.phone,
+				clientPhone: clientUser?.phone ?? "",
 				clientName: clientUser?.fullName
 					? clientUser.fullName
-					: maskPhoneNumber(clientUser.phone),
+					: maskPhoneNumber(clientUser.phone as string),
 				clientImg: clientUser?.photo,
 				client_first_seen: formattedDate,
-				creator_first_seen: creator.createdAt.toString().split("T")[0],
+				creator_first_seen: creator.createdAt
+					? creator.createdAt.toString().split("T")[0]
+					: "",
 				client_balance: clientUser.walletBalance,
 				status: "pending",
 				chatId: chatId,
-				chatRate,
+				chatRate: String(chatRate),
 				maxCallDuration,
+				global: currentUser?.global ?? false,
 				createdAt: Date.now(),
 			});
 
@@ -196,7 +214,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 			if (docSnap.exists()) {
 				const chatRequestData = docSnap.data();
-				const fcmToken = await fetchFCMToken(creator.phone);
+				const fcmToken = await fetchFCMToken(creator.phone as string);
 				if (fcmToken) {
 					sendNotification(
 						fcmToken,
@@ -297,7 +315,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	};
 
 	const handleAcceptChat = async (chatRequest: any) => {
-		console.log(chatRequest);
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
 		const response = await getUserById(chatRequest.clientId as string);
@@ -308,7 +325,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
-			if (!existingChatDoc.exists()) {
+			if (!existingChatDoc.data()?.status) {
 				await setDoc(doc(db, "chats", chatId), {
 					callId: chatRequest.callId,
 					chatId: chatRequest.chatId,
@@ -323,6 +340,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					status: "active",
 					messages: [],
 					timerSet: false,
+					global: chatRequest.global ?? false,
 					chatRate: chatRequest.chatRate,
 				});
 
@@ -355,12 +373,21 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			} else {
 				await updateDoc(doc(db, "chats", chatId), {
 					callId: chatRequest.callId,
-					clientName: chatRequest.clientName,
-					maxChatDuration,
 					chatId: chatRequest.chatId,
+					clientId: chatRequest.clientId,
+					clientName: chatRequest.clientName,
+					clientPhone: chatRequest.clientPhone ?? "",
+					clientImg: chatRequest.clientImg,
+					creatorId: chatRequest.creatorId,
+					creatorName: chatRequest.creatorName,
+					creatorPhone: chatRequest.creatorPhone,
+					creatorImg: chatRequest.creatorImg,
+					status: "active",
+					timerSet: false,
+					chatRate: chatRequest.chatRate,
+					maxChatDuration,
 					global: chatRequest.global ?? false,
 					clientBalance: response.walletBalance ?? "",
-					timerSet: false,
 				});
 			}
 

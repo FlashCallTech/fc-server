@@ -52,17 +52,13 @@ export const CallTimerProvider = ({
 	isVideoCall,
 	isMeetingOwner,
 	call,
-	participants,
 }: CallTimerProviderProps) => {
-	const { toast } = useToast();
 	const [audioRatePerMinute, setAudioRatePerMinute] = useState(0);
 	const [videoRatePerMinute, setVideoRatePerMinute] = useState(0);
 	const [callRatePerMinute, setCallRatePerMinute] = useState(0);
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
 	const [maxCallDuration, setMaxCallDuration] = useState(NaN);
-	const { useCallStartsAt, useCallStartedAt } = useCallStateHooks();
 	const [timeLeft, setTimeLeft] = useState(NaN);
-	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
 	const [hasLowBalance, setHasLowBalance] = useState(false);
 	const [isTimerRunning, setIsTimerRunning] = useState(true);
 	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
@@ -112,7 +108,6 @@ export const CallTimerProvider = ({
 
 				if (callDoc.exists()) {
 					const data = callDoc.data();
-					console.log(data);
 					const storedStartTime = data?.startTime;
 					const storedTimeLeft = data?.timeLeft;
 
@@ -125,7 +120,6 @@ export const CallTimerProvider = ({
 						}
 					}
 				} else {
-					// Save `startTime` and initialize Firestore doc
 					const currentTime = new Date();
 
 					await setDoc(callDocRef, {
@@ -136,8 +130,6 @@ export const CallTimerProvider = ({
 
 					setCallStartedAt(currentTime);
 					setTimeLeft(initialMaxCallDuration);
-
-					console.log(callStartedAt);
 				}
 			} catch (error) {
 				Sentry.captureException(error);
@@ -165,8 +157,8 @@ export const CallTimerProvider = ({
 
 			setTimeLeft(updatedTimeLeft);
 			setTotalTimeUtilized(elapsedTime);
+			setHasLowBalance(updatedTimeLeft <= lowBalanceThreshold);
 
-			// Update Firestore with new values
 			try {
 				const callDocRef = doc(db, "calls", callId);
 				updateDoc(callDocRef, {
@@ -183,7 +175,6 @@ export const CallTimerProvider = ({
 			}
 		};
 
-		// Recalculate immediately and then at regular intervals
 		calculateTimeLeft();
 		const intervalId = setInterval(() => {
 			if (isTimerRunning) {

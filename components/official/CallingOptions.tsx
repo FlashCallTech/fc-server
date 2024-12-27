@@ -71,7 +71,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		let clientStatusDocRef: any;
 		if (clientUser) {
-			clientStatusDocRef = doc(db, "userStatus", clientUser.phone);
+			clientStatusDocRef = doc(db, "userStatus", clientUser?.phone as string);
 		}
 
 		const unsubscribe = onSnapshot(creatorRef, (doc) => {

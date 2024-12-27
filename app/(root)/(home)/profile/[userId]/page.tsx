@@ -8,7 +8,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
 import { getImageSource } from "@/lib/utils";
-import DeleteAlert from "@/components/shared/DeleteAlert";
+import DeleteAlert from "@/components/alerts/DeleteAlert";
 import Link from "next/link";
 
 const UserProfilePage = () => {

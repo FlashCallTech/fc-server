@@ -27,12 +27,13 @@ import {
 	getDisplayName,
 	fetchFCMToken,
 	sendNotification,
+	backendUrl,
 } from "@/lib/utils";
-import useChat from "@/hooks/useChat";
-import Loader from "../shared/Loader";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import NotifyConsentSheet from "../client/NotifyConsentSheet";
 import { Cursor, Typewriter } from "react-simple-typewriter";
+import usePlatform from "@/hooks/usePlatform";
+import axios from "axios";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -41,9 +42,8 @@ interface CallingOptions {
 const CallingOptions = ({ creator }: CallingOptions) => {
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
-	const { loading } = useChat();
 	const client = useStreamVideoClient();
-	const { clientUser, userType, setAuthenticationSheetOpen } =
+	const { clientUser, userType, setAuthenticationSheetOpen, region } =
 		useCurrentUsersContext();
 	const { toast } = useToast();
 	const [isSheetOpen, setSheetOpen] = useState(false);
@@ -57,21 +57,27 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [isClientBusy, setIsClientBusy] = useState(false);
 	const [onlineStatus, setOnlineStatus] = useState<String>("");
-	const themeColor = isValidHexColor(creator.themeSelected)
-		? creator.themeSelected
+	const themeColor = isValidHexColor(creator?.themeSelected)
+		? creator?.themeSelected
 		: "#50A65C";
 
 	const [updatedCreator, setUpdatedCreator] = useState<creatorUser>({
 		...creator,
-		videoRate: creator.videoRate,
-		audioRate: creator.audioRate,
-		chatRate: creator.chatRate,
+		videoRate:
+			region === "Global" ? creator.globalVideoRate : creator.videoRate,
+		audioRate:
+			region === "Global" ? creator.globalAudioRate : creator.audioRate,
+		chatRate: region === "Global" ? creator.globalChatRate : creator.chatRate,
 		videoAllowed: creator.videoAllowed,
 		audioAllowed: creator.audioAllowed,
 		chatAllowed: creator.chatAllowed,
 	});
 
 	const fullName = getDisplayName(creator);
+
+	const { getDevicePlatform } = usePlatform();
+
+	const devicePlatform = getDevicePlatform();
 
 	const handleTabClose = () => {
 		const chatRequestId = localStorage.getItem("chatRequestId");
@@ -100,22 +106,33 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		let clientStatusDocRef: any;
 		if (clientUser) {
-			clientStatusDocRef = doc(db, "userStatus", clientUser.phone);
+			const docId =
+				clientUser.global === true ? clientUser.email : clientUser.phone;
+			clientStatusDocRef = doc(db, "userStatus", docId as string);
 		}
 
 		const unsubscribe = onSnapshot(creatorRef, (doc) => {
 			const data = doc.data();
 
 			if (data) {
-				const prices = data.prices;
+				const prices = region === "Global" ? data.globalPrices : data.prices;
 				const services = data.services;
 
 				// Update creator services in state
 				setUpdatedCreator((prev) => ({
 					...prev,
-					videoRate: prices?.videoCall ?? "",
-					audioRate: prices?.audioCall ?? "",
-					chatRate: prices?.chat ?? "",
+					videoRate:
+						region === "Global"
+							? prices?.videoCall ?? creator.globalVideoRate
+							: prices?.videoCall ?? creator.videoRate,
+					audioRate:
+						region === "Global"
+							? prices?.audioCall ?? creator.globalAudioRate
+							: prices?.audioCall ?? creator.audioRate,
+					chatRate:
+						region === "Global"
+							? prices?.chat ?? creator.globalChatRate
+							: prices?.chat ?? creator.chatRate,
 					videoAllowed: services?.videoCall ?? false,
 					audioAllowed: services?.audioCall ?? false,
 					chatAllowed: services?.chat ?? false,
@@ -181,7 +198,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 		// Clean up the services listener
 		return () => unsubscribe();
-	}, [creator._id, creator.phone, clientUser, isAuthSheetOpen]);
+	}, [creator._id, creator.phone, isAuthSheetOpen]);
 
 	useEffect(() => {
 		if (!chatReqSent) {
@@ -314,8 +331,14 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 
 			const ratePerMinute =
 				callType === "video"
-					? parseInt(creator?.videoRate, 10)
-					: parseInt(creator?.audioRate, 10);
+					? parseInt(
+							clientUser.global ? creator.globalVideoRate : creator?.videoRate,
+							10
+					  )
+					: parseInt(
+							clientUser.global ? creator.globalAudioRate : creator?.audioRate,
+							10
+					  );
 			let maxCallDuration = (walletBalance / ratePerMinute) * 60;
 			maxCallDuration =
 				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
@@ -356,6 +379,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						members: members,
 						custom: {
 							description,
+							global: clientUser?.global ?? false,
 						},
 					},
 				})
@@ -380,19 +404,36 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						});
 					}
 
-					const fcmToken = await fetchFCMToken(creator.phone);
+					const fcmToken = await fetchFCMToken(creator.phone as string, "voip");
+
 					if (fcmToken) {
-						sendNotification(
-							fcmToken,
-							`Incoming ${callType} Call`,
-							`Call Request from ${clientUser.username}`,
-							{
-								created_by_display_name: clientUser.username,
-								callType: call.type,
-								callId: call.id,
-								notificationType: "call.ring",
-							}
-						);
+						try {
+							sendNotification(
+								fcmToken.token,
+								`Incoming ${callType} Call`,
+								`Call Request from ${clientUser.username}`,
+								{
+									created_by_display_name: clientUser.username,
+									callType: call.type,
+									callId: call.id,
+									notificationType: "call.ring",
+								}
+							);
+
+							fcmToken.voip_token &&
+								(await axios.post(`${backendUrl}/send-notification`, {
+									deviceToken: fcmToken.voip_token,
+									message: `Incoming ${callType} Call Request from ${clientUser.username}`,
+									payload: {
+										created_by_display_name: clientUser.username,
+										callType: call.type,
+										callId: call.id,
+										notificationType: "call.ring",
+									},
+								}));
+						} catch (error) {
+							console.warn(error);
+						}
 					}
 
 					await fetch(`${backendBaseUrl}/calls/registerCall`, {
@@ -414,7 +455,10 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						expertId: creator._id,
 						isVideoCall: callType,
 						creatorPhone: creator.phone,
-						clientPhone: clientUser?.phone,
+						clientPhone: clientUser?.global
+							? clientUser?.email
+							: clientUser?.phone,
+						global: clientUser?.global ?? false,
 					});
 				})
 				.catch((err) => console.log("Unable to create Meeting", err));
@@ -632,10 +676,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		return priority[a.type] - priority[b.type];
 	});
 
-	if (loading) {
-		return <Loader />;
-	}
-
 	return (
 		<>
 			<div className="flex flex-col w-full items-center justify-center gap-4">
@@ -665,7 +705,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 										: themeColor,
 							}}
 						>
-							Rs.<span>{service.rate}</span>/min
+							{region === "India" ? "Rs." : "$"}
+							<span>{service.rate}</span>/min
 						</p>
 					</button>
 				))}

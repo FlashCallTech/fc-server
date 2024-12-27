@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "../ui/button";
 import { S3Client } from "@aws-sdk/client-s3";
@@ -9,9 +9,6 @@ import Image from "next/image";
 import imageCompression from "browser-image-compression";
 import * as Sentry from "@sentry/nextjs";
 import { usePathname } from "next/navigation";
-import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { storage } from "@/lib/firebase";
 
 type FileUploaderProps = {
 	fieldChange: (url: string) => void;
@@ -26,10 +23,8 @@ const FileUploader = ({
 }: FileUploaderProps) => {
 	const pathname = usePathname();
 	const [fileUrl, setFileUrl] = useState(mediaUrl);
-	const [newFileUrl, setNewFileUrl] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
-	const { currentUser } = useCurrentUsersContext();
 
 	// S3 client setup
 	const s3Client = new S3Client({
@@ -47,7 +42,6 @@ const FileUploader = ({
 			try {
 				const file = acceptedFiles[0];
 
-				// Compress and convert to WebP
 				const options = {
 					maxSizeMB: 0.1,
 					maxWidthOrHeight: 1920,
@@ -57,15 +51,11 @@ const FileUploader = ({
 
 				const compressedFile = await imageCompression(file, options);
 				let fileName = "";
-				// Rename the file to have the .webp extension
-				if (currentUser?._id) {
-					fileName = `${currentUser._id}.webp`;
-				} else {
-					fileName = `${Date.now()}_${compressedFile.name.replace(
-						/\.[^.]+$/,
-						".webp"
-					)}`;
-				}
+
+				fileName = `${Date.now()}_${compressedFile.name.replace(
+					/\.[^.]+$/,
+					".webp"
+				)}`;
 
 				const fileStream = compressedFile.stream();
 
@@ -90,28 +80,11 @@ const FileUploader = ({
 				// Generate CloudFront URL
 				const cloudFrontUrl = `https://dxvnlnyzij172.cloudfront.net/uploads/${fileName}`;
 
-				// Upload to Firebase Storage
-				if (currentUser?._id) {
-					const firebaseStorageRef = ref(
-						storage,
-						`notifications/${currentUser._id}`
-					);
-
-					const snapshot = await uploadBytes(
-						firebaseStorageRef,
-						compressedFile
-					);
-					const firebaseUrl = await getDownloadURL(snapshot.ref);
-
-					console.log("Firebase URL:", firebaseUrl);
-				}
-
 				// Update state
 				if (pathname === "/updateDetails") {
 					setFileUrl(cloudFrontUrl);
 				} else {
-					setFileUrl(mediaUrl);
-					setNewFileUrl(cloudFrontUrl);
+					setFileUrl(cloudFrontUrl);
 					fieldChange(cloudFrontUrl);
 				}
 
@@ -138,10 +111,6 @@ const FileUploader = ({
 		},
 	});
 
-	useEffect(() => {
-		fieldChange(fileUrl);
-	}, [fileUrl, fieldChange]);
-
 	if (loading)
 		return (
 			<div className="flex flex-col items-center justify-center">
@@ -167,7 +136,7 @@ const FileUploader = ({
 		>
 			<input {...getInputProps()} className="cursor-pointer" />
 
-			{!fileUrl && !loading && !newFileUrl ? (
+			{!fileUrl && !loading ? (
 				<div className="file_uploader-box">
 					<img
 						src="/icons/file-upload.svg"
@@ -185,9 +154,7 @@ const FileUploader = ({
 				</div>
 			) : (
 				<div className="relative flex justify-center items-center size-20 md:size-32">
-					{/* Overlay */}
 					<div className="absolute inset-0 bg-black/30 rounded-full flex justify-center items-center">
-						{/* Icon */}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
@@ -210,20 +177,11 @@ const FileUploader = ({
 					</div>
 
 					{/* Old Image */}
-					{fileUrl && !newFileUrl && (
+					{fileUrl && (
 						<img
 							src={fileUrl}
 							alt="Current image"
 							className={`size-20 md:size-32 rounded-full border-2 border-white object-cover`}
-						/>
-					)}
-
-					{/* New Image Preview */}
-					{newFileUrl && (
-						<img
-							src={newFileUrl}
-							alt="New image preview"
-							className={`w-20 h-20 md:size-32 object-cover rounded-full border-2 border-green-500`}
 						/>
 					)}
 				</div>

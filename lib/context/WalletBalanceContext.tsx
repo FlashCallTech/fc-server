@@ -52,10 +52,15 @@ export const WalletBalanceProvider = ({
 		setIsInitialized(false);
 		if (currentUser?._id) {
 			try {
-				const response = await axios.get(
-					`${backendBaseUrl}/${isCreator ? "creator" : "client"}/getUser/${
-						currentUser._id
-					}`
+				const userType = isCreator ? "creator" : "client";
+				const endpoint = currentUser.global
+					? `getGlobalUserByEmail/${currentUser.email}`
+					: `getUser/${currentUser._id}`;
+
+				const method = currentUser.global ? "post" : "get";
+
+				const response = await axios[method](
+					`${backendBaseUrl}/${userType}/${endpoint}`
 				);
 				const data = response.data;
 
@@ -92,8 +97,11 @@ export const WalletBalanceProvider = ({
 
 		const creatorId =
 			userType === "client"
-				? JSON.parse(localStorage.getItem("currentCreator") || "{}")?._id
-				: currentUser._id;
+				? (() => {
+						const storedValue = localStorage.getItem("currentCreator");
+						return storedValue ? JSON.parse(storedValue)?._id : null;
+				  })()
+				: currentUser?._id;
 
 		if (!creatorId) return;
 

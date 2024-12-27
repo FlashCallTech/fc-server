@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 // Gender
 export type Gender = "male" | "female" | "other" | undefined;
 
@@ -11,6 +13,18 @@ export type CreateUserParams = {
 	phone: any;
 	role: string;
 	bio?: string;
+};
+
+export type CreateForeignUserParams = {
+	username: string;
+	email: string;
+	fullName?: string;
+	phone?: string;
+	photo: string;
+	role: string;
+	bio?: string;
+	walletBalance: number;
+	global: boolean;
 };
 
 export type UpdateUserParams = {
@@ -42,7 +56,8 @@ export type clientUser = {
 	lastName: string;
 	username: string;
 	photo: string;
-	phone: string;
+	phone?: string;
+	email?: string;
 	walletBalance: number;
 	bio: string;
 	gender?: string;
@@ -56,6 +71,7 @@ export type clientUser = {
 	referralAmount?: number;
 	restricted?: boolean;
 	blocked?: any[];
+	global?: boolean;
 };
 
 // Creator Params
@@ -67,7 +83,8 @@ export type creatorUser = {
 	lastName: string;
 	username: string;
 	photo: string;
-	phone: string;
+	phone?: string;
+	email?: string;
 	profession: string;
 	themeSelected: string;
 	gender: string;
@@ -93,6 +110,7 @@ export type creatorUser = {
 	createdAt?: string;
 	restricted?: boolean;
 	blocked?: any[];
+	global?: boolean;
 };
 
 export type CreateCreatorParams = {
@@ -417,4 +435,31 @@ export interface UpdateCallTransactionParams {
 	amountPaid?: number;
 	isDone?: boolean;
 	callDuration?: number;
+}
+
+// Discount Service Type
+
+export interface DiscountRule {
+	_id: string;
+	conditions: [
+		"New User" | "Seasonal Offer" | "30+ Minutes Call" | "60+ Minutes Call"
+	];
+	discountAmount: number;
+	discountType: "percentage" | "flat";
+}
+
+export interface Service {
+	_id: string;
+	creatorId: string;
+	title: string;
+	description: string;
+	photo: string;
+	type: "all" | "audio" | "video" | "chat";
+	isActive: boolean;
+	currency: "INR" | "USD";
+	discountRules: DiscountRule[];
+	extraDetails?: string;
+	createdAt: string;
+	updatedAt: string;
+	utilizedBy: Types.ObjectId[];
 }

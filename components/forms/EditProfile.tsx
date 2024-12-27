@@ -36,7 +36,7 @@ import {
 } from "@/lib/validator";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
-import FileUploader from "../shared/FileUploader";
+import FileUploader from "../uploaders/FileUploader";
 import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
 import { usePathname } from "next/navigation";
@@ -525,6 +525,7 @@ const EditProfile = ({
 										userType === "creator" ? " w-fit gap-2.5" : "w-full"
 									}`}
 								>
+									{/* empty placeholder for creator's username */}
 									{userType === "creator" && (
 										<span className="text-gray-400 pl-2">
 											https://flashcall.me/

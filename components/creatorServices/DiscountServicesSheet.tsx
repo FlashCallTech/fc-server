@@ -15,16 +15,23 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import ServicesForm from "../shared/ServicesForm";
+import ServicesForm from "../forms/DiscountServicesForm";
+import { Service } from "@/types";
 
 interface DiscountConsentSheetProps {
 	isOpen: boolean;
 	onOpenChange: (isOpen: boolean) => void;
+	refetch: any;
+	sheetType: "Create" | "Update";
+	service: Service | null;
 }
 
-const ServiceSheet: React.FC<DiscountConsentSheetProps> = ({
+const DiscountServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 	isOpen,
 	onOpenChange,
+	refetch,
+	sheetType,
+	service,
 }) => {
 	const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 584);
 	useEffect(() => {
@@ -54,7 +61,12 @@ const ServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 							rules tailored to your customers&apos; needs.
 						</SheetDescription>
 					</SheetHeader>
-					<ServicesForm sheetOpen={onOpenChange} />
+					<ServicesForm
+						sheetOpen={onOpenChange}
+						refetch={refetch}
+						sheetType={sheetType}
+						service={service}
+					/>
 				</SheetContent>
 			</Sheet>
 		);
@@ -72,11 +84,16 @@ const ServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 							rules tailored to your customers&apos; needs.
 						</DialogDescription>
 					</DialogHeader>
-					<ServicesForm sheetOpen={onOpenChange} />
+					<ServicesForm
+						sheetOpen={onOpenChange}
+						refetch={refetch}
+						sheetType={sheetType}
+						service={service}
+					/>
 				</DialogContent>
 			</Dialog>
 		);
 	}
 };
 
-export default ServiceSheet;
+export default DiscountServiceSheet;

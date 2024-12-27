@@ -20,6 +20,7 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 	let lastName = currentUser?.lastName || "";
 	let username = currentUser?.username || "";
 	const fullName = getDisplayName({ firstName, lastName, username });
+
 	useEffect(() => {
 		const initializeVideoClient = async (retries = 3) => {
 			if (!currentUser || !userId) {

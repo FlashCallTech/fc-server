@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { backendBaseUrl, getImageSource } from "@/lib/utils";
 import { clientUser, creatorUser } from "@/types";
 import Loader from "../shared/Loader";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const CallInvoiceModal = ({
 	isOpen,
@@ -18,13 +19,14 @@ const CallInvoiceModal = ({
 	const [client, setClient] = useState<clientUser>();
 	const [creator, setCreator] = useState<creatorUser>();
 	const [loading, setLoading] = useState<boolean>(true);
+	const {userType} = useCurrentUsersContext();
 	const modalRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		const fetchClient = async () => {
 			try {
 				const response = await fetch(
-					`${backendBaseUrl}/client/getUser/${call.creator}`,
+					`${call?.global ? `${backendBaseUrl}/client/getGlobalUserById/${call.creator}` : `${backendBaseUrl}/client/getUser/${call.creator}`}`,
 					{
 						method: "GET",
 						headers: {
@@ -58,8 +60,11 @@ const CallInvoiceModal = ({
 
 	const handleDownload = async () => {
 		try {
-			const response = await fetch(
-				`${backendBaseUrl}/invoice/callInvoiceDownload/${call._id}`
+			setLoading(true);
+			const response = userType === "client" ? await fetch(
+				`${backendBaseUrl}/invoice/callInvoiceDownload/${call._id}/client`
+			) : await fetch(
+				`${backendBaseUrl}/invoice/callInvoiceDownload/${call._id}/creator`
 			);
 
 			if (!response.ok) {
@@ -77,6 +82,8 @@ const CallInvoiceModal = ({
 			window.URL.revokeObjectURL(url); // Clean up the URL object
 		} catch (error) {
 			console.error("Error downloading the PDF:", error);
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -146,23 +153,26 @@ const CallInvoiceModal = ({
 						</div>
 
 						<div className="flex justify-between text-sm font-medium text-gray-700">
-							<div>Invoice Number: INV-001</div>
+							<div>{`Invoice Number: ${call._id}`}</div>
 							<div>Date: {new Date().toLocaleDateString()}</div>
 						</div>
 
 						<div className="border-t pt-4">
 							<div className="text-sm font-medium">Bill To:</div>
-							{client?.firstName && (
+							{client?.fullName && (
 								<div className="text-sm">
-									Customer Name: {client?.firstName}
+									Customer Name: {client?.fullName}
 								</div>
 							)}
-							<div className="text-sm">
+							{client?.email && <div className="text-sm">
+								Customer Email: {client?.email}
+							</div>}
+							{client?.phone && <div className="text-sm">
 								Customer Phone Number: {client?.phone}
-							</div>
+							</div>}
 						</div>
 
-						<table className="w-full border border-gray-300 text-sm text-center mt-4">
+						<table className="w-full border border-gray-300 text-xs text-center mt-4">
 							<thead>
 								<tr className="bg-gray-100">
 									<th className="p-2 border border-gray-300">
@@ -180,10 +190,10 @@ const CallInvoiceModal = ({
 									</td>
 									<td className="p-2 border border-gray-300">1</td>
 									<td className="p-2 border border-gray-300">
-										INR {call.amount}
+										{` ${userType === "client" ? call.amount : call.amountINR.toFixed(2)}`}
 									</td>
 									<td className="p-2 border border-gray-300">
-										INR {call.amount}
+										{`${client?.global && userType === "client" ? "$" : "INR"} ${userType === "client" ? call.amount : call.amountINR.toFixed(2)}`}
 									</td>
 								</tr>
 							</tbody>
@@ -191,14 +201,14 @@ const CallInvoiceModal = ({
 
 						<div className="flex text-sm font-medium pt-4">
 							<div>
-								<div>Subtotal: INR {call.amount}</div>
-								<div>Total Amount Due: INR {call.amount}</div>
+								<div>{`Subtotal: ${client?.global && userType === "client" ? "$" : "INR"} ${userType === "client" ? call.amount : call.amountINR.toFixed(2)}`}</div>
+								<div>{`Total Amount Due: ${client?.global && userType === "client" ? "$" : "INR"} ${userType === "client" ? call.amount : call.amountINR.toFixed(2)}`}</div>
 							</div>
 						</div>
 
 						<div className="border-t pt-4 text-sm font-medium">
 							<div>Payment Method: Wallet Recharge</div>
-							<div>Transaction ID: {call._id}</div>
+							<div>Call ID: {call._id}</div>
 						</div>
 
 						<div className="text-xs text-gray-600 border-t pt-4 text-center">
@@ -206,8 +216,6 @@ const CallInvoiceModal = ({
 						</div>
 						<div className="text-xs text-center text-gray-600 pt-2 pb-2">
 							Thank you for your consultation!
-							<br />
-							For assistance, contact me at [creator email].
 						</div>
 					</div>
 
