@@ -353,8 +353,8 @@ const DiscountServicesForm = ({
 								</Select>
 								{isNewUserConditionSelected && (
 									<p className="mt-2 text-sm text-gray-500">
-										Type is locked to "All" because "New User" condition is
-										selected.
+										Type is locked to &quot;All&quot; because &quot;New
+										User&quot; condition is selected.
 									</p>
 								)}
 								<FormMessage />
