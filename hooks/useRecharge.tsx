@@ -29,11 +29,11 @@ const useRecharge = () => {
 	const pgHandler = async (
 		pg: string | undefined,
 		clientId: string,
-		clientPhone: string,
-		creatorId: string,
 		totalPayable: number,
-		User_First_Seen: string,
-		Walletbalace_Available: number,
+		clientPhone?: string,
+		User_First_Seen?: string,
+		Walletbalace_Available?: number,
+		creatorId?: string,
 	) => {
 		trackEvent("Recharge_Page_Proceed_Clicked", {
 			Client_ID: clientId,
@@ -51,30 +51,30 @@ const useRecharge = () => {
 			localStorage.removeItem("cashfree_order_id");
 			PaymentHandler(
 				clientId,
-				clientPhone,
-				creatorId,
 				totalPayable,
+				clientPhone,
 				User_First_Seen,
 				Walletbalace_Available,
+				creatorId,
 			);
 		} else
 			cashfreeHandler(
 				clientId,
-				clientPhone,
-				creatorId,
 				totalPayable,
+				clientPhone,
 				User_First_Seen,
-				Walletbalace_Available
+				Walletbalace_Available,
+				creatorId,
 			);
 	};
 
 	const cashfreeHandler = async (
 		clientId: string,
-		clientPhone: string,
-		creatorId: string,
 		totalPayable: number,
-		User_First_Seen: string,
-		Walletbalace_Available: number
+		clientPhone?: string,
+		User_First_Seen?: string,
+		Walletbalace_Available?: number,
+		creatorId?: string,
 	) => {
 		try {
 			// Access Cashfree from the global window object
@@ -141,11 +141,11 @@ const useRecharge = () => {
 
 	const PaymentHandler = async (
 		clientId: string,
-		clientPhone: string,
-		creatorId: string,
 		totalPayable: number,
-		User_First_Seen: string,
-		Walletbalace_Available: number,
+		clientPhone?: string,
+		User_First_Seen?: string,
+		Walletbalace_Available?: number,
+		creatorId?: string,
 	): Promise<void> => {
 		const totalPayableInPaise = totalPayable! * 100;
 		const rechargeAmount = parseInt(totalPayableInPaise.toFixed(2));

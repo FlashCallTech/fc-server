@@ -291,72 +291,96 @@ const AuthenticateViaOTP = ({
 
 	const handleGoogleSignIn = async () => {
 		try {
-			const result = await signInWithPopup(auth, provider);
-			const email = result.user.email as string;
+			let result: any;
+			let email: string = "";
 
-			const fcmToken: any = await getFCMToken();
-			const payload = {
-				fcmToken,
-			}
-
-			let userExists = true;
-
+			// Google Sign-In
 			try {
-				// Check if the user exists
-				const response = await axios.post(`${backendBaseUrl}/client/getGlobalUserByEmail/${email}`,
-					payload,
-					{
-						headers: { "Content-Type": "application/json" }
-					}
-				);
-				localStorage.setItem("currentUserID", response.data._id);
-				userExists = response.status !== 404; // User exists if no 404
-			} catch (error: any) {
-				// If 404, set userExists to false
-				if (error.response?.status === 404) {
-					userExists = false;
-				} else {
-					// Rethrow other errors
-					throw error;
-				}
+				result = await signInWithPopup(auth, provider);
+				email = result.user.email as string;
+			} catch (error) {
+				console.log(error);
+				throw new Error("Google Sign-In failed");
+			} finally {
+				setAuthenticationSheetOpen(false);
+				onOpenChange && onOpenChange(false);
 			}
 
-			// If user does not exist, create a new one
-			if (!userExists) {
-				const newUser: CreateForeignUserParams = {
-					username: result.user.uid,
-					photo: GetRandomImage() || "",
-					phone: result.user.phoneNumber ?? "",
-					fullName: result.user.displayName ?? "",
-					email,
-					role: "client",
-					bio: "",
-					walletBalance: 0,
-					global: true,
-				};
-
-				const createUserResponse = await axios.post(
-					`${backendBaseUrl}/client/createGlobalUser`,
-					newUser,
-					{
-						headers: {
-							"Content-Type": "application/json",
-						},
-					}
-				);
-
-				if (createUserResponse.status === 201) {
-					localStorage.setItem("currentUserID", createUserResponse.data.client_id);
-					console.log("New user created successfully.");
-					refreshCurrentUser();
-				}
+			if (!email) {
+				throw new Error("Email is not available after sign-in.");
 			}
-			
-			// Refresh and close authentication modal
-			setAuthenticationSheetOpen(false);
-			onOpenChange && onOpenChange(false);
+
+			// Fetch FCM Token
+			const fcmToken: any = await getFCMToken();
+			const payload = { fcmToken };
+
+			// Check if the user exists or create a new user
+			await handleUserExistenceAndCreation(email, result, payload);
+
 		} catch (error) {
 			console.error("Error during sign-in:", error);
+			await signOut(auth);  // Sign out if an error occurs
+			throw new Error(error as string);
+		}
+	};
+
+	// Helper function to check if the user exists and create if necessary
+	const handleUserExistenceAndCreation = async (email: string, result: any, payload: any) => {
+		let userExists = true;
+
+		try {
+			const response = await axios.post(`${backendBaseUrl}/client/getGlobalUserByEmail/${email}`, payload, {
+				headers: { "Content-Type": "application/json" }
+			});
+			localStorage.setItem("currentUserID", response.data._id);
+			userExists = response.status !== 404;
+		} catch (error: any) {
+			if (error.response?.status === 404) {
+				userExists = false;
+			} else {
+				throw error;
+			}
+		}
+
+		// If user does not exist, create a new one
+		if (!userExists) {
+			await createNewUser(result, email, payload);
+		}
+	};
+
+	// Helper function to create a new user
+	const createNewUser = async (result: any, email: string, payload: any) => {
+		const newUser: CreateForeignUserParams = {
+			username: result.user.uid,
+			photo: GetRandomImage() || "",
+			phone: result.user.phoneNumber ?? "",
+			fullName: result.user.displayName ?? "",
+			email,
+			role: "client",
+			bio: "",
+			walletBalance: 0,
+			global: true,
+		};
+
+		try {
+			const createUserResponse = await axios.post(
+				`${backendBaseUrl}/client/createGlobalUser`,
+				newUser,
+				{
+					headers: { "Content-Type": "application/json" },
+				}
+			);
+
+			if (createUserResponse.status === 201) {
+				localStorage.setItem("currentUserID", createUserResponse.data.client_id);
+				console.log("New user created successfully.");
+				refreshCurrentUser();
+			} else {
+				throw new Error("Failed to create user.");
+			}
+		} catch (error) {
+			console.error("Error during user creation:", error);
+			throw error; // Propagate the error to be handled in the main function
 		}
 	};
 
@@ -382,7 +406,7 @@ const AuthenticateViaOTP = ({
 							Get started with your first consultation <br /> and start earning
 						</p>
 					</div>
-					{region === "India" && userType === "client" ? (
+					{region === "India" ? (
 						<Form {...signUpForm}>
 							<form
 								onSubmit={signUpForm.handleSubmit(handleSignUpSubmit)}

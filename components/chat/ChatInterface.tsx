@@ -205,6 +205,7 @@ const ChatInterface: React.FC = () => {
 					tip: tipAmt,
 					img: null,
 					audio: null,
+					global: currentUser?.global ?? false,
 				}),
 			});
 			setMessages((prevMessages) => [

@@ -82,6 +82,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 	const handleChat = async (creator: creatorUser, clientUser: clientUser) => {
 		if (!clientUser) router.push("sign-in");
+		if (!clientUser) router.push("sign-in");
 
 		const chatRate = await getUserData(creator._id, clientUser.global ?? false);
 
@@ -167,6 +168,19 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			}
 
 			const chatId = existingChatId || doc(chatRef).id;
+			const chatDocRef = doc(db, "callTimer", chatId as string);
+			const callDoc = await getDoc(chatDocRef);
+			if (callDoc.exists()) {
+				await updateDoc(chatDocRef, {
+					timeLeft: maxCallDuration,
+					timeUtilized: 0,
+				});
+			} else {
+				await setDoc(chatDocRef, {
+					timeLeft: maxCallDuration,
+					timeUtilized: 0,
+				});
+			}
 			await setDoc(
 				doc(db, "chats", chatId),
 				{

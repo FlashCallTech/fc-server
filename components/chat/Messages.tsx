@@ -20,6 +20,7 @@ interface Chat {
 		audio: string;
 		seen: boolean;
 		tip: string;
+		global?: boolean;
 	}[];
 }
 
@@ -179,11 +180,11 @@ const Messages: React.FC<Props> = ({ chat, img, isImgUploading }) => {
 											className="flex-grow w-full items-center rounded-md"
 										>
 											<div className="flex flex-col items-center justify-center text-black font-bold text-[17px] lg:text-4xl border-l-[#DCF8C6] p-1">
-												{`₹ ${message.tip}`}
+												{`${message?.global ? "$" : "₹"} ${message.tip}`}
 											</div>
 											<div className="flex flex-row gap-1 items-center justify-start text-white text-xs border-l-[#DCF8C6] p-1">
 												{/* SVG inserted here */}
-												<Image src={"/rupee_logo.svg"} width={1000} height={1000} alt="rupee" className="size-5" />
+												<Image src={`${message.global ? "/dollar_icon.svg" : "/rupee_logo.svg"}`} width={1000} height={1000} alt="currency" className="size-5" />
 												<div className="flex flex-col items-start justify-start text-black text-[10px] lg:text-xs">
 													<span>
 														{`Sent to ${isCurrentUserMessage ? chat.creatorName ?? "Creator" : "You"}`}

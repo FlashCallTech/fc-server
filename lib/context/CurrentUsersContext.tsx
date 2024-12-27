@@ -45,6 +45,7 @@ interface CurrentUsersContextValue {
 	setPendingNotifications: any;
 	setPreviousPendingNotifications: any;
 	fetchNotificationsOnce: any;
+	setAuthToken: any;
 }
 
 // Create the context with a default value of null
@@ -265,18 +266,18 @@ export const CurrentUsersProvider = ({
 		try {
 			setFetchingUser(true);
 
+			if (authToken) {
+				setFetchingUser(false);
+				setUserFetched(true);
+				setCreatorUser(null);
+				setUserType("client");
+			}
+
 			const response = await axios.get(`${backendBaseUrl}/user/getProfile`, {
 				withCredentials: true,
 			});
 
-			const { success, data, token, source } = response.data;
-
-			if (source === "official") {
-				setFetchingUser(false);
-				setUserFetched(true);
-				setCreatorUser(null);
-				setUserType("creator");
-			}
+			const { success, data, token } = response.data;
 
 			if (success && data) {
 				if (data.userType === "creator") {
@@ -461,6 +462,8 @@ export const CurrentUsersProvider = ({
 		);
 	}
 
+	console.log(authToken, currentUser, clientUser);
+
 	// Provide the context value to children
 	return (
 		<CurrentUsersContext.Provider
@@ -488,6 +491,7 @@ export const CurrentUsersProvider = ({
 				setPendingNotifications,
 				setPreviousPendingNotifications,
 				fetchNotificationsOnce,
+				setAuthToken,
 			}}
 		>
 			{children}

@@ -13,31 +13,67 @@ import MeetingSetup from "@/components/meeting/MeetingSetup";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import MeetingRoom from "@/components/official/MeetingRoom";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
+import axios from "axios";
+import { backendBaseUrl } from "@/lib/utils";
 
 const MeetingPage = () => {
 	const { meetingId, clientId } = useParams();
-	const { currentUser, fetchingUser, setClientUser } = useCurrentUsersContext();
+	const {
+		currentUser,
+		fetchingUser,
+		setClientUser,
+		setAuthToken,
+		refreshCurrentUser,
+	} = useCurrentUsersContext();
 	const { call, isCallLoading } = useGetCallById(meetingId);
 
 	console.log(meetingId, clientId);
 
 	useEffect(() => {
+		const fetchAuthToken = async (client: any, source: string) => {
+			try {
+				const response = await axios.post(
+					`${backendBaseUrl}/otp/createSessionToken`,
+					{
+						user: client,
+						source,
+					}
+				);
+				return response.data.sessionToken;
+			} catch (error) {
+				console.error("Error fetching session token:", error);
+				return null;
+			}
+		};
+
 		// If currentUser is not present, set with hardcoded data
 		if (!currentUser) {
-			setClientUser({
+			const client = {
 				_id: clientId as string,
 				username: `guest_${clientId}`,
 				phone: "+1234567890",
 				fullName: "Guest User",
 				firstName: "Guest",
 				lastName: "User",
-				photo: "https://example.com/defaultUserPhoto.png",
+				photo:
+					"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
 				role: "client",
 				bio: "This is a guest user.",
 				walletBalance: 0,
-				gender: "unspecified",
+				gender: "male",
 				dob: "2000-01-01",
-			});
+			};
+
+			const fetchToken = async () => {
+				const authToken = await fetchAuthToken(client, "official");
+				if (authToken) {
+					setAuthToken(authToken);
+					setClientUser(client);
+					refreshCurrentUser();
+				}
+			};
+
+			fetchToken();
 		}
 
 		const preventBackNavigation = () => {

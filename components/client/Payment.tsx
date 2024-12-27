@@ -24,7 +24,7 @@ import { Button } from "../ui/button";
 import Script from "next/script";
 import { backendBaseUrl } from "@/lib/utils";
 import axios from "axios";
-import useRecharge from "@/hooks/recharge";
+import useRecharge from "@/hooks/useRecharge";
 
 interface PaymentProps {
 	callType?: string;
@@ -171,13 +171,13 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		let rate: number | undefined;
 		switch (callType) {
 			case "video":
-				rate = creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
+				rate = currentUser?.global ? creator?.globalVideoRate ? parseFloat(creator.globalVideoRate) : undefined : creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
 				break;
 			case "audio":
-				rate = creator?.audioRate ? parseFloat(creator.audioRate) : undefined;
+				rate = currentUser?.global ? creator?.globalAudioRate ? parseFloat(creator.globalAudioRate) : undefined : creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
 				break;
 			case "chat":
-				rate = creator?.chatRate ? parseFloat(creator.chatRate) : undefined;
+				rate = currentUser?.global ? creator?.globalChatRate ? parseFloat(creator.globalChatRate) : undefined : creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
 				break;
 			default:
 				rate = 0;
@@ -251,11 +251,11 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			pgHandler(
 				pg,
 				currentUser?._id as string,
-				currentUser?.phone as string,
-				creator?._id as string,
 				rechargeAmount,
-				clientUser?.createdAt?.toString().split("T")[0] as string,
-				currentUser?.walletBalance as number,
+				currentUser?.phone,
+				clientUser?.createdAt?.toString().split("T")[0],
+				currentUser?.walletBalance,
+				creator?._id,
 			)
 		}
 
