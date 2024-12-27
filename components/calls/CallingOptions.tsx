@@ -84,7 +84,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleTabClose = () => {
 		const chatRequestId = localStorage.getItem("chatRequestId");
 		const data = chatRequestId;
-		const url = `${backendBaseUrl}endChat/rejectChat`; // Example endpoint
+		const url = `${backendBaseUrl}endChat/rejectChat`;
 		navigator.sendBeacon(url, data);
 	};
 
@@ -270,7 +270,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}, 1000);
 
 		return () => clearInterval(intervalId);
-	}, [clientUser?._id, router, chatReqSent]);
+	}, [router, chatReqSent]);
 
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
