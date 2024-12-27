@@ -15,7 +15,7 @@ import { db } from "./firebase";
 import * as Sentry from "@sentry/nextjs";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { Call } from "@stream-io/video-react-sdk";
-import { clientUser, creatorUser } from "@/types";
+import { clientUser, creatorUser, Service } from "@/types";
 import { getDownloadURL, ref } from "firebase/storage";
 
 const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
@@ -53,12 +53,15 @@ export const handleInterruptedCall = async (
 	userType: "client" | "expert",
 	backendBaseUrl: string,
 	expertPhone: string,
-	clientPhone: string
+	clientPhone: string,
+	discounts?: Service[]
 ) => {
 	if (!callId || !currentUserPhone) {
 		console.error("Invalid callId or user phone");
 		return;
 	}
+
+	const validDiscounts = discounts && discounts.length > 0 ? discounts : [];
 
 	// Extract relevant fields from the call object
 	const callData = {
@@ -67,19 +70,17 @@ export const handleInterruptedCall = async (
 		endedAt: call.state.endedAt,
 		startedAt: call.state.startsAt,
 		isVideoCall: call.type === "default",
+
 		expertId: call.state.members.find(
 			(member) => member.custom.type === "expert"
 		)?.user_id,
 		clientId: call.state.createdBy?.id,
 		expertPhone,
 		clientPhone,
+		discounts: validDiscounts,
 	};
 
-	console.log(callData);
-
 	try {
-		// Update the user's status based on the type
-
 		const localSessionKey = `meeting_${callId}_${currentUserId}`;
 
 		localStorage.removeItem("activeCallId");
@@ -568,8 +569,6 @@ export const updateFirestoreSessions = async (
 		const SessionDoc = await getDoc(SessionDocRef);
 		const ongoingCallUpdate: { [key: string]: any } = {};
 
-		console.log(params);
-
 		if (params.callId) ongoingCallUpdate.callId = params.callId;
 		if (params.status) ongoingCallUpdate.status = params.status;
 		if (params.clientId) ongoingCallUpdate.clientId = params.clientId;
@@ -581,9 +580,10 @@ export const updateFirestoreSessions = async (
 		if (params?.global) ongoingCallUpdate.global = params.global ?? false;
 
 		if (SessionDoc.exists()) {
+			const existingOngoingCall = SessionDoc.data()?.ongoingCall || {};
 			await updateDoc(SessionDocRef, {
 				ongoingCall: {
-					...SessionDoc.data()?.ongoingCall,
+					...existingOngoingCall,
 					...ongoingCallUpdate,
 				},
 			});

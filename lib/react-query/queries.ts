@@ -231,18 +231,33 @@ export const useGetCreatorNotifications = (userId: string) => {
 };
 
 // Hook for fetching user services
-export const useGetUserServices = (creatorId: string) => {
+export const useGetUserServices = (
+	creatorId: string,
+	filter: "all" | "audio" | "video" | "chat" | "" = "all",
+	fetchAll: boolean = false,
+	requestFrom: "creator" | "client"
+) => {
 	const limit = 10;
+
 	return useInfiniteQuery({
-		queryKey: [QUERY_KEYS.GET_CREATOR_DISCOUNT_SERVICES, creatorId],
+		queryKey: [
+			QUERY_KEYS.GET_CREATOR_DISCOUNT_SERVICES,
+			creatorId,
+			filter,
+			fetchAll,
+			requestFrom,
+		],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
 				`${backendBaseUrl}/services/creatorServices`,
 				{
 					params: {
-						page: pageParam,
-						limit,
-						creatorId: creatorId,
+						page: fetchAll ? undefined : pageParam,
+						limit: fetchAll ? undefined : limit,
+						creatorId,
+						filter,
+						fetchAll,
+						requestFrom,
 					},
 				}
 			);
@@ -254,6 +269,7 @@ export const useGetUserServices = (creatorId: string) => {
 			}
 		},
 		getNextPageParam: (lastPage, allPages) => {
+			if (fetchAll) return null;
 			const totalPages = lastPage.pagination.pages;
 			const nextPage = allPages.length + 1;
 			return nextPage <= totalPages ? nextPage : null;

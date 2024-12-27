@@ -36,7 +36,7 @@ const predefinedConditions = [
 	"New User",
 	"Seasonal Offer",
 	"30+ Minutes Call",
-	"60+ Minutes Call",
+	"60 Minutes Call",
 ] as const;
 
 const discountRuleSchema = z
@@ -98,7 +98,9 @@ const formSchema = z.object({
 	type: z.enum(["all", "audio", "video", "chat"], {
 		required_error: "Service type is required.",
 	}),
-	// basePrice: z.number().min(1, "Base price must be at least 1."),
+	isActive: z.boolean({
+		required_error: "isActive is required.",
+	}),
 	currency: z.enum(["INR", "USD"], {
 		required_error: "Currency is required.",
 	}),
@@ -121,6 +123,7 @@ const DiscountServicesForm = ({
 		service?.photo ||
 			"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7"
 	);
+
 	const { currentUser } = useCurrentUsersContext();
 	const { toast } = useToast();
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -132,7 +135,8 @@ const DiscountServicesForm = ({
 						title: service.title,
 						description: service.description,
 						photo: service.photo,
-						type: "all",
+						type: service.type,
+						isActive: service.isActive,
 						currency: service.currency,
 						discountRules: service.discountRules.map((rule) => ({
 							conditions: rule.conditions,
@@ -146,6 +150,7 @@ const DiscountServicesForm = ({
 						description: "",
 						photo: "",
 						type: "all",
+						isActive: true,
 						currency: "INR",
 						discountRules: [
 							{
@@ -298,37 +303,92 @@ const DiscountServicesForm = ({
 				<FormField
 					control={form.control}
 					name="type"
+					render={({ field }) => {
+						// Check if any discount rule contains the "New User" condition
+						const isNewUserConditionSelected = form
+							.watch("discountRules")
+							?.some((rule) => rule.conditions.includes("New User"));
+
+						return (
+							<FormItem>
+								<FormLabel>Type</FormLabel>
+								<Select
+									onValueChange={(value) => {
+										// Only allow changing type if "New User" is not selected
+										if (!isNewUserConditionSelected) {
+											field.onChange(value);
+										}
+									}}
+									value={field.value}
+									disabled={isNewUserConditionSelected} // Disable dropdown if "New User" is selected
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select service type" />
+									</SelectTrigger>
+									<SelectContent className="!bg-white">
+										<SelectItem
+											className="cursor-pointer hover:bg-gray-50"
+											value="all"
+										>
+											All
+										</SelectItem>
+										<SelectItem
+											className="cursor-pointer hover:bg-gray-50"
+											value="audio"
+										>
+											Audio
+										</SelectItem>
+										<SelectItem
+											className="cursor-pointer hover:bg-gray-50"
+											value="video"
+										>
+											Video
+										</SelectItem>
+										<SelectItem
+											className="cursor-pointer hover:bg-gray-50"
+											value="chat"
+										>
+											Chat
+										</SelectItem>
+									</SelectContent>
+								</Select>
+								{isNewUserConditionSelected && (
+									<p className="mt-2 text-sm text-gray-500">
+										Type is locked to "All" because "New User" condition is
+										selected.
+									</p>
+								)}
+								<FormMessage />
+							</FormItem>
+						);
+					}}
+				/>
+
+				<FormField
+					control={form.control}
+					name="isActive"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Type</FormLabel>
-							<Select onValueChange={field.onChange} defaultValue={field.value}>
+							<FormLabel>Toggle Service Active</FormLabel>
+							<Select
+								onValueChange={(value) => field.onChange(value === "true")}
+								value={field.value ? "true" : "false"} // Ensures correct selection is displayed
+							>
 								<SelectTrigger>
-									<SelectValue placeholder="Select service type" />
+									<SelectValue placeholder="Select status" />
 								</SelectTrigger>
 								<SelectContent className="!bg-white">
 									<SelectItem
 										className="cursor-pointer hover:bg-gray-50"
-										value="all"
+										value="true"
 									>
-										All
+										Active
 									</SelectItem>
 									<SelectItem
 										className="cursor-pointer hover:bg-gray-50"
-										value="audio"
+										value="false"
 									>
-										Audio
-									</SelectItem>
-									<SelectItem
-										className="cursor-pointer hover:bg-gray-50"
-										value="video"
-									>
-										Video
-									</SelectItem>
-									<SelectItem
-										className="cursor-pointer hover:bg-gray-50"
-										value="chat"
-									>
-										Chat
+										Inactive
 									</SelectItem>
 								</SelectContent>
 							</Select>
@@ -379,46 +439,59 @@ const DiscountServicesForm = ({
 							<FormField
 								control={form.control}
 								name={`discountRules.${index}.conditions`}
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Conditions</FormLabel>
-										<FormControl>
-											<div className="grid grid-cols-2 gap-4">
-												{" "}
-												{/* Grid layout for cards */}
-												{predefinedConditions.map((condition) => {
-													const isSelected =
-														field.value?.includes(condition) || false;
+								render={({ field }) => {
+									const conditions =
+										form.watch(`discountRules.${index}.conditions`) || [];
+									const isNewUserSelected = conditions.includes("New User");
 
-													return (
-														<section
-															key={condition}
-															className={cn(
-																"cursor-pointer p-4 border transition-all rounded-lg",
-																isSelected
-																	? "bg-gray-100 border border-gray-300"
-																	: "hover:bg-gray-50"
-															)}
-															onClick={() => {
-																const updatedConditions = isSelected
-																	? field.value?.filter(
-																			(item) => item !== condition
-																	  )
-																	: [...(field.value || []), condition];
-																field.onChange(updatedConditions);
-															}}
-														>
-															<section className="flex items-center justify-center text-sm font-medium">
-																{condition}
+									return (
+										<FormItem>
+											<FormLabel>Conditions</FormLabel>
+											<FormControl>
+												<div className="grid grid-cols-2 gap-4">
+													{predefinedConditions.map((condition) => {
+														const isSelected = conditions.includes(condition);
+														const isDisabled =
+															isNewUserSelected && condition !== "New User";
+
+														return (
+															<section
+																key={condition}
+																className={cn(
+																	"cursor-pointer p-4 border transition-all rounded-lg",
+																	isSelected
+																		? "bg-gray-100 border border-gray-300"
+																		: "hover:bg-gray-50",
+																	isDisabled && "cursor-not-allowed opacity-50"
+																)}
+																onClick={() => {
+																	if (isDisabled) return;
+
+																	const updatedConditions = isSelected
+																		? conditions.filter(
+																				(item) => item !== condition
+																		  )
+																		: [...conditions, condition];
+
+																	field.onChange(updatedConditions);
+
+																	if (condition === "New User" && !isSelected) {
+																		form.setValue("type", "all");
+																	}
+																}}
+															>
+																<section className="flex items-center justify-center text-sm font-medium">
+																	{condition}
+																</section>
 															</section>
-														</section>
-													);
-												})}
-											</div>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
+														);
+													})}
+												</div>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
 							/>
 
 							<FormField
