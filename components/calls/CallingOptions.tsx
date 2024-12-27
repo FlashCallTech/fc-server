@@ -28,6 +28,8 @@ import {
 	fetchFCMToken,
 	sendNotification,
 	backendUrl,
+	maskNumbers,
+	sendCallNotification,
 } from "@/lib/utils";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import NotifyConsentSheet from "../client/NotifyConsentSheet";
@@ -404,37 +406,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						});
 					}
 
-					const fcmToken = await fetchFCMToken(creator.phone as string, "voip");
-
-					if (fcmToken) {
-						try {
-							sendNotification(
-								fcmToken.token,
-								`Incoming ${callType} Call`,
-								`Call Request from ${clientUser.username}`,
-								{
-									created_by_display_name: clientUser.username,
-									callType: call.type,
-									callId: call.id,
-									notificationType: "call.ring",
-								}
-							);
-
-							fcmToken.voip_token &&
-								(await axios.post(`${backendUrl}/send-notification`, {
-									deviceToken: fcmToken.voip_token,
-									message: `Incoming ${callType} Call Request from ${clientUser.username}`,
-									payload: {
-										created_by_display_name: clientUser.username,
-										callType: call.type,
-										callId: call.id,
-										notificationType: "call.ring",
-									},
-								}));
-						} catch (error) {
-							console.warn(error);
-						}
-					}
+					await sendCallNotification(
+						creator.phone as string,
+						callType,
+						clientUser.username,
+						call,
+						"call.ring",
+						fetchFCMToken,
+						sendNotification,
+						backendUrl as string
+					);
 
 					await fetch(`${backendBaseUrl}/calls/registerCall`, {
 						method: "POST",

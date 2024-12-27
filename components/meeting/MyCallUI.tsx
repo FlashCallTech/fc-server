@@ -9,7 +9,9 @@ import { analytics, db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { increment, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
 import {
+	backendUrl,
 	fetchFCMToken,
+	sendCallNotification,
 	sendNotification,
 	updateFirestoreCallServices,
 } from "@/lib/utils";
@@ -327,24 +329,16 @@ const MyCallUI = () => {
 			setRedirecting(false);
 			clearTimeout(autoDeclineTimeout);
 
-			const fcmToken = await fetchFCMToken(expert?.custom?.phone);
-			if (fcmToken) {
-				sendNotification(
-					fcmToken,
-					`Missed ${callType} Call Request`,
-					`Call Request from ${maskNumbers(
-						outgoingCall?.state?.createdBy?.name || "Flashcall User"
-					)}`,
-					{
-						created_by_display_name: maskNumbers(
-							outgoingCall?.state?.createdBy?.name || "Flashcall User"
-						),
-						callType: callType,
-						callId: outgoingCall.id,
-						notificationType: "call.missed",
-					}
-				);
-			}
+			await sendCallNotification(
+				expert?.custom?.phone as string,
+				callType,
+				currentUser?.username as string,
+				call!,
+				"call.missed",
+				fetchFCMToken,
+				sendNotification,
+				backendUrl as string
+			);
 
 			if (sessionStorage.getItem(`callRejected-${outgoingCall.id}`)) return;
 
@@ -401,22 +395,16 @@ const MyCallUI = () => {
 			setConnecting(false);
 			setRedirecting(false);
 
-			const fcmToken = await fetchFCMToken(expert?.custom?.phone);
-			if (fcmToken) {
-				sendNotification(
-					fcmToken,
-					`Missed ${callType} Call Request`,
-					`Call Request from ${outgoingCall?.state?.createdBy?.name}`,
-					{
-						created_by_display_name: maskNumbers(
-							outgoingCall?.state?.createdBy?.name || "Flashcall User"
-						),
-						callType: callType,
-						callId: outgoingCall.id,
-						notificationType: "call.missed",
-					}
-				);
-			}
+			await sendCallNotification(
+				expert?.custom?.phone as string,
+				callType,
+				currentUser?.username as string,
+				call!,
+				"call.missed",
+				fetchFCMToken,
+				sendNotification,
+				backendUrl as string
+			);
 
 			const defaultMessage = {
 				title: `${expert?.custom?.name || "User"} is not answering`,
@@ -448,22 +436,16 @@ const MyCallUI = () => {
 				"Idle"
 			);
 
-			const fcmToken = await fetchFCMToken(expert?.custom?.phone);
-			if (fcmToken) {
-				sendNotification(
-					fcmToken,
-					`Missed ${callType} Call Request`,
-					`Call Request from ${outgoingCall?.state?.createdBy?.name}`,
-					{
-						created_by_display_name: maskNumbers(
-							outgoingCall?.state?.createdBy?.name || "Flashcall User"
-						),
-						callType: callType,
-						callId: outgoingCall.id,
-						notificationType: "call.missed",
-					}
-				);
-			}
+			await sendCallNotification(
+				expert?.custom?.phone as string,
+				callType,
+				currentUser?.username as string,
+				call!,
+				"call.missed",
+				fetchFCMToken,
+				sendNotification,
+				backendUrl as string
+			);
 		};
 
 		if (outgoingCall?.state?.callingState === CallingState.RINGING) {
