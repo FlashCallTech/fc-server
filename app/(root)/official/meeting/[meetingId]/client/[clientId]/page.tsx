@@ -7,7 +7,6 @@ import {
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { useParams, useRouter } from "next/navigation";
-
 import { useGetCallById } from "@/hooks/useGetCallById";
 import MeetingSetup from "@/components/meeting/MeetingSetup";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -15,6 +14,8 @@ import MeetingRoom from "@/components/official/MeetingRoom";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
+import Image from "next/image";
+import ContentLoading from "@/components/shared/ContentLoading";
 
 const MeetingPage = () => {
 	const { meetingId, clientId } = useParams();
@@ -27,53 +28,54 @@ const MeetingPage = () => {
 	} = useCurrentUsersContext();
 	const { call, isCallLoading } = useGetCallById(meetingId);
 
-	// console.log(meetingId, clientId);
+	const [isInitializing, setIsInitializing] = useState(false);
 
-	useEffect(() => {
-		const fetchAuthToken = async (client: any, source: string) => {
-			try {
-				const response = await axios.post(
-					`${backendBaseUrl}/otp/createSessionToken`,
-					{
-						user: client,
-						source,
-					}
-				);
-				return response.data.sessionToken;
-			} catch (error) {
-				console.error("Error fetching session token:", error);
-				return null;
-			}
+	const fetchAuthToken = async (client: any, source: string) => {
+		try {
+			const response = await axios.post(
+				`${backendBaseUrl}/otp/createSessionToken`,
+				{
+					user: client,
+					source,
+				}
+			);
+			return response.data.sessionToken;
+		} catch (error) {
+			console.error("Error fetching session token:", error);
+			return null;
+		}
+	};
+
+	const initializeUser = async () => {
+		setIsInitializing(true);
+		const client = {
+			_id: clientId as string,
+			username: `guest_${clientId}`,
+			phone: "+1234567890",
+			fullName: "Official User",
+			firstName: "Official",
+			lastName: "User",
+			photo:
+				"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
+			role: "client",
+			bio: "This is an Official user.",
+			walletBalance: 44,
+			gender: "male",
+			dob: "2000-01-01",
 		};
 
-		// If currentUser is not present, set with hardcoded data
+		const authToken = await fetchAuthToken(client, "official");
+		if (authToken) {
+			setAuthToken(authToken);
+			setClientUser(client);
+			refreshCurrentUser();
+		}
+		setIsInitializing(false);
+	};
+
+	useEffect(() => {
 		if (!currentUser) {
-			const client = {
-				_id: clientId as string,
-				username: `guest_${clientId}`,
-				phone: "+1234567890",
-				fullName: "Official User",
-				firstName: "Official",
-				lastName: "User",
-				photo:
-					"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
-				role: "client",
-				bio: "This is an Official user.",
-				walletBalance: 44,
-				gender: "male",
-				dob: "2000-01-01",
-			};
-
-			const fetchToken = async () => {
-				const authToken = await fetchAuthToken(client, "official");
-				if (authToken) {
-					setAuthToken(authToken);
-					setClientUser(client);
-					refreshCurrentUser();
-				}
-			};
-
-			fetchToken();
+			initializeUser();
 		}
 
 		const preventBackNavigation = () => {
@@ -100,9 +102,10 @@ const MeetingPage = () => {
 						</p>
 						<button
 							className="px-6 py-3 bg-blue-600 text-white text-lg rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300"
-							onClick={() => console.log("Nice")}
+							onClick={initializeUser}
+							disabled={isInitializing}
 						>
-							Authenticate
+							{isInitializing ? "Authenticating..." : "Authenticate"}
 						</button>
 					</div>
 				</div>
@@ -110,11 +113,26 @@ const MeetingPage = () => {
 		);
 	}
 
-	// user or call information is still loading
 	if ((currentUser && isCallLoading) || fetchingUser)
 		return (
-			<div className="flex flex-col w-full items-center justify-center h-screen gap-7">
-				<SinglePostLoader />
+			<div className="flex flex-col w-full items-center justify-center h-screen">
+				{!fetchingUser ? (
+					<SinglePostLoader />
+				) : (
+					<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
+						<ContentLoading />
+						<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
+							Fetching Participant&apos;s Details{" "}
+							<Image
+								src="/icons/loading-circle.svg"
+								alt="Loading..."
+								width={24}
+								height={24}
+								priority
+							/>
+						</p>
+					</div>
+				)}
 			</div>
 		);
 
@@ -130,7 +148,6 @@ const MeetingPage = () => {
 		);
 	}
 
-	// user is allowed to join the call
 	const Allowed =
 		call.isCreatedByMe ||
 		call.state.members.find((m) => m.user_id === currentUser?._id);
@@ -145,7 +162,6 @@ const MeetingPage = () => {
 			</div>
 		);
 
-	// Render the main meeting page
 	return (
 		<main className="h-full w-full bg-dark-1">
 			<StreamCall call={call}>
@@ -157,7 +173,6 @@ const MeetingPage = () => {
 	);
 };
 
-// MeetingRoomWrapper component
 const MeetingRoomWrapper = ({ call }: any) => {
 	const { useCallEndedAt } = useCallStateHooks();
 	const callEndedAt = useCallEndedAt();
