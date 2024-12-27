@@ -17,6 +17,7 @@ import GetRandomImage from "@/utils/GetRandomImage";
 import { Call } from "@stream-io/video-react-sdk";
 import { clientUser, creatorUser, Service } from "@/types";
 import { getDownloadURL, ref } from "firebase/storage";
+import axios from "axios";
 
 const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 const key_secret = process.env.NEXT_PUBLIC_RAZORPAY_SECRET;
@@ -656,7 +657,6 @@ export const fetchFCMToken = async (phone: string, tokenType?: string) => {
 		return null;
 	}
 };
-
 // Function to send notification
 export const sendNotification = async (
 	token: string,
@@ -941,4 +941,63 @@ export const fetchExchangeRate = async (): Promise<number> => {
 		retries++;
 	}
 	throw new Error("Unable to fetch exchange rate after multiple attempts.");
+};
+
+interface FCMToken {
+	token: string;
+	voip_token: string;
+}
+
+export const sendCallNotification = async (
+	creatorPhone: string,
+	callType: string,
+	clientUsername: string,
+	call: Call,
+	notificationType: string,
+	fetchFCMToken: (phone: string, type: string) => Promise<FCMToken | null>,
+	sendNotification: (
+		token: string,
+		title: string,
+		message: string,
+		payload: object
+	) => void,
+	backendUrl: string
+) => {
+	const fcmToken = await fetchFCMToken(creatorPhone, "voip");
+
+	if (fcmToken) {
+		try {
+			// Send push notification for regular FCM
+			sendNotification(
+				fcmToken.token,
+				`Incoming ${callType} Call`,
+				`Call Request from ${clientUsername}`,
+				{
+					created_by_display_name: maskNumbers(
+						clientUsername || "Flashcall User"
+					),
+					callType: call.type,
+					callId: call.id,
+					notificationType,
+				}
+			);
+
+			if (fcmToken.voip_token) {
+				await axios.post(`${backendUrl}/send-notification`, {
+					deviceToken: fcmToken.voip_token,
+					message: `Incoming ${callType} Call Request from ${clientUsername}`,
+					payload: {
+						created_by_display_name: maskNumbers(
+							clientUsername || "Flashcall User"
+						),
+						callType: call.type,
+						callId: call.id,
+						notificationType,
+					},
+				});
+			}
+		} catch (error) {
+			console.warn(error);
+		}
+	}
 };

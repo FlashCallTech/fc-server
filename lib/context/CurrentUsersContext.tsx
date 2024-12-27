@@ -447,21 +447,6 @@ export const CurrentUsersProvider = ({
 		}
 	}, [currentUser?._id, authToken]);
 
-	if (!userFetched) {
-		// Render splash screen while loading
-		return (
-			<section className="absolute bg-[#121319] top-0 left-0 flex justify-center items-center h-screen w-full z-40">
-				<Image
-					src="/icons/logo_splashScreen.png"
-					alt="Loading..."
-					width={500}
-					height={500}
-					className="w-36 h-36 animate-pulse"
-				/>
-			</section>
-		);
-	}
-
 	// console.log(authToken, currentUser, clientUser);
 
 	// Provide the context value to children

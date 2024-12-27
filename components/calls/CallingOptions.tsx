@@ -28,6 +28,8 @@ import {
 	fetchFCMToken,
 	sendNotification,
 	backendUrl,
+	maskNumbers,
+	sendCallNotification,
 } from "@/lib/utils";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import NotifyConsentSheet from "../client/NotifyConsentSheet";
@@ -82,7 +84,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleTabClose = () => {
 		const chatRequestId = localStorage.getItem("chatRequestId");
 		const data = chatRequestId;
-		const url = `${backendBaseUrl}endChat/rejectChat`; // Example endpoint
+		const url = `${backendBaseUrl}endChat/rejectChat`;
 		navigator.sendBeacon(url, data);
 	};
 
@@ -97,7 +99,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
 	}, [isAuthSheetOpen, setAuthenticationSheetOpen]);
 
-	// Logic to show the updated creator services in real-time
 	useEffect(() => {
 		if (!creator?._id || !creator?.phone) return;
 
@@ -118,25 +119,45 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				const prices = region === "Global" ? data.globalPrices : data.prices;
 				const services = data.services;
 
-				// Update creator services in state
-				setUpdatedCreator((prev) => ({
-					...prev,
-					videoRate:
+				// Check if state really needs updating
+				setUpdatedCreator((prev) => {
+					const newVideoRate =
 						region === "Global"
 							? prices?.videoCall ?? creator.globalVideoRate
-							: prices?.videoCall ?? creator.videoRate,
-					audioRate:
+							: prices?.videoCall ?? creator.videoRate;
+					const newAudioRate =
 						region === "Global"
 							? prices?.audioCall ?? creator.globalAudioRate
-							: prices?.audioCall ?? creator.audioRate,
-					chatRate:
+							: prices?.audioCall ?? creator.audioRate;
+					const newChatRate =
 						region === "Global"
 							? prices?.chat ?? creator.globalChatRate
-							: prices?.chat ?? creator.chatRate,
-					videoAllowed: services?.videoCall ?? false,
-					audioAllowed: services?.audioCall ?? false,
-					chatAllowed: services?.chat ?? false,
-				}));
+							: prices?.chat ?? creator.chatRate;
+					const newVideoAllowed = services?.videoCall ?? false;
+					const newAudioAllowed = services?.audioCall ?? false;
+					const newChatAllowed = services?.chat ?? false;
+
+					if (
+						newVideoRate !== prev.videoRate ||
+						newAudioRate !== prev.audioRate ||
+						newChatRate !== prev.chatRate ||
+						newVideoAllowed !== prev.videoAllowed ||
+						newAudioAllowed !== prev.audioAllowed ||
+						newChatAllowed !== prev.chatAllowed
+					) {
+						return {
+							...prev,
+							videoRate: newVideoRate,
+							audioRate: newAudioRate,
+							chatRate: newChatRate,
+							videoAllowed: newVideoAllowed,
+							audioAllowed: newAudioAllowed,
+							chatAllowed: newChatAllowed,
+						};
+					}
+
+					return prev;
+				});
 
 				// Check if any of the services are enabled
 				const hasActiveService =
@@ -188,7 +209,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					);
 				}
 
-				// Clean up both status listeners
 				return () => {
 					unsubscribeStatus();
 					if (unsubscribeClientStatus) unsubscribeClientStatus();
@@ -196,9 +216,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			}
 		});
 
-		// Clean up the services listener
 		return () => unsubscribe();
-	}, [creator._id, creator.phone, isAuthSheetOpen]);
+	}, [creator._id, creator.phone, region]);
 
 	useEffect(() => {
 		if (!chatReqSent) {
@@ -237,7 +256,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							localStorage.removeItem("chatRequestId");
 							localStorage.removeItem("chatId");
 							localStorage.removeItem("CallId");
-							// updateExpertStatus(creator.phone as string, "Online");
 							unsubscribe();
 						} else if (
 							data.status === "accepted" &&
@@ -268,7 +286,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}, 1000);
 
 		return () => clearInterval(intervalId);
-	}, [clientUser?._id, router, chatReqSent]);
+	}, [router, chatReqSent]);
 
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
@@ -404,37 +422,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						});
 					}
 
-					const fcmToken = await fetchFCMToken(creator.phone as string, "voip");
-
-					if (fcmToken) {
-						try {
-							sendNotification(
-								fcmToken.token,
-								`Incoming ${callType} Call`,
-								`Call Request from ${clientUser.username}`,
-								{
-									created_by_display_name: clientUser.username,
-									callType: call.type,
-									callId: call.id,
-									notificationType: "call.ring",
-								}
-							);
-
-							fcmToken.voip_token &&
-								(await axios.post(`${backendUrl}/send-notification`, {
-									deviceToken: fcmToken.voip_token,
-									message: `Incoming ${callType} Call Request from ${clientUser.username}`,
-									payload: {
-										created_by_display_name: clientUser.username,
-										callType: call.type,
-										callId: call.id,
-										notificationType: "call.ring",
-									},
-								}));
-						} catch (error) {
-							console.warn(error);
-						}
-					}
+					await sendCallNotification(
+						creator.phone as string,
+						callType,
+						clientUser.username,
+						call,
+						"call.ring",
+						fetchFCMToken,
+						sendNotification,
+						backendUrl as string
+					);
 
 					await fetch(`${backendBaseUrl}/calls/registerCall`, {
 						method: "POST",

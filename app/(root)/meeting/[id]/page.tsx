@@ -8,7 +8,6 @@ import {
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { useParams, useRouter } from "next/navigation";
-import Loader from "@/components/shared/Loader";
 import { useToast } from "@/components/ui/use-toast";
 import MeetingRoom from "@/components/meeting/MeetingRoom";
 import { useGetCallById } from "@/hooks/useGetCallById";
@@ -163,7 +162,12 @@ const CallEnded = ({ toast, router, call }: any) => {
 				setLoading(true);
 
 				if (userType === "client") {
-					await updateExpertStatus(currentUser?.global ? currentUser?.email as string : currentUser?.phone as string, "Idle");
+					await updateExpertStatus(
+						currentUser?.global
+							? (currentUser?.email as string)
+							: (currentUser?.phone as string),
+						"Idle"
+					);
 				}
 
 				await updateExpertStatus(expertPhone, "Online");
