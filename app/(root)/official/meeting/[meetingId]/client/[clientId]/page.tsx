@@ -52,14 +52,14 @@ const MeetingPage = () => {
 				_id: clientId as string,
 				username: `guest_${clientId}`,
 				phone: "+1234567890",
-				fullName: "Guest User",
-				firstName: "Guest",
+				fullName: "Official User",
+				firstName: "Official",
 				lastName: "User",
 				photo:
 					"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
 				role: "client",
-				bio: "This is a guest user.",
-				walletBalance: 0,
+				bio: "This is an Official user.",
+				walletBalance: 44,
 				gender: "male",
 				dob: "2000-01-01",
 			};

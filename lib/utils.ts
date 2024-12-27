@@ -637,13 +637,24 @@ export const stopMediaStreams = () => {
 
 // Function to fetch the FCM token
 export const fetchFCMToken = async (phone: string, tokenType?: string) => {
-	const fcmTokenRef = doc(db, "FCMtoken", phone);
-	const fcmTokenDoc = await getDoc(fcmTokenRef);
-	return fcmTokenDoc.exists()
-		? tokenType === "voip"
-			? fcmTokenDoc.data()
-			: fcmTokenDoc.data().token
-		: null;
+	try {
+		const fcmTokenRef = doc(db, "FCMtoken", phone);
+		const fcmTokenDoc = await getDoc(fcmTokenRef);
+
+		if (fcmTokenDoc.exists()) {
+			const data = fcmTokenDoc.data();
+			if (tokenType === "voip") {
+				return data;
+			}
+			return data.token || null;
+		} else {
+			console.warn(`No FCM token found for phone number: ${phone}`);
+			return null;
+		}
+	} catch (error) {
+		console.error("Error fetching FCM token:", error);
+		return null;
+	}
 };
 
 // Function to send notification
@@ -898,40 +909,36 @@ export const fetchExchangeRate = async (): Promise<number> => {
 	const baseURL1 = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@";
 	const baseURL2 = ".currency-api.pages.dev/v1/currencies/usd.json";
 
-	while (retries<maxRetries) {
-	  const yyyy = date.getFullYear();
-	  const mm = String(date.getMonth() + 1).padStart(2, "0");
-	  const dd = String(date.getDate()).padStart(2, "0");
-	  const formattedDate = `${yyyy}-${mm}-${dd}`;
+	while (retries < maxRetries) {
+		const yyyy = date.getFullYear();
+		const mm = String(date.getMonth() + 1).padStart(2, "0");
+		const dd = String(date.getDate()).padStart(2, "0");
+		const formattedDate = `${yyyy}-${mm}-${dd}`;
 
-	  try {
-		const rateResponse = await fetch(
-		  `${baseURL1}${formattedDate}/v1/currencies/usd.json`,
-		  {method: "GET"}
-		)
-		  .catch(() => fetch(
-			`https://${formattedDate}${baseURL2}`,
-			{method: "GET"})
-		  );
+		try {
+			const rateResponse = await fetch(
+				`${baseURL1}${formattedDate}/v1/currencies/usd.json`,
+				{ method: "GET" }
+			).catch(() =>
+				fetch(`https://${formattedDate}${baseURL2}`, { method: "GET" })
+			);
 
-		if (rateResponse.ok) {
-		  const rateData = await rateResponse.json();
-		  if (rateData?.usd?.inr) {
-			return Number(rateData.usd.inr.toFixed(2));
-		  }
+			if (rateResponse.ok) {
+				const rateData = await rateResponse.json();
+				if (rateData?.usd?.inr) {
+					return Number(rateData.usd.inr.toFixed(2));
+				}
+			}
+		} catch (error) {
+			console.error(
+				`Failed to fetch exchange rate for date ${formattedDate}:`,
+				error
+			);
 		}
-	  } catch (error) {
-		console.error(
-		  `Failed to fetch exchange rate for date ${formattedDate}:`,
-		  error
-		);
-	  }
 
-	  // Move to the previous day
-	  date.setDate(date.getDate() - 1);
-	  retries++;
+		// Move to the previous day
+		date.setDate(date.getDate() - 1);
+		retries++;
 	}
-	throw new Error(
-	  "Unable to fetch exchange rate after multiple attempts."
-	);
-  };
+	throw new Error("Unable to fetch exchange rate after multiple attempts.");
+};

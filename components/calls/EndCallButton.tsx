@@ -36,9 +36,9 @@ const EndCallButton = () => {
 
 	return (
 		<>
-			<Button
+			<button
 				onClick={endCall}
-				className="bg-red-500 font-semibold hover:opacity-80 h-11 w-11 rounded-full p-0 hoverScaleDownEffect"
+				className="flex items-center justify-center bg-red-500 font-semibold hover:opacity-80 h-11 w-11 rounded-full p-0 hoverScaleDownEffect"
 			>
 				<Image
 					src="/icons/endCall.png"
@@ -47,7 +47,7 @@ const EndCallButton = () => {
 					height={100}
 					className="w-6 h-6"
 				/>
-			</Button>
+			</button>
 
 			{showDialog && (
 				<EndCallDecision

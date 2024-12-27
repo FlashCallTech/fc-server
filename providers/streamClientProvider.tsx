@@ -25,6 +25,7 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 		console.log(currentUser);
 		const initializeVideoClient = async (retries = 3) => {
 			if (!currentUser || !userId) {
+				console.error("No current user or user ID");
 				return;
 			}
 
@@ -42,6 +43,10 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 						currentUser.global ?? false,
 						currentUser.email ?? null
 					);
+
+					if (!token) {
+						throw new Error("Token was not generated successfully");
+					}
 
 					const client = new StreamVideoClient({
 						apiKey: API_KEY,
@@ -65,6 +70,7 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 							timeoutErrorMessage: "Connection Timed Out",
 						},
 					});
+
 					setVideoClient(client);
 					return;
 				} catch (error) {
