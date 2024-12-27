@@ -22,7 +22,6 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 	const fullName = getDisplayName({ firstName, lastName, username });
 
 	useEffect(() => {
-		console.log(currentUser);
 		const initializeVideoClient = async (retries = 3) => {
 			if (!currentUser || !userId) {
 				console.error("No current user or user ID");
