@@ -638,15 +638,25 @@ export const stopMediaStreams = () => {
 
 // Function to fetch the FCM token
 export const fetchFCMToken = async (phone: string, tokenType?: string) => {
-	const fcmTokenRef = doc(db, "FCMtoken", phone);
-	const fcmTokenDoc = await getDoc(fcmTokenRef);
-	return fcmTokenDoc.exists()
-		? tokenType === "voip"
-			? fcmTokenDoc.data()
-			: fcmTokenDoc.data().token
-		: null;
-};
+	try {
+		const fcmTokenRef = doc(db, "FCMtoken", phone);
+		const fcmTokenDoc = await getDoc(fcmTokenRef);
 
+		if (fcmTokenDoc.exists()) {
+			const data = fcmTokenDoc.data();
+			if (tokenType === "voip") {
+				return data;
+			}
+			return data.token || null;
+		} else {
+			console.warn(`No FCM token found for phone number: ${phone}`);
+			return null;
+		}
+	} catch (error) {
+		console.error("Error fetching FCM token:", error);
+		return null;
+	}
+};
 // Function to send notification
 export const sendNotification = async (
 	token: string,
