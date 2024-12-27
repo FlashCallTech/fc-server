@@ -14,6 +14,9 @@ interface callDetails {
 	commissionAmt: number;
 	commissionRate: number;
 	amountAdded: number;
+	activePg: string;
+	pgChargesRate: number;
+	pgChargesAmt: number;
 }
 
 const TransactionInvoice = ({
@@ -39,7 +42,7 @@ const TransactionInvoice = ({
 			(call?.amount - call?.amount * 0.8));
 	const gstCommissionAmt = callTransaction?.gstAmt ?? 0;
 	const totalCommissionAmt = Number((commissionAmt + gstCommissionAmt).toFixed(2));
-	const amtDue = Number(call?.global ? (call?.amountINR - totalCommissionAmt).toFixed(2) : (call?.amount - totalCommissionAmt).toFixed(2))
+	const amtDue = Number((callTransaction?.amountAdded)?.toFixed(2)) || Number(call?.global ? (call?.amountINR - totalCommissionAmt).toFixed(2) : (call?.amount - totalCommissionAmt).toFixed(2))
 
 	useEffect(() => {
 		const fetchClient = async () => {
@@ -187,6 +190,12 @@ const TransactionInvoice = ({
 									</td>
 									<td className="p-2 border border-gray-300">
 										{`${call?.global ? `INR ${call.amountINR.toFixed(2)}` : `INR ${call.amount}`}`}
+									</td>
+								</tr>
+								<tr>
+									<td className="p-2 border border-gray-300">{`Payment Gateway Charges (${callTransaction?.pgChargesRate ?? 2.5}%)`}</td>
+									<td className="p-2 border border-gray-300">
+										{`INR ${callTransaction?.pgChargesAmt}`}
 									</td>
 								</tr>
 								<tr>
