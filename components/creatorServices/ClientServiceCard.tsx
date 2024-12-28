@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { formatDateTime } from "@/lib/utils";
 import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
-import { Types } from "mongoose";
 
 const ClientServiceCard = ({
 	service,
@@ -139,7 +138,10 @@ const ClientServiceCard = ({
 
 				{!isServiceSelectable && (
 					<p className="mt-2 text-sm text-gray-500 mb-2.5">
-						You are not eligible for New User Discounts.
+						You are not eligible for{" "}
+						{isAlreadyUtilizedByClient
+							? "this Discount"
+							: "New User Discounts."}
 					</p>
 				)}
 

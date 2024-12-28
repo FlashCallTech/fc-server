@@ -58,8 +58,8 @@ export const sidebarLinksCreator = [
 	},
 	{
 		imgURL: "/icons/orderHistory.svg",
-		route: "/calender",
-		label: "Calender",
+		route: "/calendar",
+		label: "Calendar",
 		protected: true,
 	},
 	{
