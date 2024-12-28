@@ -470,7 +470,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleClickOption = async (callType: string) => {
-		setcallInitiated(true);
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",
@@ -483,6 +482,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 
 		try {
+			setcallInitiated(true);
+
 			if (!clientUser) {
 				setIsAuthSheetOpen(true);
 				return;
