@@ -6,6 +6,7 @@ import Razorpay from "razorpay";
 import {
 	arrayUnion,
 	doc,
+	DocumentData,
 	getDoc,
 	onSnapshot,
 	setDoc,
@@ -992,6 +993,69 @@ export const sendCallNotification = async (
 						),
 						callType: call.type,
 						callId: call.id,
+						notificationType,
+					},
+				});
+			}
+		} catch (error) {
+			console.warn(error);
+		}
+	}
+};
+
+export const sendChatNotification = async (
+	creatorPhone: string,
+	callType: string,
+	clientUsername: string,
+	notificationType: string,
+	chatRequestData: DocumentData,
+	fetchFCMToken: (phone: string, type: string) => Promise<FCMToken | null>,
+	sendNotification: (
+		token: string,
+		title: string,
+		message: string,
+		payload: object
+	) => void,
+	backendUrl: string
+) => {
+	const fcmToken = await fetchFCMToken(creatorPhone, "voip");
+
+	if (fcmToken) {
+		try {
+			sendNotification(
+				fcmToken.token,
+				`Incoming Chat Request`,
+				`Chat Request from ${clientUsername}`,
+				{
+					clientId: chatRequestData.clientId,
+					clientName: chatRequestData.clientName,
+					clientPhone: chatRequestData.clientPhone,
+					clientImg: chatRequestData.clientImg,
+					creatorId: chatRequestData.creatorId,
+					creatorName: chatRequestData.creatorName,
+					creatorPhone: chatRequestData.creatorPhone,
+					creatorImg: chatRequestData.creatorImg,
+					chatId: chatRequestData.chatId,
+					chatRequestId: chatRequestData.id,
+					callId: chatRequestData.callId,
+					chatRate: chatRequestData.chatRate,
+					client_first_seen: chatRequestData.client_first_seen,
+					creator_first_seen: chatRequestData.creator_first_seen,
+					createdAt: String(chatRequestData.createdAt),
+					notificationType: "chat.ring",
+				}
+			);
+
+			if (fcmToken.voip_token) {
+				await axios.post(`${backendUrl}/send-notification`, {
+					deviceToken: fcmToken.voip_token,
+					message: `Incoming ${callType} Call Request from ${clientUsername}`,
+					payload: {
+						created_by_display_name: maskNumbers(
+							clientUsername || "Flashcall User"
+						),
+						chatId: chatRequestData.chatId,
+						chatRequestId: chatRequestData.id,
 						notificationType,
 					},
 				});
