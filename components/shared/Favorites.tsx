@@ -176,4 +176,6 @@ const Favorites = memo(
 	}
 );
 
+Favorites.displayName = "Favorites";
+
 export default Favorites;

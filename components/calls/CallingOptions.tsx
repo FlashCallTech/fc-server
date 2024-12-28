@@ -819,4 +819,6 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	);
 });
 
+CallingOptions.displayName = "CallingOptions";
+
 export default CallingOptions;
