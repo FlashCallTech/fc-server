@@ -16,6 +16,7 @@ import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 import Image from "next/image";
 import ContentLoading from "@/components/shared/ContentLoading";
+import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 
 const MeetingPage = () => {
 	const { meetingId, clientId } = useParams();
@@ -26,6 +27,13 @@ const MeetingPage = () => {
 		setAuthToken,
 		refreshCurrentUser,
 	} = useCurrentUsersContext();
+
+	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
+		if (currentUser?._id) {
+			navigator.sendBeacon(`${backendBaseUrl}/official/call/end`);
+		}
+	});
+
 	const { call, isCallLoading } = useGetCallById(meetingId);
 
 	const [isInitializing, setIsInitializing] = useState(false);

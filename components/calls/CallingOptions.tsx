@@ -35,7 +35,6 @@ import { trackPixelEvent } from "@/lib/analytics/pixel";
 import NotifyConsentSheet from "../client/NotifyConsentSheet";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import usePlatform from "@/hooks/usePlatform";
-import axios from "axios";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -410,7 +409,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 							Creator_ID: creator._id,
 							Time_Duration_Available: maxCallDuration,
-							Walletbalace_Available: clientUser?.walletBalance,
+							Walletbalance_Available: clientUser?.walletBalance,
 						});
 					} else {
 						trackEvent("BookCall_Video_Initiated", {
@@ -418,7 +417,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
 							Creator_ID: creator._id,
 							Time_Duration_Available: maxCallDuration,
-							Walletbalace_Available: clientUser?.walletBalance,
+							Walletbalance_Available: clientUser?.walletBalance,
 						});
 					}
 
@@ -471,6 +470,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	};
 
 	const handleClickOption = async (callType: string) => {
+		setcallInitiated(true);
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",
@@ -483,8 +483,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}
 
 		try {
-			setcallInitiated(true);
-
 			if (!clientUser) {
 				setIsAuthSheetOpen(true);
 				return;
@@ -511,7 +509,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							utm_source: "google",
 							Creator_ID: creator._id,
 							status: onlineStatus,
-							Walletbalace_Available: clientUser?.walletBalance,
+							Walletbalance_Available: clientUser?.walletBalance,
 						});
 
 						trackPixelEvent("Audio Call Booked", {
@@ -524,7 +522,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							utm_source: "google",
 							Creator_ID: creator._id,
 							status: onlineStatus,
-							Walletbalace_Available: clientUser?.walletBalance,
+							Walletbalance_Available: clientUser?.walletBalance,
 						});
 
 						trackPixelEvent("Video Call Booked", {
@@ -593,7 +591,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			trackEvent("BookCall_Chat_Clicked", {
 				Creator_ID: creator._id,
 				status: onlineStatus,
-				Walletbalace_Available: clientUser?.walletBalance,
+				Walletbalance_Available: clientUser?.walletBalance,
 			});
 
 			trackPixelEvent("Chat Booked", {
