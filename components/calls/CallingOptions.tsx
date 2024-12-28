@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useMemo, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { audio, chat, video } from "@/constants/icons";
 import { creatorUser } from "@/types";
@@ -28,20 +28,18 @@ import {
 	fetchFCMToken,
 	sendNotification,
 	backendUrl,
-	maskNumbers,
 	sendCallNotification,
 } from "@/lib/utils";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import NotifyConsentSheet from "../client/NotifyConsentSheet";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import usePlatform from "@/hooks/usePlatform";
-import axios from "axios";
 
 interface CallingOptions {
 	creator: creatorUser;
 }
 
-const CallingOptions = ({ creator }: CallingOptions) => {
+const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
 	const client = useStreamVideoClient();
@@ -159,16 +157,13 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					return prev;
 				});
 
-				// Check if any of the services are enabled
 				const hasActiveService =
 					services?.videoCall || services?.audioCall || services?.chat;
 
-				// Now listen for the creator's status
 				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
 					const statusData = statusDoc.data();
 
 					if (statusData) {
-						// Prioritize loginStatus
 						if (statusData.loginStatus === true) {
 							if (statusData.status === "Busy") {
 								setOnlineStatus("Busy");
@@ -182,7 +177,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						} else if (statusData.loginStatus === false) {
 							setOnlineStatus("Offline");
 						} else {
-							// Fallback to services and status
 							if (statusData.status === "Busy") {
 								setOnlineStatus("Busy");
 							} else {
@@ -192,7 +186,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}
 				});
 
-				// Listen for the client's status only if clientUser is not null
 				let unsubscribeClientStatus: any;
 				if (clientUser) {
 					unsubscribeClientStatus = onSnapshot(
@@ -228,7 +221,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const chatRequestId = localStorage.getItem("chatRequestId");
 
 			if (chatRequestId && chatReqSent) {
-				clearInterval(intervalId); // Clear the interval once the ID is found
+				clearInterval(intervalId);
 
 				const chatRequestDoc = doc(db, "chatRequests", chatRequestId);
 
@@ -669,13 +662,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	];
 
 	// Sort services based on priority and enabled status
-	const sortedServices = services.sort((a, b) => {
-		if (a.enabled && !b.enabled) return -1;
-		if (!a.enabled && b.enabled) return 1;
+	const sortedServices = useMemo(() => {
+		return services.sort((a, b) => {
+			if (a.enabled && !b.enabled) return -1;
+			if (!a.enabled && b.enabled) return 1;
 
-		const priority: any = { video: 1, audio: 2, chat: 3 };
-		return priority[a.type] - priority[b.type];
-	});
+			const priority: Record<string, number> = { video: 1, audio: 2, chat: 3 };
+			return priority[a.type] - priority[b.type];
+		});
+	}, [services]);
 
 	return (
 		<>
@@ -822,6 +817,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			)}
 		</>
 	);
-};
+});
 
 export default CallingOptions;
