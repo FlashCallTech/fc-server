@@ -41,7 +41,7 @@ const MyCallUI = () => {
 	const [connecting, setConnecting] = useState(false);
 	const [connectingCall, setConnectingCall] = useState<Call | null>(null);
 	const [redirecting, setRedirecting] = useState(false);
-	const { getFinalServices } = useSelectedServiceContext();
+	const { getFinalServices, resetServices } = useSelectedServiceContext();
 	let autoDeclineTimeout: NodeJS.Timeout;
 	const router = useRouter();
 	const checkFirestoreSession = (userId: string) => {
@@ -104,6 +104,8 @@ const MyCallUI = () => {
 					: (currentUser?.phone as string),
 				discounts as Service[]
 			);
+
+			resetServices();
 		} catch (error) {
 			console.error("Error handling interrupted call:", error);
 		}
