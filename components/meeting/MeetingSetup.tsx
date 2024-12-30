@@ -49,6 +49,7 @@ const MeetingSetup = ({
 
 	const handleJoinNow = async () => {
 		const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
+		console.log(expert, fcmToken);
 		if (fcmToken) {
 			sendNotification(
 				fcmToken,

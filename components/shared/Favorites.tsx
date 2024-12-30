@@ -7,10 +7,6 @@ import { backendBaseUrl } from "@/lib/utils";
 import UnfollowAlert from "../alerts/UnfollowAlert";
 import { debounce } from "lodash";
 
-interface FavoriteItem {
-	creatorId: creatorUser;
-}
-
 const Favorites = memo(
 	({
 		setMarkedFavorite,
@@ -30,7 +26,7 @@ const Favorites = memo(
 		isFavoritesPath?: boolean;
 	}) => {
 		const [showUnfollowDialog, setShowUnfollowDialog] = useState(false);
-		const [loading, setLoading] = useState(true);
+		const [loading, setLoading] = useState(user?._id ? true : false);
 
 		const fetchFavorites = debounce(
 			async (userId: string, creatorId: string) => {
@@ -72,19 +68,24 @@ const Favorites = memo(
 		}, [handleToggleFavorite]);
 
 		useEffect(() => {
-			if (!user?._id || !creator?._id) return;
+			if (!user?._id || !creator?._id) {
+				setLoading(false);
+				return;
+			}
+
+			setLoading(true);
 
 			fetchFavorites(user._id, creator._id);
-		}, [creator?._id]);
+		}, [user?._id, creator?._id]);
 
 		if (loading) {
 			return (
 				<div
-					className={` flex items-center justify-center w-full hoverScaleDownEffect ${
+					className={`flex items-center justify-center w-full hoverScaleDownEffect ${
 						isFavoritesPath
 							? "p-2 rounded-full "
 							: "h-[36px] w-full rounded-[6px] border border-black"
-					}  ${
+					} ${
 						markedFavorite
 							? isFavoritesPath && "bg-transparent"
 							: "bg-transparent"
@@ -98,6 +99,27 @@ const Favorites = memo(
 						className={`${isFavoritesPath ? "size-4" : "size-6"} invert`}
 						priority
 					/>
+				</div>
+			);
+		}
+
+		// Display fallback UI if user or creator details are missing
+		if (!user?._id || !creator?._id) {
+			return (
+				<div
+					className={`flex items-center justify-center w-full hoverScaleDownEffect cursor-pointer ${
+						isFavoritesPath
+							? "p-2 rounded-full "
+							: "h-[36px] w-full rounded-[6px] border border-black"
+					} ${
+						markedFavorite
+							? isFavoritesPath && "bg-transparent"
+							: "bg-transparent"
+					} flex gap-2 items-center`}
+				>
+					<span className="text-center w-full font-bold text-sm">
+						Authenticate
+					</span>
 				</div>
 			);
 		}

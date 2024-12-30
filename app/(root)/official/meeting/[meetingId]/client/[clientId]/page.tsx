@@ -124,7 +124,7 @@ const MeetingPage = () => {
 	if ((currentUser && isCallLoading) || fetchingUser)
 		return (
 			<div className="flex flex-col w-full items-center justify-center h-screen">
-				{!fetchingUser ? (
+				{fetchingUser ? (
 					<SinglePostLoader />
 				) : (
 					<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">

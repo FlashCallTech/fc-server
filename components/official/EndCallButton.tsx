@@ -1,39 +1,58 @@
 "use client";
 
-import { useCall, useCallStateHooks } from "@stream-io/video-react-sdk";
-
-import { useRouter } from "next/navigation";
-import { Button } from "../ui/button";
+import { useCall } from "@stream-io/video-react-sdk";
+import { useState } from "react";
+import Image from "next/image";
+import EndCallDecision from "../calls/EndCallDecision";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const EndCallButton = () => {
 	const call = useCall();
-	const router = useRouter();
-	const creatorURL = localStorage.getItem("creatorURL");
+	const [showDialog, setShowDialog] = useState(false);
+	const { handleSignout } = useCurrentUsersContext();
 
-	if (!call)
+	if (!call) {
 		throw new Error(
 			"useStreamCall must be used within a StreamCall component."
 		);
-
-	const { useLocalParticipant } = useCallStateHooks();
-	const localParticipant = useLocalParticipant();
-
-	const isMeetingOwner =
-		localParticipant &&
-		call.state.createdBy &&
-		localParticipant.userId === call.state.createdBy.id;
-
-	if (!isMeetingOwner) return null;
+	}
 
 	const endCall = async () => {
-		await call.endCall();
-		router.replace(`${creatorURL ? creatorURL : "/official/home"}`);
+		setShowDialog(true);
+	};
+
+	const handleDecisionDialog = async () => {
+		await call?.endCall().then(() => handleSignout());
+
+		setShowDialog(false);
+	};
+
+	const handleCloseDialog = () => {
+		setShowDialog(false);
 	};
 
 	return (
-		<Button onClick={endCall} className="bg-red-500">
-			End call for everyone
-		</Button>
+		<>
+			<button
+				onClick={endCall}
+				className="flex items-center justify-center bg-red-500 font-semibold hover:opacity-80 h-11 w-11 rounded-full p-0 hoverScaleDownEffect"
+			>
+				<Image
+					src="/icons/endCall.png"
+					alt="End Call"
+					width={100}
+					height={100}
+					className="w-6 h-6"
+				/>
+			</button>
+
+			{showDialog && (
+				<EndCallDecision
+					handleDecisionDialog={handleDecisionDialog}
+					setShowDialog={handleCloseDialog}
+				/>
+			)}
+		</>
 	);
 };
 

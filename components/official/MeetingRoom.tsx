@@ -17,7 +17,7 @@ import { AudioToggleButton } from "../calls/AudioToggleButton";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
 import { Cursor, Typewriter } from "react-simple-typewriter";
-import EndCallButton from "../calls/EndCallButton";
+import EndCallButton from "./EndCallButton";
 import OfficialCallTimer from "@/lib/context/OfficialCallTimerContext";
 import CallTimer from "./CallTimer";
 
