@@ -103,7 +103,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 				>
 					{isDiscountServiceSheetOpen
 						? "Services Sheet Visible"
-						: "Add Services"}
+						: "Add Discount Services"}
 				</section>
 
 				{isDiscountServiceSheetOpen && (
