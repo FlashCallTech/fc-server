@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 // Gender
 export type Gender = "male" | "female" | "other" | undefined;
 
@@ -439,7 +441,9 @@ export interface UpdateCallTransactionParams {
 
 export interface DiscountRule {
 	_id: string;
-	conditions: string[];
+	conditions: [
+		"New User" | "Seasonal Offer" | "30+ Minutes Call" | "60+ Minutes Call"
+	];
 	discountAmount: number;
 	discountType: "percentage" | "flat";
 }
@@ -450,11 +454,14 @@ export interface Service {
 	title: string;
 	description: string;
 	photo: string;
+	type: "all" | "audio" | "video" | "chat";
+	isActive: boolean;
 	currency: "INR" | "USD";
 	discountRules: DiscountRule[];
 	extraDetails?: string;
 	createdAt: string;
 	updatedAt: string;
+	utilizedBy: Types.ObjectId[];
 }
 
 export interface Chat {

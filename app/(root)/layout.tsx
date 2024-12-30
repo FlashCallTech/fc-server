@@ -1,16 +1,12 @@
 "use client";
 
-import React, { ReactNode, useEffect, useState, Suspense, lazy } from "react";
-
+import React, { ReactNode, useEffect, useState } from "react";
+import WalletBalanceProvider from "@/lib/context/WalletBalanceContext";
+import ChatRequestProvider from "@/lib/context/ChatRequestContext";
+import SelectedServiceProvider from "@/lib/context/SelectedServiceContext";
 import StreamVideoProvider from "@/providers/streamClientProvider";
 import CurrentUsersProvider from "@/lib/context/CurrentUsersContext";
 
-const WalletBalanceProvider = lazy(
-	() => import("@/lib/context/WalletBalanceContext")
-);
-const ChatRequestProvider = lazy(
-	() => import("@/lib/context/ChatRequestContext")
-);
 import { initMixpanel } from "@/lib/mixpanel";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
 import axios from "axios";
@@ -21,7 +17,7 @@ import Script from "next/script";
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	const [isMounted, setIsMounted] = useState(false);
 	const [region, setRegion] = useState<"India" | "Global" | null>(null);
-
+	const [isSplashVisible, setIsSplashVisible] = useState(true);
 	useEffect(() => {
 		// Calculate the region based on timezone
 		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -33,15 +29,20 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 		);
 	}, []);
 
-	// Set mounted state once the component is mounted
 	useEffect(() => {
 		setIsMounted(true);
 		initMixpanel();
 		axios.defaults.withCredentials = true;
 	}, []);
 
+	useEffect(() => {
+		if (isMounted) {
+			setIsSplashVisible(false);
+		}
+	}, [isMounted]);
+
 	const renderContent = () => {
-		if (!isMounted) {
+		if (isSplashVisible) {
 			return (
 				<section className="absolute bg-[#121319] top-0 left-0 flex justify-center items-center h-screen w-full z-40">
 					<Image
@@ -50,6 +51,7 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 						width={500}
 						height={500}
 						className="w-36 h-36 animate-pulse"
+						priority
 					/>
 				</section>
 			);
@@ -110,29 +112,22 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	return (
 		<QueryProvider>
 			<CurrentUsersProvider region={region as string}>
-				<Suspense
-					fallback={
-						<section className="absolute bg-[#121319] top-0 left-0 flex justify-center items-center h-screen w-full z-40">
-							<Image
-								src="/icons/logo_splashScreen.png"
-								alt="Loading..."
-								width={500}
-								height={500}
-								className="w-36 h-36 animate-pulse"
-							/>
-						</section>
-					}
-				>
-					<WalletBalanceProvider>
-						<ChatRequestProvider>
+				<WalletBalanceProvider>
+					<ChatRequestProvider>
+						<SelectedServiceProvider>
 							<StreamVideoProvider>
 								<div className="relative min-h-screen w-full">
+									<Script
+										src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD`}
+									/>
+									<Script src="https://checkout.razorpay.com/v1/checkout.js" />
+									<Script src="https://sdk.cashfree.com/js/v3/cashfree.js" />
 									{renderContent()}
 								</div>
 							</StreamVideoProvider>
-						</ChatRequestProvider>
-					</WalletBalanceProvider>
-				</Suspense>
+						</SelectedServiceProvider>
+					</ChatRequestProvider>
+				</WalletBalanceProvider>
 			</CurrentUsersProvider>
 		</QueryProvider>
 	);

@@ -24,12 +24,6 @@ import axios from "axios";
 import Link from "next/link";
 import Image from "next/image";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
-import { motion } from "framer-motion";
-
-const fadeInVariants = {
-	hidden: { opacity: 0, y: 20 },
-	visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-};
 
 const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const {
@@ -43,7 +37,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const [markedFavorite, setMarkedFavorite] = useState(false);
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 
-	const [status, setStatus] = useState<string>("");
+	const [status, setStatus] = useState<string>("Online");
 	const pathname = usePathname();
 	const { toast } = useToast();
 	const creatorURL = pathname || localStorage.getItem("creatorURL");
@@ -71,17 +65,17 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		setCurrentTheme(themeColor);
 		updateCreatorURL(creatorURL);
 		setBodyBackgroundColor("#121319");
-	}, [creator]);
+	}, []);
 
 	useEffect(() => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
 	}, [isAuthSheetOpen]);
 
 	useEffect(() => {
-		if (!creator || !creator?._id || !creator?.phone) return;
+		if (!creator || !creator._id || !creator.phone) return;
 
-		const creatorRef = doc(db, "services", creator?._id);
-		const statusDocRef = doc(db, "userStatus", creator?.phone);
+		const creatorRef = doc(db, "services", creator._id);
+		const statusDocRef = doc(db, "userStatus", creator.phone);
 
 		const unsubscribeServices = onSnapshot(creatorRef, (doc) => {
 			const data = doc.data();
@@ -94,39 +88,36 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
 					const statusData = statusDoc.data();
 					if (statusData) {
-						// Prioritize loginStatus
-						if (statusData.loginStatus === true) {
-							// Check Busy status if loginStatus is true
+						let newStatus = "Offline";
+
+						if (statusData.loginStatus) {
+							// Check Busy status
 							if (statusData.status === "Busy") {
-								setStatus("Busy");
+								newStatus = "Busy";
+							} else if (statusData.status === "Online" && hasActiveService) {
+								newStatus = "Online";
 							} else {
-								setStatus(
-									hasActiveService && statusData.status === "Online"
-										? "Online"
-										: "Offline"
-								);
+								newStatus = "Offline";
 							}
-						} else if (statusData.loginStatus === false) {
-							setStatus("Offline");
 						} else {
-							// Fallback to services and status
-							if (statusData.status === "Busy") {
-								setStatus("Busy");
-							} else {
-								setStatus(hasActiveService ? "Online" : "Offline");
-							}
+							newStatus = "Offline";
+						}
+
+						// Only update status if it has changed
+						if (status !== newStatus) {
+							setStatus(newStatus);
 						}
 					}
 				});
 
-				return () => unsubscribeStatus();
+				return () => unsubscribeStatus(); // Unsubscribe from userStatus snapshot
 			}
 		});
 
 		return () => {
-			unsubscribeServices();
+			unsubscribeServices(); // Unsubscribe from services snapshot
 		};
-	}, [creator?._id, creator?.phone]);
+	}, [creator, creator?._id, creator?.phone, status]);
 
 	const handleToggleFavorite = async () => {
 		if (!clientUser) {
@@ -150,7 +141,9 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			);
 
 			if (response.status === 200) {
-				setMarkedFavorite((prev) => !prev);
+				if (markedFavorite !== !markedFavorite) {
+					setMarkedFavorite((prev) => !prev);
+				}
 				toast({
 					title: `${
 						!markedFavorite
@@ -271,9 +264,6 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 							addingFavorite={addingFavorite}
 							creator={creator}
 							user={clientUser}
-							isCreatorOrExpertPath={pathname.includes(
-								creatorURL || `/${creator?.username}`
-							)}
 						/>
 					)}
 					{/* Share Button */}
@@ -292,12 +282,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 			</section>
 
 			{/* About, Services and Reviews */}
-			<motion.section
-				className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5"
-				initial="hidden"
-				animate="visible"
-				variants={fadeInVariants}
-			>
+			<section className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5">
 				{creator?.bio && creator.bio !== "Enter your bio here" ? (
 					<>
 						{/* About Creator */}
@@ -362,12 +347,12 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 						creatorId={creator?._id}
 					/>
 				</section>
-			</motion.section>
+			</section>
 
 			{isAuthSheetOpen && (
 				<AuthenticationSheet
 					isOpen={isAuthSheetOpen}
-					onOpenChange={setIsAuthSheetOpen} // Handle sheet close
+					onOpenChange={setIsAuthSheetOpen}
 				/>
 			)}
 		</section>

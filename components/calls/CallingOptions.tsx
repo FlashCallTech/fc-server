@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useMemo, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { audio, chat, video } from "@/constants/icons";
 import { creatorUser } from "@/types";
@@ -28,18 +28,18 @@ import {
 	fetchFCMToken,
 	sendNotification,
 	backendUrl,
+	sendCallNotification,
 } from "@/lib/utils";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import NotifyConsentSheet from "../client/NotifyConsentSheet";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import usePlatform from "@/hooks/usePlatform";
-import axios from "axios";
 
 interface CallingOptions {
 	creator: creatorUser;
 }
 
-const CallingOptions = ({ creator }: CallingOptions) => {
+const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
 	const client = useStreamVideoClient();
@@ -82,7 +82,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	const handleTabClose = () => {
 		const chatRequestId = localStorage.getItem("chatRequestId");
 		const data = chatRequestId;
-		const url = `${backendBaseUrl}endChat/rejectChat`; // Example endpoint
+		const url = `${backendBaseUrl}endChat/rejectChat`;
 		navigator.sendBeacon(url, data);
 	};
 
@@ -97,7 +97,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		setAuthenticationSheetOpen(isAuthSheetOpen);
 	}, [isAuthSheetOpen, setAuthenticationSheetOpen]);
 
-	// Logic to show the updated creator services in real-time
 	useEffect(() => {
 		if (!creator?._id || !creator?.phone) return;
 
@@ -118,36 +117,53 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 				const prices = region === "Global" ? data.globalPrices : data.prices;
 				const services = data.services;
 
-				// Update creator services in state
-				setUpdatedCreator((prev) => ({
-					...prev,
-					videoRate:
+				// Check if state really needs updating
+				setUpdatedCreator((prev) => {
+					const newVideoRate =
 						region === "Global"
 							? prices?.videoCall ?? creator.globalVideoRate
-							: prices?.videoCall ?? creator.videoRate,
-					audioRate:
+							: prices?.videoCall ?? creator.videoRate;
+					const newAudioRate =
 						region === "Global"
 							? prices?.audioCall ?? creator.globalAudioRate
-							: prices?.audioCall ?? creator.audioRate,
-					chatRate:
+							: prices?.audioCall ?? creator.audioRate;
+					const newChatRate =
 						region === "Global"
 							? prices?.chat ?? creator.globalChatRate
-							: prices?.chat ?? creator.chatRate,
-					videoAllowed: services?.videoCall ?? false,
-					audioAllowed: services?.audioCall ?? false,
-					chatAllowed: services?.chat ?? false,
-				}));
+							: prices?.chat ?? creator.chatRate;
+					const newVideoAllowed = services?.videoCall ?? false;
+					const newAudioAllowed = services?.audioCall ?? false;
+					const newChatAllowed = services?.chat ?? false;
 
-				// Check if any of the services are enabled
+					if (
+						newVideoRate !== prev.videoRate ||
+						newAudioRate !== prev.audioRate ||
+						newChatRate !== prev.chatRate ||
+						newVideoAllowed !== prev.videoAllowed ||
+						newAudioAllowed !== prev.audioAllowed ||
+						newChatAllowed !== prev.chatAllowed
+					) {
+						return {
+							...prev,
+							videoRate: newVideoRate,
+							audioRate: newAudioRate,
+							chatRate: newChatRate,
+							videoAllowed: newVideoAllowed,
+							audioAllowed: newAudioAllowed,
+							chatAllowed: newChatAllowed,
+						};
+					}
+
+					return prev;
+				});
+
 				const hasActiveService =
 					services?.videoCall || services?.audioCall || services?.chat;
 
-				// Now listen for the creator's status
 				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
 					const statusData = statusDoc.data();
 
 					if (statusData) {
-						// Prioritize loginStatus
 						if (statusData.loginStatus === true) {
 							if (statusData.status === "Busy") {
 								setOnlineStatus("Busy");
@@ -161,7 +177,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						} else if (statusData.loginStatus === false) {
 							setOnlineStatus("Offline");
 						} else {
-							// Fallback to services and status
 							if (statusData.status === "Busy") {
 								setOnlineStatus("Busy");
 							} else {
@@ -171,7 +186,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					}
 				});
 
-				// Listen for the client's status only if clientUser is not null
 				let unsubscribeClientStatus: any;
 				if (clientUser) {
 					unsubscribeClientStatus = onSnapshot(
@@ -188,7 +202,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 					);
 				}
 
-				// Clean up both status listeners
 				return () => {
 					unsubscribeStatus();
 					if (unsubscribeClientStatus) unsubscribeClientStatus();
@@ -196,9 +209,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			}
 		});
 
-		// Clean up the services listener
 		return () => unsubscribe();
-	}, [creator._id, creator.phone, clientUser, isAuthSheetOpen]);
+	}, [creator._id, creator.phone, region]);
 
 	useEffect(() => {
 		if (!chatReqSent) {
@@ -209,7 +221,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			const chatRequestId = localStorage.getItem("chatRequestId");
 
 			if (chatRequestId && chatReqSent) {
-				clearInterval(intervalId); // Clear the interval once the ID is found
+				clearInterval(intervalId);
 
 				const chatRequestDoc = doc(db, "chatRequests", chatRequestId);
 
@@ -237,7 +249,6 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 							localStorage.removeItem("chatRequestId");
 							localStorage.removeItem("chatId");
 							localStorage.removeItem("CallId");
-							// updateExpertStatus(creator.phone as string, "Online");
 							unsubscribe();
 						} else if (
 							data.status === "accepted" &&
@@ -268,7 +279,7 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 		}, 1000);
 
 		return () => clearInterval(intervalId);
-	}, [clientUser?._id, router, chatReqSent]);
+	}, [router, chatReqSent]);
 
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
@@ -404,37 +415,16 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 						});
 					}
 
-					const fcmToken = await fetchFCMToken(creator.phone as string, "voip");
-
-					if (fcmToken) {
-						try {
-							sendNotification(
-								fcmToken.token,
-								`Incoming ${callType} Call`,
-								`Call Request from ${clientUser.username}`,
-								{
-									created_by_display_name: clientUser.username,
-									callType: call.type,
-									callId: call.id,
-									notificationType: "call.ring",
-								}
-							);
-
-							fcmToken.voip_token &&
-								(await axios.post(`${backendUrl}/send-notification`, {
-									deviceToken: fcmToken.voip_token,
-									message: `Incoming ${callType} Call Request from ${clientUser.username}`,
-									payload: {
-										created_by_display_name: clientUser.username,
-										callType: call.type,
-										callId: call.id,
-										notificationType: "call.ring",
-									},
-								}));
-						} catch (error) {
-							console.warn(error);
-						}
-					}
+					await sendCallNotification(
+						creator.phone as string,
+						callType,
+						clientUser.username,
+						call,
+						"call.ring",
+						fetchFCMToken,
+						sendNotification,
+						backendUrl as string
+					);
 
 					await fetch(`${backendBaseUrl}/calls/registerCall`, {
 						method: "POST",
@@ -672,13 +662,15 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 	];
 
 	// Sort services based on priority and enabled status
-	const sortedServices = services.sort((a, b) => {
-		if (a.enabled && !b.enabled) return -1;
-		if (!a.enabled && b.enabled) return 1;
+	const sortedServices = useMemo(() => {
+		return services.sort((a, b) => {
+			if (a.enabled && !b.enabled) return -1;
+			if (!a.enabled && b.enabled) return 1;
 
-		const priority: any = { video: 1, audio: 2, chat: 3 };
-		return priority[a.type] - priority[b.type];
-	});
+			const priority: Record<string, number> = { video: 1, audio: 2, chat: 3 };
+			return priority[a.type] - priority[b.type];
+		});
+	}, [services]);
 
 	return (
 		<>
@@ -825,6 +817,8 @@ const CallingOptions = ({ creator }: CallingOptions) => {
 			)}
 		</>
 	);
-};
+});
+
+CallingOptions.displayName = "CallingOptions";
 
 export default CallingOptions;

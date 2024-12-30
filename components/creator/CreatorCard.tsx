@@ -14,22 +14,17 @@ import { backendBaseUrl } from "@/lib/utils";
 import Image from "next/image";
 import { useCreatorQuery } from "@/lib/react-query/queries";
 import ContentLoading from "../shared/ContentLoading";
+import ClientSideDiscountSheet from "../creatorServices/ClientSideDiscountSheet";
 
 const CreatorCard = () => {
 	const { username } = useParams();
 	const { currentUser, userType, fetchingUser } = useCurrentUsersContext();
 	const router = useRouter();
-	const [loading, setLoading] = useState(true);
+
 	const initializedPixelId = useRef<string | null>(null);
 	const [lastCallTracked, setLastCallTracked] = useState(
 		() => localStorage.getItem("lastTrackedCallId") || null
 	);
-
-	useEffect(() => {
-		setTimeout(() => {
-			setLoading(false);
-		}, 1000);
-	}, []);
 
 	const {
 		data: creatorUser,
@@ -89,10 +84,6 @@ const CreatorCard = () => {
 						setLastCallTracked(callData.callId);
 						localStorage.setItem("lastTrackedCallId", callData.callId);
 					}
-
-					console.log("Tracked call event:", callData.callId);
-				} else if (callData) {
-					console.log("Duplicate call event skipped:", callData.callId);
 				}
 			} catch (error) {
 				Sentry.captureException(error);
@@ -115,17 +106,9 @@ const CreatorCard = () => {
 		fetchingUser,
 	]);
 
-	if (fetchingUser || isLoading || loading) {
+	if (fetchingUser || isLoading) {
 		return (
 			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
-				{/* <Image
-					src="/icons/loading-circle.svg"
-					alt="Loading..."
-					width={50}
-					height={50}
-					priority
-				/> */}
-
 				<ContentLoading />
 				<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
 					Fetching Creator&apos;s Details{" "}
@@ -144,7 +127,7 @@ const CreatorCard = () => {
 	if (isError) {
 		console.error("Error fetching creator:", error);
 		return (
-			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-white">
+			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-400">
 				<p>Failed to load creator details.</p>
 			</div>
 		);
@@ -152,7 +135,7 @@ const CreatorCard = () => {
 
 	if (!creatorUser) {
 		return (
-			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-white">
+			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-400">
 				<p>No creators found.</p>
 			</div>
 		);
@@ -162,6 +145,13 @@ const CreatorCard = () => {
 		<React.Suspense fallback={<ContentLoading />}>
 			<section className="size-full grid grid-cols-1 items-start justify-center">
 				<CreatorDetails creator={creatorUser} />
+
+				{/* {currentUser && (
+					<ClientSideDiscountSheet
+						creatorId={creatorUser._id || ""}
+						theme={creatorUser?.themeSelected}
+					/>
+				)} */}
 			</section>
 		</React.Suspense>
 	);

@@ -9,7 +9,9 @@ import { analytics, db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { increment, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
 import {
+	backendUrl,
 	fetchFCMToken,
+	sendCallNotification,
 	sendNotification,
 	updateFirestoreCallServices,
 } from "@/lib/utils";
@@ -23,6 +25,8 @@ import { useGetCallById } from "@/hooks/useGetCallById";
 import axios from "axios";
 import MyCallConnectingUI from "./MyCallConnectigUI";
 import { trackEvent } from "@/lib/mixpanel";
+import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
+import { Service } from "@/types";
 
 const MyCallUI = () => {
 	const calls = useCalls();
@@ -37,7 +41,7 @@ const MyCallUI = () => {
 	const [connecting, setConnecting] = useState(false);
 	const [connectingCall, setConnectingCall] = useState<Call | null>(null);
 	const [redirecting, setRedirecting] = useState(false);
-
+	const { getFinalServices, resetServices } = useSelectedServiceContext();
 	let autoDeclineTimeout: NodeJS.Timeout;
 	const router = useRouter();
 	const checkFirestoreSession = (userId: string) => {
@@ -72,22 +76,36 @@ const MyCallUI = () => {
 			)?.custom?.phone;
 
 			if (userType === "client") {
-				await updateExpertStatus(currentUser?.global ? currentUser?.email as string : currentUser?.phone as string, "Idle");
+				await updateExpertStatus(
+					currentUser?.global
+						? (currentUser?.email as string)
+						: (currentUser?.phone as string),
+					"Idle"
+				);
 			} else {
 				await updateExpertStatus(expertPhone, "Online");
 			}
+
+			let discounts = getFinalServices();
 
 			await handleInterruptedCall(
 				currentUser?._id as string,
 				currentUser?.global ?? false,
 				updatedCall.id,
 				updatedCall as Call,
-				currentUser?.global ? currentUser.email as string : currentUser?.phone as string,
+				currentUser?.global
+					? (currentUser.email as string)
+					: (currentUser?.phone as string),
 				userType as "client" | "expert",
 				backendBaseUrl as string,
 				expertPhone,
-				currentUser?.global ? currentUser.email as string : currentUser?.phone as string
+				currentUser?.global
+					? (currentUser.email as string)
+					: (currentUser?.phone as string),
+				discounts as Service[]
 			);
+
+			resetServices();
 		} catch (error) {
 			console.error("Error handling interrupted call:", error);
 		}
@@ -282,7 +300,9 @@ const MyCallUI = () => {
 				  });
 
 			await updateExpertStatus(
-				currentUser?.global ? currentUser?.email as string : currentUser?.phone as string,
+				currentUser?.global
+					? (currentUser?.email as string)
+					: (currentUser?.phone as string),
 				"Busy"
 			);
 
@@ -311,24 +331,16 @@ const MyCallUI = () => {
 			setRedirecting(false);
 			clearTimeout(autoDeclineTimeout);
 
-			const fcmToken = await fetchFCMToken(expert?.custom?.phone);
-			if (fcmToken) {
-				sendNotification(
-					fcmToken,
-					`Missed ${callType} Call Request`,
-					`Call Request from ${maskNumbers(
-						outgoingCall?.state?.createdBy?.name || "Flashcall User"
-					)}`,
-					{
-						created_by_display_name: maskNumbers(
-							outgoingCall?.state?.createdBy?.name || "Flashcall User"
-						),
-						callType: callType,
-						callId: outgoingCall.id,
-						notificationType: "call.missed",
-					}
-				);
-			}
+			await sendCallNotification(
+				expert?.custom?.phone as string,
+				callType,
+				currentUser?.username as string,
+				call!,
+				"call.missed",
+				fetchFCMToken,
+				sendNotification,
+				backendUrl as string
+			);
 
 			if (sessionStorage.getItem(`callRejected-${outgoingCall.id}`)) return;
 
@@ -385,22 +397,16 @@ const MyCallUI = () => {
 			setConnecting(false);
 			setRedirecting(false);
 
-			const fcmToken = await fetchFCMToken(expert?.custom?.phone);
-			if (fcmToken) {
-				sendNotification(
-					fcmToken,
-					`Missed ${callType} Call Request`,
-					`Call Request from ${outgoingCall?.state?.createdBy?.name}`,
-					{
-						created_by_display_name: maskNumbers(
-							outgoingCall?.state?.createdBy?.name || "Flashcall User"
-						),
-						callType: callType,
-						callId: outgoingCall.id,
-						notificationType: "call.missed",
-					}
-				);
-			}
+			await sendCallNotification(
+				expert?.custom?.phone as string,
+				callType,
+				currentUser?.username as string,
+				call!,
+				"call.missed",
+				fetchFCMToken,
+				sendNotification,
+				backendUrl as string
+			);
 
 			const defaultMessage = {
 				title: `${expert?.custom?.name || "User"} is not answering`,
@@ -432,22 +438,16 @@ const MyCallUI = () => {
 				"Idle"
 			);
 
-			const fcmToken = await fetchFCMToken(expert?.custom?.phone);
-			if (fcmToken) {
-				sendNotification(
-					fcmToken,
-					`Missed ${callType} Call Request`,
-					`Call Request from ${outgoingCall?.state?.createdBy?.name}`,
-					{
-						created_by_display_name: maskNumbers(
-							outgoingCall?.state?.createdBy?.name || "Flashcall User"
-						),
-						callType: callType,
-						callId: outgoingCall.id,
-						notificationType: "call.missed",
-					}
-				);
-			}
+			await sendCallNotification(
+				expert?.custom?.phone as string,
+				callType,
+				currentUser?.username as string,
+				call!,
+				"call.missed",
+				fetchFCMToken,
+				sendNotification,
+				backendUrl as string
+			);
 		};
 
 		if (outgoingCall?.state?.callingState === CallingState.RINGING) {

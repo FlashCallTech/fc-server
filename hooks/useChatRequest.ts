@@ -18,7 +18,13 @@ import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
 import usePlatform from "./usePlatform";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { backendBaseUrl, fetchFCMToken, sendNotification } from "@/lib/utils";
+import {
+	backendBaseUrl,
+	backendUrl,
+	fetchFCMToken,
+	sendChatNotification,
+	sendNotification,
+} from "@/lib/utils";
 import axios from "axios";
 import { clientUser, creatorUser } from "@/types";
 
@@ -230,29 +236,15 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				const chatRequestData = docSnap.data();
 				const fcmToken = await fetchFCMToken(creator.phone as string);
 				if (fcmToken) {
-					sendNotification(
-						fcmToken,
-						`Incoming Chat Request`,
-						`Chat Request from ${clientUser.username}`,
-						{
-							clientId: chatRequestData.clientId,
-							clientName: chatRequestData.clientName,
-							clientPhone: chatRequestData.clientPhone,
-							clientImg: chatRequestData.clientImg,
-							creatorId: chatRequestData.creatorId,
-							creatorName: chatRequestData.creatorName,
-							creatorPhone: chatRequestData.creatorPhone,
-							creatorImg: chatRequestData.creatorImg,
-							chatId: chatRequestData.chatId,
-							chatRequestId: chatRequestData.id,
-							callId: chatRequestData.callId,
-							chatRate: chatRequestData.chatRate,
-							client_first_seen: chatRequestData.client_first_seen,
-							creator_first_seen: chatRequestData.creator_first_seen,
-							createdAt: String(chatRequestData.createdAt),
-							notificationType: "chat.ring",
-						},
-						`https:flashcall.me/`
+					await sendChatNotification(
+						creator.phone as string,
+						"chat",
+						clientUser.username,
+						"chat.ring",
+						chatRequestData,
+						fetchFCMToken,
+						sendNotification,
+						backendUrl as string
 					);
 				}
 			} else {
