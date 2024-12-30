@@ -18,7 +18,6 @@ import { VideoToggleButton } from "../calls/VideoToggleButton";
 import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import EndCallButton from "./EndCallButton";
-import OfficialCallTimer from "@/lib/context/OfficialCallTimerContext";
 import CallTimer from "./CallTimer";
 
 type CallLayoutType = "grid" | "speaker-bottom";
@@ -57,7 +56,7 @@ const useScreenSize = () => {
 	};
 
 	useEffect(() => {
-		handleResize(); // Set initial value
+		handleResize();
 		window.addEventListener("resize", handleResize);
 		return () => window.removeEventListener("resize", handleResize);
 	}, []);
@@ -68,12 +67,12 @@ const useScreenSize = () => {
 export const isMobileDevice = () => {
 	const userAgent = navigator.userAgent || navigator.vendor;
 	if (/android/i.test(userAgent)) {
-		return true; // Android device
+		return true;
 	}
 	if (/iPad|iPhone|iPod/.test(userAgent)) {
-		return true; // iOS device
+		return true;
 	}
-	return false; // Not Android or iOS
+	return false;
 };
 
 const MeetingRoom = () => {
@@ -82,11 +81,6 @@ const MeetingRoom = () => {
 	const callingState = useCallCallingState();
 	const participants = useParticipants();
 	const call = useCall();
-
-	// const { timeLeft, pauseTimer, resumeTimer } = OfficialCallTimer({
-	// 	callId: call?.id!,
-	// 	callDuration: call?.state.settings?.limits.max_duration_seconds!,
-	// });
 
 	// Memoized helpers
 	const isVideoCall = useMemo(() => call?.type === "default", [call]);

@@ -11,12 +11,12 @@ import { useGetCallById } from "@/hooks/useGetCallById";
 import MeetingSetup from "@/components/meeting/MeetingSetup";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import MeetingRoom from "@/components/official/MeetingRoom";
-import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 import Image from "next/image";
 import ContentLoading from "@/components/shared/ContentLoading";
 import useWarnOnUnload from "@/hooks/useWarnOnUnload";
+import GetRandomImage from "@/utils/GetRandomImage";
 
 const MeetingPage = () => {
 	const { meetingId, clientId } = useParams();
@@ -30,7 +30,7 @@ const MeetingPage = () => {
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
 		if (currentUser?._id) {
-			navigator.sendBeacon(`${backendBaseUrl}/official/call/end`);
+			navigator.sendBeacon(`${backendBaseUrl}/official/call/end/${meetingId}`);
 		}
 	});
 
@@ -58,12 +58,13 @@ const MeetingPage = () => {
 		setIsInitializing(true);
 		const client = {
 			_id: clientId as string,
-			username: `guest_${clientId}`,
+			username: `Official User`,
 			phone: "+1234567890",
 			fullName: "Official User",
 			firstName: "Official",
 			lastName: "User",
 			photo:
+				GetRandomImage() ||
 				"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
 			role: "client",
 			bio: "This is an Official user.",
@@ -105,9 +106,7 @@ const MeetingPage = () => {
 				<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
 					<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
 						<h1 className="text-3xl font-semibold mb-4">Access Restricted</h1>
-						<p className="text-lg mb-6">
-							You need to authenticate to join the meeting.
-						</p>
+						<p className="text-lg mb-6">Unable to authenticate User.</p>
 						<button
 							className="px-6 py-3 bg-blue-600 text-white text-lg rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300"
 							onClick={initializeUser}
@@ -124,23 +123,19 @@ const MeetingPage = () => {
 	if ((currentUser && isCallLoading) || fetchingUser)
 		return (
 			<div className="flex flex-col w-full items-center justify-center h-screen">
-				{fetchingUser ? (
-					<SinglePostLoader />
-				) : (
-					<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
-						<ContentLoading />
-						<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
-							Fetching Participant&apos;s Details{" "}
-							<Image
-								src="/icons/loading-circle.svg"
-								alt="Loading..."
-								width={24}
-								height={24}
-								priority
-							/>
-						</p>
-					</div>
-				)}
+				<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
+					<ContentLoading />
+					<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
+						Fetching Participant&apos;s Details{" "}
+						<Image
+							src="/icons/loading-circle.svg"
+							alt="Loading..."
+							width={24}
+							height={24}
+							priority
+						/>
+					</p>
+				</div>
 			</div>
 		);
 

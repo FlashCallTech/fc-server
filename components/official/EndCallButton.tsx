@@ -22,9 +22,14 @@ const EndCallButton = () => {
 	};
 
 	const handleDecisionDialog = async () => {
-		await call?.endCall().then(() => handleSignout());
-
-		setShowDialog(false);
+		try {
+			await call?.endCall();
+			handleSignout();
+		} catch (error) {
+			console.error("Error ending call:", error);
+		} finally {
+			setShowDialog(false);
+		}
 	};
 
 	const handleCloseDialog = () => {

@@ -44,12 +44,11 @@ const MeetingSetup = ({
 
 	const handleCallEnded = () => {
 		stopMediaStreams();
-		router.replace(`${creatorURL ? creatorURL : "/home"}`);
 	};
 
 	const handleJoinNow = async () => {
 		const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
-		console.log(expert, fcmToken);
+		console.log(expert, fcmToken, currentUser);
 		if (fcmToken) {
 			sendNotification(
 				fcmToken,
@@ -98,22 +97,12 @@ const MeetingSetup = ({
 		call.on("call.ended", handleCallEnded);
 	};
 
-	const returnHome = () => {
-		router.replace(`${creatorURL ? creatorURL : "/official/home"}`);
-	};
-
 	if (callHasEnded) {
 		return (
 			<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
 				<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
 					<h1 className="text-3xl font-semibold mb-4">Call Ended</h1>
 					<p className="text-lg mb-6">The call has already been ended</p>
-					<button
-						className="px-6 py-3 bg-blue-600 text-white text-lg rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300"
-						onClick={returnHome}
-					>
-						Go Back
-					</button>
 				</div>
 			</div>
 		);
