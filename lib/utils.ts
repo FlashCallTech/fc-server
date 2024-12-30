@@ -935,3 +935,24 @@ export const fetchExchangeRate = async (): Promise<number> => {
 	  "Unable to fetch exchange rate after multiple attempts."
 	);
   };
+
+  export const getDevicePlatform = () => {
+	const userAgent = navigator.userAgent || navigator.vendor;
+
+	// Detect iOS
+	if (/iPad|iPhone|iPod/.test(userAgent)) {
+		return "iOS";
+	}
+
+	// Detect Android
+	if (/android/i.test(userAgent)) {
+		return "Android";
+	}
+
+	// Detect Windows
+	if (/Win/i.test(userAgent)) {
+		return "Windows";
+	}
+
+	return "Unknown Platform";
+}

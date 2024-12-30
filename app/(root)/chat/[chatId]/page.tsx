@@ -1,18 +1,17 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { ChatTimerProvider } from "@/lib/context/ChatTimerContext";
-import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import ChatInterface from "@/components/chat/ChatInterface";
-import useEndChat from "@/hooks/useEndChat";
 import { backendBaseUrl } from "@/lib/utils";
+import ChatProvider from "@/lib/context/ChatContext";
+import { useParams } from "next/navigation";
 
 const Page = () => {
 	const [queryParams, setQueryParams] = useState<{
 		clientId: string | null;
 		creatorId: string | null;
 	}>({ clientId: null, creatorId: null });
-	const { user2, chatId, handleEnd } = useEndChat();
-	const {userType} = useCurrentUsersContext();
+	const { chatId } = useParams();
 
 	let isTabClosing = false;
 
@@ -26,7 +25,6 @@ const Page = () => {
 			const data = chatId;
 			const url = `${backendBaseUrl}/endChat/endChat`; // Example endpoint
 			navigator.sendBeacon(url, data as string);
-			// handleEnd(chatId as string, user2, userType!);
 		}
 	};
 
@@ -44,7 +42,7 @@ const Page = () => {
 			window.removeEventListener("beforeunload", handleTabCloseWarning);
 			window.removeEventListener("unload", handleTabClose);
 		};
-	}, [chatId, user2]);
+	}, [chatId]);
 
 	if (!queryParams.clientId || !queryParams.creatorId) {
 		return null; // or Loading indicator or some error handling
@@ -52,12 +50,15 @@ const Page = () => {
 
 	return (
 		<div>
-			<ChatTimerProvider
-				clientId={queryParams.clientId as string}
-				creatorId={queryParams.creatorId as string}
-			>
-				<ChatInterface />
-			</ChatTimerProvider>
+			<ChatProvider chatId={chatId as string}>
+				<ChatTimerProvider
+					clientId={queryParams.clientId as string}
+					creatorId={queryParams.creatorId as string}
+					chatId={chatId as string}
+				>
+					<ChatInterface />
+				</ChatTimerProvider>
+			</ChatProvider>
 		</div>
 	);
 };
