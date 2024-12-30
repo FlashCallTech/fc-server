@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
-const Calender = () => {
+const Calendar = () => {
 	const { currentUser, userType, fetchingUser } = useCurrentUsersContext();
 	const router = useRouter();
 	const { toast } = useToast();
@@ -103,7 +103,7 @@ const Calender = () => {
 							/>
 						</svg>
 					</Link>
-					<h1 className="text-xl md:text-2xl font-bold">User Calender</h1>
+					<h1 className="text-xl md:text-2xl font-bold">User Calendar</h1>
 				</section>
 			</section>
 			<UserAvailability data={data} userId={currentUser._id} />;
@@ -111,4 +111,4 @@ const Calender = () => {
 	);
 };
 
-export default Calender;
+export default Calendar;

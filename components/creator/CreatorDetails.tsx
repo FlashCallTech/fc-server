@@ -72,10 +72,10 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	}, [isAuthSheetOpen]);
 
 	useEffect(() => {
-		if (!creator || !creator?._id || !creator?.phone) return;
+		if (!creator || !creator._id || !creator.phone) return;
 
-		const creatorRef = doc(db, "services", creator?._id);
-		const statusDocRef = doc(db, "userStatus", creator?.phone);
+		const creatorRef = doc(db, "services", creator._id);
+		const statusDocRef = doc(db, "userStatus", creator.phone);
 
 		const unsubscribeServices = onSnapshot(creatorRef, (doc) => {
 			const data = doc.data();
@@ -88,27 +88,19 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
 					const statusData = statusDoc.data();
 					if (statusData) {
-						let newStatus = "Offline"; // Default status
+						let newStatus = "Offline";
 
-						if (statusData.loginStatus === true) {
-							// Check Busy status if loginStatus is true
+						if (statusData.loginStatus) {
+							// Check Busy status
 							if (statusData.status === "Busy") {
 								newStatus = "Busy";
+							} else if (statusData.status === "Online" && hasActiveService) {
+								newStatus = "Online";
 							} else {
-								newStatus =
-									hasActiveService && statusData.status === "Online"
-										? "Online"
-										: "Offline";
+								newStatus = "Offline";
 							}
-						} else if (statusData.loginStatus === false) {
-							newStatus = "Offline";
 						} else {
-							// Fallback to services and status
-							if (statusData.status === "Busy") {
-								newStatus = "Busy";
-							} else {
-								newStatus = hasActiveService ? "Online" : "Offline";
-							}
+							newStatus = "Offline";
 						}
 
 						// Only update status if it has changed
@@ -118,13 +110,14 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 					}
 				});
 
-				return () => unsubscribeStatus();
+				return () => unsubscribeStatus(); // Unsubscribe from userStatus snapshot
 			}
 		});
+
 		return () => {
-			unsubscribeServices();
+			unsubscribeServices(); // Unsubscribe from services snapshot
 		};
-	}, []);
+	}, [creator, creator?._id, creator?.phone, status]);
 
 	const handleToggleFavorite = async () => {
 		if (!clientUser) {
@@ -271,9 +264,6 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 							addingFavorite={addingFavorite}
 							creator={creator}
 							user={clientUser}
-							isCreatorOrExpertPath={pathname.includes(
-								creatorURL || `/${creator?.username}`
-							)}
 						/>
 					)}
 					{/* Share Button */}

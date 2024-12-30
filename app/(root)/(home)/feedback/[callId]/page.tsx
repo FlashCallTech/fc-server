@@ -32,7 +32,7 @@ const CallFeedbackPage = () => {
 	};
 
 	return (
-		<section className="bg-black w-full h-dvh flex items-center justify-center">
+		<section className="w-full h-dvh flex items-center justify-center">
 			<CallFeedback
 				callId={callId as string}
 				isOpen={showFeedback}
