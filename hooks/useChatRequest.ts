@@ -240,7 +240,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 						creator.phone as string,
 						"chat",
 						clientUser.username,
-						"call.ring",
+						"chat.ring",
 						chatRequestData,
 						fetchFCMToken,
 						sendNotification,

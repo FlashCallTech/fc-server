@@ -5,6 +5,8 @@ import { useState } from "react";
 import Image from "next/image";
 import EndCallDecision from "../calls/EndCallDecision";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import axios from "axios";
+import { backendBaseUrl } from "@/lib/utils";
 
 const EndCallButton = () => {
 	const call = useCall();
@@ -25,6 +27,22 @@ const EndCallButton = () => {
 		try {
 			await call?.endCall();
 			handleSignout();
+			await axios.post(
+				`${backendBaseUrl}/official/call/end/${call?.id}`,
+				{
+					client_id: call?.state?.createdBy?.id || null,
+					influencer_id: call?.state?.members[0].user_id || null,
+					started_at: call?.state?.startedAt,
+					ended_at: call?.state?.endedAt,
+					call_type: call?.type,
+					meeting_id: call?.id,
+				},
+				{
+					params: {
+						type: call?.type,
+					},
+				}
+			);
 		} catch (error) {
 			console.error("Error ending call:", error);
 		} finally {

@@ -48,7 +48,7 @@ const MeetingSetup = ({
 
 	const handleJoinNow = async () => {
 		const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
-		console.log(expert, fcmToken, currentUser);
+
 		if (fcmToken) {
 			sendNotification(
 				fcmToken,
@@ -102,7 +102,7 @@ const MeetingSetup = ({
 			<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
 				<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
 					<h1 className="text-3xl font-semibold mb-4">Call Ended</h1>
-					<p className="text-lg mb-6">The call has already been ended</p>
+					<p className="text-lg">The call has already been ended</p>
 				</div>
 			</div>
 		);

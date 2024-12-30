@@ -30,7 +30,18 @@ const MeetingPage = () => {
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
 		if (currentUser?._id) {
-			navigator.sendBeacon(`${backendBaseUrl}/official/call/end/${meetingId}`);
+			let callData = {
+				client_id: call?.state?.createdBy?.id || null,
+				influencer_id: call?.state?.members[0].user_id || null,
+				started_at: call?.state?.startedAt,
+				ended_at: call?.state?.endedAt,
+				call_type: call?.type,
+				meeting_id: call?.id,
+			};
+			navigator.sendBeacon(
+				`${backendBaseUrl}/official/call/end/${meetingId}`,
+				JSON.stringify(callData)
+			);
 		}
 	});
 
@@ -100,26 +111,6 @@ const MeetingPage = () => {
 		};
 	}, [currentUser, meetingId, clientId, setClientUser]);
 
-	if (!currentUser) {
-		return (
-			<>
-				<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-					<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
-						<h1 className="text-3xl font-semibold mb-4">Access Restricted</h1>
-						<p className="text-lg mb-6">Unable to authenticate User.</p>
-						<button
-							className="px-6 py-3 bg-blue-600 text-white text-lg rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300"
-							onClick={initializeUser}
-							disabled={isInitializing}
-						>
-							{isInitializing ? "Authenticating..." : "Authenticate"}
-						</button>
-					</div>
-				</div>
-			</>
-		);
-	}
-
 	if ((currentUser && isCallLoading) || fetchingUser)
 		return (
 			<div className="flex flex-col w-full items-center justify-center h-screen">
@@ -138,6 +129,26 @@ const MeetingPage = () => {
 				</div>
 			</div>
 		);
+
+	if (!currentUser && !fetchingUser) {
+		return (
+			<>
+				<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+					<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
+						<h1 className="text-3xl font-semibold mb-4">Access Restricted</h1>
+						<p className="text-lg mb-6">Unable to authenticate User.</p>
+						<button
+							className="px-6 py-3 bg-blue-600 text-white text-lg rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300"
+							onClick={initializeUser}
+							disabled={isInitializing}
+						>
+							{isInitializing ? "Authenticating..." : "Authenticate"}
+						</button>
+					</div>
+				</div>
+			</>
+		);
+	}
 
 	// call is not found
 	if (!call) {
@@ -180,26 +191,14 @@ const MeetingRoomWrapper = ({ call }: any) => {
 	const { useCallEndedAt } = useCallStateHooks();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
-	const router = useRouter();
-	const creatorURL = localStorage.getItem("creatorURL");
 	const [isSetupComplete, setIsSetupComplete] = useState(false);
-
-	const returnHome = () => {
-		router.replace(`${creatorURL ? creatorURL : "/official/home"}`);
-	};
 
 	if (callHasEnded) {
 		return (
 			<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
 				<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
 					<h1 className="text-3xl font-semibold mb-4">Call Ended</h1>
-					<p className="text-lg mb-6">The call has already been ended</p>
-					<button
-						className="px-6 py-3 bg-blue-600 text-white text-lg rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300"
-						onClick={returnHome}
-					>
-						Go Back
-					</button>
+					<p className="text-lg">The call has already been ended</p>
 				</div>
 			</div>
 		);

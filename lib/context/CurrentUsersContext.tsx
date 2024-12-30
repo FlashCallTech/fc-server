@@ -15,11 +15,10 @@ import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { backendBaseUrl } from "../utils";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import Image from "next/image";
 
 interface CurrentUsersContextValue {
 	clientUser: clientUser | null;
@@ -89,6 +88,7 @@ export const CurrentUsersProvider = ({
 
 	const { toast } = useToast();
 	const router = useRouter();
+	const pathname = usePathname();
 
 	const currentUser = useMemo(
 		() => creatorUser || clientUser,
@@ -266,7 +266,7 @@ export const CurrentUsersProvider = ({
 		try {
 			setFetchingUser(true);
 
-			if (authToken) {
+			if (authToken && pathname.includes("/official/meeting")) {
 				setFetchingUser(false);
 				setUserFetched(true);
 				setCreatorUser(null);
