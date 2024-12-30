@@ -6,15 +6,11 @@ import React, {
 	ReactNode,
 } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
-import useEndChat from "@/hooks/useEndChat";
-import { creatorUser } from "@/types";
 import { useCurrentUsersContext } from "./CurrentUsersContext";
 import { useWalletBalanceContext } from "./WalletBalanceContext";
-import axios from "axios";
-import { backendBaseUrl } from "../utils";
+import { useChatContext } from "./ChatContext";
 
 interface ChatTimerContextProps {
 	timeLeft: string;
@@ -30,6 +26,7 @@ interface ChatTimerProviderProps {
 	children: ReactNode;
 	clientId: string;
 	creatorId: string;
+	chatId: string;
 }
 const ChatTimerContext = createContext<ChatTimerContextProps | null>(null);
 export const useChatTimerContext = () => {
@@ -54,6 +51,7 @@ export const ChatTimerProvider = ({
 	children,
 	clientId,
 	creatorId,
+	chatId
 }: ChatTimerProviderProps) => {
 	const [anyModalOpen, setAnyModalOpen] = useState(false);
 	const [timeLeft, setTimeLeft] = useState(0);
@@ -62,7 +60,7 @@ export const ChatTimerProvider = ({
 	const [hasLowBalance, setHasLowBalance] = useState(false);
 	const [isTimerRunning, setIsTimerRunning] = useState(true);
 	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
-	const { chatId, user2, handleEnd, startedAt } = useEndChat();
+	const { handleEnd, startedAt, chat } = useChatContext();
 	const { walletBalance } = useWalletBalanceContext();
 	const { clientUser, userType } = useCurrentUsersContext();
 	const { toast } = useToast();
@@ -70,26 +68,13 @@ export const ChatTimerProvider = ({
 
 	const pauseTimer = () => setIsTimerRunning(false);
 	const resumeTimer = () => setIsTimerRunning(true);
-	
-	useEffect(() => {
-		const getCreatorData = async() => {
-
-			const response = await axios.get(
-				`${backendBaseUrl}/creator/getUser/${creatorId}`
-			);
-			const chatRate = clientUser?.global? Number(response.data.globalChatRate) : Number(response.data.chatRate);
-			setChatRatePerMinute(chatRate);
-		}
-
-		getCreatorData();
-	}, [])
 
 	useEffect(() => {
 		if (!chatId) {
 			return; // Exit early if not the meeting owner or callId is undefined
 		}
 		if (userType === "client") {
-			const ratePerMinute = chatRatePerMinute;
+			const ratePerMinute: number = Number(chat?.chatRate);
 			let maxChatDuration = (walletBalance / ratePerMinute) * 60; // in seconds
 			maxChatDuration = maxChatDuration > 3600 ? 3600 : maxChatDuration; // Limit to 60 minutes (3600 seconds)
 			if (!startedAt) {
@@ -137,7 +122,7 @@ export const ChatTimerProvider = ({
 					if (clampedTimeLeft <= 0) {
 						clearInterval(intervalId);
 						if (clientId === clientUser?._id) {
-							handleEnd(chatId as string, user2, "low_balance");
+							handleEnd(chatId as string, "low_balance");
 						}
 					}
 

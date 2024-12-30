@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React from 'react';
 
 interface ImageModalProps {
@@ -17,7 +18,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ imageUrl, onClose }) => {
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-75 z-50" onClick={handleClickOutside}>
             <div className="relative max-h-full max-w-full overflow-auto">
                 <button onClick={onClose} className="absolute top-4 right-4 px-2 text-black text-3xl rounded-full bg-red-600">&times;</button>
-                <img src={imageUrl} alt="Full Resolution" className="max-h-screen max-w-screen object-contain" />
+                <Image src={`${imageUrl}`} width={1000} height={1000} alt="Full Resolution" className="max-h-screen max-w-screen object-contain" />
             </div>
         </div>
     );
