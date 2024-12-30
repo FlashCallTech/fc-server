@@ -5,10 +5,11 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { format, isSameDay } from "date-fns";
 import CustomAudioPlayer from "@/lib/CustomAudioPlayer";
 import usePlatform from "@/hooks/usePlatform";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 interface Chat {
+	chatId: string;
 	creatorName: string;
 	creatorId: string;
 	clientId: string;
@@ -34,9 +35,10 @@ interface Props {
 	chat: Chat;
 	currentUserMessageSent: boolean;
 	setReplyIndex: any;
+	setText: any;
 }
 
-const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex }) => {
+const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex, setText }) => {
 	const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
 	const [isTyping, setIsTyping] = useState(false); // Track typing status
 	const [imagesLoaded, setImagesLoaded] = useState(0); // Track loaded images
@@ -148,6 +150,19 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 		}
 	};
 
+	const handleUnsend = async (index: number) => {
+		try {
+			const updatedMessages = chat.messages.filter((_, i) => i !== index);
+			await updateDoc(doc(db, "chats", chat.chatId), { messages: updatedMessages });
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
+	const handleEdit = async (index: number) => {
+		setText(selectedMessage.text);
+	}
+
 	// Attach the click outside listener on component mount and clean up on unmount
 	useEffect(() => {
 		document.addEventListener("click", handleClickOutside);
@@ -165,7 +180,7 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 		return `${hours}:${minutes}`;
 	};
 
-	console.log(chat.messages);
+	console.log(selectedMessage);
 
 	return (
 		<div className="flex-1 p-4 overflow-y-auto scrollbar-hide">
@@ -336,14 +351,33 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 
 									{/* Reply Box */}
 									{isLongPress && selectedMessage === message && (
-										<div className="absolute bottom-10 left-0 right-0 p-2 bg-white shadow-md rounded-md flex justify-center items-center" ref={replyBoxRef}>
+										<div className="absolute flex-col gap-2 bottom-10 left-0 right-0 p-2 bg-white shadow-md rounded-md flex justify-center items-center" ref={replyBoxRef}>
 											<button
 												onClick={() => handleReply(index)}
-												className=""
+												className="w-full hoverScaleDownEffect"
 											>
 												Reply
 											</button>
+											{/* {selectedMessage.senderId === currentUser?._id && !selectedMessage.tip &&
+												<div className="w-full">
+													<button
+														onClick={() => handleUnsend(index)}
+														className="w-full border-t-2 border-gray-200 p-1 hoverScaleDownEffect"
+													>
+														Unsend
+													</button>
+													{!selectedMessage.img && !selectedMessage.audio &&
+														<button	
+														onClick={() => handleEdit(index)}
+														className="w-full border-t-2 border-gray-200 p-1 hoverScaleDownEffect"
+														>
+														Edit
+													</button>
+													}
+												</div>
+											} */}
 										</div>
+
 									)}
 
 									<div
