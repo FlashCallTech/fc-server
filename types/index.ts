@@ -463,3 +463,30 @@ export interface Service {
 	updatedAt: string;
 	utilizedBy: Types.ObjectId[];
 }
+
+export interface Chat {
+	callId: string;
+	chatId: string;
+	chatRate: string;
+    clientId: string;
+	clientImg: string;
+	clientName: string;
+	clientPhone?: string;
+    creatorId: string;
+	creatorImg: string;
+    creatorName: string;
+	creatorPhone: string;
+	endedAt?: number;
+    messages: {
+        senderId: string;
+        text: string;
+        createdAt: number;
+        img: string;
+        audio: string;
+        seen: boolean;
+        tip: string;
+    }[];
+	startedAt: number;
+	status: string;
+	timerSet: boolean;
+}
