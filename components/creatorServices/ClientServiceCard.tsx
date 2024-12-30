@@ -85,7 +85,7 @@ const ClientServiceCard = ({
 		<div
 			className={`bg-white shadow-md rounded-lg overflow-hidden w-full mx-auto border hover:shadow-lg transition-shadow hover:bg-gray-100 ${
 				!isServiceSelectable
-					? "opacity-50 cursor-not-allowed"
+					? "hidden opacity-50 cursor-not-allowed"
 					: isSelected
 					? "border-blue-500 shadow-lg cursor-pointer"
 					: " cursor-pointer"
@@ -125,7 +125,7 @@ const ClientServiceCard = ({
 												isServiceSelectable &&
 												discount.conditions.includes("New User") && (
 													<span className="ml-2 text-xs font-medium text-gray-500">
-														(Auto Applied)
+														(Applied)
 													</span>
 												)}
 										</span>

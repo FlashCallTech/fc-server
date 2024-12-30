@@ -103,7 +103,6 @@ const Favorites = memo(
 			);
 		}
 
-		// Display fallback UI if user or creator details are missing
 		if (!user?._id || !creator?._id) {
 			return (
 				<div
@@ -117,9 +116,7 @@ const Favorites = memo(
 							: "bg-transparent"
 					} flex gap-2 items-center`}
 				>
-					<span className="text-center w-full font-bold text-sm">
-						Authenticate
-					</span>
+					<span className="text-center w-full font-bold text-sm">Follow</span>
 				</div>
 			);
 		}

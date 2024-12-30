@@ -35,8 +35,8 @@ import { Service } from "@/types";
 const predefinedConditions = [
 	"New User",
 	"Seasonal Offer",
-	"30+ Minutes Call",
-	"60 Minutes Call",
+	// "30+ Minutes Call",
+	// "60 Minutes Call",
 ] as const;
 
 const discountRuleSchema = z
@@ -310,7 +310,7 @@ const DiscountServicesForm = ({
 
 						return (
 							<FormItem>
-								<FormLabel>Type</FormLabel>
+								<FormLabel>Services</FormLabel>
 								<Select
 									onValueChange={(value) => {
 										// Only allow changing type if "New User" is not selected
@@ -368,7 +368,7 @@ const DiscountServicesForm = ({
 					name="isActive"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Toggle Service Active</FormLabel>
+							<FormLabel>Toggle Service Status</FormLabel>
 							<Select
 								onValueChange={(value) => field.onChange(value === "true")}
 								value={field.value ? "true" : "false"} // Ensures correct selection is displayed
@@ -402,23 +402,23 @@ const DiscountServicesForm = ({
 					name="currency"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Currency</FormLabel>
+							<FormLabel>User Type</FormLabel>
 							<Select onValueChange={field.onChange} defaultValue={field.value}>
 								<SelectTrigger>
-									<SelectValue placeholder="Select currency" />
+									<SelectValue placeholder="Select Type" />
 								</SelectTrigger>
 								<SelectContent className="!bg-white">
 									<SelectItem
 										className="cursor-pointer hover:bg-gray-50"
 										value="INR"
 									>
-										INR
+										Indian
 									</SelectItem>
 									<SelectItem
 										className="cursor-pointer hover:bg-gray-50"
 										value="USD"
 									>
-										USD
+										Global
 									</SelectItem>
 								</SelectContent>
 							</Select>
@@ -450,8 +450,6 @@ const DiscountServicesForm = ({
 												<div className="grid grid-cols-2 gap-4">
 													{predefinedConditions.map((condition) => {
 														const isSelected = conditions.includes(condition);
-														const isDisabled =
-															isNewUserSelected && condition !== "New User";
 
 														return (
 															<section
@@ -459,22 +457,33 @@ const DiscountServicesForm = ({
 																className={cn(
 																	"cursor-pointer p-4 border transition-all rounded-lg",
 																	isSelected
-																		? "bg-gray-100 border border-gray-300"
-																		: "hover:bg-gray-50",
-																	isDisabled && "cursor-not-allowed opacity-50"
+																		? "bg-gray-100 border-gray-300"
+																		: "hover:bg-gray-50"
 																)}
 																onClick={() => {
-																	if (isDisabled) return;
+																	let updatedConditions = [];
 
-																	const updatedConditions = isSelected
-																		? conditions.filter(
-																				(item) => item !== condition
-																		  )
-																		: [...conditions, condition];
+																	if (condition === "New User") {
+																		// If "New User" is selected, deselect other conditions
+																		updatedConditions = isSelected
+																			? conditions.filter(
+																					(item) => item !== condition
+																			  )
+																			: ["New User"];
+																	} else {
+																		// If another condition is selected, deselect "New User"
+																		updatedConditions = isSelected
+																			? conditions.filter(
+																					(item) => item !== condition
+																			  )
+																			: conditions
+																					.filter((item) => item !== "New User")
+																					.concat(condition);
+																	}
 
 																	field.onChange(updatedConditions);
 
-																	if (condition === "New User" && !isSelected) {
+																	if (updatedConditions.includes("New User")) {
 																		form.setValue("type", "all");
 																	}
 																}}
@@ -525,7 +534,6 @@ const DiscountServicesForm = ({
 									</FormItem>
 								)}
 							/>
-
 							<FormField
 								control={form.control}
 								name={`discountRules.${index}.discountAmount`}
@@ -588,18 +596,17 @@ const DiscountServicesForm = ({
 									);
 								}}
 							/>
-
-							<Button
+							{/* <Button
 								type="button"
 								className="text-sm bg-red-500 hoverScaleDownEffect w-fit text-white mt-2"
 								variant="destructive"
 								onClick={() => remove(index)}
 							>
 								Remove Rule
-							</Button>
+							</Button> */}
 						</div>
 					))}
-					<Button
+					{/* <Button
 						type="button"
 						className="text-sm bg-black hoverScaleDownEffect w-full mx-auto text-white"
 						onClick={() => {
@@ -616,7 +623,7 @@ const DiscountServicesForm = ({
 						}}
 					>
 						Add Discount Rule
-					</Button>
+					</Button> */}
 				</div>
 
 				{/* Extra Details */}

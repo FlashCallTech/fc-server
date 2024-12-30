@@ -29,7 +29,6 @@ export const ChatRequestProvider = ({
 }) => {
 	const [chatRequest, setChatRequest] = useState<any>(null);
 	const { chatRequestsRef } = useChatRequest();
-	// const [currentCreator, setCurrentCreator] = useState<creatorUser>();
 	const { creatorUser } = useCurrentUsersContext();
 	let collectionUnsubscribe: (() => void) | undefined;
 	let docUnsubscribe: (() => void) | undefined;
