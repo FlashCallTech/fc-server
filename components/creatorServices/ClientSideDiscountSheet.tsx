@@ -277,9 +277,9 @@ const ClientSideDiscountheet = ({
 							} rounded-full hoverScaleDownEffect relative`}
 							style={{ background: theme && theme }}
 						>
-							<span className="absolute -top-0 -right-0 flex items-center justify-center bg-red-500 rounded-full text-white p-1 text-xs size-5">
+							{/* <span className="absolute -top-0 -right-0 flex items-center justify-center bg-red-500 rounded-full text-white p-1 text-xs size-5">
 								{userServices.length}
-							</span>
+							</span> */}
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								fill="none"
