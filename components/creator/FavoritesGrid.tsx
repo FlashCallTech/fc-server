@@ -110,7 +110,7 @@ const FavoritesGrid = ({
 							? `You are now following ${fullName}`
 							: `You have unfollowed ${fullName}`
 					}`,
-					toastStatus: isFavorited ? "negative" : "positive",
+					toastStatus: !isFavorited ? "negative" : "positive",
 				});
 			}
 		} catch (error) {
@@ -124,7 +124,7 @@ const FavoritesGrid = ({
 	const imageSrc = getImageSource(creator);
 
 	return (
-		<section className="relative group flex flex-col items-center justify-center rounded-xl w-full h-[202px] sm:h-64 md:h-80 transition-all duration-300 hover:scale-95 group">
+		<section className="relative group flex flex-col items-center justify-center rounded-xl w-full h-[202px] sm:h-64 md:h-80 group">
 			<Link
 				href={creator?.username}
 				className="aspect-square size-full absolute top-0 left-0 bg-slate-300 rounded-xl overflow-clip"

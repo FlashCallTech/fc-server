@@ -6,6 +6,7 @@ import Razorpay from "razorpay";
 import {
 	arrayUnion,
 	doc,
+	DocumentData,
 	getDoc,
 	onSnapshot,
 	setDoc,
@@ -15,8 +16,9 @@ import { db } from "./firebase";
 import * as Sentry from "@sentry/nextjs";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { Call } from "@stream-io/video-react-sdk";
-import { clientUser, creatorUser } from "@/types";
+import { clientUser, creatorUser, Service } from "@/types";
 import { getDownloadURL, ref } from "firebase/storage";
+import axios from "axios";
 
 const key_id = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 const key_secret = process.env.NEXT_PUBLIC_RAZORPAY_SECRET;
@@ -53,12 +55,15 @@ export const handleInterruptedCall = async (
 	userType: "client" | "expert",
 	backendBaseUrl: string,
 	expertPhone: string,
-	clientPhone: string
+	clientPhone: string,
+	discounts?: Service[]
 ) => {
 	if (!callId || !currentUserPhone) {
 		console.error("Invalid callId or user phone");
 		return;
 	}
+
+	const validDiscounts = discounts && discounts.length > 0 ? discounts : [];
 
 	// Extract relevant fields from the call object
 	const callData = {
@@ -67,19 +72,17 @@ export const handleInterruptedCall = async (
 		endedAt: call.state.endedAt,
 		startedAt: call.state.startsAt,
 		isVideoCall: call.type === "default",
+
 		expertId: call.state.members.find(
 			(member) => member.custom.type === "expert"
 		)?.user_id,
 		clientId: call.state.createdBy?.id,
 		expertPhone,
 		clientPhone,
+		discounts: validDiscounts,
 	};
 
-	console.log(callData);
-
 	try {
-		// Update the user's status based on the type
-
 		const localSessionKey = `meeting_${callId}_${currentUserId}`;
 
 		localStorage.removeItem("activeCallId");
@@ -568,8 +571,6 @@ export const updateFirestoreSessions = async (
 		const SessionDoc = await getDoc(SessionDocRef);
 		const ongoingCallUpdate: { [key: string]: any } = {};
 
-		console.log(params);
-
 		if (params.callId) ongoingCallUpdate.callId = params.callId;
 		if (params.status) ongoingCallUpdate.status = params.status;
 		if (params.clientId) ongoingCallUpdate.clientId = params.clientId;
@@ -581,9 +582,10 @@ export const updateFirestoreSessions = async (
 		if (params?.global) ongoingCallUpdate.global = params.global ?? false;
 
 		if (SessionDoc.exists()) {
+			const existingOngoingCall = SessionDoc.data()?.ongoingCall || {};
 			await updateDoc(SessionDocRef, {
 				ongoingCall: {
-					...SessionDoc.data()?.ongoingCall,
+					...existingOngoingCall,
 					...ongoingCallUpdate,
 				},
 			});
@@ -637,15 +639,25 @@ export const stopMediaStreams = () => {
 
 // Function to fetch the FCM token
 export const fetchFCMToken = async (phone: string, tokenType?: string) => {
-	const fcmTokenRef = doc(db, "FCMtoken", phone);
-	const fcmTokenDoc = await getDoc(fcmTokenRef);
-	return fcmTokenDoc.exists()
-		? tokenType === "voip"
-			? fcmTokenDoc.data()
-			: fcmTokenDoc.data().token
-		: null;
-};
+	try {
+		const fcmTokenRef = doc(db, "FCMtoken", phone);
+		const fcmTokenDoc = await getDoc(fcmTokenRef);
 
+		if (fcmTokenDoc.exists()) {
+			const data = fcmTokenDoc.data();
+			if (tokenType === "voip") {
+				return data;
+			}
+			return data.token || null;
+		} else {
+			console.warn(`No FCM token found for phone number: ${phone}`);
+			return null;
+		}
+	} catch (error) {
+		console.error("Error fetching FCM token:", error);
+		return null;
+	}
+};
 // Function to send notification
 export const sendNotification = async (
 	token: string,
@@ -898,43 +910,161 @@ export const fetchExchangeRate = async (): Promise<number> => {
 	const baseURL1 = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@";
 	const baseURL2 = ".currency-api.pages.dev/v1/currencies/usd.json";
 
-	while (retries<maxRetries) {
-	  const yyyy = date.getFullYear();
-	  const mm = String(date.getMonth() + 1).padStart(2, "0");
-	  const dd = String(date.getDate()).padStart(2, "0");
-	  const formattedDate = `${yyyy}-${mm}-${dd}`;
+	while (retries < maxRetries) {
+		const yyyy = date.getFullYear();
+		const mm = String(date.getMonth() + 1).padStart(2, "0");
+		const dd = String(date.getDate()).padStart(2, "0");
+		const formattedDate = `${yyyy}-${mm}-${dd}`;
 
-	  try {
-		const rateResponse = await fetch(
-		  `${baseURL1}${formattedDate}/v1/currencies/usd.json`,
-		  {method: "GET"}
-		)
-		  .catch(() => fetch(
-			`https://${formattedDate}${baseURL2}`,
-			{method: "GET"})
-		  );
+		try {
+			const rateResponse = await fetch(
+				`${baseURL1}${formattedDate}/v1/currencies/usd.json`,
+				{ method: "GET" }
+			).catch(() =>
+				fetch(`https://${formattedDate}${baseURL2}`, { method: "GET" })
+			);
 
-		if (rateResponse.ok) {
-		  const rateData = await rateResponse.json();
-		  if (rateData?.usd?.inr) {
-			return Number(rateData.usd.inr.toFixed(2));
-		  }
+			if (rateResponse.ok) {
+				const rateData = await rateResponse.json();
+				if (rateData?.usd?.inr) {
+					return Number(rateData.usd.inr.toFixed(2));
+				}
+			}
+		} catch (error) {
+			console.error(
+				`Failed to fetch exchange rate for date ${formattedDate}:`,
+				error
+			);
 		}
-	  } catch (error) {
-		console.error(
-		  `Failed to fetch exchange rate for date ${formattedDate}:`,
-		  error
-		);
-	  }
 
-	  // Move to the previous day
-	  date.setDate(date.getDate() - 1);
-	  retries++;
+		// Move to the previous day
+		date.setDate(date.getDate() - 1);
+		retries++;
 	}
-	throw new Error(
-	  "Unable to fetch exchange rate after multiple attempts."
-	);
-  };
+	throw new Error("Unable to fetch exchange rate after multiple attempts.");
+};
+
+interface FCMToken {
+	token: string;
+	voip_token: string;
+}
+
+export const sendCallNotification = async (
+	creatorPhone: string,
+	callType: string,
+	clientUsername: string,
+	call: Call,
+	notificationType: string,
+	fetchFCMToken: (phone: string, type: string) => Promise<FCMToken | null>,
+	sendNotification: (
+		token: string,
+		title: string,
+		message: string,
+		payload: object
+	) => void,
+	backendUrl: string
+) => {
+	const fcmToken = await fetchFCMToken(creatorPhone, "voip");
+
+	if (fcmToken) {
+		try {
+			// Send push notification for regular FCM
+			sendNotification(
+				fcmToken.token,
+				`Incoming ${callType} Call`,
+				`Call Request from ${clientUsername}`,
+				{
+					created_by_display_name: maskNumbers(
+						clientUsername || "Flashcall User"
+					),
+					callType: call.type,
+					callId: call.id,
+					notificationType,
+				}
+			);
+
+			if (fcmToken.voip_token) {
+				await axios.post(`${backendUrl}/send-notification`, {
+					deviceToken: fcmToken.voip_token,
+					message: `Incoming ${callType} Call Request from ${clientUsername}`,
+					payload: {
+						created_by_display_name: maskNumbers(
+							clientUsername || "Flashcall User"
+						),
+						callType: call.type,
+						callId: call.id,
+						notificationType,
+					},
+				});
+			}
+		} catch (error) {
+			console.warn(error);
+		}
+	}
+};
+
+export const sendChatNotification = async (
+	creatorPhone: string,
+	callType: string,
+	clientUsername: string,
+	notificationType: string,
+	chatRequestData: DocumentData,
+	fetchFCMToken: (phone: string, type: string) => Promise<FCMToken | null>,
+	sendNotification: (
+		token: string,
+		title: string,
+		message: string,
+		payload: object
+	) => void,
+	backendUrl: string
+) => {
+	const fcmToken = await fetchFCMToken(creatorPhone, "voip");
+
+	if (fcmToken) {
+		try {
+			sendNotification(
+				fcmToken.token,
+				`Incoming Chat Request`,
+				`Chat Request from ${clientUsername}`,
+				{
+					clientId: chatRequestData.clientId,
+					clientName: chatRequestData.clientName,
+					clientPhone: chatRequestData.clientPhone,
+					clientImg: chatRequestData.clientImg,
+					creatorId: chatRequestData.creatorId,
+					creatorName: chatRequestData.creatorName,
+					creatorPhone: chatRequestData.creatorPhone,
+					creatorImg: chatRequestData.creatorImg,
+					chatId: chatRequestData.chatId,
+					chatRequestId: chatRequestData.id,
+					callId: chatRequestData.callId,
+					chatRate: chatRequestData.chatRate,
+					client_first_seen: chatRequestData.client_first_seen,
+					creator_first_seen: chatRequestData.creator_first_seen,
+					createdAt: String(chatRequestData.createdAt),
+					notificationType: "chat.ring",
+				}
+			);
+
+			if (fcmToken.voip_token) {
+				await axios.post(`${backendUrl}/send-notification`, {
+					deviceToken: fcmToken.voip_token,
+					message: `Incoming ${callType} Call Request from ${clientUsername}`,
+					payload: {
+						created_by_display_name: maskNumbers(
+							clientUsername || "Flashcall User"
+						),
+						chatId: chatRequestData.chatId,
+						chatRequestId: chatRequestData.id,
+						notificationType,
+					},
+				});
+			}
+		} catch (error) {
+			console.warn(error);
+		}
+	}
+};
 
   export const getDevicePlatform = () => {
 	const userAgent = navigator.userAgent || navigator.vendor;

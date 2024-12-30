@@ -43,6 +43,7 @@ const Favorites = () => {
 		data: userFavorites,
 		fetchNextPage,
 		hasNextPage,
+		refetch,
 		isFetching,
 		isError,
 		isLoading,
@@ -52,18 +53,23 @@ const Favorites = () => {
 		limit
 	);
 
-	// Flatten paginated data
 	useEffect(() => {
-		const flatFavorites =
-			userFavorites?.pages.flatMap((page: any) => page.paginatedData) || [];
-		setFavorites(flatFavorites);
-	}, [userFavorites]);
+		if (!isLoading && userFavorites?.pages && userFavorites.pages.length > 0) {
+			const flatFavorites =
+				userFavorites.pages.flatMap((page: any) => page.paginatedData) || [];
+			setFavorites(flatFavorites);
 
-	const removeFavorite = (creatorId: string) => {
-		setFavorites((prevFavorites) =>
-			prevFavorites.filter((favorite) => favorite.creatorId !== creatorId)
-		);
-	};
+			// Show toast only if favorites are empty after data fetch
+			if (flatFavorites.length === 0) {
+				toast({
+					variant: "destructive",
+					title: `No creators found in the ${selectedProfession} category`,
+					description: "Try adjusting your filters",
+					toastStatus: "negative",
+				});
+			}
+		}
+	}, [userFavorites, isLoading, selectedProfession, toast]);
 
 	useEffect(() => {
 		if (inView && hasNextPage && !isFetching) {
@@ -73,15 +79,14 @@ const Favorites = () => {
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
+
 		if (storedCreator) {
 			const parsedCreator: creatorUser = JSON.parse(storedCreator);
 			if (parsedCreator) {
 				setCreator(parsedCreator);
 			}
 		}
-	}, []);
 
-	useEffect(() => {
 		trackEvent("Favourites_Impression", {
 			Client_ID: clientUser?._id,
 			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
@@ -90,21 +95,12 @@ const Favorites = () => {
 		});
 	}, []);
 
-	useEffect(() => {
-		if (
-			userFavorites &&
-			userFavorites?.pages.flatMap((page: any) => page.totalFavorites)[0] ===
-				0 &&
-			!isLoading
-		) {
-			toast({
-				variant: "destructive",
-				title: `No creators found in the ${selectedProfession} category`,
-				description: "Try adjusting your filters",
-				toastStatus: "negative",
-			});
-		}
-	}, [userFavorites, selectedProfession, isLoading]);
+	const removeFavorite = (creatorId: string) => {
+		refetch();
+		setFavorites((prevFavorites) =>
+			prevFavorites.filter((favorite) => favorite.creatorId !== creatorId)
+		);
+	};
 
 	const handleProfessionChange = (profession: string) => {
 		setSelectedProfession(profession);
@@ -141,14 +137,14 @@ const Favorites = () => {
 				</section>
 			</section>
 
-			{isLoading || !fetchingUser ? (
+			{isLoading || fetchingUser ? (
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
 				</section>
 			) : favorites.length === 0 ? (
 				<div className="size-full flex flex-col gap-4 items-center justify-center text-center text-gray-500">
 					<h2 className="text-2xl font-bold">No Favorites Found</h2>
-					<p className="text-lg text-gray-400">
+					<p className="px-4 text-lg text-gray-400">
 						{selectedProfession !== "All"
 							? `No results found in the "${selectedProfession}" category.`
 							: "You don’t have any favorites yet. Start exploring and add your favorites!"}
