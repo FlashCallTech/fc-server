@@ -5,19 +5,14 @@ import {
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { ParticipantsPreview } from "./ParticipantsPreview";
-import { useRouter } from "next/navigation";
 import Loader from "../shared/Loader";
 import Image from "next/image";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import {
-	fetchFCMToken,
-	maskNumbers,
-	sendNotification,
-	stopMediaStreams,
-} from "@/lib/utils";
+import { fetchFCMToken, sendNotification } from "@/lib/utils";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
+import EndCallButton from "../official/EndCallButton";
 
 const MeetingSetup = ({
 	setIsSetupComplete,
@@ -27,10 +22,8 @@ const MeetingSetup = ({
 	const { useCallEndedAt } = useCallStateHooks();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
-	const router = useRouter();
 	const call = useCall();
 	const { currentUser } = useCurrentUsersContext();
-	const creatorURL = localStorage.getItem("creatorURL");
 
 	if (!call) {
 		throw new Error(
@@ -42,10 +35,6 @@ const MeetingSetup = ({
 		(member) => member.custom.type === "expert"
 	);
 
-	const handleCallEnded = () => {
-		stopMediaStreams();
-	};
-
 	const handleJoinNow = async () => {
 		const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
 
@@ -55,7 +44,7 @@ const MeetingSetup = ({
 				`Incoming ${call.type} Call`,
 				`Call Request from ${currentUser?.username}`,
 				{
-					created_by_display_name: currentUser?.username || "Flashcall User",
+					created_by_display_name: currentUser?.username || "Official User",
 					callType: call.type,
 					callId: call.id,
 					notificationType: "call.ring",
@@ -68,41 +57,12 @@ const MeetingSetup = ({
 		setIsSetupComplete(true);
 	};
 
-	const handleCancel = async () => {
-		call.camera.disable();
-		call.microphone.disable();
-
-		if (isMeetingOwner) {
-			const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
-			if (fcmToken) {
-				sendNotification(
-					fcmToken,
-					`Missed ${call.type} Call Request`,
-					`Call Request from ${maskNumbers(
-						currentUser?.username || "Flashcall User"
-					)}`,
-					{
-						created_by_display_name: maskNumbers(
-							currentUser?.username || "Flashcall User"
-						),
-						callType: call.type,
-						callId: call.id,
-						notificationType: "call.missed",
-					}
-				);
-			}
-		}
-
-		call.endCall();
-		call.on("call.ended", handleCallEnded);
-	};
-
 	if (callHasEnded) {
 		return (
 			<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
 				<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
 					<h1 className="text-3xl font-semibold mb-4">Call Ended</h1>
-					<p className="text-lg">The call has already been ended</p>
+					<p className="text-lg">The call has been ended</p>
 				</div>
 			</div>
 		);
@@ -181,25 +141,9 @@ const MeetingSetup = ({
 					</button>
 
 					{isMeetingOwner && (
-						<button
-							className="w-fit bg-red-500 text-white p-4 rounded-full hoverScaleDownEffect"
-							onClick={handleCancel}
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								strokeWidth={1.5}
-								stroke="currentColor"
-								className="size-6"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M15.75 3.75 18 6m0 0 2.25 2.25M18 6l2.25-2.25M18 6l-2.25 2.25m1.5 13.5c-8.284 0-15-6.716-15-15V4.5A2.25 2.25 0 0 1 4.5 2.25h1.372c.516 0 .966.351 1.091.852l1.106 4.423c.11.44-.054.902-.417 1.173l-1.293.97a1.062 1.062 0 0 0-.38 1.21 12.035 12.035 0 0 0 7.143 7.143c.441.162.928-.004 1.21-.38l.97-1.293a1.125 1.125 0 0 1 1.173-.417l4.423 1.106c.5.125.852.575.852 1.091V19.5a2.25 2.25 0 0 1-2.25 2.25h-2.25Z"
-								/>
-							</svg>
-						</button>
+						<section className="w-fit">
+							<EndCallButton />
+						</section>
 					)}
 				</div>
 

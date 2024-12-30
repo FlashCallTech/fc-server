@@ -6,7 +6,7 @@ import {
 	StreamTheme,
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useGetCallById } from "@/hooks/useGetCallById";
 import MeetingSetup from "@/components/meeting/MeetingSetup";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -15,7 +15,6 @@ import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 import Image from "next/image";
 import ContentLoading from "@/components/shared/ContentLoading";
-import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import GetRandomImage from "@/utils/GetRandomImage";
 
 const MeetingPage = () => {
@@ -28,24 +27,10 @@ const MeetingPage = () => {
 		refreshCurrentUser,
 	} = useCurrentUsersContext();
 
-	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
-		if (currentUser?._id) {
-			let callData = {
-				client_id: call?.state?.createdBy?.id || null,
-				influencer_id: call?.state?.members[0].user_id || null,
-				started_at: call?.state?.startedAt,
-				ended_at: call?.state?.endedAt,
-				call_type: call?.type,
-				meeting_id: call?.id,
-			};
-			navigator.sendBeacon(
-				`${backendBaseUrl}/official/call/end/${meetingId}`,
-				JSON.stringify(callData)
-			);
-		}
-	});
-
 	const { call, isCallLoading } = useGetCallById(meetingId);
+	const { useCallEndedAt } = useCallStateHooks();
+	const callEndedAt = useCallEndedAt();
+	const callHasEnded = !!callEndedAt;
 
 	const [isInitializing, setIsInitializing] = useState(false);
 
@@ -94,7 +79,7 @@ const MeetingPage = () => {
 	};
 
 	useEffect(() => {
-		if (!currentUser) {
+		if (!callHasEnded && !currentUser) {
 			initializeUser();
 		}
 
@@ -111,9 +96,21 @@ const MeetingPage = () => {
 		};
 	}, [currentUser, meetingId, clientId, setClientUser]);
 
-	if ((currentUser && isCallLoading) || fetchingUser)
+	// Check if the call has ended
+	if (callHasEnded) {
 		return (
-			<div className="flex flex-col w-full items-center justify-center h-screen">
+			<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+				<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
+					<h1 className="text-3xl font-semibold mb-4">Call Ended</h1>
+					<p className="text-lg">The call has been ended.</p>
+				</div>
+			</div>
+		);
+	}
+
+	if ((currentUser && isCallLoading) || fetchingUser) {
+		return (
+			<div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white flex flex-col w-full items-center justify-center h-screen">
 				<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
 					<ContentLoading />
 					<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
@@ -129,28 +126,26 @@ const MeetingPage = () => {
 				</div>
 			</div>
 		);
+	}
 
 	if (!currentUser && !fetchingUser) {
 		return (
-			<>
-				<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-					<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
-						<h1 className="text-3xl font-semibold mb-4">Access Restricted</h1>
-						<p className="text-lg mb-6">Unable to authenticate User.</p>
-						<button
-							className="px-6 py-3 bg-blue-600 text-white text-lg rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300"
-							onClick={initializeUser}
-							disabled={isInitializing}
-						>
-							{isInitializing ? "Authenticating..." : "Authenticate"}
-						</button>
-					</div>
+			<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+				<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
+					<h1 className="text-3xl font-semibold mb-4">Access Restricted</h1>
+					<p className="text-lg mb-6">Unable to authenticate User.</p>
+					<button
+						className="px-6 py-3 bg-blue-600 text-white text-lg rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300"
+						onClick={initializeUser}
+						disabled={isInitializing}
+					>
+						{isInitializing ? "Authenticating..." : "Authenticate"}
+					</button>
 				</div>
-			</>
+			</div>
 		);
 	}
 
-	// call is not found
 	if (!call) {
 		return (
 			<div className="bg-dark-1 text-white flex flex-col items-center justify-center h-screen text-center px-4 gap-1.5 capitalize">
@@ -166,7 +161,7 @@ const MeetingPage = () => {
 		call.isCreatedByMe ||
 		call.state.members.find((m) => m.user_id === currentUser?._id);
 
-	if (!Allowed)
+	if (!Allowed) {
 		return (
 			<div className="bg-dark-1 text-white flex flex-col items-center justify-center h-screen text-center px-4 gap-1.5">
 				<p className="text-3xl font-bold ">Access Denied</p>
@@ -175,6 +170,7 @@ const MeetingPage = () => {
 				</span>
 			</div>
 		);
+	}
 
 	return (
 		<main className="h-full w-full bg-dark-1">
@@ -188,21 +184,7 @@ const MeetingPage = () => {
 };
 
 const MeetingRoomWrapper = ({ call }: any) => {
-	const { useCallEndedAt } = useCallStateHooks();
-	const callEndedAt = useCallEndedAt();
-	const callHasEnded = !!callEndedAt;
 	const [isSetupComplete, setIsSetupComplete] = useState(false);
-
-	if (callHasEnded) {
-		return (
-			<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-				<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
-					<h1 className="text-3xl font-semibold mb-4">Call Ended</h1>
-					<p className="text-lg">The call has already been ended</p>
-				</div>
-			</div>
-		);
-	}
 
 	return !isSetupComplete ? (
 		<MeetingSetup setIsSetupComplete={setIsSetupComplete} />

@@ -6,7 +6,13 @@ import Image from "next/image";
 import EndCallDecision from "../calls/EndCallDecision";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import axios from "axios";
-import { backendBaseUrl } from "@/lib/utils";
+import {
+	backendBaseUrl,
+	fetchFCMToken,
+	maskNumbers,
+	sendNotification,
+	stopMediaStreams,
+} from "@/lib/utils";
 
 const EndCallButton = () => {
 	const call = useCall();
@@ -23,10 +29,14 @@ const EndCallButton = () => {
 		setShowDialog(true);
 	};
 
+	const expert = call?.state?.members?.find(
+		(member) => member.custom.type === "expert"
+	);
+
 	const handleDecisionDialog = async () => {
 		try {
+			stopMediaStreams();
 			await call?.endCall();
-			handleSignout();
 			await axios.post(
 				`${backendBaseUrl}/official/call/end/${call?.id}`,
 				{
@@ -43,6 +53,26 @@ const EndCallButton = () => {
 					},
 				}
 			);
+
+			const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
+			if (fcmToken) {
+				sendNotification(
+					fcmToken,
+					`Missed ${call.type} Call Request`,
+					`Call Request from ${maskNumbers(
+						call?.state?.createdBy?.name || "Official User"
+					)}`,
+					{
+						created_by_display_name: maskNumbers(
+							call?.state?.createdBy?.name || "Official User"
+						),
+						callType: call.type,
+						callId: call.id,
+						notificationType: "call.missed",
+					}
+				);
+			}
+			handleSignout();
 		} catch (error) {
 			console.error("Error ending call:", error);
 		} finally {

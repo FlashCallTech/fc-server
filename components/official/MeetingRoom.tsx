@@ -19,6 +19,9 @@ import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import EndCallButton from "./EndCallButton";
 import CallTimer from "./CallTimer";
+import Countdown from "./CountDown";
+import useWarnOnUnload from "@/hooks/useWarnOnUnload";
+import { backendBaseUrl } from "@/lib/utils";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -86,11 +89,24 @@ const MeetingRoom = () => {
 	const isVideoCall = useMemo(() => call?.type === "default", [call]);
 	const isMobile = useScreenSize();
 	const mobileDevice = isMobileDevice();
-	const [countdown, setCountdown] = useState<number | null>(null);
-	const [showCountdown, setShowCountdown] = useState(false);
+
 	const [layout, setLayout] = useState<CallLayoutType>("grid");
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
-	const countdownDuration = 30;
+
+	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
+		let callData = {
+			client_id: call?.state?.createdBy?.id || null,
+			influencer_id: call?.state?.members[0].user_id || null,
+			started_at: call?.state?.startedAt,
+			ended_at: call?.state?.endedAt,
+			call_type: call?.type,
+			meeting_id: call?.id,
+		};
+		navigator.sendBeacon(
+			`${backendBaseUrl}/official/call/end/${call?.id}`,
+			JSON.stringify(callData)
+		);
+	});
 
 	// Layout rendering logic
 	const CallLayout = useMemo(() => {
@@ -119,48 +135,6 @@ const MeetingRoom = () => {
 		}
 	}, [layout, isVideoCall]);
 
-	useEffect(() => {
-		let timeoutId: NodeJS.Timeout | null = null;
-
-		let countdownInterval: NodeJS.Timeout | null = null;
-
-		if (participants.length === 1) {
-			setShowCountdown(true);
-			setCountdown(countdownDuration);
-
-			if (isVideoCall) call?.camera?.disable();
-			call?.microphone?.disable();
-
-			countdownInterval = setInterval(() => {
-				setCountdown((prevCountdown) => {
-					if (prevCountdown && prevCountdown > 1) {
-						return prevCountdown - 1;
-					} else {
-						return null;
-					}
-				});
-			}, 1000);
-
-			timeoutId = setTimeout(async () => {
-				await call?.endCall();
-			}, countdownDuration * 1000);
-		} else {
-			if (timeoutId) {
-				clearTimeout(timeoutId);
-			}
-			if (countdownInterval) {
-				clearInterval(countdownInterval);
-			}
-			setShowCountdown(false);
-			setCountdown(null);
-		}
-
-		return () => {
-			if (timeoutId) clearTimeout(timeoutId);
-			if (countdownInterval) clearInterval(countdownInterval);
-		};
-	}, [participants, call]);
-
 	// Handle layout updates on screen size changes
 	useEffect(() => {
 		if (isMobile) {
@@ -187,15 +161,9 @@ const MeetingRoom = () => {
 
 	if (callingState !== CallingState.JOINED) return <Loader />;
 
-	const CountdownDisplay = () => (
-		<div className="absolute top-6 left-6 sm:top-4 sm:left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-red-500 text-white flex items-center justify-center">
-			<p>Ending call in {countdown}s</p>
-		</div>
-	);
-
 	return (
 		<section className="relative w-full overflow-hidden pt-4 md:pt-0 text-white bg-dark-2 h-dvh">
-			{showCountdown && countdown && <CountdownDisplay />}
+			<Countdown participants={participants} duration={30} />
 			<div className="relative flex size-full items-center justify-center transition-all">
 				<div className="flex size-full max-w-[95%] md:max-w-[1000px] items-center transition-all">
 					{participants.length > 1 ? CallLayout : <NoParticipantsView />}
