@@ -83,8 +83,10 @@ const ChatInput: React.FC<Props> = ({
         }
     };
 
+    console.log(replyIndex);
+
     return (
-        <div className={`flex ${replyIndex ? "flex-col" : "flex-row"} gap-2 items-center w-full px-2 pb-2 justify-between`}>
+        <div className={`flex ${replyIndex !== undefined ? "flex-col" : "flex-row"} gap-2 items-center w-full px-2 pb-2 justify-between`}>
             {replyIndex !== undefined && (
                 <div className="relative flex w-full items-center gap-2 p-2 bg-gray-100 rounded-md">
                     <div className="flex w-full flex-col flex-1">
@@ -103,7 +105,7 @@ const ChatInput: React.FC<Props> = ({
                     </button>
                 </div>
             )}
-            <div className={`${replyIndex ? "flex flex-row w-full gap-2" : "w-full flex gap-2"}`}>
+            <div className={`${replyIndex !== undefined ? "flex flex-row w-full gap-2" : "w-full flex gap-2"}`}>
                 {isRecording && audioStream ? (
                     <div className="flex flex-row gap-3 flex-1 mr-5">
                         <button onClick={discardAudio}>
