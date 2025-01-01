@@ -51,31 +51,36 @@ const MeetingPage = () => {
 	};
 
 	const initializeUser = async () => {
-		setIsInitializing(true);
-		const client = {
-			_id: clientId as string,
-			username: `Official User`,
-			phone: "+1234567890",
-			fullName: "Official User",
-			firstName: "Official",
-			lastName: "User",
-			photo:
-				GetRandomImage() ||
-				"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
-			role: "client",
-			bio: "This is an Official user.",
-			walletBalance: 44,
-			gender: "male",
-			dob: "2000-01-01",
-		};
+		try {
+			setIsInitializing(true);
+			const client = {
+				_id: clientId as string,
+				username: `Official User`,
+				phone: "+1234567890",
+				fullName: "Official User",
+				firstName: "Official",
+				lastName: "User",
+				photo:
+					GetRandomImage() ||
+					"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
+				role: "client",
+				bio: "This is an Official user.",
+				walletBalance: 44,
+				gender: "male",
+				dob: "2000-01-01",
+			};
 
-		const authToken = await fetchAuthToken(client, "official");
-		if (authToken) {
-			setAuthToken(authToken);
-			setClientUser(client);
-			refreshCurrentUser();
+			const authToken = await fetchAuthToken(client, "official");
+			if (authToken) {
+				setAuthToken(authToken);
+				setClientUser(client);
+				refreshCurrentUser();
+			}
+		} catch (error) {
+			console.log(error);
+		} finally {
+			setIsInitializing(false);
 		}
-		setIsInitializing(false);
 	};
 
 	useEffect(() => {
