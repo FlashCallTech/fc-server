@@ -26,14 +26,14 @@ const Calendar = () => {
 					description: "You need to be logged in to access the calendar.",
 					toastStatus: "negative",
 				});
-				router.replace("/home");
+				router.replace("/");
 			} else if (userType === "client") {
 				toast({
 					title: "Redirecting",
 					description: "Clients do not have access to the calendar.",
 					toastStatus: "negative",
 				});
-				router.replace("/home");
+				router.replace("/");
 			}
 		}
 	}, [fetchingUser, currentUser, userType, toast, router]);
