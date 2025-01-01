@@ -137,11 +137,11 @@ const MeetingRoomWrapper = ({ toast, router, call }: any) => {
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
 
-	if (callHasEnded) {
-		return <CallEnded toast={toast} router={router} call={call} />;
-	} else {
-		return <MeetingRoom />;
-	}
+	return callHasEnded ? (
+		<CallEnded toast={toast} router={router} call={call} />
+	) : (
+		<MeetingRoom />
+	);
 };
 
 const CallEnded = ({ toast, router, call }: any) => {

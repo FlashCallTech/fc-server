@@ -163,7 +163,7 @@ const MeetingRoom = () => {
 
 	return (
 		<section className="relative w-full overflow-hidden pt-4 md:pt-0 text-white bg-dark-2 h-dvh">
-			<Countdown participants={participants} duration={30} />
+			<Countdown participants={participants} duration={5} />
 			<div className="relative flex size-full items-center justify-center transition-all">
 				<div className="flex size-full max-w-[95%] md:max-w-[1000px] items-center transition-all">
 					{participants.length > 1 ? CallLayout : <NoParticipantsView />}
