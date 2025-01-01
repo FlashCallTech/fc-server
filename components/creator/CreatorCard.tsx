@@ -14,7 +14,7 @@ import { backendBaseUrl } from "@/lib/utils";
 import Image from "next/image";
 import { useCreatorQuery } from "@/lib/react-query/queries";
 import ContentLoading from "../shared/ContentLoading";
-import ClientSideDiscountSheet from "../creatorServices/ClientSideDiscountSheet";
+import ClientSideDiscountSheet from "../discountServices/ClientSideDiscountSheet";
 
 const CreatorCard = () => {
 	const { username } = useParams();
@@ -37,7 +37,7 @@ const CreatorCard = () => {
 		let isMounted = true;
 
 		if (currentUser && userType === "creator") {
-			router.replace("/home");
+			router.replace("/");
 			return;
 		}
 

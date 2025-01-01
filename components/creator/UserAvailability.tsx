@@ -31,6 +31,9 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import { creatorUser } from "@/types";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import AvailabilityServiceCards from "../availabilityServices/AvailabilityServiceCards";
 
 const DAYS_OF_WEEK = [
 	"Saturday",
@@ -86,6 +89,7 @@ type TimeSlotFormValues = z.infer<typeof TimeSlotSchema>;
 const timeSlots = generateTimeSlots();
 
 const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
+	const { currentUser } = useCurrentUsersContext();
 	const form = useForm<TimeSlotFormValues>({
 		mode: "onChange",
 		resolver: zodResolver(TimeSlotSchema),
@@ -219,6 +223,9 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 			<p className="text-gray-500 mb-6">
 				Let your clients know when you&apos;re available.
 			</p>
+
+			<AvailabilityServiceCards creator={currentUser as creatorUser} />
+
 			<Form {...form}>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 					{fields.map((dayItem, dayIndex) => (

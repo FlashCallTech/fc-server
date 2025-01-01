@@ -969,34 +969,33 @@ export const sendCallNotification = async (
 	if (fcmToken) {
 		try {
 			// Send push notification for regular FCM
-			sendNotification(
-				fcmToken.token,
-				`Incoming ${callType} Call`,
-				`Call Request from ${clientUsername}`,
-				{
-					created_by_display_name: maskNumbers(
-						clientUsername || "Flashcall User"
-					),
-					callType: call.type,
-					callId: call.id,
-					notificationType,
-				}
-			);
-
-			if (fcmToken.voip_token) {
-				await axios.post(`${backendUrl}/send-notification`, {
-					deviceToken: fcmToken.voip_token,
-					message: `Incoming ${callType} Call Request from ${clientUsername}`,
-					payload: {
-						created_by_display_name: maskNumbers(
-							clientUsername || "Flashcall User"
-						),
-						callType: call.type,
-						callId: call.id,
-						notificationType,
-					},
-				});
-			}
+			// sendNotification(
+			// 	fcmToken.token,
+			// 	`Incoming ${callType} Call`,
+			// 	`Call Request from ${clientUsername}`,
+			// 	{
+			// 		created_by_display_name: maskNumbers(
+			// 			clientUsername || "Flashcall User"
+			// 		),
+			// 		callType: call.type,
+			// 		callId: call.id,
+			// 		notificationType,
+			// 	}
+			// );
+			// if (fcmToken.voip_token) {
+			// 	await axios.post(`${backendUrl}/send-notification`, {
+			// 		deviceToken: fcmToken.voip_token,
+			// 		message: `Incoming ${callType} Call Request from ${clientUsername}`,
+			// 		payload: {
+			// 			created_by_display_name: maskNumbers(
+			// 				clientUsername || "Flashcall User"
+			// 			),
+			// 			callType: call.type,
+			// 			callId: call.id,
+			// 			notificationType,
+			// 		},
+			// 	});
+			// }
 		} catch (error) {
 			console.warn(error);
 		}
@@ -1066,7 +1065,7 @@ export const sendChatNotification = async (
 	}
 };
 
-  export const getDevicePlatform = () => {
+export const getDevicePlatform = () => {
 	const userAgent = navigator.userAgent || navigator.vendor;
 
 	// Detect iOS
@@ -1085,4 +1084,4 @@ export const sendChatNotification = async (
 	}
 
 	return "Unknown Platform";
-}
+};

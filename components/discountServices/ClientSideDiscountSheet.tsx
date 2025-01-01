@@ -99,7 +99,13 @@ const ClientSideDiscountheet = ({
 		fetchNextPage,
 		hasNextPage,
 		isFetching,
-	} = useGetUserServices(creatorId, selectedFilter, removeFilter, "client");
+	} = useGetUserServices(
+		creatorId,
+		currentUser ? (currentUser?.email ? "Global" : "Indian") : "",
+		selectedFilter,
+		removeFilter,
+		"client"
+	);
 
 	// Handle mobile view detection
 	useEffect(() => {
