@@ -24,6 +24,7 @@ import axios from "axios";
 import Link from "next/link";
 import Image from "next/image";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
+import ClientSideUserAvailability from "../availabilityServices/ClientSideUserAvailability";
 
 const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 	const {
@@ -301,6 +302,9 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				{/* Call Buttons */}
 				<CallingOptions creator={creator} />
 
+				{/* Call Scheduling */}
+				{/* <ClientSideUserAvailability /> */}
+
 				{/* Creator Links */}
 				{creator?.links && creator?.links?.length > 0 && (
 					<section className="grid grid-cols-1 gap-4 w-full items-center">
@@ -337,7 +341,6 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 							))}
 					</section>
 				)}
-
 				{/* User Reviews */}
 				<section className="grid grid-cols-1 w-full items-start justify-start gap-2 pt-4">
 					{/* Content */}
