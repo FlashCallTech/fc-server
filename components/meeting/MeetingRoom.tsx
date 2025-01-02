@@ -173,7 +173,7 @@ const MeetingRoom = () => {
 						description: "You are already in this meeting in another tab.",
 						toastStatus: "positive",
 					});
-					router.replace("/home");
+					router.replace("/");
 					return;
 				}
 				if (callingState === CallingState.IDLE) {

@@ -14,7 +14,7 @@ import {
 	getImageSource,
 	updateFirestoreCallServices,
 } from "@/lib/utils";
-import ServicesCheckbox from "../creatorServices/ServicesCheckbox";
+import ServicesCheckbox from "../discountServices/ServicesCheckbox";
 import CopyToClipboard from "../shared/CopyToClipboard";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -27,7 +27,7 @@ import usePlatform from "@/hooks/usePlatform";
 import ProfileDialog from "./ProfileDialog";
 import useServices from "@/hooks/useServices";
 import Loader from "../shared/Loader";
-import DiscountServiceCards from "../creatorServices/DiscountServiceCards";
+import DiscountServiceCards from "../discountServices/DiscountServiceCards";
 
 const CreatorHome = () => {
 	const { creatorUser, refreshCurrentUser, fetchingUser } =

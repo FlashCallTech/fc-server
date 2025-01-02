@@ -235,7 +235,8 @@ export const useGetUserServices = (
 	creatorId: string,
 	filter: "all" | "audio" | "video" | "chat" | "" = "all",
 	fetchAll: boolean = false,
-	requestFrom: "creator" | "client"
+	requestFrom: "creator" | "client",
+	clientType?: string
 ) => {
 	const limit = 10;
 
@@ -243,6 +244,7 @@ export const useGetUserServices = (
 		queryKey: [
 			QUERY_KEYS.GET_CREATOR_DISCOUNT_SERVICES,
 			creatorId,
+			clientType,
 			filter,
 			fetchAll,
 			requestFrom,
@@ -250,6 +252,55 @@ export const useGetUserServices = (
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
 				`${backendBaseUrl}/services/creatorServices`,
+				{
+					params: {
+						page: fetchAll ? undefined : pageParam,
+						limit: fetchAll ? undefined : limit,
+						creatorId,
+						clientType,
+						filter,
+						fetchAll,
+						requestFrom,
+					},
+				}
+			);
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching user services");
+			}
+		},
+		getNextPageParam: (lastPage, allPages) => {
+			if (fetchAll) return null;
+			const totalPages = lastPage.pagination.pages;
+			const nextPage = allPages.length + 1;
+			return nextPage <= totalPages ? nextPage : null;
+		},
+		initialPageParam: 1,
+		enabled: !!creatorId,
+	});
+};
+
+export const useGetUserAvailabilityServices = (
+	creatorId: string,
+	filter: "all" | "audio" | "video" | "chat" | "" = "all",
+	fetchAll: boolean = false,
+	requestFrom: "creator" | "client"
+) => {
+	const limit = 10;
+
+	return useInfiniteQuery({
+		queryKey: [
+			QUERY_KEYS.GET_CREATOR_AVAILABILITY_SERVICES,
+			creatorId,
+			filter,
+			fetchAll,
+			requestFrom,
+		],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(
+				`${backendBaseUrl}/availability/creatorServices`,
 				{
 					params: {
 						page: fetchAll ? undefined : pageParam,

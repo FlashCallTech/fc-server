@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -30,14 +30,10 @@ import axios from "axios";
 import { backendBaseUrl, cn } from "@/lib/utils";
 import { useToast } from "../ui/use-toast";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { Service } from "@/types";
+import { AvailabilityService } from "@/types";
+import { isEqual } from "lodash";
 
-const predefinedConditions = [
-	"New User",
-	"Seasonal Offer",
-	// "30+ Minutes Call",
-	// "60 Minutes Call",
-] as const;
+const predefinedConditions = ["30+ Minutes Call", "60+ Minutes Call"] as const;
 
 const discountRuleSchema = z
 	.object({
@@ -49,13 +45,10 @@ const discountRuleSchema = z
 			})
 			.nonempty("At least one condition is required."),
 		discountAmount: z
-			.union([
-				z.number({
-					required_error: "Discount amount is required.",
-				}),
-				z.literal(null),
-			])
-			.refine((val) => val !== null && val > 0, {
+			.number({
+				required_error: "Discount amount is required.",
+			})
+			.refine((val) => val > 0, {
 				message: "Discount amount must be a valid number greater than 0.",
 			}),
 		discountType: z.enum(["percentage", "flat"], {
@@ -97,17 +90,23 @@ const formSchema = z.object({
 	type: z.enum(["all", "audio", "video", "chat"], {
 		required_error: "Service type is required.",
 	}),
+	timeDuration: z
+		.number()
+		.int()
+		.positive("Duration must be a positive number.")
+		.min(15, "Duration must be at least 15 minutes.")
+		.optional(),
 	isActive: z.boolean({
 		required_error: "isActive is required.",
 	}),
 	currency: z.enum(["INR", "USD"], {
 		required_error: "Currency is required.",
 	}),
-	discountRules: z.array(discountRuleSchema).optional(),
+	discountRules: discountRuleSchema.optional(),
 	extraDetails: z.string().optional(),
 });
 
-const DiscountServicesForm = ({
+const AvailabilityServicesForm = ({
 	sheetOpen,
 	refetch,
 	sheetType,
@@ -116,7 +115,7 @@ const DiscountServicesForm = ({
 	sheetOpen: (isOpen: boolean) => void;
 	refetch: any;
 	sheetType: "Create" | "Update";
-	service: Service | null;
+	service: AvailabilityService | null;
 }) => {
 	const { currentUser } = useCurrentUsersContext();
 	const { toast } = useToast();
@@ -130,13 +129,10 @@ const DiscountServicesForm = ({
 						description: service.description,
 						photo: service.photo,
 						type: service.type,
+						timeDuration: service.timeDuration || 15,
 						isActive: service.isActive,
 						currency: service.currency,
-						discountRules: service.discountRules.map((rule) => ({
-							conditions: rule.conditions,
-							discountType: rule.discountType,
-							discountAmount: rule.discountAmount,
-						})),
+						discountRules: service.discountRules,
 						extraDetails: service.extraDetails,
 				  }
 				: {
@@ -146,45 +142,43 @@ const DiscountServicesForm = ({
 							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
 						type: "all",
 						isActive: true,
+						timeDuration: 15,
 						currency: "INR",
-						discountRules: [
-							{
-								conditions: ["New User"],
-								discountType: "percentage",
-								discountAmount: 10,
-							},
-						],
+						discountRules: {
+							conditions: ["30+ Minutes Call"],
+							discountType: "percentage",
+							discountAmount: 10,
+						},
 						extraDetails: "",
 				  },
-	});
-
-	const { fields, append, remove } = useFieldArray({
-		name: "discountRules",
-		control: form.control,
 	});
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
 			const payload = {
 				...values,
-				photo: values.photo || service?.photo,
+				timeDuration: values.timeDuration ?? 0,
+				discountRules:
+					values.discountRules && Object.keys(values.discountRules).length > 0
+						? values.discountRules
+						: undefined,
+				photo:
+					values.photo ||
+					"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
 			};
 
-			// Determine URL and method based on sheetType
 			const url =
 				sheetType === "Create"
-					? `${backendBaseUrl}/services/creator/create`
-					: `${backendBaseUrl}/services/${service?._id}`;
+					? `${backendBaseUrl}/availability/creator/create`
+					: `${backendBaseUrl}/availability/${service?._id}`;
 			const method = sheetType === "Create" ? axios.post : axios.put;
 			const params =
 				sheetType === "Create"
 					? { params: { creatorId: currentUser?._id } }
 					: undefined;
 
-			// Make the API call
 			await method(url, payload, params);
 
-			// Refetch data and reset form
 			refetch();
 
 			toast({
@@ -219,16 +213,19 @@ const DiscountServicesForm = ({
 
 	const [hasChanges, setHasChanges] = useState(false);
 	const initialValues = useRef(form.getValues());
+	const hasChangesRef = useRef(false);
 
 	useEffect(() => {
 		const subscription = form.watch((values) => {
 			const currentValues = values;
-			setHasChanges(
-				JSON.stringify(currentValues) !== JSON.stringify(initialValues.current)
-			);
+			const changes = !isEqual(currentValues, initialValues.current);
+			if (hasChangesRef.current !== changes) {
+				hasChangesRef.current = changes;
+				setHasChanges(changes);
+			}
 		});
 		return () => subscription.unsubscribe();
-	}, [form]);
+	}, [form, isValid]);
 
 	return (
 		<Form {...form}>
@@ -258,7 +255,6 @@ const DiscountServicesForm = ({
 						);
 					}}
 				/>
-
 				{/* Title */}
 				<FormField
 					control={form.control}
@@ -273,7 +269,6 @@ const DiscountServicesForm = ({
 						</FormItem>
 					)}
 				/>
-
 				{/* Description */}
 				<FormField
 					control={form.control}
@@ -292,29 +287,19 @@ const DiscountServicesForm = ({
 						</FormItem>
 					)}
 				/>
-
 				{/* Type */}
 				<FormField
 					control={form.control}
 					name="type"
 					render={({ field }) => {
-						// Check if any discount rule contains the "New User" condition
-						const isNewUserConditionSelected = form
-							.watch("discountRules")
-							?.some((rule) => rule.conditions.includes("New User"));
-
 						return (
 							<FormItem>
 								<FormLabel>Services</FormLabel>
 								<Select
 									onValueChange={(value) => {
-										// Only allow changing type if "New User" is not selected
-										if (!isNewUserConditionSelected) {
-											field.onChange(value);
-										}
+										field.onChange(value);
 									}}
 									value={field.value}
-									disabled={isNewUserConditionSelected} // Disable dropdown if "New User" is selected
 								>
 									<SelectTrigger>
 										<SelectValue placeholder="Select service type" />
@@ -346,18 +331,60 @@ const DiscountServicesForm = ({
 										</SelectItem>
 									</SelectContent>
 								</Select>
-								{isNewUserConditionSelected && (
-									<p className="mt-2 text-sm text-gray-500">
-										Type is locked to &quot;All&quot; because &quot;New
-										User&quot; condition is selected.
-									</p>
-								)}
+
 								<FormMessage />
 							</FormItem>
 						);
 					}}
 				/>
 
+				{/* Service Call Duration */}
+				<FormField
+					control={form.control}
+					name="timeDuration"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Service Duration (minutes)</FormLabel>
+							<Select
+								onValueChange={(value) => field.onChange(Number(value))}
+								value={field.value?.toString() || ""}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder="Select duration" />
+								</SelectTrigger>
+								<SelectContent className="!bg-white">
+									<SelectItem
+										className="cursor-pointer hover:bg-gray-100"
+										value="15"
+									>
+										15 Minutes
+									</SelectItem>
+									<SelectItem
+										className="cursor-pointer hover:bg-gray-100"
+										value="30"
+									>
+										30 Minutes
+									</SelectItem>
+									<SelectItem
+										className="cursor-pointer hover:bg-gray-100"
+										value="45"
+									>
+										45 Minutes
+									</SelectItem>
+									<SelectItem
+										className="cursor-pointer hover:bg-gray-100"
+										value="60"
+									>
+										60 Minutes
+									</SelectItem>
+								</SelectContent>
+							</Select>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* Toggle Service State */}
 				<FormField
 					control={form.control}
 					name="isActive"
@@ -390,7 +417,6 @@ const DiscountServicesForm = ({
 						</FormItem>
 					)}
 				/>
-
 				{/* Currency */}
 				<FormField
 					control={form.control}
@@ -421,22 +447,18 @@ const DiscountServicesForm = ({
 						</FormItem>
 					)}
 				/>
-
 				{/* Discount Rules */}
-				<div className="space-y-4">
+				<div className="space-y-4 flex flex-col item-start justify-start">
 					<FormLabel>Discount Rules</FormLabel>
-					{fields.map((field, index) => (
-						<div
-							key={field.id}
-							className="grid grid-cols-1 gap-4 border p-4 rounded-md"
-						>
+					{form.watch("discountRules") ? (
+						<div className="grid grid-cols-1 gap-4 border p-4 rounded-md">
 							<FormField
 								control={form.control}
-								name={`discountRules.${index}.conditions`}
+								name="discountRules.conditions"
 								render={({ field }) => {
 									const conditions =
-										form.watch(`discountRules.${index}.conditions`) || [];
-									const isNewUserSelected = conditions.includes("New User");
+										form.watch("discountRules.conditions") || [];
+									const selectedCondition = conditions[0] || null;
 
 									return (
 										<FormItem>
@@ -444,7 +466,7 @@ const DiscountServicesForm = ({
 											<FormControl>
 												<div className="grid grid-cols-2 gap-4">
 													{predefinedConditions.map((condition) => {
-														const isSelected = conditions.includes(condition);
+														const isSelected = selectedCondition === condition;
 
 														return (
 															<section
@@ -456,29 +478,10 @@ const DiscountServicesForm = ({
 																		: "hover:bg-gray-50"
 																)}
 																onClick={() => {
-																	let updatedConditions = [];
-
-																	if (condition === "New User") {
-																		updatedConditions = isSelected
-																			? conditions.filter(
-																					(item) => item !== condition
-																			  )
-																			: ["New User"];
-																	} else {
-																		updatedConditions = isSelected
-																			? conditions.filter(
-																					(item) => item !== condition
-																			  )
-																			: conditions
-																					.filter((item) => item !== "New User")
-																					.concat(condition);
-																	}
-
-																	field.onChange(updatedConditions);
-
-																	if (updatedConditions.includes("New User")) {
-																		form.setValue("type", "all");
-																	}
+																	const updatedCondition = isSelected
+																		? []
+																		: [condition];
+																	field.onChange(updatedCondition);
 																}}
 															>
 																<section className="flex items-center justify-center text-sm font-medium">
@@ -494,10 +497,9 @@ const DiscountServicesForm = ({
 									);
 								}}
 							/>
-
 							<FormField
 								control={form.control}
-								name={`discountRules.${index}.discountType`}
+								name="discountRules.discountType"
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Discount Type</FormLabel>
@@ -529,12 +531,10 @@ const DiscountServicesForm = ({
 							/>
 							<FormField
 								control={form.control}
-								name={`discountRules.${index}.discountAmount`}
+								name="discountRules.discountAmount"
 								render={({ field }) => {
-									const discountType = form.watch(
-										`discountRules.${index}.discountType`
-									);
-									const discountCurrency = form.watch(`currency`);
+									const discountType = form.watch("discountRules.discountType");
+									const discountCurrency = form.watch("currency");
 
 									const placeholder =
 										discountType === "percentage"
@@ -589,34 +589,36 @@ const DiscountServicesForm = ({
 									);
 								}}
 							/>
-							{/* <Button
-								type="button"
-								className="text-sm bg-red-500 hoverScaleDownEffect w-fit text-white mt-2"
-								variant="destructive"
-								onClick={() => remove(index)}
-							>
-								Remove Rule
-							</Button> */}
+							{/* Remove Discount Button */}
+							<div className="flex justify-end">
+								<Button
+									type="button"
+									variant="outline"
+									className="text-red-500 border-red-500 hover:bg-red-50"
+									onClick={() => {
+										form.setValue("discountRules", undefined);
+									}}
+								>
+									Remove Discount
+								</Button>
+							</div>
 						</div>
-					))}
-					{/* <Button
-						type="button"
-						className="text-sm bg-black hoverScaleDownEffect w-full mx-auto text-white"
-						onClick={() => {
-							const randomIndex = Math.floor(
-								Math.random() * predefinedConditions.length
-							);
-							const randomCondition = predefinedConditions[randomIndex];
-
-							append({
-								conditions: [randomCondition],
-								discountType: "percentage",
-								discountAmount: 10,
-							});
-						}}
-					>
-						Add Discount Rule
-					</Button> */}
+					) : (
+						<Button
+							type="button"
+							variant="outline"
+							className="text-blue-500 border-blue-500 hover:bg-blue-50"
+							onClick={() =>
+								form.setValue("discountRules", {
+									conditions: ["30+ Minutes Call"],
+									discountType: "percentage",
+									discountAmount: 10,
+								})
+							}
+						>
+							Add Discount
+						</Button>
+					)}
 				</div>
 
 				{/* Extra Details */}
@@ -637,7 +639,6 @@ const DiscountServicesForm = ({
 						</FormItem>
 					)}
 				/>
-
 				{isValid && hasChanges && (
 					<Button
 						className="sticky -bottom-2.5 text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
@@ -665,4 +666,4 @@ const DiscountServicesForm = ({
 	);
 };
 
-export default DiscountServicesForm;
+export default AvailabilityServicesForm;

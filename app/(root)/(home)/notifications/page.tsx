@@ -30,7 +30,7 @@ const Notifications = () => {
 	const router = useRouter();
 	useEffect(() => {
 		if (currentUser && userType === "client") {
-			creatorURL ? router.replace(`/${creatorURL}`) : router.replace("/home");
+			creatorURL ? router.replace(`/${creatorURL}`) : router.replace("/");
 			return;
 		}
 	}, [currentUser]);
