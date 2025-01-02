@@ -11,23 +11,29 @@ import { backendBaseUrl } from "@/lib/utils";
 import DeleteCreatorServiceAlert from "../alerts/DeleteCreatorServiceAlert";
 import { useToast } from "../ui/use-toast";
 
-const AvailabilityServiceCards = ({ creator }: { creator: creatorUser }) => {
-	const {
-		data: creatorAvailabilityServices,
-		fetchNextPage,
-		hasNextPage,
-		isFetching,
-		isLoading,
-		refetch,
-	} = useGetUserAvailabilityServices(
-		creator?._id as string,
-		"all",
-		true,
-		"creator"
-	);
+const AvailabilityServiceCards = ({
+	creator,
+	userServices,
+	setUserServices,
+	refetch,
+	hasNextPage,
+	isFetching,
+	fetchNextPage,
+}: {
+	creator: creatorUser;
+	userServices: AvailabilityService[];
+	setUserServices: any;
+	refetch: any;
+	hasNextPage: boolean;
+	isFetching: boolean;
+	fetchNextPage: any;
+}) => {
+	const { ref, inView } = useInView({
+		threshold: 0.1,
+		triggerOnce: false,
+	});
 
 	const [sheetType, setSheetType] = useState<"Create" | "Update">("Create");
-	const [userServices, setUserServices] = useState<AvailabilityService[]>([]);
 	const [selectedService, setSelectedService] =
 		useState<AvailabilityService | null>(null);
 	const [isAvailabilityServiceSheetOpen, setIsAvailabilityServiceSheetOpen] =
@@ -35,24 +41,6 @@ const AvailabilityServiceCards = ({ creator }: { creator: creatorUser }) => {
 	const [deletingService, setDeletingService] = useState(false);
 	const [showDeleteServiceAlert, setShowDeleteServiceAlert] = useState(false);
 	const { toast } = useToast();
-
-	const { ref, inView } = useInView({
-		threshold: 0.1,
-		triggerOnce: false,
-	});
-
-	useEffect(() => {
-		const flattenedServices =
-			creatorAvailabilityServices?.pages.flatMap((page: any) => page.data) ||
-			[];
-		setUserServices(flattenedServices);
-	}, [creatorAvailabilityServices]);
-
-	useEffect(() => {
-		if (inView && hasNextPage) {
-			fetchNextPage();
-		}
-	}, [inView, hasNextPage, fetchNextPage]);
 
 	const editService = () => {
 		setIsAvailabilityServiceSheetOpen((prev) => !prev);
@@ -78,20 +66,18 @@ const AvailabilityServiceCards = ({ creator }: { creator: creatorUser }) => {
 		} catch (error) {
 			console.warn(error);
 		} finally {
-			setUserServices((prevServices) =>
-				prevServices.filter((service) => service._id !== serviceId)
+			setUserServices((prevServices: any) =>
+				prevServices.filter((service: any) => service._id !== serviceId)
 			);
 			setDeletingService(false);
 		}
 	};
 
-	if (isLoading) {
-		return (
-			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
-				<ContentLoading />
-			</div>
-		);
-	}
+	useEffect(() => {
+		if (inView && hasNextPage) {
+			fetchNextPage();
+		}
+	}, [inView, hasNextPage, fetchNextPage]);
 
 	return (
 		<>
@@ -146,9 +132,15 @@ const AvailabilityServiceCards = ({ creator }: { creator: creatorUser }) => {
 										</div>
 									</div>
 									<p className="mt-2 text-sm text-gray-500">
-										Availability: {service.discountRules?.discountAmount}{" "}
-										{service.discountRules?.discountType}
+										Duration: {service.timeDuration} minutes
 									</p>
+									<p className="text-sm text-gray-500 capitalize">
+										Included Services:{" "}
+										{service.type === "all"
+											? "Video, Audio, Chat"
+											: service.type}
+									</p>
+
 									<p className="text-sm text-gray-500">
 										Extra Details: {service.extraDetails}
 									</p>

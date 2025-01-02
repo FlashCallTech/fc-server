@@ -31,6 +31,7 @@ import { backendBaseUrl, cn } from "@/lib/utils";
 import { useToast } from "../ui/use-toast";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { AvailabilityService } from "@/types";
+import { isEqual } from "lodash";
 
 const predefinedConditions = ["30+ Minutes Call", "60+ Minutes Call"] as const;
 
@@ -89,7 +90,7 @@ const formSchema = z.object({
 	type: z.enum(["all", "audio", "video", "chat"], {
 		required_error: "Service type is required.",
 	}),
-	duration: z
+	timeDuration: z
 		.number()
 		.int()
 		.positive("Duration must be a positive number.")
@@ -116,11 +117,6 @@ const AvailabilityServicesForm = ({
 	sheetType: "Create" | "Update";
 	service: AvailabilityService | null;
 }) => {
-	const [selectedFile, setSelectedFile] = useState<File | String>(
-		service?.photo ||
-			"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7"
-	);
-
 	const { currentUser } = useCurrentUsersContext();
 	const { toast } = useToast();
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -133,7 +129,7 @@ const AvailabilityServicesForm = ({
 						description: service.description,
 						photo: service.photo,
 						type: service.type,
-						duration: service.duration || 15,
+						timeDuration: service.timeDuration || 15,
 						isActive: service.isActive,
 						currency: service.currency,
 						discountRules: service.discountRules,
@@ -142,10 +138,11 @@ const AvailabilityServicesForm = ({
 				: {
 						title: "",
 						description: "",
-						photo: "",
+						photo:
+							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
 						type: "all",
 						isActive: true,
-						duration: 15,
+						timeDuration: 15,
 						currency: "INR",
 						discountRules: {
 							conditions: ["30+ Minutes Call"],
@@ -160,8 +157,14 @@ const AvailabilityServicesForm = ({
 		try {
 			const payload = {
 				...values,
-				discountRules: values.discountRules ?? {},
-				photo: values.photo || service?.photo,
+				timeDuration: values.timeDuration ?? 0,
+				discountRules:
+					values.discountRules && Object.keys(values.discountRules).length > 0
+						? values.discountRules
+						: undefined,
+				photo:
+					values.photo ||
+					"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
 			};
 
 			const url =
@@ -174,10 +177,8 @@ const AvailabilityServicesForm = ({
 					? { params: { creatorId: currentUser?._id } }
 					: undefined;
 
-			// Make the API call
 			await method(url, payload, params);
 
-			// Refetch data and reset form
 			refetch();
 
 			toast({
@@ -203,7 +204,7 @@ const AvailabilityServicesForm = ({
 				toastStatus: "negative",
 			});
 			console.warn(error);
-			form.reset();
+			// form.reset();
 		}
 	}
 
@@ -212,16 +213,19 @@ const AvailabilityServicesForm = ({
 
 	const [hasChanges, setHasChanges] = useState(false);
 	const initialValues = useRef(form.getValues());
+	const hasChangesRef = useRef(false);
 
 	useEffect(() => {
 		const subscription = form.watch((values) => {
 			const currentValues = values;
-			setHasChanges(
-				JSON.stringify(currentValues) !== JSON.stringify(initialValues.current)
-			);
+			const changes = !isEqual(currentValues, initialValues.current);
+			if (hasChangesRef.current !== changes) {
+				hasChangesRef.current = changes;
+				setHasChanges(changes);
+			}
 		});
 		return () => subscription.unsubscribe();
-	}, [form]);
+	}, [form, isValid]);
 
 	return (
 		<Form {...form}>
@@ -244,7 +248,6 @@ const AvailabilityServicesForm = ({
 									<FileUploaderServices
 										fieldChange={field.onChange}
 										mediaUrl={mediaUrl}
-										onFileSelect={setSelectedFile}
 									/>
 								</FormControl>
 								<FormMessage />
@@ -338,7 +341,7 @@ const AvailabilityServicesForm = ({
 				{/* Service Call Duration */}
 				<FormField
 					control={form.control}
-					name="duration"
+					name="timeDuration"
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Service Duration (minutes)</FormLabel>

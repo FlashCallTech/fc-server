@@ -31,9 +31,12 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
-import { creatorUser } from "@/types";
+import { AvailabilityService, creatorUser } from "@/types";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import AvailabilityServiceCards from "../availabilityServices/AvailabilityServiceCards";
+import { useGetUserAvailabilityServices } from "@/lib/react-query/queries";
+import SinglePostLoader from "../shared/SinglePostLoader";
+import { isEqual } from "lodash";
 
 const DAYS_OF_WEEK = [
 	"Saturday",
@@ -54,6 +57,22 @@ export const validateTimeSlots = (
 	});
 };
 
+const convertTo24HourFormat = (time: string) => {
+	const [timePart, ampm] = time.split(" ");
+	const [hours, minutes] = timePart.split(":").map(Number);
+
+	let newHours = hours % 12;
+	if (ampm.toUpperCase() === "PM") {
+		newHours += 12;
+	}
+
+	return new Date(
+		`1970-01-01T${newHours.toString().padStart(2, "0")}:${minutes
+			.toString()
+			.padStart(2, "0")}:00Z`
+	);
+};
+
 const TimeSlotSchema = z.object({
 	weeklyAvailability: z
 		.array(
@@ -65,6 +84,7 @@ const TimeSlotSchema = z.object({
 						id: z.string(),
 						startTime: z.string().min(1, "Start time is required"),
 						endTime: z.string().min(1, "End time is required"),
+						serviceId: z.string().optional(),
 					})
 				),
 			})
@@ -90,6 +110,28 @@ const timeSlots = generateTimeSlots();
 
 const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 	const { currentUser } = useCurrentUsersContext();
+	const [userServices, setUserServices] = useState<AvailabilityService[]>([]);
+	const {
+		data: creatorAvailabilityServices,
+		fetchNextPage,
+		hasNextPage,
+		isFetching,
+		isLoading,
+		refetch,
+	} = useGetUserAvailabilityServices(
+		currentUser?._id as string,
+		"all",
+		true,
+		"creator"
+	);
+
+	useEffect(() => {
+		const flattenedServices =
+			creatorAvailabilityServices?.pages.flatMap((page: any) => page.data) ||
+			[];
+		setUserServices(flattenedServices);
+	}, [creatorAvailabilityServices]);
+
 	const form = useForm<TimeSlotFormValues>({
 		mode: "onChange",
 		resolver: zodResolver(TimeSlotSchema),
@@ -101,6 +143,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 					id: slot._id,
 					startTime: slot.startTime,
 					endTime: slot.endTime,
+					serviceId: slot.serviceId,
 				})),
 			})),
 		},
@@ -128,16 +171,19 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 	const initialValues = useRef(form.getValues());
 
 	const { toast } = useToast();
+	const hasChangesRef = useRef(false);
 
 	useEffect(() => {
 		const subscription = form.watch((values) => {
 			const currentValues = values;
-			setHasChanges(
-				JSON.stringify(currentValues) !== JSON.stringify(initialValues.current)
-			);
+			const changes = !isEqual(currentValues, initialValues.current);
+			if (hasChangesRef.current !== changes) {
+				hasChangesRef.current = changes;
+				setHasChanges(changes);
+			}
 		});
 		return () => subscription.unsubscribe();
-	}, [form]);
+	}, [form, isValid]);
 
 	useEffect(() => {
 		if (data?.weeklyAvailability && Array.isArray(data.weeklyAvailability)) {
@@ -194,9 +240,10 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 				userId,
 				weekAvailability: data.weeklyAvailability.map((day) => ({
 					day: day.day,
-					timeSlots: day.slots.map(({ startTime, endTime }) => ({
+					timeSlots: day.slots.map(({ startTime, endTime, serviceId }) => ({
 						startTime,
 						endTime,
+						service: serviceId,
 					})),
 				})),
 			};
@@ -215,6 +262,14 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		}
 	};
 
+	if (isLoading) {
+		return (
+			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
+				<SinglePostLoader />
+			</div>
+		);
+	}
+
 	return (
 		<div className="relative size-full mx-auto py-4 px-1.5">
 			<h2 className="text-2xl font-bold mb-4">
@@ -224,7 +279,15 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 				Let your clients know when you&apos;re available.
 			</p>
 
-			<AvailabilityServiceCards creator={currentUser as creatorUser} />
+			<AvailabilityServiceCards
+				creator={currentUser as creatorUser}
+				userServices={userServices}
+				setUserServices={setUserServices}
+				refetch={refetch}
+				hasNextPage={hasNextPage}
+				isFetching={isFetching}
+				fetchNextPage={fetchNextPage}
+			/>
 
 			<Form {...form}>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -311,7 +374,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 												(slot, slotIndex) => (
 													<div
 														key={slot.id}
-														className="flex items-center gap-4 mb-2"
+														className="flex flex-wrap items-center gap-4 mb-2"
 													>
 														{/* Start Time */}
 														<FormField
@@ -328,7 +391,11 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																		</SelectTrigger>
 																		<SelectContent className="bg-white">
 																			{timeSlots.map((time) => (
-																				<SelectItem key={time} value={time}>
+																				<SelectItem
+																					key={time}
+																					value={time}
+																					className="cursor-pointer hover:bg-gray-100"
+																				>
 																					{time}
 																				</SelectItem>
 																			))}
@@ -353,7 +420,11 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																		</SelectTrigger>
 																		<SelectContent className="bg-white">
 																			{timeSlots.map((time) => (
-																				<SelectItem key={time} value={time}>
+																				<SelectItem
+																					key={time}
+																					value={time}
+																					className="cursor-pointer hover:bg-gray-100"
+																				>
 																					{time}
 																				</SelectItem>
 																			))}
@@ -362,6 +433,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																</FormControl>
 															)}
 														/>
+
 														{watch(`weeklyAvailability.${dayIndex}.slots`)
 															?.length > 1 && (
 															<Button
@@ -384,6 +456,73 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																	/>
 																</svg>
 															</Button>
+														)}
+
+														{/* Service Dropdown */}
+														{userServices && userServices.length > 0 && (
+															<FormField
+																control={form.control}
+																name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.serviceId`}
+																render={({ field }) => {
+																	const slots = form.watch(
+																		`weeklyAvailability.${dayIndex}.slots`
+																	);
+																	const currentSlot = slots[slotIndex];
+
+																	const startTime = convertTo24HourFormat(
+																		currentSlot.startTime
+																	);
+																	const endTime = convertTo24HourFormat(
+																		currentSlot.endTime
+																	);
+
+																	const slotDuration =
+																		(endTime.getTime() - startTime.getTime()) /
+																		(1000 * 60);
+
+																	const filteredServices = userServices.filter(
+																		(service) =>
+																			service.timeDuration === slotDuration
+																	);
+
+																	if (filteredServices.length === 0) {
+																		return (
+																			<div className="text-red-500">
+																				No services available for the given time
+																				slot.
+																			</div>
+																		);
+																	}
+
+																	return (
+																		<FormControl>
+																			<Select
+																				value={field.value}
+																				onValueChange={field.onChange}
+																			>
+																				<SelectTrigger className="w-full">
+																					<SelectValue placeholder="Select Service" />
+																				</SelectTrigger>
+																				<SelectContent className="bg-white">
+																					{filteredServices.map((service) => (
+																						<SelectItem
+																							key={service._id}
+																							value={service._id}
+																							className={`cursor-pointer hover:bg-gray-100 ${
+																								field.value === service._id
+																									? "bg-gray-200"
+																									: ""
+																							}`}
+																						>
+																							{service.title}
+																						</SelectItem>
+																					))}
+																				</SelectContent>
+																			</Select>
+																		</FormControl>
+																	);
+																}}
+															/>
 														)}
 													</div>
 												)
