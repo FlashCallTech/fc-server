@@ -156,7 +156,7 @@ const MeetingPage = () => {
 			<div className="bg-dark-1 text-white flex flex-col items-center justify-center h-screen text-center px-4 gap-1.5 capitalize">
 				<p className="text-3xl font-bold">Meeting Not Available</p>
 				<span className="text-xl">
-					The meeting you're looking for could not be found.
+					The meeting you&apos;re looking for could not be found.
 				</span>
 			</div>
 		);

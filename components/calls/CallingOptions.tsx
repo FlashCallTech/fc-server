@@ -415,16 +415,16 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						});
 					}
 
-					// await sendCallNotification(
-					// 	creator.phone as string,
-					// 	callType,
-					// 	clientUser.username,
-					// 	call,
-					// 	"call.ring",
-					// 	fetchFCMToken,
-					// 	sendNotification,
-					// 	backendUrl as string
-					// );
+					await sendCallNotification(
+						creator.phone as string,
+						callType,
+						clientUser.username,
+						call,
+						"call.ring",
+						fetchFCMToken,
+						sendNotification,
+						backendUrl as string
+					);
 
 					await fetch(`${backendBaseUrl}/calls/registerCall`, {
 						method: "POST",
