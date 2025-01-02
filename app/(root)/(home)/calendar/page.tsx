@@ -106,7 +106,7 @@ const Calendar = () => {
 					<h1 className="text-xl md:text-2xl font-bold">User Calendar</h1>
 				</section>
 			</section>
-			<UserAvailability data={data} userId={currentUser._id} />;
+			<UserAvailability data={data} userId={currentUser._id} />
 		</section>
 	);
 };

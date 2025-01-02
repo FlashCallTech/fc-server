@@ -473,7 +473,7 @@ export interface AvailabilityService {
 	description: string;
 	photo: string;
 	type: "all" | "audio" | "video" | "chat";
-	duration: number;
+	timeDuration: number;
 	isActive: boolean;
 	currency: "INR" | "USD";
 	discountRules: {

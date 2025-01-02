@@ -12,13 +12,11 @@ import * as Sentry from "@sentry/nextjs";
 type FileUploaderServicesProps = {
 	fieldChange: (url: string) => void;
 	mediaUrl: string;
-	onFileSelect: (file: File) => void;
 };
 
 const FileUploaderServices = ({
 	fieldChange,
 	mediaUrl,
-	onFileSelect,
 }: FileUploaderServicesProps) => {
 	const [fileUrl, setFileUrl] = useState(mediaUrl);
 	const [loading, setLoading] = useState(false);
@@ -95,7 +93,7 @@ const FileUploaderServices = ({
 				setLoading(false);
 			}
 		},
-		[fieldChange, onFileSelect, toast]
+		[fieldChange, toast]
 	);
 
 	const { getRootProps, getInputProps } = useDropzone({
