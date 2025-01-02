@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/form";
 import { AvailabilityService, creatorUser } from "@/types";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import AvailabilityServiceCards from "../availabilityServices/AvailabilityServiceCards";
+import AvailabilityServiceCards from "./AvailabilityServiceCards";
 import { useGetUserAvailabilityServices } from "@/lib/react-query/queries";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { isEqual } from "lodash";
@@ -253,6 +253,8 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 				description: "Your availability has been saved successfully!",
 				toastStatus: "positive",
 			});
+			initialValues.current = form.getValues();
+			setHasChanges(false);
 		} catch (error) {
 			toast({
 				title: "Error Saving Availability",
@@ -269,6 +271,8 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 			</div>
 		);
 	}
+
+	console.log(hasChanges, isValid);
 
 	return (
 		<div className="relative size-full mx-auto py-4 px-1.5">
