@@ -101,10 +101,10 @@ const ClientSideDiscountheet = ({
 		isFetching,
 	} = useGetUserServices(
 		creatorId,
-		currentUser ? (currentUser?.email ? "Global" : "Indian") : "",
 		selectedFilter,
 		removeFilter,
-		"client"
+		"client",
+		currentUser ? (currentUser?.email ? "Global" : "Indian") : ""
 	);
 
 	// Handle mobile view detection
