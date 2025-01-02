@@ -1,6 +1,6 @@
 "use client";
 
-import UserAvailability from "@/components/creator/UserAvailability";
+import UserAvailability from "@/components/availabilityServices/UserAvailability";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
