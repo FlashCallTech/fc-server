@@ -14,7 +14,6 @@ echo "Building the app..."
 npm install
 npm run build
 
-
 # Check if the build was successful
 if [ $? -eq 0 ]; then
   echo "Build completed successfully"
