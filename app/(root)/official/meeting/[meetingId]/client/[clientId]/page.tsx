@@ -165,15 +165,17 @@ const MeetingPage = () => {
 		<main className="h-full w-full bg-dark-1">
 			<StreamCall call={call}>
 				<StreamTheme>
-					<MeetingRoomWrapper call={call} />
+					<MeetingRoomWrapper />
 				</StreamTheme>
 			</StreamCall>
 		</main>
 	);
 };
 
-const MeetingRoomWrapper = memo(({ call }: any) => {
+const MeetingRoomWrapper = memo(() => {
 	return <MeetingSetup />;
 });
+
+MeetingRoomWrapper.displayName = "MeetingRoomWrapper";
 
 export default MeetingPage;
