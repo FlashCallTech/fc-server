@@ -59,6 +59,27 @@ const MeetingSetup = () => {
 		autoJoin();
 	}, []);
 
+	useEffect(() => {
+		const handleCallRejected = async () => {
+			const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
+
+			if (fcmToken)
+				sendNotification(
+					fcmToken,
+					`Incoming ${call.type} Call`,
+					`Call Request from ${currentUser?.username}`,
+					{
+						created_by_display_name: currentUser?.username || "Official User",
+						callType: call.type,
+						callId: call.id,
+						notificationType: "call.missed",
+					}
+				);
+		};
+
+		isMeetingOwner && call.on("call.rejected", handleCallRejected);
+	}, [call]);
+
 	const handleJoinNow = async () => {
 		if (!call) return;
 
@@ -72,7 +93,6 @@ const MeetingSetup = () => {
 					(participant) => participant.user.id === expert?.user?.id
 				);
 
-				console.log(expertAlreadyInCall);
 				if (!expertAlreadyInCall && fcmToken)
 					sendNotification(
 						fcmToken,
