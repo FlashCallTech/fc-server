@@ -8,22 +8,23 @@ import { ParticipantsPreview } from "./ParticipantsPreview";
 import Image from "next/image";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { fetchFCMToken, sendNotification } from "@/lib/utils";
+import { backendBaseUrl, fetchFCMToken, sendNotification } from "@/lib/utils";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import EndCallButton from "../official/EndCallButton";
 import { useEffect, useState } from "react";
 import MeetingRoom from "../official/MeetingRoom";
+import axios from "axios";
 
 const MeetingSetup = () => {
 	const [isJoining, setIsJoining] = useState(true);
 	const [isSetupComplete, setIsSetupComplete] = useState(false);
-	const { useCallEndedAt, useCallSession } = useCallStateHooks();
+	const { useCallEndedAt, useParticipants } = useCallStateHooks();
+	const participants = useParticipants();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
 	const call = useCall();
 	const { currentUser } = useCurrentUsersContext();
-	const session = useCallSession();
 
 	if (!call) {
 		throw new Error(
@@ -35,6 +36,7 @@ const MeetingSetup = () => {
 	const expert = call?.state.members?.find(
 		(member) => member.custom.type === "expert"
 	);
+	const callType = call.type === "default" ? "video" : "audio";
 
 	useEffect(() => {
 		if (!call)
@@ -65,11 +67,11 @@ const MeetingSetup = () => {
 		if (fcmToken)
 			sendNotification(
 				fcmToken,
-				`Incoming ${call.type} Call`,
+				`Incoming ${callType} Call`,
 				`Call Request from ${currentUser?.username}`,
 				{
 					created_by_display_name: currentUser?.username || "Official User",
-					callType: call.type,
+					callType: callType,
 					callId: call.id,
 					notificationType: "call.missed",
 				}
@@ -78,19 +80,58 @@ const MeetingSetup = () => {
 
 	useEffect(() => {
 		const handleCallRejected = async () => {
+			console.log("Call rejected");
+			await call?.endCall();
+			await axios.post(
+				`${backendBaseUrl}/official/call/end/${call?.id}`,
+				{
+					client_id: call?.state?.createdBy?.id || null,
+					influencer_id: call?.state?.members[0].user_id || null,
+					started_at: call?.state?.startedAt,
+					ended_at: call?.state?.endedAt,
+					call_type: call?.type,
+					meeting_id: call?.id,
+				},
+				{
+					params: {
+						type: call?.type,
+					},
+				}
+			);
+
 			notifyInfluencer();
 		};
 
 		const handleCallEnded = async () => {
+			console.log("Call ended");
+			await call?.endCall();
+
+			await axios.post(
+				`${backendBaseUrl}/official/call/end/${call?.id}`,
+				{
+					client_id: call?.state?.createdBy?.id || null,
+					influencer_id: call?.state?.members[0].user_id || null,
+					started_at: call?.state?.startedAt,
+					ended_at: call?.state?.endedAt,
+					call_type: call?.type,
+					meeting_id: call?.id,
+				},
+				{
+					params: {
+						type: call?.type,
+					},
+				}
+			);
 			notifyInfluencer();
 		};
 
-		isMeetingOwner && call.on("call.rejected", handleCallRejected);
+		call.on("call.rejected", handleCallRejected);
+		call.on("call.ended", handleCallEnded);
 		return () => {
 			call.off("call.rejected", handleCallRejected);
 			call.off("call.ended", handleCallEnded);
 		};
-	}, [call]);
+	}, [call.id]);
 
 	const handleJoinNow = async () => {
 		if (!call) return;
@@ -99,20 +140,17 @@ const MeetingSetup = () => {
 			setIsJoining(true);
 
 			// Send notification if FCM token exists and there is no other participant
-			if (isMeetingOwner && session) {
+			if (isMeetingOwner && participants && !callHasEnded) {
 				const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
-				let expertAlreadyInCall = session.participants.find(
-					(participant) => participant.user.id === expert?.user?.id
-				);
 
-				if (!expertAlreadyInCall && fcmToken)
+				if (participants.length === 0 && fcmToken)
 					sendNotification(
 						fcmToken,
-						`Incoming ${call.type} Call`,
+						`Incoming ${callType} Call`,
 						`Call Request from ${currentUser?.username}`,
 						{
 							created_by_display_name: currentUser?.username || "Official User",
-							callType: call.type,
+							callType: callType,
 							callId: call.id,
 							notificationType: "call.ring",
 						}

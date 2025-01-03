@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useCall } from "@stream-io/video-react-sdk";
+import axios from "axios";
+import {
+	backendBaseUrl,
+	fetchFCMToken,
+	maskNumbers,
+	sendNotification,
+	stopMediaStreams,
+} from "@/lib/utils";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 interface CountdownProps {
 	participants: any[];
@@ -8,9 +17,12 @@ interface CountdownProps {
 
 const Countdown = ({ participants, duration }: CountdownProps) => {
 	const call = useCall();
+	const { handleSignout } = useCurrentUsersContext();
 	const [countdown, setCountdown] = useState<number | null>(null);
 	const [showCountdown, setShowCountdown] = useState(false);
-
+	const expert = call?.state?.members?.find(
+		(member) => member.custom.type === "expert"
+	);
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout | null = null;
 		let countdownInterval: NodeJS.Timeout | null = null;
@@ -29,7 +41,48 @@ const Countdown = ({ participants, duration }: CountdownProps) => {
 			}, 1000);
 
 			timeoutId = setTimeout(async () => {
-				await call?.endCall();
+				try {
+					stopMediaStreams();
+					await call?.endCall();
+					// await axios.post(
+					// 	`${backendBaseUrl}/official/call/end/${call?.id}`,
+					// 	{
+					// 		client_id: call?.state?.createdBy?.id || null,
+					// 		influencer_id: call?.state?.members[0].user_id || null,
+					// 		started_at: call?.state?.startedAt,
+					// 		ended_at: call?.state?.endedAt,
+					// 		call_type: call?.type,
+					// 		meeting_id: call?.id,
+					// 	},
+					// 	{
+					// 		params: {
+					// 			type: call?.type,
+					// 		},
+					// 	}
+					// );
+
+					const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
+					if (fcmToken) {
+						sendNotification(
+							fcmToken,
+							`Missed ${call?.type} Call Request`,
+							`Call Request from ${maskNumbers(
+								call?.state?.createdBy?.name || "Official User"
+							)}`,
+							{
+								created_by_display_name: maskNumbers(
+									call?.state?.createdBy?.name || "Official User"
+								),
+								callType: call?.type,
+								callId: call?.id,
+								notificationType: "call.missed",
+							}
+						);
+					}
+					handleSignout();
+				} catch (error) {
+					console.error("Error ending call:", error);
+				}
 			}, duration * 1000);
 		} else {
 			if (timeoutId) clearTimeout(timeoutId);
