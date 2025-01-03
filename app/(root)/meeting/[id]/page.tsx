@@ -84,12 +84,9 @@ const MeetingPage = () => {
 
 	useEffect(() => {
 		if (!isCallLoading && call) {
-			const expert = call.state?.members?.find(
-				(member: any) => member.custom.type === "expert"
-			);
 			const isAuthorized =
-				currentUser?._id === call.state?.createdBy?.id ||
-				currentUser?._id === expert?.user_id;
+				call.isCreatedByMe ||
+				call.state.members.find((m) => m.user_id === currentUser?._id);
 
 			if (!isAuthorized) {
 				toast({
