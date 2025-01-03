@@ -59,25 +59,37 @@ const MeetingSetup = () => {
 		autoJoin();
 	}, []);
 
+	const notifyInfluencer = async () => {
+		const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
+
+		if (fcmToken)
+			sendNotification(
+				fcmToken,
+				`Incoming ${call.type} Call`,
+				`Call Request from ${currentUser?.username}`,
+				{
+					created_by_display_name: currentUser?.username || "Official User",
+					callType: call.type,
+					callId: call.id,
+					notificationType: "call.missed",
+				}
+			);
+	};
+
 	useEffect(() => {
 		const handleCallRejected = async () => {
-			const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
+			notifyInfluencer();
+		};
 
-			if (fcmToken)
-				sendNotification(
-					fcmToken,
-					`Incoming ${call.type} Call`,
-					`Call Request from ${currentUser?.username}`,
-					{
-						created_by_display_name: currentUser?.username || "Official User",
-						callType: call.type,
-						callId: call.id,
-						notificationType: "call.missed",
-					}
-				);
+		const handleCallEnded = async () => {
+			notifyInfluencer();
 		};
 
 		isMeetingOwner && call.on("call.rejected", handleCallRejected);
+		return () => {
+			call.off("call.rejected", handleCallRejected);
+			call.off("call.ended", handleCallEnded);
+		};
 	}, [call]);
 
 	const handleJoinNow = async () => {
