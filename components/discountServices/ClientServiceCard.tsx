@@ -41,8 +41,6 @@ const ClientServiceCard = ({
 		setNewUserService,
 	} = useSelectedServiceContext();
 
-	const isAlreadyUtilizedByClient = utilizedBy.includes(clientId);
-
 	const formattedDiscounts = (rule: any) => {
 		return rule.discountType === "percentage"
 			? `${rule.discountAmount}% off`
@@ -53,12 +51,18 @@ const ClientServiceCard = ({
 		rule.conditions.includes("New User")
 	);
 
-	const isDiscountAutomaticallyApplied = hasNewUserDiscount && !hasPreviousCall;
+	useEffect(() => {
+		if (hasNewUserDiscount) {
+			setNewUserService(service);
+		} else if (newUserService?._id === service._id) {
+			setNewUserService(null);
+		}
+	}, [hasNewUserDiscount, service, newUserService, setNewUserService]);
 
-	const isServiceSelectable =
-		!isDiscountAutomaticallyApplied && !isAlreadyUtilizedByClient;
-
+	// Handle service selection
 	const handleSelectService = () => {
+		if (newUserService?._id === service._id) return;
+
 		if (selectedService?._id === service._id) {
 			setSelectedService(null);
 		} else {
@@ -66,31 +70,17 @@ const ClientServiceCard = ({
 		}
 	};
 
+	// Check if the current service is selected
 	const isSelected = selectedService?._id === service._id;
-
-	useEffect(() => {
-		if (isDiscountAutomaticallyApplied) {
-			setNewUserService(service);
-		} else {
-			setNewUserService(null);
-		}
-	}, [
-		service,
-		isDiscountAutomaticallyApplied,
-		newUserService,
-		setNewUserService,
-	]);
 
 	return (
 		<div
 			className={`bg-white shadow-md rounded-lg overflow-hidden w-full mx-auto border hover:shadow-lg transition-shadow hover:bg-gray-100 ${
-				!isServiceSelectable
-					? "hidden opacity-50 cursor-not-allowed"
-					: isSelected
+				isSelected
 					? "border-blue-500 shadow-lg cursor-pointer"
 					: " cursor-pointer"
 			}`}
-			onClick={isServiceSelectable ? handleSelectService : undefined}
+			onClick={handleSelectService}
 		>
 			{/* Service Content */}
 			<section className="p-5">
@@ -120,14 +110,7 @@ const ClientServiceCard = ({
 										className="text-sm text-gray-700 flex items-center"
 									>
 										<span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-											{formattedDiscounts(discount)}{" "}
-											{isDiscountAutomaticallyApplied &&
-												isServiceSelectable &&
-												discount.conditions.includes("New User") && (
-													<span className="ml-2 text-xs font-medium text-gray-500">
-														(Applied)
-													</span>
-												)}
+											{formattedDiscounts(discount)}
 										</span>
 									</li>
 								))}
@@ -136,22 +119,10 @@ const ClientServiceCard = ({
 					</section>
 				</section>
 
-				{!isServiceSelectable && (
-					<p className="mt-2 text-sm text-gray-500 mb-2.5">
-						You are not eligible for{" "}
-						{isAlreadyUtilizedByClient
-							? "this Discount"
-							: "New User Discounts."}
-					</p>
-				)}
-
 				{/* CTA */}
 				<button
 					onClick={() => setIsModalOpen(true)}
-					className={`w-full px-4 py-2 bg-black text-white text-sm rounded-lg font-medium ${
-						!isServiceSelectable ? "cursor-not-allowed" : "hoverScaleDownEffect"
-					}`}
-					disabled={!isServiceSelectable}
+					className={`w-full px-4 py-2 bg-black text-white text-sm rounded-lg font-medium "hoverScaleDownEffect`}
 				>
 					View Details
 				</button>

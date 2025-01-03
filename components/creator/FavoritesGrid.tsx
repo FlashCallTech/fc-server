@@ -1,4 +1,4 @@
-import { backendBaseUrl, getDisplayName, getImageSource } from "@/lib/utils";
+import { getDisplayName, getImageSource } from "@/lib/utils";
 import { creatorUser } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,11 +6,9 @@ import React, { useEffect, useState } from "react";
 import Favorites from "../shared/Favorites";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useToast } from "../ui/use-toast";
-import * as Sentry from "@sentry/nextjs";
 import { usePathname } from "next/navigation";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import axios from "axios";
 
 const FavoritesGrid = ({
 	creator,
@@ -19,9 +17,7 @@ const FavoritesGrid = ({
 	creator: creatorUser;
 	onFavoriteToggle: (updatedCreator: creatorUser, isFavorited: boolean) => void;
 }) => {
-	const [addingFavorite, setAddingFavorite] = useState(false);
-	const [markedFavorite, setMarkedFavorite] = useState(false);
-	const [status, setStatus] = useState<string>("Online"); // Default status to "Offline"
+	const [status, setStatus] = useState<string>("Online");
 
 	const { clientUser } = useCurrentUsersContext();
 	const pathname = usePathname();
@@ -87,40 +83,6 @@ const FavoritesGrid = ({
 		};
 	}, [creator._id, creator.phone]);
 
-	const handleToggleFavorite = async () => {
-		const clientId = clientUser?._id;
-		setAddingFavorite(true);
-		try {
-			const response = await axios.post(
-				`${backendBaseUrl}/favorites/upsertFavorite`,
-				{
-					clientId: clientId as string,
-					creatorId: creator?._id,
-				}
-			);
-
-			if (response.status === 200) {
-				const isFavorited = !markedFavorite;
-				setMarkedFavorite(isFavorited);
-				onFavoriteToggle(creator, isFavorited);
-				toast({
-					variant: "destructive",
-					title: `${
-						isFavorited
-							? `You are now following ${fullName}`
-							: `You have unfollowed ${fullName}`
-					}`,
-					toastStatus: !isFavorited ? "negative" : "positive",
-				});
-			}
-		} catch (error) {
-			Sentry.captureException(error);
-			console.log(error);
-		} finally {
-			setAddingFavorite(false);
-		}
-	};
-
 	const imageSrc = getImageSource(creator);
 
 	return (
@@ -176,10 +138,7 @@ const FavoritesGrid = ({
 
 			<div className="absolute transition-all duration-500 ease-in-out group-hover:top-1 group-hover:right-1 top-0 right-0 flex flex-col items-end justify-center gap-2">
 				<Favorites
-					setMarkedFavorite={setMarkedFavorite}
-					markedFavorite={markedFavorite}
-					handleToggleFavorite={handleToggleFavorite}
-					addingFavorite={addingFavorite}
+					onFavoriteToggle={onFavoriteToggle}
 					creator={creator}
 					user={clientUser}
 					isFavoritesPath={isFavoritesPath}
