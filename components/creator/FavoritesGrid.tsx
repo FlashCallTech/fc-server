@@ -140,7 +140,7 @@ const FavoritesGrid = ({
 				<Favorites
 					onFavoriteToggle={onFavoriteToggle}
 					creator={creator}
-					user={clientUser}
+					userId={clientUser?._id as string}
 					isFavoritesPath={isFavoritesPath}
 				/>
 			</div>

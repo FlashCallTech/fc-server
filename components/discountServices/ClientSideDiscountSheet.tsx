@@ -100,10 +100,10 @@ const ClientSideDiscountheet = ({
 		isFetching,
 	} = useGetUserServices(
 		creatorId,
-		currentUser?._id as string,
 		selectedFilter,
 		removeFilter,
 		"client",
+		currentUser?._id as string,
 		currentUser ? (currentUser?.email ? "Global" : "Indian") : ""
 	);
 
