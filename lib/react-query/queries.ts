@@ -118,13 +118,18 @@ export const useGetClients = () => {
 // ============================================================
 
 const fetchCreator = async (username: string) => {
-	const response = await axios.post(
-		`${backendBaseUrl}/user/getUserByUsername`,
-		{
-			username,
+	try {
+		const response = await axios.get(
+			`${backendBaseUrl}/creator/getByUsername/${username}`
+		);
+
+		// Check for successful response
+		if (response.status === 200) {
+			return response.data;
 		}
-	);
-	return response.data;
+	} catch (error: any) {
+		throw new Error("Unable to fetch creator details");
+	}
 };
 
 // Custom hook for React Query
@@ -233,6 +238,7 @@ export const useGetCreatorNotifications = (userId: string) => {
 // Hook for fetching user services
 export const useGetUserServices = (
 	creatorId: string,
+	clientId: string,
 	filter: "all" | "audio" | "video" | "chat" | "" = "all",
 	fetchAll: boolean = false,
 	requestFrom: "creator" | "client",
@@ -244,6 +250,7 @@ export const useGetUserServices = (
 		queryKey: [
 			QUERY_KEYS.GET_CREATOR_DISCOUNT_SERVICES,
 			creatorId,
+			clientId,
 			clientType,
 			filter,
 			fetchAll,
@@ -257,6 +264,7 @@ export const useGetUserServices = (
 						page: fetchAll ? undefined : pageParam,
 						limit: fetchAll ? undefined : limit,
 						creatorId,
+						clientId,
 						clientType,
 						filter,
 						fetchAll,

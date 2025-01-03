@@ -73,6 +73,25 @@ const convertTo24HourFormat = (time: string) => {
 	);
 };
 
+const serviceSchema = z.object({
+	_id: z.string().nonempty("Service ID is required"),
+	photo: z.string().optional(),
+	title: z.string().nonempty("Service title is required"),
+	description: z.string().nonempty("Service description is required"),
+	type: z.enum(["all", "audio", "video", "chat"]),
+	timeDuration: z.number().min(1, "Time duration must be at least 1 minute"),
+	isActive: z.boolean(),
+	currency: z.enum(["INR", "USD"]),
+	discountRules: z
+		.object({
+			conditions: z.array(z.string()).optional(),
+			discountAmount: z.number().optional(),
+			discountType: z.enum(["percentage", "flat"]).optional(),
+		})
+		.optional(),
+	extraDetails: z.string().optional(),
+});
+
 const TimeSlotSchema = z.object({
 	weeklyAvailability: z
 		.array(
@@ -84,7 +103,7 @@ const TimeSlotSchema = z.object({
 						id: z.string(),
 						startTime: z.string().min(1, "Start time is required"),
 						endTime: z.string().min(1, "End time is required"),
-						serviceId: z.string().optional(),
+						service: serviceSchema.optional(),
 					})
 				),
 			})
@@ -143,7 +162,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 					id: slot._id,
 					startTime: slot.startTime,
 					endTime: slot.endTime,
-					serviceId: slot.serviceId,
+					service: slot.service ?? "",
 				})),
 			})),
 		},
@@ -240,10 +259,10 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 				userId,
 				weekAvailability: data.weeklyAvailability.map((day) => ({
 					day: day.day,
-					timeSlots: day.slots.map(({ startTime, endTime, serviceId }) => ({
+					timeSlots: day.slots.map(({ startTime, endTime, service }) => ({
 						startTime,
 						endTime,
-						service: serviceId,
+						service: service,
 					})),
 				})),
 			};
@@ -272,7 +291,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		);
 	}
 
-	console.log(hasChanges, isValid);
+	console.log(data);
 
 	return (
 		<div className="relative size-full mx-auto py-4 px-1.5">
@@ -466,13 +485,14 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 														{userServices && userServices.length > 0 && (
 															<FormField
 																control={form.control}
-																name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.serviceId`}
+																name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.service`}
 																render={({ field }) => {
 																	const slots = form.watch(
 																		`weeklyAvailability.${dayIndex}.slots`
 																	);
 																	const currentSlot = slots[slotIndex];
 
+																	// Convert times to 24-hour format
 																	const startTime = convertTo24HourFormat(
 																		currentSlot.startTime
 																	);
@@ -480,10 +500,12 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																		currentSlot.endTime
 																	);
 
+																	// Calculate slot duration in minutes
 																	const slotDuration =
 																		(endTime.getTime() - startTime.getTime()) /
 																		(1000 * 60);
 
+																	// Filter services based on time duration
 																	const filteredServices = userServices.filter(
 																		(service) =>
 																			service.timeDuration === slotDuration
@@ -498,11 +520,25 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																		);
 																	}
 
+																	// Find the selected service object by _id
+																	const selectedService =
+																		filteredServices.find(
+																			(service) =>
+																				service._id === field.value?._id
+																		) || null;
+
 																	return (
 																		<FormControl>
 																			<Select
-																				value={field.value}
-																				onValueChange={field.onChange}
+																				value={selectedService?._id}
+																				onValueChange={(value) => {
+																					// Map the selected _id back to the full service object
+																					const selected =
+																						filteredServices.find(
+																							(service) => service._id === value
+																						);
+																					field.onChange(selected);
+																				}}
 																			>
 																				<SelectTrigger className="w-full">
 																					<SelectValue placeholder="Select Service" />
@@ -513,7 +549,8 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																							key={service._id}
 																							value={service._id}
 																							className={`cursor-pointer hover:bg-gray-100 ${
-																								field.value === service._id
+																								selectedService?._id ===
+																								service._id
 																									? "bg-gray-200"
 																									: ""
 																							}`}

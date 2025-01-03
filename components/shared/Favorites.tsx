@@ -3,54 +3,99 @@ import Image from "next/image";
 import { creatorUser } from "@/types";
 import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
-import { backendBaseUrl } from "@/lib/utils";
+import { backendBaseUrl, getDisplayName } from "@/lib/utils";
 import UnfollowAlert from "../alerts/UnfollowAlert";
-import { debounce } from "lodash";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { useToast } from "../ui/use-toast";
+import AuthenticationSheet from "./AuthenticationSheet";
 
 const Favorites = memo(
 	({
-		setMarkedFavorite,
-		markedFavorite,
-		handleToggleFavorite,
-		addingFavorite,
 		creator,
-		user,
+		userId,
+		onFavoriteToggle,
 		isFavoritesPath,
 	}: {
-		setMarkedFavorite: React.Dispatch<React.SetStateAction<boolean>>;
-		markedFavorite: boolean;
-		handleToggleFavorite: () => Promise<void>;
-		addingFavorite: boolean;
 		creator: creatorUser;
-		user: any;
+		userId: string;
+		onFavoriteToggle?: (
+			updatedCreator: creatorUser,
+			isFavorited: boolean
+		) => void;
 		isFavoritesPath?: boolean;
 	}) => {
 		const [showUnfollowDialog, setShowUnfollowDialog] = useState(false);
-		const [loading, setLoading] = useState(user?._id ? true : false);
+		const [loading, setLoading] = useState(false);
+		const [addingFavorite, setAddingFavorite] = useState(false);
+		const [markedFavorite, setMarkedFavorite] = useState(false);
+		const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
+		const { setAuthenticationSheetOpen } = useCurrentUsersContext();
+		const { toast } = useToast();
+		const fullName = getDisplayName(creator);
 
-		const fetchFavorites = debounce(
-			async (userId: string, creatorId: string) => {
-				try {
-					const response = await axios.get(
-						`${backendBaseUrl}/favorites/${userId}`
+		const fetchFavorites = async (userId: string, creatorId: string) => {
+			try {
+				setLoading(true);
+				const response = await axios.get(
+					`${backendBaseUrl}/favorites/${userId}`
+				);
+				if (response.data?.paginatedData) {
+					const isFavorite = response.data.paginatedData.some(
+						(fav: any) => fav._id === creatorId
 					);
-					if (response.data?.paginatedData) {
-						const isFavorite = response.data.paginatedData.some(
-							(fav: any) => fav._id === creatorId
-						);
-						setMarkedFavorite(isFavorite);
-					} else {
-						console.error("Unexpected favorites response:", response.data);
-					}
-				} catch (error) {
-					Sentry.captureException(error);
-					console.error("Error fetching favorites:", error);
-				} finally {
-					setLoading(false);
+					setMarkedFavorite(isFavorite);
+				} else {
+					console.error("Unexpected favorites response:", response.data);
 				}
-			},
-			300
-		);
+			} catch (error) {
+				Sentry.captureException(error);
+				console.error("Error fetching favorites:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		useEffect(() => {
+			setAuthenticationSheetOpen(isAuthSheetOpen);
+		}, [isAuthSheetOpen]);
+
+		const handleToggleFavorite = async () => {
+			if (!userId) {
+				setIsAuthSheetOpen(true);
+				return;
+			}
+			const clientId = userId;
+			setAddingFavorite(true);
+			try {
+				const response = await axios.post(
+					`${backendBaseUrl}/favorites/upsertFavorite`,
+					{
+						clientId: clientId as string,
+						creatorId: creator?._id,
+					}
+				);
+
+				if (response.status === 200) {
+					const isFavorited = !markedFavorite;
+					setMarkedFavorite(isFavorited);
+					onFavoriteToggle && onFavoriteToggle(creator, isFavorited);
+
+					toast({
+						title: `${
+							isFavorited
+								? `You are now following ${fullName}`
+								: `You have unfollowed ${fullName}`
+						}`,
+						toastStatus: !isFavorited ? "negative" : "positive",
+					});
+				}
+			} catch (error) {
+				Sentry.captureException(error);
+				console.log(error);
+			} finally {
+				setAddingFavorite(false);
+			}
+		};
 
 		const handleUnfollowClick = useCallback(() => {
 			if (markedFavorite) {
@@ -68,15 +113,13 @@ const Favorites = memo(
 		}, [handleToggleFavorite]);
 
 		useEffect(() => {
-			if (!user?._id || !creator?._id) {
+			if (!userId || !creator?._id) {
 				setLoading(false);
 				return;
 			}
 
-			setLoading(true);
-
-			fetchFavorites(user._id, creator._id);
-		}, [user?._id, creator?._id]);
+			fetchFavorites(userId, creator._id);
+		}, []);
 
 		if (loading) {
 			return (
@@ -103,7 +146,7 @@ const Favorites = memo(
 			);
 		}
 
-		if (!user?._id || !creator?._id) {
+		if (!userId || !creator?._id) {
 			return (
 				<div
 					className={`flex items-center justify-center w-full hoverScaleDownEffect cursor-pointer ${
@@ -190,6 +233,13 @@ const Favorites = memo(
 						/>
 					)}
 				</button>
+
+				{isAuthSheetOpen && (
+					<AuthenticationSheet
+						isOpen={isAuthSheetOpen}
+						onOpenChange={setIsAuthSheetOpen}
+					/>
+				)}
 			</>
 		);
 	}

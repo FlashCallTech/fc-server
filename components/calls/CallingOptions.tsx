@@ -210,7 +210,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		});
 
 		return () => unsubscribe();
-	}, [creator._id, creator.phone, region]);
+	}, [creator?._id, creator?.phone]);
 
 	useEffect(() => {
 		if (!chatReqSent) {

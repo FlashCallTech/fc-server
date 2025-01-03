@@ -2,45 +2,36 @@
 
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import {
-	backendBaseUrl,
 	getDisplayName,
 	getImageSource,
 	isValidHexColor,
 	setBodyBackgroundColor,
 } from "@/lib/utils";
 import { creatorUser, LinkType } from "@/types";
-import React, { useEffect, useState } from "react";
-import { useToast } from "../ui/use-toast";
-import * as Sentry from "@sentry/nextjs";
+import React, { memo, useEffect, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { usePathname } from "next/navigation";
 import CallingOptions from "../calls/CallingOptions";
 import UserReviews from "../creator/UserReviews";
-import AuthenticationSheet from "../shared/AuthenticationSheet";
 import Favorites from "../shared/Favorites";
 import ShareButton from "../shared/ShareButton";
-import axios from "axios";
 import Link from "next/link";
 import Image from "next/image";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import ClientSideUserAvailability from "../availabilityServices/ClientSideUserAvailability";
 
-const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
+const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 	const {
 		clientUser,
-		setAuthenticationSheetOpen,
+
 		userType,
 		setCurrentTheme,
 		updateCreatorURL,
 	} = useCurrentUsersContext();
-	const [addingFavorite, setAddingFavorite] = useState(false);
-	const [markedFavorite, setMarkedFavorite] = useState(false);
-	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 
 	const [status, setStatus] = useState<string>("Online");
 	const pathname = usePathname();
-	const { toast } = useToast();
 	const creatorURL = pathname || localStorage.getItem("creatorURL");
 
 	const fullName = getDisplayName(creator);
@@ -67,10 +58,6 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 		updateCreatorURL(creatorURL);
 		setBodyBackgroundColor("#121319");
 	}, []);
-
-	useEffect(() => {
-		setAuthenticationSheetOpen(isAuthSheetOpen);
-	}, [isAuthSheetOpen]);
 
 	useEffect(() => {
 		if (!creator || !creator._id || !creator.phone) return;
@@ -111,56 +98,14 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 					}
 				});
 
-				return () => unsubscribeStatus(); // Unsubscribe from userStatus snapshot
+				return () => unsubscribeStatus();
 			}
 		});
 
 		return () => {
-			unsubscribeServices(); // Unsubscribe from services snapshot
+			unsubscribeServices();
 		};
-	}, [creator, creator?._id, creator?.phone, status]);
-
-	const handleToggleFavorite = async () => {
-		if (!clientUser) {
-			setIsAuthSheetOpen(true);
-			return;
-		}
-		const clientId = clientUser?._id;
-		setAddingFavorite(true);
-		try {
-			trackPixelEvent("Favorite Toggled", {
-				clientId: clientId as string,
-				creatorId: creator?._id,
-				markedFavorite: !markedFavorite,
-			});
-			const response = await axios.post(
-				`${backendBaseUrl}/favorites/upsertFavorite`,
-				{
-					clientId: clientId as string,
-					creatorId: creator?._id,
-				}
-			);
-
-			if (response.status === 200) {
-				if (markedFavorite !== !markedFavorite) {
-					setMarkedFavorite((prev) => !prev);
-				}
-				toast({
-					title: `${
-						!markedFavorite
-							? `You are now following ${fullName}`
-							: `You have unfollowed ${fullName}`
-					}`,
-					toastStatus: markedFavorite ? "negative" : "positive",
-				});
-			}
-		} catch (error) {
-			Sentry.captureException(error);
-			console.log(error);
-		} finally {
-			setAddingFavorite(false);
-		}
-	};
+	}, [creator?._id, creator?.phone]);
 
 	return (
 		// Wrapper Section
@@ -258,14 +203,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				<section className={`flex items-center w-full gap-4`}>
 					{/* Favorite Button */}
 					{userType === "client" && (
-						<Favorites
-							setMarkedFavorite={setMarkedFavorite}
-							markedFavorite={markedFavorite}
-							handleToggleFavorite={handleToggleFavorite}
-							addingFavorite={addingFavorite}
-							creator={creator}
-							user={clientUser}
-						/>
+						<Favorites creator={creator} userId={clientUser?._id as string} />
 					)}
 					{/* Share Button */}
 					<ShareButton
@@ -303,7 +241,7 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 				<CallingOptions creator={creator} />
 
 				{/* Call Scheduling */}
-				{/* <ClientSideUserAvailability /> */}
+				<ClientSideUserAvailability creator={creator} />
 
 				{/* Creator Links */}
 				{creator?.links && creator?.links?.length > 0 && (
@@ -351,15 +289,9 @@ const CreatorDetails = ({ creator }: { creator: creatorUser }) => {
 					/>
 				</section>
 			</section>
-
-			{isAuthSheetOpen && (
-				<AuthenticationSheet
-					isOpen={isAuthSheetOpen}
-					onOpenChange={setIsAuthSheetOpen}
-				/>
-			)}
 		</section>
 	);
-};
+});
 
+CreatorDetails.displayName = "CreatorDetails";
 export default CreatorDetails;
