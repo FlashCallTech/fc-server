@@ -238,10 +238,10 @@ export const useGetCreatorNotifications = (userId: string) => {
 // Hook for fetching user services
 export const useGetUserServices = (
 	creatorId: string,
-	clientId: string,
 	filter: "all" | "audio" | "video" | "chat" | "" = "all",
 	fetchAll: boolean = false,
 	requestFrom: "creator" | "client",
+	clientId?: string,
 	clientType?: string
 ) => {
 	const limit = 10;
