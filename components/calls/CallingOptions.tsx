@@ -210,7 +210,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		});
 
 		return () => unsubscribe();
-	}, [creator._id, creator.phone, region]);
+	}, [creator?._id, creator?.phone]);
 
 	useEffect(() => {
 		if (!chatReqSent) {
@@ -415,16 +415,16 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						});
 					}
 
-					// await sendCallNotification(
-					// 	creator.phone as string,
-					// 	callType,
-					// 	clientUser.username,
-					// 	call,
-					// 	"call.ring",
-					// 	fetchFCMToken,
-					// 	sendNotification,
-					// 	backendUrl as string
-					// );
+					await sendCallNotification(
+						creator.phone as string,
+						callType,
+						clientUser.username,
+						call,
+						"call.ring",
+						fetchFCMToken,
+						sendNotification,
+						backendUrl as string
+					);
 
 					await fetch(`${backendBaseUrl}/calls/registerCall`, {
 						method: "POST",
