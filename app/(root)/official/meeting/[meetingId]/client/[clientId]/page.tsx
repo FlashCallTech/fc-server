@@ -28,9 +28,6 @@ const MeetingPage = () => {
 	} = useCurrentUsersContext();
 
 	const { call, isCallLoading } = useGetCallById(meetingId);
-	const { useCallEndedAt } = useCallStateHooks();
-	const callEndedAt = useCallEndedAt();
-	const callHasEnded = !!callEndedAt;
 
 	const [isInitializing, setIsInitializing] = useState(false);
 
@@ -84,7 +81,7 @@ const MeetingPage = () => {
 	};
 
 	useEffect(() => {
-		if (!callHasEnded && !currentUser) {
+		if (!currentUser) {
 			initializeUser();
 		}
 
@@ -100,18 +97,6 @@ const MeetingPage = () => {
 			window.removeEventListener("popstate", preventBackNavigation);
 		};
 	}, [currentUser, meetingId, clientId, setClientUser]);
-
-	// Check if the call has ended
-	if (callHasEnded) {
-		return (
-			<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-				<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
-					<h1 className="text-3xl font-semibold mb-4">Call Ended</h1>
-					<p className="text-lg">The call has been ended.</p>
-				</div>
-			</div>
-		);
-	}
 
 	if ((currentUser && isCallLoading) || fetchingUser) {
 		return (
@@ -189,26 +174,7 @@ const MeetingPage = () => {
 };
 
 const MeetingRoomWrapper = ({ call }: any) => {
-	const [isSetupComplete, setIsSetupComplete] = useState(false);
-	const { useCallEndedAt } = useCallStateHooks();
-	const callEndedAt = useCallEndedAt();
-	const callHasEnded = !!callEndedAt;
-
-	if (callHasEnded) {
-		return (
-			<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-				<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
-					<h1 className="text-3xl font-semibold mb-4">Call Ended</h1>
-					<p className="text-lg">The call has been ended.</p>
-				</div>
-			</div>
-		);
-	}
-	return !isSetupComplete ? (
-		<MeetingSetup setIsSetupComplete={setIsSetupComplete} />
-	) : (
-		<MeetingRoom />
-	);
+	return <MeetingSetup />;
 };
 
 export default MeetingPage;

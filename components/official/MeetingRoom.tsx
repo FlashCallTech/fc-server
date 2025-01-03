@@ -95,17 +95,21 @@ const MeetingRoom = () => {
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
 		let callData = {
-			client_id: call?.state?.createdBy?.id || null,
-			influencer_id: call?.state?.members[0].user_id || null,
-			started_at: call?.state?.startedAt,
-			ended_at: call?.state?.endedAt,
-			call_type: call?.type,
-			meeting_id: call?.id,
+			client_id: call?.state?.createdBy?.id || "unknown_client",
+			influencer_id: call?.state?.members?.[0]?.user_id || "unknown_influencer",
+			started_at: call?.state?.startedAt || new Date().toISOString(),
+			ended_at: call?.state?.endedAt || new Date().toISOString(),
+			meeting_id: call?.id || "unknown_meeting",
 		};
-		navigator.sendBeacon(
-			`${backendBaseUrl}/official/call/end/${call?.id}`,
-			JSON.stringify(callData)
-		);
+
+		try {
+			navigator.sendBeacon(
+				`${backendBaseUrl}/official/call/end/${call?.id || "unknown_meeting"}`,
+				JSON.stringify(callData)
+			);
+		} catch (error) {
+			console.error("Error sending beacon:", error);
+		}
 	});
 
 	// Layout rendering logic
