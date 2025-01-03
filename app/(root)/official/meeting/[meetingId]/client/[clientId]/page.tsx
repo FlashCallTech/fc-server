@@ -1,16 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-	StreamCall,
-	StreamTheme,
-	useCallStateHooks,
-} from "@stream-io/video-react-sdk";
+import { useState, useEffect, useRef, memo } from "react";
+import { StreamCall, StreamTheme } from "@stream-io/video-react-sdk";
 import { useParams } from "next/navigation";
 import { useGetCallById } from "@/hooks/useGetCallById";
 import MeetingSetup from "@/components/meeting/MeetingSetup";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import MeetingRoom from "@/components/official/MeetingRoom";
 import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 import Image from "next/image";
@@ -96,15 +91,19 @@ const MeetingPage = () => {
 		return () => {
 			window.removeEventListener("popstate", preventBackNavigation);
 		};
-	}, [currentUser, meetingId, clientId, setClientUser]);
+	}, [currentUser?._id, meetingId, clientId]);
 
-	if ((currentUser && isCallLoading) || fetchingUser) {
+	if (isInitializing || fetchingUser || isCallLoading) {
 		return (
 			<div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white flex flex-col w-full items-center justify-center h-screen">
 				<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
 					<ContentLoading />
 					<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
-						Fetching Participant&apos;s Details{" "}
+						{isCallLoading
+							? "Fetching Call Details"
+							: isInitializing
+							? "Authenticating..."
+							: "Fetching Participant's Details"}{" "}
 						<Image
 							src="/icons/loading-circle.svg"
 							alt="Loading..."
@@ -173,8 +172,8 @@ const MeetingPage = () => {
 	);
 };
 
-const MeetingRoomWrapper = ({ call }: any) => {
+const MeetingRoomWrapper = memo(({ call }: any) => {
 	return <MeetingSetup />;
-};
+});
 
 export default MeetingPage;

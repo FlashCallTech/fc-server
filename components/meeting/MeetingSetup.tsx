@@ -12,7 +12,7 @@ import { backendBaseUrl, fetchFCMToken, sendNotification } from "@/lib/utils";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import EndCallButton from "../official/EndCallButton";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MeetingRoom from "../official/MeetingRoom";
 import axios from "axios";
 
@@ -25,7 +25,7 @@ const MeetingSetup = () => {
 	const callHasEnded = !!callEndedAt;
 	const call = useCall();
 	const { currentUser } = useCurrentUsersContext();
-
+	const eventListenersSet = useRef(false);
 	if (!call) {
 		throw new Error(
 			"useStreamCall must be used within a StreamCall component."
@@ -37,6 +37,23 @@ const MeetingSetup = () => {
 		(member) => member.custom.type === "expert"
 	);
 	const callType = call.type === "default" ? "video" : "audio";
+
+	const notifyInfluencer = async () => {
+		const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
+
+		if (fcmToken)
+			sendNotification(
+				fcmToken,
+				`Incoming ${callType} Call`,
+				`Call Request from ${currentUser?.username}`,
+				{
+					created_by_display_name: currentUser?.username || "Official User",
+					callType: call.type,
+					callId: call.id,
+					notificationType: "call.missed",
+				}
+			);
+	};
 
 	useEffect(() => {
 		if (!call)
@@ -61,24 +78,42 @@ const MeetingSetup = () => {
 		autoJoin();
 	}, []);
 
-	const notifyInfluencer = async () => {
-		const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
+	const handleJoinNow = async () => {
+		if (!call) return;
 
-		if (fcmToken)
-			sendNotification(
-				fcmToken,
-				`Incoming ${callType} Call`,
-				`Call Request from ${currentUser?.username}`,
-				{
-					created_by_display_name: currentUser?.username || "Official User",
-					callType: callType,
-					callId: call.id,
-					notificationType: "call.missed",
-				}
-			);
+		try {
+			setIsJoining(true);
+
+			// Send notification if FCM token exists and there is no other participant
+			if (isMeetingOwner && participants && !callHasEnded) {
+				const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
+
+				if (participants.length === 0 && fcmToken)
+					sendNotification(
+						fcmToken,
+						`Incoming ${callType} Call`,
+						`Call Request from ${currentUser?.username}`,
+						{
+							created_by_display_name: currentUser?.username || "Official User",
+							callType: call.type,
+							callId: call.id,
+							notificationType: "call.ring",
+						}
+					);
+			}
+
+			// Join the call
+			await call.join();
+
+			setIsJoining(false);
+			setIsSetupComplete(true);
+		} catch (error) {
+			console.log(error);
+		}
 	};
 
 	useEffect(() => {
+		if (eventListenersSet.current) return;
 		const handleCallRejected = async () => {
 			console.log("Call rejected");
 			await call?.endCall();
@@ -102,70 +137,16 @@ const MeetingSetup = () => {
 			notifyInfluencer();
 		};
 
-		const handleCallEnded = async () => {
-			console.log("Call ended");
-			await call?.endCall();
-
-			await axios.post(
-				`${backendBaseUrl}/official/call/end/${call?.id}`,
-				{
-					client_id: call?.state?.createdBy?.id || null,
-					influencer_id: call?.state?.members[0].user_id || null,
-					started_at: call?.state?.startedAt,
-					ended_at: call?.state?.endedAt,
-					call_type: call?.type,
-					meeting_id: call?.id,
-				},
-				{
-					params: {
-						type: call?.type,
-					},
-				}
-			);
-			notifyInfluencer();
-		};
-
 		call.on("call.rejected", handleCallRejected);
-		call.on("call.ended", handleCallEnded);
+
+		// Mark that event listeners have been set
+		eventListenersSet.current = true;
 		return () => {
 			call.off("call.rejected", handleCallRejected);
-			call.off("call.ended", handleCallEnded);
+
+			eventListenersSet.current = false;
 		};
-	}, [call.id]);
-
-	const handleJoinNow = async () => {
-		if (!call) return;
-
-		try {
-			setIsJoining(true);
-
-			// Send notification if FCM token exists and there is no other participant
-			if (isMeetingOwner && participants && !callHasEnded) {
-				const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
-
-				if (participants.length === 0 && fcmToken)
-					sendNotification(
-						fcmToken,
-						`Incoming ${callType} Call`,
-						`Call Request from ${currentUser?.username}`,
-						{
-							created_by_display_name: currentUser?.username || "Official User",
-							callType: callType,
-							callId: call.id,
-							notificationType: "call.ring",
-						}
-					);
-			}
-
-			// Join the call
-			await call.join();
-
-			setIsJoining(false);
-			setIsSetupComplete(true);
-		} catch (error) {
-			console.log(error);
-		}
-	};
+	}, [call]);
 
 	if (callHasEnded) {
 		return (

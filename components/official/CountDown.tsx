@@ -44,22 +44,22 @@ const Countdown = ({ participants, duration }: CountdownProps) => {
 				try {
 					stopMediaStreams();
 					await call?.endCall();
-					// await axios.post(
-					// 	`${backendBaseUrl}/official/call/end/${call?.id}`,
-					// 	{
-					// 		client_id: call?.state?.createdBy?.id || null,
-					// 		influencer_id: call?.state?.members[0].user_id || null,
-					// 		started_at: call?.state?.startedAt,
-					// 		ended_at: call?.state?.endedAt,
-					// 		call_type: call?.type,
-					// 		meeting_id: call?.id,
-					// 	},
-					// 	{
-					// 		params: {
-					// 			type: call?.type,
-					// 		},
-					// 	}
-					// );
+					await axios.post(
+						`${backendBaseUrl}/official/call/end/${call?.id}`,
+						{
+							client_id: call?.state?.createdBy?.id || null,
+							influencer_id: call?.state?.members[0].user_id || null,
+							started_at: call?.state?.startedAt,
+							ended_at: call?.state?.endedAt,
+							call_type: call?.type,
+							meeting_id: call?.id,
+						},
+						{
+							params: {
+								type: call?.type,
+							},
+						}
+					);
 
 					const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
 					if (fcmToken) {
