@@ -8,13 +8,13 @@ import { ParticipantsPreview } from "./ParticipantsPreview";
 import Image from "next/image";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { backendBaseUrl, fetchFCMToken, sendNotification } from "@/lib/utils";
+import { fetchFCMToken, sendNotification } from "@/lib/utils";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import EndCallButton from "../official/EndCallButton";
 import { useEffect, useRef, useState } from "react";
 import MeetingRoom from "../official/MeetingRoom";
-import axios from "axios";
+import { useToast } from "../ui/use-toast";
 
 const MeetingSetup = () => {
 	const [isJoining, setIsJoining] = useState(true);
@@ -26,6 +26,7 @@ const MeetingSetup = () => {
 	const call = useCall();
 	const { currentUser } = useCurrentUsersContext();
 	const eventListenersSet = useRef(false);
+	const { toast } = useToast();
 	if (!call) {
 		throw new Error(
 			"useStreamCall must be used within a StreamCall component."
@@ -116,25 +117,13 @@ const MeetingSetup = () => {
 		if (eventListenersSet.current) return;
 		const handleCallRejected = async () => {
 			console.log("Call rejected");
+			toast({
+				variant: "destructive",
+				title: "Call Canceled",
+				description: "Influencer is Busy",
+				toastStatus: "negative",
+			});
 			await call?.endCall();
-			await axios.post(
-				`${backendBaseUrl}/official/call/end/${call?.id}`,
-				{
-					client_id: call?.state?.createdBy?.id || null,
-					influencer_id: call?.state?.members[0].user_id || null,
-					started_at: call?.state?.startedAt,
-					ended_at: call?.state?.endedAt,
-					call_type: call?.type,
-					meeting_id: call?.id,
-				},
-				{
-					params: {
-						type: call?.type,
-					},
-				}
-			);
-
-			notifyInfluencer();
 		};
 
 		call.on("call.rejected", handleCallRejected);
@@ -147,17 +136,6 @@ const MeetingSetup = () => {
 			eventListenersSet.current = false;
 		};
 	}, [call]);
-
-	if (callHasEnded) {
-		return (
-			<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-				<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
-					<h1 className="text-3xl font-semibold mb-4">Call Ended</h1>
-					<p className="text-lg">The call has been ended</p>
-				</div>
-			</div>
-		);
-	}
 
 	if (isSetupComplete) {
 		return <MeetingRoom />;

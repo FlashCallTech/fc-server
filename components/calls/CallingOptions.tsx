@@ -392,6 +392,11 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 							description,
 							global: clientUser?.global ?? false,
 						},
+						settings_override: {
+							limits: {
+								max_participants: 2,
+							},
+						},
 					},
 				})
 				.then(async () => {

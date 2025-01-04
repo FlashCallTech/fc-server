@@ -271,6 +271,14 @@ export const CurrentUsersProvider = ({
 				setUserFetched(true);
 				setCreatorUser(null);
 				setUserType("client");
+				return;
+			} else if (currentUser && currentUser.phone === "+1234567890") {
+				setFetchingUser(false);
+				setUserFetched(true);
+				setCreatorUser(null);
+				setClientUser(null);
+				setUserType("client");
+				return;
 			}
 
 			const response = await axios.get(`${backendBaseUrl}/user/getProfile`, {

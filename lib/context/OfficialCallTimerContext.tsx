@@ -17,6 +17,7 @@ const OfficialCallTimer = ({
 	const [hasLowTimeLeft, setHasLowTimeLeft] = useState(false);
 	const [isTimerRunning, setIsTimerRunning] = useState(true);
 	const [startTime, setStartTime] = useState<Date | null>(null);
+	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
 
 	const pauseTimer = () => setIsTimerRunning(false);
 	const resumeTimer = () => setIsTimerRunning(true);
@@ -56,6 +57,7 @@ const OfficialCallTimer = ({
 					await setDoc(callDocRef, {
 						startTime: currentTime.toISOString(),
 						timeLeft: callDuration,
+						timeUtilized: 0,
 					});
 
 					setStartTime(currentTime);
@@ -83,7 +85,7 @@ const OfficialCallTimer = ({
 			const updatedTimeLeft = Math.max(callDuration - elapsedTime, 0);
 
 			setTimeLeft(updatedTimeLeft);
-
+			setTotalTimeUtilized(elapsedTime);
 			setHasLowTimeLeft(updatedTimeLeft <= 300);
 
 			// Update Firebase
@@ -91,6 +93,7 @@ const OfficialCallTimer = ({
 				const callDocRef = doc(db, "calls", callId);
 				updateDoc(callDocRef, {
 					timeLeft: updatedTimeLeft,
+					timeUtilized: elapsedTime,
 				});
 			} catch (error) {
 				console.error("Error updating timer in Firestore:", error);

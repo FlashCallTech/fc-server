@@ -1,16 +1,27 @@
 "use client";
 
 import { useState, useEffect, useRef, memo } from "react";
-import { StreamCall, StreamTheme } from "@stream-io/video-react-sdk";
+import {
+	StreamCall,
+	StreamTheme,
+	useCallStateHooks,
+} from "@stream-io/video-react-sdk";
 import { useParams } from "next/navigation";
 import { useGetCallById } from "@/hooks/useGetCallById";
 import MeetingSetup from "@/components/meeting/MeetingSetup";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import axios from "axios";
-import { backendBaseUrl } from "@/lib/utils";
+import {
+	backendBaseUrl,
+	fetchFCMToken,
+	maskNumbers,
+	sendNotification,
+	stopMediaStreams,
+} from "@/lib/utils";
 import Image from "next/image";
 import ContentLoading from "@/components/shared/ContentLoading";
 import GetRandomImage from "@/utils/GetRandomImage";
+import { Cursor, Typewriter } from "react-simple-typewriter";
 
 const MeetingPage = () => {
 	const { meetingId, clientId } = useParams();
@@ -91,7 +102,7 @@ const MeetingPage = () => {
 		return () => {
 			window.removeEventListener("popstate", preventBackNavigation);
 		};
-	}, [currentUser?._id, meetingId, clientId]);
+	}, [meetingId, clientId]);
 
 	if (isInitializing || fetchingUser || isCallLoading) {
 		return (
@@ -165,17 +176,113 @@ const MeetingPage = () => {
 		<main className="h-full w-full bg-dark-1">
 			<StreamCall call={call}>
 				<StreamTheme>
-					<MeetingRoomWrapper />
+					<MeetingRoomWrapper call={call} />
 				</StreamTheme>
 			</StreamCall>
 		</main>
 	);
 };
 
-const MeetingRoomWrapper = memo(() => {
-	return <MeetingSetup />;
+const MeetingRoomWrapper = memo(({ call }: any) => {
+	const { useCallEndedAt } = useCallStateHooks();
+	const callEndedAt = useCallEndedAt();
+	const callHasEnded = !!callEndedAt;
+
+	return callHasEnded ? <CallEnded call={call} /> : <MeetingSetup />;
 });
 
 MeetingRoomWrapper.displayName = "MeetingRoomWrapper";
+
+const CallEnded = ({ call }: any) => {
+	const [loading, setLoading] = useState(false);
+	const transactionHandled = useRef(false);
+	const expert = call.state?.members?.find(
+		(member: any) => member.custom.type === "expert"
+	);
+
+	useEffect(() => {
+		const handleCallEnd = async () => {
+			if (transactionHandled.current) return;
+			transactionHandled.current = true;
+			try {
+				setLoading(true);
+				await call?.endCall();
+				await axios.post(
+					`${backendBaseUrl}/official/call/end/${call?.id}`,
+					{
+						client_id: call?.state?.createdBy?.id || null,
+						influencer_id: call?.state?.members[0].user_id || null,
+						started_at: call?.state?.startsAt,
+						ended_at: call?.state?.endedAt,
+						call_type: call?.type,
+						meeting_id: call?.id,
+					},
+					{
+						params: {
+							type: call?.type,
+						},
+					}
+				);
+
+				const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
+				if (fcmToken) {
+					sendNotification(
+						fcmToken,
+						`Missed ${call.type} Call Request`,
+						`Call Request from ${maskNumbers(
+							call?.state?.createdBy?.name || "Official User"
+						)}`,
+						{
+							created_by_display_name: maskNumbers(
+								call?.state?.createdBy?.name || "Official User"
+							),
+							callType: call.type,
+							callId: call.id,
+							notificationType: "call.missed",
+						}
+					);
+				}
+			} catch (error) {
+				console.error("Error handling call end", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		if (!transactionHandled.current) {
+			stopMediaStreams();
+			handleCallEnd();
+		}
+	}, [call?.id]);
+
+	if (loading) {
+		return (
+			<section className="w-full h-screen flex flex-col items-center justify-center gap-4">
+				<ContentLoading />
+				<h1 className="text-xl md:text-2xl font-semibold text-gray-300">
+					<Typewriter
+						words={["Checking Pending Transactions", "Please Wait ..."]}
+						loop={true}
+						cursor
+						cursorStyle="_"
+						typeSpeed={50}
+						deleteSpeed={50}
+						delaySpeed={2000}
+					/>
+					<Cursor cursorColor={"#50A65C"} />
+				</h1>
+			</section>
+		);
+	}
+
+	return (
+		<div className="flex flex-col items-center justify-center h-screen text-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+			<div className="p-6 rounded-lg shadow-lg bg-opacity-80 bg-gray-700">
+				<h1 className="text-3xl font-semibold mb-4">Call Ended</h1>
+				<p className="text-lg">The call has been ended</p>
+			</div>
+		</div>
+	);
+};
 
 export default MeetingPage;
