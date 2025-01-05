@@ -17,7 +17,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { backendBaseUrl, generateTimeSlots } from "@/lib/utils";
+import {
+	backendBaseUrl,
+	convertTo24Hour,
+	generateTimeSlots,
+} from "@/lib/utils";
 import axios from "axios";
 import { useToast } from "../ui/use-toast";
 import { useEffect, useRef, useState } from "react";
@@ -28,7 +32,6 @@ import {
 	FormControl,
 	FormField,
 	FormItem,
-	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
 import { AvailabilityService, creatorUser } from "@/types";
@@ -57,70 +60,23 @@ export const validateTimeSlots = (
 	});
 };
 
-const convertTo24HourFormat = (time: string) => {
-	const [timePart, ampm] = time.split(" ");
-	const [hours, minutes] = timePart.split(":").map(Number);
-
-	let newHours = hours % 12;
-	if (ampm.toUpperCase() === "PM") {
-		newHours += 12;
-	}
-
-	return new Date(
-		`1970-01-01T${newHours.toString().padStart(2, "0")}:${minutes
-			.toString()
-			.padStart(2, "0")}:00Z`
-	);
-};
-
-const serviceSchema = z.object({
-	_id: z.string().nonempty("Service ID is required"),
-	photo: z.string().optional(),
-	title: z.string().nonempty("Service title is required"),
-	description: z.string().nonempty("Service description is required"),
-	type: z.enum(["all", "audio", "video", "chat"]),
-	timeDuration: z.number().min(1, "Time duration must be at least 1 minute"),
-	isActive: z.boolean(),
-	currency: z.enum(["INR", "USD"]),
-	discountRules: z
-		.object({
-			conditions: z.array(z.string()).optional(),
-			discountAmount: z.number().optional(),
-			discountType: z.enum(["percentage", "flat"]).optional(),
-		})
-		.optional(),
-	extraDetails: z.string().optional(),
-});
-
 const TimeSlotSchema = z.object({
-	weeklyAvailability: z
-		.array(
-			z.object({
-				day: z.string(),
-				isActive: z.boolean(),
-				slots: z.array(
+	weeklyAvailability: z.array(
+		z.object({
+			day: z.string(),
+			isActive: z.boolean(),
+			slots: z
+				.array(
 					z.object({
 						id: z.string(),
-						startTime: z.string().min(1, "Start time is required"),
-						endTime: z.string().min(1, "End time is required"),
-						service: serviceSchema.optional(),
+						startTime: z.string(),
+
+						endTime: z.string(),
 					})
-				),
-			})
-		)
-		.superRefine((weeklyAvailability, ctx) => {
-			weeklyAvailability.forEach((day, dayIndex) => {
-				day.slots.forEach((slot, slotIndex) => {
-					if (slot.startTime >= slot.endTime) {
-						ctx.addIssue({
-							code: z.ZodIssueCode.custom,
-							message: "Start time must be earlier than end time.",
-							path: [dayIndex, "slots", slotIndex, "endTime"],
-						});
-					}
-				});
-			});
-		}),
+				)
+				.optional(),
+		})
+	),
 });
 
 type TimeSlotFormValues = z.infer<typeof TimeSlotSchema>;
@@ -130,6 +86,7 @@ const timeSlots = generateTimeSlots();
 const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 	const { currentUser } = useCurrentUsersContext();
 	const [userServices, setUserServices] = useState<AvailabilityService[]>([]);
+	const [errors, setErrors] = useState<{ [key: string]: string }>({});
 	const {
 		data: creatorAvailabilityServices,
 		fetchNextPage,
@@ -157,12 +114,11 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		defaultValues: {
 			weeklyAvailability: data.weekAvailability.map((day: any) => ({
 				day: day.day,
-				isActive: day.isActive,
+				isActive: day.isActive || true,
 				slots: day.timeSlots.map((slot: any) => ({
-					id: slot._id,
+					id: slot._id ?? uuidv4(),
 					startTime: slot.startTime,
 					endTime: slot.endTime,
-					service: slot.service ?? "",
 				})),
 			})),
 		},
@@ -175,7 +131,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		setValue,
 		trigger,
 		getValues,
-		formState: { isSubmitting, errors },
+		formState: { isSubmitting },
 	} = form;
 
 	const { fields } = useFieldArray({
@@ -204,53 +160,127 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		return () => subscription.unsubscribe();
 	}, [form, isValid]);
 
-	useEffect(() => {
-		if (data?.weeklyAvailability && Array.isArray(data.weeklyAvailability)) {
-			data.weeklyAvailability.forEach((availability: any, index: number) => {
-				setValue(`weeklyAvailability.${index}.isActive`, availability.isActive);
-				setValue(
-					`weeklyAvailability.${index}.slots`,
-					availability.slots?.map((slot: any) => ({
-						...slot,
-					})) || []
-				);
-			});
+	// useEffect(() => {
+	// 	if (data?.weeklyAvailability && Array.isArray(data.weeklyAvailability)) {
+	// 		data.weeklyAvailability.forEach((availability: any, index: number) => {
+	// 			setValue(`weeklyAvailability.${index}.isActive`, availability.isActive);
+	// 			setValue(
+	// 				`weeklyAvailability.${index}.slots`,
+	// 				availability.slots?.map((slot: any) => ({
+	// 					...slot,
+	// 				})) || []
+	// 			);
+	// 		});
+	// 	}
+	// }, [data, setValue]);
+
+	const validateSlot = (
+		dayIndex: number,
+		slotIndex: number,
+		startTime: string | null,
+		endTime: string | null
+	) => {
+		const slotErrors: { [key: string]: string } = {};
+
+		if (!startTime && endTime) {
+			slotErrors[`day_${dayIndex}_slot_${slotIndex}_startTime`] =
+				"Start time is required when end time is provided.";
+		} else if (startTime && !endTime) {
+			slotErrors[`day_${dayIndex}_slot_${slotIndex}_endTime`] =
+				"End time is required when start time is provided.";
+		} else if (startTime && endTime) {
+			const startTime24 = convertTo24Hour(startTime);
+			const endTime24 = convertTo24Hour(endTime);
+
+			if (startTime24 >= endTime24) {
+				slotErrors[`day_${dayIndex}_slot_${slotIndex}_endTime`] =
+					"Start time must be earlier than end time.";
+			}
 		}
-	}, [data, setValue]);
+
+		setErrors((prevErrors) => {
+			const updatedErrors = { ...prevErrors };
+
+			// Remove old errors for this slot
+			delete updatedErrors[`day_${dayIndex}_slot_${slotIndex}_startTime`];
+			delete updatedErrors[`day_${dayIndex}_slot_${slotIndex}_endTime`];
+
+			// Add new errors for this slot
+			return { ...updatedErrors, ...slotErrors };
+		});
+
+		// Return true if no errors, false otherwise
+		return Object.keys(slotErrors).length === 0;
+	};
 
 	const addSlot = (dayIndex: number) => {
-		const slots = getValues(`weeklyAvailability.${dayIndex}.slots`);
+		const slots = getValues(`weeklyAvailability.${dayIndex}.slots`) || [];
 		setValue(`weeklyAvailability.${dayIndex}.slots`, [
 			...slots,
-			{ id: uuidv4(), startTime: "", endTime: "" },
+			{ id: uuidv4(), startTime: "12:00 AM", endTime: "12:15 AM" },
 		]);
 		trigger(`weeklyAvailability.${dayIndex}.slots`);
 	};
 
 	const removeSlot = (dayIndex: number, slotId: string) => {
-		const slots = getValues(`weeklyAvailability.${dayIndex}.slots`);
+		const slots = getValues(`weeklyAvailability.${dayIndex}.slots`) || [];
 		const updatedSlots = slots.filter((slot) => slot.id !== slotId);
-		setValue(
-			`weeklyAvailability.${dayIndex}.slots`,
-			updatedSlots.length > 0
-				? updatedSlots
-				: [{ id: uuidv4(), startTime: "", endTime: "" }]
-		);
+		setValue(`weeklyAvailability.${dayIndex}.slots`, updatedSlots);
 		trigger(`weeklyAvailability.${dayIndex}.slots`);
 	};
 
 	const copySlotsToAllDays = (sourceDayIndex: number) => {
-		const sourceSlots = getValues(`weeklyAvailability.${sourceDayIndex}.slots`);
+		if (
+			sourceDayIndex === undefined ||
+			sourceDayIndex < 0 ||
+			sourceDayIndex >= fields.length
+		) {
+			console.error("Invalid sourceDayIndex:", sourceDayIndex);
+			return;
+		}
+
+		let sourceSlots = getValues(`weeklyAvailability.${sourceDayIndex}.slots`);
+
+		if (!sourceSlots || sourceSlots.length === 0) {
+			console.error("No slots found for the source day.");
+			toast({
+				title: "Unable to perform action",
+				description: "No slots found for the source day.",
+				toastStatus: "negative",
+			});
+			return;
+		}
+
+		if (Object.keys(errors).length !== 0) {
+			toast({
+				title: "Unable to perform action",
+				description: "Sort out the errors first",
+				toastStatus: "negative",
+			});
+			return;
+		}
+
+		sourceSlots = sourceSlots.map((slot) => ({
+			...slot,
+			id: slot.id || uuidv4(),
+		}));
+
+		setValue(`weeklyAvailability.${sourceDayIndex}.slots`, sourceSlots);
+
+		const copiedSlots = sourceSlots.map((slot) => ({
+			...slot,
+			id: uuidv4(),
+		}));
+
 		fields.forEach((_, dayIndex) => {
 			if (dayIndex !== sourceDayIndex) {
-				setValue(
-					`weeklyAvailability.${dayIndex}.slots`,
-					sourceSlots.map((slot) => ({ ...slot, id: uuidv4() }))
-				);
+				setValue(`weeklyAvailability.${dayIndex}.slots`, copiedSlots);
 				setValue(`weeklyAvailability.${dayIndex}.isActive`, true);
 			}
 		});
-		trigger(`weeklyAvailability.${sourceDayIndex}.slots`);
+
+		// Trigger validation for all fields
+		trigger(`weeklyAvailability`);
 	};
 
 	const onSubmit = async (data: TimeSlotFormValues) => {
@@ -259,11 +289,10 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 				userId,
 				weekAvailability: data.weeklyAvailability.map((day) => ({
 					day: day.day,
-					timeSlots: day.slots.map(({ startTime, endTime, service }) => ({
-						startTime,
-						endTime,
-						service: service,
-					})),
+					isActive: day.isActive,
+					timeSlots: (day.slots || []).filter(
+						({ startTime, endTime }) => startTime !== "" || endTime !== ""
+					),
 				})),
 			};
 			await axios.post(`${backendBaseUrl}/availability/user/weekly`, payload);
@@ -291,7 +320,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		);
 	}
 
-	console.log(data);
+	console.log(errors, hasChanges, isValid);
 
 	return (
 		<div className="relative size-full mx-auto py-4 px-1.5">
@@ -396,7 +425,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 											{watch(`weeklyAvailability.${dayIndex}.slots`)?.map(
 												(slot, slotIndex) => (
 													<div
-														key={slot.id}
+														key={slotIndex}
 														className="flex flex-wrap items-center gap-4 mb-2"
 													>
 														{/* Start Time */}
@@ -407,7 +436,17 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																<FormControl>
 																	<Select
 																		value={field.value}
-																		onValueChange={field.onChange}
+																		onValueChange={(value) => {
+																			field.onChange(value);
+																			validateSlot(
+																				dayIndex,
+																				slotIndex,
+																				value,
+																				watch(
+																					`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`
+																				)
+																			);
+																		}}
 																	>
 																		<SelectTrigger className="w-1/3">
 																			<SelectValue placeholder="From" />
@@ -436,7 +475,17 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																<FormControl>
 																	<Select
 																		value={field.value}
-																		onValueChange={field.onChange}
+																		onValueChange={(value) => {
+																			field.onChange(value);
+																			validateSlot(
+																				dayIndex,
+																				slotIndex,
+																				watch(
+																					`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`
+																				),
+																				value
+																			);
+																		}}
 																	>
 																		<SelectTrigger className="w-1/3">
 																			<SelectValue placeholder="To" />
@@ -457,8 +506,10 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 															)}
 														/>
 
-														{watch(`weeklyAvailability.${dayIndex}.slots`)
-															?.length > 1 && (
+														{(
+															watch(`weeklyAvailability.${dayIndex}.slots`) ||
+															[]
+														)?.length > 1 && (
 															<Button
 																type="button"
 																variant="destructive"
@@ -480,96 +531,35 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																</svg>
 															</Button>
 														)}
-
-														{/* Service Dropdown */}
-														{userServices && userServices.length > 0 && (
-															<FormField
-																control={form.control}
-																name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.service`}
-																render={({ field }) => {
-																	const slots = form.watch(
-																		`weeklyAvailability.${dayIndex}.slots`
-																	);
-																	const currentSlot = slots[slotIndex];
-
-																	// Convert times to 24-hour format
-																	const startTime = convertTo24HourFormat(
-																		currentSlot.startTime
-																	);
-																	const endTime = convertTo24HourFormat(
-																		currentSlot.endTime
-																	);
-
-																	// Calculate slot duration in minutes
-																	const slotDuration =
-																		(endTime.getTime() - startTime.getTime()) /
-																		(1000 * 60);
-
-																	// Filter services based on time duration
-																	const filteredServices = userServices.filter(
-																		(service) =>
-																			service.timeDuration === slotDuration
-																	);
-
-																	if (filteredServices.length === 0) {
-																		return (
-																			<div className="text-red-500">
-																				No services available for the given time
-																				slot.
-																			</div>
-																		);
+														<section className="flex flex-col items-start justify-center gap-2.5">
+															{errors[
+																`day_${dayIndex}_slot_${slotIndex}_startTime`
+															] && (
+																<p className="text-sm text-red-500">
+																	{
+																		errors[
+																			`day_${dayIndex}_slot_${slotIndex}_startTime`
+																		]
 																	}
+																</p>
+															)}
 
-																	// Find the selected service object by _id
-																	const selectedService =
-																		filteredServices.find(
-																			(service) =>
-																				service._id === field.value?._id
-																		) || null;
-
-																	return (
-																		<FormControl>
-																			<Select
-																				value={selectedService?._id}
-																				onValueChange={(value) => {
-																					// Map the selected _id back to the full service object
-																					const selected =
-																						filteredServices.find(
-																							(service) => service._id === value
-																						);
-																					field.onChange(selected);
-																				}}
-																			>
-																				<SelectTrigger className="w-full">
-																					<SelectValue placeholder="Select Service" />
-																				</SelectTrigger>
-																				<SelectContent className="bg-white">
-																					{filteredServices.map((service) => (
-																						<SelectItem
-																							key={service._id}
-																							value={service._id}
-																							className={`cursor-pointer hover:bg-gray-100 ${
-																								selectedService?._id ===
-																								service._id
-																									? "bg-gray-200"
-																									: ""
-																							}`}
-																						>
-																							{service.title}
-																						</SelectItem>
-																					))}
-																				</SelectContent>
-																			</Select>
-																		</FormControl>
-																	);
-																}}
-															/>
-														)}
+															{errors[
+																`day_${dayIndex}_slot_${slotIndex}_endTime`
+															] && (
+																<p className="text-sm text-red-500">
+																	{
+																		errors[
+																			`day_${dayIndex}_slot_${slotIndex}_endTime`
+																		]
+																	}
+																</p>
+															)}
+														</section>
 													</div>
 												)
 											)}
 										</CardContent>
-										<FormMessage />
 									</Card>
 								</FormItem>
 							)}

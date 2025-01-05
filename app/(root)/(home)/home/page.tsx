@@ -142,7 +142,7 @@ const HomePage = () => {
 		return (
 			<main className="size-full flex flex-col pt-0 md:pt-5">
 				<Suspense fallback={<PostLoader count={6} />}>
-					<CreatorHome />;
+					<CreatorHome />
 				</Suspense>
 			</main>
 		);
