@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { useGetUserAvailabilityServices } from "@/lib/react-query/queries";
-import ContentLoading from "../shared/ContentLoading";
 import { AvailabilityService, creatorUser } from "@/types";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";

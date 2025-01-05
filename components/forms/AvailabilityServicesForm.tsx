@@ -96,6 +96,11 @@ const formSchema = z.object({
 		.positive("Duration must be a positive number.")
 		.min(15, "Duration must be at least 15 minutes.")
 		.optional(),
+	basePrice: z
+		.number()
+		.int()
+		.positive("Price must be greater than zero.")
+		.min(10, "Price must be greater than zero."),
 	isActive: z.boolean({
 		required_error: "isActive is required.",
 	}),
@@ -130,6 +135,7 @@ const AvailabilityServicesForm = ({
 						photo: service.photo,
 						type: service.type,
 						timeDuration: service.timeDuration || 15,
+						basePrice: service.basePrice || 10,
 						isActive: service.isActive,
 						currency: service.currency,
 						discountRules: service.discountRules,
@@ -143,6 +149,7 @@ const AvailabilityServicesForm = ({
 						type: "all",
 						isActive: true,
 						timeDuration: 15,
+						basePrice: 10,
 						currency: "INR",
 						discountRules: {
 							conditions: ["30+ Minutes Call"],
@@ -157,7 +164,8 @@ const AvailabilityServicesForm = ({
 		try {
 			const payload = {
 				...values,
-				timeDuration: values.timeDuration ?? 0,
+				timeDuration: values.timeDuration ?? 15,
+				basePrice: values.basePrice ?? 10,
 				discountRules:
 					values.discountRules && Object.keys(values.discountRules).length > 0
 						? values.discountRules
@@ -382,6 +390,51 @@ const AvailabilityServicesForm = ({
 							<FormMessage />
 						</FormItem>
 					)}
+				/>
+
+				{/* Service Call Base Price */}
+				<FormField
+					control={form.control}
+					name="basePrice"
+					render={({ field }) => {
+						const discountCurrency = form.watch("currency");
+
+						const placeholder =
+							discountCurrency === "INR" ? "e.g. ₹100" : "e.g. $100";
+
+						return (
+							<FormItem>
+								<FormLabel className="block mb-2 text-sm font-medium text-gray-700">
+									Price
+								</FormLabel>
+								<FormControl>
+									<section className="flex items-center w-full space-x-2 border border-gray-300 rounded-lg pl-3">
+										{discountCurrency === "INR" ? (
+											<span className="text-gray-500">₹</span>
+										) : (
+											<span className="text-gray-500">$</span>
+										)}
+										<Input
+											type="number"
+											min={0}
+											placeholder={placeholder}
+											className={`w-full  py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0`}
+											{...field}
+											value={field.value ?? ""}
+											onChange={(e) => {
+												const rawValue = e.target.value;
+												const sanitizedValue = rawValue.replace(/^0+(?!$)/, "");
+												field.onChange(
+													sanitizedValue !== "" ? Number(sanitizedValue) : null
+												);
+											}}
+										/>
+									</section>
+								</FormControl>
+								<FormMessage className="mt-1 text-sm text-red-500" />
+							</FormItem>
+						);
+					}}
 				/>
 
 				{/* Toggle Service State */}
