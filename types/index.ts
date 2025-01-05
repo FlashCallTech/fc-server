@@ -475,6 +475,7 @@ export interface AvailabilityService {
 	photo: string;
 	type: "all" | "audio" | "video" | "chat";
 	timeDuration: number;
+	basePrice: number;
 	isActive: boolean;
 	currency: "INR" | "USD";
 	discountRules: {

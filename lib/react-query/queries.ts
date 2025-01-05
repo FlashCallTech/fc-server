@@ -294,7 +294,8 @@ export const useGetUserAvailabilityServices = (
 	creatorId: string,
 	filter: "all" | "audio" | "video" | "chat" | "" = "all",
 	fetchAll: boolean = false,
-	requestFrom: "creator" | "client"
+	requestFrom: "creator" | "client",
+	clientType?: string
 ) => {
 	const limit = 10;
 
@@ -305,6 +306,7 @@ export const useGetUserAvailabilityServices = (
 			filter,
 			fetchAll,
 			requestFrom,
+			clientType,
 		],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
@@ -317,6 +319,7 @@ export const useGetUserAvailabilityServices = (
 						filter,
 						fetchAll,
 						requestFrom,
+						clientType,
 					},
 				}
 			);

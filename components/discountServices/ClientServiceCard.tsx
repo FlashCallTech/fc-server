@@ -3,12 +3,12 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
 import { formatDateTime } from "@/lib/utils";
 import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
 
@@ -71,12 +71,17 @@ const ClientServiceCard = ({
 	};
 
 	// Check if the current service is selected
-	const isSelected = selectedService?._id === service._id;
+	const isSelected =
+		selectedService?._id === service._id || newUserService?._id === service._id;
+
+	console.log(isSelected);
 
 	return (
 		<div
 			className={`bg-white shadow-md rounded-lg overflow-hidden w-full mx-auto border hover:shadow-lg transition-shadow hover:bg-gray-100 ${
-				isSelected
+				hasNewUserDiscount
+					? "opacity-50"
+					: isSelected
 					? "border-blue-500 shadow-lg cursor-pointer"
 					: " cursor-pointer"
 			}`}
@@ -107,11 +112,16 @@ const ClientServiceCard = ({
 								{discountRules.map((discount, index) => (
 									<li
 										key={index}
-										className="text-sm text-gray-700 flex items-center"
+										className="text-sm text-gray-700 flex gap-2 items-center"
 									>
 										<span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
 											{formattedDiscounts(discount)}
 										</span>
+										{hasNewUserDiscount && (
+											<span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+												Auto Applied
+											</span>
+										)}
 									</li>
 								))}
 							</ul>
@@ -121,7 +131,10 @@ const ClientServiceCard = ({
 
 				{/* CTA */}
 				<button
-					onClick={() => setIsModalOpen(true)}
+					onClick={(e) => {
+						e.stopPropagation();
+						setIsModalOpen(true);
+					}}
 					className={`w-full px-4 py-2 bg-black text-white text-sm rounded-lg font-medium "hoverScaleDownEffect`}
 				>
 					View Details
@@ -129,17 +142,23 @@ const ClientServiceCard = ({
 			</section>
 
 			{/* Modal for Additional Details */}
-			<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-				<DialogContent
+			<Sheet
+				open={isModalOpen}
+				onOpenChange={(isOpen) => {
+					setIsModalOpen(isOpen);
+				}}
+			>
+				<SheetContent
+					side="bottom"
 					onOpenAutoFocus={(e) => e.preventDefault()}
-					className="flex flex-col items-start justify-start w-[92%] max-h-[90vh] outline-none border-none rounded-xl bg-white mx-auto px-7 py-5 overflow-y-auto no-scrollbar"
+					className="flex flex-col items-start justify-start w-full sm:max-w-[444px] max-h-[90vh] outline-none border-none rounded-t-xl bg-white mx-auto px-7 py-5 overflow-y-auto no-scrollbar"
 				>
-					<DialogHeader className="flex flex-col items-start justify-center w-full">
-						<DialogTitle>Service Details</DialogTitle>
-						<DialogDescription className="text-start mb-5 pr-5">
+					<SheetHeader className="flex flex-col items-start justify-center w-full">
+						<SheetTitle>Service Details</SheetTitle>
+						<SheetDescription className="text-start mb-5 pr-5">
 							Extra info about the service.
-						</DialogDescription>
-					</DialogHeader>
+						</SheetDescription>
+					</SheetHeader>
 
 					{/* Conditions */}
 					{discountRules.length > 0 && (
@@ -189,13 +208,16 @@ const ClientServiceCard = ({
 
 					{/* Close Button */}
 					<button
-						onClick={() => setIsModalOpen(false)}
+						onClick={(e) => {
+							e.stopPropagation();
+							setIsModalOpen(false);
+						}}
 						className="mt-4 w-full py-2 bg-black text-white rounded-lg font-medium hoverScaleDownEffect"
 					>
 						Close
 					</button>
-				</DialogContent>
-			</Dialog>
+				</SheetContent>
+			</Sheet>
 		</div>
 	);
 };
