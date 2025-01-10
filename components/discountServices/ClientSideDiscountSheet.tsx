@@ -47,7 +47,7 @@ const FilterButtons = ({
 				setRemoveFilter(true);
 			}}
 		>
-			All Discount
+			All Discounts
 		</button>
 		{["all", "video", "audio", "chat"].map((filter) => (
 			<button
@@ -61,7 +61,7 @@ const FilterButtons = ({
 				}}
 			>
 				{filter === "all"
-					? "All Services Included"
+					? "Include All"
 					: filter.charAt(0).toUpperCase() + filter.slice(1)}
 			</button>
 		))}
@@ -141,7 +141,7 @@ const ClientSideDiscountheet = ({
 				setTimeout(() => {
 					setIsOpen(true);
 					sessionStorage.setItem(`hasSeenDiscountSheet_${creatorId}`, "true");
-				}, 1000);
+				}, 2000);
 			}
 		}
 	}, [creatorId, userServices]);
@@ -220,12 +220,7 @@ const ClientSideDiscountheet = ({
 		return (
 			<section className="size-full grid grid-cols-1 items-center gap-4 mt-4">
 				{userServices.map((service: Service) => (
-					<ClientServiceCard
-						key={service._id}
-						service={service}
-						clientId={currentUser?._id!}
-						hasPreviousCall={hasPreviousCall}
-					/>
+					<ClientServiceCard key={service._id} service={service} />
 				))}
 				{hasNextPage && isFetching && (
 					<Image
@@ -248,10 +243,10 @@ const ClientSideDiscountheet = ({
 
 	// Render Mobile View or Desktop View
 	return (
-		<section className="fixed grid grid-cols-1 items-center bottom-5 right-4 lg:right-9 z-40 shadow-lg">
+		<section className="fixed grid grid-cols-1 items-center bottom-5 right-4 lg:right-8 z-40 shadow-lg">
 			{/* Toggle Button */}
 			<button onClick={() => setIsOpen((prev) => !prev)}>
-				{discount ? (
+				{currentUser?._id && discount ? (
 					<section
 						key={discount._id}
 						className="flex flex-col items-center justify-center gap-2.5 p-4 bg-white rounded-xl shadow-md hoverScaleDownEffect"
@@ -284,7 +279,7 @@ const ClientSideDiscountheet = ({
 					<div
 						className={`p-4 ${
 							theme ? `text-black` : "bg-green-1 text-white"
-						} rounded-full hoverScaleDownEffect relative`}
+						} rounded-full hoverScaleEffect relative`}
 						style={{ background: theme && theme }}
 					>
 						<svg

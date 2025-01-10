@@ -96,7 +96,6 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		refetch,
 	} = useGetUserAvailabilityServices(
 		currentUser?._id as string,
-		"all",
 		true,
 		"creator"
 	);
@@ -114,7 +113,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		defaultValues: {
 			weeklyAvailability: data.weekAvailability.map((day: any) => ({
 				day: day.day,
-				isActive: day.isActive || true,
+				isActive: day.isActive || false,
 				slots: day.timeSlots.map((slot: any) => ({
 					id: slot._id ?? uuidv4(),
 					startTime: slot.startTime,
@@ -160,20 +159,6 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		return () => subscription.unsubscribe();
 	}, [form, isValid]);
 
-	// useEffect(() => {
-	// 	if (data?.weeklyAvailability && Array.isArray(data.weeklyAvailability)) {
-	// 		data.weeklyAvailability.forEach((availability: any, index: number) => {
-	// 			setValue(`weeklyAvailability.${index}.isActive`, availability.isActive);
-	// 			setValue(
-	// 				`weeklyAvailability.${index}.slots`,
-	// 				availability.slots?.map((slot: any) => ({
-	// 					...slot,
-	// 				})) || []
-	// 			);
-	// 		});
-	// 	}
-	// }, [data, setValue]);
-
 	const validateSlot = (
 		dayIndex: number,
 		slotIndex: number,
@@ -217,8 +202,9 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		const slots = getValues(`weeklyAvailability.${dayIndex}.slots`) || [];
 		setValue(`weeklyAvailability.${dayIndex}.slots`, [
 			...slots,
-			{ id: uuidv4(), startTime: "12:00 AM", endTime: "12:15 AM" },
+			{ id: uuidv4(), startTime: "", endTime: "" },
 		]);
+		setValue(`weeklyAvailability.${dayIndex}.isActive`, true);
 		trigger(`weeklyAvailability.${dayIndex}.slots`);
 	};
 
@@ -226,6 +212,9 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		const slots = getValues(`weeklyAvailability.${dayIndex}.slots`) || [];
 		const updatedSlots = slots.filter((slot) => slot.id !== slotId);
 		setValue(`weeklyAvailability.${dayIndex}.slots`, updatedSlots);
+		if (updatedSlots.length === 0) {
+			setValue(`weeklyAvailability.${dayIndex}.isActive`, false);
+		}
 		trigger(`weeklyAvailability.${dayIndex}.slots`);
 	};
 
@@ -281,6 +270,17 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 
 		// Trigger validation for all fields
 		trigger(`weeklyAvailability`);
+
+		// Force the form to detect changes
+		setTimeout(() => {
+			const currentValues = getValues();
+			const changes = !isEqual(currentValues, initialValues.current);
+
+			if (hasChangesRef.current !== changes) {
+				hasChangesRef.current = changes;
+				setHasChanges(changes);
+			}
+		}, 0);
 	};
 
 	const onSubmit = async (data: TimeSlotFormValues) => {
@@ -319,8 +319,6 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 			</div>
 		);
 	}
-
-	console.log(errors, hasChanges, isValid);
 
 	return (
 		<div className="relative size-full mx-auto py-4 px-1.5">
@@ -421,145 +419,150 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 												</div>
 											</div>
 										</CardHeader>
-										<CardContent>
-											{watch(`weeklyAvailability.${dayIndex}.slots`)?.map(
-												(slot, slotIndex) => (
-													<div
-														key={slotIndex}
-														className="flex flex-wrap items-center gap-4 mb-2"
-													>
-														{/* Start Time */}
-														<FormField
-															control={form.control}
-															name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`}
-															render={({ field }) => (
-																<FormControl>
-																	<Select
-																		value={field.value}
-																		onValueChange={(value) => {
-																			field.onChange(value);
-																			validateSlot(
-																				dayIndex,
-																				slotIndex,
-																				value,
-																				watch(
-																					`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`
-																				)
-																			);
-																		}}
-																	>
-																		<SelectTrigger className="w-1/3">
-																			<SelectValue placeholder="From" />
-																		</SelectTrigger>
-																		<SelectContent className="bg-white">
-																			{timeSlots.map((time) => (
-																				<SelectItem
-																					key={time}
-																					value={time}
-																					className="cursor-pointer hover:bg-gray-100"
-																				>
-																					{time}
-																				</SelectItem>
-																			))}
-																		</SelectContent>
-																	</Select>
-																</FormControl>
-															)}
-														/>
-														<span>-</span>
-														{/* End Time */}
-														<FormField
-															control={form.control}
-															name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`}
-															render={({ field }) => (
-																<FormControl>
-																	<Select
-																		value={field.value}
-																		onValueChange={(value) => {
-																			field.onChange(value);
-																			validateSlot(
-																				dayIndex,
-																				slotIndex,
-																				watch(
-																					`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`
-																				),
-																				value
-																			);
-																		}}
-																	>
-																		<SelectTrigger className="w-1/3">
-																			<SelectValue placeholder="To" />
-																		</SelectTrigger>
-																		<SelectContent className="bg-white">
-																			{timeSlots.map((time) => (
-																				<SelectItem
-																					key={time}
-																					value={time}
-																					className="cursor-pointer hover:bg-gray-100"
-																				>
-																					{time}
-																				</SelectItem>
-																			))}
-																		</SelectContent>
-																	</Select>
-																</FormControl>
-															)}
-														/>
-
-														{(
-															watch(`weeklyAvailability.${dayIndex}.slots`) ||
-															[]
-														)?.length > 1 && (
-															<Button
-																type="button"
-																variant="destructive"
-																size="icon"
-																onClick={() => removeSlot(dayIndex, slot.id)}
-																className="hoverScaleDownEffect"
+										{watch(`weeklyAvailability.${dayIndex}.isActive`) && (
+											<CardContent>
+												{(watch(`weeklyAvailability.${dayIndex}.slots`) ?? [])
+													?.length > 0 ? (
+													watch(`weeklyAvailability.${dayIndex}.slots`)?.map(
+														(slot, slotIndex) => (
+															<div
+																key={slotIndex}
+																className="flex flex-wrap items-center gap-4 mb-2"
 															>
-																<svg
-																	xmlns="http://www.w3.org/2000/svg"
-																	viewBox="0 0 24 24"
-																	fill="currentColor"
-																	className="size-6"
-																>
-																	<path
-																		fillRule="evenodd"
-																		d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z"
-																		clipRule="evenodd"
-																	/>
-																</svg>
-															</Button>
-														)}
-														<section className="flex flex-col items-start justify-center gap-2.5">
-															{errors[
-																`day_${dayIndex}_slot_${slotIndex}_startTime`
-															] && (
-																<p className="text-sm text-red-500">
-																	{
-																		errors[
-																			`day_${dayIndex}_slot_${slotIndex}_startTime`
-																		]
-																	}
-																</p>
-															)}
+																{/* Start Time */}
+																<FormField
+																	control={form.control}
+																	name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`}
+																	render={({ field }) => (
+																		<FormControl>
+																			<Select
+																				value={field.value}
+																				onValueChange={(value) => {
+																					field.onChange(value);
+																					validateSlot(
+																						dayIndex,
+																						slotIndex,
+																						value,
+																						watch(
+																							`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`
+																						)
+																					);
+																				}}
+																			>
+																				<SelectTrigger className="w-1/3">
+																					<SelectValue placeholder="From" />
+																				</SelectTrigger>
+																				<SelectContent className="bg-white">
+																					{timeSlots.map((time) => (
+																						<SelectItem
+																							key={time}
+																							value={time}
+																							className="cursor-pointer hover:bg-gray-100"
+																						>
+																							{time}
+																						</SelectItem>
+																					))}
+																				</SelectContent>
+																			</Select>
+																		</FormControl>
+																	)}
+																/>
+																<span>-</span>
+																{/* End Time */}
+																<FormField
+																	control={form.control}
+																	name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`}
+																	render={({ field }) => (
+																		<FormControl>
+																			<Select
+																				value={field.value}
+																				onValueChange={(value) => {
+																					field.onChange(value);
+																					validateSlot(
+																						dayIndex,
+																						slotIndex,
+																						watch(
+																							`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`
+																						),
+																						value
+																					);
+																				}}
+																			>
+																				<SelectTrigger className="w-1/3">
+																					<SelectValue placeholder="To" />
+																				</SelectTrigger>
+																				<SelectContent className="bg-white">
+																					{timeSlots.map((time) => (
+																						<SelectItem
+																							key={time}
+																							value={time}
+																							className="cursor-pointer hover:bg-gray-100"
+																						>
+																							{time}
+																						</SelectItem>
+																					))}
+																				</SelectContent>
+																			</Select>
+																		</FormControl>
+																	)}
+																/>
 
-															{errors[
-																`day_${dayIndex}_slot_${slotIndex}_endTime`
-															] && (
-																<p className="text-sm text-red-500">
-																	{
-																		errors[
-																			`day_${dayIndex}_slot_${slotIndex}_endTime`
-																		]
-																	}
-																</p>
-															)}
-														</section>
-													</div>
-												)
-											)}
-										</CardContent>
+																<Button
+																	type="button"
+																	variant="destructive"
+																	size="icon"
+																	onClick={() => removeSlot(dayIndex, slot.id)}
+																	className="hoverScaleDownEffect"
+																>
+																	<svg
+																		xmlns="http://www.w3.org/2000/svg"
+																		viewBox="0 0 24 24"
+																		fill="currentColor"
+																		className="size-6"
+																	>
+																		<path
+																			fillRule="evenodd"
+																			d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z"
+																			clipRule="evenodd"
+																		/>
+																	</svg>
+																</Button>
+
+																<section className="flex flex-col items-start justify-center gap-2.5">
+																	{errors[
+																		`day_${dayIndex}_slot_${slotIndex}_startTime`
+																	] && (
+																		<p className="text-sm text-red-500">
+																			{
+																				errors[
+																					`day_${dayIndex}_slot_${slotIndex}_startTime`
+																				]
+																			}
+																		</p>
+																	)}
+
+																	{errors[
+																		`day_${dayIndex}_slot_${slotIndex}_endTime`
+																	] && (
+																		<p className="text-sm text-red-500">
+																			{
+																				errors[
+																					`day_${dayIndex}_slot_${slotIndex}_endTime`
+																				]
+																			}
+																		</p>
+																	)}
+																</section>
+															</div>
+														)
+													)
+												) : (
+													<p className="text-gray-500 text-center">
+														Add a slot to enable bookings for this day.
+													</p>
+												)}
+											</CardContent>
+										)}
 									</Card>
 								</FormItem>
 							)}

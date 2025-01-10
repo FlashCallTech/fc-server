@@ -254,6 +254,26 @@ export type RegisterCallParams = {
 	amountINR?: number;
 };
 
+export type ScheduledCallParams = {
+	_id: string;
+	callId: string;
+	type: "video" | "audio" | "chat";
+	status: string;
+	meetingOwner: clientUser;
+	expert: creatorUser;
+	description: string;
+	selectedDay: string;
+	selectedSlot: string;
+	startsAt: Date;
+	startedAt?: Date;
+	endedAt?: Date;
+	duration: number;
+	amount: number;
+	currency: string;
+	discounts: AvailabilityService;
+
+};
+
 export type RegisterChatParams = {
 	chatId: string;
 	creator: string;
@@ -472,7 +492,7 @@ export interface AvailabilityService {
 	title: string;
 	description: string;
 	photo: string;
-	type: "all" | "audio" | "video" | "chat";
+	type: "audio" | "video" | "chat";
 	timeDuration: number;
 	basePrice: number;
 	isActive: boolean;
