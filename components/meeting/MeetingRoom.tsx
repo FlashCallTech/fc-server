@@ -319,7 +319,7 @@ const MeetingRoom = () => {
 	);
 
 	return (
-		<section className="relative w-full overflow-hidden pt-4 md:pt-0 text-white bg-dark-2 h-dvh">
+		<section className="relative size-full overflow-hidden pt-4 md:pt-0 text-white">
 			{call &&
 				participants.length === 1 &&
 				isMeetingOwner &&

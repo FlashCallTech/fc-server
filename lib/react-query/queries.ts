@@ -45,6 +45,42 @@ export const useGetPreviousCalls = (
 	});
 };
 
+export const useGetScheduledCalls = (
+	userId: string,
+	userType: string,
+	callType?: string
+) => {
+	const limit = 10; // Define the limit per page
+
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_USER_CALLS, userId, userType, callType],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(`${backendBaseUrl}/calls/scheduled/getUserCalls`, {
+				params: {
+					userId,
+					userType,
+					callType,
+					page: pageParam,
+					limit,
+				},
+			});
+
+			if (response.status === 200) {
+				console.log(response.data)
+				return response.data;
+
+			} else {
+				throw new Error("Error fetching calls");
+			}
+		},
+		getNextPageParam: (lastPage: any, allPages: any) => {
+			return lastPage.hasMore ? allPages.length + 1 : undefined;
+		},
+		enabled: !!userId,
+		initialPageParam: 1,
+	});
+};
+
 // ============================================================
 // FAVORITES QUERIES
 // ============================================================
@@ -292,7 +328,6 @@ export const useGetUserServices = (
 
 export const useGetUserAvailabilityServices = (
 	creatorId: string,
-	filter: "all" | "audio" | "video" | "chat" | "" = "all",
 	fetchAll: boolean = false,
 	requestFrom: "creator" | "client",
 	clientType?: string
@@ -303,7 +338,6 @@ export const useGetUserAvailabilityServices = (
 		queryKey: [
 			QUERY_KEYS.GET_CREATOR_AVAILABILITY_SERVICES,
 			creatorId,
-			filter,
 			fetchAll,
 			requestFrom,
 			clientType,
@@ -316,7 +350,6 @@ export const useGetUserAvailabilityServices = (
 						page: fetchAll ? undefined : pageParam,
 						limit: fetchAll ? undefined : limit,
 						creatorId,
-						filter,
 						fetchAll,
 						requestFrom,
 						clientType,

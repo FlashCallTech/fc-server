@@ -12,15 +12,7 @@ import {
 import { formatDateTime } from "@/lib/utils";
 import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
 
-const ClientServiceCard = ({
-	service,
-	hasPreviousCall,
-	clientId,
-}: {
-	service: Service;
-	hasPreviousCall: boolean;
-	clientId: any;
-}) => {
+const ClientServiceCard = ({ service }: { service: Service }) => {
 	const {
 		title,
 		description,
@@ -30,7 +22,6 @@ const ClientServiceCard = ({
 		discountRules,
 		createdAt,
 		extraDetails,
-		utilizedBy,
 	} = service;
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,7 +52,7 @@ const ClientServiceCard = ({
 
 	// Handle service selection
 	const handleSelectService = () => {
-		if (newUserService?._id === service._id) return;
+		if (newUserService?._id === service._id || isModalOpen) return;
 
 		if (selectedService?._id === service._id) {
 			setSelectedService(null);
@@ -73,8 +64,6 @@ const ClientServiceCard = ({
 	// Check if the current service is selected
 	const isSelected =
 		selectedService?._id === service._id || newUserService?._id === service._id;
-
-	console.log(isSelected);
 
 	return (
 		<div
@@ -135,7 +124,7 @@ const ClientServiceCard = ({
 						e.stopPropagation();
 						setIsModalOpen(true);
 					}}
-					className={`w-full px-4 py-2 bg-black text-white text-sm rounded-lg font-medium "hoverScaleDownEffect`}
+					className={`w-full px-4 py-2 bg-black text-white text-sm rounded-lg font-medium hoverScaleDownEffect`}
 				>
 					View Details
 				</button>
@@ -160,52 +149,56 @@ const ClientServiceCard = ({
 						</SheetDescription>
 					</SheetHeader>
 
-					{/* Conditions */}
-					{discountRules.length > 0 && (
+					<section
+						className="grid w-full"
+						style={{
+							gridTemplateColumns: "repeat(auto-fit, minmax(50%, 1fr))",
+						}}
+					>
+						{/* Conditions */}
+						{discountRules.length > 0 && (
+							<div className="mb-4">
+								<p className="font-bold text-sm text-gray-800 mb-2">
+									Discount Conditions
+								</p>
+								<ul className="text-sm text-gray-700 space-y-1">
+									{discountRules.map((discount, index) => (
+										<li key={index}>{discount.conditions.join(", ")}</li>
+									))}
+								</ul>
+							</div>
+						)}
+
+						{/* Call Type */}
+						{type && (
+							<div className="mb-4">
+								<p className="font-bold text-sm text-gray-800 mb-2">
+									Call Type
+								</p>
+								<p className="text-sm text-gray-700 capitalize">
+									{type === "all" ? "All Three Services" : type}
+								</p>
+							</div>
+						)}
+
+						{/* Extra Details */}
+						{extraDetails && (
+							<div className="mb-4">
+								<p className="font-bold text-sm text-gray-800 mb-2">
+									Extra Details
+								</p>
+								<p className="text-sm text-gray-700">{extraDetails}</p>
+							</div>
+						)}
+
+						{/* Created At */}
 						<div className="mb-4">
-							<p className="text-sm font-medium text-gray-800 mb-2">
-								Discount Conditions:
-							</p>
-							<ul className="text-sm text-gray-700 space-y-1">
-								{discountRules.map((discount, index) => (
-									<li key={index}>{discount.conditions.join(", ")}</li>
-								))}
-							</ul>
-						</div>
-					)}
-
-					{/* Call Type */}
-					{type && (
-						<div className="mb-4">
-							<p className="text-sm font-medium text-gray-800 mb-2">
-								Call Type:
-							</p>
-							<p className="text-sm text-gray-700 capitalize">
-								{type === "all" ? "All Three Services" : type}
+							<p className="font-bold text-sm text-gray-800 mb-2">Created At</p>
+							<p className="text-sm text-gray-700">
+								{formatDateTime(new Date(createdAt)).dateTime}
 							</p>
 						</div>
-					)}
-
-					{/* Extra Details */}
-					{extraDetails && (
-						<div className="mb-4">
-							<p className="text-sm font-medium text-gray-800 mb-2">
-								Extra Details:
-							</p>
-							<p className="text-sm text-gray-700">{extraDetails}</p>
-						</div>
-					)}
-
-					{/* Created At */}
-					<div className="mb-4">
-						<p className="text-sm font-medium text-gray-800 mb-2">
-							Created At:
-						</p>
-						<p className="text-sm text-gray-700">
-							{formatDateTime(new Date(createdAt)).dateTime}
-						</p>
-					</div>
-
+					</section>
 					{/* Close Button */}
 					<button
 						onClick={(e) => {

@@ -13,7 +13,6 @@ import { useRouter } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useInView } from "react-intersection-observer";
-import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import { useToast } from "../ui/use-toast";
 import { useGetPreviousCalls } from "@/lib/react-query/queries";
 import OptionsList from "../shared/OptionsList";
@@ -23,8 +22,7 @@ const CallListMobile = ({
 }: {
 	callType: "All" | "Audio" | "Video" | "Chat";
 }) => {
-	const { currentUser, userType } = useCurrentUsersContext();
-	const { walletBalance } = useWalletBalanceContext();
+	const { currentUser, userType, fetchingUser } = useCurrentUsersContext();
 	const router = useRouter();
 	const { toast } = useToast();
 	const { ref, inView } = useInView({
@@ -52,11 +50,11 @@ const CallListMobile = ({
 
 	return (
 		<>
-			{isLoading || (currentUser && walletBalance < 0) ? (
+			{isLoading || (!currentUser && fetchingUser) ? (
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
 				</section>
-			) : userCalls && userCalls.pages[0].length === 0 ? (
+			) : userCalls && userCalls.pages[0].totalCalls === 0 ? (
 				<div className="flex flex-col w-full items-center justify-center h-full">
 					<h1 className="text-2xl font-semibold text-red-500">
 						No Calls Found
@@ -238,7 +236,9 @@ const CallListMobile = ({
 																{/* User Amount */}
 																<span className="flex items-center gap-1">
 																	{/* Amount */}
-																	{`${currentUser?.global ? "$" : "₹"} ${userCall?.amount?.toFixed(2) ?? 0}`}
+																	{`${currentUser?.global ? "$" : "₹"} ${
+																		userCall?.amount?.toFixed(2) ?? 0
+																	}`}
 																</span>
 															</>
 														</section>

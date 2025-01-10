@@ -12,6 +12,12 @@ export const sidebarLinks = [
 		protected: true,
 	},
 	{
+		imgURL: "/icons/upcoming.svg",
+		route: "/upcoming",
+		label: "Scheduled",
+		protected: true,
+	},
+	{
 		imgURL: "/icons/refer-and-earn.svg",
 		route: "/transactions",
 		label: "Transaction History",

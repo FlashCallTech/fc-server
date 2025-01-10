@@ -24,6 +24,7 @@ import {
 } from "@/lib/utils";
 import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { trackEvent } from "@/lib/mixpanel";
+import MeetingNotStarted from "@/components/meeting/MeetingNotStarted";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -119,7 +120,7 @@ const MeetingPage = () => {
 	}
 
 	return (
-		<main className="h-full w-full">
+		<main className="size-full bg-dark-2 h-dvh">
 			<StreamCall call={call}>
 				<StreamTheme>
 					<MeetingRoomWrapper toast={toast} router={router} call={call} />
@@ -130,9 +131,15 @@ const MeetingPage = () => {
 };
 
 const MeetingRoomWrapper = ({ toast, router, call }: any) => {
-	const { useCallEndedAt } = useCallStateHooks();
+	const { useCallEndedAt, useCallStartsAt } = useCallStateHooks();
+	const callStartsAt = useCallStartsAt();
 	const callEndedAt = useCallEndedAt();
+	const callTimeNotArrived =
+		callStartsAt && new Date(callStartsAt) > new Date();
 	const callHasEnded = !!callEndedAt;
+
+	if (callTimeNotArrived)
+		return <MeetingNotStarted call={call} startsAt={callStartsAt} />;
 
 	if (callHasEnded) {
 		return <CallEnded toast={toast} router={router} call={call} />;

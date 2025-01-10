@@ -315,12 +315,6 @@ const AvailabilityServicesForm = ({
 									<SelectContent className="!bg-white">
 										<SelectItem
 											className="cursor-pointer hover:bg-gray-50"
-											value="all"
-										>
-											All
-										</SelectItem>
-										<SelectItem
-											className="cursor-pointer hover:bg-gray-50"
 											value="audio"
 										>
 											Audio

@@ -133,10 +133,7 @@ const AvailabilityServiceCards = ({
 										Duration: {service.timeDuration} minutes
 									</p>
 									<p className="text-sm text-gray-500 capitalize">
-										Included Services:{" "}
-										{service.type === "all"
-											? "Video, Audio, Chat"
-											: service.type}
+										Included Services: {service.type}
 									</p>
 
 									<p className="text-sm text-gray-500">
