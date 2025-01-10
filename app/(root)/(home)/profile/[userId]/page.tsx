@@ -20,7 +20,10 @@ const UserProfilePage = () => {
 			(currentUser?.firstName ?? "") + " " + (currentUser?.lastName ?? ""),
 		firstName: currentUser?.firstName ?? "",
 		lastName: currentUser?.lastName ?? "",
-		username: currentUser?.username ?? "",
+		username:
+			currentUser?.username === currentUser?.phone
+				? currentUser?._id || `${currentUser?._id}`
+				: currentUser?.username || `${currentUser?._id}`,
 		profession: currentUser?.profession ?? "",
 		themeSelected: currentUser?.themeSelected ?? "#88D8C0",
 		phone: currentUser?.phone ?? "",
