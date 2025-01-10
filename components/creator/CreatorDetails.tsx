@@ -65,6 +65,8 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);
 
+		let unsubscribeStatus: any;
+
 		const unsubscribeServices = onSnapshot(creatorRef, (doc) => {
 			const data = doc.data();
 
@@ -73,13 +75,16 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				const hasActiveService =
 					services?.videoCall || services?.audioCall || services?.chat;
 
-				const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
+				if (unsubscribeStatus) {
+					unsubscribeStatus();
+				}
+
+				unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
 					const statusData = statusDoc.data();
 					if (statusData) {
 						let newStatus = "Offline";
 
 						if (statusData.loginStatus) {
-							// Check Busy status
 							if (statusData.status === "Busy") {
 								newStatus = "Busy";
 							} else if (statusData.status === "Online" && hasActiveService) {
@@ -91,21 +96,21 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 							newStatus = "Offline";
 						}
 
-						// Only update status if it has changed
 						if (status !== newStatus) {
 							setStatus(newStatus);
 						}
 					}
 				});
-
-				return () => unsubscribeStatus();
 			}
 		});
 
 		return () => {
 			unsubscribeServices();
+			if (unsubscribeStatus) {
+				unsubscribeStatus();
+			}
 		};
-	}, [creator?._id, creator?.phone]);
+	}, [creator?._id, creator?.phone, status]);
 
 	return (
 		// Wrapper Section

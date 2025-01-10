@@ -48,8 +48,8 @@ const MeetingNotStarted = ({
 	};
 
 	const handleJoinCall = async () => {
-               await call?.join();
-	}
+		await call?.join();
+	};
 
 	return (
 		<div
@@ -132,15 +132,20 @@ const MeetingNotStarted = ({
 						videoCall ? "justify-start md:justify-center" : "justify-center"
 					}`}
 				>
-					<h3 className="text-xl font-bold text-green-400">Time Left</h3>
 					{remainingTime && remainingTime !== "00:00:00" ? (
-						formatCountdown(remainingTime)
+						<>
+							<h3 className="text-xl font-bold text-green-400">Time Left</h3>
+							{formatCountdown(remainingTime)}
+						</>
 					) : (
 						<div className="text-white flex flex-col items-center justify-center w-full gap-2.5 max-w-[15rem]">
-							<p className="py-2 px-4 bg-green-500 rounded-full hoverScaleDownEffect text-sm">
+							<p className="text-xl font-bold text-green-400">
 								Meeting is ready to start!
 							</p>
-							<button className="w-full bg-green-500 p-4 rounded-full hoverScaleDownEffect" onClick={handleJoinCall}>
+							<button
+								className="w-full bg-green-500 px-4 py-2 rounded-full hoverScaleDownEffect"
+								onClick={handleJoinCall}
+							>
 								Join Now
 							</button>
 						</div>

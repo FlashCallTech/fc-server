@@ -126,6 +126,8 @@ const MeetingRoom = () => {
 	const [hasVisited, setHasVisited] = useState(false);
 	const firestore = getFirestore();
 
+	let callType = call?.state?.custom?.type || "instant";
+
 	const countdownDuration = ongoingCallStatus === "ongoing" ? 30 : 15;
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
@@ -319,7 +321,7 @@ const MeetingRoom = () => {
 	);
 
 	return (
-		<section className="relative size-full overflow-hidden pt-4 md:pt-0 text-white">
+		<section className="relative w-full overflow-hidden pt-4 md:pt-0 text-white bg-dark-2 h-dvh">
 			{call &&
 				participants.length === 1 &&
 				isMeetingOwner &&

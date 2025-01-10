@@ -406,6 +406,7 @@ const AvailabilityFinalConsentForm = ({
 							{showDiscountCards && (
 								<ClientSideDiscountCard
 									service={service}
+									clientUserId={clientUser?._id as string}
 									isDiscountSelected={isDiscountSelected}
 									setIsDiscountSelected={setIsDiscountSelected}
 								/>

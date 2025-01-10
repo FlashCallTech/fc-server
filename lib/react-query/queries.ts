@@ -330,7 +330,8 @@ export const useGetUserAvailabilityServices = (
 	creatorId: string,
 	fetchAll: boolean = false,
 	requestFrom: "creator" | "client",
-	clientType?: string
+	clientType?: string,
+	clientId?: string
 ) => {
 	const limit = 10;
 
@@ -341,6 +342,7 @@ export const useGetUserAvailabilityServices = (
 			fetchAll,
 			requestFrom,
 			clientType,
+			clientId
 		],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
@@ -353,6 +355,7 @@ export const useGetUserAvailabilityServices = (
 						fetchAll,
 						requestFrom,
 						clientType,
+						clientId
 					},
 				}
 			);

@@ -7,10 +7,12 @@ const ClientSideDiscountCard = ({
 	service,
 	isDiscountSelected,
 	setIsDiscountSelected,
+	clientUserId,
 }: {
 	service: AvailabilityService;
 	isDiscountSelected: boolean;
 	setIsDiscountSelected: any;
+	clientUserId: string;
 }) => {
 	const {
 		title,
