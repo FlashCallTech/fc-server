@@ -393,7 +393,10 @@ const EditProfile = ({
 					toastStatus: "negative",
 				});
 			} else {
-				const updatedUser = response.updatedUser;
+				const updatedUser =
+					userType === "creator"
+						? response.data.updatedUser
+						: response.updatedUser;
 				const newUserDetails = {
 					...userData,
 					fullName: `${updatedUser.firstName} ${updatedUser.lastName}`,
