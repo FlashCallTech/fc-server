@@ -169,7 +169,6 @@ const AvailabilityFinalConsentForm = ({
 					settings_override: {
 						limits: {
 							max_participants: 2,
-							max_duration_seconds: service.timeDuration * 60,
 						},
 					},
 				},
