@@ -115,7 +115,13 @@ const OfficialCallTimer = ({
 		return () => clearInterval(intervalId);
 	}, [startTime, callId, isTimerRunning, callDuration, participants]);
 
-	return { timeLeft, pauseTimer, resumeTimer, hasLowTimeLeft };
+	return {
+		timeLeft,
+		pauseTimer,
+		resumeTimer,
+		hasLowTimeLeft,
+		totalTimeUtilized,
+	};
 };
 
 export default OfficialCallTimer;
