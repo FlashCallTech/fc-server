@@ -120,7 +120,7 @@ const MeetingPage = () => {
 	}
 
 	return (
-		<main className="size-full bg-dark-2 h-dvh">
+		<main className="size-full">
 			<StreamCall call={call}>
 				<StreamTheme>
 					<MeetingRoomWrapper toast={toast} router={router} call={call} />

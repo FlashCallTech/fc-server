@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { format, addMinutes, parse, isBefore, isEqual } from "date-fns";
+import { parse, format, addMinutes, isBefore, isEqual } from "date-fns";
 
 import Razorpay from "razorpay";
 import {
@@ -1086,11 +1086,16 @@ export const convertTo24Hour = (time: string): string => {
 		.padStart(2, "0")}`;
 };
 
-// method to generate dynamic timeslots
+// generate dynamic timeslots
 export const generateTimeSlots = (): string[] => {
 	const slots: string[] = [];
 	let start = new Date();
-	start.setHours(0, 0, 0, 0);
+	start.setHours(0, 0, 0, 0); // Start from 12:00 AM
+
+	const now = new Date();
+	const currentSlotIndex = Math.floor(
+		(now.getHours() * 60 + now.getMinutes()) / 15
+	);
 
 	while (start.getDate() === new Date().getDate()) {
 		const hours = start.getHours();
@@ -1107,26 +1112,36 @@ export const generateTimeSlots = (): string[] => {
 		start.setMinutes(start.getMinutes() + 15);
 	}
 
-	return slots;
+	// Sort the list so current time slot is the starting point
+	const reorderedSlots = [
+		...slots.slice(currentSlotIndex),
+		...slots.slice(0, currentSlotIndex),
+	];
+
+	return reorderedSlots;
 };
+
 
 export const getTimeSlots = (timeSlots: any[], duration: number) => {
 	const slots: string[] = [];
+	const now = new Date();
 
 	timeSlots.forEach(({ startTime, endTime }: any) => {
-		// Parse start and end times with AM/PM correctly
+	
 		let start = parse(startTime, "hh:mm a", new Date());
 		const end = parse(endTime, "hh:mm a", new Date());
 
 		while (isBefore(start, end) || isEqual(start, end)) {
-			slots.push(format(start, "hh:mm a"));
+		
+			if (isBefore(now, start) || isEqual(now, start)) {
+				slots.push(format(start, "hh:mm a"));
+			}
 			start = addMinutes(start, duration);
 		}
 	});
 
 	return slots;
 };
-
 // Function to format date and time
 export function formatDisplay(
 	selectedDay: string,

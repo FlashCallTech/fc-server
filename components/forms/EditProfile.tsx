@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { UpdateCreatorParams, UpdateUserParams } from "@/types";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	UpdateProfileFormSchema,
 	UpdateProfileFormSchemaClient,
@@ -37,7 +37,6 @@ import {
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
 import FileUploader from "../uploaders/FileUploader";
-import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
 import { usePathname } from "next/navigation";
 import axios from "axios";
@@ -62,6 +61,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../ui/select";
+import { isEqual } from "lodash";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -242,15 +242,23 @@ const EditProfile = ({
 	const { formState } = form;
 	const { errors, isValid } = formState;
 
+	const initialValues = useRef(form.getValues());
+	const hasChangesRef = useRef(false);
+
 	// Watch form values to detect changes
 	const watchedValues: any = useWatch({ control: form.control });
 
 	useEffect(() => {
-		const hasChanged = Object.keys(watchedValues).some((key) => {
-			return watchedValues[key] !== initialState[key];
+		const subscription = form.watch((values) => {
+			const currentValues = values;
+			const changes = !isEqual(currentValues, initialValues.current);
+			if (hasChangesRef.current !== changes) {
+				hasChangesRef.current = changes;
+				setIsChanged(changes);
+			}
 		});
-		setIsChanged(hasChanged);
-	}, [watchedValues, initialState]);
+		return () => subscription.unsubscribe();
+	}, [form, isValid]);
 
 	useEffect(() => {
 		if (!selectedFile) {
@@ -442,6 +450,8 @@ const EditProfile = ({
 				<SinglePostLoader />
 			</section>
 		);
+
+	console.log(isChanged, isValid, formError, watchedValues, initialState);
 
 	return (
 		<Form {...form}>
@@ -884,7 +894,7 @@ const EditProfile = ({
 												style={{ paddingBottom: "0px !important" }}
 											>
 												{field.value ? (
-													format(new Date(field.value), "PPP") // Format the stored string value back to a readable format
+													format(new Date(field.value), "PPP")
 												) : (
 													<span>Pick a date</span>
 												)}
@@ -943,10 +953,10 @@ const EditProfile = ({
 											selected={selectedDate}
 											onSelect={(date) => {
 												setSelectedDate(date);
-												// Convert the date to a string format before setting it in the form
+
 												field.onChange(
 													format(date as Date | string, "yyyy-MM-dd")
-												); // Format as 'yyyy-MM-dd' (ISO format)
+												);
 											}}
 											month={new Date(selectedYear, selectedMonth)}
 											disabled={(date) =>

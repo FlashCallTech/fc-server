@@ -506,7 +506,7 @@ export interface AvailabilityService {
 	extraDetails?: string;
 	createdAt: string;
 	updatedAt: string;
-	utilizedBy: string;
+	utilizedBy: Types.ObjectId[];
 }
 
 export interface Chat {

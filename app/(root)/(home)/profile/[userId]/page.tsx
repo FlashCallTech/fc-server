@@ -20,7 +20,10 @@ const UserProfilePage = () => {
 			(currentUser?.firstName ?? "") + " " + (currentUser?.lastName ?? ""),
 		firstName: currentUser?.firstName ?? "",
 		lastName: currentUser?.lastName ?? "",
-		username: currentUser?.username ?? "",
+		username:
+			(currentUser?.username === currentUser?.phone
+				? currentUser?._id
+				: currentUser?.username) ?? "",
 		profession: currentUser?.profession ?? "",
 		themeSelected: currentUser?.themeSelected ?? "#88D8C0",
 		phone: currentUser?.phone ?? "",
@@ -45,7 +48,7 @@ const UserProfilePage = () => {
 			setUserData(updatedInitialState);
 			setInitialState(updatedInitialState);
 		}
-	}, [fetchingUser, currentUser, userType, pathname]);
+	}, [fetchingUser, currentUser?._id, userType, pathname]);
 
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		setUserData(newUserData);
