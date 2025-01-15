@@ -101,6 +101,7 @@
 		"svix": "^1.24.0",
 		"tailwind-merge": "^2.3.0",
 		"tailwindcss-animate": "^1.0.7",
+		"tailwindcss-filters": "^3.0.0",
 		"typewriter-effect": "^2.21.0",
 		"uploadthing": "^7.4.0",
 		"uuid": "^10.0.0",

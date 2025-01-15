@@ -52,15 +52,15 @@ const ProfileDialog = ({
 	return (
 		<Dialog open={isOpen} onOpenChange={handleDialogClose}>
 			<DialogTrigger>
-				<div className="relative flex items-center hoverScaleDownEffect">
+				<div className="relative lg:min-w-[83px] flex items-center hoverScaleDownEffect">
 					<Image
 						src={creator.photo || uploadedImage}
 						width={1000}
 						height={1000}
 						alt="avatar"
-						className="bg-white w-32 h-32 rounded-full object-cover"
+						className="bg-white size-32 lg:size-20 rounded-full object-cover"
 					/>
-					<span className="absolute z-20 bottom-2 right-0 bg-black/50 rounded-full p-2 flex items-center justify-center">
+					<span className="absolute z-20 bottom-2 right-0 bg-black/50 rounded-full p-1 flex items-center justify-center">
 						{editIcons}
 					</span>
 				</div>

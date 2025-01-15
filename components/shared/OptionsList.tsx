@@ -118,7 +118,7 @@ const OptionsList = ({
 					{userCall.status === "Ended" && <DropdownMenuItem>
 						<button
 							onClick={() => handleOpenInvoice(userCall)}
-							className="w-full flex items-center justify-start gap-2 "
+							className={`w-full flex items-center justify-start gap-2 ${userType === "creator" ? "text-sm tracking-[0.6px]" : ""}`}
 							title="Download Invoice"
 						>
 							<svg
@@ -142,7 +142,7 @@ const OptionsList = ({
 						<DropdownMenuItem>
 							<button
 								onClick={() => handleOpenTransactionInvoice(userCall)}
-								className="w-full flex items-center justify-start gap-2 "
+								className={`w-full flex items-center justify-start gap-2 ${userType === "creator" ? "text-sm tracking-[0.6px]" : ""}`}
 								title="Download Invoice"
 							>
 								<svg
@@ -168,7 +168,7 @@ const OptionsList = ({
 						disabled={reportSubmitted}
 						className={`${reportSubmitted && "cursor-not-allowed"}`}
 					>
-						<section className="w-full flex items-center justify-start gap-2">
+						<section className={`w-full flex items-center justify-start gap-2 ${userType === "creator" ? "text-sm tracking-[0.6px]" : ""}`}>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								fill="none"

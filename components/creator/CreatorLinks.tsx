@@ -211,7 +211,7 @@ const CreatorLinks = () => {
 									{link.title}
 								</a>
 								<div className="flex flex-row gap-2">
-									<label className="relative inline-block w-14 h-6">
+									<label className="relative inline-block w-10 h-6">
 										<input
 											type="checkbox"
 											className="toggle-checkbox absolute w-0 h-0"
@@ -221,7 +221,7 @@ const CreatorLinks = () => {
 										/>
 										<p
 											className={`toggle-label block overflow-hidden h-6 rounded-full ${
-												link.isActive ? "bg-green-600" : "bg-gray-500"
+												link.isActive ? "bg-[#16BC88]" : "bg-gray-500"
 											} servicesCheckbox ${
 												isLoading ? "cursor-not-allowed" : "cursor-pointer"
 											}`}
@@ -230,7 +230,7 @@ const CreatorLinks = () => {
 												className="servicesCheckboxContent"
 												style={{
 													transform: link.isActive
-														? "translateX(2.1rem)"
+														? "translateX(1.1rem)"
 														: "translateX(0)",
 												}}
 											/>

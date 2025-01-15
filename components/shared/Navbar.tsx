@@ -13,6 +13,7 @@ import AuthenticationSheet from "../shared/AuthenticationSheet";
 import { trackEvent } from "@/lib/mixpanel";
 import { creatorUser } from "@/types";
 import { getDarkHexCode } from "@/lib/utils";
+import CreatorNavbar from "../creator/Navbar";
 
 const NavLoader = () => {
 	return (
@@ -41,6 +42,7 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 	const [creator, setCreator] = useState<creatorUser>();
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const pathname = usePathname();
+	const isCreatorHome = pathname.includes("home") && userType === "creator";
 	const isCreatorOrExpertPath =
 		creatorURL && creatorURL !== "" && pathname.includes(`${creatorURL}`);
 	const followCreatorTheme = isCreatorOrExpertPath ? "#ffffff" : "#000000";
@@ -88,21 +90,19 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
 			style={{
 				boxShadow: `4px 4px 0px 0px #000000`,
-				color: `${
-					isMobile && isCreatorOrExpertPath
+				color: `${isMobile && isCreatorOrExpertPath
 						? currentTheme
 							? "#000000"
 							: "#ffffff"
 						: followCreatorTheme
-				}`,
+					}`,
 				border: `1px solid #000000`,
-				backgroundColor: `${
-					isCreatorOrExpertPath
+				backgroundColor: `${isCreatorOrExpertPath
 						? isMobile
 							? currentTheme
 							: "#333333"
 						: "#ffffff"
-				}`,
+					}`,
 			}}
 			onClick={handleAppRedirect}
 		>
@@ -119,6 +119,10 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 			</span>
 		</Button>
 	);
+
+	if(userType === "creator") {
+		return <CreatorNavbar />
+	}
 
 	return (
 		<nav

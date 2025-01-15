@@ -31,6 +31,93 @@ export const sidebarLinks = [
 	},
 ];
 
+export const newSidebarLinksCreator = [
+	{
+		imgURL: "/icons/Home.svg",
+		route: "/home",
+		label: "Home",
+		protected: false,
+	},
+	{
+		imgURL: "/creator/orderHistory.svg",
+		route: "/previous",
+		label: "Order History",
+		protected: true,
+	},
+	{
+		imgURL: "/creator/transactionHistory.svg",
+		route: "/payment",
+		label: "Transaction History",
+		protected: true,
+	},
+	{
+		imgURL: "/creator/feedback.svg",
+		route: "/userFeedbacks",
+		label: "User Feedback's",
+		protected: true,
+	},
+	// {
+	// 	imgURL: "/icons/orderHistory.svg",
+	// 	route: "/previous",
+	// 	label: "Order History",
+	// 	protected: true,
+	// },
+	// {
+	// 	imgURL: "/icons/favorites.svg",
+	// 	route: "/userFeedbacks",
+	// 	label: "User Feedback's",
+	// 	protected: true,
+	// },
+	{
+		imgURL: "/creator/blocked.svg",
+		route: "/blocked-accounts",
+		label: "Blocked Users",
+		protected: true,
+	},
+	// {
+	// 	imgURL: "/icons/orderHistory.svg",
+	// 	route: "/calendar",
+	// 	label: "Calendar",
+	// 	protected: true,
+	// },
+	{
+		imgURL: "/creator/notification.svg",
+		route: "/notifications",
+		label: "Notifications",
+		protected: true,
+	},
+	{
+		imgURL: "/creator/refer.svg",
+		route: "/refer",
+		label: "Refer and Earn",
+		protected: true,
+	},
+	{
+		imgURL: "/creator/paymentSetting.svg",
+		route: "/payment-settings",
+		label: "Payment Settings",
+		protected: true,
+	},
+	{
+		imgURL: "/creator/meta.svg",
+		route: "/meta-analytics",
+		label: "Meta Pixel Analytics",
+		protected: true,
+	},
+	// {
+	// 	imgURL: "/icons/termsConditions.svg",
+	// 	route: "/terms-and-conditions",
+	// 	label: "Terms & Conditions",
+	// 	protected: false,
+	// },
+	// {
+	// 	imgURL: "/icons/support.svg",
+	// 	route: "/support",
+	// 	label: "Support",
+	// 	protected: false,
+	// },
+];
+
 export const sidebarLinksCreator = [
 	// {
 	// 	imgURL: "/icons/Home.svg",
