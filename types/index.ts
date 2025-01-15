@@ -254,6 +254,26 @@ export type RegisterCallParams = {
 	amountINR?: number;
 };
 
+export type ScheduledCallParams = {
+	_id: string;
+	callId: string;
+	type: "video" | "audio" | "chat";
+	status: string;
+	meetingOwner: clientUser;
+	expert: creatorUser;
+	description: string;
+	selectedDay: string;
+	selectedSlot: string;
+	startsAt: Date;
+	startedAt?: Date;
+	endedAt?: Date;
+	duration: number;
+	amount: number;
+	currency: string;
+	discounts: AvailabilityService;
+
+};
+
 export type RegisterChatParams = {
 	chatId: string;
 	creator: string;
@@ -464,28 +484,53 @@ export interface Service {
 	utilizedBy: Types.ObjectId[];
 }
 
+// Availability Service Type
+
+export interface AvailabilityService {
+	_id: string;
+	creatorId: string;
+	title: string;
+	description: string;
+	photo: string;
+	type: "audio" | "video" | "chat";
+	timeDuration: number;
+	basePrice: number;
+	isActive: boolean;
+	currency: "INR" | "USD";
+	discountRules: {
+		_id: string;
+		conditions: ["30+ Minutes Call" | "60+ Minutes Call"];
+		discountAmount: number;
+		discountType: "percentage" | "flat";
+	};
+	extraDetails?: string;
+	createdAt: string;
+	updatedAt: string;
+	utilizedBy: Types.ObjectId[];
+}
+
 export interface Chat {
 	callId: string;
 	chatId: string;
 	chatRate: string;
-    clientId: string;
+	clientId: string;
 	clientImg: string;
 	clientName: string;
 	clientPhone?: string;
-    creatorId: string;
+	creatorId: string;
 	creatorImg: string;
-    creatorName: string;
+	creatorName: string;
 	creatorPhone: string;
 	endedAt?: number;
-    messages: {
-        senderId: string;
-        text: string;
-        createdAt: number;
-        img: string;
-        audio: string;
-        seen: boolean;
-        tip: string;
-    }[];
+	messages: {
+		senderId: string;
+		text: string;
+		createdAt: number;
+		img: string;
+		audio: string;
+		seen: boolean;
+		tip: string;
+	}[];
 	startedAt: number;
 	status: string;
 	timerSet: boolean;

@@ -5,7 +5,7 @@ import { useInView } from "react-intersection-observer";
 import { creatorUser } from "@/types";
 import CreatorHome from "@/components/creator/CreatorHome";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import PostLoader from "@/components/shared/PostLoader";
 import Image from "next/image";
 import { trackEvent } from "@/lib/mixpanel";

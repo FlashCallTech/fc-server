@@ -28,7 +28,7 @@ export const useGetCalls = () => {
 						],
 					},
 				});
-				// console.log("Calls ... ", calls);
+
 				setCalls(calls);
 			} catch (error) {
 				Sentry.captureException(error);

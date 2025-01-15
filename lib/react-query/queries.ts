@@ -45,6 +45,42 @@ export const useGetPreviousCalls = (
 	});
 };
 
+export const useGetScheduledCalls = (
+	userId: string,
+	userType: string,
+	callType?: string
+) => {
+	const limit = 10; // Define the limit per page
+
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_USER_CALLS, userId, userType, callType],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(`${backendBaseUrl}/calls/scheduled/getUserCalls`, {
+				params: {
+					userId,
+					userType,
+					callType,
+					page: pageParam,
+					limit,
+				},
+			});
+
+			if (response.status === 200) {
+				console.log(response.data)
+				return response.data;
+
+			} else {
+				throw new Error("Error fetching calls");
+			}
+		},
+		getNextPageParam: (lastPage: any, allPages: any) => {
+			return lastPage.hasMore ? allPages.length + 1 : undefined;
+		},
+		enabled: !!userId,
+		initialPageParam: 1,
+	});
+};
+
 // ============================================================
 // FAVORITES QUERIES
 // ============================================================
@@ -118,13 +154,18 @@ export const useGetClients = () => {
 // ============================================================
 
 const fetchCreator = async (username: string) => {
-	const response = await axios.post(
-		`${backendBaseUrl}/user/getUserByUsername`,
-		{
-			username,
+	try {
+		const response = await axios.get(
+			`${backendBaseUrl}/creator/getByUsername/${username}`
+		);
+
+		// Check for successful response
+		if (response.status === 200) {
+			return response.data;
 		}
-	);
-	return response.data;
+	} catch (error: any) {
+		throw new Error("Unable to fetch creator details");
+	}
 };
 
 // Custom hook for React Query
@@ -235,7 +276,9 @@ export const useGetUserServices = (
 	creatorId: string,
 	filter: "all" | "audio" | "video" | "chat" | "" = "all",
 	fetchAll: boolean = false,
-	requestFrom: "creator" | "client"
+	requestFrom: "creator" | "client",
+	clientId?: string,
+	clientType?: string
 ) => {
 	const limit = 10;
 
@@ -243,6 +286,8 @@ export const useGetUserServices = (
 		queryKey: [
 			QUERY_KEYS.GET_CREATOR_DISCOUNT_SERVICES,
 			creatorId,
+			clientId,
+			clientType,
 			filter,
 			fetchAll,
 			requestFrom,
@@ -255,9 +300,62 @@ export const useGetUserServices = (
 						page: fetchAll ? undefined : pageParam,
 						limit: fetchAll ? undefined : limit,
 						creatorId,
+						clientId,
+						clientType,
 						filter,
 						fetchAll,
 						requestFrom,
+					},
+				}
+			);
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching user services");
+			}
+		},
+		getNextPageParam: (lastPage, allPages) => {
+			if (fetchAll) return null;
+			const totalPages = lastPage.pagination.pages;
+			const nextPage = allPages.length + 1;
+			return nextPage <= totalPages ? nextPage : null;
+		},
+		initialPageParam: 1,
+		enabled: !!creatorId,
+	});
+};
+
+export const useGetUserAvailabilityServices = (
+	creatorId: string,
+	fetchAll: boolean = false,
+	requestFrom: "creator" | "client",
+	clientType?: string,
+	clientId?: string
+) => {
+	const limit = 10;
+
+	return useInfiniteQuery({
+		queryKey: [
+			QUERY_KEYS.GET_CREATOR_AVAILABILITY_SERVICES,
+			creatorId,
+			fetchAll,
+			requestFrom,
+			clientType,
+			clientId
+		],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(
+				`${backendBaseUrl}/availability/creatorServices`,
+				{
+					params: {
+						page: fetchAll ? undefined : pageParam,
+						limit: fetchAll ? undefined : limit,
+						creatorId,
+						fetchAll,
+						requestFrom,
+						clientType,
+						clientId
 					},
 				}
 			);

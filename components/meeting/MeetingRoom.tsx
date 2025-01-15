@@ -126,6 +126,8 @@ const MeetingRoom = () => {
 	const [hasVisited, setHasVisited] = useState(false);
 	const firestore = getFirestore();
 
+	let callType = call?.state?.custom?.type || "instant";
+
 	const countdownDuration = ongoingCallStatus === "ongoing" ? 30 : 15;
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
@@ -173,7 +175,7 @@ const MeetingRoom = () => {
 						description: "You are already in this meeting in another tab.",
 						toastStatus: "positive",
 					});
-					router.replace("/home");
+					router.replace("/");
 					return;
 				}
 				if (callingState === CallingState.IDLE) {

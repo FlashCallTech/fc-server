@@ -19,7 +19,6 @@ import { useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { backendBaseUrl } from "../utils";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import Image from "next/image";
 
 interface CurrentUsersContextValue {
 	clientUser: clientUser | null;

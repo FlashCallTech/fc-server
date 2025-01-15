@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { format } from "date-fns";
+import { parse, format, addMinutes, isBefore, isEqual } from "date-fns";
 
 import Razorpay from "razorpay";
 import {
@@ -866,30 +866,6 @@ export const fetchCallDuration = async (callId: string) => {
 	}
 };
 
-// method to generate dynamic timeslots
-export const generateTimeSlots = (): string[] => {
-	const slots: string[] = [];
-	let start = new Date();
-	start.setHours(0, 0, 0, 0);
-
-	while (start.getDate() === new Date().getDate()) {
-		const hours = start.getHours();
-		const minutes = start.getMinutes();
-		const period = hours >= 12 ? "PM" : "AM";
-		const displayHours = hours % 12 === 0 ? 12 : hours % 12;
-
-		// Format the time string
-		const timeString = `${displayHours}:${minutes
-			.toString()
-			.padStart(2, "0")} ${period}`;
-		slots.push(timeString);
-
-		start.setMinutes(start.getMinutes() + 15);
-	}
-
-	return slots;
-};
-
 // function to mask user number
 
 export const maskNumbers = (input: string): string => {
@@ -954,6 +930,7 @@ export const sendCallNotification = async (
 	creatorPhone: string,
 	callType: string,
 	clientUsername: string,
+	clientId: string,
 	call: Call,
 	notificationType: string,
 	fetchFCMToken: (phone: string, type: string) => Promise<FCMToken | null>,
@@ -978,12 +955,12 @@ export const sendCallNotification = async (
 					created_by_display_name: maskNumbers(
 						clientUsername || "Flashcall User"
 					),
+					callerId: clientId || call.state.createdBy?.id,
 					callType: call.type,
 					callId: call.id,
 					notificationType,
 				}
 			);
-
 			if (fcmToken.voip_token) {
 				await axios.post(`${backendUrl}/send-notification`, {
 					deviceToken: fcmToken.voip_token,
@@ -992,6 +969,7 @@ export const sendCallNotification = async (
 						created_by_display_name: maskNumbers(
 							clientUsername || "Flashcall User"
 						),
+						callerId: clientId || call.state.createdBy?.id,
 						callType: call.type,
 						callId: call.id,
 						notificationType,
@@ -1030,6 +1008,7 @@ export const sendChatNotification = async (
 				{
 					clientId: chatRequestData.clientId,
 					clientName: chatRequestData.clientName,
+					callerId: chatRequestData.clientId,
 					clientPhone: chatRequestData.clientPhone,
 					clientImg: chatRequestData.clientImg,
 					creatorId: chatRequestData.creatorId,
@@ -1056,6 +1035,7 @@ export const sendChatNotification = async (
 							clientUsername || "Flashcall User"
 						),
 						chatId: chatRequestData.chatId,
+						callerId: chatRequestData.clientId,
 						chatRequestId: chatRequestData.id,
 						notificationType,
 					},
@@ -1067,7 +1047,7 @@ export const sendChatNotification = async (
 	}
 };
 
-  export const getDevicePlatform = () => {
+export const getDevicePlatform = () => {
 	const userAgent = navigator.userAgent || navigator.vendor;
 
 	// Detect iOS
@@ -1086,4 +1066,142 @@ export const sendChatNotification = async (
 	}
 
 	return "Unknown Platform";
+};
+
+// utils.ts
+export const convertTo24Hour = (time: string): string => {
+	if (!time) return "";
+
+	const [hoursMinutes, modifier] = time.split(" ");
+	let [hours, minutes] = hoursMinutes.split(":").map(Number);
+
+	if (modifier === "PM" && hours !== 12) {
+		hours += 12;
+	}
+	if (modifier === "AM" && hours === 12) {
+		hours = 0;
+	}
+
+	return `${hours.toString().padStart(2, "0")}:${minutes
+		.toString()
+		.padStart(2, "0")}`;
+};
+
+// generate dynamic timeslots
+export const generateTimeSlots = (): string[] => {
+	const slots: string[] = [];
+	let start = new Date();
+	start.setHours(0, 0, 0, 0); // Start from 12:00 AM
+
+	const now = new Date();
+	const currentSlotIndex = Math.floor(
+		(now.getHours() * 60 + now.getMinutes()) / 15
+	);
+
+	while (start.getDate() === new Date().getDate()) {
+		const hours = start.getHours();
+		const minutes = start.getMinutes();
+		const period = hours >= 12 ? "PM" : "AM";
+		const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+
+		// Format the time string
+		const timeString = `${displayHours}:${minutes
+			.toString()
+			.padStart(2, "0")} ${period}`;
+		slots.push(timeString);
+
+		start.setMinutes(start.getMinutes() + 15);
+	}
+
+	// Sort the list so current time slot is the starting point
+	const reorderedSlots = [
+		...slots.slice(currentSlotIndex),
+		...slots.slice(0, currentSlotIndex),
+	];
+
+	return reorderedSlots;
+};
+
+
+export const getTimeSlots = (timeSlots: any[], duration: number) => {
+	const slots: string[] = [];
+	const now = new Date();
+
+	timeSlots.forEach(({ startTime, endTime }: any) => {
+	
+		let start = parse(startTime, "hh:mm a", new Date());
+		const end = parse(endTime, "hh:mm a", new Date());
+
+		while (isBefore(start, end) || isEqual(start, end)) {
+		
+			if (isBefore(now, start) || isEqual(now, start)) {
+				slots.push(format(start, "hh:mm a"));
+			}
+			start = addMinutes(start, duration);
+		}
+	});
+
+	return slots;
+};
+// Function to format date and time
+export function formatDisplay(
+	selectedDay: string,
+	selectedTimeSlot: string,
+	timeSlotDuration: number
+) {
+	// Parse the date and time
+	const date = new Date(`${selectedDay} ${selectedTimeSlot}`);
+
+	// Format date into 'Sat, 11 Jan'
+	const formattedDate = date.toLocaleDateString("en-US", {
+		weekday: "short",
+		day: "2-digit",
+		month: "short",
+	});
+
+	// Format time range
+	const startTime = new Date(date);
+	const endTime = new Date(date);
+	endTime.setMinutes(endTime.getMinutes() + timeSlotDuration);
+
+	const formattedTimeRange = `${startTime.toLocaleTimeString("en-US", {
+		hour: "2-digit",
+		minute: "2-digit",
+	})} - ${endTime.toLocaleTimeString("en-US", {
+		hour: "2-digit",
+		minute: "2-digit",
+	})}`;
+
+	// Get timezone offset in hours and minutes
+	const timezoneOffset = -date.getTimezoneOffset(); // in minutes
+	const hoursOffset = Math.floor(timezoneOffset / 60);
+	const minutesOffset = timezoneOffset % 60;
+	const formattedTimezone = `GMT ${hoursOffset >= 0 ? "+" : ""}${hoursOffset}:${
+		minutesOffset < 10 ? "0" : ""
+	}${minutesOffset}`;
+
+	// Return values as separate fields
+	return {
+		day: formattedDate, 
+		timeRange: formattedTimeRange, 
+		timezone: formattedTimezone, 
+	};
 }
+
+export const getCountdownTime = (startTime: string | Date): string => {
+	const now = new Date();
+	const targetTime = new Date(startTime);
+	const diff = targetTime.getTime() - now.getTime();
+
+	if (diff <= 0) {
+		return "00:00:00"; 
+	}
+
+	const hours = Math.floor(diff / (1000 * 60 * 60));
+	const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+	const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+	return `${hours.toString().padStart(2, "0")}:${minutes
+		.toString()
+		.padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+};

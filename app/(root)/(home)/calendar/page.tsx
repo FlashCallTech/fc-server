@@ -1,6 +1,6 @@
 "use client";
 
-import UserAvailability from "@/components/creator/UserAvailability";
+import UserAvailability from "@/components/availabilityServices/UserAvailability";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -26,14 +26,14 @@ const Calendar = () => {
 					description: "You need to be logged in to access the calendar.",
 					toastStatus: "negative",
 				});
-				router.replace("/home");
+				router.replace("/");
 			} else if (userType === "client") {
 				toast({
 					title: "Redirecting",
 					description: "Clients do not have access to the calendar.",
 					toastStatus: "negative",
 				});
-				router.replace("/home");
+				router.replace("/");
 			}
 		}
 	}, [fetchingUser, currentUser, userType, toast, router]);
@@ -106,7 +106,7 @@ const Calendar = () => {
 					<h1 className="text-xl md:text-2xl font-bold">User Calendar</h1>
 				</section>
 			</section>
-			<UserAvailability data={data} userId={currentUser._id} />;
+			<UserAvailability data={data} userId={currentUser._id} />
 		</section>
 	);
 };

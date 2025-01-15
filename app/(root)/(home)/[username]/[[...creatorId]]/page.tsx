@@ -1,12 +1,13 @@
 import CreatorCard from "@/components/creator/CreatorCard";
 import { Metadata } from "next";
 import * as Sentry from "@sentry/nextjs";
-import { getUserByUsername } from "@/lib/actions/creator.actions";
 import {
 	getDisplayName,
 	getProfileImagePlaceholder,
 	getImageSource,
+	backendBaseUrl,
 } from "@/lib/utils";
+import axios from "axios";
 
 export async function generateMetadata({
 	params,
@@ -25,8 +26,19 @@ export async function generateMetadata({
 	const formattedUsername = decodedUsername.startsWith("@")
 		? decodedUsername.substring(1)
 		: decodedUsername;
+	let creator: any;
+	try {
+		const response = await axios.get(
+			`${backendBaseUrl}/creator/getByUsername/${formattedUsername}`
+		);
 
-	const creator = await getUserByUsername(String(formattedUsername));
+		if (response.status === 200) {
+			creator = response.data;
+		}
+	} catch (error) {
+		console.log(error);
+	}
+
 	const creatorProfile = creator ? creator : null;
 
 	if (!creatorProfile) {
