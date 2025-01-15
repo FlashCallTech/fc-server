@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { UpdateCreatorParams, UpdateUserParams } from "@/types";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	UpdateProfileFormSchema,
 	UpdateProfileFormSchemaClient,
@@ -62,6 +62,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../ui/select";
+import { isEqual } from "lodash";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -241,22 +242,29 @@ const EditProfile = ({
 
 	const { formState } = form;
 	const { errors, isValid } = formState;
+	const initialValues = useRef(form.getValues());
+	const hasChangesRef = useRef(false);
 
 	// Watch form values to detect changes
 	const watchedValues: any = useWatch({ control: form.control });
 
 	useEffect(() => {
-		const hasChanged = Object.keys(watchedValues).some((key) => {
-			return watchedValues[key] !== initialState[key];
+		const subscription = form.watch((values) => {
+			const currentValues = values;
+			const changes = !isEqual(currentValues, initialValues.current);
+			if (hasChangesRef.current !== changes) {
+				hasChangesRef.current = changes;
+				setIsChanged(changes);
+			}
 		});
-		setIsChanged(hasChanged);
-	}, [watchedValues, initialState]);
+		return () => subscription.unsubscribe();
+	}, [form, isValid]);
 
 	useEffect(() => {
 		if (!selectedFile) {
 			const newPhoto =
 				placeholderImages[
-					watchedValues.gender as "male" | "female" | "other"
+				watchedValues.gender as "male" | "female" | "other"
 				] || GetRandomImage();
 
 			if (
@@ -384,6 +392,7 @@ const EditProfile = ({
 			}
 
 			if (response.error) {
+				console.log("Error Found");
 				// Display the error if an existing user is found
 				setFormError(response.error);
 				toast({
@@ -393,7 +402,7 @@ const EditProfile = ({
 					toastStatus: "negative",
 				});
 			} else {
-				const updatedUser = response.updatedUser;
+				const updatedUser = userType === "creator" ? response.data.updatedUser : response.updatedUser;
 				const newUserDetails = {
 					...userData,
 					fullName: `${updatedUser.firstName} ${updatedUser.lastName}`,
@@ -435,9 +444,8 @@ const EditProfile = ({
 	if (loading)
 		return (
 			<section
-				className={`w-full ${
-					pathname.includes("/updateDetails") ? "h-screen" : "h-full"
-				} flex items-center justify-center`}
+				className={`w-full ${pathname.includes("/updateDetails") ? "h-screen" : "h-full"
+					} flex items-center justify-center`}
 			>
 				<SinglePostLoader />
 			</section>
@@ -445,40 +453,6 @@ const EditProfile = ({
 
 	return (
 		<Form {...form}>
-			<section
-				className={`sticky ${
-					pathname.includes("/updateDetails") ? "top-0" : "top-0 md:top-[76px]"
-				}  bg-white z-30 p-4 pl-0 flex flex-col items-start justify-start gap-4 w-full h-fit`}
-			>
-				<section className="flex items-center gap-4">
-					{pathname.includes("/profile") && (
-						<section
-							onClick={() => {
-								form.reset();
-								setEditData && setEditData((prev) => !prev);
-							}}
-							className="text-xl font-bold hoverScaleDownEffect cursor-pointer"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								strokeWidth={1.5}
-								stroke="currentColor"
-								className="size-6"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M15.75 19.5 8.25 12l7.5-7.5"
-								/>
-							</svg>
-						</section>
-					)}
-					<h1 className="text-xl md:text-2xl font-bold">Edit User Details</h1>
-				</section>
-			</section>
-
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
 				className="relative space-y-8 w-full flex flex-col items-center"
@@ -521,9 +495,8 @@ const EditProfile = ({
 							</FormLabel>
 							<FormControl>
 								<div
-									className={`relative flex items-center  ${
-										userType === "creator" ? " w-fit gap-2.5" : "w-full"
-									}`}
+									className={`relative flex items-center  ${userType === "creator" ? " w-fit gap-2.5" : "w-full"
+										}`}
 								>
 									{/* empty placeholder for creator's username */}
 									{userType === "creator" && (
@@ -666,8 +639,8 @@ const EditProfile = ({
 														<ContentLoading />
 													</div>
 												) : !loadingProfessions &&
-												  professions &&
-												  professions.length === 0 ? (
+													professions &&
+													professions.length === 0 ? (
 													<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
 														Error fetching the list
 													</p>
@@ -682,21 +655,19 @@ const EditProfile = ({
 																}
 															>
 																<section
-																	className={`${
-																		(profession.name === field.value ||
-																			profession.name === selectedProfession) &&
+																	className={`${(profession.name === field.value ||
+																		profession.name === selectedProfession) &&
 																		"ring-2 ring-offset-2 ring-green-1"
-																	} relative shadow-lg rounded-[12px]`}
+																		} relative shadow-lg rounded-[12px]`}
 																>
 																	{/* Overlay */}
 
 																	<div
-																		className={`${
-																			profession.name === field.value ||
+																		className={`${profession.name === field.value ||
 																			profession.name === selectedProfession
-																				? "bg-black/60"
-																				: "bg-black/20"
-																		} absolute inset-0  rounded-[12px]`}
+																			? "bg-black/60"
+																			: "bg-black/20"
+																			} absolute inset-0  rounded-[12px]`}
 																	/>
 
 																	<Image
@@ -710,15 +681,14 @@ const EditProfile = ({
 
 																<section className="flex flex-col gap-2 items-center justify-center absolute bottom-2">
 																	<button
-																		className={`${
-																			profession.name !== field.value ||
+																		className={`${profession.name !== field.value ||
 																			profession.name !== selectedProfession
-																				? "bg-white text-black "
-																				: "bg-green-1 text-white"
-																		} rounded-full p-2 hoverScaleDownEffect cursor-pointer`}
+																			? "bg-white text-black "
+																			: "bg-green-1 text-white"
+																			} rounded-full p-2 hoverScaleDownEffect cursor-pointer`}
 																	>
 																		{profession.name !== field.value ||
-																		profession.name !== selectedProfession ? (
+																			profession.name !== selectedProfession ? (
 																			<svg
 																				xmlns="http://www.w3.org/2000/svg"
 																				fill="none"
@@ -787,9 +757,8 @@ const EditProfile = ({
 
 														<Button
 															type="button"
-															className={`${
-																loadingProfessions && "hidden"
-															} bg-green-1 hoverScaleDownEffect text-white w-fit`}
+															className={`${loadingProfessions && "hidden"
+																} bg-green-1 hoverScaleDownEffect text-white w-fit`}
 															onClick={handleConfirmProfession}
 														>
 															Confirm Profession
@@ -1022,11 +991,10 @@ const EditProfile = ({
 											{predefinedColors.map((color, index) => (
 												<div
 													key={index}
-													className={`w-8 h-8 m-1 rounded-full cursor-pointer hoverScaleDownEffect ${
-														selectedColor === color
-															? "ring-2 ring-offset-2 ring-blue-500"
-															: ""
-													}`}
+													className={`w-8 h-8 m-1 rounded-full cursor-pointer hoverScaleDownEffect ${selectedColor === color
+														? "ring-2 ring-offset-2 ring-blue-500"
+														: ""
+														}`}
 													style={{ backgroundColor: color }}
 													onClick={() => {
 														handleColorSelect(color);
@@ -1073,11 +1041,10 @@ const EditProfile = ({
 					<div className="text-red-500 text-lg text-center">{formError}</div>
 				)}
 				<section
-					className={`${
-						isChanged && isValid && !formError
-							? "grid-cols-1 w-full"
-							: "grid-cols-1 w-3/4 lg:w-1/2"
-					} sticky bottom-2 right-0 grid  gap-4 items-center justify-center `}
+					className={`${isChanged && isValid && !formError
+						? "grid-cols-1 w-full"
+						: "grid-cols-1 w-3/4 lg:w-1/2"
+						} sticky bottom-2 right-0 grid  gap-4 items-center justify-center `}
 				>
 					{isChanged && isValid && !formError && (
 						<Button

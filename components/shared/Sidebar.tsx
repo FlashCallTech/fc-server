@@ -11,6 +11,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { getDarkHexCode, getDisplayName, getImageSource } from "@/lib/utils";
 import { clientUser, creatorUser } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
+import CreatorSidebar from "./CreatorSidebar";
 
 const Sidebar = () => {
 	const [creator, setCreator] = useState<creatorUser>();
@@ -29,6 +30,7 @@ const Sidebar = () => {
 		lastName: currentUser?.lastName,
 		username: currentUser?.username as string,
 	});
+	const isCreatorHome = pathname.includes("home") && userType === "creator";
 	const isExpertPath =
 		creatorURL && creatorURL !== "" && pathname.includes(`${creatorURL}`);
 
@@ -74,13 +76,18 @@ const Sidebar = () => {
 	const imageSrc =
 		getImageSource(currentUser as clientUser | creatorUser) ?? "";
 
+
+	if(userType === "creator") {
+		return <CreatorSidebar />
+	}
+
 	return (
 		<section
 			id="sidebar"
-			className={`sticky left-0 top-[76px] flex h-screen flex-col justify-between p-6  max-md:hidden lg:w-[264px] shadow-md ${isExpertPath && "border-r border-white/20"
+			className={`sticky left-0 ${isCreatorHome ? "top-0" : "top-[76px]"}  flex h-screen flex-col justify-between p-6  max-md:hidden lg:w-[264px] shadow-md ${isExpertPath && "border-r border-white/20"
 				}`}
 			style={{
-				maxHeight: `calc(100dvh - 76px)`,
+				maxHeight: `calc(100dvh - ${isCreatorHome ? "0px" : "76px"} )`,
 				backgroundColor: isExpertPath ? "transparent" : "#ffffff",
 			}}
 		>
@@ -145,9 +152,8 @@ const Sidebar = () => {
 					<TooltipTrigger asChild>
 						<Link
 							href={`/profile/${currentUser?._id}`}
-							className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start hoverScaleDownEffect overflow-hidden ${
-								userType === "client" && isExpertPath && "bg-[#333333] py-2.5"
-							}  ${pathname.includes("/profile/") && "opacity-80"}`}
+							className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start hoverScaleDownEffect overflow-hidden ${userType === "client" && isExpertPath && "bg-[#333333] py-2.5"
+								}  ${pathname.includes("/profile/") && "opacity-80"}`}
 						>
 							<Image
 								src={imageSrc}
@@ -158,9 +164,8 @@ const Sidebar = () => {
 							/>
 							<div className="flex flex-col w-full items-start justify-center max-lg:hidden">
 								<span
-									className={`${
-										isExpertPath && "text-white"
-									} text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap`}
+									className={`${isExpertPath && "text-white"
+										} text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap`}
 								>
 									{fullName}
 								</span>

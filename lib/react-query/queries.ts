@@ -343,22 +343,30 @@ export const useGetFeedbacks = (creatorId: string) => {
 
 export const useGetUserTransactionsByType = (
 	userId: string,
-	type: "debit" | "credit" | "all"
+	type: "debit" | "credit" | "all",
+	range: {
+		startDate: string | null,
+		endDate: string | null,
+	}
+
 ) => {
 	const limit = 10;
 
 	return useInfiniteQuery({
-		queryKey: ["userTransactions", userId, type],
+		queryKey: ["userTransactions", userId, type, range.startDate, range.endDate],
 		queryFn: async ({ pageParam = 1 }) => {
-			const response = await axios.get(
-				`${backendBaseUrl}/wallet/transactions/paginated/${userId}/type/${type}`,
-				{
-					params: {
-						page: pageParam,
-						limit,
-					},
-				}
-			);
+			const baseUrl = `${backendBaseUrl}/wallet/transactions/paginated/${userId}/type/${type}/range`;
+			const url =
+				range.startDate && range.endDate
+					? `${baseUrl}/${range.startDate}/${range.endDate}`
+					: baseUrl; // Use base URL when no range is provided
+
+			const response = await axios.get(url, {
+				params: {
+					page: pageParam,
+					limit,
+				},
+			});
 
 			if (response.status === 200) {
 				return response.data;
@@ -369,7 +377,11 @@ export const useGetUserTransactionsByType = (
 		getNextPageParam: (lastPage: any, allPages: any) => {
 			return lastPage.hasNextPage ? allPages.length + 1 : undefined;
 		},
-		enabled: !!userId && !!type,
+		enabled:
+			!!userId &&
+			!!type &&
+			((range.startDate === null && range.endDate === null) ||
+				(range.startDate !== null && range.endDate !== null)),
 		initialPageParam: 1,
 	});
 };
@@ -394,5 +406,35 @@ export const useGetUserAvailability = (userId: string) => {
 			}
 		},
 		enabled: !!userId,
+	});
+};
+
+export const useGetUserReferrals = (
+	userId: string,
+) => {
+	const limit = 10; // Define the limit per page
+
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_USER_REFERRALS, userId],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(`${backendBaseUrl}/referral/getReferrals`, {
+				params: {
+					userId,
+					page: pageParam,
+					limit,
+				},
+			});
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching referrals");
+			}
+		},
+		getNextPageParam: (lastPage: any, allPages: any) => {
+			return lastPage.hasMore ? allPages.length + 1 : undefined;
+		},
+		enabled: !!userId,
+		initialPageParam: 1,
 	});
 };

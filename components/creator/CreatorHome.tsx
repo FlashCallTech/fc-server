@@ -43,6 +43,7 @@ const CreatorHome = () => {
 
 	const [creatorLink, setCreatorLink] = useState<string | null>(null);
 	const [todaysEarning, setTodaysEarning] = useState(0);
+	const [totalCalls, setTotalCalls] = useState();
 	const [isPriceEditOpen, setIsPriceEditOpen] = useState(false);
 	const [prices, setPrices] = useState({
 		videoCall: "0",
@@ -94,6 +95,22 @@ const CreatorHome = () => {
 			fetchLink();
 		}
 	}, [creatorUser?._id]);
+
+	useEffect(() => {
+		const fetchTotalCalls = async () => {
+			const response = await axios.get(`${backendBaseUrl}/calls/getUserCalls`, {
+				params: {
+					userId: creatorUser?._id,
+					userType: "Creator",
+					limit: 1,
+				},
+			});
+			const data = response.data;
+			setTotalCalls(data.totalCalls);
+		}
+
+		fetchTotalCalls();
+	}, [])
 
 	const fetchTransactions = async () => {
 		try {
@@ -319,9 +336,9 @@ const CreatorHome = () => {
 	const fullName = getDisplayName(creatorUser);
 
 	return (
-		<>
+		<div className="size-full">
 			<div
-				className={`relative size-full 2xl:w-[90%] mx-auto flex flex-col md:pt-4 md:rounded-t-xl`}
+				className={`relative size-full 2xl:w-[90%] mx-auto flex flex-col md:pt-4 md:rounded-t-xl lg:hidden`}
 				style={{ backgroundColor: theme }}
 			>
 				<div className="flex justify-end p-2 absolute top-2 right-2">
@@ -335,7 +352,7 @@ const CreatorHome = () => {
 				<div className="flex flex-col items-center justify-center p-4 gap-2.5">
 					<ProfileDialog creator={creatorUser} imageSrc={imageSrc} />
 					<section className="size-full flex flex-col items-center justify-center overflow-hidden">
-						<p className="font-semibold text-2xl max-w-[92%] text-ellipsis whitespace-nowrap overflow-hidden capitalize">
+						<p className="font-bold text-2xl max-w-[92%] text-ellipsis whitespace-nowrap overflow-hidden capitalize">
 							{fullName}
 						</p>
 						<span className="text-sm">
@@ -446,20 +463,17 @@ const CreatorHome = () => {
 								<input
 									disabled={services.isRestricted}
 									type="checkbox"
-									className={`${
-										services.isRestricted && "!cursor-not-allowed"
-									} toggle-checkbox absolute w-0 h-0 opacity-0`}
+									className={`${services.isRestricted && "!cursor-not-allowed"
+										} toggle-checkbox absolute w-0 h-0 opacity-0`}
 									checked={services.myServices}
 									onChange={() => handleToggle("myServices")}
 								/>
 								<p
-									className={`toggle-label block overflow-hidden h-6 rounded-full ${
-										services.myServices ? "bg-green-600" : "bg-gray-500"
-									} ${
-										services.isRestricted
+									className={`toggle-label block overflow-hidden h-6 rounded-full ${services.myServices ? "bg-green-600" : "bg-gray-500"
+										} ${services.isRestricted
 											? "!cursor-not-allowed"
 											: "cursor-pointer"
-									} servicesCheckbox`}
+										} servicesCheckbox`}
 									style={{
 										justifyContent: services.myServices
 											? "flex-end"
@@ -517,7 +531,240 @@ const CreatorHome = () => {
 					/>
 				)}
 			</div>
-		</>
+
+			{/* New Design */}
+
+			<div className="hidden size-full lg:block bg-white p-8">
+				<div
+					className={`relative bg-white size-full mx-auto flex flex-col`}
+				>
+					<div className="w-full mb-4">
+						<div className="flex gap-3 w-full">
+							<ProfileDialog creator={creatorUser} imageSrc={imageSrc} />
+							<div className="flex w-full p-2 pr-0 justify-between">
+								<section className="size-full flex flex-col overflow-hidden">
+									<p className="font-bold text-xl max-w-[92%] text-ellipsis whitespace-nowrap overflow-hidden capitalize">
+										{fullName}
+									</p>
+									<span className="text-sm text-[#6B7280]">
+										{creatorUser?.creatorId?.startsWith("@")
+											? creatorUser.creatorId
+											: `@${creatorUser?.username}`}
+									</span>
+								</section>
+								<div className="px-4 py-2 text-white text-sm h-fit bg-[#16BC88] rounded-full hoverScaleDownEffect">
+									<Link
+										href="/profile/editProfile"
+										className="whitespace-nowrap"
+									>
+										Edit Profile
+									</Link>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div className="flex-grow flex flex-col gap-6">
+						<CopyToClipboard
+							link={
+								creatorLink ?? `https://flashcall.me/${creatorUser?.username}`
+							}
+							username={
+								creatorUser.username
+									? creatorUser.username
+									: (creatorUser.phone as string)
+							}
+							profession={creatorUser.profession ?? "Astrologer"}
+							gender={creatorUser.gender ?? ""}
+							firstName={creatorUser.firstName}
+							lastName={creatorUser.lastName}
+						/>
+
+						{/* restriction warning */}
+						{showRestrictedWarning && (
+							<section className="flex flex-col gap-4 items-start justify-center rounded-lg bg-[#FFECEC] border border-red-500 p-3 shadow-sm">
+								{/* heading */}
+								<section className="w-full flex items-center justify-between">
+									<section className="flex items-center w-full gap-4">
+										<span className="bg-red-500 text-white rounded-full p-1 hoverScaleDownEffect cursor-pointer">
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												viewBox="0 0 24 24"
+												strokeWidth={1.5}
+												stroke="currentColor"
+												className="size-5 text-white"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+												/>
+											</svg>
+										</span>
+
+										<span className="font-bold">Account Temporarily Blocked</span>
+									</section>
+
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										strokeWidth={1.5}
+										stroke="currentColor"
+										className="size-6 hoverScaleDownEffect cursor-pointer"
+										onClick={() => setShowRestrictedWarning(false)}
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											d="M6 18 18 6M6 6l12 12"
+										/>
+									</svg>
+								</section>
+
+								{/* subheading */}
+								<section className="w-full flex items-center justify-between gap-7">
+									<span className="text-xs">
+										We’ve temporarily paused your account, so you won’t be able to
+										take calls at this time
+									</span>
+									<span className="text-green-1 text-xs hoverScaleDownEffect">
+										Help
+									</span>
+								</section>
+							</section>
+						)}
+
+						<section className="flex flex-row gap-6 justify-between bg-white">
+							<div className="flex flex-row gap-3 w-full border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-xl">
+								<div className="flex flex-col p-6 w-full">
+									<div className="flex flex-row w-full justify-between">
+										<p className="text-[#6B7280] text-sm">Today's Earning</p>
+										<Image
+											src={"/creator/todayTransaction.svg"}
+											width={100}
+											height={100}
+											alt="img"
+											className="size-4"
+										/>
+									</div>
+									<p className="text-lg font-bold">
+										{transactionsLoading ? "Fetching..." : `Rs. ${todaysEarning}`}
+									</p>
+								</div>
+							</div>
+							<div className="flex flex-row gap-3 w-full border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-xl">
+								<div className="flex flex-col p-6 w-full">
+									<div className="flex flex-row w-full justify-between">
+										<p className="text-[#6B7280] text-sm">Total Balance</p>
+										<Image
+											src={"/creator/wallet.svg"}
+											width={100}
+											height={100}
+											alt="img"
+											className="size-4"
+										/>
+									</div>
+									<p className="text-lg font-bold">
+										{`Rs. ${creatorUser.walletBalance}`}
+									</p>
+								</div>
+							</div>
+							<div className="flex flex-row gap-3 w-full border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-xl">
+								<div className="flex flex-col p-6 w-full">
+									<div className="flex flex-row w-full justify-between">
+										<p className="text-[#6B7280] text-sm">Total Calls</p>
+										<Image
+											src={"/creator/call.svg"}
+											width={100}
+											height={100}
+											alt="img"
+											className="size-4"
+										/>
+									</div>
+									<p className="text-lg font-bold">
+										{totalCalls}
+									</p>
+								</div>
+							</div>
+						</section>
+						<section className="flex flex-col justify-between p-1">
+							<div className="flex flex-row justify-between items-center p-2">
+								<span className="text-black text-lg font-bold">My Services</span>
+								{/* <label className="relative inline-block w-14 h-6">
+									<input
+										disabled={services.isRestricted}
+										type="checkbox"
+										className={`${services.isRestricted && "!cursor-not-allowed"
+											} toggle-checkbox absolute w-0 h-0 opacity-0`}
+										checked={services.myServices}
+										onChange={() => handleToggle("myServices")}
+									/>
+									<p
+										className={`toggle-label block overflow-hidden h-6 rounded-full ${services.myServices ? "bg-green-600" : "bg-gray-500"
+											} ${services.isRestricted
+												? "!cursor-not-allowed"
+												: "cursor-pointer"
+											} servicesCheckbox`}
+										style={{
+											justifyContent: services.myServices
+												? "flex-end"
+												: "flex-start",
+										}}
+									>
+										<span
+											className="servicesCheckboxContent"
+											style={{
+												transition: "transform 0.3s",
+												transform: services.myServices
+													? "translateX(2.1rem)"
+													: "translateX(0)",
+											}}
+										/>
+									</p>
+								</label> */}
+							</div>
+
+							<ServicesCheckbox
+								setIsPriceEditOpen={setIsPriceEditOpen}
+								services={{
+									videoCall: services.videoCall,
+									audioCall: services.audioCall,
+									chat: services.chat,
+								}}
+								isRestricted={services.isRestricted}
+								handleToggle={handleToggle}
+								prices={prices}
+								globalPrices={globalPrices}
+							/>
+						</section>
+
+						{/* <DiscountServiceCards creator={creatorUser} /> */}
+
+						<CreatorLinks />
+
+						<section className="flex items-center justify-center pt-4">
+							<div className="text-center text-[13px] text-gray-400">
+								If you are interested in learning how to create an account on{" "}
+								<b>Flashcall</b> and how it works. <br />{" "}
+								<Link href={"/home"} className="text-[#16BC88]">
+									{" "}
+									<b> please click here. </b>{" "}
+								</Link>
+							</div>
+						</section>
+					</div>
+					{isPriceEditOpen && (
+						<PriceEditModal
+							onClose={() => setIsPriceEditOpen(false)}
+							onSave={handleSavePrices}
+							currentPrices={prices}
+							currentGlobalPrices={globalPrices}
+						/>
+					)}
+				</div>
+			</div>
+		</div>
 	);
 };
 

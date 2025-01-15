@@ -32,7 +32,7 @@ const MetaAnalytics = () => {
 			<section
 				className={`sticky flex w-full items-center justify-between top-0 md:top-[76px] bg-white z-30 px-2 pl-0 p-4 pb-0 transition-all duration-300`}
 			>
-				<section className="flex items-center gap-4">
+				{/* <section className="flex items-center gap-4">
 					<Link
 						href={`${creatorURL ? creatorURL : "/home"}`}
 						className="text-xl font-bold hoverScaleDownEffect"
@@ -55,7 +55,7 @@ const MetaAnalytics = () => {
 					<h1 className="text-xl md:text-2xl font-bold">
 						Meta Pixel Analytics
 					</h1>
-				</section>
+				</section> */}
 			</section>
 			<section className="size-full h-fit grid grid-cols-1 items-center gap-4">
 				<PixelIntegration creatorId={currentUser?._id} />
@@ -63,7 +63,7 @@ const MetaAnalytics = () => {
 					<div className="text-center text-[13px] text-gray-400">
 						If you are interested in learning how to set up a <b>Meta Pixel</b>{" "}
 						account and how it works, <br />{" "}
-						<Link href={"/home"} className="text-green-1">
+						<Link href={"/home"} className="text-green-1 lg:text-[#16BC88]">
 							<b> please click here. </b>{" "}
 						</Link>
 					</div>

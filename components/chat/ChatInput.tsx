@@ -83,8 +83,6 @@ const ChatInput: React.FC<Props> = ({
         }
     };
 
-    console.log(replyIndex);
-
     return (
         <div className={`flex ${replyIndex !== undefined ? "flex-col" : "flex-row"} gap-2 items-center w-full px-2 pb-2 justify-between`}>
             {replyIndex !== undefined && (

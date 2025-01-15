@@ -28,7 +28,7 @@ export const tokenProvider = async (
 		id: userId,
 		name: username || userId,
 		image: photo,
-		phone: phone,
+		phone: global ? email : phone,
 		role: "admin",
 		devices: [
 			...(fcmToken.token

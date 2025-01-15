@@ -60,7 +60,7 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 								: currentUser.username,
 							image: currentUser?.photo as string,
 							custom: {
-								phone: currentUser?.phone as string,
+								phone: global ? currentUser.email as string : currentUser?.phone as string,
 							},
 						},
 						tokenProvider: async () => token,

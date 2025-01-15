@@ -112,14 +112,14 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 			<div className="flex flex-col gap-8 bg-white rounded-3xl py-5 px-8">
 				<div className="flex justify-center pb-2">
 					<button
-						className={`px-4 py-2 ${activeTab === "INDIAN" ? "border-b-2  border-green-500 font-semibold" : ""
+						className={`px-4 py-2 ${activeTab === "INDIAN" ? "border-b-2  border-[#16BC88] font-semibold" : ""
 							}`}
 						onClick={() => setActiveTab("INDIAN")}
 					>
 						Indian Prices
 					</button>
 					<button
-						className={`px-4 py-2 ${activeTab === "GLOBAL" ? "border-b-2 border-green-500 font-semibold" : ""
+						className={`px-4 py-2 ${activeTab === "GLOBAL" ? "border-b-2 border-[#16BC88] font-semibold" : ""
 							}`}
 						onClick={() => setActiveTab("GLOBAL")}
 					>
@@ -208,7 +208,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							onClick={handleSave}
 							className={`${notSaved
 									? "bg-black/20 !cursor-not-allowed"
-									: "bg-green-600 text-white hoverScaleDownEffect"
+									: "bg-[#16BC88] text-white hoverScaleDownEffect"
 								}  rounded-md px-8 w-full`}
 						>
 							Save

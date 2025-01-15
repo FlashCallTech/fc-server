@@ -15,6 +15,7 @@ import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 import Image from "next/image";
 import { useToast } from "../ui/use-toast";
+import ConfirmationAlert from "../alerts/ConfirmationAlert";
 
 const formSchema = z.object({
 	pixelId: z
@@ -38,6 +39,7 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 	const [updatingData, setUpdatingData] = useState(false);
 	const [pixelId, setPixelId] = useState("");
 	const [accessToken, setAccessToken] = useState("");
+	const [showModal, setShowModal] = useState<boolean>(false);
 	const { toast } = useToast();
 
 	const initialState: {
@@ -46,6 +48,14 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 	} = {
 		pixelId: pixelId,
 		accessToken: accessToken,
+	};
+
+	const handleOpenModal = (): void => {
+		setShowModal(true);
+	};
+
+	const handleCloseModal = (): void => {
+		setShowModal(false);
 	};
 
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -94,6 +104,8 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 
 			setPixelId(values.pixelId);
 			setAccessToken(values.accessToken);
+
+			handleOpenModal();
 
 			toast({
 				variant: "destructive",
@@ -190,7 +202,7 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 					/>
 					{isValid && isChanged && (
 						<Button
-							className="text-base bg-green-1 hoverScaleDownEffect w-3/4 !mx-auto text-white"
+							className="text-base bg-green-1 lg:bg-[#16BC88] lg:rounded-full hoverScaleDownEffect w-3/4 !mx-auto text-white"
 							type="submit"
 							disabled={loadingData || updatingData}
 						>
@@ -209,6 +221,7 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 					)}
 				</form>
 			</Form>
+			<ConfirmationAlert show={showModal} onClose={handleCloseModal} heading="Analytics Updated" body="Your analytics information has been successfully updated." />
 		</section>
 	);
 };

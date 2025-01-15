@@ -436,6 +436,7 @@ export const formatDateTime = (dateString: Date) => {
 		dateTime: format(date, "EEE, MMM d, h:mm a"), // e.g., "Mon, Oct 25, 2023 8:30 AM"
 		dateOnly: format(date, "EEE, MMM d, yyyy"), // e.g., "Mon, Oct 25, 2023"
 		timeOnly: format(date, "h:mm a"), // e.g., "8:30 AM"
+		custom: format(date, "MMM d, h:mm a"),
 	};
 };
 
