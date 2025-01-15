@@ -37,7 +37,6 @@ import {
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
 import FileUploader from "../uploaders/FileUploader";
-import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
 import { usePathname } from "next/navigation";
 import axios from "axios";
@@ -242,6 +241,9 @@ const EditProfile = ({
 
 	const { formState } = form;
 	const { errors, isValid } = formState;
+	const initialValues = useRef(form.getValues());
+	const hasChangesRef = useRef(false);
+
 	const initialValues = useRef(form.getValues());
 	const hasChangesRef = useRef(false);
 
@@ -450,6 +452,8 @@ const EditProfile = ({
 				<SinglePostLoader />
 			</section>
 		);
+
+	console.log(isChanged, isValid, formError, watchedValues, initialState);
 
 	return (
 		<Form {...form}>
@@ -853,7 +857,7 @@ const EditProfile = ({
 												style={{ paddingBottom: "0px !important" }}
 											>
 												{field.value ? (
-													format(new Date(field.value), "PPP") // Format the stored string value back to a readable format
+													format(new Date(field.value), "PPP")
 												) : (
 													<span>Pick a date</span>
 												)}
@@ -912,10 +916,10 @@ const EditProfile = ({
 											selected={selectedDate}
 											onSelect={(date) => {
 												setSelectedDate(date);
-												// Convert the date to a string format before setting it in the form
+
 												field.onChange(
 													format(date as Date | string, "yyyy-MM-dd")
-												); // Format as 'yyyy-MM-dd' (ISO format)
+												);
 											}}
 											month={new Date(selectedYear, selectedMonth)}
 											disabled={(date) =>

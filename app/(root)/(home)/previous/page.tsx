@@ -10,19 +10,20 @@ import { creatorUser } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
 import CallListMobileCreator from "@/components/calls/CallListMobileCreator";
 import Link from "next/link";
+import SinglePostLoader from "@/components/shared/SinglePostLoader";
 
 const PreviousPage = () => {
+	const [creator, setCreator] = useState<creatorUser>();
 	const [historyType, setHistoryType] = useState<
 		"All" | "Audio" | "Video" | "Chat"
 	>("All");
-	const [creator, setCreator] = useState<creatorUser>();
 	const options: ("All" | "Audio" | "Video" | "Chat")[] = [
 		"All",
 		"Audio",
 		"Video",
 		"Chat",
 	];
-	const { currentUser, userType } = useCurrentUsersContext();
+	const { currentUser, userType, fetchingUser } = useCurrentUsersContext();
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -101,21 +102,27 @@ const PreviousPage = () => {
 					))}
 				</div>
 
-				{currentUser ? (
-					userType === "client" ? (
-						<CallListMobile callType={historyType} />
+				{!fetchingUser ? (
+				currentUser ? (
+						userType === "client" ? (
+							<CallListMobile callType={historyType} />
+						) : (
+							<CallListMobileCreator callType={historyType} />
+						)
 					) : (
-						<CallListMobileCreator callType={historyType} />
-					)
-				) : (
-					<div className="flex flex-col w-full items-center justify-center h-full">
-						<h1 className="text-2xl font-semibold text-red-500">
-							No Calls Found
-						</h1>
-						<h2 className="text-xl font-semibold text-red-500">
-							Please sign in to continue.
-						</h2>
-					</div>
+						<div className="flex flex-col w-full items-center justify-center h-full">
+							<h1 className="text-2xl font-semibold text-red-500">
+								No Calls Found
+							</h1>
+							<h2 className="text-xl font-semibold text-red-500">
+								Please sign in to continue.
+							</h2>
+						</div>
+				)
+			) : (
+				<section className={`w-full h-full flex items-center justify-center`}>
+					<SinglePostLoader />
+				</section>
 				)}
 			</section>
 			{/* New Design */}

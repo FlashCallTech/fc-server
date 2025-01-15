@@ -98,7 +98,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 
 			<div className="grid grid-cols-1 size-full overflow-y-auto no-scrollbar max-h-[35rem] gap-5 pb-4">
 				<section
-					className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer"
+					className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer hover:bg-gray-100"
 					onClick={toggleDiscountServiceSheet}
 				>
 					{isDiscountServiceSheetOpen

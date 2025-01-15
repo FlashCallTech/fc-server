@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import PixelIntegration from "@/components/creatorServices/PixelIntegration";
+import PixelIntegration from "@/components/discountServices/PixelIntegration";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import Link from "next/link";
@@ -12,7 +12,7 @@ const MetaAnalytics = () => {
 	const router = useRouter();
 	useEffect(() => {
 		if (currentUser && userType === "client") {
-			router.replace("/home");
+			router.replace("/");
 			return;
 		}
 	}, [currentUser]);

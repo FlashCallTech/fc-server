@@ -11,8 +11,8 @@ import DeleteAlert from "@/components/alerts/DeleteAlert";
 import Edit from "@/components/forms/NewEdit";
 
 const UserProfilePage = () => {
-	const { currentUser, userType, refreshCurrentUser } = useCurrentUsersContext();
-
+	const { currentUser, fetchingUser, userType, refreshCurrentUser } =
+		useCurrentUsersContext();
 	const getInitialState = (): UpdateUserParams => ({
 		id: currentUser?._id ?? "",
 		fullName: (currentUser?.firstName ?? "") + " " + (currentUser?.lastName ?? ""),
@@ -39,12 +39,12 @@ const UserProfilePage = () => {
 	const [editData, setEditData] = useState(false);
 
 	useEffect(() => {
-		if (currentUser) {
+		if (!fetchingUser && currentUser) {
 			const updatedInitialState = getInitialState();
 			setUserData(updatedInitialState);
 			setInitialState(updatedInitialState);
 		}
-	}, [currentUser, userType, pathname]);
+	}, [fetchingUser, currentUser?._id, userType, pathname]);
 
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		setUserData(newUserData);

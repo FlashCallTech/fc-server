@@ -1,14 +1,20 @@
 export const sidebarLinks = [
-	// {
-	// 	imgURL: "/icons/Home.svg",
-	// 	route: "/home",
-	// 	label: "Home",
-	// 	protected: false,
-	// },
+	{
+		imgURL: "/icons/Home.svg",
+		route: "/home",
+		label: "Home",
+		protected: false,
+	},
 	{
 		imgURL: "/icons/orderHistory.svg",
 		route: "/previous",
 		label: "Order History",
+		protected: true,
+	},
+	{
+		imgURL: "/icons/upcoming.svg",
+		route: "/upcoming",
+		label: "Scheduled",
 		protected: true,
 	},
 	{
@@ -119,12 +125,12 @@ export const newSidebarLinksCreator = [
 ];
 
 export const sidebarLinksCreator = [
-	// {
-	// 	imgURL: "/icons/Home.svg",
-	// 	route: "/home",
-	// 	label: "Home",
-	// 	protected: false,
-	// },
+	{
+		imgURL: "/icons/Home.svg",
+		route: "/home",
+		label: "Home",
+		protected: false,
+	},
 	{
 		imgURL: "/icons/orderHistory.svg",
 		route: "/previous",
@@ -143,12 +149,12 @@ export const sidebarLinksCreator = [
 		label: "Blocked Users",
 		protected: true,
 	},
-	// {
-	// 	imgURL: "/icons/orderHistory.svg",
-	// 	route: "/calendar",
-	// 	label: "Calendar",
-	// 	protected: true,
-	// },
+	{
+		imgURL: "/icons/calendar.svg",
+		route: "/calendar",
+		label: "Calendar",
+		protected: true,
+	},
 	{
 		imgURL: "/icons/notifications.svg",
 		route: "/notifications",
