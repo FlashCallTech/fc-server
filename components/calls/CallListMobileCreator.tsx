@@ -306,7 +306,7 @@ const CallListMobileCreator = ({
 					<div className="overflow-auto py-2 px-4 text-sm border-[1px] rounded-lg shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] text-[#6B7280]">
 						{/* Table */}
 						<table className="w-full text-left">
-							<thead className="text-xs font-medium text-black uppercase">
+							<thead className="text-sm font-medium text-black">
 								<tr>
 									<th scope="col" className="px-6 py-3">User</th>
 									<th scope="col" className="px-6 py-3">Type</th>

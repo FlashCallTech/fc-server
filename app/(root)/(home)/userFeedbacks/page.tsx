@@ -89,7 +89,7 @@ const UserFeedbacks = () => {
 				{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
 			</section>
 			{/* new design */}
-			<section className="hidden lg:flex size-full flex-col gap-2 px-6 py-8">
+			<section className="hidden lg:flex size-full flex-col gap-2 p-8">
 				{isError ? (
 					<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
 						Failed to fetch Feedbacks

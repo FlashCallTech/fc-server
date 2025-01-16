@@ -29,6 +29,10 @@ const CreatorSidebar = () => {
     });
 
     useEffect(() => {
+        if(pathname.includes("payment-settings") || pathname.includes("kyc")) setPaymentDropdownOpen(true);
+    }, [pathname])
+
+    useEffect(() => {
         const storedCreator = localStorage.getItem("currentCreator");
         if (storedCreator) {
             const parsedCreator: creatorUser = JSON.parse(storedCreator);
@@ -209,7 +213,7 @@ const CreatorSidebar = () => {
                 className={`flex flex-col p-4`}
             >
                 {/* Additional Links */}
-                <Link href="/terms-and-conditions" className="flex items-center gap-5 text-sm tracking-wide font-medium text-gray-600 px-4 py-2 hover:bg-green-100 rounded-lg">
+                <Link href="/terms-and-conditions" className="flex items-center gap-5 text-sm tracking-wide font-medium text-gray-600 px-4 py-2 rounded-lg">
                     <Image
                         src={"/creator/terms&conditions.svg"}
                         width={100}
@@ -219,7 +223,7 @@ const CreatorSidebar = () => {
                     />
                     Terms & Conditions
                 </Link>
-                <Link href="/support" className="flex items-center gap-5 text-sm tracking-wide font-medium text-gray-600 px-4 py-2 hover:bg-green-100 rounded-lg">
+                <Link href="/support" className="flex items-center gap-5 text-sm tracking-wide font-medium text-gray-600 px-4 py-2 rounded-lg">
                     <Image
                         src={"/creator/support.svg"}
                         width={100}

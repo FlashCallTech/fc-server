@@ -70,8 +70,7 @@ const Sidebar = () => {
 			});
 	};
 
-	const sidebarItems =
-		userType === "creator" ? sidebarLinksCreator : sidebarLinks;
+	const sidebarItems = sidebarLinks;
 
 	const imageSrc =
 		getImageSource(currentUser as clientUser | creatorUser) ?? "";

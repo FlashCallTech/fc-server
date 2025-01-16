@@ -65,20 +65,24 @@ import {
 import { isEqual } from "lodash";
 
 export type EditProfileProps = {
+	isOpen: boolean,
+	onClose: () => void,
 	userData: UpdateUserParams;
 	setUserData: any;
 	initialState: any;
-	setEditData?: React.Dispatch<React.SetStateAction<boolean>>;
 	userType: string | null;
 };
 
 const Edit = ({
+	isOpen,
+	onClose,
 	userData,
 	setUserData,
 	initialState,
-	setEditData,
 	userType,
 }: EditProfileProps) => {
+	if(!isOpen) return;
+	
 	const pathname = usePathname();
 	const { toast } = useToast();
 	const [isChanged, setIsChanged] = useState(false);
@@ -425,7 +429,6 @@ const Edit = ({
 					toastStatus: "positive",
 				});
 
-				setEditData && setEditData((prev) => !prev);
 			}
 		} catch (error) {
 			Sentry.captureException(error);
@@ -453,11 +456,20 @@ const Edit = ({
 
 	return (
 		<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-			<div className="bg-white w-full max-w-lg max-h-[80vh] overflow-y-auto scrollbar-hide">
+			<div className="bg-white w-full max-w-lg max-h-[80vh] overflow-y-auto scrollbar-hide rounded-lg p-8 pb-0">
+				<div className="flex justify-between items-center">
+					<h2 className="text-lg font-semibold">Edit Details</h2>
+					<button
+						className="text-gray-500 text-xl hover:text-gray-700"
+						onClick={onClose}
+					>
+						&times;
+					</button>
+				</div>
 				<Form {...form}>
 					<form
 						onSubmit={form.handleSubmit(onSubmit)}
-						className="relative space-y-6 w-full max-w-lg p-6 bg-white rounded-lg shadow-lg"
+						className="relative space-y-6 w-full max-w-lg mt-8 bg-white"
 					>
 						{/* User Profile Photo */}
 						<FormField
@@ -614,7 +626,7 @@ const Edit = ({
 												<DialogTrigger asChild>
 													<Button
 														type="button"
-														className="hoverScaleDownEffect bg-green-1 w-fit text-white"
+														className="hoverScaleDownEffect bg-green-1 lg:bg-[#16BC88] w-fit text-white"
 													>
 														Choose
 													</Button>
@@ -681,7 +693,7 @@ const Edit = ({
 																				className={`${profession.name !== field.value ||
 																					profession.name !== selectedProfession
 																					? "bg-white text-black "
-																					: "bg-green-1 text-white"
+																					: "bg-green-1 lg:bg-[#16BC88] text-white"
 																					} rounded-full p-2 hoverScaleDownEffect cursor-pointer`}
 																			>
 																				{profession.name !== field.value ||
@@ -755,7 +767,7 @@ const Edit = ({
 																<Button
 																	type="button"
 																	className={`${loadingProfessions && "hidden"
-																		} bg-green-1 hoverScaleDownEffect text-white w-fit`}
+																		} bg-green-1 lg:bg-[#16BC88] hoverScaleDownEffect text-white w-fit`}
 																	onClick={handleConfirmProfession}
 																>
 																	Confirm Profession
@@ -1037,29 +1049,35 @@ const Edit = ({
 							<div className="text-red-500 text-lg text-center">{formError}</div>
 						)}
 						<section
-							className={`sticky bottom-0 right-0 grid p-2 gap-4 items-center justify-center z-20 bg-white`}
+							className={`sticky bottom-0 right-0 grid py-2 gap-4 items-center justify-end z-20 bg-white`}
 						>
-							<Button
-								className="text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
-								type="submit"
-								disabled={!isValid || form.formState.isSubmitting}
-							>
-								{form.formState.isSubmitting ? (
-									<Image
-										src="/icons/loading-circle.svg"
-										alt="Loading..."
-										width={24}
-										height={24}
-										className=""
-										priority
-									/>
-								) : (
-									"Update Details"
-								)}
-							</Button>
+							<div className="flex justify-end gap-4">
+								<button
+									className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hoverScaleDownEffect"
+									onClick={onClose}
+								>
+									Cancel
+								</button>
+								<button
+									className="px-4 py-2 text-sm bg-green-1 lg:bg-[#16BC88] hoverScaleDownEffect rounded-lg text-white"
+									type="submit"
+									disabled={!isValid || form.formState.isSubmitting}
+								>
+									{form.formState.isSubmitting ? (
+										<Image
+											src="/icons/loading-circle.svg"
+											alt="Loading..."
+											width={24}
+											height={24}
+											className=""
+											priority
+										/>
+									) : (
+										"Update Details"
+									)}
+								</button>
+							</div>
 						</section>
-
-
 					</form>
 				</Form>
 			</div>
