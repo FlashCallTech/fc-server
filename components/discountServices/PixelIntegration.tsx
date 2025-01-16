@@ -37,10 +37,10 @@ const formSchema = z.object({
 const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 	const [isChanged, setIsChanged] = useState(false);
 	const [loadingData, setLoadingData] = useState(true);
-	const [updatingData, setUpdatingData] = useState(false);
 	const [pixelId, setPixelId] = useState("");
 	const [accessToken, setAccessToken] = useState("");
 	const [showModal, setShowModal] = useState<boolean>(false);
+	const [updatingData, setUpdatingData] = useState(false);
 	const [isEditModalOpen, setEditModalOpen] = useState<boolean>(false);
 	const { toast } = useToast();
 
@@ -51,6 +51,16 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 		pixelId: pixelId,
 		accessToken: accessToken,
 	};
+
+	const methods = useForm<z.infer<typeof formSchema>>({
+		mode: "onChange",
+		resolver: zodResolver(formSchema),
+		defaultValues: initialState,
+	});
+
+	useEffect(() => {
+		methods.reset(initialState);
+	}, [pixelId, accessToken, methods]);
 
 	const handleOpenModal = (): void => {
 		setShowModal(true);
@@ -66,7 +76,7 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 		defaultValues: initialState,
 	});
 
-	const { formState } = form;
+	const { formState, control } = form;
 	const { isValid } = formState;
 
 	useEffect(() => {
@@ -325,6 +335,12 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 				setAccessToken={setAccessToken}
 				creatorId={creatorId}
 				handleOpenModal={handleOpenModal}
+				updatingData={updatingData}
+				methods={methods}
+				initialState={initialState}
+				setUpdatingData={setUpdatingData}
+				formState={formState}
+				control={control}
 			/>
 			<ConfirmationAlert
 				show={showModal}

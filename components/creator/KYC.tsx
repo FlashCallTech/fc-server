@@ -960,7 +960,7 @@ const KYC: React.FC = () => {
 										)}
 									</div>
 								</div>
-								<span className="text-[#4B5563] text-sm">Please ensure you're in a well-lit area and your face is clearly visible</span>
+								<span className="text-[#4B5563] text-sm">Please ensure you&apos;re in a well-lit area and your face is clearly visible</span>
 							</div>
 						)}
 
