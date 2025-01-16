@@ -24,6 +24,8 @@ import {
 } from "@/lib/utils";
 import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { trackEvent } from "@/lib/mixpanel";
+import MeetingNotStarted from "@/components/meeting/MeetingNotStarted";
+import MeetingRoomScheduled from "@/components/meeting/MeetingRoomScheduled";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -119,7 +121,7 @@ const MeetingPage = () => {
 	}
 
 	return (
-		<main className="h-full w-full">
+		<main className="size-full">
 			<StreamCall call={call}>
 				<StreamTheme>
 					<MeetingRoomWrapper toast={toast} router={router} call={call} />
@@ -129,19 +131,54 @@ const MeetingPage = () => {
 	);
 };
 
-const MeetingRoomWrapper = ({ toast, router, call }: any) => {
-	const { useCallEndedAt } = useCallStateHooks();
+const MeetingRoomWrapper = ({
+	toast,
+	router,
+	call,
+}: {
+	toast: any;
+	router: any;
+	call: Call;
+}) => {
+	const { useCallEndedAt, useCallStartsAt } = useCallStateHooks();
+	const callStartsAt = useCallStartsAt();
 	const callEndedAt = useCallEndedAt();
+	const [hasJoinedCall, setHasJoinedCall] = useState(false);
+
+	const callTimeNotArrived =
+		!hasJoinedCall && callStartsAt && new Date(callStartsAt) > new Date();
+
 	const callHasEnded = !!callEndedAt;
 
-	return callHasEnded ? (
-		<CallEnded toast={toast} router={router} call={call} />
-	) : (
-		<MeetingRoom />
-	);
+	if (callTimeNotArrived)
+		return (
+			<MeetingNotStarted
+				call={call}
+				startsAt={callStartsAt}
+				onJoinCall={() => setHasJoinedCall(true)}
+			/>
+		);
+
+	if (callHasEnded) {
+		return <CallEnded toast={toast} router={router} call={call} />;
+	} else {
+		return call.state.custom.type !== "scheduled" ? (
+			<MeetingRoom />
+		) : (
+			<MeetingRoomScheduled />
+		);
+	}
 };
 
-const CallEnded = ({ toast, router, call }: any) => {
+const CallEnded = ({
+	toast,
+	router,
+	call,
+}: {
+	toast: any;
+	router: any;
+	call: Call;
+}) => {
 	const [loading, setLoading] = useState(false);
 	const transactionHandled = useRef(false);
 	const { currentUser, currentTheme, userType } = useCurrentUsersContext();

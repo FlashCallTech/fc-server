@@ -1,19 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-
+import { useState } from "react";
+import ScheduledMeetingList from "@/components/availabilityServices/ScheduledMeetingList";
 import { Button } from "@/components/ui/button";
-import CallListMobile from "@/components/calls/CallListMobile";
-import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-
-import { creatorUser } from "@/types";
-import { trackEvent } from "@/lib/mixpanel";
-import CallListMobileCreator from "@/components/calls/CallListMobileCreator";
 import Link from "next/link";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 
-const PreviousPage = () => {
-	const [creator, setCreator] = useState<creatorUser>();
+const UpcomingPage = () => {
+	const creatorURL = localStorage.getItem("creatorURL");
+	const { currentUser, fetchingUser } = useCurrentUsersContext();
 	const [historyType, setHistoryType] = useState<
 		"All" | "Audio" | "Video" | "Chat"
 	>("All");
@@ -23,30 +19,6 @@ const PreviousPage = () => {
 		"Video",
 		"Chat",
 	];
-	const { currentUser, userType, fetchingUser } = useCurrentUsersContext();
-
-	useEffect(() => {
-		const storedCreator = localStorage.getItem("currentCreator");
-		if (storedCreator) {
-			const parsedCreator: creatorUser = JSON.parse(storedCreator);
-			if (parsedCreator) {
-				setCreator(parsedCreator);
-			}
-		}
-	}, []);
-
-	useEffect(() => {
-		userType === "client" &&
-			trackEvent("OrderHistory_Impression", {
-				Client_ID: currentUser?._id,
-				User_First_Seen: currentUser?.createdAt?.toString().split("T")[0],
-				Creator_ID: creator?._id,
-				Walletbalace_Available: currentUser?.walletBalance,
-			});
-	}, []);
-
-	const creatorURL = localStorage.getItem("creatorURL");
-
 	return (
 		<section className="flex size-full flex-col gap-2 pb-5">
 			<section
@@ -72,7 +44,7 @@ const PreviousPage = () => {
 							/>
 						</svg>
 					</Link>
-					<h1 className="text-xl md:text-2xl font-bold">Order History</h1>
+					<h1 className="text-xl md:text-2xl font-bold">Scheduled Calls</h1>
 				</section>
 				<div className="hidden xl:flex items-center justify-center w-fit gap-2">
 					{options.map((option) => (
@@ -105,11 +77,7 @@ const PreviousPage = () => {
 
 			{!fetchingUser ? (
 				currentUser ? (
-					userType === "client" ? (
-						<CallListMobile callType={historyType} />
-					) : (
-						<CallListMobileCreator callType={historyType} />
-					)
+					<ScheduledMeetingList callType={historyType} />
 				) : (
 					<div className="flex flex-col w-full items-center justify-center h-full">
 						<h1 className="text-2xl font-semibold text-red-500">
@@ -129,4 +97,4 @@ const PreviousPage = () => {
 	);
 };
 
-export default PreviousPage;
+export default UpcomingPage;

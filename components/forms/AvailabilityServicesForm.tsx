@@ -33,7 +33,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { AvailabilityService } from "@/types";
 import { isEqual } from "lodash";
 
-const predefinedConditions = ["30+ Minutes Call", "60+ Minutes Call"] as const;
+const predefinedConditions = ["30 Minutes Call", "60 Minutes Call"] as const;
 
 const discountRuleSchema = z
 	.object({
@@ -152,7 +152,7 @@ const AvailabilityServicesForm = ({
 						basePrice: 10,
 						currency: "INR",
 						discountRules: {
-							conditions: ["30+ Minutes Call"],
+							conditions: ["30 Minutes Call"],
 							discountType: "percentage",
 							discountAmount: 10,
 						},
@@ -315,12 +315,6 @@ const AvailabilityServicesForm = ({
 									<SelectContent className="!bg-white">
 										<SelectItem
 											className="cursor-pointer hover:bg-gray-50"
-											value="all"
-										>
-											All
-										</SelectItem>
-										<SelectItem
-											className="cursor-pointer hover:bg-gray-50"
 											value="audio"
 										>
 											Audio
@@ -354,7 +348,27 @@ const AvailabilityServicesForm = ({
 						<FormItem>
 							<FormLabel>Service Duration (minutes)</FormLabel>
 							<Select
-								onValueChange={(value) => field.onChange(Number(value))}
+								onValueChange={(value) => {
+									const selectedDuration = Number(value);
+									const selectedConditions =
+										form.watch("discountRules.conditions") || [];
+
+									if (
+										selectedDuration < 30 &&
+										selectedConditions.includes("30 Minutes Call")
+									) {
+										form.setValue("discountRules.conditions", [""]);
+									}
+
+									if (
+										selectedDuration < 60 &&
+										selectedConditions.includes("60 Minutes Call")
+									) {
+										form.setValue("discountRules.conditions", [""]);
+									}
+
+									field.onChange(selectedDuration);
+								}}
 								value={field.value?.toString() || ""}
 							>
 								<SelectTrigger>
@@ -511,7 +525,22 @@ const AvailabilityServicesForm = ({
 								render={({ field }) => {
 									const conditions =
 										form.watch("discountRules.conditions") || [];
+									const selectedDuration = form.watch("timeDuration");
 									const selectedCondition = conditions[0] || null;
+
+									const handleConditionClick = (condition: string) => {
+										// Update the timeDuration based on the selected condition
+										let updatedDuration = selectedDuration;
+										if (condition === "30 Minutes Call") {
+											updatedDuration = 30;
+										} else if (condition === "60 Minutes Call") {
+											updatedDuration = 60;
+										}
+
+										// Set the selected condition and update the timeDuration field
+										field.onChange([condition]);
+										form.setValue("timeDuration", updatedDuration);
+									};
 
 									return (
 										<FormItem>
@@ -530,12 +559,7 @@ const AvailabilityServicesForm = ({
 																		? "bg-gray-100 border-gray-300"
 																		: "hover:bg-gray-50"
 																)}
-																onClick={() => {
-																	const updatedCondition = isSelected
-																		? []
-																		: [condition];
-																	field.onChange(updatedCondition);
-																}}
+																onClick={() => handleConditionClick(condition)}
 															>
 																<section className="flex items-center justify-center text-sm font-medium">
 																	{condition}
@@ -663,7 +687,7 @@ const AvailabilityServicesForm = ({
 							className="text-blue-500 border-blue-500 hover:bg-blue-50"
 							onClick={() =>
 								form.setValue("discountRules", {
-									conditions: ["30+ Minutes Call"],
+									conditions: ["30 Minutes Call"],
 									discountType: "percentage",
 									discountAmount: 10,
 								})

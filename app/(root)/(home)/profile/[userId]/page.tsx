@@ -12,7 +12,7 @@ import DeleteAlert from "@/components/alerts/DeleteAlert";
 import Link from "next/link";
 
 const UserProfilePage = () => {
-	const { currentUser, userType, refreshCurrentUser } =
+	const { currentUser, fetchingUser, userType, refreshCurrentUser } =
 		useCurrentUsersContext();
 	const getInitialState = (): UpdateUserParams => ({
 		id: currentUser?._id ?? "",
@@ -20,7 +20,10 @@ const UserProfilePage = () => {
 			(currentUser?.firstName ?? "") + " " + (currentUser?.lastName ?? ""),
 		firstName: currentUser?.firstName ?? "",
 		lastName: currentUser?.lastName ?? "",
-		username: currentUser?.username ?? "",
+		username:
+			(currentUser?.username === currentUser?.phone
+				? currentUser?._id
+				: currentUser?.username) ?? "",
 		profession: currentUser?.profession ?? "",
 		themeSelected: currentUser?.themeSelected ?? "#88D8C0",
 		phone: currentUser?.phone ?? "",
@@ -40,12 +43,12 @@ const UserProfilePage = () => {
 	const [editData, setEditData] = useState(false);
 
 	useEffect(() => {
-		if (currentUser) {
+		if (!fetchingUser && currentUser) {
 			const updatedInitialState = getInitialState();
 			setUserData(updatedInitialState);
 			setInitialState(updatedInitialState);
 		}
-	}, [currentUser, userType, pathname]);
+	}, [fetchingUser, currentUser?._id, userType, pathname]);
 
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		setUserData(newUserData);

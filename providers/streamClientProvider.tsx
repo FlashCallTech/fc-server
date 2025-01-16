@@ -14,7 +14,7 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 	const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(
 		null
 	);
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, fetchingUser } = useCurrentUsersContext();
 	const userId = currentUser?._id as string | undefined;
 	let firstName = currentUser?.firstName || "";
 	let lastName = currentUser?.lastName || "";
@@ -22,6 +22,7 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 	const fullName = getDisplayName({ firstName, lastName, username });
 
 	useEffect(() => {
+		let isMounted = true;
 		const initializeVideoClient = async (retries = 3) => {
 			if (!currentUser || !userId) {
 				console.error("No current user or user ID");
@@ -51,13 +52,7 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 						apiKey: API_KEY,
 						user: {
 							id: userId,
-							name: currentUser?.username.startsWith("+91")
-								? currentUser.username.replace(
-										/(\+91)(\d+)/,
-										(match, p1, p2) =>
-											`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-								  )
-								: currentUser.username,
+							name: fullName || "Flashcall User",
 							image: currentUser?.photo as string,
 							custom: {
 								phone: currentUser?.phone as string,
@@ -71,6 +66,9 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 					});
 
 					setVideoClient(client);
+					if (isMounted) {
+						setVideoClient(client);
+					}
 					return;
 				} catch (error) {
 					attempts++;
@@ -89,7 +87,13 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 			}
 		};
 
-		initializeVideoClient();
+		if (!fetchingUser && currentUser && userId) {
+			initializeVideoClient();
+		}
+
+		return () => {
+			isMounted = false;
+		};
 	}, [currentUser?._id, userId]);
 
 	return videoClient && currentUser ? (

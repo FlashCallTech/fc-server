@@ -35,7 +35,7 @@ import { Service } from "@/types";
 const predefinedConditions = [
 	"New User",
 	"Seasonal Offer",
-	// "30+ Minutes Call",
+	// "30 Minutes Call",
 	// "60 Minutes Call",
 ] as const;
 

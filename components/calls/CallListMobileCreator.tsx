@@ -53,7 +53,7 @@ const CallListMobileCreator = ({
 				<section className={`w-full h-full flex items-center justify-center`}>
 					<SinglePostLoader />
 				</section>
-			) : userCalls && userCalls?.pages[0]?.totalCalls === 0 ? (
+			) : userCalls && userCalls.pages[0].totalCalls === 0 ? (
 				<div className="flex flex-col w-full items-center justify-center h-full">
 					<h1 className="text-2xl font-semibold text-red-500">
 						No Calls Found
@@ -218,7 +218,11 @@ const CallListMobileCreator = ({
 																{/* User Amount */}
 																<span className="flex items-center gap-1">
 																	{/* Amount */}
-																	{`₹ ${userCall?.global ? userCall?.amountINR?.toFixed(2) ?? 0 : userCall?.amount?.toFixed(2) ?? 0}`}
+																	{`₹ ${
+																		userCall?.global
+																			? userCall?.amountINR?.toFixed(2) ?? 0
+																			: userCall?.amount?.toFixed(2) ?? 0
+																	}`}
 																</span>
 															</>
 														</section>

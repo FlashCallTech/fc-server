@@ -68,7 +68,7 @@ const CreatorHome = () => {
 				chat: creatorUser.globalChatRate,
 			});
 		}
-	}, [creatorUser]);
+	}, [creatorUser?._id]);
 
 	const fetchCreatorLink = async () => {
 		try {
@@ -98,9 +98,8 @@ const CreatorHome = () => {
 	const fetchTransactions = async () => {
 		try {
 			setTransactionsLoading(true);
-			// Get today's date in local YYYY-MM-DD format
 			const today = new Date();
-			const localDate = today.toLocaleDateString("en-CA"); // 'en-CA' gives YYYY-MM-DD format
+			const localDate = today.toLocaleDateString("en-CA");
 
 			const response = await axios.get(
 				`${backendBaseUrl}/wallet/transactions/user/${creatorUser?._id}/date`,

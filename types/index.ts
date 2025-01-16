@@ -255,6 +255,25 @@ export type RegisterCallParams = {
 	amountINR?: number;
 };
 
+export type ScheduledCallParams = {
+	_id: string;
+	callId: string;
+	type: "video" | "audio" | "chat";
+	status: string;
+	meetingOwner: clientUser;
+	expert: creatorUser;
+	description: string;
+	selectedDay: string;
+	selectedSlot: string;
+	startsAt: Date;
+	startedAt?: Date;
+	endedAt?: Date;
+	duration: number;
+	amount: number;
+	currency: string;
+	discounts: AvailabilityService;
+};
+
 export type RegisterChatParams = {
 	chatId: string;
 	creator: string;
@@ -443,7 +462,7 @@ export interface UpdateCallTransactionParams {
 export interface DiscountRule {
 	_id: string;
 	conditions: [
-		"New User" | "Seasonal Offer" | "30+ Minutes Call" | "60+ Minutes Call"
+		"New User" | "Seasonal Offer" | "30 Minutes Call" | "60 Minutes Call"
 	];
 	discountAmount: number;
 	discountType: "percentage" | "flat";
@@ -473,21 +492,21 @@ export interface AvailabilityService {
 	title: string;
 	description: string;
 	photo: string;
-	type: "all" | "audio" | "video" | "chat";
+	type: "audio" | "video" | "chat";
 	timeDuration: number;
 	basePrice: number;
 	isActive: boolean;
 	currency: "INR" | "USD";
 	discountRules: {
 		_id: string;
-		conditions: ["30+ Minutes Call" | "60+ Minutes Call"];
+		conditions: ["30 Minutes Call" | "60 Minutes Call"];
 		discountAmount: number;
 		discountType: "percentage" | "flat";
 	};
 	extraDetails?: string;
 	createdAt: string;
 	updatedAt: string;
-	utilizedBy: string;
+	utilizedBy: Types.ObjectId[];
 }
 
 export interface Chat {

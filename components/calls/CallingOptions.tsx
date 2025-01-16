@@ -326,7 +326,9 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 					custom: {
 						name: fullName,
 						type: "expert",
-						image: creator.photo || "/images/defaultProfile.png",
+						image:
+							creator.photo ||
+							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
 						phone: creator.phone,
 					},
 					role: "admin",
@@ -391,6 +393,8 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						custom: {
 							description,
 							global: clientUser?.global ?? false,
+							duration: maxCallDuration,
+							type: "instant",
 						},
 						settings_override: {
 							limits: {
@@ -424,6 +428,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						creator.phone as string,
 						callType,
 						clientUser.username,
+						clientUser._id as string,
 						call,
 						"call.ring",
 						fetchFCMToken,
@@ -446,6 +451,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 					await updateFirestoreSessions(clientUser?._id as string, {
 						callId: call.id,
 						status: "initiated",
+						callType: "instant",
 						clientId: clientUser?._id as string,
 						expertId: creator._id,
 						isVideoCall: callType,
