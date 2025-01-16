@@ -6,10 +6,15 @@ import Image from "next/image";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
-import { backendBaseUrl, getImageSource } from "@/lib/utils";
+import { backendBaseUrl, getImageSource, placeholderImages } from "@/lib/utils";
 import DeleteAlert from "@/components/alerts/DeleteAlert";
 import Edit from "@/components/forms/NewEdit";
 import axios from "axios";
+import { UpdateProfileFormSchema, UpdateProfileFormSchemaClient } from "@/lib/validator";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import GetRandomImage from "@/utils/GetRandomImage";
 
 const UserProfilePage = () => {
 	const { currentUser, fetchingUser, userType, refreshCurrentUser } = useCurrentUsersContext();
@@ -33,7 +38,7 @@ const UserProfilePage = () => {
 		creatorId: currentUser?.creatorId ?? "",
 		referredBy: currentUser?.referredBy ?? "",
 	});
-	
+
 	const [userData, setUserData] = useState<UpdateUserParams>(getInitialState);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [loading, setLoading] = useState(false);
@@ -114,7 +119,51 @@ const UserProfilePage = () => {
 		fetchThemes();
 	}, []);
 
+	
+	// Conditionally select the schema based on user role
+	const schema =
+	userData.role === "creator"
+	? UpdateProfileFormSchema
+			: UpdateProfileFormSchemaClient;
+			
+			// 1. Define your form.
+			const form = useForm<z.infer<typeof schema>>({
+		mode: "onChange",
+		resolver: zodResolver(schema),
+		defaultValues: {
+			firstName: userData.firstName,
+			lastName: userData.lastName,
+			username: userData.username,
+			profession: userData.profession,
+			themeSelected: userData.themeSelected,
+			photo: userData.photo,
+			bio: userData.bio,
+			gender: userData.gender,
+			dob: userData.dob,
+			referredBy: userData.referredBy,
+		},
+	});
+	
+	// Watch form values to detect changes
+	const watchedValues: any = useWatch({ control: form.control });
 
+	useEffect(() => {
+		if (!selectedFile) {
+			const newPhoto =
+				placeholderImages[
+				watchedValues.gender as "male" | "female" | "other"
+				] || GetRandomImage();
+
+			if (
+				!watchedValues.photo ||
+				watchedValues.photo === "" ||
+				watchedValues.photo === newPhoto
+			) {
+				form.setValue("photo", newPhoto);
+			}
+		}
+	}, [watchedValues.gender, selectedFile, form, placeholderImages]);
+	
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		setUserData(newUserData);
 		await refreshCurrentUser();
@@ -287,6 +336,8 @@ const UserProfilePage = () => {
 							loadingProfessions={loadingProfessions}
 							setPredefinedColors={setPredefinedColors}
 							predefinedColors={predefinedColors}
+							form={form}
+							schema={schema}
 						/>
 					</div>
 				</>

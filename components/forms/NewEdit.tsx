@@ -105,6 +105,8 @@ export type EditProfileProps = {
 	loadingProfessions: boolean;
 	setPredefinedColors: any;
 	predefinedColors: any;
+	form: any;
+	schema: any;
 };
 
 const Edit = ({
@@ -148,6 +150,8 @@ const Edit = ({
 	loadingProfessions,
 	setPredefinedColors,
 	predefinedColors,
+	form,
+	schema,
 }: EditProfileProps) => {
 	if(!isOpen) return;
 
@@ -217,52 +221,8 @@ const Edit = ({
 		setSelectedColor(color);
 	};
 
-	// Conditionally select the schema based on user role
-	const schema =
-		userData.role === "creator"
-			? UpdateProfileFormSchema
-			: UpdateProfileFormSchemaClient;
-
-	// 1. Define your form.
-	const form = useForm<z.infer<typeof schema>>({
-		mode: "onChange",
-		resolver: zodResolver(schema),
-		defaultValues: {
-			firstName: userData.firstName,
-			lastName: userData.lastName,
-			username: userData.username,
-			profession: userData.profession,
-			themeSelected: userData.themeSelected,
-			photo: userData.photo,
-			bio: userData.bio,
-			gender: userData.gender,
-			dob: userData.dob,
-			referredBy: userData.referredBy,
-		},
-	});
-
 	const { formState } = form;
 	const { errors, isValid } = formState;
-
-	// Watch form values to detect changes
-	const watchedValues: any = useWatch({ control: form.control });
-
-	useEffect(() => {
-		if (!selectedFile) {
-			const newPhoto =
-				placeholderImages[
-				watchedValues.gender as "male" | "female" | "other"
-				] || GetRandomImage();
-
-			if (
-				!watchedValues.photo ||
-				watchedValues.photo === "" ||
-				watchedValues.photo === newPhoto
-			) {
-				form.setValue("photo", newPhoto);
-			}
-		}
-	}, [watchedValues.gender, selectedFile, form, placeholderImages]);
 
 	const checkUsernameAvailability = async (username: string) => {
 		try {

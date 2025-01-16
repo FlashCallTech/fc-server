@@ -639,7 +639,7 @@ const CreatorHome = () => {
 							<div className="flex flex-row gap-3 w-full border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-xl">
 								<div className="flex flex-col p-6 w-full">
 									<div className="flex flex-row w-full justify-between">
-										<p className="text-[#6B7280] text-sm">Today's Earning</p>
+										<p className="text-[#6B7280] text-sm">Today&apos;s Earning</p>
 										<Image
 											src={"/creator/todayTransaction.svg"}
 											width={100}

@@ -35,6 +35,12 @@ const EditPixelDetails = ({
     setAccessToken,
     creatorId,
     handleOpenModal,
+    updatingData,
+    setUpdatingData,
+    methods,
+    initialState,
+    formState, 
+    control,
 }: {
     isOpen: boolean;
     onClose: () => void;
@@ -44,28 +50,16 @@ const EditPixelDetails = ({
     setAccessToken: any;
     creatorId: string;
     handleOpenModal: any;
+    updatingData: boolean;
+    setUpdatingData: any;
+    methods: any;
+    initialState: any;
+    formState: any;
+    control: any;
 }) => {
     if (!isOpen) return null;
 
-    const [updatingData, setUpdatingData] = useState(false);
-
-    const initialState = {
-        pixelId: pixelId || "",
-        accessToken: accessToken || "",
-    };
-
-    const methods = useForm<z.infer<typeof formSchema>>({
-        mode: "onChange",
-        resolver: zodResolver(formSchema),
-        defaultValues: initialState,
-    });
-
-    const { formState, control } = methods;
     const { isValid } = formState;
-
-    useEffect(() => {
-        methods.reset(initialState);
-    }, [pixelId, accessToken, methods]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
@@ -103,11 +97,6 @@ const EditPixelDetails = ({
             onClose();
             setUpdatingData(false);
         }
-    };
-
-    const watchedValues = useWatch({ control }) as {
-        pixelId: string;
-        accessToken: string;
     };
 
     return (
