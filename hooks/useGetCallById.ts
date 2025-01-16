@@ -8,14 +8,19 @@ export const useGetCallById = (id: string | string[]) => {
 
 	const client = useStreamVideoClient();
 
+	console.log("Stream Video Client:", client);
+
 	useEffect(() => {
-		if (!client) return;
+		if (!client) {
+			console.warn("Stream Video Client is not initialized.");
+			return;
+		}
 
 		const loadCall = async () => {
 			try {
 				// https://getstream.io/video/docs/react/guides/querying-calls/#filters
 				const { calls } = await client.queryCalls({
-					filter_conditions: { id },
+					filter_conditions: { id: { $eq: id } },
 				});
 
 				if (calls.length > 0) setCall(calls[0]);
@@ -23,7 +28,7 @@ export const useGetCallById = (id: string | string[]) => {
 				setIsCallLoading(false);
 			} catch (error) {
 				Sentry.captureException(error);
-				console.error(error);
+				console.error("Error loading call: ", error);
 				setIsCallLoading(false);
 			}
 		};
