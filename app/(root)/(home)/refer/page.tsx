@@ -139,7 +139,7 @@ const ReferralLink: React.FC = () => {
 							<div className="overflow-x-auto">
 								<table className="min-w-full bg-white rounded-lg shadow-md">
 									<thead>
-										<tr className="text-left text-xs uppercase">
+										<tr className="text-left text-sm font-medium text-black">
 											<th className="py-3 px-6">Name</th>
 											<th className="py-3 px-6">Date</th>
 											<th className="py-3 px-6">Status</th>
