@@ -1,5 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
+
+import {
+	DropdownMenu,
+	DropdownMenuTrigger,
+	DropdownMenuContent,
+	DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+
 import {
 	backendBaseUrl,
 	fetchExchangeRate,
@@ -42,7 +50,7 @@ const AvailabilityFinalConsentForm = ({
 	const [isDiscountSelected, setIsDiscountSelected] = useState(false);
 	const [showDiscountCards, setShowDiscountCards] = useState(false);
 	const [showInfo, setShowInfo] = useState(false);
-	const [payUsing, setPayUsing] = useState("wallet");
+	const [payUsing, setPayUsing] = useState<"wallet" | "other">("wallet");
 	const [isSuccess, setIsSuccess] = useState(false);
 	const { clientUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
@@ -203,6 +211,7 @@ const AvailabilityFinalConsentForm = ({
 	};
 
 	const handlePaySchedule = async () => {
+		if (payUsing === "other") return;
 		setPreparingTransaction(true);
 		try {
 			// Step 1: Check if wallet balance is sufficient
@@ -355,6 +364,11 @@ const AvailabilityFinalConsentForm = ({
 		} finally {
 			setPreparingTransaction(false);
 		}
+	};
+
+	const handlePaymentMethod = (method: "wallet" | "other") => {
+		console.log("Updating payUsing to ", method);
+		setPayUsing(method);
 	};
 
 	return (
@@ -542,26 +556,53 @@ const AvailabilityFinalConsentForm = ({
 					</div>
 
 					{/* Payment Confirmation */}
-					<div className="bg-white shadow-md mt-4 w-full flex item-center justify-center gap-4 py-2.5 sticky bottom-0">
-						<section className="bg-white flex items-center gap-2 border-2 border-gray-300 rounded-full py-2 px-4 whitespace-nowrap">
-							<span className="text-sm font-bold">
-								{totalAmount.currency === "INR" ? "₹" : "$"} {totalAmount.total}
-							</span>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								strokeWidth={1.5}
-								stroke="currentColor"
-								className="size-4"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="m8.25 4.5 7.5 7.5-7.5 7.5"
-								/>
-							</svg>
-						</section>
+					<div className="bg-white shadow-md mt-4 w-full flex items-center justify-center gap-4 py-2.5 sticky bottom-0">
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<section className="bg-white flex items-center gap-2 border-2 border-gray-300 rounded-full py-2 px-4 whitespace-nowrap cursor-pointer">
+									<span className="text-sm font-bold">
+										{totalAmount.currency === "INR" ? "₹" : "$"}{" "}
+										{totalAmount.total}
+									</span>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										strokeWidth={1.5}
+										stroke="currentColor"
+										className="size-5"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+										/>
+									</svg>
+								</section>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent className="!m-0 !ml-6 !min-w-[15rem] p-5 bg-white border-2 border-gray-300 shadow-md">
+								<h3 className="text-lg font-semibold mb-3">
+									Select Payment Method
+								</h3>
+								<DropdownMenuItem
+									onSelect={() => handlePaymentMethod("wallet")}
+									className={`w-full py-2.5 rounded-md text-left justify-start ${
+										payUsing === "wallet" ? "bg-blue-500 text-white px-2.5" : ""
+									}`}
+								>
+									Pay Using Wallet
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={() => handlePaymentMethod("other")}
+									className={`w-full py-2.5 rounded-md text-left justify-start ${
+										payUsing === "other" ? "bg-blue-500 text-white px-2.5" : ""
+									}`}
+								>
+									Use Other Methods
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+
 						<Button
 							className="text-base bg-blue-500 hoverScaleDownEffect w-full mx-auto text-white"
 							type="submit"
@@ -574,11 +615,13 @@ const AvailabilityFinalConsentForm = ({
 									alt="Loading..."
 									width={1000}
 									height={1000}
-									className={`size-6`}
+									className="size-6"
 									priority
 								/>
 							) : (
-								"Confirm & Pay"
+								<span className="text-base">
+									{payUsing === "wallet" ? "Pay via Wallet" : "Confirm Payment"}
+								</span>
 							)}
 						</Button>
 					</div>
