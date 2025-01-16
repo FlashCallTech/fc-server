@@ -104,8 +104,6 @@ const MeetingPage = () => {
 		};
 	}, [meetingId, clientId]);
 
-	console.log(currentUser, isInitializing, fetchingUser, isCallLoading, call);
-
 	if (isInitializing || fetchingUser || isCallLoading) {
 		return (
 			<div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white flex flex-col w-full items-center justify-center h-screen">
