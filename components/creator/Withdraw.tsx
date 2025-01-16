@@ -39,7 +39,7 @@ const Withdraw: React.FC = () => {
 	const [dateRange, setDateRange] = useState<dateRange>({ startDate: "", endDate: "" });
 	const [selectedOption, setSelectedOption] = useState("");
 	const [withdrawAmount, setWithdrawAmount] = useState<string>("");
-	const [totalEarnings, setTotalEarnings] = useState();
+	const [totalEarnings, setTotalEarnings] = useState<number>();
 	const [totalWithdrawals, setTotalWithdrawals] = useState();
 	const [fetching, setFetching] = useState(true);
 	const [isStickyVisible, setIsStickyVisible] = useState(true);
@@ -61,35 +61,6 @@ const Withdraw: React.FC = () => {
 		}
 	};
 
-	useEffect(() => {
-		const fetchData = async () => {
-			
-		  try {
-			const [earningsResponse, withdrawalsResponse] = await Promise.all([
-			  axios.get(
-				`${backendBaseUrl}/wallet/transactionAmountByTypeAndId/user/${creatorUser?._id}/type/credit`
-			  ),
-			  axios.get(
-				`${backendBaseUrl}/wallet/transactionAmountByTypeAndId/user/${creatorUser?._id}/type/debit`
-			  ),
-			]);
-	  
-			const earningsData = earningsResponse.data.totalAmount;
-			const withdrawalsData = withdrawalsResponse.data.totalAmount;
-	  
-			setTotalEarnings(earningsData);
-			setTotalWithdrawals(withdrawalsData);
-		  } catch (error) {
-			console.error("Error fetching data:", error);
-		  } finally {
-			setFetching(false);
-		  }
-		};
-	  
-		if (creatorUser) fetchData();
-	  }, []);
-	  
-
 	const handleDateChange = (key: any, value: any) => {
 		setDateRange((prev) => {
 			const updated = { ...prev, [key]: value };
@@ -100,8 +71,6 @@ const Withdraw: React.FC = () => {
 			} else {
 				setError(""); // Clear error if dates are valid
 			}
-
-			console.log(updated);
 
 			return updated;
 		});
@@ -136,7 +105,7 @@ const Withdraw: React.FC = () => {
 			case "Lifetime":
 				const res = { startDate: null, endDate: null };
 				setDateRange(res);
-				return  res// No date filtering
+				return res// No date filtering
 			default:
 				return null;
 		}
@@ -146,8 +115,6 @@ const Withdraw: React.FC = () => {
 			endDate: end,
 		};
 	};
-
-	// console.log(dateRange);
 
 	// Update dateRange whenever filter changes
 	useEffect(() => {
@@ -209,6 +176,8 @@ const Withdraw: React.FC = () => {
 			fetchNextPage();
 		}
 	}, [inView, hasNextPage, isFetching]);
+
+	console.log(userTransactions?.pages[0].totalEarnings, userTransactions?.pages[0].totalWithdrawals);
 
 	const groupTransactionsByDate = (transactionsList: Transaction[]) => {
 		return transactionsList.reduce((acc, transaction) => {
@@ -569,7 +538,7 @@ const Withdraw: React.FC = () => {
 						<section className="flex flex-col gap-5 items-center justify-center md:items-start">
 							{/* Balance Section */}
 							{isStickyVisible && (
-								<div className="w-full flex gap-1 text-[24px] items-start font-semibold justify-start">
+								<div className="w-full flex gap-1 text-xl items-start font-semibold justify-start">
 									<p>
 										Welcome,
 										<br />
@@ -578,7 +547,7 @@ const Withdraw: React.FC = () => {
 										{creatorUser?.firstName} {creatorUser?.lastName}
 									</p>
 								</div>
-							) }
+							)}
 
 							{/* Recharge Section */}
 							<div className="flex flex-col gap-5 w-full items-center justify-center lg:items-start">
@@ -586,7 +555,7 @@ const Withdraw: React.FC = () => {
 									<>
 										<div className="w-full flex flex-row justify-between p-6 mb-6 items-center rounded-lg bg-white border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
 											<div className="flex flex-col items-start pl-1">
-												<span className="text-[13px]">Wallet Balance</span>
+												<span className="text-[#6B7280] text-sm">Wallet Balance</span>
 												<p className="text-[#16BC88] text-[30px] font-bold p-0">
 													₹ {walletBalance.toFixed(2)}
 												</p>
@@ -668,15 +637,15 @@ const Withdraw: React.FC = () => {
 					<div className="flex justify-between gap-3 w-full pb-6 text-[#6B7280] text-sm">
 						<section className="flex flex-col gap-3 border-[1px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg p-6 w-full">
 							<span>Total Earnings</span>
-							<span className={`text-[#16BC88] ${fetching ? "text-sm" : "text-[30px]"} font-bold`}>{`${fetching ? "Fetching..." : `₹ ${totalEarnings}`} `}</span>
+							<span className={`text-[#16BC88] ${isFetching ? "text-sm" : "text-[30px]"} font-bold`}>{`${isFetching ? "Fetching..." : `₹ ${userTransactions?.pages[0].totalEarnings.toFixed(2)}`} `}</span>
 						</section>
 						<section className="flex flex-col gap-3 border-[1px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg p-6 w-full">
 							<span>Total Withdrawals</span>
-							<span className={`text-[#EF4444] ${fetching ? "text-sm" : "text-[30px]"} font-bold`}>{`${fetching ? "Fetching..." : `₹ ${totalWithdrawals}`}`}</span>
+							<span className={`text-[#EF4444] ${isFetching ? "text-sm" : "text-[30px]"} font-bold`}>{`${isFetching ? "Fetching..." : `₹ ${userTransactions?.pages[0].totalWithdrawals.toFixed(2)}`}`}</span>
 						</section>
 					</div>
 					<div className="flex flex-col gap-6 w-full border-[1px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg p-6">
-						<span className="font-semibold text-[20px]">Transaction History</span>
+						<span className="font-semibold text-lg">Transaction History</span>
 						{/* Transaction History List */}
 						{!isLoading || !creatorUser ? (
 							isError ? (
@@ -698,7 +667,7 @@ const Withdraw: React.FC = () => {
 							) : (
 								<div className="w-full text-base overflow-x-auto">
 									<table className="w-full text-left font-normal">
-										<thead className="text-xs font-medium text-[#6B7280] uppercase">
+										<thead className="text-sm font-medium text-black">
 											<tr>
 												<th scope="col" className="px-6 py-3">Date and Time</th>
 												<th scope="col" className="px-6 py-3">Transaction ID</th>

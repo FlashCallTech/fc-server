@@ -987,7 +987,7 @@ const KYC: React.FC = () => {
 									<div>
 										<h2 className="text-sm font-semibold">{`${reason === nameMismatchCheck ? "Name Mismatch Detected" : "Face Mismatch Detected"}`}</h2>
 										<p>
-											<span className="text-[13px]">{`${reason === nameMismatchCheck ? "The name on your Aadhaar card doesn't match with the provided information. Our verification team will contact you within 24 hours to resolve this issue." : "The face on your Aadhaar card doesn't match with the provided information. Our verification team will contact you within 24 hours to resolve this issue."}`}</span>
+											<span className="text-[13px]">{`${reason === nameMismatchCheck ? "The name on your Aadhaar card and Pan card doesn't match with the provided information. Our verification team will contact you within 24 hours to resolve this issue." : "The face on your Aadhaar card and Liveliness Photo doesn't match with the provided information. Our verification team will contact you within 24 hours to resolve this issue."}`}</span>
 										</p>
 									</div>
 								</section>
