@@ -71,6 +71,40 @@ export type EditProfileProps = {
 	setUserData: any;
 	initialState: any;
 	userType: string | null;
+	pathname: string;
+	setSelectedFile: any;
+	selectedFile: any;
+	setSelectedMonth: any;
+	setSelectedDate: any;
+	setSelectedYear: any;
+	selectedMonth: any;
+	selectedDate: any;
+	selectedYear: any;
+	setSelectedColor: any;
+	selectedColor: any;
+	setLoadingThemes: any;
+	loadingThemes: boolean;
+	setUsernameError: any;
+	usernameError: any;
+	setLoading: any;
+	loading: boolean;
+	setFormError: any;
+	formError: any;
+	initialReferralValue: any;
+	setSelectedProfession: any;
+	selectedProfession: any;
+	setErrorMessage: any;
+	errorMessage: any;
+	setCustomProfession: any;
+	customProfession: any;
+	setDialogOpen: any;
+	dialogOpen: boolean;
+	setProfessions: any;
+	professions: any
+	setLoadingProfessions: any;
+	loadingProfessions: boolean;
+	setPredefinedColors: any;
+	predefinedColors: any;
 };
 
 const Edit = ({
@@ -80,29 +114,42 @@ const Edit = ({
 	setUserData,
 	initialState,
 	userType,
+	pathname,
+	setSelectedFile,
+	selectedFile,
+	setSelectedMonth,
+	setSelectedDate,
+	setSelectedYear,
+	selectedMonth,
+	selectedDate,
+	selectedYear,
+	setSelectedColor,
+	selectedColor,
+	setLoadingThemes,
+	loadingThemes,
+	setUsernameError,
+	usernameError,
+	setLoading,
+	loading,
+	setFormError,
+	formError,
+	initialReferralValue,
+	setSelectedProfession,
+	selectedProfession,
+	setErrorMessage,
+	errorMessage,
+	setCustomProfession,
+	customProfession,
+	setDialogOpen,
+	dialogOpen,
+	setProfessions,
+	professions,
+	setLoadingProfessions,
+	loadingProfessions,
+	setPredefinedColors,
+	predefinedColors,
 }: EditProfileProps) => {
 	if(!isOpen) return;
-	
-	const pathname = usePathname();
-	const { toast } = useToast();
-	const [isChanged, setIsChanged] = useState(false);
-	const [selectedFile, setSelectedFile] = useState<File | null>(null);
-	const [loading, setLoading] = useState(false);
-	const [usernameError, setUsernameError] = useState<string | null>(null);
-	const [formError, setFormError] = useState<string | null>(null);
-	const [loadingThemes, setLoadingThemes] = useState(true);
-	const [selectedColor, setSelectedColor] = useState(
-		userData.themeSelected ?? "#88D8C0"
-	);
-	const [initialReferralValue, setInitialReferralValue] = useState<boolean>(
-		() => {
-			return Boolean(!userData.referredBy);
-		}
-	);
-
-	const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-	const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-	const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
 	const handleMonthChange = (month: number) => {
 		setSelectedMonth(month);
@@ -135,16 +182,6 @@ const Edit = ({
 			setSelectedMonth(selectedMonth + 1);
 		}
 	};
-
-	const [predefinedColors, setPredefinedColors] = useState([]);
-	const [professions, setProfessions] = useState([]);
-	const [errorMessage, setErrorMessage] = useState("");
-	const [loadingProfessions, setLoadingProfessions] = useState(true);
-
-	const [selectedProfession, setSelectedProfession] = useState("");
-	const [dialogOpen, setDialogOpen] = useState(false);
-
-	const [customProfession, setCustomProfession] = useState("");
 
 	const handleSelectProfession = (profession: any) => {
 		setSelectedProfession(profession);
@@ -180,46 +217,6 @@ const Edit = ({
 		setSelectedColor(color);
 	};
 
-	// Fetch professions from the API
-	useEffect(() => {
-		const fetchProfessions = async () => {
-			try {
-				const response = await axios.get(
-					`${backendBaseUrl}/profession/selectProfession`
-				);
-				if (response.status === 200) {
-					setProfessions(response.data.professions);
-				}
-			} catch (error) {
-				console.error("Error fetching professions:", error);
-			} finally {
-				setLoadingProfessions(false); // Set loading to false after fetching is done
-			}
-		};
-
-		fetchProfessions();
-	}, []);
-
-	// Fetch themes from API
-	useEffect(() => {
-		const fetchThemes = async () => {
-			try {
-				const response = await axios.get(`${backendBaseUrl}/user/select-theme`);
-				if (response.data.success) {
-					setPredefinedColors(response.data.colors);
-				} else {
-					console.error("Failed to fetch themes");
-				}
-			} catch (error) {
-				console.error("Error fetching themes:", error);
-			} finally {
-				setLoadingThemes(false); // Set loading to false after fetching is done
-			}
-		};
-
-		fetchThemes();
-	}, []);
-
 	// Conditionally select the schema based on user role
 	const schema =
 		userData.role === "creator"
@@ -246,23 +243,9 @@ const Edit = ({
 
 	const { formState } = form;
 	const { errors, isValid } = formState;
-	const initialValues = useRef(form.getValues());
-	const hasChangesRef = useRef(false);
 
 	// Watch form values to detect changes
 	const watchedValues: any = useWatch({ control: form.control });
-
-	useEffect(() => {
-		const subscription = form.watch((values) => {
-			const currentValues = values;
-			const changes = !isEqual(currentValues, initialValues.current);
-			if (hasChangesRef.current !== changes) {
-				hasChangesRef.current = changes;
-				setIsChanged(changes);
-			}
-		});
-		return () => subscription.unsubscribe();
-	}, [form, isValid]);
 
 	useEffect(() => {
 		if (!selectedFile) {
@@ -399,12 +382,12 @@ const Edit = ({
 				console.log("Error Found");
 				// Display the error if an existing user is found
 				setFormError(response.error);
-				toast({
-					variant: "destructive",
-					title: "Unable to Edit Details",
-					description: `${response.error}`,
-					toastStatus: "negative",
-				});
+				// toast({
+				// 	variant: "destructive",
+				// 	title: "Unable to Edit Details",
+				// 	description: `${response.error}`,
+				// 	toastStatus: "negative",
+				// });
 			} else {
 				const updatedUser = userType === "creator" ? response.data.updatedUser : response.updatedUser;
 				const newUserDetails = {
@@ -422,25 +405,26 @@ const Edit = ({
 
 				setUserData(newUserDetails);
 
-				toast({
-					variant: "destructive",
-					title: "Details Edited Successfully",
-					description: "Changes are now visible ...",
-					toastStatus: "positive",
-				});
+				// toast({
+				// 	variant: "destructive",
+				// 	title: "Details Edited Successfully",
+				// 	description: "Changes are now visible ...",
+				// 	toastStatus: "positive",
+				// });
 
 			}
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error updating user details:", error);
-			toast({
-				variant: "destructive",
-				title: "Unable to Edit Details",
-				description: "Try Again Editing your Details",
-				toastStatus: "negative",
-			});
+			// toast({
+			// 	variant: "destructive",
+			// 	title: "Unable to Edit Details",
+			// 	description: "Try Again Editing your Details",
+			// 	toastStatus: "negative",
+			// });
 		} finally {
 			setLoading(false);
+			onClose();
 		}
 	}
 
@@ -996,7 +980,7 @@ const Edit = ({
 												</div>
 											) : (
 												<div className="flex flex-wrap mt-2">
-													{predefinedColors.map((color, index) => (
+													{predefinedColors.map((color: any, index: any) => (
 														<div
 															key={index}
 															className={`w-8 h-8 m-1 rounded-full cursor-pointer hoverScaleDownEffect ${selectedColor === color
