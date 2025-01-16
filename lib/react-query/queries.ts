@@ -50,7 +50,7 @@ export const useGetScheduledCalls = (
 	userType: string,
 	callType?: string
 ) => {
-	const limit = 10; // Define the limit per page
+	const limit = 10; 
 
 	return useInfiniteQuery({
 		queryKey: [QUERY_KEYS.GET_USER_CALLS, userId, userType, callType],

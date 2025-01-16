@@ -6,6 +6,7 @@ import {
 	formatDisplay,
 	getDisplayName,
 	getImageSource,
+	updateFirestoreSessions,
 } from "@/lib/utils";
 import { AvailabilityService, creatorUser } from "@/types";
 import Image from "next/image";
@@ -41,6 +42,7 @@ const AvailabilityFinalConsentForm = ({
 	const [isDiscountSelected, setIsDiscountSelected] = useState(false);
 	const [showDiscountCards, setShowDiscountCards] = useState(false);
 	const [showInfo, setShowInfo] = useState(false);
+	const [payUsing, setPayUsing] = useState("wallet");
 	const [isSuccess, setIsSuccess] = useState(false);
 	const { clientUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
@@ -163,8 +165,9 @@ const AvailabilityFinalConsentForm = ({
 					custom: {
 						description,
 						global: clientUser?.global ?? false,
-						duration: service.timeDuration,
+						duration: service.timeDuration * 60,
 						type: "scheduled",
+						serviceId: service._id,
 					},
 					settings_override: {
 						limits: {
@@ -186,6 +189,7 @@ const AvailabilityFinalConsentForm = ({
 				duration: service.timeDuration,
 				meetingOwner: clientUser?._id,
 				description: description,
+				members: members,
 			};
 		} catch (error) {
 			Sentry.captureException(error);
@@ -221,7 +225,7 @@ const AvailabilityFinalConsentForm = ({
 			const walletUpdateAPI = "/wallet/temporary/update";
 			const walletUpdatePayload = {
 				userId: clientUser?._id,
-				userType: "client",
+				userType: "Client",
 				amount: parseFloat(totalAmount.total),
 				transactionType: "credit",
 			};
@@ -269,9 +273,42 @@ const AvailabilityFinalConsentForm = ({
 					callType: service.type,
 				});
 
+				await fetch(`${backendBaseUrl}/calls/registerCall`, {
+					method: "POST",
+					body: JSON.stringify({
+						callId: callDetails.callId as string,
+						type: service.type as string,
+						status: "Scheduled",
+						creator: String(clientUser?._id),
+						members: callDetails.members,
+					}),
+					headers: { "Content-Type": "application/json" },
+				});
+
+				await updateFirestoreSessions(clientUser?._id as string, {
+					callId: callDetails.callId,
+					status: "upcoming",
+					callType: "scheduled",
+					clientId: clientUser?._id as string,
+					expertId: creator._id,
+					isVideoCall: service.type,
+					creatorPhone: creator.phone,
+					clientPhone: clientUser?.global
+						? clientUser?.email
+						: clientUser?.phone,
+					global: clientUser?.global ?? false,
+				});
+
+				isDiscountSelected &&
+					(await axios.put(`${backendBaseUrl}/availability/${service._id}`, {
+						clientId: callDetails.meetingOwner || clientUser?._id,
+					}));
+
 				updateWalletBalance();
 
 				setIsSuccess(true);
+
+				localStorage.removeItem("hasVisitedFeedbackPage");
 
 				setTimeout(() => {
 					toggleSchedulingSheet(false);
@@ -289,12 +326,11 @@ const AvailabilityFinalConsentForm = ({
 			console.log("Call scheduled successfully:", registerCallResponse.data);
 		} catch (error: any) {
 			console.error(error);
-			// Rollback wallet balance deduction if the call scheduling fails
 			if (error.message.includes("Failed to register the call")) {
 				try {
 					await axios.post(`${backendBaseUrl}/wallet/temporary/update`, {
 						userId: clientUser?._id,
-						userType: "client",
+						userType: "Client",
 						amount: parseFloat(totalAmount.total),
 						transactionType: "debit",
 					});
@@ -311,7 +347,6 @@ const AvailabilityFinalConsentForm = ({
 				}
 			}
 
-			// Notify the user of the error
 			toast({
 				variant: "destructive",
 				title: "Failed to schedule the call",
@@ -401,25 +436,29 @@ const AvailabilityFinalConsentForm = ({
 						</section>
 					</div>
 
-					{service.discountRules && (
-						<div className="w-full grid grid-cols-1 gap-4 mt-5">
-							{showDiscountCards && (
-								<ClientSideDiscountCard
-									service={service}
-									clientUserId={clientUser?._id as string}
-									isDiscountSelected={isDiscountSelected}
-									setIsDiscountSelected={setIsDiscountSelected}
-								/>
-							)}
+					{clientUser?._id &&
+						!service.utilizedBy.some(
+							(clientId) => clientId.toString() === clientUser?._id.toString()
+						) &&
+						service.discountRules && (
+							<div className="w-full grid grid-cols-1 gap-4 mt-5">
+								{showDiscountCards && (
+									<ClientSideDiscountCard
+										service={service}
+										clientUserId={clientUser?._id as string}
+										isDiscountSelected={isDiscountSelected}
+										setIsDiscountSelected={setIsDiscountSelected}
+									/>
+								)}
 
-							<button
-								onClick={() => setShowDiscountCards((prev) => !prev)}
-								className={`w-fit ml-auto px-4 py-2 bg-black text-white text-sm rounded-lg font-medium hoverScaleDownEffect`}
-							>
-								{showDiscountCards ? "Hide Discount Cards" : "View Discounts"}
-							</button>
-						</div>
-					)}
+								<button
+									onClick={() => setShowDiscountCards((prev) => !prev)}
+									className={`w-fit ml-auto px-4 py-2 bg-black text-white text-sm rounded-lg font-medium hoverScaleDownEffect`}
+								>
+									{showDiscountCards ? "Hide Discount Cards" : "View Discounts"}
+								</button>
+							</div>
+						)}
 
 					{/* Order Summary Section */}
 					<div className="mt-4 w-full">
