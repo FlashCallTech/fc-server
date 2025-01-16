@@ -244,9 +244,6 @@ const EditProfile = ({
 	const initialValues = useRef(form.getValues());
 	const hasChangesRef = useRef(false);
 
-	const initialValues = useRef(form.getValues());
-	const hasChangesRef = useRef(false);
-
 	// Watch form values to detect changes
 	const watchedValues: any = useWatch({ control: form.control });
 
