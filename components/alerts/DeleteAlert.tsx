@@ -61,7 +61,7 @@ const DeleteAlert = () => {
 	async function deleteFirestoreDocs(userId: string, phoneNumber: string) {
 		try {
 			// Collections that take phoneNumber
-			const phoneCollections = ["userStatus", "FCMtoken", "authToken"];
+			const phoneCollections = ["userStatus", "FCMtokenOfficial", "authToken"];
 			for (const col of phoneCollections) {
 				const q = query(
 					collection(firestore, col),

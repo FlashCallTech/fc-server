@@ -6,7 +6,7 @@ import * as Sentry from "@sentry/nextjs";
 const useFcmToken = () => {
 	const fetchCreatorToken = async (creatorUser: creatorUser) => {
 		try {
-			// Reference to the specific document in the FCMtoken collection
+			// Reference to the specific document in the FCMtokenOfficial collection
 			const tokenDocRef = doc(db, "fcmTokenWeb", creatorUser._id);
 
 			// Fetch the document

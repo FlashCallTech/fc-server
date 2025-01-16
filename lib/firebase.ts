@@ -103,7 +103,7 @@ export const getFirebaseToken = async () => {
 };
 
 export const udpateFCMtoken = async (phoneNumber: string, fcmToken: string) => {
-	const fcmTokenRef = doc(db, "FCMtoken", phoneNumber); // Reference to user's FCM token document
+	const fcmTokenRef = doc(db, "FCMtokenOfficial", phoneNumber); // Reference to user's FCM token document
 	const fcmTokenDoc = await getDoc(fcmTokenRef);
 
 	if (fcmTokenDoc.exists()) {

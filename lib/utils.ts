@@ -657,7 +657,7 @@ export const stopMediaStreams = () => {
 // Function to fetch the FCM token
 export const fetchFCMToken = async (phone: string, tokenType?: string) => {
 	try {
-		const fcmTokenRef = doc(db, "FCMtoken", phone);
+		const fcmTokenRef = doc(db, "FCMtokenOfficial", phone);
 		const fcmTokenDoc = await getDoc(fcmTokenRef);
 
 		if (fcmTokenDoc.exists()) {
