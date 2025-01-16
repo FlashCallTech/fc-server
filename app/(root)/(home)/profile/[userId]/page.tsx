@@ -6,13 +6,14 @@ import Image from "next/image";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { usePathname } from "next/navigation";
-import { getImageSource } from "@/lib/utils";
+import { backendBaseUrl, getImageSource } from "@/lib/utils";
 import DeleteAlert from "@/components/alerts/DeleteAlert";
 import Edit from "@/components/forms/NewEdit";
+import axios from "axios";
 
 const UserProfilePage = () => {
-	const { currentUser, fetchingUser, userType, refreshCurrentUser } =
-		useCurrentUsersContext();
+	const { currentUser, fetchingUser, userType, refreshCurrentUser } = useCurrentUsersContext();
+
 	const getInitialState = (): UpdateUserParams => ({
 		id: currentUser?._id ?? "",
 		fullName: (currentUser?.firstName ?? "") + " " + (currentUser?.lastName ?? ""),
@@ -32,9 +33,36 @@ const UserProfilePage = () => {
 		creatorId: currentUser?.creatorId ?? "",
 		referredBy: currentUser?.referredBy ?? "",
 	});
+	
+	const [userData, setUserData] = useState<UpdateUserParams>(getInitialState);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [loading, setLoading] = useState(false);
+	const [usernameError, setUsernameError] = useState<string | null>(null);
+	const [formError, setFormError] = useState<string | null>(null);
+	const [loadingThemes, setLoadingThemes] = useState(true);
+	const [selectedColor, setSelectedColor] = useState(
+		userData.themeSelected ?? "#88D8C0"
+	);
+	const [initialReferralValue, setInitialReferralValue] = useState<boolean>(
+		() => {
+			return Boolean(!userData.referredBy);
+		}
+	);
+
+	const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+	const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+	const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+	const [predefinedColors, setPredefinedColors] = useState([]);
+	const [professions, setProfessions] = useState([]);
+	const [errorMessage, setErrorMessage] = useState("");
+	const [loadingProfessions, setLoadingProfessions] = useState(true);
+
+	const [selectedProfession, setSelectedProfession] = useState("");
+	const [dialogOpen, setDialogOpen] = useState(false);
+
+	const [customProfession, setCustomProfession] = useState("");
 
 	const pathname = usePathname();
-	const [userData, setUserData] = useState<UpdateUserParams>(getInitialState);
 	const [initialState, setInitialState] = useState<UpdateUserParams>(getInitialState);
 	const [editData, setEditData] = useState(false);
 
@@ -45,6 +73,47 @@ const UserProfilePage = () => {
 			setInitialState(updatedInitialState);
 		}
 	}, [fetchingUser, currentUser?._id, userType, pathname]);
+
+	// Fetch professions from the API
+	useEffect(() => {
+		const fetchProfessions = async () => {
+			try {
+				const response = await axios.get(
+					`${backendBaseUrl}/profession/selectProfession`
+				);
+				if (response.status === 200) {
+					setProfessions(response.data.professions);
+				}
+			} catch (error) {
+				console.error("Error fetching professions:", error);
+			} finally {
+				setLoadingProfessions(false); // Set loading to false after fetching is done
+			}
+		};
+
+		fetchProfessions();
+	}, []);
+
+	// Fetch themes from API
+	useEffect(() => {
+		const fetchThemes = async () => {
+			try {
+				const response = await axios.get(`${backendBaseUrl}/user/select-theme`);
+				if (response.data.success) {
+					setPredefinedColors(response.data.colors);
+				} else {
+					console.error("Failed to fetch themes");
+				}
+			} catch (error) {
+				console.error("Error fetching themes:", error);
+			} finally {
+				setLoadingThemes(false); // Set loading to false after fetching is done
+			}
+		};
+
+		fetchThemes();
+	}, []);
+
 
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		setUserData(newUserData);
@@ -184,6 +253,40 @@ const UserProfilePage = () => {
 							setUserData={handleUpdate}
 							initialState={initialState}
 							userType={userType}
+							pathname={pathname}
+							setSelectedFile={setSelectedFile}
+							selectedFile={selectedFile}
+							setSelectedMonth={setSelectedMonth}
+							setSelectedDate={setSelectedDate}
+							setSelectedYear={setSelectedYear}
+							selectedMonth={selectedMonth}
+							selectedDate={selectedDate}
+							selectedYear={selectedYear}
+							setSelectedColor={setSelectedColor}
+							selectedColor={selectedColor}
+							setLoadingThemes={setLoadingThemes}
+							loadingThemes={loadingThemes}
+							setUsernameError={setUsernameError}
+							usernameError={usernameError}
+							setLoading={setLoading}
+							loading={loading}
+							setFormError={setFormError}
+							formError={formError}
+							initialReferralValue={initialReferralValue}
+							setSelectedProfession={setSelectedProfession}
+							selectedProfession={selectedProfession}
+							setErrorMessage={setErrorMessage}
+							errorMessage={errorMessage}
+							setCustomProfession={setCustomProfession}
+							customProfession={customProfession}
+							setDialogOpen={setDialogOpen}
+							dialogOpen={dialogOpen}
+							setProfessions={setProfessions}
+							professions={professions}
+							setLoadingProfessions={setLoadingProfessions}
+							loadingProfessions={loadingProfessions}
+							setPredefinedColors={setPredefinedColors}
+							predefinedColors={predefinedColors}
 						/>
 					</div>
 				</>
