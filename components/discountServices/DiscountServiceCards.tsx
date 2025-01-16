@@ -116,46 +116,50 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 					/>
 				)}
 				<div className="grid grid-cols-1 md:grid-cols-2 3xl:grid-cols-4 gap-6">
-					{userServices.map((service, index) => (
+					{userServices.map((service) => (
 						<Card
 							key={service._id}
-							className="relative shadow-lg border rounded-lg flex flex-row"
+							className="relative shadow-lg border rounded-lg p-4 hover:shadow-xl transition-shadow duration-200 ease-in-out"
 						>
-							<div className="size-full p-4 flex flex-col justify-between">
-								<div>
-									<div className="flex items-center justify-start gap-2.5">
-										<Image
-											width={1000}
-											height={1000}
-											src={service.photo}
-											alt={service.title}
-											className="size-10 object-cover rounded-full"
-										/>
-										<div className="flex flex-col">
-											<h3 className="text-xl font-semibold">{service.title}</h3>
-											<p className="text-sm text-gray-600">
-												{service.description}
-											</p>
-										</div>
+							<div className="flex items-start space-x-4">
+								{/* Left Section - Image */}
+								<Image
+									width={80}
+									height={80}
+									src={service.photo}
+									alt={service.title}
+									className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+								/>
+
+								{/* Center Section - Content */}
+								<div className="flex-1">
+									<h3 className="text-lg font-semibold text-gray-800">
+										{service.title}
+									</h3>
+									<p className="text-sm text-gray-600">{service.description}</p>
+									<div className="mt-2 space-y-1">
+										<p className="text-sm font-medium text-gray-700">
+											Discount:{" "}
+											<span className="text-green-600 font-bold">
+												{service.discountRules[0]?.discountAmount}{" "}
+												{service.discountRules[0]?.discountType}
+											</span>
+										</p>
+										<p className="text-sm text-gray-500">
+											Extra Details: {service.extraDetails}
+										</p>
 									</div>
-									<p className="mt-2 text-sm text-gray-500">
-										Discount: {service.discountRules[0]?.discountAmount}{" "}
-										{service.discountRules[0]?.discountType}
-									</p>
-									<p className="text-sm text-gray-500">
-										Extra Details: {service.extraDetails}
-									</p>
 								</div>
 
-								{/* Footer */}
-								<div className="flex justify-between items-center mt-4">
+								{/* Right Section - Actions */}
+								<div className="flex flex-col items-end space-y-2">
 									<p className="text-xs text-gray-400">
 										Created at:{" "}
 										{new Date(service.createdAt).toLocaleDateString()}
 									</p>
-									<div className="flex items-center justify-center gap-2.5">
+									<div className="flex space-x-2">
 										<button
-											className="text-blue-500 hoverScaleDownEffect"
+											className="p-2 bg-blue-50 text-blue-500 rounded-full hover:bg-blue-100 transition"
 											onClick={() => {
 												setSelectedService(service);
 												editService();
@@ -167,7 +171,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 												viewBox="0 0 24 24"
 												strokeWidth={1.5}
 												stroke="currentColor"
-												className="size-4"
+												className="w-5 h-5"
 											>
 												<path
 													strokeLinecap="round"
@@ -177,7 +181,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 											</svg>
 										</button>
 										<button
-											className="text-red-500 hoverScaleDownEffect"
+											className="p-2 bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition"
 											onClick={() => {
 												setSelectedService(service);
 												setShowDeleteServiceAlert(true);
@@ -189,7 +193,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 													alt="Loading..."
 													width={50}
 													height={50}
-													className="size-4 invert"
+													className="w-5 h-5 invert"
 												/>
 											) : (
 												<svg
@@ -198,7 +202,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 													viewBox="0 0 24 24"
 													strokeWidth={1.5}
 													stroke="currentColor"
-													className="size-4"
+													className="w-5 h-5"
 												>
 													<path
 														strokeLinecap="round"
