@@ -214,7 +214,7 @@ const CallEnded = ({ call }: any) => {
 						influencer_id: call?.state?.members[0].user_id || null,
 						started_at: call?.state?.startsAt,
 						ended_at: call?.state?.endedAt,
-						call_type: call?.type,
+						call_type: call?.type === "default" ? "default" : "audio",
 						meeting_id: call?.id,
 					},
 					{

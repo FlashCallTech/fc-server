@@ -19,7 +19,7 @@ const useWarnOnUnload = (message: string, onUnload: () => void) => {
 
 		const handleUnload = () => {
 			if (!isReload()) {
-				onUnload(); // Call the unload handler if not a reload
+				onUnload();
 			}
 		};
 
