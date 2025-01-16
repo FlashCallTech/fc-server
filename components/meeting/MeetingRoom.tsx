@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React from "react";
 import { useEffect, useState, useMemo, useRef } from "react";
 import {
 	CallParticipantsList,
@@ -15,7 +15,6 @@ import { Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
 import CallTimer from "../calls/CallTimer";
 import { useToast } from "../ui/use-toast";
-import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
 import SinglePostLoader from "../shared/SinglePostLoader";
@@ -26,7 +25,6 @@ import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { backendBaseUrl } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 import { CallTimerProvider } from "@/lib/context/CallTimerContext";
@@ -127,14 +125,6 @@ const MeetingRoom = () => {
 	const firestore = getFirestore();
 
 	const countdownDuration = 30;
-
-	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
-		navigator.sendBeacon(
-			`${backendBaseUrl}/user/setCallStatus/${currentUser?._id as string}`
-		);
-
-		call?.endCall();
-	});
 
 	const isMobile = useScreenSize();
 	const mobileDevice = isMobileDevice();

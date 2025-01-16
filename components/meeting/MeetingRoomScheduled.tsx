@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React from "react";
 import { useEffect, useState, useMemo, useRef } from "react";
 import {
 	CallParticipantsList,
@@ -14,7 +14,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
 import { useToast } from "../ui/use-toast";
-import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
 import SinglePostLoader from "../shared/SinglePostLoader";
@@ -24,7 +23,13 @@ import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { backendBaseUrl, formatTime } from "@/lib/utils";
+import {
+	backendUrl,
+	fetchFCMToken,
+	formatTime,
+	sendCallNotification,
+	sendNotification,
+} from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 import MyCallConnectingUI from "./MyCallConnectigUI";
@@ -123,15 +128,13 @@ const MeetingRoomScheduled = () => {
 	let callType: "scheduled" | "instant" =
 		call?.state?.custom?.type || "instant";
 
+	const expert = call?.state?.members?.find(
+		(member) => member.custom.type === "expert"
+	);
+
+	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
+
 	const countdownDuration = 300;
-
-	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
-		navigator.sendBeacon(
-			`${backendBaseUrl}/user/setCallStatus/${currentUser?._id as string}`
-		);
-
-		call?.endCall();
-	});
 
 	const isMobile = useScreenSize();
 	const mobileDevice = isMobileDevice();
@@ -162,6 +165,7 @@ const MeetingRoomScheduled = () => {
 			}
 			try {
 				const localSessionKey = `meeting_${call.id}_${currentUser._id}`;
+				const notificationSentKey = `${localSessionKey}_notificationSent`;
 
 				if (localStorage.getItem(localSessionKey) && participants.length > 1) {
 					toast({
@@ -177,6 +181,24 @@ const MeetingRoomScheduled = () => {
 					await call?.join();
 					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
+
+					if (isMeetingOwner && participants.length === 1) {
+						if (!localStorage.getItem(notificationSentKey)) {
+							await sendCallNotification(
+								expert?.custom?.phone as string,
+								callType,
+								currentUser.username,
+								currentUser._id as string,
+								call,
+								"call.ring",
+								fetchFCMToken,
+								sendNotification,
+								backendUrl as string
+							);
+
+							localStorage.setItem(notificationSentKey, "true");
+						}
+					}
 				}
 			} catch (error) {
 				console.warn("Error Joining Call ", error);
@@ -190,9 +212,6 @@ const MeetingRoomScheduled = () => {
 
 	useEffect(() => {
 		if (userType === "creator") {
-			const expert = call?.state?.members?.find(
-				(member) => member.custom.type === "expert"
-			);
 			const userTipsRef = doc(firestore, "userTips", expert?.user_id as string);
 
 			const unsubscribe = onSnapshot(userTipsRef, async (doc) => {
@@ -297,8 +316,6 @@ const MeetingRoomScheduled = () => {
 			/>
 		);
 	}, [layout, isVideoCall]);
-
-	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 
 	if (callingState !== CallingState.JOINED) {
 		return (

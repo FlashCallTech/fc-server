@@ -1,6 +1,13 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { parse, format, addMinutes, isBefore, isEqual } from "date-fns";
+import {
+	parse,
+	isBefore,
+	isEqual,
+	addMinutes,
+	format,
+	isSameDay,
+} from "date-fns";
 
 import Razorpay from "razorpay";
 import {
@@ -1138,16 +1145,28 @@ export const generateTimeSlots = (): string[] => {
 	return reorderedSlots;
 };
 
-export const getTimeSlots = (timeSlots: any[], duration: number) => {
+export const getTimeSlots = (
+	timeSlots: any[],
+	duration: number,
+	selectedDay: string,
+	dayDate: string
+) => {
 	const slots: string[] = [];
 	const now = new Date();
+	const currentDay = format(now, "EEEE");
+	const selectedDate = new Date(dayDate);
+	console.log(dayDate);
 
 	timeSlots.forEach(({ startTime, endTime }: any) => {
 		let start = parse(startTime, "hh:mm a", new Date());
 		const end = parse(endTime, "hh:mm a", new Date());
 
 		while (isBefore(start, end) || isEqual(start, end)) {
-			if (isBefore(now, start) || isEqual(now, start)) {
+			if (isSameDay(selectedDate, now) && selectedDay === currentDay) {
+				if (isBefore(now, start) || isEqual(now, start)) {
+					slots.push(format(start, "hh:mm a"));
+				}
+			} else {
 				slots.push(format(start, "hh:mm a"));
 			}
 			start = addMinutes(start, duration);
@@ -1156,6 +1175,7 @@ export const getTimeSlots = (timeSlots: any[], duration: number) => {
 
 	return slots;
 };
+
 // Function to format date and time
 export function formatDisplay(
 	selectedDay: string,

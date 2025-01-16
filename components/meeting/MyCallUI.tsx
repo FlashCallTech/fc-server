@@ -187,12 +187,12 @@ const MyCallUI = () => {
 			setShowCallUI(false);
 		};
 
-		incomingCall.on("call.accepted", handleCallAccepted);
+		incomingCall.on("call.session_participant_joined", handleCallAccepted);
 		incomingCall.on("call.ended", handleCallEnded);
 		incomingCall.on("call.rejected", () => handleCallRejected());
 
 		return () => {
-			incomingCall.off("call.accepted", handleCallAccepted);
+			incomingCall.off("call.session_participant_joined", handleCallAccepted);
 			incomingCall.off("call.ended", handleCallEnded);
 			incomingCall.off("call.rejected", () => handleCallRejected());
 		};
@@ -319,10 +319,10 @@ const MyCallUI = () => {
 				},
 			});
 
-			router.replace(`/meeting/${outgoingCall.id}`);
 			setShowCallUI(false);
 			setConnecting(false);
 			setRedirecting(false);
+			router.replace(`/meeting/${outgoingCall.id}`);
 		};
 
 		const handleCallRejected = async () => {
