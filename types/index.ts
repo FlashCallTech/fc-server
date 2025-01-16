@@ -271,7 +271,6 @@ export type ScheduledCallParams = {
 	amount: number;
 	currency: string;
 	discounts: AvailabilityService;
-
 };
 
 export type RegisterChatParams = {
@@ -462,7 +461,7 @@ export interface UpdateCallTransactionParams {
 export interface DiscountRule {
 	_id: string;
 	conditions: [
-		"New User" | "Seasonal Offer" | "30+ Minutes Call" | "60+ Minutes Call"
+		"New User" | "Seasonal Offer" | "30 Minutes Call" | "60 Minutes Call"
 	];
 	discountAmount: number;
 	discountType: "percentage" | "flat";
@@ -499,7 +498,7 @@ export interface AvailabilityService {
 	currency: "INR" | "USD";
 	discountRules: {
 		_id: string;
-		conditions: ["30+ Minutes Call" | "60+ Minutes Call"];
+		conditions: ["30 Minutes Call" | "60 Minutes Call"];
 		discountAmount: number;
 		discountType: "percentage" | "flat";
 	};

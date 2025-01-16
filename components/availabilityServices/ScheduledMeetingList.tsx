@@ -92,17 +92,7 @@ const ScheduledMeetingList = ({
 						{userCalls?.pages?.flatMap((page: any) =>
 							page?.calls?.map((userCall: ScheduledCallParams) => {
 								const creator = userCall.expert;
-								const fullName: string = getDisplayName(creator);
-
-								let firstName = currentUser?.firstName || "";
-								let lastName = currentUser?.lastName || "";
-								let username = currentUser?.username || "";
-
-								const clientName: string = getDisplayName({
-									firstName,
-									lastName,
-									username,
-								});
+								const client = userCall.meetingOwner;
 
 								let formattedData = formatDisplay(
 									userCall.selectedDay,
@@ -119,6 +109,7 @@ const ScheduledMeetingList = ({
 									new Date(userCall.startsAt).getTime() - new Date().getTime();
 
 								const handleRedirect = () => {
+									if (userType === "creator") return;
 									if (creator?.username) {
 										router.push(`/${creator.username}`);
 									} else {
@@ -191,7 +182,10 @@ const ScheduledMeetingList = ({
 										<div className="w-full flex items-center justify-between gap-2.5">
 											<div className="flex w-fit items-start justify-center gap-2">
 												<button
-													className="flex items-center justify-center rounded-xl cursor-pointer hoverScaleDownEffect"
+													className={`flex items-center justify-center rounded-xl ${
+														userType === "client" &&
+														"cursor-pointer hoverScaleDownEffect"
+													}`}
 													onClick={handleRedirect}
 												>
 													<Image
@@ -211,7 +205,7 @@ const ScheduledMeetingList = ({
 
 												<article className="flex items-center justify-center rounded-xl">
 													<Image
-														src={currentUser?.photo || GetRandomImage()}
+														src={client.photo || GetRandomImage()}
 														alt="attendees"
 														width={1000}
 														height={1000}

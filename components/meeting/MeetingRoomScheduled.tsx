@@ -13,7 +13,6 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
-import CallTimer from "../calls/CallTimer";
 import { useToast } from "../ui/use-toast";
 import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
@@ -22,17 +21,14 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import SwitchCameraType from "../calls/SwitchCameraType";
 import AudioDeviceList from "../calls/AudioDeviceList";
 import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
-import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { backendBaseUrl } from "@/lib/utils";
+import { backendBaseUrl, formatTime } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
-import { CallTimerProvider } from "@/lib/context/CallTimerContext";
-import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import TipModal from "../calls/TipModal";
 import MyCallConnectingUI from "./MyCallConnectigUI";
+import ScheduledTimer from "../calls/ScheduledTimer";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -99,12 +95,10 @@ export const isMobileDevice = () => {
 	return false; // Not Android or iOS
 };
 
-const MeetingRoom = () => {
+const MeetingRoomScheduled = () => {
 	const { useCallCallingState, useCallEndedAt, useParticipants } =
 		useCallStateHooks();
 	const { currentUser, userType, ongoingCallStatus } = useCurrentUsersContext();
-	const { walletBalance, setWalletBalance, updateWalletBalance } =
-		useWalletBalanceContext();
 
 	const hasAlreadyJoined = useRef(false);
 	const [showParticipants, setShowParticipants] = useState(false);
@@ -126,7 +120,10 @@ const MeetingRoom = () => {
 	const [hasVisited, setHasVisited] = useState(false);
 	const firestore = getFirestore();
 
-	const countdownDuration = 30;
+	let callType: "scheduled" | "instant" =
+		call?.state?.custom?.type || "instant";
+
+	const countdownDuration = 300;
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
 		navigator.sendBeacon(
@@ -228,7 +225,7 @@ const MeetingRoom = () => {
 			return;
 		}
 
-		if (participants.length === 1) {
+		if (participants.length !== 2) {
 			setShowCountdown(true);
 			setCountdown(countdownDuration);
 
@@ -263,7 +260,7 @@ const MeetingRoom = () => {
 			if (timeoutId) clearTimeout(timeoutId);
 			if (countdownInterval) clearInterval(countdownInterval);
 		};
-	}, [participants, call]);
+	}, [participants, call, callType]);
 
 	const toggleCamera = async () => {
 		if (call && call.camera) {
@@ -314,7 +311,7 @@ const MeetingRoom = () => {
 	// Display countdown notification or modal to the user
 	const CountdownDisplay = () => (
 		<div className="absolute top-6 left-6 sm:top-4 sm:left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-red-500 text-white flex items-center justify-center">
-			<p>Ending call in {countdown}s</p>
+			<p>Ending call in {formatTime(countdown ?? 0)}</p>
 		</div>
 	);
 
@@ -341,36 +338,14 @@ const MeetingRoom = () => {
 				<TipAnimation amount={tipAmount} />
 			)}
 
-			<CallTimerProvider
-				isVideoCall={isVideoCall}
-				isMeetingOwner={isMeetingOwner}
-				call={call}
-				participants={participants.length}
-			>
-				{!callHasEnded && isMeetingOwner && !showCountdown && call ? (
-					<CallTimer
-						handleCallRejected={handleCallRejected}
-						isVideoCall={isVideoCall}
-						callId={call.id}
-					/>
-				) : (
-					!showCountdown &&
-					call &&
-					participants.length > 1 && <CreatorCallTimer callId={call.id} />
-				)}
-
-				{isMeetingOwner && (
-					<section className="pl-4 absolute bottom-[5.75rem] left-4 z-50 w-fit">
-						<TipModal
-							walletBalance={walletBalance}
-							setWalletBalance={setWalletBalance}
-							updateWalletBalance={updateWalletBalance}
-							isVideoCall={isVideoCall}
-							callId={call?.id as string}
-						/>
-					</section>
-				)}
-			</CallTimerProvider>
+			{!callHasEnded && isMeetingOwner && !showCountdown && call && (
+				<ScheduledTimer
+					handleCallRejected={handleCallRejected}
+					callId={call.id}
+					callDuration={call.state.custom.duration}
+					participants={participants.length}
+				/>
+			)}
 
 			{/* Call Controls */}
 
@@ -439,4 +414,4 @@ const MeetingRoom = () => {
 	);
 };
 
-export default MeetingRoom;
+export default MeetingRoomScheduled;

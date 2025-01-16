@@ -10,9 +10,11 @@ import { getCountdownTime } from "@/lib/utils";
 const MeetingNotStarted = ({
 	call,
 	startsAt,
+	onJoinCall,
 }: {
 	call: Call;
 	startsAt: Date | undefined;
+	onJoinCall: () => void;
 }) => {
 	const [remainingTime, setRemainingTime] = useState<string | null>(null);
 	const { currentUser } = useCurrentUsersContext();
@@ -49,110 +51,115 @@ const MeetingNotStarted = ({
 
 	const handleJoinCall = async () => {
 		await call?.join();
+		onJoinCall();
 	};
 
 	return (
-		<div
-			className={`h-screen w-full md:max-w-[85%] mx-auto ${
-				videoCall
-					? "flex flex-col md:grid md:grid-cols-[2fr_1fr]"
-					: "flex flex-col"
-			} items-center ${
-				videoCall ? "justify-start md:justify-center" : "justify-center"
-			} gap-6 text-white bg-gradient-to-br from-gray-900 via-gray-800 to-black p-6 pt-10 overflow-y-scroll no-scrollbar`}
-		>
-			<div className="size-full flex flex-col items-center justify-center">
-				{/* Heading Section */}
-				<div className="text-center mb-6">
-					<h1 className="text-3xl font-bold text-green-400">
-						Upcoming Meeting
-					</h1>
-					<p className="text-sm text-gray-400">
-						Stay prepared! Your meeting with an expert is about to start.
-					</p>
-				</div>
-
-				{/* Video Call Preview Section */}
-				{videoCall ? (
-					<div className="relative flex items-center justify-center px-4 w-full h-fit bg-gray-900 rounded-xl shadow-md">
-						<VideoPreview />
-						<section className="absolute bottom-4 flex items-center gap-4">
-							<AudioToggleButton />
-							<VideoToggleButton />
-						</section>
+		<section className="h-screen w-full bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+			<div
+				className={`size-full md:max-w-[85%] mx-auto ${
+					videoCall
+						? "flex flex-col md:grid md:grid-cols-[2fr_1fr]"
+						: "flex flex-col"
+				} items-center ${
+					videoCall ? "justify-start md:justify-center" : "justify-center"
+				} gap-6 text-white p-6 pt-10 overflow-y-scroll no-scrollbar`}
+			>
+				<div className="size-full flex flex-col items-center justify-center">
+					{/* Heading Section */}
+					<div className="text-center mb-6">
+						<h1 className="text-3xl font-bold text-green-400">
+							Upcoming Meeting
+						</h1>
+						<p className="text-sm text-gray-400">
+							Stay prepared! Your meeting with an expert is about to start.
+						</p>
 					</div>
-				) : (
-					<div className="flex items-center justify-center gap-4 bg-gray-900 p-4 rounded-lg shadow-md">
-						<Image
-							src={currentUser?.photo as string}
-							alt=""
-							width={1000}
-							height={1000}
-							className="rounded-full w-14 h-14 object-cover"
-						/>
-						<div className="flex flex-col items-start justify-center">
-							<span className="text-lg text-green-400">
-								{currentUser?.username}
-							</span>
-							<span className="text-sm text-gray-400">
-								Session&apos;s Participant
-							</span>
+
+					{/* Video Call Preview Section */}
+					{videoCall ? (
+						<div className="relative flex items-center justify-center px-4 w-full h-fit bg-gray-900 rounded-xl shadow-md">
+							<VideoPreview />
+							<section className="absolute bottom-4 flex items-center gap-4">
+								<AudioToggleButton />
+								<VideoToggleButton />
+							</section>
 						</div>
-						<AudioToggleButton />
-					</div>
-				)}
-			</div>
-
-			<div className="size-full flex flex-col items-center justify-center gap-5">
-				{/* Meeting Info Section */}
-				<div className="text-center">
-					<h2 className="text-xl font-semibold text-green-500">
-						Video Call with Expert {call.state.custom.name}
-					</h2>
-					<p className="text-sm text-gray-400">
-						Meeting Description: {meetingDescription}
-					</p>
-				</div>
-
-				{/* Tips Section */}
-				<div className="p-4 bg-gray-800 rounded-lg shadow-md">
-					<h4 className="text-lg font-semibold text-green-400">Meeting Tips</h4>
-					<ul className="list-disc list-inside text-sm text-gray-400">
-						<li>Ensure your microphone and camera are enabled.</li>
-						<li>Find a quiet place with good lighting.</li>
-						<li>Join a few minutes early to test your setup.</li>
-					</ul>
-				</div>
-
-				<ParticipantsPreview />
-
-				{/* Countdown Section */}
-				<div
-					className={`flex flex-col items-center ${
-						videoCall ? "justify-start md:justify-center" : "justify-center"
-					}`}
-				>
-					{remainingTime && remainingTime !== "00:00:00" ? (
-						<>
-							<h3 className="text-xl font-bold text-green-400">Time Left</h3>
-							{formatCountdown(remainingTime)}
-						</>
 					) : (
-						<div className="text-white flex flex-col items-center justify-center w-full gap-2.5 max-w-[15rem]">
-							<p className="text-xl font-bold text-green-400">
-								Meeting is ready to start!
-							</p>
-							<button
-								className="w-full bg-green-500 px-4 py-2 rounded-full hoverScaleDownEffect"
-								onClick={handleJoinCall}
-							>
-								Join Now
-							</button>
+						<div className="flex items-center justify-center gap-4 bg-gray-900 p-4 rounded-lg shadow-md">
+							<Image
+								src={currentUser?.photo as string}
+								alt=""
+								width={1000}
+								height={1000}
+								className="rounded-full w-14 h-14 object-cover"
+							/>
+							<div className="flex flex-col items-start justify-center">
+								<span className="text-lg text-green-400">
+									{currentUser?.username}
+								</span>
+								<span className="text-sm text-gray-400">
+									Session&apos;s Participant
+								</span>
+							</div>
+							<AudioToggleButton />
 						</div>
 					)}
 				</div>
+
+				<div className="size-full flex flex-col items-center justify-center gap-5">
+					{/* Meeting Info Section */}
+					<div className="text-center">
+						<h2 className="text-xl font-semibold text-green-500">
+							Video Call with Expert {call.state.custom.name}
+						</h2>
+						<p className="text-sm text-gray-400">
+							Meeting Description: {meetingDescription}
+						</p>
+					</div>
+
+					{/* Tips Section */}
+					<div className="p-4 bg-gray-800 rounded-lg shadow-md">
+						<h4 className="text-lg font-semibold text-green-400">
+							Meeting Tips
+						</h4>
+						<ul className="list-disc list-inside text-sm text-gray-400">
+							<li>Ensure your microphone and camera are enabled.</li>
+							<li>Find a quiet place with good lighting.</li>
+							<li>Join a few minutes early to test your setup.</li>
+						</ul>
+					</div>
+
+					<ParticipantsPreview />
+
+					{/* Countdown Section */}
+					<div
+						className={`flex flex-col items-center ${
+							videoCall ? "justify-start md:justify-center" : "justify-center"
+						}`}
+					>
+						{remainingTime && remainingTime !== "00:00:00" ? (
+							<>
+								<h3 className="text-xl font-bold text-green-400">Time Left</h3>
+								{formatCountdown(remainingTime)}
+							</>
+						) : (
+							<div className="text-white flex flex-col items-center justify-center w-full gap-2.5 max-w-[15rem]">
+								<p className="text-xl font-bold text-green-400">
+									Meeting is ready to start!
+								</p>
+								<button
+									className="w-full bg-green-500 px-4 py-2 rounded-full hoverScaleDownEffect"
+									onClick={handleJoinCall}
+								>
+									Join Now
+								</button>
+							</div>
+						)}
+					</div>
+				</div>
 			</div>
-		</div>
+		</section>
 	);
 };
 

@@ -125,7 +125,7 @@ const CreatorCard = () => {
 
 	if (isError) {
 		return (
-			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-gray-300">
+			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-gray-400">
 				Oops! We couldn&apos;t find the creator you&apos;re looking for.
 				<span className="text-lg">
 					Don&apos;t worry double-check the username and try again!

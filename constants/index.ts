@@ -51,6 +51,12 @@ export const sidebarLinksCreator = [
 		protected: true,
 	},
 	{
+		imgURL: "/icons/upcoming.svg",
+		route: "/upcoming",
+		label: "Scheduled",
+		protected: true,
+	},
+	{
 		imgURL: "/icons/favorites.svg",
 		route: "/userFeedbacks",
 		label: "User Feedback's",
