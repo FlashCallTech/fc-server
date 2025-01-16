@@ -114,42 +114,59 @@ const AvailabilityServiceCards = ({
 						>
 							<div className="size-full p-4 flex flex-col justify-between">
 								<div>
-									<div className="flex items-center justify-start gap-2.5">
+									<div className="flex items-start justify-start gap-4">
 										<Image
-											width={1000}
-											height={1000}
+											width={80}
+											height={80}
 											src={service.photo}
 											alt={service.title}
-											className="size-10 object-cover rounded-full"
+											className="w-16 h-16 object-cover rounded-lg border border-gray-200"
 										/>
 										<div className="flex flex-col">
-											<h3 className="text-xl font-semibold">{service.title}</h3>
+											<h3 className="text-lg font-semibold text-gray-800">
+												{service.title}
+											</h3>
 											<p className="text-sm text-gray-600">
 												{service.description}
 											</p>
+
+											<p className="mt-2 text-sm font-medium text-gray-500">
+												Duration: {service.timeDuration} minutes
+											</p>
+											<p className="text-sm font-medium text-gray-500 capitalize">
+												Included Services: {service.type}
+											</p>
+
+											<p className="text-sm font-medium text-gray-500">
+												Discount:{" "}
+												<span className="text-green-600 font-bold">
+													{service.discountRules?.discountType === "flat" ? (
+														<>
+															{service.currency === "INR" ? "₹" : "$"}{" "}
+															{service.discountRules?.discountAmount}
+														</>
+													) : (
+														<>{service.discountRules?.discountAmount} %</>
+													)}
+												</span>
+											</p>
 										</div>
 									</div>
-									<p className="mt-2 text-sm text-gray-500">
-										Duration: {service.timeDuration} minutes
-									</p>
-									<p className="text-sm text-gray-500 capitalize">
-										Included Services: {service.type}
-									</p>
 
-									<p className="text-sm text-gray-500">
+									<p className="text-sm text-gray-500 mt-4">
 										Extra Details: {service.extraDetails}
 									</p>
 								</div>
 
 								{/* Footer */}
-								<div className="flex justify-between items-center mt-4">
+								<div className="flex justify-between items-center mt-2">
 									<p className="text-xs text-gray-400">
 										Created at:{" "}
 										{new Date(service.createdAt).toLocaleDateString()}
 									</p>
 									<div className="flex items-center justify-center gap-2.5">
 										<button
-											className="text-blue-500 hoverScaleDownEffect"
+											className="p-2 bg-blue-50 text-blue-500 rounded-full hover:bg-blue-100 transition"
 											onClick={() => {
 												setSelectedService(service);
 												editService();
@@ -171,7 +188,7 @@ const AvailabilityServiceCards = ({
 											</svg>
 										</button>
 										<button
-											className="text-red-500 hoverScaleDownEffect"
+											className="p-2 bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition"
 											onClick={() => {
 												setSelectedService(service);
 												setShowDeleteServiceAlert(true);
