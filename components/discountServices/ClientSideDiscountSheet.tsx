@@ -141,7 +141,7 @@ const ClientSideDiscountheet = ({
 				setTimeout(() => {
 					setIsOpen(true);
 					sessionStorage.setItem(`hasSeenDiscountSheet_${creatorId}`, "true");
-				}, 1000);
+				}, 1500);
 			}
 		}
 	}, [creatorId, userServices, fetchingUser]);
