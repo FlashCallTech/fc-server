@@ -215,7 +215,7 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 							}`}
 						/>
 						<span className="w-full mt-[2px] text-center align-middle text-xs font-semibold">
-							{`Rs. ${Math.round(walletBalance)}`}
+							{`${currentUser.global ? "$" : "RS."} ${Math.round(walletBalance)}`}
 						</span>
 					</Link>
 
