@@ -27,6 +27,7 @@ import { useToast } from "../ui/use-toast";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import axios from "axios";
 import { success } from "@/constants/icons";
+import useScheduledPayment from "@/hooks/useScheduledPayment";
 
 interface params {
 	service: AvailabilityService;
@@ -52,6 +53,7 @@ const AvailabilityFinalConsentForm = ({
 	const [showInfo, setShowInfo] = useState(false);
 	const [payUsing, setPayUsing] = useState<"wallet" | "other">("wallet");
 	const [isSuccess, setIsSuccess] = useState(false);
+	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
 	const { clientUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const [totalAmount, setTotalAmount] = useState<{
@@ -61,6 +63,8 @@ const AvailabilityFinalConsentForm = ({
 		total: service.basePrice.toFixed(2),
 		currency: service.currency,
 	});
+	const { pgHandler, loading } = useScheduledPayment();
+
 	const [preparingTransaction, setPreparingTransaction] = useState(false);
 	const { toast } = useToast();
 	const client = useStreamVideoClient();
@@ -82,6 +86,63 @@ const AvailabilityFinalConsentForm = ({
 		};
 		updateTotal();
 	}, [isDiscountSelected]);
+
+	const handlePayPal = async (): Promise<boolean> => {
+		return new Promise((resolve) => {
+			const paypal = (window as any).paypal;
+			if (paypal) {
+				paypal
+					.Buttons({
+						async createOrder(data: any, actions: any) {
+							try {
+								return await actions.order.create({
+									purchase_units: [
+										{
+											amount: {
+												currency_code: "USD",
+												value: totalAmount.total,
+											},
+										},
+									],
+									application_context: {
+										shipping_preference: "NO_SHIPPING",
+									},
+								});
+							} catch (error) {
+								console.error("PayPal order creation error:", error);
+								resolve(false);
+							}
+						},
+						async onApprove(data: any, actions: any) {
+							try {
+								const details = await actions.order.capture();
+								if (details.status === "COMPLETED") {
+									console.log("PayPal payment successful:", details);
+									resolve(true);
+								} else {
+									resolve(false);
+								}
+							} catch (error) {
+								console.error("PayPal capture error:", error);
+								resolve(false);
+							}
+						},
+						onCancel(data: any) {
+							console.warn("PayPal payment canceled:", data);
+							resolve(false);
+						},
+						onError(err: any) {
+							console.error("PayPal payment error:", err);
+							resolve(false);
+						},
+					})
+					.render("#paypal-button-container");
+			} else {
+				console.error("PayPal SDK not loaded");
+				resolve(false);
+			}
+		});
+	};
 
 	const calculateTotal = async () => {
 		let { basePrice, discountRules, currency } = service;
@@ -211,44 +272,87 @@ const AvailabilityFinalConsentForm = ({
 	};
 
 	const handlePaySchedule = async () => {
-		if (payUsing === "other") return;
 		setPreparingTransaction(true);
 		try {
-			// Step 1: Check if wallet balance is sufficient
-			if (walletBalance < parseFloat(totalAmount.total)) {
-				toast({
-					variant: "destructive",
-					title: "Insufficient Wallet Balance",
-					toastStatus: "negative",
-				});
-				return;
+			if (payUsing === "other") {
+				if (clientUser?.global) {
+					try {
+						const paypalSuccess = await handlePayPal();
+						if (!paypalSuccess) {
+							toast({
+								variant: "destructive",
+								title: "Payment Failed",
+								description: "Your PayPal payment could not be processed.",
+							});
+
+							return;
+						}
+					} catch (error) {
+						console.error("PayPal Payment Error:", error);
+						toast({
+							variant: "destructive",
+							title: "Payment Failed",
+							description:
+								"An error occurred while processing your PayPal payment.",
+							toastStatus: "negative",
+						});
+					}
+				} else {
+					// Call Razorpay payment handler
+					await pgHandler(
+						clientUser?._id as string,
+						parseFloat(totalAmount.total),
+						clientUser?.phone,
+						setIsPaymentHandlerSuccess
+					);
+
+					if (!isPaymentHandlerSuccess) {
+						toast({
+							variant: "destructive",
+							title: "Payment Failed",
+							description: "Your Razorpay payment could not be processed.",
+						});
+						return;
+					}
+				}
+			} else {
+				if (walletBalance < parseFloat(totalAmount.total)) {
+					toast({
+						variant: "destructive",
+						title: "Insufficient Wallet Balance",
+						toastStatus: "negative",
+					});
+					return;
+				}
 			}
 
-			// Step 2: Attempt to create a meeting
+			// Step 1: Attempt to create a meeting
 			let callDetails = await createMeeting();
 			if (!callDetails) {
 				throw new Error("Failed to create meeting");
 			}
 
-			// Step 3: Deduct wallet balance if the meeting was created
-			const walletUpdateAPI = "/wallet/temporary/update";
-			const walletUpdatePayload = {
-				userId: clientUser?._id,
-				userType: "Client",
-				amount: parseFloat(totalAmount.total),
-				transactionType: "credit",
-			};
+			// Step 2: Deduct wallet balance if the meeting was created
+			if (payUsing === "wallet") {
+				const walletUpdateAPI = "/wallet/temporary/update";
+				const walletUpdatePayload = {
+					userId: clientUser?._id,
+					userType: "Client",
+					amount: parseFloat(totalAmount.total),
+					transactionType: "credit",
+				};
 
-			let walletUpdateResponse = await axios.post(
-				`${backendBaseUrl}${walletUpdateAPI}`,
-				walletUpdatePayload
-			);
+				let walletUpdateResponse = await axios.post(
+					`${backendBaseUrl}${walletUpdateAPI}`,
+					walletUpdatePayload
+				);
 
-			if (walletUpdateResponse.status !== 200) {
-				throw new Error("Failed to update wallet balance");
+				if (walletUpdateResponse.status !== 200) {
+					throw new Error("Failed to update wallet balance");
+				}
 			}
 
-			// Step 4: Register the scheduled call
+			// Step 3: Register the scheduled call
 			const registerUpcomingCallAPI = "/calls/scheduled/createCall";
 			const registerUpcomingCallPayload = {
 				callId: callDetails.callId,
@@ -331,7 +435,7 @@ const AvailabilityFinalConsentForm = ({
 				throw new Error("Failed to register the call");
 			}
 
-			// Step 5: Success flow completed
+			// Step 4: Success flow completed
 			console.log("Call scheduled successfully:", registerCallResponse.data);
 		} catch (error: any) {
 			console.error(error);
@@ -367,7 +471,6 @@ const AvailabilityFinalConsentForm = ({
 	};
 
 	const handlePaymentMethod = (method: "wallet" | "other") => {
-		console.log("Updating payUsing to ", method);
 		setPayUsing(method);
 	};
 

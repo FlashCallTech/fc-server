@@ -103,7 +103,7 @@ const ScheduledMeetingList = ({
 								const formattedDate = formatDateTime(userCall.startsAt as Date);
 
 								let customDateValue =
-									formattedData.day.split(", ")[1].split(" ") ?? "";
+									formattedData?.day?.split(", ")[1]?.split(" ") ?? "";
 
 								const timeToStart =
 									new Date(userCall.startsAt).getTime() - new Date().getTime();
