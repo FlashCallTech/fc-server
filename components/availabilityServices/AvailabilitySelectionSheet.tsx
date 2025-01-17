@@ -158,7 +158,12 @@ const AvailabilitySelectionSheet = ({
 			);
 		}
 
-		const timeSlots = getTimeSlots(dayData.timeSlots, service.timeDuration);
+		const timeSlots = getTimeSlots(
+			dayData.timeSlots,
+			service.timeDuration,
+			dayName,
+			selectedDay
+		);
 
 		const availableSlots = timeSlots.filter(
 			(slot) => !bookedSlots.includes(slot)

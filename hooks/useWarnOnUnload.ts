@@ -1,16 +1,26 @@
 import { useEffect } from "react";
 
 const useWarnOnUnload = (message: string, onUnload: () => void) => {
+	const isReload = () => {
+		const navigationEntry = window.performance.getEntriesByType(
+			"navigation"
+		)[0] as PerformanceNavigationTiming;
+		return navigationEntry?.type === "reload";
+	};
+
 	useEffect(() => {
-		const handleBeforeUnload = (event: any) => {
-			// Show warning message
-			event.preventDefault();
-			event.returnValue = message;
-			return message;
+		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+			if (!isReload()) {
+				event.preventDefault();
+				event.returnValue = message;
+				return message;
+			}
 		};
 
 		const handleUnload = () => {
-			onUnload();
+			if (!isReload()) {
+				onUnload(); // Call the unload handler if not a reload
+			}
 		};
 
 		window.addEventListener("beforeunload", handleBeforeUnload);

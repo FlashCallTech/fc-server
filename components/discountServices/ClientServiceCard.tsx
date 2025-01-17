@@ -78,7 +78,7 @@ const ClientServiceCard = ({ service }: { service: Service }) => {
 		>
 			{/* Service Content */}
 			<section className="p-5">
-				<section className="flex items-start justify-start gap-2.5 mb-7">
+				<section className="flex items-start justify-start gap-2.5 mb-4">
 					<Image
 						src={photo}
 						alt={title}
@@ -97,7 +97,7 @@ const ClientServiceCard = ({ service }: { service: Service }) => {
 
 						{/* Discounts */}
 						{discountRules.length > 0 && (
-							<ul className="space-y-2 absolute top-0 right-0">
+							<ul className="hidden xm:block space-y-2 absolute top-0 right-0">
 								{discountRules.map((discount, index) => (
 									<li
 										key={index}
@@ -118,13 +118,34 @@ const ClientServiceCard = ({ service }: { service: Service }) => {
 					</section>
 				</section>
 
+				{/* Discounts */}
+				{discountRules.length > 0 && (
+					<ul className="block xm:hidden space-y-2">
+						{discountRules.map((discount, index) => (
+							<li
+								key={index}
+								className="text-sm text-gray-700 flex gap-2 items-center"
+							>
+								<span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+									{formattedDiscounts(discount)}
+								</span>
+								{hasNewUserDiscount && (
+									<span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+										Auto Applied
+									</span>
+								)}
+							</li>
+						))}
+					</ul>
+				)}
+
 				{/* CTA */}
 				<button
 					onClick={(e) => {
 						e.stopPropagation();
 						setIsModalOpen(true);
 					}}
-					className={`w-full px-4 py-2 bg-black text-white text-sm rounded-lg font-medium hoverScaleDownEffect`}
+					className={`w-full px-4 py-2 mt-4 bg-black text-white text-sm rounded-lg font-medium hoverScaleDownEffect`}
 				>
 					View Details
 				</button>
