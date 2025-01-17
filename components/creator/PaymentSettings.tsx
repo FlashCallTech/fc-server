@@ -742,7 +742,7 @@ const PaymentSettings = () => {
 												handleChange("UPI"), setPaymentMethod("UPI");
 											}}
 										/>
-										<div>
+										<div className="flex gap-2">
 											<span className="font-semibold text-black">
 												UPI Details
 											</span>

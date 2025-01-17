@@ -307,12 +307,6 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 										</div>
 									)}
 
-									{fullImageUrl && (
-										<ImageModal
-											imageUrl={fullImageUrl}
-											onClose={handleCloseModal}
-										/>
-									)}
 									{message.audio && (
 										<div className="w-full items-center justify-center mb-1">
 											<CustomAudioPlayer
@@ -374,24 +368,6 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 											>
 												Reply
 											</button>
-											{/* {selectedMessage.senderId === currentUser?._id && !selectedMessage.tip &&
-												<div className="w-full">
-													<button
-														onClick={() => handleUnsend(index)}
-														className="w-full border-t-2 border-gray-200 p-1 hoverScaleDownEffect"
-													>
-														Unsend
-													</button>
-													{!selectedMessage.img && !selectedMessage.audio &&
-														<button	
-														onClick={() => handleEdit(index)}
-														className="w-full border-t-2 border-gray-200 p-1 hoverScaleDownEffect"
-														>
-														Edit
-													</button>
-													}
-												</div>
-											} */}
 										</div>
 
 									)}
@@ -431,6 +407,12 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 							<span className="w-2 h-2 bg-green-500 rounded-full animate-bounce delay-225"></span>
 						</div>
 					</div>
+				)}
+				{fullImageUrl && (
+					<ImageModal
+						imageUrl={fullImageUrl}
+						onClose={handleCloseModal}
+					/>
 				)}
 			</div>
 			<div ref={messagesEndRef} />
