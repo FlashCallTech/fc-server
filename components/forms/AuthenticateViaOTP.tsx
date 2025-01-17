@@ -295,6 +295,7 @@ const AuthenticateViaOTP = ({
 
 	const handleGoogleSignIn = async () => {
 		try {
+			console.log("Inside the google sign in function");
 			let result: any;
 			let email: string = "";
 
@@ -333,6 +334,7 @@ const AuthenticateViaOTP = ({
 		result: any,
 		payload: any
 	) => {
+		console.log("Inside user existence function");
 		let userExists = true;
 
 		try {
@@ -361,6 +363,7 @@ const AuthenticateViaOTP = ({
 
 	// Helper function to create a new user
 	const createNewUser = async (result: any, email: string, payload: any) => {
+		console.log("Inside createNewUser function");
 		const newUser: CreateForeignUserParams = {
 			username: result.user.uid,
 			photo: GetRandomImage() || "",
@@ -371,6 +374,7 @@ const AuthenticateViaOTP = ({
 			bio: "",
 			walletBalance: 0,
 			global: true,
+			fcmToken: payload.fcmToken,
 		};
 
 		try {

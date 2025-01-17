@@ -44,6 +44,8 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 						currentUser.email ?? null
 					);
 
+					console.log("Token in provider: ", token);
+
 					if (!token) {
 						throw new Error("Token was not generated successfully");
 					}

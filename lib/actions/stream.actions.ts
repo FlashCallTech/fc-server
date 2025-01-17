@@ -23,6 +23,8 @@ export const tokenProvider = async (
 		"voip"
 	);
 
+	console.log("fcmToken: ", fcmToken);
+
 	// Register the user in Stream
 	const userData = {
 		id: userId,
@@ -50,6 +52,8 @@ export const tokenProvider = async (
 	const issuedAt = Math.floor(Date.now() / 1000) - 60;
 
 	const token = streamClient.createToken(userId, expirationTime, issuedAt);
+
+	console.log("Token: ", token);
 
 	return token;
 };

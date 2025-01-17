@@ -317,6 +317,7 @@ export const CurrentUsersProvider = ({
 
 	const fetchGlobalCurrentUser = async (email: string) => {
 		try {
+			console.log("Fetching global client");
 			setFetchingUser(true);
 
 			if (email) {
