@@ -119,15 +119,15 @@ const UserProfilePage = () => {
 		fetchThemes();
 	}, []);
 
-	
+
 	// Conditionally select the schema based on user role
 	const schema =
-	userData.role === "creator"
-	? UpdateProfileFormSchema
+		userData.role === "creator"
+			? UpdateProfileFormSchema
 			: UpdateProfileFormSchemaClient;
-			
-			// 1. Define your form.
-			const form = useForm<z.infer<typeof schema>>({
+
+	// 1. Define your form.
+	const form = useForm<z.infer<typeof schema>>({
 		mode: "onChange",
 		resolver: zodResolver(schema),
 		defaultValues: {
@@ -143,7 +143,7 @@ const UserProfilePage = () => {
 			referredBy: userData.referredBy,
 		},
 	});
-	
+
 	// Watch form values to detect changes
 	const watchedValues: any = useWatch({ control: form.control });
 
@@ -163,7 +163,7 @@ const UserProfilePage = () => {
 			}
 		}
 	}, [watchedValues.gender, selectedFile, form, placeholderImages]);
-	
+
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		setUserData(newUserData);
 		await refreshCurrentUser();

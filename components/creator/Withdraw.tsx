@@ -576,19 +576,35 @@ const Withdraw: React.FC = () => {
 						<section className={`w-full pb-6`}>
 							<div className="flex justify-between w-full h-fit">
 								<div className="flex items-center gap-3 text-xs font-bold text-[#4B5563]">
-									<select
-										className="border-[1px] bg-white border-solid border-[#E5E7EB] px-6 py-3 rounded-lg focus:outline-none hover:cursor-pointer hoverScaleDownEffect"
-										value={selectedOption}
-										onChange={(e) => setSelectedOption(e.target.value)}
-									>
-										<option value="Lifetime">Lifetime</option>
-										<option value="Yesterday">Yesterday</option>
-										<option value="Last 7 days">Last 7 Days</option>
-										<option value="Last 30 Days">Last 30 Days</option>
-										<option value="This Month">This Month</option>
-										<option value="Last Month">Last Month</option>
-										<option value="Custom">Custom</option>
-									</select>
+									<div className="relative">
+										<select
+											className="border-[1px] bg-white border-solid border-[#E5E7EB] px-6 py-3 rounded-lg focus:outline-none hover:cursor-pointer hoverScaleDownEffect pr-10 appearance-none"
+											value={selectedOption}
+											onChange={(e) => setSelectedOption(e.target.value)}
+										>
+											<option value="Lifetime">Lifetime</option>
+											<option value="Yesterday">Yesterday</option>
+											<option value="Last 7 days">Last 7 Days</option>
+											<option value="Last 30 Days">Last 30 Days</option>
+											<option value="This Month">This Month</option>
+											<option value="Last Month">Last Month</option>
+											<option value="Custom">Custom</option>
+										</select>
+										<span className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+											<svg
+												className="w-4 h-4 text-gray-500"
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 20 20"
+												fill="currentColor"
+											>
+												<path
+													fillRule="evenodd"
+													d="M5.23 7.21a.75.75 0 011.06 0L10 10.94l3.71-3.73a.75.75 0 111.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 010-1.06z"
+													clipRule="evenodd"
+												/>
+											</svg>
+										</span>
+									</div>
 									{/* Show custom date inputs if 'Custom' is selected */}
 									{selectedOption === "Custom" && (
 										<div>
