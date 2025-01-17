@@ -89,6 +89,9 @@ const MeetingRoom = () => {
 	const isVideoCall = useMemo(() => call?.type === "default", [call]);
 	const isMobile = useScreenSize();
 	const mobileDevice = isMobileDevice();
+	const expert = call?.state?.members?.find(
+		(member: any) => member.custom.type === "expert"
+	);
 
 	const [layout, setLayout] = useState<CallLayoutType>("grid");
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
@@ -96,7 +99,10 @@ const MeetingRoom = () => {
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
 		let callData = {
 			client_id: call?.state?.createdBy?.id || "unknown_client",
-			influencer_id: call?.state?.members?.[0]?.user_id || "unknown_influencer",
+			influencer_id:
+				expert?.user_id ||
+				call?.state?.members?.[0]?.user_id ||
+				"unknown_influencer",
 			started_at: call?.state?.startedAt || new Date().toISOString(),
 			ended_at: call?.state?.endedAt || new Date().toISOString(),
 			meeting_id: call?.id || "unknown_meeting",

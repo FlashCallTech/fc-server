@@ -211,7 +211,8 @@ const CallEnded = ({ call }: any) => {
 					`${backendBaseUrl}/official/call/end/${call?.id}`,
 					{
 						client_id: call?.state?.createdBy?.id || null,
-						influencer_id: call?.state?.members[0].user_id || null,
+						influencer_id:
+							expert?.user_id || call?.state?.members[0].user_id || null,
 						started_at: call?.state?.startsAt,
 						ended_at: call?.state?.endedAt,
 						call_type: call?.type === "default" ? "default" : "audio",
