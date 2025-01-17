@@ -84,7 +84,7 @@ const ClientSideDiscountheet = ({
 	const [removeFilter, setRemoveFilter] = useState(true);
 	const [hasPreviousCall, setHasPreviousCall] = useState(false);
 	const { selectedService, newUserService } = useSelectedServiceContext();
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, fetchingUser } = useCurrentUsersContext();
 	const { ref, inView } = useInView({
 		threshold: 0.1,
 		triggerOnce: false,
@@ -132,7 +132,7 @@ const ClientSideDiscountheet = ({
 	}, [servicesData]);
 
 	useEffect(() => {
-		if (creatorId) {
+		if (creatorId && !fetchingUser) {
 			const seenDiscountSheet = sessionStorage.getItem(
 				`hasSeenDiscountSheet_${creatorId}`
 			);
@@ -141,10 +141,10 @@ const ClientSideDiscountheet = ({
 				setTimeout(() => {
 					setIsOpen(true);
 					sessionStorage.setItem(`hasSeenDiscountSheet_${creatorId}`, "true");
-				}, 2000);
+				}, 1500);
 			}
 		}
-	}, [creatorId, userServices]);
+	}, [creatorId, userServices, fetchingUser]);
 
 	// Check if user has had any prior calls with the creator
 	useEffect(() => {
@@ -241,7 +241,6 @@ const ClientSideDiscountheet = ({
 		);
 	};
 
-	// Render Mobile View or Desktop View
 	return (
 		<section className="fixed grid grid-cols-1 items-center bottom-5 right-4 lg:right-8 z-40 shadow-lg">
 			{/* Toggle Button */}

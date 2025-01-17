@@ -1,11 +1,20 @@
 "use client";
 import React, { useEffect, useState } from "react";
+
+import {
+	DropdownMenu,
+	DropdownMenuTrigger,
+	DropdownMenuContent,
+	DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+
 import {
 	backendBaseUrl,
 	fetchExchangeRate,
 	formatDisplay,
 	getDisplayName,
 	getImageSource,
+	updateFirestoreSessions,
 } from "@/lib/utils";
 import { AvailabilityService, creatorUser } from "@/types";
 import Image from "next/image";
@@ -18,6 +27,7 @@ import { useToast } from "../ui/use-toast";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import axios from "axios";
 import { success } from "@/constants/icons";
+import useScheduledPayment from "@/hooks/useScheduledPayment";
 
 interface params {
 	service: AvailabilityService;
@@ -41,7 +51,9 @@ const AvailabilityFinalConsentForm = ({
 	const [isDiscountSelected, setIsDiscountSelected] = useState(false);
 	const [showDiscountCards, setShowDiscountCards] = useState(false);
 	const [showInfo, setShowInfo] = useState(false);
+	const [payUsing, setPayUsing] = useState<"wallet" | "other">("wallet");
 	const [isSuccess, setIsSuccess] = useState(false);
+	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
 	const { clientUser } = useCurrentUsersContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const [totalAmount, setTotalAmount] = useState<{
@@ -51,6 +63,8 @@ const AvailabilityFinalConsentForm = ({
 		total: service.basePrice.toFixed(2),
 		currency: service.currency,
 	});
+	const { pgHandler, loading } = useScheduledPayment();
+
 	const [preparingTransaction, setPreparingTransaction] = useState(false);
 	const { toast } = useToast();
 	const client = useStreamVideoClient();
@@ -72,6 +86,63 @@ const AvailabilityFinalConsentForm = ({
 		};
 		updateTotal();
 	}, [isDiscountSelected]);
+
+	const handlePayPal = async (): Promise<boolean> => {
+		return new Promise((resolve) => {
+			const paypal = (window as any).paypal;
+			if (paypal) {
+				paypal
+					.Buttons({
+						async createOrder(data: any, actions: any) {
+							try {
+								return await actions.order.create({
+									purchase_units: [
+										{
+											amount: {
+												currency_code: "USD",
+												value: totalAmount.total,
+											},
+										},
+									],
+									application_context: {
+										shipping_preference: "NO_SHIPPING",
+									},
+								});
+							} catch (error) {
+								console.error("PayPal order creation error:", error);
+								resolve(false);
+							}
+						},
+						async onApprove(data: any, actions: any) {
+							try {
+								const details = await actions.order.capture();
+								if (details.status === "COMPLETED") {
+									console.log("PayPal payment successful:", details);
+									resolve(true);
+								} else {
+									resolve(false);
+								}
+							} catch (error) {
+								console.error("PayPal capture error:", error);
+								resolve(false);
+							}
+						},
+						onCancel(data: any) {
+							console.warn("PayPal payment canceled:", data);
+							resolve(false);
+						},
+						onError(err: any) {
+							console.error("PayPal payment error:", err);
+							resolve(false);
+						},
+					})
+					.render("#paypal-button-container");
+			} else {
+				console.error("PayPal SDK not loaded");
+				resolve(false);
+			}
+		});
+	};
 
 	const calculateTotal = async () => {
 		let { basePrice, discountRules, currency } = service;
@@ -163,8 +234,9 @@ const AvailabilityFinalConsentForm = ({
 					custom: {
 						description,
 						global: clientUser?.global ?? false,
-						duration: service.timeDuration,
+						duration: service.timeDuration * 60,
 						type: "scheduled",
+						serviceId: service._id,
 					},
 					settings_override: {
 						limits: {
@@ -186,6 +258,7 @@ const AvailabilityFinalConsentForm = ({
 				duration: service.timeDuration,
 				meetingOwner: clientUser?._id,
 				description: description,
+				members: members,
 			};
 		} catch (error) {
 			Sentry.captureException(error);
@@ -201,41 +274,85 @@ const AvailabilityFinalConsentForm = ({
 	const handlePaySchedule = async () => {
 		setPreparingTransaction(true);
 		try {
-			// Step 1: Check if wallet balance is sufficient
-			if (walletBalance < parseFloat(totalAmount.total)) {
-				toast({
-					variant: "destructive",
-					title: "Insufficient Wallet Balance",
-					toastStatus: "negative",
-				});
-				return;
+			if (payUsing === "other") {
+				if (clientUser?.global) {
+					try {
+						const paypalSuccess = await handlePayPal();
+						if (!paypalSuccess) {
+							toast({
+								variant: "destructive",
+								title: "Payment Failed",
+								description: "Your PayPal payment could not be processed.",
+							});
+
+							return;
+						}
+					} catch (error) {
+						console.error("PayPal Payment Error:", error);
+						toast({
+							variant: "destructive",
+							title: "Payment Failed",
+							description:
+								"An error occurred while processing your PayPal payment.",
+							toastStatus: "negative",
+						});
+					}
+				} else {
+					// Call Razorpay payment handler
+					await pgHandler(
+						clientUser?._id as string,
+						parseFloat(totalAmount.total),
+						clientUser?.phone,
+						setIsPaymentHandlerSuccess
+					);
+
+					if (!isPaymentHandlerSuccess) {
+						toast({
+							variant: "destructive",
+							title: "Payment Failed",
+							description: "Your Razorpay payment could not be processed.",
+						});
+						return;
+					}
+				}
+			} else {
+				if (walletBalance < parseFloat(totalAmount.total)) {
+					toast({
+						variant: "destructive",
+						title: "Insufficient Wallet Balance",
+						toastStatus: "negative",
+					});
+					return;
+				}
 			}
 
-			// Step 2: Attempt to create a meeting
+			// Step 1: Attempt to create a meeting
 			let callDetails = await createMeeting();
 			if (!callDetails) {
 				throw new Error("Failed to create meeting");
 			}
 
-			// Step 3: Deduct wallet balance if the meeting was created
-			const walletUpdateAPI = "/wallet/temporary/update";
-			const walletUpdatePayload = {
-				userId: clientUser?._id,
-				userType: "client",
-				amount: parseFloat(totalAmount.total),
-				transactionType: "credit",
-			};
+			// Step 2: Deduct wallet balance if the meeting was created
+			if (payUsing === "wallet") {
+				const walletUpdateAPI = "/wallet/temporary/update";
+				const walletUpdatePayload = {
+					userId: clientUser?._id,
+					userType: "Client",
+					amount: parseFloat(totalAmount.total),
+					transactionType: "credit",
+				};
 
-			let walletUpdateResponse = await axios.post(
-				`${backendBaseUrl}${walletUpdateAPI}`,
-				walletUpdatePayload
-			);
+				let walletUpdateResponse = await axios.post(
+					`${backendBaseUrl}${walletUpdateAPI}`,
+					walletUpdatePayload
+				);
 
-			if (walletUpdateResponse.status !== 200) {
-				throw new Error("Failed to update wallet balance");
+				if (walletUpdateResponse.status !== 200) {
+					throw new Error("Failed to update wallet balance");
+				}
 			}
 
-			// Step 4: Register the scheduled call
+			// Step 3: Register the scheduled call
 			const registerUpcomingCallAPI = "/calls/scheduled/createCall";
 			const registerUpcomingCallPayload = {
 				callId: callDetails.callId,
@@ -269,9 +386,42 @@ const AvailabilityFinalConsentForm = ({
 					callType: service.type,
 				});
 
+				await fetch(`${backendBaseUrl}/calls/registerCall`, {
+					method: "POST",
+					body: JSON.stringify({
+						callId: callDetails.callId as string,
+						type: service.type as string,
+						status: "Scheduled",
+						creator: String(clientUser?._id),
+						members: callDetails.members,
+					}),
+					headers: { "Content-Type": "application/json" },
+				});
+
+				await updateFirestoreSessions(clientUser?._id as string, {
+					callId: callDetails.callId,
+					status: "upcoming",
+					callType: "scheduled",
+					clientId: clientUser?._id as string,
+					expertId: creator._id,
+					isVideoCall: service.type,
+					creatorPhone: creator.phone,
+					clientPhone: clientUser?.global
+						? clientUser?.email
+						: clientUser?.phone,
+					global: clientUser?.global ?? false,
+				});
+
+				isDiscountSelected &&
+					(await axios.put(`${backendBaseUrl}/availability/${service._id}`, {
+						clientId: callDetails.meetingOwner || clientUser?._id,
+					}));
+
 				updateWalletBalance();
 
 				setIsSuccess(true);
+
+				localStorage.removeItem("hasVisitedFeedbackPage");
 
 				setTimeout(() => {
 					toggleSchedulingSheet(false);
@@ -285,16 +435,15 @@ const AvailabilityFinalConsentForm = ({
 				throw new Error("Failed to register the call");
 			}
 
-			// Step 5: Success flow completed
+			// Step 4: Success flow completed
 			console.log("Call scheduled successfully:", registerCallResponse.data);
 		} catch (error: any) {
 			console.error(error);
-			// Rollback wallet balance deduction if the call scheduling fails
 			if (error.message.includes("Failed to register the call")) {
 				try {
 					await axios.post(`${backendBaseUrl}/wallet/temporary/update`, {
 						userId: clientUser?._id,
-						userType: "client",
+						userType: "Client",
 						amount: parseFloat(totalAmount.total),
 						transactionType: "debit",
 					});
@@ -311,7 +460,6 @@ const AvailabilityFinalConsentForm = ({
 				}
 			}
 
-			// Notify the user of the error
 			toast({
 				variant: "destructive",
 				title: "Failed to schedule the call",
@@ -320,6 +468,10 @@ const AvailabilityFinalConsentForm = ({
 		} finally {
 			setPreparingTransaction(false);
 		}
+	};
+
+	const handlePaymentMethod = (method: "wallet" | "other") => {
+		setPayUsing(method);
 	};
 
 	return (
@@ -401,25 +553,29 @@ const AvailabilityFinalConsentForm = ({
 						</section>
 					</div>
 
-					{service.discountRules && (
-						<div className="w-full grid grid-cols-1 gap-4 mt-5">
-							{showDiscountCards && (
-								<ClientSideDiscountCard
-									service={service}
-									clientUserId={clientUser?._id as string}
-									isDiscountSelected={isDiscountSelected}
-									setIsDiscountSelected={setIsDiscountSelected}
-								/>
-							)}
+					{clientUser?._id &&
+						!service.utilizedBy.some(
+							(clientId) => clientId.toString() === clientUser?._id.toString()
+						) &&
+						service.discountRules && (
+							<div className="w-full grid grid-cols-1 gap-4 mt-5">
+								{showDiscountCards && (
+									<ClientSideDiscountCard
+										service={service}
+										clientUserId={clientUser?._id as string}
+										isDiscountSelected={isDiscountSelected}
+										setIsDiscountSelected={setIsDiscountSelected}
+									/>
+								)}
 
-							<button
-								onClick={() => setShowDiscountCards((prev) => !prev)}
-								className={`w-fit ml-auto px-4 py-2 bg-black text-white text-sm rounded-lg font-medium hoverScaleDownEffect`}
-							>
-								{showDiscountCards ? "Hide Discount Cards" : "View Discounts"}
-							</button>
-						</div>
-					)}
+								<button
+									onClick={() => setShowDiscountCards((prev) => !prev)}
+									className={`w-fit ml-auto px-4 py-2 bg-black text-white text-sm rounded-lg font-medium hoverScaleDownEffect`}
+								>
+									{showDiscountCards ? "Hide Discount Cards" : "View Discounts"}
+								</button>
+							</div>
+						)}
 
 					{/* Order Summary Section */}
 					<div className="mt-4 w-full">
@@ -503,26 +659,53 @@ const AvailabilityFinalConsentForm = ({
 					</div>
 
 					{/* Payment Confirmation */}
-					<div className="bg-white shadow-md mt-4 w-full flex item-center justify-center gap-4 py-2.5 sticky bottom-0">
-						<section className="bg-white flex items-center gap-2 border-2 border-gray-300 rounded-full py-2 px-4 whitespace-nowrap">
-							<span className="text-sm font-bold">
-								{totalAmount.currency === "INR" ? "₹" : "$"} {totalAmount.total}
-							</span>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								strokeWidth={1.5}
-								stroke="currentColor"
-								className="size-4"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="m8.25 4.5 7.5 7.5-7.5 7.5"
-								/>
-							</svg>
-						</section>
+					<div className="bg-white shadow-md mt-4 w-full flex items-center justify-center gap-4 py-2.5 sticky bottom-0">
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<section className="bg-white flex items-center gap-2 border-2 border-gray-300 rounded-full py-2 px-4 whitespace-nowrap cursor-pointer">
+									<span className="text-sm font-bold">
+										{totalAmount.currency === "INR" ? "₹" : "$"}{" "}
+										{totalAmount.total}
+									</span>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										strokeWidth={1.5}
+										stroke="currentColor"
+										className="size-5"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+										/>
+									</svg>
+								</section>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent className="!m-0 !ml-6 !min-w-[15rem] p-5 bg-white border-2 border-gray-300 shadow-md">
+								<h3 className="text-lg font-semibold mb-3">
+									Select Payment Method
+								</h3>
+								<DropdownMenuItem
+									onSelect={() => handlePaymentMethod("wallet")}
+									className={`w-full py-2.5 rounded-md text-left justify-start ${
+										payUsing === "wallet" ? "bg-blue-500 text-white px-2.5" : ""
+									}`}
+								>
+									Pay Using Wallet
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={() => handlePaymentMethod("other")}
+									className={`w-full py-2.5 rounded-md text-left justify-start ${
+										payUsing === "other" ? "bg-blue-500 text-white px-2.5" : ""
+									}`}
+								>
+									Use Other Methods
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+
 						<Button
 							className="text-base bg-blue-500 hoverScaleDownEffect w-full mx-auto text-white"
 							type="submit"
@@ -535,11 +718,13 @@ const AvailabilityFinalConsentForm = ({
 									alt="Loading..."
 									width={1000}
 									height={1000}
-									className={`size-6`}
+									className="size-6"
 									priority
 								/>
 							) : (
-								"Confirm & Pay"
+								<span className="text-base">
+									{payUsing === "wallet" ? "Pay via Wallet" : "Confirm Payment"}
+								</span>
 							)}
 						</Button>
 					</div>

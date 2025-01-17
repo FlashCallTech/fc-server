@@ -1,6 +1,13 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { parse, format, addMinutes, isBefore, isEqual } from "date-fns";
+import {
+	parse,
+	isBefore,
+	isEqual,
+	addMinutes,
+	format,
+	isSameDay,
+} from "date-fns";
 
 import Razorpay from "razorpay";
 import {
@@ -66,8 +73,10 @@ export const handleInterruptedCall = async (
 	const validDiscounts = discounts && discounts.length > 0 ? discounts : [];
 
 	// Extract relevant fields from the call object
+
 	const callData = {
 		id: call.id,
+		callType: call.state.custom.type || "instant",
 		global,
 		endedAt: call.state.endedAt,
 		startedAt: call.state.startsAt,
@@ -429,15 +438,27 @@ export const handleError = (error: unknown) => {
 export const formatDateTime = (dateString: Date) => {
 	const date = new Date(dateString);
 	if (isNaN(date.getTime())) {
-		throw new Error("Invalid Date");
+		return {
+			dateTime: "Invalid Date",
+			dateOnly: "Invalid Date",
+			timeOnly: "Invalid Date",
+		};
 	}
 
 	return {
-		dateTime: format(date, "EEE, MMM d, h:mm a"), // e.g., "Mon, Oct 25, 2023 8:30 AM"
-		dateOnly: format(date, "EEE, MMM d, yyyy"), // e.g., "Mon, Oct 25, 2023"
-		timeOnly: format(date, "h:mm a"), // e.g., "8:30 AM"
-		custom: format(date, "MMM d, h:mm a"),
+		dateTime: format(date, "EEE, MMM d, h:mm a"),
+		dateOnly: format(date, "EEE, MMM d, yyyy"),
+		timeOnly: format(date, "h:mm a"),
 	};
+};
+
+export const formatTime = (timeInSeconds: number) => {
+	const minutes = Math.floor(timeInSeconds / 60);
+	const seconds = timeInSeconds % 60;
+	return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
+		2,
+		"0"
+	)}`;
 };
 
 export const calculateTotalEarnings = (transactions: any) => {
@@ -555,6 +576,7 @@ export const validateUsername = (username: string) => {
 type UpdateSessionParams = {
 	callId?: string;
 	status?: string;
+	callType?: string;
 	clientId?: string;
 	expertId?: string;
 	isVideoCall?: string;
@@ -574,6 +596,7 @@ export const updateFirestoreSessions = async (
 
 		if (params.callId) ongoingCallUpdate.callId = params.callId;
 		if (params.status) ongoingCallUpdate.status = params.status;
+		if (params.callType) ongoingCallUpdate.status = params.callType;
 		if (params.clientId) ongoingCallUpdate.clientId = params.clientId;
 		if (params.expertId) ongoingCallUpdate.expertId = params.expertId;
 		if (params.isVideoCall) ongoingCallUpdate.isVideoCall = params.isVideoCall;
@@ -1122,27 +1145,42 @@ export const generateTimeSlots = (): string[] => {
 	return reorderedSlots;
 };
 
-
-export const getTimeSlots = (timeSlots: any[], duration: number) => {
+export const getTimeSlots = (
+	timeSlots: any[],
+	duration: number,
+	selectedDay: string,
+	dayDate: string
+) => {
 	const slots: string[] = [];
 	const now = new Date();
+	const currentDay = format(now, "EEEE");
+	const selectedDate = new Date(dayDate);
 
 	timeSlots.forEach(({ startTime, endTime }: any) => {
-	
 		let start = parse(startTime, "hh:mm a", new Date());
 		const end = parse(endTime, "hh:mm a", new Date());
 
 		while (isBefore(start, end) || isEqual(start, end)) {
-		
-			if (isBefore(now, start) || isEqual(now, start)) {
+			if (isSameDay(selectedDate, now) && selectedDay === currentDay) {
+				if (isBefore(now, start) || isEqual(now, start)) {
+					slots.push(format(start, "hh:mm a"));
+				}
+			} else {
 				slots.push(format(start, "hh:mm a"));
 			}
 			start = addMinutes(start, duration);
 		}
 	});
 
+	slots.sort(
+		(a, b) =>
+			parse(a, "hh:mm a", new Date()).getTime() -
+			parse(b, "hh:mm a", new Date()).getTime()
+	);
+
 	return slots;
 };
+
 // Function to format date and time
 export function formatDisplay(
 	selectedDay: string,
@@ -1182,9 +1220,9 @@ export function formatDisplay(
 
 	// Return values as separate fields
 	return {
-		day: formattedDate, 
-		timeRange: formattedTimeRange, 
-		timezone: formattedTimezone, 
+		day: formattedDate,
+		timeRange: formattedTimeRange,
+		timezone: formattedTimezone,
 	};
 }
 
@@ -1194,7 +1232,7 @@ export const getCountdownTime = (startTime: string | Date): string => {
 	const diff = targetTime.getTime() - now.getTime();
 
 	if (diff <= 0) {
-		return "00:00:00"; 
+		return "00:00:00";
 	}
 
 	const hours = Math.floor(diff / (1000 * 60 * 60));
