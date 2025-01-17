@@ -29,7 +29,7 @@ const AddBankAccountModal = ({ isOpen, onClose, errors, setPaymentMethod, bankDe
                         <input
                             type="text"
                             id="accountNumber"
-                            placeholder="Enter account number"
+                            placeholder="Enter UPI ID"
                             value={bankDetails.upiId}
                             onChange={(e) =>
                                 setBankDetails({

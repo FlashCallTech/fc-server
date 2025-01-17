@@ -1,7 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import {
 	Popover,
@@ -29,28 +27,19 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { UpdateCreatorParams, UpdateUserParams } from "@/types";
-import React, { useEffect, useRef, useState } from "react";
-import {
-	UpdateProfileFormSchema,
-	UpdateProfileFormSchemaClient,
-} from "@/lib/validator";
+import React from "react";
 import { Textarea } from "../ui/textarea";
-import { useToast } from "../ui/use-toast";
 import FileUploader from "../uploaders/FileUploader";
-import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
-import { usePathname } from "next/navigation";
 import axios from "axios";
 import {
 	backendBaseUrl,
 	cn,
 	debounce,
 	getProfileImagePlaceholder,
-	placeholderImages,
 } from "@/lib/utils";
 import * as Sentry from "@sentry/nextjs";
 import Image from "next/image";
-import GetRandomImage from "@/utils/GetRandomImage";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import ContentLoading from "../shared/ContentLoading";
 import { format } from "date-fns";
@@ -62,7 +51,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../ui/select";
-import { isEqual } from "lodash";
 
 export type EditProfileProps = {
 	isOpen: boolean,
