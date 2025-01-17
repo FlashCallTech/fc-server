@@ -141,10 +141,11 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 	const { formState } = form;
 	const { isValid } = formState;
 
+	const { toast } = useToast();
+
 	const [hasChanges, setHasChanges] = useState(false);
 	const initialValues = useRef(form.getValues());
 
-	const { toast } = useToast();
 	const hasChangesRef = useRef(false);
 
 	useEffect(() => {
@@ -157,7 +158,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 			}
 		});
 		return () => subscription.unsubscribe();
-	}, [form, isValid]);
+	}, [form]);
 
 	const validateSlot = (
 		dayIndex: number,
@@ -186,15 +187,12 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		setErrors((prevErrors) => {
 			const updatedErrors = { ...prevErrors };
 
-			// Remove old errors for this slot
 			delete updatedErrors[`day_${dayIndex}_slot_${slotIndex}_startTime`];
 			delete updatedErrors[`day_${dayIndex}_slot_${slotIndex}_endTime`];
 
-			// Add new errors for this slot
 			return { ...updatedErrors, ...slotErrors };
 		});
 
-		// Return true if no errors, false otherwise
 		return Object.keys(slotErrors).length === 0;
 	};
 
@@ -301,7 +299,8 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 				description: "Your availability has been saved successfully!",
 				toastStatus: "positive",
 			});
-			initialValues.current = form.getValues();
+			// initialValues.current = form.getValues();
+			hasChangesRef.current = false;
 			setHasChanges(false);
 		} catch (error) {
 			toast({

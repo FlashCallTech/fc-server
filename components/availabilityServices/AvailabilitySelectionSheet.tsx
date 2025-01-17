@@ -87,7 +87,7 @@ const AvailabilitySelectionSheet = ({
 	useEffect(() => {
 		if (availableDates.length > 0) {
 			const firstAvailableDay = availableDates[0];
-			setSelectedDay(firstAvailableDay.toISOString().split("T")[0]);
+			setSelectedDay(firstAvailableDay.toLocaleDateString("en-CA"));
 		}
 	}, [availableDates]);
 
@@ -103,7 +103,7 @@ const AvailabilitySelectionSheet = ({
 	useEffect(() => {
 		const fetchBookedSlots = async () => {
 			if (!selectedDay) return;
-
+			const selectedDate = new Date(selectedDay);
 			try {
 				setIsFetchingSlots(true);
 
@@ -257,7 +257,8 @@ const AvailabilitySelectionSheet = ({
 					className="flex gap-2 overflow-x-auto no-scrollbar"
 				>
 					{availableDates.map((date, index) => {
-						const isoDate = date.toISOString().split("T")[0];
+						const isoDate = date.toLocaleDateString("en-CA");
+						console.log(isoDate);
 						const dayNameShort = date.toLocaleDateString("en-US", {
 							weekday: "short",
 						});
@@ -272,7 +273,7 @@ const AvailabilitySelectionSheet = ({
 								ref={(el) => {
 									dayRefs.current[isoDate] = el;
 								}}
-								onClick={() => setSelectedDay(isoDate)} // Set selectedDay as ISO date
+								onClick={() => setSelectedDay(isoDate)}
 								className={`w-full min-w-[7rem] whitespace-nowrap flex flex-col items-center px-4 py-2 hover:bg-blue-500 hover:text-white ${
 									selectedDay === isoDate
 										? "bg-blue-500 text-white"
