@@ -105,7 +105,7 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 		fetchAnalyticsInfo();
 	}, [creatorId, form, toast]);
 
-	 async function onSubmit(values: z.infer<typeof formSchema>) {
+	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
 			setUpdatingData(true);
 			await axios.post(`${backendBaseUrl}/creator/analytics/update`, {
@@ -295,7 +295,7 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 									<button
 										className="text-base px-4 py-2 rounded-lg bg-[#16BC88] hoverScaleDownEffect text-white"
 										type="submit"
-										disabled={loadingData || updatingData || isValid}
+										disabled={loadingData || updatingData || !isValid}
 									>
 										{updatingData ? (
 											<Image
@@ -339,8 +339,6 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 				methods={methods}
 				initialState={initialState}
 				setUpdatingData={setUpdatingData}
-				formState={formState}
-				control={control}
 			/>
 			<ConfirmationAlert
 				show={showModal}

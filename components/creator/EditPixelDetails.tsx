@@ -39,8 +39,6 @@ const EditPixelDetails = ({
     setUpdatingData,
     methods,
     initialState,
-    formState, 
-    control,
 }: {
     isOpen: boolean;
     onClose: () => void;
@@ -54,15 +52,15 @@ const EditPixelDetails = ({
     setUpdatingData: any;
     methods: any;
     initialState: any;
-    formState: any;
-    control: any;
 }) => {
     if (!isOpen) return null;
 
-    const { isValid } = formState;
+    const { formState } = methods;
+	const { isValid } = formState;
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
+            console.log(values)
             setUpdatingData(true);
             await axios.post(`${backendBaseUrl}/creator/analytics/update`, {
                 userId: creatorId,
@@ -119,7 +117,7 @@ const EditPixelDetails = ({
                         className="grid grid-cols-1 gap-5 items-center"
                     >
                         <FormField
-                            control={control}
+                            control={methods.control}
                             name="pixelId"
                             render={({ field }) => (
                                 <FormItem>
@@ -136,7 +134,7 @@ const EditPixelDetails = ({
                         />
 
                         <FormField
-                            control={control}
+                            control={methods.control}
                             name="accessToken"
                             render={({ field }) => (
                                 <FormItem>
