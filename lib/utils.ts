@@ -1155,7 +1155,6 @@ export const getTimeSlots = (
 	const now = new Date();
 	const currentDay = format(now, "EEEE");
 	const selectedDate = new Date(dayDate);
-	console.log(dayDate);
 
 	timeSlots.forEach(({ startTime, endTime }: any) => {
 		let start = parse(startTime, "hh:mm a", new Date());
@@ -1172,6 +1171,12 @@ export const getTimeSlots = (
 			start = addMinutes(start, duration);
 		}
 	});
+
+	slots.sort(
+		(a, b) =>
+			parse(a, "hh:mm a", new Date()).getTime() -
+			parse(b, "hh:mm a", new Date()).getTime()
+	);
 
 	return slots;
 };
