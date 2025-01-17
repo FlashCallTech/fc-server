@@ -105,7 +105,7 @@ const PixelIntegration = ({ creatorId }: { creatorId: string }) => {
 		fetchAnalyticsInfo();
 	}, [creatorId, form, toast]);
 
-	async function onSubmit(values: z.infer<typeof formSchema>) {
+	 async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
 			setUpdatingData(true);
 			await axios.post(`${backendBaseUrl}/creator/analytics/update`, {

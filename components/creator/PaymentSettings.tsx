@@ -28,28 +28,11 @@ interface PaymentDetails {
 }
 
 const PaymentSettings = () => {
-	const { toast } = useToast();
 	const [isAddBankModalOpen, setIsAddBankModalOpen] = useState(false);
 	const [isUPIModalOpen, setIsUPIModalOpen] = useState(false);
 	const [showModal, setShowModal] = useState<boolean>(false);
 	const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
 	const [saved, setSaved] = useState<boolean>();
-	const [paymentMethod, setPaymentMethod] = useState<
-		"UPI" | "bankTransfer" | ""
-	>("");
-	const [bankDetails, setBankDetails] = useState({
-		upiId: "",
-		ifscCode: "",
-		accountNumber: "",
-	});
-	const [initialPaymentMethod, setInitialPaymentMethod] = useState<
-		"UPI" | "bankTransfer" | ""
-	>("");
-	const [initialBankDetails, setInitialBankDetails] = useState({
-		upiId: "",
-		ifscCode: "",
-		accountNumber: "",
-	});
 	const [isLoading, setIsLoading] = useState(false);
 	const [isPageLoading, setIsPageLoading] = useState(true);
 	const [details, setDetails] = useState<PaymentDetails>();
@@ -57,13 +40,27 @@ const PaymentSettings = () => {
 	const [showOtp, setShowOtp] = useState<boolean>(false);
 	const [otpGenerated, setOtpGenerated] = useState<boolean>(false);
 	const [otpSubmitted, setOtpSubmitted] = useState<boolean>(false);
+	const [paymentMethod, setPaymentMethod] = useState<"UPI" | "bankTransfer" | "">("");
+	const [initialPaymentMethod, setInitialPaymentMethod] = useState<"UPI" | "bankTransfer" | "">("");
+	const [bankDetails, setBankDetails] = useState({
+		upiId: "",
+		ifscCode: "",
+		accountNumber: "",
+	});
+	const [initialBankDetails, setInitialBankDetails] = useState({
+		upiId: "",
+		ifscCode: "",
+		accountNumber: "",
+	});
 	const [errors, setErrors] = useState({
 		upiId: "",
 		ifscCode: "",
 		accountNumber: "",
 	});
-
+	
+	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
+
 	const router = useRouter();
 
 	useEffect(() => {
@@ -113,7 +110,7 @@ const PaymentSettings = () => {
 		if (currentUser?._id) {
 			fetchPaymentDetails();
 		}
-	}, []);
+	}, [currentUser]);
 
 	const handleResize = () => {
 		if (window.innerWidth < 1024) {
@@ -216,7 +213,6 @@ const PaymentSettings = () => {
 		if (response.status === 200) {
 			handleOpenModal();
 		}
-
 	};
 
 	const handleSave = async () => {
@@ -314,6 +310,7 @@ const PaymentSettings = () => {
 							return;
 						}
 					} else {
+						setOtpSubmitted(false);
 						const response = await fetch(
 							`${backendBaseUrl}/paymentSetting/verifyVpaOtp`,
 							{
@@ -337,8 +334,10 @@ const PaymentSettings = () => {
 								description: result,
 								toastStatus: "negative",
 							});
+							setShowOtp(false);
 							setIsLoading(false);
 							setIsAddBankModalOpen(false);
+							setOtpGenerated(false)
 							return;
 						} else {
 							setInitialPaymentMethod("UPI");
@@ -432,6 +431,9 @@ const PaymentSettings = () => {
 			}
 		}
 	};
+
+
+	console.log(otpGenerated, otpSubmitted);
 
 	const hasChanges = () => {
 		return JSON.stringify(bankDetails) !== JSON.stringify(initialBankDetails);
@@ -714,7 +716,7 @@ const PaymentSettings = () => {
 											type="radio"
 											name="accountType"
 											checked={paymentMethod === "UPI"}
-											className={`${details?.upiId ? "" : "hidden"}`}
+											className={`${initialBankDetails?.upiId ? "" : "hidden"}`}
 											onChange={() => {
 												handleChange("UPI"), setPaymentMethod("UPI");
 											}}
@@ -808,21 +810,6 @@ const PaymentSettings = () => {
 				) : (
 					<div className="flex size-full justify-start text-base bg-[#F9FAFB] p-8">
 						<div className="flex flex-col h-fit gap-6 bg-white p-6 w-[60%] rounded-lg">
-							{/* <section className="flex justify-between">
-								<span className="font-semibold">
-									Payment Method
-								</span>
-								<button
-									onClick={() => {
-										resetStates()
-										setShowPaymentMethodModal(true)
-									}}
-									className="flex gap-2 text-sm items-center rounded-lg border-[1px] border-[#16BC88] px-3 py-[6px] text-[#16BC88] hoverScaleDownEffect"
-								>
-									<svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="14" height="16" viewBox="0 0 14 16"><defs><pattern x="0" y="0" width="14" height="16" patternUnits="userSpaceOnUse" id="master_svg0_3_00967"><image x="0" y="0" width="14" height="16" xlinkHref="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFQAAABgCAYAAACDgFV6AAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAJWSURBVHic7doxbxJxGMfx51EEooN0cetkV30HDiY6dWnfCd3qK2g3eCft4qRJB9+BrjqxubQONoCYx4E04Y4jd4c/jj/k+9lKb/jzDYG75GcGAAAAYOf5tg+wSu9m0GvPxn1zO7WwIzMP8/hhYVfTVnd49/bsbttnLJJk0INPl69aFh/d/bDo/xExmpkf374//9b02cokF7R3M+g9mY2/ror5ICJGf1rd16l9Uh9t+wB57b+Ts7KYZmbuftiejftNnKmO5IKaxUnlS91ON3iQtaQXNOyo+rX+coMnWUt6Qd2fVr/Wnm3wJGtJL+iOI6gYQcUIKkZQMYKKEVSMoGIEFSOoGEHFCCpGUDGCihFUjKBiBBUjqBhBxQgqRlAxgooRVIygYgQVI6hY4ZxxaexaZx6zz8J+l41+l4KWjV0xt2r0mwladeyKuaLRb+Y7tOrYFXNFo9/cj1KNsSvmcqPfbNA6Y1fM5Ua/3Db9t8j8DmWDun1v9Cz7INcs9wn16ybPshfCrhb/zASddGIYEaNmT7S7ImI0bXWHi69lgv568+F2Zn5M1HIPN/b5p6XCR8/nXy4OOhPvm8UJj54LIu7n35l+PX3cGVR69Ny2F58vo871P9+dJ/UeuG0SI6gYQcUIKkZQMYKKEVSMoGIEFSOoGEHFCCpGUDGCihFUjKBiBBUjqBhBxQgqRlAxgooRVIygYgQVI6hYekEj7jdybUPSC1pn9JvgQDi9oHVGv7mxawqSC1p19Fs0dk1BckGrjH5XjV1TkNS2ctHS6NfMysauAAAAACDxD1+LwHx1DJ/TAAAAAElFTkSuQmCC" /></pattern></defs><g><rect x="0" y="0" width="14" height="16" rx="0" fill="currentColor" fillOpacity="0" /><rect x="0" y="0" width="14" height="16" rx="0" fill="url(#master_svg0_3_00967)" fillOpacity="1" /></g></svg>
-									<span>Add New Payment Method</span>
-								</button>
-							</section> */}
 							<section className="p-8 border-2 border-spacing-4 border-dotted border-gray-300 justify-center rounded-lg bg-[#F9FAFB] flex flex-col gap-6">
 								<div className="flex justify-center">
 									<div className="flex justify-center items-center p-[21.5px] bg-[#F3F4F6] rounded-full">
@@ -871,7 +858,11 @@ const PaymentSettings = () => {
 			/>
 			<AddUPIModal
 				isOpen={isUPIModalOpen}
-				onClose={() => setIsUPIModalOpen(false)}
+				onClose={() => {
+					setOtpGenerated(false)
+					setIsUPIModalOpen(false)
+				}
+				}
 				errors={errors}
 				setPaymentMethod={setPaymentMethod}
 				bankDetails={bankDetails}
