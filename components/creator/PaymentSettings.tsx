@@ -32,12 +32,11 @@ const PaymentSettings = () => {
 	const [isUPIModalOpen, setIsUPIModalOpen] = useState(false);
 	const [showModal, setShowModal] = useState<boolean>(false);
 	const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
-	const [saved, setSaved] = useState<boolean>();
+	const [saved, setSaved] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isPageLoading, setIsPageLoading] = useState(true);
 	const [details, setDetails] = useState<PaymentDetails>();
 	const [otp, setOtp] = useState<string>("");
-	const [showOtp, setShowOtp] = useState<boolean>(false);
 	const [otpGenerated, setOtpGenerated] = useState<boolean>(false);
 	const [otpSubmitted, setOtpSubmitted] = useState<boolean>(false);
 	const [paymentMethod, setPaymentMethod] = useState<"UPI" | "bankTransfer" | "">("");
@@ -57,7 +56,7 @@ const PaymentSettings = () => {
 		ifscCode: "",
 		accountNumber: "",
 	});
-	
+
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
 
@@ -87,11 +86,9 @@ const PaymentSettings = () => {
 						accountNumber: result.data.bankDetails?.accountNumber || "",
 					};
 					setPaymentMethod(method);
-					setBankDetails(details);
 					setInitialPaymentMethod(method);
+					setBankDetails(details);
 					setInitialBankDetails(details);
-				} else {
-					console.error(result.message);
 				}
 			} catch (error: unknown) {
 				if (error instanceof Error) {
@@ -215,7 +212,7 @@ const PaymentSettings = () => {
 		}
 	};
 
-	const handleSave = async () => {
+	const handleSaveUPI = async () => {
 		let hasError = false;
 		const newErrors = {
 			upiId: "",
@@ -232,6 +229,123 @@ const PaymentSettings = () => {
 				hasError = true;
 			}
 		}
+
+		setErrors(newErrors);
+
+		if (!hasError) {
+			const paymentData = {
+				userId: currentUser?._id,
+				paymentMode: "UPI",
+				upiId: bankDetails.upiId,
+				bankDetails: {
+					ifsc: bankDetails.ifscCode,
+					accountNumber: bankDetails.accountNumber,
+				},
+			};
+
+			try {
+				setIsLoading(true);
+				if (!otpGenerated) {
+					const response = await fetch(
+						`${backendBaseUrl}/paymentSetting/generateVpaOtp`,
+						{
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								userId: currentUser?._id,
+								vpa: paymentData.upiId,
+							}),
+						}
+					);
+
+					const result = await response.json();
+					console.log(result);
+
+					if (!response.ok) {
+						toast({
+							variant: "destructive",
+							title: "Failed",
+							description: result.message + (result?.retryAfter ? " " + formatToHumanReadable(result.retryAfter) : ""),
+							toastStatus: "negative",
+						});
+						setIsUPIModalOpen(false);
+						return;
+					} else {
+						toast({
+							variant: "destructive",
+							title: "OTP Generated",
+							toastStatus: "positive",
+						});
+						setOtpGenerated(true);
+						return;
+					}
+				} else {
+					const response = await fetch(
+						`${backendBaseUrl}/paymentSetting/verifyVpaOtp`,
+						{
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								userId: currentUser?._id,
+								otp,
+							}),
+						}
+					);
+
+					const result = await response.json();
+
+					if (!response.ok) {
+						toast({
+							variant: "destructive",
+							title: "Failed",
+							description: result,
+							toastStatus: "negative",
+						});
+						setIsAddBankModalOpen(false);
+						setOtpGenerated(false)
+						return;
+					} else {
+						setInitialPaymentMethod("UPI");
+						setOtpSubmitted(true);
+						setSaved(true);
+						setOtpGenerated(false);
+						const currentDetails = {
+							upiId: bankDetails.upiId,
+							ifscCode: initialBankDetails.ifscCode,
+							accountNumber: initialBankDetails.accountNumber,
+						};
+						setInitialBankDetails(currentDetails);
+						// setInitialBankDetails()
+						toast({
+							variant: "destructive",
+							title: "Success",
+							description: "Payment Details Saved",
+							toastStatus: "positive",
+						});
+						setIsUPIModalOpen(false);
+					}
+				}
+			} catch (error) {
+				console.log(error)
+			} finally {
+				setIsLoading(false);
+				setOtpSubmitted(false);
+			}
+		};
+	}
+
+
+	const handleSaveBank = async () => {
+		let hasError = false;
+		const newErrors = {
+			upiId: "",
+			ifscCode: "",
+			accountNumber: "",
+		};
 
 		if (paymentMethod === "bankTransfer") {
 			if (!bankDetails.ifscCode) {
@@ -255,7 +369,7 @@ const PaymentSettings = () => {
 		if (!hasError) {
 			const paymentData = {
 				userId: currentUser?._id,
-				paymentMode: paymentMethod === "bankTransfer" ? "BANK_TRANSFER" : "UPI",
+				paymentMode: "BANK_TRANSFER",
 				upiId: bankDetails.upiId,
 				bankDetails: {
 					ifsc: bankDetails.ifscCode,
@@ -265,161 +379,64 @@ const PaymentSettings = () => {
 
 			try {
 				setIsLoading(true);
-				if (paymentData.paymentMode === "UPI") {
-					if (!otpGenerated) {
-						const response = await fetch(
-							`${backendBaseUrl}/paymentSetting/generateVpaOtp`,
-							{
-								method: "POST",
-								headers: {
-									"Content-Type": "application/json",
-								},
-								body: JSON.stringify({
-									userId: currentUser?._id,
-									vpa: paymentData.upiId,
-								}),
-							}
-						);
 
-						const result = await response.json();
-
-						if (!response.ok) {
-							toast({
-								variant: "destructive",
-								title: "Failed",
-								description:
-									result.message +
-									" " +
-									formatToHumanReadable(result.retryAfter),
-								toastStatus: "negative",
-							});
-							setIsLoading(false);
-							setIsAddBankModalOpen(false);
-							setIsUPIModalOpen(false);
-							return;
-						} else {
-							toast({
-								variant: "destructive",
-								title: "OTP Generated",
-								toastStatus: "positive",
-							});
-							setShowOtp(true);
-							setOtpGenerated(true);
-							setIsLoading(false);
-							setIsAddBankModalOpen(false);
-							return;
-						}
-					} else {
-						setOtpSubmitted(false);
-						const response = await fetch(
-							`${backendBaseUrl}/paymentSetting/verifyVpaOtp`,
-							{
-								method: "POST",
-								headers: {
-									"Content-Type": "application/json",
-								},
-								body: JSON.stringify({
-									userId: currentUser?._id,
-									otp,
-								}),
-							}
-						);
-
-						const result = await response.json();
-
-						if (!response.ok) {
-							toast({
-								variant: "destructive",
-								title: "Failed",
-								description: result,
-								toastStatus: "negative",
-							});
-							setShowOtp(false);
-							setIsLoading(false);
-							setIsAddBankModalOpen(false);
-							setOtpGenerated(false)
-							return;
-						} else {
-							setInitialPaymentMethod("UPI");
-							setOtpSubmitted(true);
-							setSaved(true);
-							setOtpGenerated(false);
-							const currentDetails = {
-								upiId: bankDetails.upiId,
-								ifscCode: initialBankDetails.ifscCode,
-								accountNumber: initialBankDetails.accountNumber,
-							};
-							setInitialBankDetails(currentDetails);
-							// setInitialBankDetails()
-							toast({
-								variant: "destructive",
-								title: "Success",
-								description: "Payment Details Saved",
-								toastStatus: "positive",
-							});
-							setIsLoading(false);
-							setIsAddBankModalOpen(false);
-							setIsUPIModalOpen(false);
-						}
+				const response = await fetch(
+					`${backendBaseUrl}/paymentSetting/verifyBank`,
+					{
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							userId: currentUser?._id,
+							bank_account: paymentData.bankDetails.accountNumber,
+							ifsc: paymentData.bankDetails.ifsc,
+						}),
 					}
-				} else if (paymentData.paymentMode === "BANK_TRANSFER") {
-					const response = await fetch(
-						`${backendBaseUrl}/paymentSetting/verifyBank`,
-						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json",
-							},
-							body: JSON.stringify({
-								userId: currentUser?._id,
-								bank_account: paymentData.bankDetails.accountNumber,
-								ifsc: paymentData.bankDetails.ifsc,
-							}),
-						}
-					);
+				);
 
-					const result = await response.json();
-					if (result.data.account_status !== "VALID") {
-						console.error("Something wrong with Bank Details");
-						alert("Failed to save payment details.");
-						setIsLoading(false);
-						setIsAddBankModalOpen(false);
-						setIsUPIModalOpen(false);
-						return;
-					} else {
-						setInitialPaymentMethod("bankTransfer");
-						handleOpenModal();
-						const currentDetails = {
-							upiId: initialBankDetails.upiId,
-							ifscCode: result.details.ifsc,
-							accountNumber: result.details.bank_account,
-						};
-						setInitialBankDetails(currentDetails);
-						toast({
-							variant: "destructive",
-							title: "Success",
-							description: "Payment Details Saved",
-							toastStatus: "positive",
-						});
-						console.log(result);
-						const newBankDetails = {
-							ifsc: result.details.ifsc,
-							accountNumber: result.details.bank_account,
-							name: result.data.name_at_bank,
-							bankName: result.data.bank_name,
-						};
-						setDetails((prevDetails) => ({
-							...prevDetails,
-							bankDetails: newBankDetails,
-							userId: prevDetails?.userId ?? "",
-							paymentMode: prevDetails?.paymentMode ?? "BANK_TRANSFER",
-							upiId: prevDetails?.upiId ?? null,
-						}));
-						setSaved(true);
-						setIsLoading(false);
-						setIsAddBankModalOpen(false);
-						setIsUPIModalOpen(false);
-					}
+				const result = await response.json();
+				if (result.data.account_status !== "VALID") {
+					console.error("Something wrong with Bank Details");
+					alert("Failed to save payment details.");
+					setIsLoading(false);
+					setIsAddBankModalOpen(false);
+					setIsUPIModalOpen(false);
+					return;
+				} else {
+					setInitialPaymentMethod("bankTransfer");
+					handleOpenModal();
+					const currentDetails = {
+						upiId: initialBankDetails.upiId,
+						ifscCode: result.details.ifsc,
+						accountNumber: result.details.bank_account,
+					};
+					setInitialBankDetails(currentDetails);
+					toast({
+						variant: "destructive",
+						title: "Success",
+						description: "Payment Details Saved",
+						toastStatus: "positive",
+					});
+					console.log(result);
+					const newBankDetails = {
+						ifsc: result.details.ifsc,
+						accountNumber: result.details.bank_account,
+						name: result.data.name_at_bank,
+						bankName: result.data.bank_name,
+					};
+					setDetails((prevDetails) => ({
+						...prevDetails,
+						bankDetails: newBankDetails,
+						userId: prevDetails?.userId ?? "",
+						paymentMode: prevDetails?.paymentMode ?? "BANK_TRANSFER",
+						upiId: prevDetails?.upiId ?? null,
+					}));
+					setSaved(true);
+					setIsLoading(false);
+					setIsAddBankModalOpen(false);
+					setIsUPIModalOpen(false);
+
 				}
 			} catch (error) {
 				Sentry.captureException(error);
@@ -431,9 +448,6 @@ const PaymentSettings = () => {
 			}
 		}
 	};
-
-
-	console.log(otpGenerated, otpSubmitted);
 
 	const hasChanges = () => {
 		return JSON.stringify(bankDetails) !== JSON.stringify(initialBankDetails);
@@ -582,7 +596,7 @@ const PaymentSettings = () => {
 					</div>
 					{hasChanges() && (
 						<button
-							onClick={handleSave}
+							onClick={paymentMethod === "UPI" ? handleSaveUPI : handleSaveBank}
 							className={`w-full py-2 px-4 rounded-lg text-white ${hasChanges()
 								? "bg-black hover:bg-gray-900"
 								: "bg-gray-400 cursor-not-allowed"
@@ -611,9 +625,16 @@ const PaymentSettings = () => {
 												handleChange("bankTransfer"), setPaymentMethod("bankTransfer");
 											}}
 										/>
-										<span className="font-semibold text-black">
-											Bank Account Details
-										</span>
+										<div className="flex gap-2">
+											<span className="font-semibold text-black">
+												Bank Account Details
+											</span>
+											{paymentMethod === "bankTransfer" &&
+												<span className="text-black">
+													{`(Default)`}
+												</span>
+											}
+										</div>
 									</div>
 									{details?.bankDetails && (
 										<button onClick={() => {
@@ -721,9 +742,16 @@ const PaymentSettings = () => {
 												handleChange("UPI"), setPaymentMethod("UPI");
 											}}
 										/>
-										<span className="font-semibold text-black">
-											UPI Details
-										</span>
+										<div>
+											<span className="font-semibold text-black">
+												UPI Details
+											</span>
+											{paymentMethod === "UPI" &&
+												<span className="text-black">
+													{`(Default)`}
+												</span>
+											}
+										</div>
 									</div>
 									{initialBankDetails?.upiId && (
 										<button onClick={() => {
@@ -853,7 +881,7 @@ const PaymentSettings = () => {
 				setPaymentMethod={setPaymentMethod}
 				bankDetails={bankDetails}
 				setBankDetails={setBankDetails}
-				save={handleSave}
+				save={handleSaveBank}
 				saving={isLoading}
 			/>
 			<AddUPIModal
@@ -867,7 +895,7 @@ const PaymentSettings = () => {
 				setPaymentMethod={setPaymentMethod}
 				bankDetails={bankDetails}
 				setBankDetails={setBankDetails}
-				save={handleSave}
+				save={handleSaveUPI}
 				otpSubmitted={otpSubmitted}
 				otpGenerated={otpGenerated}
 				setOtp={setOtp}
