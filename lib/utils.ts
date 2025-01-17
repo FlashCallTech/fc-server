@@ -449,6 +449,7 @@ export const formatDateTime = (dateString: Date) => {
 		dateTime: format(date, "EEE, MMM d, h:mm a"),
 		dateOnly: format(date, "EEE, MMM d, yyyy"),
 		timeOnly: format(date, "h:mm a"),
+		custom: format(date, "MMM d, h:mm a"),
 	};
 };
 
@@ -1152,6 +1153,7 @@ export const getTimeSlots = (
 	dayDate: string
 ) => {
 	const slots: string[] = [];
+
 	const now = new Date();
 	const currentDay = format(now, "EEEE");
 	const selectedDate = new Date(dayDate);
