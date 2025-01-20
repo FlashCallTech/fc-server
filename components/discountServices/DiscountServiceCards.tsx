@@ -10,6 +10,7 @@ import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 import DeleteCreatorServiceAlert from "../alerts/DeleteCreatorServiceAlert";
 import { useToast } from "../ui/use-toast";
+import { Switch } from "@/components/ui/switch";
 
 const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 	const {
@@ -86,6 +87,21 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 		);
 	}
 
+	const handleToggleActiveState = async (
+		serviceId: string,
+		isActive: boolean
+	) => {
+		try {
+			await axios.put(`${backendBaseUrl}/services/${serviceId}`, {
+				isActive: !isActive,
+			});
+
+			refetch();
+		} catch (error) {
+			console.warn(error);
+		}
+	};
+
 	return (
 		<>
 			<DeleteCreatorServiceAlert
@@ -96,7 +112,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 				serviceId={selectedService?._id}
 			/>
 
-			<div className="grid grid-cols-1 size-full overflow-y-auto no-scrollbar max-h-[35rem] gap-5 pb-4">
+			<div className="grid grid-cols-1 size-full gap-5 pb-4">
 				<section
 					className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer hover:bg-gray-100"
 					onClick={toggleDiscountServiceSheet}
@@ -121,6 +137,15 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 							key={service._id}
 							className="relative shadow-lg border rounded-lg p-4 hover:shadow-xl transition-shadow duration-200 ease-in-out"
 						>
+							<Switch
+								id={`serviceToggle-${service._id}`}
+								checked={!!service?.isActive}
+								onCheckedChange={() =>
+									handleToggleActiveState(service?._id, service?.isActive)
+								}
+								className="absolute top-4 right-4"
+							/>
+
 							<div className="flex items-start space-x-4">
 								{/* Left Section - Image */}
 								<Image

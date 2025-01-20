@@ -365,7 +365,7 @@ const AvailabilitySelectionSheet = ({
 			<DialogContent
 				onOpenAutoFocus={(e) => e.preventDefault()}
 				hideCloseButton={true}
-				className={`flex flex-col items-start justify-start border-none rounded-xl bg-white mx-auto w-full h-dvh sm:max-h-[444px] sm:max-w-[444px] p-0 overflow-scroll no-scrollbar`}
+				className={`flex flex-col items-start justify-start border-none rounded-xl bg-white mx-auto w-full h-dvh sm:max-h-[644px] sm:max-w-[444px] p-0 overflow-scroll no-scrollbar`}
 			>
 				<DialogHeader
 					className={`${
@@ -413,7 +413,7 @@ const AvailabilitySelectionSheet = ({
 						toggleSchedulingSheet={onOpenChange}
 					/>
 				) : (
-					<div className="px-4">
+					<div className="size-full px-4">
 						{renderContent()}
 						{selectedDay && selectedTimeSlot && (
 							<Button

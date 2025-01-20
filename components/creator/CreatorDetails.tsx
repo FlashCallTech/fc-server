@@ -20,6 +20,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import ClientSideUserAvailability from "../availabilityServices/ClientSideUserAvailability";
+import ClientSideDiscountSheet from "../discountServices/ClientSideDiscountSheet";
+import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
 
 const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 	const {
@@ -29,8 +31,12 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 		setCurrentTheme,
 		updateCreatorURL,
 	} = useCurrentUsersContext();
-
+	const { selectedServices } = useSelectedServiceContext();
 	const [status, setStatus] = useState<string>("Online");
+	const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
+	const [offerApplied, setOfferApplied] = useState(
+		selectedServices ? selectedServices.length > 0 : false
+	);
 	const pathname = usePathname();
 	const creatorURL = pathname || localStorage.getItem("creatorURL");
 
@@ -242,6 +248,43 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				) : (
 					<div className="pb-2" />
 				)}
+
+				{/* Discounts */}
+				<div className="w-full flex-col items-start justify-center gap-2.5 p-4 bg-[#DCFCE7] rounded-xl">
+					<div className="flex items-center gap-2.5 text-[#166534] text-sm">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+							className="size-4"
+						>
+							<path
+								fillRule="evenodd"
+								d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
+								clipRule="evenodd"
+							/>
+						</svg>
+
+						<span>You might be eligible for discount</span>
+					</div>
+
+					<button
+						className="font-semibold border-b border-[#166534] text-[#166534] text-sm leading-3"
+						onClick={() => setIsDiscountModalOpen(true)}
+					>
+						{offerApplied ? "Offers Applied" : "Claim Now"}
+					</button>
+
+					<ClientSideDiscountSheet
+						creatorId={creator._id || ""}
+						creatorName={getDisplayName(creator)}
+						theme={creator.themeSelected}
+						isDiscountModalOpen={isDiscountModalOpen}
+						setIsDiscountModalOpen={setIsDiscountModalOpen}
+						offerApplied={offerApplied}
+						setOfferApplied={setOfferApplied}
+					/>
+				</div>
 				{/* Call Buttons */}
 				<CallingOptions creator={creator} />
 

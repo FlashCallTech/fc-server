@@ -591,7 +591,9 @@ const AvailabilityFinalConsentForm = ({
 
 						{/* Order Summary Section */}
 						<div className="mt-4 w-full">
-							<h4 className="text-xl font-bold text-gray-800">Order Summary</h4>
+							<h4 className="text-xl font-bold text-gray-800 mb-2.5">
+								Order Summary
+							</h4>
 							<div className="border-2 border-[#E5E7EB] rounded-lg p-4 pt-5  w-full flex flex-col items-start justify-start gap-2.5">
 								<section className="w-full pb-2.5 flex justify-between text-sm text-gray-800">
 									<p>1 x {service.title}</p>
@@ -602,17 +604,31 @@ const AvailabilityFinalConsentForm = ({
 
 								{isDiscountUtilized && service.discountRules && (
 									<section className="w-full pb-2.5 flex items-center justify-between text-sm text-gray-800">
-										<p className="bg-green-100 text-green-800 px-2.5 py-1 rounded-full text-xs whitespace-nowrap">
-											Discount
-											<span className="text-sm ml-1">
-												{service.discountRules.discountType === "percentage"
-													? `${service.discountRules.discountAmount}%`
-													: `${service.currency === "INR" ? "₹" : "$"} ${
-															service.discountRules.discountAmount
-													  }`}{" "}
-												off
-											</span>
-										</p>
+										<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="currentColor"
+												className="size-4"
+											>
+												<path
+													fillRule="evenodd"
+													d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
+													clipRule="evenodd"
+												/>
+											</svg>
+
+											<p className="text-xs whitespace-nowrap">
+												<span className="text-sm ml-1">
+													{service.discountRules.discountType === "percentage"
+														? `${service.discountRules.discountAmount}%`
+														: `${service.currency === "INR" ? "₹" : "$"} ${
+																service.discountRules.discountAmount
+														  }`}{" "}
+													OFF Applied
+												</span>
+											</p>
+										</div>
 										<p className="text-green-1 font-bold">
 											- {service.currency === "INR" ? "₹" : "$"}{" "}
 											{service.discountRules.discountType === "percentage"
