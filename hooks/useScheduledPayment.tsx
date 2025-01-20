@@ -80,7 +80,7 @@ const useScheduledPayment = () => {
 				rechargeAmount,
 				currency,
 				name: "FlashCall.me",
-				description: "Wallet Recharge",
+				description: "Call Scheduling",
 				image: "https://backend.flashcall.me/icons/logo_icon.png",
 				order_id: order.id,
 				handler: async (response: PaymentResponse): Promise<void> => {

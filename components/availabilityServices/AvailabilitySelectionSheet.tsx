@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import { AvailabilityService, creatorUser } from "@/types";
+
 import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-} from "@/components/ui/sheet";
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { useGetUserAvailability } from "@/lib/react-query/queries";
 import ContentLoading from "../shared/ContentLoading";
 import { backendBaseUrl, getTimeSlots, isValidHexColor } from "@/lib/utils";
 import AvailabilityFinalConsentForm from "./AvailabilityFinalConsentForm";
 import { Button } from "../ui/button";
 import axios from "axios";
+import SinglePostLoader from "../shared/SinglePostLoader";
 
 const AvailabilitySelectionSheet = ({
 	isOpen,
@@ -103,7 +105,6 @@ const AvailabilitySelectionSheet = ({
 	useEffect(() => {
 		const fetchBookedSlots = async () => {
 			if (!selectedDay) return;
-			const selectedDate = new Date(selectedDay);
 			try {
 				setIsFetchingSlots(true);
 
@@ -135,8 +136,8 @@ const AvailabilitySelectionSheet = ({
 
 		if (isFetchingSlots) {
 			return (
-				<div className="w-full py-5 flex items-center justify-center">
-					<ContentLoading />
+				<div className="size-full py-5 flex items-center justify-center">
+					<SinglePostLoader />
 				</div>
 			);
 		}
@@ -152,9 +153,11 @@ const AvailabilitySelectionSheet = ({
 
 		if (!dayData || !dayData.isActive || dayData.timeSlots.length === 0) {
 			return (
-				<p className="text-center text-gray-500 my-4">
-					No time slots available for {dayName}.
-				</p>
+				<div className="size-full flex flex-col h-full">
+					<p className="flex-grow flex items-center justify-center text-center text-gray-500 my-4">
+						No available slots for {dayName}.
+					</p>
+				</div>
 			);
 		}
 
@@ -171,9 +174,11 @@ const AvailabilitySelectionSheet = ({
 
 		if (availableSlots.length === 0) {
 			return (
-				<p className="text-center text-gray-500 my-4">
-					No available slots for {dayName}.
-				</p>
+				<div className="size-full flex flex-col h-full">
+					<p className="flex-grow flex items-center justify-center text-center text-gray-500 my-4">
+						No available slots for {dayName}.
+					</p>
+				</div>
 			);
 		}
 
@@ -200,14 +205,14 @@ const AvailabilitySelectionSheet = ({
 						key={groupIndex}
 						className="w-full grid gap-2"
 						style={{
-							gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))",
+							gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
 						}}
 					>
 						{group.map((slot, index) => (
 							<button
 								key={index}
-								className={`px-4 py-2 border border-gray-300 rounded-lg hover:bg-blue-500 hover:text-white text-sm ${
-									slot === selectedTimeSlot && "bg-blue-500 text-white"
+								className={`px-4 py-3 border-2 border-[#E5E7EB] rounded-lg hover:bg-black hover:text-white text-sm ${
+									slot === selectedTimeSlot && "bg-black text-white"
 								}`}
 								onClick={() => setSelectedTimeSlot(slot)}
 							>
@@ -231,7 +236,7 @@ const AvailabilitySelectionSheet = ({
 		return (
 			<div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
 				<button
-					className="rounded-full p-2 border border-gray-300 hoverScaleDownEffect hover:bg-gray-100"
+					className="rounded-full p-2 text-gray-400 hoverScaleDownEffect hover:bg-gray-100"
 					onClick={() => {
 						const slider = document.getElementById("days-slider");
 						slider?.scrollBy({ left: -200, behavior: "smooth" });
@@ -241,7 +246,7 @@ const AvailabilitySelectionSheet = ({
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
 						viewBox="0 0 24 24"
-						strokeWidth={1.5}
+						strokeWidth={2}
 						stroke="currentColor"
 						className="size-5"
 					>
@@ -258,7 +263,6 @@ const AvailabilitySelectionSheet = ({
 				>
 					{availableDates.map((date, index) => {
 						const isoDate = date.toLocaleDateString("en-CA");
-						console.log(isoDate);
 						const dayNameShort = date.toLocaleDateString("en-US", {
 							weekday: "short",
 						});
@@ -274,14 +278,21 @@ const AvailabilitySelectionSheet = ({
 									dayRefs.current[isoDate] = el;
 								}}
 								onClick={() => setSelectedDay(isoDate)}
-								className={`w-full min-w-[7rem] whitespace-nowrap flex flex-col items-center px-4 py-2 hover:bg-blue-500 hover:text-white ${
+								className={`w-full min-w-[7rem] whitespace-nowrap flex flex-col items-center px-4 py-2 hover:bg-black hover:text-white group ${
 									selectedDay === isoDate
-										? "bg-blue-500 text-white"
-										: "border border-gray-300"
+										? "bg-black text-white"
+										: "border-2 border-[#E5E7EB]"
 								} rounded-lg`}
 							>
-								<span className="text-sm">{dayNameShort}</span>
-								<span className="text-sm">{dayDate}</span>
+								<span className="text-sm font-medium">{dayNameShort}</span>
+								<span
+									className={`${
+										selectedDay !== isoDate &&
+										"group-hover:text-white text-[#6B7280]"
+									} text-xs`}
+								>
+									{dayDate}
+								</span>
 							</button>
 						);
 					})}
@@ -291,13 +302,13 @@ const AvailabilitySelectionSheet = ({
 						const slider = document.getElementById("days-slider");
 						slider?.scrollBy({ left: 200, behavior: "smooth" });
 					}}
-					className="rounded-full p-2 border border-gray-300 hoverScaleDownEffect hover:bg-gray-100"
+					className="rounded-full p-2 text-gray-400 hoverScaleDownEffect hover:bg-gray-100"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
 						viewBox="0 0 24 24"
-						strokeWidth={1.5}
+						strokeWidth={2}
 						stroke="currentColor"
 						className="size-5"
 					>
@@ -316,7 +327,7 @@ const AvailabilitySelectionSheet = ({
 	const renderContent = () => {
 		if (isError) {
 			return (
-				<div className="w-full py-5 flex flex-col items-center justify-center text-center">
+				<div className="size-full py-5 flex flex-col items-center justify-center text-center">
 					<p className="text-xl font-semibold text-gray-400">
 						Unable to fetch availability.
 					</p>
@@ -336,30 +347,60 @@ const AvailabilitySelectionSheet = ({
 		}
 
 		return (
-			<div className="w-full grid grid-cols-1 space-y-2.5 gap-2.5 mt-2.5 overflow-y-scroll no-scrollbar scroll-smooth">
-				<h2 className="font-semibold text-base">When should we meet?</h2>
-				<div className="">{renderDaysSlider()}</div>
-				<h2 className="font-semibold text-base">Select time of day</h2>
-				{renderTimeSlots()}
+			<div className="size-full flex flex-col">
+				<div className="grid grid-cols-1 items-center space-y-2.5 gap-2.5 mt-2.5">
+					<h2 className="font-semibold text-base">When should we meet?</h2>
+					{renderDaysSlider()}
+					<h2 className="font-semibold text-base">Select time of day</h2>
+				</div>
+				<div className="flex-grow overflow-y-scroll no-scrollbar scroll-smooth pb-4">
+					{renderTimeSlots()}
+				</div>
 			</div>
 		);
 	};
 
 	return (
-		<Sheet open={isOpen} onOpenChange={onOpenChange}>
-			<SheetContent
+		<Dialog open={isOpen} onOpenChange={onOpenChange}>
+			<DialogContent
 				onOpenAutoFocus={(e) => e.preventDefault()}
-				side="bottom"
-				className={`flex flex-col items-start justify-center border-none rounded-t-xl bg-white mx-auto max-h-fit w-full h-dvh sm:max-w-[444px] ${
-					showConsentForm && "!pb-0"
-				} overflow-scroll no-scrollbar`}
+				hideCloseButton={true}
+				className={`flex flex-col items-start justify-start border-none rounded-xl bg-white mx-auto w-full h-dvh sm:max-h-[444px] sm:max-w-[444px] p-0 overflow-scroll no-scrollbar`}
 			>
-				<SheetHeader className={`${showConsentForm && "sr-only"} text-start`}>
-					<SheetTitle className="font-bold text-xl">Schedule a Call</SheetTitle>
-					<SheetDescription className="font-bold text-gray-400">
-						Choose a convenient time and date for your call.
-					</SheetDescription>
-				</SheetHeader>
+				<DialogHeader
+					className={`${
+						showConsentForm && "sr-only"
+					} text-start w-full pt-4 px-4`}
+				>
+					<DialogTitle className="flex flex-col w-full items-start justify-start gap-5">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							strokeWidth={2}
+							stroke="currentColor"
+							className="size-5 cursor-pointer hoverScaleDownEffect"
+							onClick={() => onOpenChange(false)}
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+							/>
+						</svg>
+						<div className="flex w-full items-center justify-between">
+							<span className="font-bold text-2xl capitalize">
+								{service.title}
+							</span>
+							<span className="bg-white flex items-center justify-center gap-2 border-2 border-[#E5E7EB] rounded-full min-w-[100px] text-center py-1 px-4 whitespace-nowrap cursor-pointer font-medium text-base">
+								{service.timeDuration} Min
+							</span>
+						</div>
+					</DialogTitle>
+					<DialogDescription className="font-bold text-gray-400 text-sm">
+						{service.description}
+					</DialogDescription>
+				</DialogHeader>
 
 				{selectedDay && selectedTimeSlot && showConsentForm ? (
 					<AvailabilityFinalConsentForm
@@ -372,21 +413,21 @@ const AvailabilitySelectionSheet = ({
 						toggleSchedulingSheet={onOpenChange}
 					/>
 				) : (
-					<>
+					<div className="px-4">
 						{renderContent()}
 						{selectedDay && selectedTimeSlot && (
 							<Button
-								className="text-base bg-blue-500 hoverScaleDownEffect w-full mx-auto text-white"
+								className="rounded-full bg-black hoverScaleDownEffect w-full mx-auto text-white sticky bottom-1 text-sm py-3"
 								type="submit"
 								onClick={() => setShowConsentForm(true)}
 							>
-								Continue
+								Confirm Booking
 							</Button>
 						)}
-					</>
+					</div>
 				)}
-			</SheetContent>
-		</Sheet>
+			</DialogContent>
+		</Dialog>
 	);
 };
 
