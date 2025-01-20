@@ -4,7 +4,12 @@ import { useCall } from "@stream-io/video-react-sdk";
 import { useState } from "react";
 import Image from "next/image";
 import EndCallDecision from "../calls/EndCallDecision";
-import { stopMediaStreams } from "@/lib/utils";
+import {
+	fetchFCMToken,
+	maskNumbers,
+	sendNotification,
+	stopMediaStreams,
+} from "@/lib/utils";
 
 const EndCallButton = () => {
 	const call = useCall();
@@ -16,6 +21,10 @@ const EndCallButton = () => {
 		);
 	}
 
+	const expert = call?.state.members?.find(
+		(member) => member.custom.type === "expert"
+	);
+
 	const endCall = async () => {
 		setShowDialog(true);
 	};
@@ -23,6 +32,24 @@ const EndCallButton = () => {
 	const handleDecisionDialog = async () => {
 		try {
 			stopMediaStreams();
+			const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
+			if (fcmToken) {
+				sendNotification(
+					fcmToken,
+					`Missed ${call.type} Call Request`,
+					`Call Request from ${maskNumbers(
+						call?.state?.createdBy?.name || "Official User"
+					)}`,
+					{
+						created_by_display_name: maskNumbers(
+							call?.state?.createdBy?.name || "Official User"
+						),
+						callType: call.type,
+						callId: call.id,
+						notificationType: "call.missed",
+					}
+				);
+			}
 			await call?.endCall();
 		} catch (error) {
 			console.error("Error ending call:", error);

@@ -8,8 +8,6 @@ export const useGetCallById = (id: string | string[]) => {
 
 	const client = useStreamVideoClient();
 
-	console.log("Stream Video Client:", client);
-
 	useEffect(() => {
 		if (!client) {
 			console.warn("Stream Video Client is not initialized.");

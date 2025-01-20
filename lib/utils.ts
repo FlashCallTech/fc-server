@@ -676,11 +676,11 @@ export const fetchFCMToken = async (phone: string, tokenType?: string) => {
 			return data.token || null;
 		} else {
 			console.warn(`No FCM token found for phone number: ${phone}`);
-			return null;
+			return "";
 		}
 	} catch (error) {
 		console.error("Error fetching FCM token:", error);
-		return null;
+		return "";
 	}
 };
 // Function to send notification

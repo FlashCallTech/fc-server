@@ -61,19 +61,13 @@ export const tokenProvider = async (
 
 		const token = streamClient.createToken(userId, expirationTime, issuedAt);
 
-		console.log("Token: ", token);
-
-		// Return the generated token
 		return token;
 	} catch (error) {
-		// Catching and logging specific errors
 		console.error("Error during token provider process:", error);
 
 		if (error instanceof Error) {
-			// Handling the specific error with detailed message
 			throw new Error(`Token provider failed: ${error.message}`);
 		} else {
-			// General error handling for unexpected issues
 			throw new Error("An unexpected error occurred during token generation");
 		}
 	}

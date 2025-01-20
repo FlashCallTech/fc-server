@@ -1,20 +1,13 @@
 "use client";
-import {
-	VideoPreview,
-	useCall,
-	useCallStateHooks,
-} from "@stream-io/video-react-sdk";
-import { ParticipantsPreview } from "./ParticipantsPreview";
+import { useCall, useCallStateHooks } from "@stream-io/video-react-sdk";
 import Image from "next/image";
-import { Cursor, Typewriter } from "react-simple-typewriter";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { fetchFCMToken, sendNotification } from "@/lib/utils";
-import { AudioToggleButton } from "../calls/AudioToggleButton";
-import { VideoToggleButton } from "../calls/VideoToggleButton";
-import EndCallButton from "../official/EndCallButton";
+
 import { useEffect, useRef, useState } from "react";
 import MeetingRoom from "../official/MeetingRoom";
 import { useToast } from "../ui/use-toast";
+import ContentLoading from "../shared/ContentLoading";
 
 const MeetingSetup = () => {
 	const [isJoining, setIsJoining] = useState(true);
@@ -27,43 +20,24 @@ const MeetingSetup = () => {
 	const { currentUser } = useCurrentUsersContext();
 	const eventListenersSet = useRef(false);
 	const { toast } = useToast();
-	if (!call) {
-		throw new Error(
-			"useStreamCall must be used within a StreamCall component."
-		);
-	}
+
+	const localSessionKey = `meeting_${call?.id}_${currentUser?._id}`;
 
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 	const expert = call?.state.members?.find(
 		(member) => member.custom.type === "expert"
 	);
-	const callType = call.type === "default" ? "video" : "audio";
-
-	const notifyInfluencer = async () => {
-		const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
-
-		if (fcmToken)
-			sendNotification(
-				fcmToken,
-				`Incoming ${callType} Call`,
-				`Call Request from ${currentUser?.username}`,
-				{
-					created_by_display_name: currentUser?.username || "Official User",
-					callType: call.type,
-					callId: call.id,
-					notificationType: "call.missed",
-				}
-			);
-	};
+	const callType = call?.type === "default" ? "video" : "audio";
 
 	useEffect(() => {
-		if (!call)
+		if (!call) {
 			<div className="bg-dark-1 text-white flex flex-col items-center justify-center h-screen text-center px-4 gap-1.5 capitalize">
 				<p className="text-3xl font-bold">Meeting Not Available</p>
 				<span className="text-xl">
 					The meeting you&apos;re looking for could not be found.
 				</span>
 			</div>;
+		}
 	}, [call]);
 
 	useEffect(() => {
@@ -84,32 +58,40 @@ const MeetingSetup = () => {
 
 		try {
 			setIsJoining(true);
+			const notificationSentKey = `meeting_${call.id}_notificationSent`;
 
 			// Send notification if FCM token exists and there is no other participant
 			if (isMeetingOwner && participants && !callHasEnded) {
 				const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
 
-				if (participants.length === 0 && fcmToken)
-					sendNotification(
-						fcmToken,
-						`Incoming ${callType} Call`,
-						`Call Request from ${currentUser?.username}`,
-						{
-							created_by_display_name: currentUser?.username || "Official User",
-							callType: call.type,
-							callId: call.id,
-							notificationType: "call.ring",
-						}
-					);
+				if (participants.length === 0 && fcmToken) {
+					if (!localStorage.getItem(notificationSentKey)) {
+						sendNotification(
+							fcmToken,
+							`Incoming ${callType} Call`,
+							`Call Request from ${currentUser?.username}`,
+							{
+								created_by_display_name:
+									currentUser?.username || "Official User",
+								callType: call.type,
+								callId: call.id,
+								notificationType: "call.ring",
+							}
+						);
+
+						localStorage.setItem(notificationSentKey, "true");
+					}
+				}
 			}
 
-			// Join the call
+			await call.leave();
 			await call.join();
-
-			setIsJoining(false);
+			localStorage.setItem(localSessionKey, "joined");
 			setIsSetupComplete(true);
 		} catch (error) {
 			console.log(error);
+		} finally {
+			setIsJoining(false);
 		}
 	};
 
@@ -126,12 +108,12 @@ const MeetingSetup = () => {
 			await call?.endCall();
 		};
 
-		call.on("call.rejected", handleCallRejected);
+		call?.on("call.rejected", handleCallRejected);
 
 		// Mark that event listeners have been set
 		eventListenersSet.current = true;
 		return () => {
-			call.off("call.rejected", handleCallRejected);
+			call?.off("call.rejected", handleCallRejected);
 
 			eventListenersSet.current = false;
 		};
@@ -141,115 +123,48 @@ const MeetingSetup = () => {
 		return <MeetingRoom />;
 	}
 
-	const videoCall = call.type === "default";
-
-	const meetingTitle = call.state.custom.meetingTitle;
-	const meetingDescription = call.state.custom.meetingAgenda;
-
 	return (
-		<div
-			className={`h-screen w-full md:max-w-[85%] mx-auto ${
-				videoCall
-					? "flex flex-col md:grid md:grid-cols-[2fr_1fr]"
-					: "flex flex-col"
-			} items-center ${
-				videoCall ? "justify-start md:justify-center" : "justify-center"
-			} gap-4 text-white bg-dark-1 p-4 pt-10`}
-		>
-			{videoCall ? (
-				<div className="relative flex items-center justify-center px-2 w-full h-fit rounded-xl">
-					<VideoPreview />
-					<section className="absolute bottom-4 flex items-center gap-4">
-						<AudioToggleButton />
-						<VideoToggleButton />
-					</section>
-				</div>
-			) : (
-				<div className="flex items-center justify-center gap-4">
-					<div className="flex items-center justify-center gap-4">
-						<Image
-							src={currentUser?.photo as string}
-							alt=""
-							width={1000}
-							height={1000}
-							className="rounded-full w-14 h-14 object-cover"
-						/>
-						<div className="flex flex-col items-start justify-center">
-							<span className="text-lg text-green-1">
-								{currentUser?.username}
-							</span>
-							<span className="text-xs">Session&apos;s Participant</span>
-						</div>
-					</div>
-
-					<AudioToggleButton />
-				</div>
-			)}
-
-			<div
-				className={`flex size-full flex-col items-center ${
-					videoCall ? "justify-start md:justify-center" : "justify-center"
-				} gap-4`}
-			>
-				<section className="flex flex-col items-center justify-center px-2 py-4 pt-6 gap-2.5">
-					<span className="text-center text-green-1 text-2xl">
-						{meetingTitle}
-					</span>
-					<span className="text-center text-sm">{meetingDescription}</span>
-				</section>
-
-				<ParticipantsPreview />
-
-				<div className="flex items-center justify-center w-full gap-2.5 max-w-[15rem]">
-					<button
-						className={`w-full p-4 rounded-full hoverScaleDownEffect ${
-							isJoining
-								? "bg-green-1 text-gray-200 cursor-not-allowed"
-								: "bg-green-1 text-white"
-						}`}
-						onClick={handleJoinNow}
-						disabled={isJoining}
-					>
-						{isJoining ? (
-							<div className="flex items-center justify-center w-full gap-2">
-								<Image
-									src="/icons/loading-circle.svg"
-									alt="Loading..."
-									width={24}
-									height={24}
-									className=""
-									priority
-								/>
-								<span>Joining ...</span>
-							</div>
-						) : (
-							"Join Now"
-						)}
-					</button>
-
-					{isMeetingOwner && (
-						<section className="w-fit">
-							<EndCallButton />
-						</section>
-					)}
-				</div>
-
-				<h1 className="text-lg font-semibold mt-7">
-					<Typewriter
-						words={[
-							`Hi There Official User`,
-							"Welcome to our platform",
-							"Glad to Have You",
-						]}
-						loop={true}
-						cursor
-						cursorStyle="_"
-						typeSpeed={70}
-						deleteSpeed={50}
-						delaySpeed={2000}
+		<div className="bg-dark-2 text-white flex flex-col w-full items-center justify-center h-screen">
+			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
+				<ContentLoading />
+				<p className="text-green-1 font-semibold text-lg flex items-center gap-2">
+					Connecting Call{" "}
+					<Image
+						src="/icons/loading-circle.svg"
+						alt="Loading..."
+						width={24}
+						height={24}
+						priority
 					/>
-					<Cursor cursorColor="#50A65C" />
-				</h1>
+				</p>
+
+				<button
+					className={`fixed bottom-4 w-fit px-4 py-2 rounded-full hoverScaleDownEffect ${
+						isJoining
+							? "bg-green-1 text-gray-200 cursor-not-allowed"
+							: "bg-green-1 text-white"
+					}`}
+					onClick={handleJoinNow}
+					disabled={isJoining}
+				>
+					{isJoining ? (
+						<div className="flex items-center justify-center w-full gap-2">
+							<Image
+								src="/icons/loading-circle.svg"
+								alt="Loading..."
+								width={24}
+								height={24}
+								className=""
+								priority
+							/>
+							<span className="text-base">Joining ...</span>
+						</div>
+					) : (
+						<span className="flex items-center justify-center text-base">
+							Join Now
+						</span>
+					)}
+				</button>
 			</div>
 		</div>
 	);

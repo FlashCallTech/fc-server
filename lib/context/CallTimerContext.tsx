@@ -6,8 +6,7 @@ import React, {
 	ReactNode,
 } from "react";
 import { useWalletBalanceContext } from "./WalletBalanceContext";
-import { useToast } from "@/components/ui/use-toast";
-import { Call, useCallStateHooks } from "@stream-io/video-react-sdk";
+import { Call } from "@stream-io/video-react-sdk";
 import { creatorUser } from "@/types";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";

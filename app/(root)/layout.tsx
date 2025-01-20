@@ -43,13 +43,13 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	const renderContent = () => {
 		if (isSplashVisible) {
 			return (
-				<section className="absolute bg-[#121319] top-0 left-0 flex justify-center items-center h-screen w-full z-40">
+				<section className="absolute bg-[#1f4bff] top-0 left-0 flex justify-center items-center h-screen w-full z-40">
 					<Image
-						src="/icons/logo_splashScreen.png"
+						src="/icons/official.png"
 						alt="Loading..."
 						width={500}
 						height={500}
-						className="w-36 h-36 animate-pulse"
+						className="w-60 h-40 object-fit animate-pulse"
 						priority
 					/>
 				</section>

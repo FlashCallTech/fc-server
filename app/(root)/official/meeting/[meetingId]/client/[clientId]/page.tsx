@@ -6,18 +6,12 @@ import {
 	StreamTheme,
 	useCallStateHooks,
 } from "@stream-io/video-react-sdk";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useGetCallById } from "@/hooks/useGetCallById";
 import MeetingSetup from "@/components/meeting/MeetingSetup";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import axios from "axios";
-import {
-	backendBaseUrl,
-	fetchFCMToken,
-	maskNumbers,
-	sendNotification,
-	stopMediaStreams,
-} from "@/lib/utils";
+import { backendBaseUrl, stopMediaStreams } from "@/lib/utils";
 import Image from "next/image";
 import ContentLoading from "@/components/shared/ContentLoading";
 import GetRandomImage from "@/utils/GetRandomImage";
@@ -173,7 +167,7 @@ const MeetingPage = () => {
 	}
 
 	return (
-		<main className="h-full w-full bg-dark-1">
+		<main className="overflow-hidden size-full bg-dark-1">
 			<StreamCall call={call}>
 				<StreamTheme>
 					<MeetingRoomWrapper call={call} />
@@ -199,6 +193,7 @@ const CallEnded = ({ call }: any) => {
 	const expert = call.state?.members?.find(
 		(member: any) => member.custom.type === "expert"
 	);
+	const router = useRouter();
 
 	useEffect(() => {
 		const handleCallEnd = async () => {
@@ -224,28 +219,16 @@ const CallEnded = ({ call }: any) => {
 						},
 					}
 				);
-
-				const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
-				if (fcmToken) {
-					sendNotification(
-						fcmToken,
-						`Missed ${call.type} Call Request`,
-						`Call Request from ${maskNumbers(
-							call?.state?.createdBy?.name || "Official User"
-						)}`,
-						{
-							created_by_display_name: maskNumbers(
-								call?.state?.createdBy?.name || "Official User"
-							),
-							callType: call.type,
-							callId: call.id,
-							notificationType: "call.missed",
-						}
-					);
-				}
 			} catch (error) {
 				console.error("Error handling call end", error);
 			} finally {
+				localStorage.removeItem("activeCallId");
+				localStorage.removeItem(
+					`meeting_${call.id}_${call?.state?.createdBy?.id}`
+				);
+				router.push(
+					`https://official.me/${expert.custom.name ? expert.custom?.name : ""}`
+				);
 				setLoading(false);
 			}
 		};

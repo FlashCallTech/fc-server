@@ -165,7 +165,7 @@ const MeetingRoomScheduled = () => {
 			}
 			try {
 				const localSessionKey = `meeting_${call.id}_${currentUser._id}`;
-				const notificationSentKey = `${localSessionKey}_notificationSent`;
+				const notificationSentKey = `meeting_${call.id}_notificationSent`;
 
 				if (localStorage.getItem(localSessionKey) && participants.length > 1) {
 					toast({
@@ -182,7 +182,7 @@ const MeetingRoomScheduled = () => {
 					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
 
-					if (isMeetingOwner && participants.length === 1) {
+					if (isMeetingOwner && participants.length === 0) {
 						if (!localStorage.getItem(notificationSentKey)) {
 							await sendCallNotification(
 								expert?.custom?.phone as string,

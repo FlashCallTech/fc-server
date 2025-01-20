@@ -52,7 +52,6 @@ const ScheduledTimerHook = ({
 						}
 					}
 				} else {
-					// Initialize Firebase document
 					const currentTime = new Date();
 					await setDoc(callDocRef, {
 						startTime: currentTime.toISOString(),
@@ -104,7 +103,6 @@ const ScheduledTimerHook = ({
 			}
 		};
 
-		// Update time immediately and at regular intervals
 		updateTimeLeft();
 		const intervalId = setInterval(() => {
 			if (isTimerRunning) {

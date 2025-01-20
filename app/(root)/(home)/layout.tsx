@@ -58,15 +58,13 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 					) : (
 						<Navbar isMobile={isMobile} />
 					)}
-					<section
-						className={`flex flex-col size-full`}
-					>
+					<section className={`flex flex-col size-full`}>
 						<div className="size-full">{children}</div>
 					</section>
 				</div>
 			</main>
-		)
-	};
+		);
+	}
 
 	return (
 		<main className="relative">
