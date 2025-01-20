@@ -86,7 +86,7 @@ const Notifications = () => {
 			<section
 				className={`sticky flex w-full items-center justify-between top-0 md:top-[76px] bg-white z-30 py-4 pb-0 transition-all duration-300`}
 			>
-				<section className="flex items-center gap-4">
+				{/* <section className="flex items-center gap-4">
 					<Link
 						href={`${creatorURL ? creatorURL : "/home"}`}
 						className="text-xl font-bold hoverScaleDownEffect"
@@ -107,7 +107,7 @@ const Notifications = () => {
 						</svg>
 					</Link>
 					<h1 className="text-xl md:text-2xl font-bold">Notifications</h1>
-				</section>
+				</section> */}
 			</section>
 
 			{/* notification content */}

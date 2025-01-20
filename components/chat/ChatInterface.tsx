@@ -240,7 +240,7 @@ const ChatInterface: React.FC = () => {
 			await updateDoc(doc(db, "chats", chatId as string), {
 				messages: arrayUnion({
 					senderId: currentUser?._id as string,
-					replyIndex,
+					replyIndex : replyIndex ?? null,
 					createdAt: Date.now(),
 					seen: true,
 					text,
@@ -277,7 +277,7 @@ const ChatInterface: React.FC = () => {
 			await updateDoc(doc(db, "chats", chatId as string), {
 				messages: arrayUnion({
 					senderId: currentUser?._id as string,
-					replyIndex,
+					replyIndex: replyIndex ?? null,
 					createdAt: Date.now(),
 					seen: true,
 					text: null,
@@ -465,7 +465,7 @@ const ChatInterface: React.FC = () => {
 					) : (
 						chat && (
 							<div className="mb-[56px] z-20">
-								<Messages chat={chat} currentUserMessageSent={currentUserMessageSent} setReplyIndex={setReplyIndex} />
+								<Messages chat={chat} currentUserMessageSent={currentUserMessageSent} setReplyIndex={setReplyIndex} setText={setText} />
 							</div>
 						)
 					)}
@@ -584,7 +584,7 @@ const ChatInterface: React.FC = () => {
 						) : (
 							chat && (
 								<div className="z-20">
-									<Messages chat={chat} currentUserMessageSent={currentUserMessageSent} setReplyIndex={setReplyIndex} />
+									<Messages chat={chat} currentUserMessageSent={currentUserMessageSent} setReplyIndex={setReplyIndex} setText={setText} />
 								</div>
 							)
 						)}

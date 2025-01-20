@@ -58,7 +58,7 @@ const EditLink: React.FC<EditLinkProps> = ({link, onClose, onSave }) => {
 						</Button>
 						<Button
 							onClick={handleSave}
-							className="bg-green-600 text-white rounded-md px-12 hover:bg-green-700"
+							className="bg-[#16BC88] text-white rounded-md px-12 hoverScaleDownEffect"
 						>
 							Save
 						</Button>

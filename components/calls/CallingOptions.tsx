@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useMemo, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { audio, chat, video } from "@/constants/icons";
-import { creatorUser } from "@/types";
+import { creatorUser, Service } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
@@ -34,6 +34,7 @@ import { trackPixelEvent } from "@/lib/analytics/pixel";
 import NotifyConsentSheet from "../client/NotifyConsentSheet";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import usePlatform from "@/hooks/usePlatform";
+import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -76,6 +77,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const fullName = getDisplayName(creator);
 
 	const { getDevicePlatform } = usePlatform();
+	const { getFinalServices, resetServices } = useSelectedServiceContext();
 
 	const devicePlatform = getDevicePlatform();
 
@@ -336,22 +338,21 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${
-				callType === "video"
+			const description = `${callType === "video"
 					? `Video Call With Expert ${creator.username}`
 					: `Audio Call With Expert ${creator.username}`
-			}`;
+				}`;
 
 			const ratePerMinute =
 				callType === "video"
 					? parseInt(
-							clientUser.global ? creator.globalVideoRate : creator?.videoRate,
-							10
-					  )
+						clientUser.global ? creator.globalVideoRate : creator?.videoRate,
+						10
+					)
 					: parseInt(
-							clientUser.global ? creator.globalAudioRate : creator?.audioRate,
-							10
-					  );
+						clientUser.global ? creator.globalAudioRate : creator?.audioRate,
+						10
+					);
 			let maxCallDuration = (walletBalance / ratePerMinute) * 60;
 			maxCallDuration =
 				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
@@ -606,8 +607,14 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				rate: updatedCreator.chatRate,
 			});
 
+			let discounts = getFinalServices();
+			const filteredDiscounts = discounts?.filter(
+				(discount) => discount.type === "all" || discount.type === "chat"
+			  );
+			console.log(filteredDiscounts);
+
 			setChatReqSent(true);
-			handleChat(creator, clientUser);
+			handleChat(creator, clientUser, discounts as Service[]);
 			let maxCallDuration =
 				(walletBalance /
 					(clientUser?.global
@@ -633,10 +640,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				onlineStatus === "Offline"
 					? true
 					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
-					  !isClientBusy &&
-					  onlineStatus !== "Busy" &&
-					  updatedCreator.videoAllowed &&
-					  Number(updatedCreator.videoRate) > 0,
+					!isClientBusy &&
+					onlineStatus !== "Busy" &&
+					updatedCreator.videoAllowed &&
+					Number(updatedCreator.videoRate) > 0,
 			onClick: () => handleClickOption("video"),
 		},
 		{
@@ -648,10 +655,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				onlineStatus === "Offline"
 					? true
 					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
-					  !isClientBusy &&
-					  onlineStatus !== "Busy" &&
-					  updatedCreator.audioAllowed &&
-					  Number(updatedCreator.audioRate) > 0,
+					!isClientBusy &&
+					onlineStatus !== "Busy" &&
+					updatedCreator.audioAllowed &&
+					Number(updatedCreator.audioRate) > 0,
 			onClick: () => handleClickOption("audio"),
 		},
 
@@ -664,10 +671,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				onlineStatus === "Offline"
 					? true
 					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
-					  !isClientBusy &&
-					  onlineStatus !== "Busy" &&
-					  updatedCreator.chatAllowed &&
-					  Number(updatedCreator.chatRate) > 0,
+					!isClientBusy &&
+					onlineStatus !== "Busy" &&
+					updatedCreator.chatAllowed &&
+					Number(updatedCreator.chatRate) > 0,
 			onClick: () => handleChatClick(),
 		},
 	];
@@ -690,10 +697,9 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 					<button
 						disabled={!service.enabled}
 						key={service.type}
-						className={`callOptionContainer ${
-							(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
+						className={`callOptionContainer ${(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
 							"!cursor-not-allowed"
-						}`}
+							}`}
 						onClick={service.onClick}
 					>
 						<div className={`flex gap-4 items-center font-bold text-white`}>
@@ -701,10 +707,9 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 							{service.label}
 						</div>
 						<p
-							className={`font-medium tracking-widest rounded-[18px] px-2 min-w-[100px] h-[36px] text-[15px] text-black flex items-center justify-center ${
-								(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
+							className={`font-medium tracking-widest rounded-[18px] px-2 min-w-[100px] h-[36px] text-[15px] text-black flex items-center justify-center ${(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
 								"border border-white/50 text-white"
-							}`}
+								}`}
 							style={{
 								backgroundColor:
 									!service.enabled || onlineStatus === "Busy"
@@ -798,10 +803,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 								<p className="font-semibold text-xl">
 									{creator?.username?.startsWith("+91")
 										? creator?.username?.replace(
-												/(\+91)(\d+)/,
-												(match, p1, p2) =>
-													`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-										  )
+											/(\+91)(\d+)/,
+											(match, p1, p2) =>
+												`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+										)
 										: creator?.username}
 								</p>
 							</div>

@@ -241,7 +241,6 @@ const EditProfile = ({
 
 	const { formState } = form;
 	const { errors, isValid } = formState;
-
 	const initialValues = useRef(form.getValues());
 	const hasChangesRef = useRef(false);
 
@@ -392,6 +391,7 @@ const EditProfile = ({
 			}
 
 			if (response.error) {
+				console.log("Error Found");
 				// Display the error if an existing user is found
 				setFormError(response.error);
 				toast({
@@ -401,7 +401,10 @@ const EditProfile = ({
 					toastStatus: "negative",
 				});
 			} else {
-				const updatedUser = response.updatedUser;
+				const updatedUser =
+					userType === "creator"
+						? response.data.updatedUser
+						: response.updatedUser;
 				const newUserDetails = {
 					...userData,
 					fullName: `${updatedUser.firstName} ${updatedUser.lastName}`,
@@ -451,44 +454,8 @@ const EditProfile = ({
 			</section>
 		);
 
-	console.log(isChanged, isValid, formError, watchedValues, initialState);
-
 	return (
 		<Form {...form}>
-			<section
-				className={`sticky ${
-					pathname.includes("/updateDetails") ? "top-0" : "top-0 md:top-[76px]"
-				}  bg-white z-30 p-4 pl-0 flex flex-col items-start justify-start gap-4 w-full h-fit`}
-			>
-				<section className="flex items-center gap-4">
-					{pathname.includes("/profile") && (
-						<section
-							onClick={() => {
-								form.reset();
-								setEditData && setEditData((prev) => !prev);
-							}}
-							className="text-xl font-bold hoverScaleDownEffect cursor-pointer"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								strokeWidth={1.5}
-								stroke="currentColor"
-								className="size-6"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M15.75 19.5 8.25 12l7.5-7.5"
-								/>
-							</svg>
-						</section>
-					)}
-					<h1 className="text-xl md:text-2xl font-bold">Edit User Details</h1>
-				</section>
-			</section>
-
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
 				className="relative space-y-8 w-full flex flex-col items-center"

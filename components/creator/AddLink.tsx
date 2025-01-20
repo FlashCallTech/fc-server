@@ -49,18 +49,18 @@ const AddLink: React.FC<AddLinkProps> = ({ onClose, onSave }) => {
 				</div>
 				<div className="flex pt-4 w-full">
 					<div className="flex flex-row w-full justify-between">
-						<Button
+						<button
 							onClick={onClose}
-							className="text-black rounded-md px-12 bg-gray-200 hover:bg-gray-400 hover:text-white"
+							className="text-grey-200 text-sm rounded-lg px-4 py-1 bg-white border border-grey-200 hoverScaleDownEffect"
 						>
 							Cancel
-						</Button>
-						<Button
+						</button>
+						<button
 							onClick={handleSave}
-							className="bg-green-600 text-white rounded-md px-12 hover:bg-green-700"
+							className="text-[#16BC88] text-sm rounded-lg border border-[#16BC88] px-4 py-1 hoverScaleDownEffect"
 						>
 							Save
-						</Button>
+						</button>
 					</div>
 				</div>
 			</div>

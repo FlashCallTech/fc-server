@@ -20,11 +20,17 @@ interface Transaction {
 	category: string;
 	callType?: string;
 	global?: boolean;
-}
+};
+
+interface dateRange {
+	startDate: string | null;
+	endDate: string | null;
+};
 
 const Transactions = () => {
 	const [btn, setBtn] = useState<"all" | "credit" | "debit">("all");
 	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [dateRange, setDateRange] = useState<dateRange>({ startDate: "", endDate: "" });
 	const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
 
 	const { currentUser } = useCurrentUsersContext();
@@ -40,7 +46,7 @@ const Transactions = () => {
 		isFetching,
 		isError,
 		isLoading,
-	} = useGetUserTransactionsByType(currentUser?._id as string, btn);
+	} = useGetUserTransactionsByType(currentUser?._id as string, btn, dateRange);
 
 	useEffect(() => {
 		if (inView && hasNextPage && !isFetching) {

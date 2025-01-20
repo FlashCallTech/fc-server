@@ -50,43 +50,78 @@ const UserFeedbacks = () => {
 	}
 
 	return (
-		<section className=" flex size-full flex-col gap-2 pb-5">
-			<section
-				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4  pb-4 flex items-center justify-between transition-all duration-300`}
-			>
-				<h1 className="text-xl md:text-2xl font-bold">User Feedbacks</h1>
+		<div className="size-full">
+			<section className="flex size-full flex-col gap-2 pb-5 lg:hidden">
+				<section
+					className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4  pb-4 flex items-center justify-between transition-all duration-300`}
+				>
+					<h1 className="text-xl md:text-2xl font-bold">User Feedbacks</h1>
+				</section>
+				{isError ? (
+					<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
+						Failed to fetch Feedbacks
+						<span className="text-lg">Please try again later.</span>
+					</div>
+				) : feedbackData && feedbackData.pages[0].length === 0 && !isLoading ? (
+					<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
+						No Feedback found.
+					</p>
+				) : (
+					<CreatorCallsFeedbacks feedbackData={feedbackData} />
+				)}
+
+				{hasNextPage && isFetching && (
+					<Image
+						src="/icons/loading-circle.svg"
+						alt="Loading..."
+						width={50}
+						height={50}
+						className="mx-auto invert my-5 mt-10 z-20"
+					/>
+				)}
+
+				{!hasNextPage && !isFetching && creatorUser && (
+					<div className="text-center text-gray-500 py-4">
+						You have reached the end of the list
+					</div>
+				)}
+
+				{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
 			</section>
-			{isError ? (
-				<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
-					Failed to fetch Feedbacks
-					<span className="text-lg">Please try again later.</span>
-				</div>
-			) : feedbackData && feedbackData.pages[0].length === 0 && !isLoading ? (
-				<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
-					No Feedback found.
-				</p>
-			) : (
-				<CreatorCallsFeedbacks feedbackData={feedbackData} />
-			)}
+			{/* new design */}
+			<section className="hidden lg:flex size-full flex-col gap-2 p-8">
+				{isError ? (
+					<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
+						Failed to fetch Feedbacks
+						<span className="text-lg">Please try again later.</span>
+					</div>
+				) : feedbackData && feedbackData.pages[0].length === 0 && !isLoading ? (
+					<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
+						No Feedback found.
+					</p>
+				) : (
+					<CreatorCallsFeedbacks feedbackData={feedbackData} />
+				)}
 
-			{hasNextPage && isFetching && (
-				<Image
-					src="/icons/loading-circle.svg"
-					alt="Loading..."
-					width={50}
-					height={50}
-					className="mx-auto invert my-5 mt-10 z-20"
-				/>
-			)}
+				{hasNextPage && isFetching && (
+					<Image
+						src="/icons/loading-circle.svg"
+						alt="Loading..."
+						width={50}
+						height={50}
+						className="mx-auto invert my-5 mt-10 z-20"
+					/>
+				)}
 
-			{!hasNextPage && !isFetching && creatorUser && (
-				<div className="text-center text-gray-500 py-4">
-					You have reached the end of the list
-				</div>
-			)}
+				{!hasNextPage && !isFetching && creatorUser && (
+					<div className="text-center text-gray-500 py-4">
+						You have reached the end of the list
+					</div>
+				)}
 
-			{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
-		</section>
+				{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
+			</section>
+		</div>
 	);
 };
 

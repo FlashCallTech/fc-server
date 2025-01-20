@@ -140,7 +140,7 @@ const HomePage = () => {
 
 	if (userType === "creator") {
 		return (
-			<main className="size-full flex flex-col pt-0 md:pt-5">
+			<main className="size-full flex flex-col">
 				<Suspense fallback={<PostLoader count={6} />}>
 					<CreatorHome />
 				</Suspense>

@@ -32,18 +32,18 @@ export const tokenProvider = async (
 			"voip"
 		);
 
-		// Prepare user data for Stream
+		// Register the user in Stream
 		const userData = {
 			id: userId,
 			name: username || userId,
 			image: photo,
-			phone: phone,
+			phone: global ? email : phone,
 			role: "admin",
 			devices: [
-				...(fcmToken && fcmToken.token
+				...(fcmToken.token
 					? [{ id: fcmToken.token, push_provider: "firebase" }]
 					: []),
-				...(fcmToken && fcmToken.voip_token
+				...(fcmToken.voip_token
 					? [{ id: fcmToken.voip_token, push_provider: "voip" }]
 					: []),
 			],
@@ -59,8 +59,9 @@ export const tokenProvider = async (
 		const expirationTime = Math.floor(Date.now() / 1000) + 3600;
 		const issuedAt = Math.floor(Date.now() / 1000) - 60;
 
-		// Create the token for Stream client
 		const token = streamClient.createToken(userId, expirationTime, issuedAt);
+
+		console.log("Token: ", token);
 
 		// Return the generated token
 		return token;

@@ -58,7 +58,9 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 								name: fullName || "Flashcall User",
 								image: currentUser?.photo as string,
 								custom: {
-									phone: currentUser?.phone as string,
+									phone: global
+										? (currentUser.email as string)
+										: (currentUser?.phone as string),
 								},
 							},
 							tokenProvider: async () => token,

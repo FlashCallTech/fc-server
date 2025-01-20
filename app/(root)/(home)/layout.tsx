@@ -13,7 +13,7 @@ const useScreenSize = () => {
 	const [isMobile, setIsMobile] = useState(false);
 
 	const handleResize = () => {
-		setIsMobile(window.innerWidth < 768);
+		setIsMobile(window.innerWidth < 1024);
 	};
 
 	useEffect(() => {
@@ -27,7 +27,7 @@ const useScreenSize = () => {
 
 const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 	const pathname = usePathname();
-	const { creatorURL } = useCurrentUsersContext();
+	const { creatorURL, userType } = useCurrentUsersContext();
 
 	const isMobile = useScreenSize();
 
@@ -46,6 +46,28 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 		}
 	}, [pathname]);
 
+	if (userType === "creator") {
+		return (
+			<main className="flex flex-row size-full">
+				<Sidebar />
+				<div className="flex flex-col w-full">
+					{isMobile ? (
+						<Headroom>
+							<Navbar isMobile={isMobile} />
+						</Headroom>
+					) : (
+						<Navbar isMobile={isMobile} />
+					)}
+					<section
+						className={`flex flex-col size-full`}
+					>
+						<div className="size-full">{children}</div>
+					</section>
+				</div>
+			</main>
+		)
+	};
+
 	return (
 		<main className="relative">
 			{isMobile ? (
@@ -58,7 +80,7 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 			<div className="flex">
 				<Sidebar />
 				<section
-					className={`flex min-h-[calc(100dvh-76px)] flex-1 flex-col transition-all duration-300 ease-in-out  md:px-10`}
+					className={`flex min-h-[calc(100dvh-76px)] flex-1 flex-col transition-all duration-300 ease-in-out md:px-10`}
 				>
 					<div className="size-full">{children}</div>
 				</section>

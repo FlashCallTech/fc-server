@@ -49,7 +49,14 @@ const MeetingNotStarted = ({
 		);
 	};
 
+	useEffect(() => {
+		if (remainingTime === "00:00:00") {
+			handleJoinCall();
+		}
+	}, [remainingTime]);
+
 	const handleJoinCall = async () => {
+		localStorage.removeItem("hasVisitedFeedbackPage");
 		await call?.join();
 		onJoinCall();
 	};

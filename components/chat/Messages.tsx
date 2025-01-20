@@ -5,10 +5,11 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { format, isSameDay } from "date-fns";
 import CustomAudioPlayer from "@/lib/CustomAudioPlayer";
 import usePlatform from "@/hooks/usePlatform";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 interface Chat {
+	chatId: string;
 	creatorName: string;
 	creatorId: string;
 	clientId: string;
@@ -34,15 +35,18 @@ interface Props {
 	chat: Chat;
 	currentUserMessageSent: boolean;
 	setReplyIndex: any;
+	setText: any;
 }
 
-const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex }) => {
+const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex, setText }) => {
 	const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
 	const [isTyping, setIsTyping] = useState(false); // Track typing status
 	const [imagesLoaded, setImagesLoaded] = useState(0); // Track loaded images
-	const [isLongPress, setIsLongPress] = useState(false); // Track long press
 	const [selectedMessage, setSelectedMessage] = useState<any | null>(null); // Track selected message for reply
 	const [highlightedMessage, setHighlightedMessage] = useState<number | null>(null);
+	const [swipeStartX, setSwipeStartX] = useState<number | null>(null);
+	const [swipeEndX, setSwipeEndX] = useState<number | null>(null);
+	const [slidingIndex, setSlidingIndex] = useState<number | null>(null);
 	const { currentUser, userType } = useCurrentUsersContext();
 	const { getDevicePlatform } = usePlatform();
 	const textSizeClass = getDevicePlatform() === "iOS" ? "text-base" : "text-sm";
@@ -50,36 +54,43 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 	const replyBoxRef = useRef<HTMLDivElement | null>(null);
 	const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
-	// Long press detection
-	const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-
-	const handleMouseDown = (message: any) => {
-		// Start the long press timer
-		longPressTimer.current = setTimeout(() => {
-			setIsLongPress(true);
-			setSelectedMessage(message);
-		}, 500); // Trigger long press after 500ms
+	const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>, index: number) => {
+		setSwipeStartX(e.touches[0].clientX);
+		setSwipeEndX(null);
 	};
 
-	const handleMouseUp = () => {
-		// Clear the timer if mouse is released before the long press time
-		if (longPressTimer.current) {
-			clearTimeout(longPressTimer.current);
+	const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+		setSwipeEndX(e.touches[0].clientX);
+	};
+
+	const handleTouchEnd = (index: number) => {
+		if (swipeStartX !== null && swipeEndX !== null) {
+			const distance = swipeEndX - swipeStartX;
+			if (distance > 50) {
+				setSlidingIndex(index); // Set the sliding index for animation
+				// Trigger reply if swipe distance exceeds the threshold
+				handleReply(index);
+				setTimeout(() => {
+					handleReply(index);
+					setSlidingIndex(null); // Reset sliding state after animation
+				}, 300); // Animation duration
+			}
 		}
+		setSwipeStartX(null);
+		setSwipeEndX(null);
 	};
+
 
 	const handleReply = (index: number) => {
 		// Handle the reply action here
 		// For example, you can set up a text area to let the user reply to the selected message
 		setReplyIndex(index);
-		setIsLongPress(false);
 		setSelectedMessage(null); // Clear the selection after replying
 	};
 
 	// Right-click to show reply box
 	const handleRightClick = (event: React.MouseEvent, message: any) => {
 		event.preventDefault(); // Prevent the default context menu
-		setIsLongPress(true);
 		setSelectedMessage(message); // Set the message to reply to
 	};
 
@@ -104,7 +115,6 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 	}, [chat?.clientId]);
 
 	const handleImageClick = (imageUrl: string) => {
-		setIsLongPress(false);
 		setSelectedMessage(null);
 		setFullImageUrl(imageUrl);
 	};
@@ -143,10 +153,22 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 	const handleClickOutside = (event: MouseEvent) => {
 		if (replyBoxRef.current && !replyBoxRef.current.contains(event.target as Node)) {
 			// Clear reply box if clicked outside
-			setIsLongPress(false);
 			setSelectedMessage(null);
 		}
 	};
+
+	const handleUnsend = async (index: number) => {
+		try {
+			const updatedMessages = chat.messages.filter((_, i) => i !== index);
+			await updateDoc(doc(db, "chats", chat.chatId), { messages: updatedMessages });
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
+	const handleEdit = async (index: number) => {
+		setText(selectedMessage.text);
+	}
 
 	// Attach the click outside listener on component mount and clean up on unmount
 	useEffect(() => {
@@ -164,8 +186,6 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 		const minutes = date.getMinutes().toString().padStart(2, "0");
 		return `${hours}:${minutes}`;
 	};
-
-	console.log(chat.messages);
 
 	return (
 		<div className="flex-1 p-4 overflow-y-auto scrollbar-hide">
@@ -187,6 +207,8 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 							new Date(chat.messages[index - 1]?.createdAt)
 						);
 
+					const isSliding = slidingIndex === index;
+
 					return (
 						<React.Fragment key={message?.createdAt}>
 							{showDateSeparator && (
@@ -206,13 +228,22 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 									className={`${isCurrentUserMessage
 										? `bg-[#DCF8C6] p-[5px] max-w-[60%] ${message.tip ? "min-w-[60%] lg:min-w-[35%]" : "min-w-[25%]"} lg:max-w-[35%] w-fit rounded-lg rounded-tr-none ml-auto text-black text-sm relative`
 										: `bg-white p-[5px] max-w-[60%] ${message.tip ? "min-w-[60%] lg:min-w-[35%]" : "min-w-[25%]"} lg:max-w-[35%] w-fit rounded-lg rounded-tl-none text-black text-sm leading-5 relative`
-										}  ${marginBottom}`}
-									style={{ wordBreak: "break-word", justifyContent: "center" }}
-									ref={(el) => { (messageRefs.current[index] = el) }}
-									onMouseDown={() => handleMouseDown(message)}
-									onMouseUp={handleMouseUp}
-									onContextMenu={(e) => handleRightClick(e, message)} // Right-click detection
+										} ${marginBottom} ${isSliding ? "sliding" : ""} ${marginBottom}`}
+									style={{
+										wordBreak: "break-word",
+										justifyContent: "center",
+										transform: isSliding ? "translateX(50px)" : "translateX(0)",
+										transition: "transform 0.3s ease-in-out",
+									}}
+									ref={(el) => {
+										messageRefs.current[index] = el;
+									}}
+									onTouchStart={(e) => handleTouchStart(e, index)}
+									onTouchMove={handleTouchMove}
+									onTouchEnd={() => handleTouchEnd(index)}
+									onContextMenu={(e) => handleRightClick(e, message)}
 								>
+
 									{message.replyIndex !== undefined && chat.messages[message.replyIndex] && (
 										<div
 											className={`p-2 mb-2 border-l-4 ${isCurrentUserMessage ? "border-green-500" : "border-blue-500"
@@ -276,12 +307,6 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 										</div>
 									)}
 
-									{fullImageUrl && (
-										<ImageModal
-											imageUrl={fullImageUrl}
-											onClose={handleCloseModal}
-										/>
-									)}
 									{message.audio && (
 										<div className="w-full items-center justify-center mb-1">
 											<CustomAudioPlayer
@@ -335,15 +360,16 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 									></div>
 
 									{/* Reply Box */}
-									{isLongPress && selectedMessage === message && (
-										<div className="absolute bottom-10 left-0 right-0 p-2 bg-white shadow-md rounded-md flex justify-center items-center" ref={replyBoxRef}>
+									{selectedMessage === message && (
+										<div className="absolute flex-col gap-2 bottom-10 left-0 right-0 p-2 bg-white shadow-md rounded-md flex justify-center items-center" ref={replyBoxRef}>
 											<button
 												onClick={() => handleReply(index)}
-												className=""
+												className="w-full hoverScaleDownEffect"
 											>
 												Reply
 											</button>
 										</div>
+
 									)}
 
 									<div
@@ -381,6 +407,12 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 							<span className="w-2 h-2 bg-green-500 rounded-full animate-bounce delay-225"></span>
 						</div>
 					</div>
+				)}
+				{fullImageUrl && (
+					<ImageModal
+						imageUrl={fullImageUrl}
+						onClose={handleCloseModal}
+					/>
 				)}
 			</div>
 			<div ref={messagesEndRef} />

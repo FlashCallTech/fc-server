@@ -25,6 +25,7 @@ export type CreateForeignUserParams = {
 	bio?: string;
 	walletBalance: number;
 	global: boolean;
+	fcmToken: string;
 };
 
 export type UpdateUserParams = {
