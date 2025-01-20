@@ -8,6 +8,7 @@ import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 import DeleteCreatorServiceAlert from "../alerts/DeleteCreatorServiceAlert";
 import { useToast } from "../ui/use-toast";
+import { Switch } from "../ui/switch";
 
 const AvailabilityServiceCards = ({
 	creator,
@@ -77,6 +78,21 @@ const AvailabilityServiceCards = ({
 		}
 	}, [inView, hasNextPage, fetchNextPage]);
 
+	const handleToggleActiveState = async (
+		serviceId: string,
+		isActive: boolean
+	) => {
+		try {
+			await axios.put(`${backendBaseUrl}/availability/${serviceId}`, {
+				isActive: !isActive,
+			});
+
+			refetch();
+		} catch (error) {
+			console.warn(error);
+		}
+	};
+
 	return (
 		<>
 			<DeleteCreatorServiceAlert
@@ -112,6 +128,14 @@ const AvailabilityServiceCards = ({
 							key={service._id}
 							className="relative shadow-lg border rounded-lg flex flex-row"
 						>
+							<Switch
+								id={`serviceToggle-${service._id}`}
+								checked={!!service?.isActive}
+								onCheckedChange={() =>
+									handleToggleActiveState(service?._id, service?.isActive)
+								}
+								className="absolute top-4 right-4"
+							/>
 							<div className="size-full p-4 flex flex-col justify-between">
 								<div>
 									<div className="flex items-start justify-start gap-4">
