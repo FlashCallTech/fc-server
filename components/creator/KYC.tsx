@@ -7,6 +7,7 @@ import upload from "@/lib/upload";
 import Verify from "../shared/Verify";
 import imageCompression from "browser-image-compression";
 import { backendBaseUrl } from "@/lib/utils";
+import { Button } from "../ui/button";
 
 const KYC: React.FC = () => {
 	const [panNumber, setPanNumber] = useState("");
@@ -18,8 +19,6 @@ const KYC: React.FC = () => {
 	const [aadhaarVerified, setAadhaarVerified] = useState(false);
 	const [livelinessCheckVerified, setLivelinessCheckVerified] =
 		useState<boolean>(false);
-	const [nameMatch, setNameMatch] = useState<boolean>(false);
-	const [faceMatch, setFaceMatch] = useState<boolean>(false);
 	// const [verificationMethod, setVerificationMethod] = useState<'otp' | 'image'>('otp');
 	const [otp, setOtp] = useState<string>("");
 	const [generatingOtp, setGeneratingOtp] = useState<boolean>(false);
@@ -36,7 +35,6 @@ const KYC: React.FC = () => {
 	const [verifyingAadhaar, setVerifyingAadhaar] = useState<boolean>(false);
 	const [verifyingLiveliness, setVerifyingLiveliness] =
 		useState<boolean>(false);
-	const [verifying, setVerifying] = useState<boolean>(false);
 	const [reason, setReason] = useState<string>("");
 
 	const nameMismatchCheck = "The name in the PAN and the Aadhaar do not match. Our team will contact you for manual verification, which may take up to 2 business days."
@@ -46,92 +44,69 @@ const KYC: React.FC = () => {
 	useEffect(() => {
 		const getKyc = async () => {
 			if (creatorUser) {
-				if (creatorUser.kycStatus) {
-					console.log(creatorUser.kycStatus);
-					if (
-						creatorUser.kycStatus === "COMPLETED" ||
-						creatorUser.kycStatus === "FAILED"
-					) {
-						setKycDone(creatorUser.kycStatus);
-						setPanVerified(true);
-						setAadhaarVerified(true);
-						setLivelinessCheckVerified(true);
+				const response = await fetch(
+					`${backendBaseUrl}/userKyc/getKyc/${creatorUser._id}`,
+					{
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+						},
+					}
+				);
 
-						const response = await fetch(
-							`${backendBaseUrl}/userKyc/getKyc/${creatorUser._id}`,
-							{
-								method: "GET",
-								headers: {
-									"Content-Type": "application/json",
-								},
-							}
-						);
+				if (!response.ok) {
+					setLoading(false);
+					return;
+				}
 
-						if (!response.ok) {
-							console.log("Gandu")
-							setLoading(false);
-							return;
-						}
+				const kycResponse = await response.json();
+				console.log(kycResponse);
 
-						const kycResponse = await response.json();
-						console.log(kycResponse);
-						if (kycResponse.success) {
+				if (
+					kycResponse.data.kyc_status === "COMPLETED" ||
+					kycResponse.data.kyc_status === "FAILED"
+				) {
+					console.log("Inside Completed or Failed");
+					setKycDone(kycResponse.data.kyc_status);
+					setPanVerified(true);
+					setAadhaarVerified(true);
+					setLivelinessCheckVerified(true);
+
+					setPanNumber(kycResponse.data.pan.pan_number);
+					setAadhaarNumber(kycResponse.data.aadhaar.aadhaar_number);
+					if (kycResponse.data.reason) {
+						setReason(kycResponse.data.reason);
+					}
+
+					setLoading(false);
+
+					return;
+				}
+
+				if (kycResponse.data.kyc_status === "PENDING") {
+					if (kycResponse.data.pan) {
+						if (kycResponse.data.pan.valid) {
+							setPanVerified(true);
 							setPanNumber(kycResponse.data.pan.pan_number);
-							setAadhaarNumber(kycResponse.data.aadhaar.aadhaar_number);
-							if (kycResponse.data.reason) {
-								setReason(kycResponse.data.reason);
-							}
 						}
-
-						setLoading(false);
-
-						return;
 					}
-				}
-			}
-
-			const response = await fetch(
-				`/api/v1/userkyc/getKyc?userId=${creatorUser?._id}`,
-				{
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json",
-					},
-				}
-			);
-
-			if (!response.ok) {
-				setLoading(false);
-				return;
-			}
-
-			const kycResponse = await response.json();
-			if (kycResponse.success) {
-				if (kycResponse.data.pan) {
-					if (kycResponse.data.pan.valid) {
-						setPanVerified(true);
-						setPanNumber(kycResponse.data.pan.pan_number);
+					if (kycResponse.data.aadhaar) {
+						if (kycResponse.data.aadhaar.status === "VALID") {
+							setAadhaarVerified(true);
+							setAadhaarNumber(kycResponse.data.aadhaar.aadhaar_number)
+						}
 					}
-				}
-				if (kycResponse.data.aadhaar) {
-					if (kycResponse.data.aadhaar.status === "VALID")
-						setAadhaarVerified(true);
-					setAadhaarNumber(kycResponse.data.aadhaar.aadhaar_number)
-				}
-				if (kycResponse.data.liveliness) {
-					if (kycResponse.data.liveliness.liveliness)
-						setLivelinessCheckVerified(true);
-				}
-				if (kycResponse.data.name_match) {
-					if (kycResponse.data.name_match.score > 0.84) {
-						setNameMatch(true);
+					if (kycResponse.data.liveliness) {
+						if (kycResponse.data.liveliness.liveliness)
+							setLivelinessCheckVerified(true);
 					}
+					setLoading(false);
 				}
-				setLoading(false);
-			} else {
-				setLoading(false);
+				setVerifyingPan(false);
+				setVerifyingAadhaar(false);
+				setVerifyingLiveliness(false);
 			}
-		};
+		}
 
 		if (creatorUser) {
 			getKyc();
@@ -164,20 +139,6 @@ const KYC: React.FC = () => {
 
 				const panResult = await panResponse.json();
 				if (panResult.success) {
-					if (panResult.kycStatus) {
-						setKycDone("COMPLETED");
-						alert("KYC VERIFIED");
-					} else {
-						if (
-							panResult.message ===
-							"Our team will verify the details you have submitted. This usually takes 24 hours."
-						) {
-							setKycDone("FAILED");
-							alert("KYC FAILED");
-						} else {
-							setKycDone("PENDING");
-						}
-					}
 					setPanVerified(true);
 				} else {
 					if (
@@ -189,10 +150,8 @@ const KYC: React.FC = () => {
 							"This PAN number is already associated with another account."
 						);
 					}
+					setVerifyingPan(false);
 				}
-
-				setVerifyingPan(false);
-				return;
 			} catch (error) {
 				console.error("Error verifying PAN:", error);
 				setVerifyingPan(false);
@@ -267,20 +226,6 @@ const KYC: React.FC = () => {
 
 				const otpVerificationResult = await otpVerificationResponse.json();
 				if (otpVerificationResult.success) {
-					if (otpVerificationResult.kycStatus) {
-						setKycDone("COMPLETED");
-						alert("KYC VERIFIED");
-					} else {
-						if (
-							otpVerificationResult.message ===
-							"Our team will verify the details you have submitted. This usually takes 24 hours."
-						) {
-							setKycDone("FAILED");
-							alert("KYC FAILED");
-						} else {
-							setKycDone("PENDING");
-						}
-					}
 					setAadhaarVerified(true);
 				} else {
 					if (
@@ -295,9 +240,9 @@ const KYC: React.FC = () => {
 					setOtp("");
 					setOtpRefId(null);
 					setOtpGenerated(false);
+					setVerifyingAadhaar(false);
 				}
 				setOtpSubmitted(false);
-				setVerifyingAadhaar(false);
 			} catch (error) {
 				console.error("Error verifying Aadhaar with OTP:", error);
 				setVerifyingAadhaar(false);
@@ -356,25 +301,11 @@ const KYC: React.FC = () => {
 
 			const result = await response.json();
 			if (result.success) {
-				if (result.kycStatus) {
-					setKycDone("COMPLETED");
-					alert("KYC VERIFIED");
-				} else {
-					if (
-						result.message ===
-						"Our team will verify the details you have submitted. This usually takes 24 hours."
-					) {
-						setKycDone("FAILED");
-						alert("KYC FAILED");
-					} else {
-						setKycDone("PENDING");
-					}
-				}
 				setLivelinessCheckVerified(true);
 			} else {
 				alert("Verify Again");
-			}
-			setVerifyingLiveliness(false);
+				setVerifyingLiveliness(false);
+			}	
 		} catch (error) {
 			console.error("Error verifying liveliness:", error);
 			setVerifyingLiveliness(false);
@@ -409,6 +340,15 @@ const KYC: React.FC = () => {
 			}
 		}
 	};
+
+	const formatMaskedString = (aadhaarNumber: string) => {
+		const masked = aadhaarNumber.slice(0, -4).replace(/\d/g, '*'); // Mask all but the last 4 digits
+		const visible = aadhaarNumber.slice(-4); // Extract the last 4 digits
+		const combined = masked + visible;
+	  
+		// Add a space after every 4 characters
+		return combined.replace(/(.{4})/g, '$1 ').trim();
+	  }
 
 	if (loading) {
 		return <Loader />;
@@ -774,13 +714,13 @@ const KYC: React.FC = () => {
 
 								{isPanInputVisible && !panVerified && (
 									<div className="flex w-full items-center">
-										<button
-											className="py-3 text-base text-white w-full rounded-full bg-[#16BC88] hoverScaleDownEffect"
+										<Button
+											className="text-white w-full rounded-full bg-black hoverScaleDownEffect"
 											onClick={handlePanVerification}
 											disabled={verifyingPan}
 										>
 											{verifyingPan ? "Verifying..." : "Verify"}
-										</button>
+										</Button>
 									</div>
 								)}
 							</div>
@@ -822,7 +762,7 @@ const KYC: React.FC = () => {
 
 						{aadhaarVerified ? (
 							<div className="p-2 flex flex-col text-sm text-gray-400">
-								<span>Aadhaar Number: <span className="text-black font-bold">{aadhaarNumber}</span> </span>
+								<span>Aadhaar Number: <span className="text-black font-bold">{formatMaskedString(aadhaarNumber)}</span> </span>
 								<span>Status: <span className="text-[#16BC88]">Verified</span></span>
 							</div>
 						) : (
@@ -854,8 +794,8 @@ const KYC: React.FC = () => {
 
 								{isAadhaarInputVisible && !aadhaarVerified && (
 									<div className="flex w-full items-center mt-2">
-										<button
-											className="py-3 text-base w-full text-white rounded-full bg-[#16BC88]"
+										<Button
+											className="w-full text-white rounded-full bg-black"
 											onClick={handleAadhaarVerification}
 										>
 											{otpGenerated
@@ -865,7 +805,7 @@ const KYC: React.FC = () => {
 												: verifyingAadhaar
 													? "Generating OTP..."
 													: "Send OTP"}
-										</button>
+										</Button>
 									</div>
 								)}
 							</div>
@@ -914,7 +854,7 @@ const KYC: React.FC = () => {
 						) : (
 							isLivelinessCheckInputVisible &&
 							<div className="flex flex-col gap-3 justify-center items-center">
-								<div className="flex border-dotted p-6 w-full bg-[#F9FAFB] rounded-lg justify-center items-center border-2 border-[#D1D5DB]">
+								<div className="flex p-6 w-full rounded-lg justify-center items-center border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
 									<div className="flex flex-col gap-3 items-center justify-center">
 										<Image
 											src={"/creator/liveliness.svg"}
@@ -942,8 +882,8 @@ const KYC: React.FC = () => {
 											<div>{livelinessCheckFile.name}</div>
 										}
 										{isLivelinessCheckInputVisible && !livelinessCheckVerified && (
-											<button
-												className={`flex items-center gap-2 px-6 py-2 ${livelinessCheckFile ? "hoverScaleDownEffect" : ""} text-white rounded-md bg-[#16BC88]`}
+											<Button
+												className={`flex items-center gap-2 ${!livelinessCheckFile ? "hoverScaleDownEffect" : ""} text-white rounded-full bg-black`}
 												onClick={handleLivelinessVerification}
 												disabled={verifyingLiveliness || livelinessCheckFile === null}
 											>
@@ -956,7 +896,7 @@ const KYC: React.FC = () => {
 														className="size-4 filter brightness-200"
 													/>}
 												<span>{verifyingLiveliness ? "Verifying..." : "Submit"}</span>
-											</button>
+											</Button>
 										)}
 									</div>
 								</div>
@@ -967,15 +907,8 @@ const KYC: React.FC = () => {
 					</div>
 					<div className="flex justify-center">
 						{kycDone === "COMPLETED" ? (
-							<div className="flex items-center gap-2 bg-[#def4ed] font-semibold text-[#16BC88] text-center px-4 py-2 rounded-full">
-								<Image
-									src={"/creator/kycCompleted.svg"}
-									width={100}
-									height={100}
-									alt="not done"
-									className={`size-4`}
-									onContextMenu={(e) => e.preventDefault()}
-								/>
+							<div className="flex items-center gap-2 bg-gray-200 font-semibold text-black text-center px-4 py-2 rounded-full">
+								<svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="16" height="16" viewBox="0 0 16 16"><defs><clipPath id="master_svg0_3_07314"><rect x="0" y="0" width="16" height="16" rx="0"/></clipPath></defs><g clip-path="url(#master_svg0_3_07314)"><g transform="matrix(1,0,0,-1,0,32.6875)"><g><path d="M8,16.34375Q10.1875,16.375,12,17.40625Q13.8125,18.46875,14.9375,20.34375Q16,22.25,16,24.34375Q16,26.43755,14.9375,28.34375Q13.8125,30.21875,12,31.28125Q10.1875,32.31255,8,32.34375Q5.8125,32.31255,4,31.28125Q2.1875,30.21875,1.0625,28.34375Q0,26.43755,0,24.34375Q0,22.25,1.0625,20.34375Q2.1875,18.46875,4,17.40625Q5.8125,16.375,8,16.34375ZM11.5312,25.8125L7.53125,21.8125L11.5312,25.8125L7.53125,21.8125Q7,21.375,6.46875,21.8125L4.46875,23.8125Q4.03125,24.34375,4.46875,24.875Q5,25.3125,5.53125,24.875L7,23.40625L10.4688,26.87495Q11,27.31255,11.5312,26.87495Q11.9688,26.34375,11.5312,25.8125Z" fill="currentColor" fill-opacity="1"/></g></g></g></svg>
 								KYC Completed
 							</div>
 						) : (

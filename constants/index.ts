@@ -62,30 +62,12 @@ export const newSidebarLinksCreator = [
 		label: "User Feedback's",
 		protected: true,
 	},
-	// {
-	// 	imgURL: "/icons/orderHistory.svg",
-	// 	route: "/previous",
-	// 	label: "Order History",
-	// 	protected: true,
-	// },
-	// {
-	// 	imgURL: "/icons/favorites.svg",
-	// 	route: "/userFeedbacks",
-	// 	label: "User Feedback's",
-	// 	protected: true,
-	// },
 	{
 		imgURL: "/creator/blocked.svg",
 		route: "/blocked-accounts",
 		label: "Blocked Users",
 		protected: true,
 	},
-	// {
-	// 	imgURL: "/icons/orderHistory.svg",
-	// 	route: "/calendar",
-	// 	label: "Calendar",
-	// 	protected: true,
-	// },
 	{
 		imgURL: "/creator/notification.svg",
 		route: "/notifications",

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Button } from "../ui/button";
 
 const AddBankAccountModal = ({ isOpen, onClose, errors, setPaymentMethod, bankDetails, setBankDetails, save, saving }: { isOpen: boolean; onClose: () => void; errors: any; setPaymentMethod: any; bankDetails: any; setBankDetails: any; save: () => void; saving: boolean }) => {
     if (!isOpen) return null;
@@ -74,20 +75,20 @@ const AddBankAccountModal = ({ isOpen, onClose, errors, setPaymentMethod, bankDe
 
                 {/* Modal Footer */}
                 <div className="mt-6 flex justify-end gap-4">
-                    <button
-                        className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hoverScaleDownEffect"
+                    <Button
+                        className="text-gray-700 border border-gray-300 rounded-full hoverScaleDownEffect"
                         onClick={onClose}
                     >
                         Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={() => {
                             save(),
                                 setPaymentMethod("bankTransfer")
                         }}
-                        className="px-4 py-2 text-sm text-white bg-[#16BC88] rounded-lg hoverScaleDownEffect">
+                        className="text-white bg-black rounded-full hoverScaleDownEffect">
                         {saving ? "Saving..." : "Add Account"}
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

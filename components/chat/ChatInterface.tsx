@@ -355,19 +355,6 @@ const ChatInterface: React.FC = () => {
 		setShowDialog(false);
 	};
 
-	function maskPhoneNumber(phoneNumber: string) {
-		// Remove the '+91' prefix
-		if (phoneNumber) {
-			let cleanedNumber = phoneNumber.replace("+91", "");
-
-			// Mask the next 5 digits, leaving the first 2 digits unmasked
-			let maskedNumber =
-				cleanedNumber.substring(0, 2) + "*****" + cleanedNumber.substring(7);
-
-			return maskedNumber;
-		}
-	}
-
 	const discardReply = () => {
 		setReplyIndex(undefined);
 		setIsTyping(false);
