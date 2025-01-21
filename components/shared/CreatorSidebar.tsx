@@ -91,7 +91,7 @@ const CreatorSidebar = () => {
     return (
         <section
             id="sidebar"
-            className={`sticky left-0 top-0 flex h-screen flex-col justify-between min-w-[264px] shadow-md max-lg:hidden`}
+            className={`sticky left-0 top-0 flex h-screen flex-col justify-between min-w-[264px] border shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] max-lg:hidden`}
         >
             <div className="p-2 ml-2">
                 <Image
@@ -117,7 +117,7 @@ const CreatorSidebar = () => {
                         return (
                             <div key={index}>
                                 <div
-                                    className={`flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer hover:bg-[#def4ed] text-[#4B5563]`}
+                                    className={`flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-100 text-[#4B5563]`}
                                     onClick={() => setPaymentDropdownOpen(!paymentDropdownOpen)}
                                 >
                                     <div className="flex items-center gap-5">
@@ -126,7 +126,7 @@ const CreatorSidebar = () => {
                                             alt={item.label}
                                             width={100}
                                             height={100}
-                                            className={`size-4 object-coverfilter grayscale brightness-[0.3] sepia hue-rotate-[220deg]`}
+                                            className={`size-4 object-cover gray-color`}
                                             priority
                                         />
                                         <p className="text-[14px] tracking-wide font-medium">
@@ -150,9 +150,9 @@ const CreatorSidebar = () => {
                                                         ? subItem.route
                                                         : "/authenticate?usertype=creator"
                                                     : subItem.route}
-                                                className={`block mb-1 text-sm tracking-wide font-medium px-4 py-2 rounded-lg hover:bg-[#def4ed] ${activeSubItem(subItem.label)
-                                                    ? "bg-[#def4ed] text-[#16BC88]"
-                                                    : "bg-white text-[#4B5563]"
+                                                className={`block mb-1 text-sm tracking-wide font-medium px-4 py-2 rounded-lg ${activeSubItem(subItem.label)
+                                                    ? "bg-[#0000001A] text-black"
+                                                    : "bg-white text-[#4B5563] hover:bg-gray-100"
                                                     }`}
                                             >
                                                 {subItem.label}
@@ -175,7 +175,7 @@ const CreatorSidebar = () => {
                                                     : "/authenticate?usertype=creator"
                                                 : item.route
                                         }
-                                        className={`flex w-full px-4 py-2 items-center gap-5 rounded-lg justify-start hover:bg-[#def4ed] ${isActive ? "bg-[#def4ed] text-[#16BC88]" : "bg-white text-[#4B5563]"}`}
+                                        className={`flex w-full px-4 py-2 items-center gap-5 rounded-lg justify-start ${isActive ? "bg-[#0000001A] text-black" : "bg-white text-[#4B5563] hover:bg-gray-100"}`}
                                         onClick={() => handleLogEvent(item)}
                                     >
                                         <Image
@@ -183,8 +183,7 @@ const CreatorSidebar = () => {
                                             alt={item.label}
                                             width={100}
                                             height={100}
-                                            className={`size-4 object-fit ${isActive ? "" : "filter grayscale brightness-[0.3] sepia hue-rotate-[220deg]"
-                                                }`}
+                                            className={`size-4 object-fit ${isActive ? "" : "gray-color"}`}
                                             priority
                                         />
                                         <p
@@ -213,23 +212,23 @@ const CreatorSidebar = () => {
                 className={`flex flex-col p-4`}
             >
                 {/* Additional Links */}
-                <Link href="/terms-and-conditions" className="flex items-center gap-5 text-sm tracking-wide font-medium text-gray-600 px-4 py-2 rounded-lg">
+                <Link href="/terms-and-conditions" className="flex items-center gap-5 text-sm tracking-wide font-medium text-[#4B5563] px-4 py-2 rounded-lg">
                     <Image
                         src={"/creator/terms&conditions.svg"}
                         width={100}
                         height={100}
                         alt="img"
-                        className="size-4 object-cover"
+                        className="size-4 object-cover gray-color"
                     />
                     Terms & Conditions
                 </Link>
-                <Link href="/support" className="flex items-center gap-5 text-sm tracking-wide font-medium text-gray-600 px-4 py-2 rounded-lg">
+                <Link href="/support" className="flex items-center gap-5 text-sm tracking-wide font-medium text-[#4B5563] px-4 py-2 rounded-lg">
                     <Image
                         src={"/creator/support.svg"}
                         width={100}
                         height={100}
                         alt="img"
-                        className="size-4 object-cover"
+                        className="size-4 object-cover gray-color"
                     />
                     Support
                 </Link>
@@ -238,7 +237,7 @@ const CreatorSidebar = () => {
                         <TooltipTrigger asChild>
                             <Link
                                 href={`/profile/${currentUser?._id}`}
-                                className={`flex p-2 gap-5 items-center rounded-lg justify-center`}
+                                className={`flex p-2 gap-5 items-center border-t mt-2 justify-center`}
                             >
                                 <Image
                                     src={imageSrc}

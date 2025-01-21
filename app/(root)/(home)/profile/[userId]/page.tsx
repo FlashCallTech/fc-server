@@ -206,7 +206,7 @@ const UserProfilePage = () => {
 								<section className="flex gap-2 justify-start items-center">
 									<DeleteAlert />
 									<button
-										className="flex gap-3 text-sm items-center rounded-lg border-[1px] border-[#16BC88] px-3 py-1 text-[#16BC88] hoverScaleDownEffect"
+										className="flex gap-3 text-sm items-center rounded-full bg-black px-4 py-2 text-white hoverScaleDownEffect"
 										onClick={() => setEditData((prev) => !prev)}
 									>
 										<svg
@@ -230,7 +230,7 @@ const UserProfilePage = () => {
 						</section>
 
 						{/* New section for displaying initial state details */}
-						<section className="flex text-sm flex-col gap-3 w-full text-[#4B5563] p-4 rounded-lg bg-[#F9FAFB] border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] mx-auto space-y-2">
+						<section className="flex text-sm flex-col gap-3 w-full text-[#4B5563] p-4 rounded-lg border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] mx-auto space-y-2">
 							<h2 className="text-lg font-semibold text-black">User Details</h2>
 							{initialState.fullName && (
 								<div className="flex justify-between w-full">

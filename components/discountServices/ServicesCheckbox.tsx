@@ -133,7 +133,7 @@ const ServicesCheckbox = ({
 								onChange={() => handleToggle(service)}
 							/>
 							<p
-								className={`toggle-label block overflow-hidden h-6 rounded-full ${services[service] ? "bg-[#16BC88]" : "bg-gray-500"
+								className={`toggle-label block overflow-hidden h-6 rounded-full ${services[service] ? "bg-green-600" : "bg-gray-500"
 									} ${isRestricted ? "!cursor-not-allowed" : "cursor-pointer"}`}
 								style={{
 									justifyContent: services[service] ? "flex-end" : "flex-start",

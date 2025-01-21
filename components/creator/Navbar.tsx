@@ -137,7 +137,7 @@ const CreatorNavbar = ({ isMobile }: { isMobile?: boolean }) => {
     return (
         <nav
             id="navbar"
-            className={`${isCreatorHome ? "lg:hidden" : ""} flex justify-between items-center sticky w-full h-[76px] z-40 top-0 left-[264px] px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}
+            className={`${isCreatorHome ? "lg:hidden" : ""} flex justify-between items-center sticky w-full h-[76px] z-40 top-0 left-[264px] px-4 py-4 transition-transform duration-300 border border-l-0 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] blurEffect`}
             style={{
                 background: `${isCreatorOrExpertPath ? (isMobile ? currentTheme : "#121319") : "#ffffff"
                     }`,
@@ -202,10 +202,10 @@ const CreatorNavbar = ({ isMobile }: { isMobile?: boolean }) => {
             {fetchingUser ? (
                 <NavLoader />
             ) : currentUser ? (
-                <div className="flex justify-end items-center gap-4 h-full lg:text-[#16BC88]">
+                <div className="flex justify-end items-center gap-4 h-full lg:text-black">
                     <Link
                         href="/payment"
-                        className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] lg:bg-[#def4ed] ${typeof window !== 'undefined' && window.innerWidth >= 1024 ? '' : 'shadow-[4px_4px_0px_0px_#000000] border-[1px] border-[#000000]'}`}
+                        className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] border border-[#E5E7EB] ${typeof window !== 'undefined' && window.innerWidth >= 1024 ? '' : 'shadow-[4px_4px_0px_0px_#000000] border-[1px] border-[#000000]'}`}
                     >
                         <svg
                             width="100"

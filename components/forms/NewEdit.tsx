@@ -388,7 +388,7 @@ const Edit = ({
 
 	return (
 		<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-			<div className="bg-white w-full max-w-lg max-h-[80vh] overflow-y-auto scrollbar-hide rounded-lg p-8 pb-0">
+			<div className="bg-white w-full max-w-xl max-h-[80vh] overflow-y-auto scrollbar-hide rounded-lg p-8 pb-0">
 				<div className="flex justify-between items-center">
 					<h2 className="text-lg font-semibold">Edit Details</h2>
 					<button
@@ -558,7 +558,7 @@ const Edit = ({
 												<DialogTrigger asChild>
 													<Button
 														type="button"
-														className="hoverScaleDownEffect bg-green-1 lg:bg-[#16BC88] w-fit text-white"
+														className="hoverScaleDownEffect bg-green-1 lg:bg-black lg:rounded-full w-fit text-white"
 													>
 														Choose
 													</Button>
@@ -598,7 +598,7 @@ const Edit = ({
 																		<section
 																			className={`${(profession.name === field.value ||
 																				profession.name === selectedProfession) &&
-																				"ring-2 ring-offset-2 ring-green-1"
+																				"ring-2 ring-offset-2 ring-green-1 lg:ring-black"
 																				} relative shadow-lg rounded-[12px]`}
 																		>
 																			{/* Overlay */}
@@ -625,7 +625,7 @@ const Edit = ({
 																				className={`${profession.name !== field.value ||
 																					profession.name !== selectedProfession
 																					? "bg-white text-black "
-																					: "bg-green-1 lg:bg-[#16BC88] text-white"
+																					: "bg-green-1 lg:bg-black text-white"
 																					} rounded-full p-2 hoverScaleDownEffect cursor-pointer`}
 																			>
 																				{profession.name !== field.value ||
@@ -699,7 +699,7 @@ const Edit = ({
 																<Button
 																	type="button"
 																	className={`${loadingProfessions && "hidden"
-																		} bg-green-1 lg:bg-[#16BC88] hoverScaleDownEffect text-white w-fit`}
+																		} bg-green-1 lg:bg-black rounded-full hoverScaleDownEffect text-white w-fit`}
 																	onClick={handleConfirmProfession}
 																>
 																	Confirm Profession
@@ -736,8 +736,8 @@ const Edit = ({
 													onClick={() => field.onChange("male")}
 													className={
 														field.value === "male"
-															? "bg-green-1 text-white rounded-xl px-4 py-3"
-															: "input-field text-sm px-4 !py-2 hoverScaleDownEffect"
+															? "bg-black text-white rounded-full px-4 py-2"
+															: "input-field text-sm px-4 py-2 hoverScaleDownEffect"
 													}
 												>
 													Male
@@ -747,8 +747,8 @@ const Edit = ({
 													onClick={() => field.onChange("female")}
 													className={
 														field.value === "female"
-															? "bg-green-1 text-white rounded-xl px-4 py-3"
-															: "input-field text-sm px-4 !py-2 hoverScaleDownEffect"
+															? "bg-black text-white rounded-full px-4 py-2"
+															: "input-field text-sm px-4 py-2 hoverScaleDownEffect"
 													}
 												>
 													Female
@@ -758,8 +758,8 @@ const Edit = ({
 													onClick={() => field.onChange("other")}
 													className={
 														field.value === "other"
-															? "bg-green-1 text-white rounded-xl px-4 py-3"
-															: "input-field text-sm px-4 !py-2 hoverScaleDownEffect"
+															? "bg-black text-white rounded-full px-4 py-2"
+															: "input-field text-sm px-4 py-2 hoverScaleDownEffect"
 													}
 												>
 													Other
@@ -984,14 +984,14 @@ const Edit = ({
 							className={`sticky bottom-0 right-0 grid py-2 gap-4 items-center justify-end z-20 bg-white`}
 						>
 							<div className="flex justify-end gap-4">
-								<button
-									className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hoverScaleDownEffect"
+								<Button
+									className="text-gray-700 border border-gray-300 rounded-lg lg:rounded-full hoverScaleDownEffect"
 									onClick={onClose}
 								>
 									Cancel
-								</button>
-								<button
-									className="px-4 py-2 text-sm bg-green-1 lg:bg-[#16BC88] hoverScaleDownEffect rounded-lg text-white"
+								</Button>
+								<Button
+									className="bg-green-1 lg:bg-black lg:rounded-full hoverScaleDownEffect rounded-lg text-white"
 									type="submit"
 									disabled={!isValid || form.formState.isSubmitting}
 								>
@@ -1007,7 +1007,7 @@ const Edit = ({
 									) : (
 										"Update Details"
 									)}
-								</button>
+								</Button>
 							</div>
 						</section>
 					</form>

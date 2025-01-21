@@ -556,13 +556,13 @@ const Withdraw: React.FC = () => {
 										<div className="w-full flex flex-row justify-between p-6 mb-6 items-center rounded-lg bg-white border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
 											<div className="flex flex-col items-start pl-1">
 												<span className="text-[#6B7280] text-sm">Wallet Balance</span>
-												<p className="text-[#16BC88] text-[30px] font-bold p-0">
+												<p className="text-green-600 text-[30px] font-bold p-0">
 													₹ {walletBalance.toFixed(2)}
 												</p>
 											</div>
 											<Button
 												onClick={openModal}
-												className="right-0 w-auto px-4 py-3 shadow bg-[#16BC88] text-white font-bold leading-4 text-sm rounded-full hoverScaleDownEffect"
+												className="right-0 w-auto px-4 py-3 shadow bg-black text-white font-bold leading-4 text-sm rounded-full hoverScaleDownEffect"
 											>
 												Withdraw
 											</Button>
@@ -578,7 +578,7 @@ const Withdraw: React.FC = () => {
 								<div className="flex items-center gap-3 text-xs font-bold text-[#4B5563]">
 									<div className="relative">
 										<select
-											className="border-[1px] bg-white border-solid border-[#E5E7EB] px-6 py-3 rounded-lg focus:outline-none hover:cursor-pointer hoverScaleDownEffect pr-10 appearance-none"
+											className="border-[1px] bg-white border-solid border-[#E5E7EB] px-6 py-3 rounded-full focus:outline-none hover:cursor-pointer hoverScaleDownEffect pr-10 appearance-none"
 											value={selectedOption}
 											onChange={(e) => setSelectedOption(e.target.value)}
 										>
@@ -638,9 +638,9 @@ const Withdraw: React.FC = () => {
 											onClick={() => {
 												setBtn(filter as "all" | "credit" | "debit");
 											}}
-											className={`capitalize px-4 py-2 border-[1px] border-solid border-[#E5E7EB] rounded-lg ${filter === btn
-												? "bg-gray-800 text-white"
-												: "bg-white text-[#4B5563] dark:bg-gray-700 dark:text-white hoverScaleDownEffect"
+											className={`capitalize px-4 py-2 border-[1px] border-solid border-[#E5E7EB] rounded-full ${filter === btn
+												? "bg-black text-white"
+												: "bg-white text-[#4B5563] hoverScaleDownEffect"
 												}`}
 										>
 											{filter === "all" ? filter : filter === 'credit' ? "Earnings" : "Withdrawal"}
@@ -653,7 +653,7 @@ const Withdraw: React.FC = () => {
 					<div className="flex justify-between gap-3 w-full pb-6 text-[#6B7280] text-sm">
 						<section className="flex flex-col gap-3 border-[1px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg p-6 w-full">
 							<span>Total Earnings</span>
-							<span className={`text-[#16BC88] ${isFetching ? "text-sm" : "text-[30px]"} font-bold`}>{`${isFetching ? "Fetching..." : `₹ ${userTransactions?.pages[0].totalEarnings.toFixed(2)}`} `}</span>
+							<span className={`text-green-600 ${isFetching ? "text-sm" : "text-[30px]"} font-bold`}>{`${isFetching ? "Fetching..." : `₹ ${userTransactions?.pages[0].totalEarnings.toFixed(2)}`} `}</span>
 						</section>
 						<section className="flex flex-col gap-3 border-[1px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg p-6 w-full">
 							<span>Total Withdrawals</span>
@@ -769,9 +769,15 @@ const Withdraw: React.FC = () => {
 					{isModalOpen && (
 						<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
 							<div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-								<h2 className="text-lg font-semibold mb-4">
-									Enter Withdrawal Amount
-								</h2>
+								<div className="flex justify-between items-center">
+									<h2 className="text-lg font-semibold">Enter Withdrawal Amount</h2>
+									<button
+										className="text-gray-500 text-xl hover:text-gray-700"
+										onClick={closeModal}
+									>
+										&times;
+									</button>
+								</div>
 								<input
 									type="text"
 									value={withdrawAmount}
@@ -779,13 +785,13 @@ const Withdraw: React.FC = () => {
 									placeholder="Enter amount"
 									className="p-2 border rounded w-full mb-4"
 								/>
-								<div className="flex justify-end gap-4">
-									<Button onClick={closeModal} className="bg-gray-300 text-black">
+								<div className="flex mt-6 justify-end gap-4">
+									<Button onClick={closeModal} className="rounded-full text-gray-700 border border-gray-300 hoverScaleDownEffect">
 										Cancel
 									</Button>
 									<Button
 										onClick={handleWithdraw}
-										className="bg-[#16BC88] text-white font-bold"
+										className="bg-black text-white rounded-full hoverScaleDownEffect"
 									>
 										Confirm
 									</Button>
