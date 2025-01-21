@@ -25,6 +25,7 @@ import {
 import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { trackEvent } from "@/lib/mixpanel";
 import MeetingNotStarted from "@/components/meeting/MeetingNotStarted";
+import MeetingRoomScheduled from "@/components/meeting/MeetingRoomScheduled";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -130,25 +131,54 @@ const MeetingPage = () => {
 	);
 };
 
-const MeetingRoomWrapper = ({ toast, router, call }: any) => {
+const MeetingRoomWrapper = ({
+	toast,
+	router,
+	call,
+}: {
+	toast: any;
+	router: any;
+	call: Call;
+}) => {
 	const { useCallEndedAt, useCallStartsAt } = useCallStateHooks();
 	const callStartsAt = useCallStartsAt();
 	const callEndedAt = useCallEndedAt();
+	const [hasJoinedCall, setHasJoinedCall] = useState(false);
+
 	const callTimeNotArrived =
-		callStartsAt && new Date(callStartsAt) > new Date();
+		!hasJoinedCall && callStartsAt && new Date(callStartsAt) > new Date();
+
 	const callHasEnded = !!callEndedAt;
 
 	if (callTimeNotArrived)
-		return <MeetingNotStarted call={call} startsAt={callStartsAt} />;
+		return (
+			<MeetingNotStarted
+				call={call}
+				startsAt={callStartsAt}
+				onJoinCall={() => setHasJoinedCall(true)}
+			/>
+		);
 
 	if (callHasEnded) {
 		return <CallEnded toast={toast} router={router} call={call} />;
 	} else {
-		return <MeetingRoom />;
+		return call.state.custom.type !== "scheduled" ? (
+			<MeetingRoom />
+		) : (
+			<MeetingRoomScheduled />
+		);
 	}
 };
 
-const CallEnded = ({ toast, router, call }: any) => {
+const CallEnded = ({
+	toast,
+	router,
+	call,
+}: {
+	toast: any;
+	router: any;
+	call: Call;
+}) => {
 	const [loading, setLoading] = useState(false);
 	const transactionHandled = useRef(false);
 	const { currentUser, currentTheme, userType } = useCurrentUsersContext();

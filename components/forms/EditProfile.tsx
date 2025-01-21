@@ -263,7 +263,7 @@ const EditProfile = ({
 		if (!selectedFile) {
 			const newPhoto =
 				placeholderImages[
-				watchedValues.gender as "male" | "female" | "other"
+					watchedValues.gender as "male" | "female" | "other"
 				] || GetRandomImage();
 
 			if (
@@ -401,7 +401,10 @@ const EditProfile = ({
 					toastStatus: "negative",
 				});
 			} else {
-				const updatedUser = userType === "creator" ? response.data.updatedUser : response.updatedUser;
+				const updatedUser =
+					userType === "creator"
+						? response.data.updatedUser
+						: response.updatedUser;
 				const newUserDetails = {
 					...userData,
 					fullName: `${updatedUser.firstName} ${updatedUser.lastName}`,
@@ -443,14 +446,13 @@ const EditProfile = ({
 	if (loading)
 		return (
 			<section
-				className={`w-full ${pathname.includes("/updateDetails") ? "h-screen" : "h-full"
-					} flex items-center justify-center`}
+				className={`w-full ${
+					pathname.includes("/updateDetails") ? "h-screen" : "h-full"
+				} flex items-center justify-center`}
 			>
 				<SinglePostLoader />
 			</section>
 		);
-
-	console.log(isChanged, isValid, formError, watchedValues, initialState);
 
 	return (
 		<Form {...form}>
@@ -496,8 +498,9 @@ const EditProfile = ({
 							</FormLabel>
 							<FormControl>
 								<div
-									className={`relative flex items-center  ${userType === "creator" ? " w-fit gap-2.5" : "w-full"
-										}`}
+									className={`relative flex items-center  ${
+										userType === "creator" ? " w-fit gap-2.5" : "w-full"
+									}`}
 								>
 									{/* empty placeholder for creator's username */}
 									{userType === "creator" && (
@@ -640,8 +643,8 @@ const EditProfile = ({
 														<ContentLoading />
 													</div>
 												) : !loadingProfessions &&
-													professions &&
-													professions.length === 0 ? (
+												  professions &&
+												  professions.length === 0 ? (
 													<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
 														Error fetching the list
 													</p>
@@ -656,19 +659,21 @@ const EditProfile = ({
 																}
 															>
 																<section
-																	className={`${(profession.name === field.value ||
-																		profession.name === selectedProfession) &&
+																	className={`${
+																		(profession.name === field.value ||
+																			profession.name === selectedProfession) &&
 																		"ring-2 ring-offset-2 ring-green-1"
-																		} relative shadow-lg rounded-[12px]`}
+																	} relative shadow-lg rounded-[12px]`}
 																>
 																	{/* Overlay */}
 
 																	<div
-																		className={`${profession.name === field.value ||
+																		className={`${
+																			profession.name === field.value ||
 																			profession.name === selectedProfession
-																			? "bg-black/60"
-																			: "bg-black/20"
-																			} absolute inset-0  rounded-[12px]`}
+																				? "bg-black/60"
+																				: "bg-black/20"
+																		} absolute inset-0  rounded-[12px]`}
 																	/>
 
 																	<Image
@@ -682,14 +687,15 @@ const EditProfile = ({
 
 																<section className="flex flex-col gap-2 items-center justify-center absolute bottom-2">
 																	<button
-																		className={`${profession.name !== field.value ||
+																		className={`${
+																			profession.name !== field.value ||
 																			profession.name !== selectedProfession
-																			? "bg-white text-black "
-																			: "bg-green-1 text-white"
-																			} rounded-full p-2 hoverScaleDownEffect cursor-pointer`}
+																				? "bg-white text-black "
+																				: "bg-green-1 text-white"
+																		} rounded-full p-2 hoverScaleDownEffect cursor-pointer`}
 																	>
 																		{profession.name !== field.value ||
-																			profession.name !== selectedProfession ? (
+																		profession.name !== selectedProfession ? (
 																			<svg
 																				xmlns="http://www.w3.org/2000/svg"
 																				fill="none"
@@ -758,8 +764,9 @@ const EditProfile = ({
 
 														<Button
 															type="button"
-															className={`${loadingProfessions && "hidden"
-																} bg-green-1 hoverScaleDownEffect text-white w-fit`}
+															className={`${
+																loadingProfessions && "hidden"
+															} bg-green-1 hoverScaleDownEffect text-white w-fit`}
 															onClick={handleConfirmProfession}
 														>
 															Confirm Profession
@@ -992,10 +999,11 @@ const EditProfile = ({
 											{predefinedColors.map((color, index) => (
 												<div
 													key={index}
-													className={`w-8 h-8 m-1 rounded-full cursor-pointer hoverScaleDownEffect ${selectedColor === color
-														? "ring-2 ring-offset-2 ring-blue-500"
-														: ""
-														}`}
+													className={`w-8 h-8 m-1 rounded-full cursor-pointer hoverScaleDownEffect ${
+														selectedColor === color
+															? "ring-2 ring-offset-2 ring-blue-500"
+															: ""
+													}`}
 													style={{ backgroundColor: color }}
 													onClick={() => {
 														handleColorSelect(color);
@@ -1042,10 +1050,11 @@ const EditProfile = ({
 					<div className="text-red-500 text-lg text-center">{formError}</div>
 				)}
 				<section
-					className={`${isChanged && isValid && !formError
-						? "grid-cols-1 w-full"
-						: "grid-cols-1 w-3/4 lg:w-1/2"
-						} sticky bottom-2 right-0 grid  gap-4 items-center justify-center `}
+					className={`${
+						isChanged && isValid && !formError
+							? "grid-cols-1 w-full"
+							: "grid-cols-1 w-3/4 lg:w-1/2"
+					} sticky bottom-2 right-0 grid  gap-4 items-center justify-center `}
 				>
 					{isChanged && isValid && !formError && (
 						<Button
