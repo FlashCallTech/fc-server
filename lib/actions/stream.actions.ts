@@ -23,8 +23,6 @@ export const tokenProvider = async (
 		"voip"
 	);
 
-	console.log("fcmToken: ", fcmToken);
-
 	// Register the user in Stream
 	const userData = {
 		id: userId,

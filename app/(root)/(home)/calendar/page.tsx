@@ -81,7 +81,7 @@ const Calendar = () => {
 	return (
 		<section className="flex size-full flex-col px-4">
 			<section
-				className={`sticky flex w-full items-center justify-between top-0 md:top-[76px] bg-white z-30  lg:pl-0.5 py-4 transition-all duration-300`}
+				className={`sticky flex w-full items-center justify-between top-0 lg:top-[76px] bg-white z-30  lg:pl-0.5 py-4 transition-all duration-300`}
 			>
 				<section className="flex items-center gap-4">
 					<Link

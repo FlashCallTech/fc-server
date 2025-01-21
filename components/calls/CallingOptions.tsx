@@ -394,6 +394,8 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						custom: {
 							description,
 							global: clientUser?.global ?? false,
+							duration: maxCallDuration,
+							type: "instant",
 						},
 					},
 				})
@@ -445,6 +447,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 					await updateFirestoreSessions(clientUser?._id as string, {
 						callId: call.id,
 						status: "initiated",
+						callType: "instant",
 						clientId: clientUser?._id as string,
 						expertId: creator._id,
 						isVideoCall: callType,
