@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Button } from "../ui/button";
 
 const AddBankAccountModal = ({ isOpen, onClose, errors, setPaymentMethod, bankDetails, setBankDetails, save, otpGenerated, otpSubmitted, setOtp, saving }: { isOpen: boolean; onClose: () => void; errors: any; setPaymentMethod: any; bankDetails: any; setBankDetails: any; save: () => void; otpGenerated: boolean; otpSubmitted: any; setOtp: any, saving: any }) => {
     if (!isOpen) return null;
@@ -50,7 +51,7 @@ const AddBankAccountModal = ({ isOpen, onClose, errors, setPaymentMethod, bankDe
                                     className="block text-sm font-semibold mb-1"
                                     htmlFor="otp"
                                 >
-                                    OTP
+                                    Add the last two digits after decimal of the amount received
                                 </label>
                                 <input
                                     id="otp"
@@ -66,20 +67,20 @@ const AddBankAccountModal = ({ isOpen, onClose, errors, setPaymentMethod, bankDe
 
                 {/* Modal Footer */}
                 <div className="mt-6 flex justify-end gap-4">
-                    <button
-                        className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hoverScaleDownEffect"
+                    <Button
+                        className="text-gray-700 border border-gray-300 rounded-full hoverScaleDownEffect"
                         onClick={onClose}
                     >
                         Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={() => {
                             save(),
                                 setPaymentMethod("UPI")
                         }}
-                        className="px-4 py-2 text-sm text-white bg-[#16BC88] rounded-lg hoverScaleDownEffect">
+                        className="text-white bg-black rounded-full hoverScaleDownEffect">
                         {saving ? (otpGenerated ? "Saving..." : "Sending OTP..." ) : otpGenerated ? "Submit OTP" : "Send OTP"}
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

@@ -73,7 +73,7 @@ const BlockUnblockButton = ({
 		<>
 			<button
 				onClick={() => setShowAlert(true)}
-				className="hoverScaleDownEffect flex items-center gap-2 px-4 py-2 bg-green-1 rounded-md text-white focus:outline-none"
+				className="hoverScaleDownEffect flex items-center gap-2 px-4 py-2 bg-green-1 lg:bg-black rounded-md lg:rounded-full text-white focus:outline-none"
 			>
 				{isBlocked ? (
 					<svg

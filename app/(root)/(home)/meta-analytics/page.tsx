@@ -79,7 +79,7 @@ const MetaAnalytics = () => {
 						<div className="text-center text-[13px] text-gray-400">
 							If you are interested in learning how to set up a{" "}
 							<b>Meta Pixel</b> account and how it works, <br />{" "}
-							<Link href={"/home"} className="text-[#16BC88]">
+							<Link href={"/home"} className="text-black">
 								<b> please click here. </b>{" "}
 							</Link>
 						</div>

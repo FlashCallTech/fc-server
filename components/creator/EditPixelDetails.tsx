@@ -150,14 +150,14 @@ const EditPixelDetails = ({
                             )}
                         />
                         <div className="mt-6 flex justify-end gap-4">
-                            <button
-                                className={`px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hoverScaleDownEffect ${updatingData ? "hidden" : ""}`}
+                            <Button
+                                className={`text-gray-700 border border-gray-300 rounded-full hoverScaleDownEffect ${updatingData ? "hidden" : ""}`}
                                 onClick={onClose}
                             >
                                 Cancel
-                            </button>
-                            <button
-                                className="px-4 py-2 text-sm bg-[#16BC88] hoverScaleDownEffect rounded-lg text-white"
+                            </Button>
+                            <Button
+                                className="bg-black hoverScaleDownEffect rounded-full text-white"
                                 type="submit"
                                 disabled={updatingData || !isValid}
                             >
@@ -172,7 +172,7 @@ const EditPixelDetails = ({
                                 ) : (
                                     "Save"
                                 )}
-                            </button>
+                            </Button>
                         </div>
                     </form>
                 </FormProvider>

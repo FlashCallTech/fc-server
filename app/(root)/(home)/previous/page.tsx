@@ -136,10 +136,10 @@ const PreviousPage = () => {
 					{options.map((option) => (
 						<Button
 							key={option}
-							className={`text-sm font-medium px-4 py-2 border-[1px] border-solid border-[#E5E7EB] text-[#6B7280] rounded-full hoverScaleDownEffect ${
+							className={`text-sm font-medium px-4 py-2 text-[#6B7280] rounded-full ${
 								historyType === option
-									? "text-[#16BC88] bg-[#def4ed] border-0"
-									: ""
+									? "bg-black text-white"
+									: "hoverScaleDownEffect bg-white text-[#4B5563] border-[1px] border-solid border-[#E5E7EB]"
 							}
 								}`}
 							onClick={() => setHistoryType(option)}
