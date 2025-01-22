@@ -304,7 +304,7 @@ const MeetingRoom = () => {
 	// Display countdown notification or modal to the user
 	const CountdownDisplay = () => (
 		<div className="absolute top-6 left-6 sm:top-4 sm:left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-red-500 text-white flex items-center justify-center">
-			<p>Ending call in {countdown}s</p>
+			<p>Connecting call in {countdown}s</p>
 		</div>
 	);
 
