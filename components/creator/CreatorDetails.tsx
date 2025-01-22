@@ -116,8 +116,8 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 	const getClampedText = (text: string) => {
 		if (!text) return;
-		let charLen = 200;
-		if (text?.length > 100 && !isExpanded) {
+		let charLen = 100;
+		if (text?.length > charLen && !isExpanded) {
 			return text.slice(0, charLen) + "... ";
 		}
 		return text;
@@ -153,16 +153,15 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 										</button>
 									</span>
 								)}
-
-								{isExpanded && (
-									<button
-										onClick={toggleReadMore}
-										className="font-semibold hoverScaleDownEffect ml-2 mt-2"
-									>
-										view less
-									</button>
-								)}
 							</p>
+							{isExpanded && (
+								<button
+									onClick={toggleReadMore}
+									className="font-semibold hoverScaleDownEffect mt-2"
+								>
+									view less
+								</button>
+							)}
 						</section>
 						{/* Divider */}
 						<div className="w-full border border-white" />
@@ -268,42 +267,44 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				{/* Creator Bio */}
 				<section className="xl:hidden size-full">{renderCreatorBio()}</section>
 				{/* Discounts */}
-				<div className="w-full flex-col items-start justify-center gap-2.5 p-4 bg-[#DCFCE7] rounded-xl">
-					<div className="flex items-center gap-2.5 text-[#166534] text-sm">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							fill="currentColor"
-							className="size-4"
+				{!offerApplied && (
+					<div className="w-full flex-col items-start justify-center gap-2.5 p-4 bg-[#DCFCE7] rounded-xl">
+						<div className="flex items-center gap-2.5 text-[#166534] text-sm">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 24 24"
+								fill="currentColor"
+								className="size-4"
+							>
+								<path
+									fillRule="evenodd"
+									d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
+									clipRule="evenodd"
+								/>
+							</svg>
+
+							<span>You might be eligible for discount</span>
+						</div>
+
+						<button
+							className="font-semibold border-b border-[#166534] text-[#166534] text-sm leading-3"
+							onClick={() => setIsDiscountModalOpen(true)}
 						>
-							<path
-								fillRule="evenodd"
-								d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
-								clipRule="evenodd"
-							/>
-						</svg>
+							{offerApplied ? "Offers Applied" : "Claim Now"}
+						</button>
 
-						<span>You might be eligible for discount</span>
+						<ClientSideDiscountSheet
+							creatorId={creator._id || ""}
+							creatorName={getDisplayName(creator)}
+							theme={creator.themeSelected}
+							isDiscountModalOpen={isDiscountModalOpen}
+							setIsDiscountModalOpen={setIsDiscountModalOpen}
+							offerApplied={offerApplied}
+							setOfferApplied={setOfferApplied}
+							setIsAuthSheetOpen={setIsAuthSheetOpen}
+						/>
 					</div>
-
-					<button
-						className="font-semibold border-b border-[#166534] text-[#166534] text-sm leading-3"
-						onClick={() => setIsDiscountModalOpen(true)}
-					>
-						{offerApplied ? "Offers Applied" : "Claim Now"}
-					</button>
-
-					<ClientSideDiscountSheet
-						creatorId={creator._id || ""}
-						creatorName={getDisplayName(creator)}
-						theme={creator.themeSelected}
-						isDiscountModalOpen={isDiscountModalOpen}
-						setIsDiscountModalOpen={setIsDiscountModalOpen}
-						offerApplied={offerApplied}
-						setOfferApplied={setOfferApplied}
-						setIsAuthSheetOpen={setIsAuthSheetOpen}
-					/>
-				</div>
+				)}
 
 				{/* Call Buttons */}
 

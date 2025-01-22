@@ -8,7 +8,7 @@ import EndCallDecision from "./EndCallDecision";
 import Image from "next/image";
 import { updateFirestoreSessions } from "@/lib/utils";
 
-const EndCallButton = () => {
+const EndCallButton = ({ callType }: { callType: "scheduled" | "instant" }) => {
 	const call = useCall();
 	const [showDialog, setShowDialog] = useState(false);
 
@@ -23,10 +23,15 @@ const EndCallButton = () => {
 	};
 
 	const handleDecisionDialog = async () => {
-		await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
-			status: "payment pending",
-		});
-		await call?.endCall();
+		if (callType !== "scheduled") {
+			await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
+				status: "payment pending",
+			});
+			await call?.endCall();
+		} else {
+			await call?.leave();
+		}
+
 		setShowDialog(false);
 	};
 

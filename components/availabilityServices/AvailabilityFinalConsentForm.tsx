@@ -42,7 +42,7 @@ const AvailabilityFinalConsentForm = ({
 	toggleSchedulingSheet,
 }: params) => {
 	const [isDiscountUtilized, setIsDiscountUtilized] = useState(false);
-	const [payUsingWallet, setPayUsingWallet] = useState(false);
+	const [payUsingWallet, setPayUsingWallet] = useState(true);
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
 	const { clientUser } = useCurrentUsersContext();
@@ -54,7 +54,7 @@ const AvailabilityFinalConsentForm = ({
 		total: service.basePrice.toFixed(2),
 		currency: service.currency,
 	});
-	const { pgHandler, loading } = useScheduledPayment();
+	const { pgHandler } = useScheduledPayment();
 
 	const [preparingTransaction, setPreparingTransaction] = useState(false);
 	const { toast } = useToast();
@@ -71,9 +71,11 @@ const AvailabilityFinalConsentForm = ({
 	let customDateValue = formattedData.day.split(", ")[1].split(" ") ?? "";
 
 	useEffect(() => {
-		!service.utilizedBy.some(
-			(clientId) => clientId.toString() === clientUser?._id.toString()
-		) && setIsDiscountUtilized(true);
+		service.discountRules &&
+			!service.utilizedBy.some(
+				(clientId) => clientId.toString() === clientUser?._id.toString()
+			) &&
+			setIsDiscountUtilized(true);
 
 		const updateTotal = async () => {
 			const { total, currency } = await calculateTotal();
@@ -723,10 +725,14 @@ const AvailabilityFinalConsentForm = ({
 									/>
 								) : (
 									<span className="text-sm">
-										{`Pay ₹ ${(
-											parseFloat(totalAmount.total) -
-											(payUsingWallet ? walletBalance : 0)
-										).toFixed(2)}`}
+										{`Pay ₹ ${
+											parseFloat(totalAmount.total) > walletBalance
+												? (
+														parseFloat(totalAmount.total) -
+														(payUsingWallet ? walletBalance : 0)
+												  ).toFixed(2)
+												: parseFloat(totalAmount.total).toFixed(2)
+										}`}
 									</span>
 								)}
 							</Button>

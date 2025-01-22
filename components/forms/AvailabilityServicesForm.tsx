@@ -96,11 +96,17 @@ const formSchema = z.object({
 		.positive("Duration must be a positive number.")
 		.min(15, "Duration must be at least 15 minutes.")
 		.optional(),
-	basePrice: z
-		.number()
-		.int()
-		.positive("Price must be greater than zero.")
-		.min(10, "Price must be greater than zero."),
+	basePrice: z.preprocess(
+		(value) => (value === null || value === undefined ? NaN : value),
+		z
+			.number({
+				required_error: "Base price is required.",
+				invalid_type_error: "Base price must be a valid number.",
+			})
+			.int()
+			.positive("Price must be greater than 0.")
+			.min(10, "Price must be greater than 10.")
+	),
 	isActive: z.boolean({
 		required_error: "isActive is required.",
 	}),
@@ -151,11 +157,7 @@ const AvailabilityServicesForm = ({
 						timeDuration: 15,
 						basePrice: 10,
 						currency: "INR",
-						discountRules: {
-							conditions: ["30 Minutes Call"],
-							discountType: "percentage",
-							discountAmount: 10,
-						},
+						discountRules: undefined,
 						extraDetails: "",
 				  },
 	});
@@ -169,7 +171,7 @@ const AvailabilityServicesForm = ({
 				discountRules:
 					values.discountRules && Object.keys(values.discountRules).length > 0
 						? values.discountRules
-						: undefined,
+						: null,
 				photo:
 					values.photo ||
 					"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
@@ -354,17 +356,12 @@ const AvailabilityServicesForm = ({
 										form.watch("discountRules.conditions") || [];
 
 									if (
-										selectedDuration < 30 &&
-										selectedConditions.includes("30 Minutes Call")
+										(selectedDuration < 30 &&
+											selectedConditions.includes("30 Minutes Call")) ||
+										(selectedDuration < 60 &&
+											selectedConditions.includes("60 Minutes Call"))
 									) {
-										form.setValue("discountRules.conditions", [""]);
-									}
-
-									if (
-										selectedDuration < 60 &&
-										selectedConditions.includes("60 Minutes Call")
-									) {
-										form.setValue("discountRules.conditions", [""]);
+										form.setValue("discountRules", undefined);
 									}
 
 									field.onChange(selectedDuration);
@@ -529,7 +526,6 @@ const AvailabilityServicesForm = ({
 									const selectedCondition = conditions[0] || null;
 
 									const handleConditionClick = (condition: string) => {
-										// Update the timeDuration based on the selected condition
 										let updatedDuration = selectedDuration;
 										if (condition === "30 Minutes Call") {
 											updatedDuration = 30;
@@ -537,7 +533,6 @@ const AvailabilityServicesForm = ({
 											updatedDuration = 60;
 										}
 
-										// Set the selected condition and update the timeDuration field
 										field.onChange([condition]);
 										form.setValue("timeDuration", updatedDuration);
 									};
