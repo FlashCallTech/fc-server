@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState } from "react";
 import { Service } from "@/types";
 
-type SelectedServiceType = Service | null;
-type SelectedServicesType = Service[] | null;
-type FinalServicesType = Service[] | null;
+export type SelectedServiceType = Service | null;
+export type SelectedServicesType = Service[] | null;
+export type FinalServicesType = Service[] | null;
 
 interface SelectedServiceContextType {
 	selectedService: SelectedServiceType;
@@ -58,14 +58,15 @@ export const SelectedServiceProvider: React.FC<{
 			? selectedServices.find(
 					(service) =>
 						service.type.toLowerCase() === type.toLowerCase() ||
+						service?.typeLabel?.toLowerCase() === type.toLowerCase() ||
 						service.type.toLowerCase() === "all"
 			  )
 			: null;
 
-		console.log(selectedServices, service);
-
 		return service || null;
 	};
+
+	console.log(selectedServices, selectedService);
 
 	return (
 		<SelectedServiceContext.Provider

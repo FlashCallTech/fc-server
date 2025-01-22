@@ -22,7 +22,7 @@ const UpcomingPage = () => {
 	return (
 		<section className="flex size-full flex-col gap-2 pb-5">
 			<section
-				className={`sticky top-0 md:top-[76px] bg-white z-30 w-full p-4  pb-4 flex items-center justify-between transition-all duration-300`}
+				className={`sticky top-0 lg:top-[76px] bg-white z-30 w-full p-4  pb-4 flex items-center justify-between transition-all duration-300`}
 			>
 				<section className="flex items-center gap-4">
 					<Link

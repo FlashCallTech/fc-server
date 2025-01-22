@@ -1,7 +1,7 @@
 "use client";
 
 import { useGetUserAvailabilityServices } from "@/lib/react-query/queries";
-import { AvailabilityService, creatorUser } from "@/types";
+import { AvailabilityService, creatorUser, DiscountRule } from "@/types";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
@@ -88,7 +88,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		return (
 			<section>
 				<>
-					<div className={`flex gap-2.5 items-center font-bold text-white`}>
+					<div className="bg-[#f3f5f8] size-[40px] flex flex-col items-center justify-center border border-[#E5E7EB] rounded-full">
 						{availableIcons[serviceType]}
 					</div>
 				</>
@@ -96,16 +96,33 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		);
 	};
 
+	const calculateDiscountedRate = (
+		rate: number,
+		discountRule: DiscountRule
+	) => {
+		const rateNum = Number(rate);
+		if (discountRule.discountType === "percentage") {
+			return (rateNum - (rateNum * discountRule.discountAmount) / 100).toFixed(
+				2
+			);
+		} else if (
+			discountRule.discountType === "flat" &&
+			rateNum > discountRule.discountAmount
+		) {
+			return (rateNum - discountRule.discountAmount).toFixed(2);
+		}
+		return rate;
+	};
+
 	return (
 		<>
 			<div className="flex flex-col w-full items-center justify-center gap-4">
 				{userServices.map((service: AvailabilityService) => {
 					const discountApplicable = getSpecificServiceOffer(service.type);
-					console.log(discountApplicable);
 					return (
 						<div
 							key={service._id}
-							className={`flex flex-col p-4  border border-white/20 bg-[#4E515C4D] rounded-[24px] min-h-[52px] gap-4 justify-between items-start w-full`}
+							className={`flex flex-col p-4  border border-gray-300 rounded-[24px] min-h-[52px] gap-4 justify-between items-start w-full`}
 						>
 							{discountApplicable && (
 								<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
@@ -139,13 +156,14 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 							)}
 							<div className="flex items-center justify-start gap-4 w-full">
 								{serviceIcon(service.type)}
+
 								<span className="font-bold text-lg">{service.title}</span>
 							</div>
 
 							<p className="text-base">{service.description}</p>
 
 							<button
-								className="w-full flex items-center justify-center px-4 py-2.5 hoverScaleDownEffect cursor-pointer border-2 border-white/50 rounded-full"
+								className="w-full flex items-center justify-center px-4 py-2.5 hoverScaleDownEffect cursor-pointer border-2 border-gray-300 rounded-full"
 								onClick={handleCallClick}
 							>
 								<section className="pl-2 w-full flex items-center justify-between">
@@ -174,11 +192,44 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 										</section>
 									</div>
 									<p
-										className={`font-medium tracking-widest rounded-full px-2 w-fit min-w-[100px] min-h-[36px] text-[15px] text-black flex items-center justify-center`}
-										style={{ background: themeColor }}
+										className={`font-medium tracking-widest rounded-full px-4 w-fit min-w-[100px] min-h-[36px] text-[14px] bg-black text-white flex items-center justify-center`}
 									>
-										{service.currency === "INR" ? "Rs." : "$"}
-										<span className="py-2.5">{service.basePrice}</span>
+										{discountApplicable && discountApplicable.discountRules ? (
+											discountApplicable.discountRules[0].discountType ===
+												"percentage" ||
+											(discountApplicable.discountRules[0].discountType ===
+												"flat" &&
+												service.basePrice >
+													discountApplicable.discountRules[0]
+														.discountAmount) ? (
+												<>
+													<s
+														style={{
+															color: "rgba(255,255,255,0.5)",
+															marginRight: "10px",
+														}}
+													>
+														{service.currency === "INR" ? "Rs." : "$"}
+														{service.basePrice}
+													</s>
+													{service.currency === "INR" ? "Rs." : "$"}
+													{calculateDiscountedRate(
+														service.basePrice,
+														discountApplicable.discountRules[0]
+													)}
+												</>
+											) : (
+												<>
+													{service.currency === "INR" ? "Rs." : "$"}
+													<span className="py-2.5">{service.basePrice}</span>
+												</>
+											)
+										) : (
+											<>
+												{service.currency === "INR" ? "Rs." : "$"}
+												<span className="py-2.5">{service.basePrice}</span>
+											</>
+										)}
 									</p>
 								</section>
 							</button>
@@ -215,7 +266,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 			)}
 
 			{/* Intersection Observer Trigger */}
-			{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
+			{hasNextPage && <div ref={ref} className="py-4 w-full" />}
 
 			{isAuthSheetOpen && (
 				<AuthenticationSheet

@@ -26,7 +26,7 @@ const NavLoader = () => {
 	);
 };
 
-const CreatorNavbar = ({ isMobile }: { isMobile?: boolean }) => {
+const CreatorNavbar = () => {
 	const {
 		currentUser,
 		fetchingUser,
@@ -34,8 +34,6 @@ const CreatorNavbar = ({ isMobile }: { isMobile?: boolean }) => {
 		setAuthenticationSheetOpen,
 		currentTheme,
 		creatorURL,
-		userFetched,
-		ongoingCallStatus,
 	} = useCurrentUsersContext();
 	const router = useRouter();
 	const [creator, setCreator] = useState<creatorUser>();
@@ -107,21 +105,7 @@ const CreatorNavbar = ({ isMobile }: { isMobile?: boolean }) => {
 			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
 			style={{
 				boxShadow: `4px 4px 0px 0px #000000`,
-				color: `${
-					isMobile && isCreatorOrExpertPath
-						? currentTheme
-							? "#000000"
-							: "#ffffff"
-						: followCreatorTheme
-				}`,
 				border: `1px solid #000000`,
-				backgroundColor: `${
-					isCreatorOrExpertPath
-						? isMobile
-							? currentTheme
-							: "#333333"
-						: "#ffffff"
-				}`,
 			}}
 			onClick={handleAppRedirect}
 		>
@@ -144,16 +128,7 @@ const CreatorNavbar = ({ isMobile }: { isMobile?: boolean }) => {
 			id="navbar"
 			className={`${
 				isCreatorHome ? "lg:hidden" : ""
-			} flex justify-between items-center sticky w-full h-[76px] z-40 top-0 left-[264px] px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}
-			style={{
-				background: `${
-					isCreatorOrExpertPath
-						? isMobile
-							? currentTheme
-							: "#121319"
-						: "#ffffff"
-				}`,
-			}}
+			} bg-white flex justify-between items-center sticky w-full h-[76px] z-40 top-0 left-[264px] px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}
 		>
 			{currentUser ? (
 				<Link
@@ -168,17 +143,7 @@ const CreatorNavbar = ({ isMobile }: { isMobile?: boolean }) => {
 						className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[150px] xl:h-[48px]"
 						style={{
 							boxShadow: `4px 4px 0px 0px #000000`,
-							color: `${
-								isMobile && followCreatorTheme ? "#000000" : followCreatorTheme
-							}`,
 							border: `1px solid #000000`,
-							backgroundColor: `${
-								isCreatorOrExpertPath
-									? isMobile
-										? currentTheme
-										: "#333333"
-									: "#ffffff"
-							}`,
 						}}
 					/>
 				</Link>

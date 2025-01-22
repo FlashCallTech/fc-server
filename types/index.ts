@@ -482,6 +482,7 @@ export interface Service {
 	createdAt: string;
 	updatedAt: string;
 	utilizedBy: Types.ObjectId[];
+	typeLabel?: string;
 }
 
 // Availability Service Type

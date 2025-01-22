@@ -269,7 +269,7 @@ const AvailabilityServiceCards = ({
 				)}
 
 				{/* Intersection Observer Trigger */}
-				{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
+				{hasNextPage && <div ref={ref} className="py-4 w-full" />}
 			</div>
 		</>
 	);
