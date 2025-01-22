@@ -157,7 +157,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 							{isExpanded && (
 								<button
 									onClick={toggleReadMore}
-									className="font-semibold hoverScaleDownEffect mt-2"
+									className="font-semibold hoverScaleDownEffect"
 								>
 									view less
 								</button>

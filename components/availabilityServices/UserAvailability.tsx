@@ -428,112 +428,116 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 													?.length > 0 ? (
 													watch(`weeklyAvailability.${dayIndex}.slots`)?.map(
 														(slot, slotIndex) => (
-															<div
-																key={slotIndex}
-																className="flex items-center gap-2 mb-2"
-															>
-																{/* Start Time */}
-																<FormField
-																	control={form.control}
-																	name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`}
-																	render={({ field }) => (
-																		<FormControl>
-																			<Select
-																				value={field.value}
-																				onValueChange={(value) => {
-																					field.onChange(value);
-																					validateSlot(
-																						dayIndex,
-																						slotIndex,
-																						value,
-																						watch(
-																							`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`
-																						)
-																					);
-																				}}
-																			>
-																				<SelectTrigger className="w-full border border-[#D1D5DB] drop-shadow-sm">
-																					<SelectValue placeholder="From" />
-																				</SelectTrigger>
-																				<SelectContent className="bg-white">
-																					{timeSlots.map((time) => (
-																						<SelectItem
-																							key={time}
-																							value={time}
-																							className="cursor-pointer hover:bg-gray-100"
-																						>
-																							{time}
-																						</SelectItem>
-																					))}
-																				</SelectContent>
-																			</Select>
-																		</FormControl>
-																	)}
-																/>
-																<span>-</span>
-																{/* End Time */}
-																<FormField
-																	control={form.control}
-																	name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`}
-																	render={({ field }) => (
-																		<FormControl>
-																			<Select
-																				value={field.value}
-																				onValueChange={(value) => {
-																					field.onChange(value);
-																					validateSlot(
-																						dayIndex,
-																						slotIndex,
-																						watch(
-																							`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`
-																						),
-																						value
-																					);
-																				}}
-																			>
-																				<SelectTrigger className="w-full border border-[#D1D5DB] drop-shadow-sm">
-																					<SelectValue placeholder="To" />
-																				</SelectTrigger>
-																				<SelectContent className="bg-white">
-																					{timeSlots.map((time) => (
-																						<SelectItem
-																							key={time}
-																							value={time}
-																							className="cursor-pointer hover:bg-gray-100"
-																						>
-																							{time}
-																						</SelectItem>
-																					))}
-																				</SelectContent>
-																			</Select>
-																		</FormControl>
-																	)}
-																/>
-
-																<Button
-																	type="button"
-																	variant="destructive"
-																	size="icon"
-																	onClick={() => removeSlot(dayIndex, slot.id)}
-																	className="hoverScaleDownEffect group"
+															<section className="w-full flex flex-col gap-2 items-start">
+																<div
+																	key={slotIndex}
+																	className="w-full flex items-center gap-2 mb-2"
 																>
-																	<svg
-																		xmlns="http://www.w3.org/2000/svg"
-																		fill="none"
-																		viewBox="0 0 24 24"
-																		strokeWidth={2.5}
-																		stroke="currentColor"
-																		className="size-4 text-[#9CA3AF] group-hover:text-red-500"
-																	>
-																		<path
-																			strokeLinecap="round"
-																			strokeLinejoin="round"
-																			d="M6 18 18 6M6 6l12 12"
-																		/>
-																	</svg>
-																</Button>
+																	{/* Start Time */}
+																	<FormField
+																		control={form.control}
+																		name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`}
+																		render={({ field }) => (
+																			<FormControl>
+																				<Select
+																					value={field.value}
+																					onValueChange={(value) => {
+																						field.onChange(value);
+																						validateSlot(
+																							dayIndex,
+																							slotIndex,
+																							value,
+																							watch(
+																								`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`
+																							)
+																						);
+																					}}
+																				>
+																					<SelectTrigger className="w-full border border-[#D1D5DB] drop-shadow-sm">
+																						<SelectValue placeholder="From" />
+																					</SelectTrigger>
+																					<SelectContent className="bg-white">
+																						{timeSlots.map((time) => (
+																							<SelectItem
+																								key={time}
+																								value={time}
+																								className="cursor-pointer hover:bg-gray-100"
+																							>
+																								{time}
+																							</SelectItem>
+																						))}
+																					</SelectContent>
+																				</Select>
+																			</FormControl>
+																		)}
+																	/>
+																	<span>-</span>
+																	{/* End Time */}
+																	<FormField
+																		control={form.control}
+																		name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`}
+																		render={({ field }) => (
+																			<FormControl>
+																				<Select
+																					value={field.value}
+																					onValueChange={(value) => {
+																						field.onChange(value);
+																						validateSlot(
+																							dayIndex,
+																							slotIndex,
+																							watch(
+																								`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`
+																							),
+																							value
+																						);
+																					}}
+																				>
+																					<SelectTrigger className="w-full border border-[#D1D5DB] drop-shadow-sm">
+																						<SelectValue placeholder="To" />
+																					</SelectTrigger>
+																					<SelectContent className="bg-white">
+																						{timeSlots.map((time) => (
+																							<SelectItem
+																								key={time}
+																								value={time}
+																								className="cursor-pointer hover:bg-gray-100"
+																							>
+																								{time}
+																							</SelectItem>
+																						))}
+																					</SelectContent>
+																				</Select>
+																			</FormControl>
+																		)}
+																	/>
 
-																<section className="flex flex-col items-start justify-center gap-2.5">
+																	<Button
+																		type="button"
+																		variant="destructive"
+																		size="icon"
+																		onClick={() =>
+																			removeSlot(dayIndex, slot.id)
+																		}
+																		className="hoverScaleDownEffect group"
+																	>
+																		<svg
+																			xmlns="http://www.w3.org/2000/svg"
+																			fill="none"
+																			viewBox="0 0 24 24"
+																			strokeWidth={2.5}
+																			stroke="currentColor"
+																			className="size-4 text-[#9CA3AF] group-hover:text-red-500"
+																		>
+																			<path
+																				strokeLinecap="round"
+																				strokeLinejoin="round"
+																				d="M6 18 18 6M6 6l12 12"
+																			/>
+																		</svg>
+																	</Button>
+																</div>
+
+																<section className="w-full flex flex-col items-start justify-center gap-2.5">
 																	{errors[
 																		`day_${dayIndex}_slot_${slotIndex}_startTime`
 																	] && (
@@ -558,7 +562,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																		</p>
 																	)}
 																</section>
-															</div>
+															</section>
 														)
 													)
 												) : (

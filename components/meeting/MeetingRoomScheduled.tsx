@@ -413,7 +413,7 @@ const MeetingRoomScheduled = () => {
 					{/* End Call Button */}
 					<Tooltip>
 						<TooltipTrigger>
-							<EndCallButton callType={callType} />
+							<EndCallButton callType={"scheduled"} />
 						</TooltipTrigger>
 						<TooltipContent className="hidden md:block mb-2 bg-red-500  border-none">
 							<p className="!text-white">End Call</p>
