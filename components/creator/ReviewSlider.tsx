@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { CreatorFeedback } from "@/types";
 import { Rating } from "@smastrom/react-rating";
 import Slider from "react-slick";
+import { getDisplayName } from "@/lib/utils";
 
 // Custom hook to track screen size
 const useScreenSize = () => {
@@ -31,6 +32,9 @@ const ReviewSlider = ({
 }) => {
 	const isMobile = useScreenSize();
 	const sliderRef = useRef<Slider>(null);
+	const [expandedStates, setExpandedStates] = useState<Record<number, boolean>>(
+		{}
+	);
 
 	const getClampedText = (text: string, isExpanded: boolean) => {
 		if (!text) return;
@@ -40,10 +44,6 @@ const ReviewSlider = ({
 		}
 		return text;
 	};
-
-	const [expandedStates, setExpandedStates] = useState<Record<number, boolean>>(
-		{}
-	);
 
 	const toggleReadMore = (index: number) => {
 		setExpandedStates((prevStates) => ({
@@ -62,8 +62,8 @@ const ReviewSlider = ({
 		rows: isMobile ? 2 : 1,
 		slidesPerRow: 1,
 		arrows: false,
-		autoplay: true,
-		autoplaySpeed: 5000,
+		// autoplay: true,
+		// autoplaySpeed: 5000,
 		beforeChange: () => {
 			setExpandedStates({});
 		},
@@ -74,12 +74,17 @@ const ReviewSlider = ({
 		},
 	};
 
+	const customStyles = {
+		activeFillColor: "#f59e0b",
+		inactiveFillColor: "#ffedd5",
+	};
+
 	return (
 		<>
 			<Slider {...settings} ref={sliderRef} className="py-4">
 				{creatorFeedbacks.map((feedback, index) => {
 					const isExpanded = expandedStates[index] || false;
-
+					const fullName = getDisplayName(feedback.clientId);
 					return (
 						<div
 							className="flex flex-col size-full items-center justify-center cursor-grabbing px-2"
@@ -95,9 +100,9 @@ const ReviewSlider = ({
 										<div className="flex gap-1 items-center">
 											<Rating
 												style={{
-													maxWidth: 180,
+													maxWidth: 120,
 													fill: "white",
-													marginLeft: "-10px",
+													marginLeft: "-5px",
 												}}
 												value={Math.floor(feedback?.rating)}
 												items={5}
@@ -111,7 +116,7 @@ const ReviewSlider = ({
 
 										<div className="text-sm pl-1 flex flex-col items-start justify-start gap-2 w-full h-full overflow-scroll no-scrollbar -ml-1 min-h-[4rem] max-h-[225px]">
 											<span
-												className={`text-start block ${
+												className={`text-[#121319] text-start block ${
 													isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
 												} ${
 													isExpanded
@@ -139,7 +144,7 @@ const ReviewSlider = ({
 											{isExpanded && (
 												<button
 													onClick={() => toggleReadMore(index)}
-													className="font-semibold hoverScaleDownEffect ml-1 mt-2"
+													className="text-sm font-semibold hoverScaleDownEffect mt-2"
 												>
 													Show Less
 												</button>
@@ -147,31 +152,8 @@ const ReviewSlider = ({
 										</div>
 									</section>
 									{/* User Details */}
-									<div className="flex flex-col items-start justify-center gap-1">
-										{feedback?.clientId?.username ? (
-											// Check if username starts with '+91'
-											feedback.clientId.username.startsWith("+91") ? (
-												<p className="text-sm font-semibold">
-													{feedback.clientId.username.replace(
-														/(\+91)(\d+)/,
-														(match, p1, p2) =>
-															`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-													)}
-												</p>
-											) : (
-												<p className="text-sm font-semibold">
-													{feedback.clientId.username}
-												</p>
-											)
-										) : (
-											<p className="text-sm font-semibold">
-												{feedback?.clientId?.phone?.replace(
-													/(\+91)(\d+)/,
-													(match, p1, p2) =>
-														`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-												)}
-											</p>
-										)}
+									<div className="flex flex-col items-start justify-center gap-1 text-sm font-medium text-[#12131999]">
+										{fullName}
 									</div>
 								</div>
 							</div>

@@ -321,7 +321,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 
 	return (
 		<div className="relative size-full mx-auto py-4 px-1.5">
-			<h2 className="text-2xl font-bold mb-4">Availability</h2>
+			<h2 className="text-2xl font-bold mb-2">Availability</h2>
 			<p className="text-gray-500 mb-6">
 				Set your available time slots for each day of the week.
 			</p>

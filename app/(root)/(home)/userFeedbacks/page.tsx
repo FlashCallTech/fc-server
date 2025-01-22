@@ -44,7 +44,7 @@ const UserFeedbacks = () => {
 
 	if (isLoading) {
 		return (
-			<section className="w-full h-full flex items-center justify-center">
+			<section className="w-full size-full h-[calc(100vh-4rem)] flex items-center justify-center">
 				<SinglePostLoader />
 			</section>
 		);
