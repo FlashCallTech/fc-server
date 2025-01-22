@@ -337,7 +337,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 			/>
 
 			<Form {...form}>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
 					{fields.map((dayItem, dayIndex) => (
 						<FormField
 							key={dayItem.id}

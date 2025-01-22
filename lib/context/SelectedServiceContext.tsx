@@ -65,8 +65,6 @@ export const SelectedServiceProvider: React.FC<{
 		return service || null;
 	};
 
-	console.log(selectedServices, selectedService);
-
 	return (
 		<SelectedServiceContext.Provider
 			value={{

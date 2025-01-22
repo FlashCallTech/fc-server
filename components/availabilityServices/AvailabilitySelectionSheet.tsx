@@ -37,6 +37,7 @@ const AvailabilitySelectionSheet = ({
 	const [availableDates, setAvailableDates] = useState<Date[]>([]);
 	const [bookedSlots, setBookedSlots] = useState<string[]>([]);
 	const [isFetchingSlots, setIsFetchingSlots] = useState(true);
+	const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
 	const dayRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
@@ -129,6 +130,19 @@ const AvailabilitySelectionSheet = ({
 
 		fetchBookedSlots();
 	}, [selectedDay]);
+
+	const toggleReadMore = () => {
+		setIsExpanded(!isExpanded);
+	};
+
+	const getClampedText = (text: string) => {
+		if (!text) return;
+		let charLen = 100;
+		if (text?.length > charLen && !isExpanded) {
+			return text.slice(0, charLen) + "... ";
+		}
+		return text;
+	};
 
 	// Render time slots for the selected day
 	const renderTimeSlots = () => {
@@ -398,7 +412,35 @@ const AvailabilitySelectionSheet = ({
 						</div>
 					</DialogTitle>
 					<DialogDescription className="font-bold text-gray-400 text-sm">
-						{service.description}
+						<p
+							className={`text-sm text-start block ${
+								isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
+							} ${
+								isExpanded
+									? "overflow-y-scroll no-scrollbar"
+									: "overflow-hidden"
+							}`}
+						>
+							{getClampedText(service.description)}
+							{!isExpanded && service.description.length > 100 && (
+								<span className="font-semibold">
+									<button
+										onClick={toggleReadMore}
+										className="hoverScaleDownEffect"
+									>
+										view more
+									</button>
+								</span>
+							)}
+						</p>
+						{isExpanded && (
+							<button
+								onClick={toggleReadMore}
+								className="font-semibold hoverScaleDownEffect mt-2"
+							>
+								view less
+							</button>
+						)}
 					</DialogDescription>
 				</DialogHeader>
 
