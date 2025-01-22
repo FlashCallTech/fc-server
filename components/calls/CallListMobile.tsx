@@ -286,7 +286,7 @@ const CallListMobile = ({
 							</div>
 						)}
 
-					{hasNextPage && <div ref={ref} className="w-full" />}
+					{hasNextPage && <div ref={ref} className="w-full py-4" />}
 				</>
 			)}
 		</>

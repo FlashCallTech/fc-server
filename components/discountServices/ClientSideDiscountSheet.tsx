@@ -25,6 +25,7 @@ const ClientSideDiscountheet = ({
 	setIsDiscountModalOpen,
 	offerApplied,
 	setOfferApplied,
+	setIsAuthSheetOpen,
 }: {
 	creatorId: string;
 	creatorName: string;
@@ -33,9 +34,9 @@ const ClientSideDiscountheet = ({
 	setIsDiscountModalOpen: any;
 	offerApplied: boolean;
 	setOfferApplied: any;
+	setIsAuthSheetOpen: any;
 }) => {
 	const [applyingOffer, setApplyingOffer] = useState(false);
-
 	const [userServices, setUserServices] = useState<Service[]>([]);
 	const { setSelectedServices } = useSelectedServiceContext();
 	const { currentUser, fetchingUser } = useCurrentUsersContext();
@@ -74,7 +75,7 @@ const ClientSideDiscountheet = ({
 				}, 1500);
 			}
 		}
-	}, [creatorId, userServices, fetchingUser]);
+	}, [creatorId, userServices]);
 
 	const onOpenChange = (open: boolean) => {
 		setIsDiscountModalOpen(open);
@@ -82,6 +83,13 @@ const ClientSideDiscountheet = ({
 	};
 
 	const handleApplyOffer = () => {
+		if (!currentUser) {
+			onOpenChange(false);
+			setIsAuthSheetOpen(true);
+			sessionStorage.removeItem(`hasSeenDiscountSheet_${creatorId}`);
+			return;
+		}
+
 		setApplyingOffer(true);
 		setOfferApplied(true);
 		setSelectedServices(userServices);

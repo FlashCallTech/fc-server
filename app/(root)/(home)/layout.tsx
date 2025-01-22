@@ -4,7 +4,6 @@ import React, { ReactNode, useEffect, useState } from "react";
 import Navbar from "@/components/shared/Navbar";
 import Sidebar from "@/components/shared/Sidebar";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { resetBodyBackgroundColor, setBodyBackgroundColor } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import Headroom from "react-headroom";
 
@@ -27,15 +26,9 @@ const useScreenSize = () => {
 
 const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 	const pathname = usePathname();
-	const { creatorURL, userType } = useCurrentUsersContext();
+	const { userType } = useCurrentUsersContext();
 
 	const isMobile = useScreenSize();
-
-	useEffect(() => {
-		pathname !== creatorURL
-			? resetBodyBackgroundColor()
-			: setBodyBackgroundColor("#121319");
-	}, [pathname, creatorURL]);
 
 	useEffect(() => {
 		if (pathname !== "/home") {
@@ -53,29 +46,27 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 				<div className="flex flex-col w-full">
 					{isMobile ? (
 						<Headroom>
-							<Navbar isMobile={isMobile} />
+							<Navbar />
 						</Headroom>
 					) : (
-						<Navbar isMobile={isMobile} />
+						<Navbar />
 					)}
-					<section
-						className={`flex flex-col size-full`}
-					>
+					<section className={`flex flex-col size-full`}>
 						<div className="size-full">{children}</div>
 					</section>
 				</div>
 			</main>
-		)
-	};
+		);
+	}
 
 	return (
 		<main className="relative">
 			{isMobile ? (
 				<Headroom>
-					<Navbar isMobile={isMobile} />
+					<Navbar />
 				</Headroom>
 			) : (
-				<Navbar isMobile={isMobile} />
+				<Navbar />
 			)}
 			<div className="flex">
 				<Sidebar />

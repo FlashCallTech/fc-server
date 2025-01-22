@@ -365,7 +365,7 @@ input[type="number"] {
 	}
 
 	.callOptionContainer {
-		@apply flex px-4 border border-white/20 bg-[#4E515C4D] rounded-[24px] h-[52px]  justify-between items-center w-full hoverScaleDownEffect cursor-pointer;
+		@apply flex flex-col p-4 border border-gray-300 bg-white rounded-[24px] h-fit gap-4 justify-between items-start w-full hoverScaleDownEffect cursor-pointer;
 	}
 
 	.text-balance {
@@ -464,6 +464,6 @@ input[type="number"] {
 }
 
 .sliding {
-    transform: translateX(50px); /* Adjust the slide distance as needed */
-    transition: transform 0.3s ease-in-out; /* Smooth animation */
+	transform: translateX(50px); /* Adjust the slide distance as needed */
+	transition: transform 0.3s ease-in-out; /* Smooth animation */
 }
