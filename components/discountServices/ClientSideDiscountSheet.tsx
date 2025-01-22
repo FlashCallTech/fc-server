@@ -112,7 +112,7 @@ const ClientSideDiscountheet = ({
 			return <ContentLoading />;
 		}
 
-		if (userServices.length === 0) {
+		if (currentUser && userServices.length === 0) {
 			return (
 				<div className="size-full flex items-center justify-center text-center my-4">
 					<Button
