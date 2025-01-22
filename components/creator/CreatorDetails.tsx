@@ -1,12 +1,7 @@
 "use client";
 
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import {
-	getDisplayName,
-	getImageSource,
-	isValidHexColor,
-	setBodyBackgroundColor,
-} from "@/lib/utils";
+import { getDisplayName, getImageSource, isValidHexColor } from "@/lib/utils";
 import { creatorUser, LinkType } from "@/types";
 import React, { memo, useEffect, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
@@ -20,17 +15,21 @@ import Link from "next/link";
 import Image from "next/image";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import ClientSideUserAvailability from "../availabilityServices/ClientSideUserAvailability";
+import ClientSideDiscountSheet from "../discountServices/ClientSideDiscountSheet";
+import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
+import AuthenticationSheet from "../shared/AuthenticationSheet";
 
 const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
-	const {
-		clientUser,
-
-		userType,
-		setCurrentTheme,
-		updateCreatorURL,
-	} = useCurrentUsersContext();
-
+	const { clientUser, userType, setCurrentTheme, updateCreatorURL } =
+		useCurrentUsersContext();
+	const { selectedServices } = useSelectedServiceContext();
 	const [status, setStatus] = useState<string>("Online");
+	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
+	const [isExpanded, setIsExpanded] = useState(false);
+	const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
+	const [offerApplied, setOfferApplied] = useState(
+		selectedServices ? selectedServices.length > 0 : false
+	);
 	const pathname = usePathname();
 	const creatorURL = pathname || localStorage.getItem("creatorURL");
 
@@ -56,7 +55,6 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 		setCurrentTheme(themeColor);
 		updateCreatorURL(creatorURL);
-		setBodyBackgroundColor("#121319");
 	}, []);
 
 	useEffect(() => {
@@ -112,129 +110,59 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 		};
 	}, [creator?._id, creator?.phone, status]);
 
-	return (
-		// Wrapper Section
-		<section className="size-full xl:w-[704px] md:mx-auto md:pt-8 flex flex-col items-center">
-			{/* Creator Details */}
-			<section
-				className={`size-full h-fit px-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-center p-5 md:rounded-t-[16px] overflow-hidden`}
-				style={{ backgroundColor: themeColor }}
-			>
-				{/* Creator Info */}
-				<section className="w-full h-fit flex items-center justify-start gap-4">
-					{/* 1. Creator Status and Image */}
-					<section
-						className="relative flex item-center justify-center rounded-full min-h-[94px] min-w-[94px]"
-						style={{
-							border: `3px solid ${
-								status === "Online"
-									? "#098D26"
-									: status === "Offline"
-									? "#f87171"
-									: status === "Busy"
-									? "#fb923c"
-									: "#f87171"
-							}`,
-							transition: "border-color 0.3s ease-in-out",
-						}}
-					>
-						<Image
-							src={imageSrc}
-							alt={creator?.firstName || creator?.username}
-							width={300}
-							height={300}
-							quality={75}
-							className="w-full h-full absolute left-0 top-0 object-cover rounded-full p-1"
-							placeholder="blur"
-							blurDataURL="/icons/blurryPlaceholder.png"
-							priority
-						/>
+	const toggleReadMore = () => {
+		setIsExpanded(!isExpanded);
+	};
 
-						{/* Creator Status */}
-						<section className="absolute z-20 left-0 -bottom-1 w-full flex items-center justify-center">
-							<div
-								className={`${
-									status === "Online"
-										? "bg-[#098D26]"
-										: status === "Offline"
-										? "bg-red-400"
-										: status === "Busy"
-										? "bg-orange-400"
-										: "bg-red-400"
-								} text-[10px] rounded-[2.75px] py-1 px-2 gap-1 font-semibold flex items-center justify-center text-white w-[51px] h-[18px]`}
-							>
-								<div
-									className={`
-									${
-										status === "Online"
-											? "bg-[#54DA72]"
-											: status === "Offline"
-											? "bg-red-600"
-											: status === "Busy"
-											? "bg-orange-600"
-											: "bg-red-600"
-									} 
+	const getClampedText = (text: string) => {
+		if (!text) return;
+		let charLen = 200;
+		if (text?.length > 100 && !isExpanded) {
+			return text.slice(0, charLen) + "... ";
+		}
+		return text;
+	};
 
-									rounded-full p-1
-									`}
-								/>
-								<span>
-									{status === "Online"
-										? "Online"
-										: status === "Offline"
-										? "Offline"
-										: status === "Busy"
-										? "Busy"
-										: "Offline"}
-								</span>
-							</div>
-						</section>
-					</section>
-
-					{/* 2. Creator Info */}
-					<section className="size-full flex flex-col items-start justify-center overflow-hidden">
-						<p className="font-semibold text-2xl max-w-[92%] text-ellipsis whitespace-nowrap overflow-hidden capitalize">
-							{fullName}
-						</p>
-						<span className="text-sm">
-							{creator?.profession
-								? creator?.profession
-								: "Please update your profession details"}
-						</span>
-					</section>
-				</section>
-
-				{/* Action Buttons */}
-				<section className={`flex items-center w-full gap-4`}>
-					{/* Favorite Button */}
-					{userType === "client" && (
-						<Favorites creator={creator} userId={clientUser?._id as string} />
-					)}
-					{/* Share Button */}
-					<ShareButton
-						username={
-							creator?.username
-								? (creator?.username as string)
-								: (creator?.phone as string)
-						}
-						profession={creator?.profession ?? "Astrologer"}
-						gender={creator?.gender ? creator?.gender.toLowerCase() : ""}
-						firstName={creator?.firstName}
-						lastName={creator?.lastName}
-					/>
-				</section>
-			</section>
-
-			{/* About, Services and Reviews */}
-			<section className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between bg-black text-white p-4 gap-5">
+	const renderCreatorBio = () => {
+		return (
+			<>
+				{/* About Creator */}
 				{creator?.bio && creator.bio !== "Enter your bio here" ? (
 					<>
-						{/* About Creator */}
-						<section className="flex flex-col items-start justify-start gap-2">
+						<section className="w-full flex flex-col items-start justify-start gap-2">
 							{/* Heading */}
 							<h2 className="text-base font-bold">About Me</h2>
 							{/* Content */}
-							<p className="text-sm">{creator?.bio}</p>
+							<p
+								className={`text-sm text-start block ${
+									isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
+								} ${
+									isExpanded
+										? "overflow-y-scroll no-scrollbar"
+										: "overflow-hidden"
+								}`}
+							>
+								{getClampedText(creator?.bio)}
+								{!isExpanded && creator.bio.length > 100 && (
+									<span className="font-semibold">
+										<button
+											onClick={toggleReadMore}
+											className="hoverScaleDownEffect"
+										>
+											view more
+										</button>
+									</span>
+								)}
+
+								{isExpanded && (
+									<button
+										onClick={toggleReadMore}
+										className="font-semibold hoverScaleDownEffect ml-2 mt-2"
+									>
+										view less
+									</button>
+								)}
+							</p>
 						</section>
 						{/* Divider */}
 						<div className="w-full border border-white" />
@@ -242,13 +170,155 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				) : (
 					<div className="pb-2" />
 				)}
+			</>
+		);
+	};
+
+	return (
+		// Wrapper Section
+		<div className="xl:relative size-full md:mx-auto md:pt-8 flex flex-col xl:flex-row xl:gap-10 items-start justify-center max-xl:overflow-y-scroll no-scrollbar">
+			<section className="xl:sticky xl:top-[100px] size-full h-fit xl:max-w-[400px] 3xl:max-w-[500px] flex flex-col items-center justify-center gap-4">
+				{/* Creator Details */}
+				<section
+					className={`size-full px-4 flex flex-col gap-4 items-center justify-center p-5 xl:px-10 xl:rounded-[16px] overflow-hidden`}
+					style={{ backgroundColor: themeColor }}
+				>
+					{/* Creator Info */}
+					<section className="w-full h-fit flex flex-col items-center justify-center gap-2.5">
+						{/* 1. Creator Status and Image */}
+						<section className="relative flex item-center justify-center rounded-full min-h-[116px] min-w-[116px] border-[4px] drop-shadow-lg border-white">
+							<Image
+								src={imageSrc}
+								alt={creator?.firstName || creator?.username}
+								width={300}
+								height={300}
+								quality={75}
+								className="w-full h-full absolute left-0 top-0 object-cover rounded-full"
+								placeholder="blur"
+								blurDataURL="/icons/blurryPlaceholder.png"
+								priority
+							/>
+
+							{/* Creator Status */}
+							<section className="w-fit absolute z-20 right-3 -bottom-1 flex items-center justify-center">
+								<div
+									className={`flex items-center justify-center text-white  border-[3px] border-white rounded-full`}
+								>
+									<div
+										className={`
+									${
+										status === "Online"
+											? "bg-[#22C55E]"
+											: status === "Offline"
+											? "bg-red-600"
+											: status === "Busy"
+											? "bg-orange-600"
+											: "bg-red-600"
+									} 
+
+									rounded-full size-[15px]
+									`}
+									/>
+								</div>
+							</section>
+						</section>
+
+						{/* 2. Creator Info */}
+						<section className="size-full flex flex-col items-center justify-center overflow-hidden">
+							<p className="font-semibold text-2xl max-w-[92%] text-ellipsis whitespace-nowrap overflow-hidden capitalize">
+								{fullName}
+							</p>
+							<span className="text-sm">
+								{creator?.profession
+									? creator?.profession
+									: "Please update your profession details"}
+							</span>
+						</section>
+					</section>
+
+					{/* Action Buttons */}
+					<section className={`flex items-center w-full gap-4 mt-2`}>
+						{/* Favorite Button */}
+						{userType === "client" && (
+							<Favorites creator={creator} userId={clientUser?._id as string} />
+						)}
+						{/* Share Button */}
+						<ShareButton
+							username={
+								creator?.username
+									? (creator?.username as string)
+									: (creator?.phone as string)
+							}
+							profession={creator?.profession ?? "Astrologer"}
+							gender={creator?.gender ? creator?.gender.toLowerCase() : ""}
+							firstName={creator?.firstName}
+							lastName={creator?.lastName}
+						/>
+					</section>
+				</section>
+
+				{/* Creator Bio */}
+				<section className="hidden xl:block size-full">
+					{renderCreatorBio()}
+				</section>
+			</section>
+
+			{/* About, Services and Reviews */}
+			<section className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between p-4 xl:pt-0 gap-2.5 bg-white overflow-y-scroll">
+				{/* Creator Bio */}
+				<section className="xl:hidden size-full">{renderCreatorBio()}</section>
+				{/* Discounts */}
+				<div className="w-full flex-col items-start justify-center gap-2.5 p-4 bg-[#DCFCE7] rounded-xl">
+					<div className="flex items-center gap-2.5 text-[#166534] text-sm">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+							className="size-4"
+						>
+							<path
+								fillRule="evenodd"
+								d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
+								clipRule="evenodd"
+							/>
+						</svg>
+
+						<span>You might be eligible for discount</span>
+					</div>
+
+					<button
+						className="font-semibold border-b border-[#166534] text-[#166534] text-sm leading-3"
+						onClick={() => setIsDiscountModalOpen(true)}
+					>
+						{offerApplied ? "Offers Applied" : "Claim Now"}
+					</button>
+
+					<ClientSideDiscountSheet
+						creatorId={creator._id || ""}
+						creatorName={getDisplayName(creator)}
+						theme={creator.themeSelected}
+						isDiscountModalOpen={isDiscountModalOpen}
+						setIsDiscountModalOpen={setIsDiscountModalOpen}
+						offerApplied={offerApplied}
+						setOfferApplied={setOfferApplied}
+						setIsAuthSheetOpen={setIsAuthSheetOpen}
+					/>
+				</div>
+
 				{/* Call Buttons */}
-				<CallingOptions creator={creator} />
+
+				<h2 className="text-base font-bold mt-2">Services</h2>
 
 				{/* Call Scheduling */}
+
 				<ClientSideUserAvailability creator={creator} />
 
+				<CallingOptions creator={creator} />
+
 				{/* Creator Links */}
+
+				<h2 className="text-base font-bold mt-2">External Links</h2>
+
 				{creator?.links && creator?.links?.length > 0 && (
 					<section className="grid grid-cols-1 gap-4 w-full items-center">
 						{creator?.links
@@ -257,7 +327,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 								<Link
 									href={link.url}
 									target="_black"
-									className="grid grid-cols-3 px-4 border border-white/20 bg-[#4E515C4D] rounded-[24px] h-[52px] justify-between font-semibold items-center text-center w-full hoverScaleDownEffect cursor-pointer capitalize"
+									className="grid grid-cols-3 px-4 border border-gray-300 rounded-[24px] h-[52px] justify-between font-semibold items-center text-center w-full hoverScaleDownEffect cursor-pointer capitalize"
 									key={index + link.title}
 									title={link.title}
 								>
@@ -294,7 +364,14 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					/>
 				</section>
 			</section>
-		</section>
+
+			{isAuthSheetOpen && (
+				<AuthenticationSheet
+					isOpen={isAuthSheetOpen}
+					onOpenChange={setIsAuthSheetOpen}
+				/>
+			)}
+		</div>
 	);
 });
 

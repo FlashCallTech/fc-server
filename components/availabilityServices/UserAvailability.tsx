@@ -313,7 +313,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 
 	if (isLoading) {
 		return (
-			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
+			<div className="size-full h-[calc(100vh-4rem)] flex flex-col items-center justify-center text-2xl font-semibold text-center">
 				<SinglePostLoader />
 			</div>
 		);
@@ -321,11 +321,9 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 
 	return (
 		<div className="relative size-full mx-auto py-4 px-1.5">
-			<h2 className="text-2xl font-bold mb-4">
-				Great! Let&apos;s set your availability
-			</h2>
+			<h2 className="text-2xl font-bold mb-2">Availability</h2>
 			<p className="text-gray-500 mb-6">
-				Let your clients know when you&apos;re available.
+				Set your available time slots for each day of the week.
 			</p>
 
 			<AvailabilityServiceCards
@@ -517,7 +515,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																	variant="destructive"
 																	size="icon"
 																	onClick={() => removeSlot(dayIndex, slot.id)}
-																	className="hoverScaleDownEffect"
+																	className="hoverScaleDownEffect group"
 																>
 																	<svg
 																		xmlns="http://www.w3.org/2000/svg"
@@ -525,7 +523,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																		viewBox="0 0 24 24"
 																		strokeWidth={2.5}
 																		stroke="currentColor"
-																		className="size-4 text-[#9CA3AF]"
+																		className="size-4 text-[#9CA3AF] group-hover:text-red-500"
 																	>
 																		<path
 																			strokeLinecap="round"
@@ -578,7 +576,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 
 					{Object.keys(errors).length === 0 && hasChanges && isValid && (
 						<Button
-							className="sticky bottom-2 text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
+							className="sticky bottom-2 text-base bg-black hoverScaleDownEffect w-full mx-auto text-white"
 							type="submit"
 							disabled={!isValid || isSubmitting}
 						>

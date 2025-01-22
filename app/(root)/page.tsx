@@ -11,14 +11,11 @@ import SwitchToggle from "@/components/sections/SwitchToggle";
 import Footer from "@/components/shared/Footer";
 import NavbarWeb from "@/components/shared/NavbarWeb";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { resetBodyBackgroundColor } from "@/lib/utils";
-import React, { useEffect } from "react";
+import React from "react";
 
 const HomePage = () => {
 	const { currentUser, handleSignout, fetchingUser } = useCurrentUsersContext();
-	useEffect(() => {
-		resetBodyBackgroundColor();
-	}, []);
+
 	return (
 		<main className="grid grid-cols-1 items-center">
 			{/* Navbar Landing Page */}

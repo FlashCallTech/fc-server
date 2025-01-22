@@ -1,218 +1,166 @@
-import { isValidUrl } from "@/lib/utils";
+import React, { useRef, useState, useEffect } from "react";
 import { CreatorFeedback } from "@/types";
-import GetRandomImage from "@/utils/GetRandomImage";
 import { Rating } from "@smastrom/react-rating";
-import Image from "next/image";
-import React, { useState, useRef, useEffect } from "react";
 import Slider from "react-slick";
+import { getDisplayName } from "@/lib/utils";
+
+// Custom hook to track screen size
+const useScreenSize = () => {
+	const [isMobile, setIsMobile] = useState(false);
+
+	const handleResize = () => {
+		setIsMobile(window.innerWidth < 1280);
+	};
+
+	useEffect(() => {
+		handleResize(); // Set initial value
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
+
+	return isMobile;
+};
 
 const ReviewSlider = ({
 	creatorFeedbacks,
-	getClampedText,
-	isExpanded,
-	setIsExpanded,
-	toggleReadMore,
-	theme,
 	fetchNextPage,
 	hasNextPage,
 }: {
 	creatorFeedbacks: CreatorFeedback[];
-	getClampedText: (text: string) => string | undefined;
-	isExpanded: boolean;
-	setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
-	toggleReadMore: () => void;
-	theme?: string;
 	fetchNextPage: () => void;
 	hasNextPage: boolean;
 }) => {
-	const [currentIndex, setCurrentIndex] = useState(0);
+	const isMobile = useScreenSize();
 	const sliderRef = useRef<Slider>(null);
+	const [expandedStates, setExpandedStates] = useState<Record<number, boolean>>(
+		{}
+	);
 
-	const getImageSrc = (feedback: any) => {
-		return isValidUrl(feedback?.clientId?.photo || "")
-			? feedback?.clientId?.photo
-			: GetRandomImage();
+	const getClampedText = (text: string, isExpanded: boolean) => {
+		if (!text) return;
+		const charLen = 100;
+		if (text.length > charLen && !isExpanded) {
+			return text.slice(0, charLen) + "... ";
+		}
+		return text;
 	};
 
-	const dummyFeedbacks = ["1", "2", "3", "4", "5", "6", "7"];
+	const toggleReadMore = (index: number) => {
+		setExpandedStates((prevStates) => ({
+			...prevStates,
+			[index]: !prevStates[index],
+		}));
+	};
+
 	// Carousel settings
 	const settings = {
 		infinite: creatorFeedbacks.length > 1,
 		centerPadding: "60px",
-		slidesToShow: 1,
+		slidesToShow: isMobile ? 1 : 2,
 		speed: 500,
 		slidesToScroll: 1,
-		autoplay: true,
-		autoplaySpeed: 5000,
+		rows: isMobile ? 2 : 1,
+		slidesPerRow: 1,
 		arrows: false,
-		beforeChange: (oldIndex: number, newIndex: number) => {
-			setCurrentIndex(newIndex);
-			setIsExpanded(false);
+		// autoplay: true,
+		// autoplaySpeed: 5000,
+		beforeChange: () => {
+			setExpandedStates({});
 		},
-
 		afterChange: (current: number) => {
-			// Check if we need to fetch the next page
 			if (hasNextPage && current === creatorFeedbacks.length - 1) {
-				fetchNextPage(); // Trigger fetching the next page
+				fetchNextPage();
 			}
 		},
 	};
 
-	useEffect(() => {
-		// Find all elements with the .rr--on and .rr--svg classes and apply the theme color
-		const ratingElements = document.querySelectorAll(".rr--on .rr--svg");
-		const ratingOffElements = document.querySelectorAll(".rr--off .rr--svg");
-		ratingElements.forEach((element: any) => {
-			element.style.fill = theme;
-			element.style.stroke = theme;
-		});
-		ratingOffElements.forEach((element: any) => {
-			element.style.stroke = "none";
-		});
-	}, [theme]);
-
-	let dummyFeedback =
-		"Lorem ipsum dolor sit amet consect adipisicing elit. Culpa consequuntur ducimus repellendus non nam, laboriosam et ullam veniam? Voluptatum laboriosam mollitia expedita fugit iste repellendus suscipit nostrum. Inventore repudiandae, quibusdam voluptatibus facere minus officiis tenetur, obcaecati quos assumenda similique commodi magni maxime nobis suscipit distinctio eaque quisquam vel omnis. Eos, temporibus odit! Odit mollitia dolores repudiandae, pariatur magni dolorem, vel necessitatibus, beatae sequi aut iste culpa doloribus. Ab iusto quaerat officiis, id maxime ratione voluptatum quasi ex voluptas beatae ipsam et quo quia esse facilis quibusdam inventore error, magnam atque totam tenetur. Sed, vel delectus voluptatum earum autem quia inventore!";
+	const customStyles = {
+		activeFillColor: "#f59e0b",
+		inactiveFillColor: "#ffedd5",
+	};
 
 	return (
 		<>
-			<Slider {...settings} ref={sliderRef} className="pt-4 pb-7">
-				{creatorFeedbacks.map((feedback, index) => (
-					<div
-						className="flex flex-col size-full items-center justify-center cursor-grabbing"
-						key={index}
-					>
+			<Slider {...settings} ref={sliderRef} className="py-4">
+				{creatorFeedbacks.map((feedback, index) => {
+					const isExpanded = expandedStates[index] || false;
+					const fullName = getDisplayName(feedback.clientId);
+					return (
 						<div
-							className={`size-full flex flex-col items-center justify-center`}
+							className="flex flex-col size-full items-center justify-center cursor-grabbing px-2"
+							key={index}
 						>
-							{/* Profile Image */}
 							<div
-								className="flex w-[80px] height-[40px] mx-auto rounded-full items-center justify-center py-1 px-2 z-10"
-								style={{ background: theme ? theme : "#ffffff" }}
+								className={`size-full flex flex-col items-center justify-center`}
 							>
-								<Image
-									src={getImageSrc(feedback)}
-									alt={`${feedback?.clientId?.username} profile`}
-									width={100}
-									height={100}
-									className="w-8 h-8 rounded-full object-cover bg-white"
-									onError={(e) => {
-										e.currentTarget.src = "/images/defaultProfileImage.png";
-									}}
-								/>
-								<span className="text-3xl -mr-1">😍</span>
-							</div>
+								{/* feedback section */}
+								<div className="size-full flex flex-col items-start justify-between gap-4 w-full rounded-[24px] m-2 p-4 border-2 border-gray-300 overflow-hidden">
+									<section className="size-full grid items-center gap-4">
+										{/* Rating */}
+										<div className="flex gap-1 items-center">
+											<Rating
+												style={{
+													maxWidth: 120,
+													fill: "white",
+													marginLeft: "-5px",
+												}}
+												value={Math.floor(feedback?.rating)}
+												items={5}
+												spaceBetween="medium"
+												transition="zoom"
+												readOnly
+											/>
+										</div>
 
-							{/* feedback section */}
-							<div className="size-full flex flex-col items-start justify-between gap-4 w-full rounded-[24px] px-5 pb-5 pt-10 -mt-4 bg-black/10 border-b-2 border-white/50">
-								<section className="size-full grid items-center gap-4">
-									{/* Rating */}
-									<div className="flex gap-1 items-center">
-										<Rating
-											style={{
-												maxWidth: 180,
-												fill: "white",
-												marginLeft: "-10px",
-											}}
-											value={Math.floor(feedback?.rating)}
-											items={5}
-											spaceBetween="medium"
-											transition="zoom"
-											readOnly
-										/>
-									</div>
+										{/* Feedback */}
 
-									{/* Feedback */}
-
-									<div className="pl-1 flex flex-col items-start justify-start gap-2 w-full h-full overflow-hidden -ml-1 min-h-[4rem] max-h-[225px]">
-										<span
-											className={`text-start block ${
-												isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
-											} ${
-												isExpanded
-													? "overflow-y-scroll no-scrollbar"
-													: "overflow-hidden"
-											}`}
-											style={{ maxHeight: isExpanded ? "10rem" : "7rem" }}
-										>
-											{feedback?.feedback
-												? getClampedText(feedback.feedback)
-												: "No feedback provided"}
-											{feedback?.feedback &&
-												!isExpanded &&
-												feedback.feedback.length > 100 && (
-													<span className="text-white">
-														<button
-															onClick={toggleReadMore}
-															className="underline underline-offset-2 hover:opacity-80"
-														>
-															Read more
-														</button>
-													</span>
-												)}
-										</span>
-
-										{isExpanded && (
-											<button
-												onClick={toggleReadMore}
-												className="text-red-400 hover:opacity-80 text-sm font-bold mt-2"
+										<div className="text-sm pl-1 flex flex-col items-start justify-start gap-2 w-full h-full overflow-scroll no-scrollbar -ml-1 min-h-[4rem] max-h-[225px]">
+											<span
+												className={`text-[#121319] text-start block ${
+													isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
+												} ${
+													isExpanded
+														? "overflow-y-scroll no-scrollbar"
+														: "overflow-hidden"
+												}`}
 											>
-												Show Less
-											</button>
-										)}
-									</div>
-								</section>
-								{/* User Details */}
-								<div className="flex flex-col items-start justify-center gap-1">
-									{feedback?.clientId?.username ? (
-										// Check if username starts with '+91'
-										feedback.clientId.username.startsWith("+91") ? (
-											<p className="text-sm font-semibold">
-												{feedback.clientId.username.replace(
-													/(\+91)(\d+)/,
-													(match, p1, p2) =>
-														`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-												)}
-											</p>
-										) : (
-											<p className="text-sm font-semibold">
-												{feedback.clientId.username}
-											</p>
-										)
-									) : (
-										<p className="text-sm font-semibold">
-											{feedback?.clientId?.phone?.replace(
-												/(\+91)(\d+)/,
-												(match, p1, p2) =>
-													`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+												{feedback?.feedback
+													? getClampedText(feedback.feedback, isExpanded)
+													: "No feedback provided"}
+												{feedback?.feedback &&
+													!isExpanded &&
+													feedback.feedback.length > 100 && (
+														<span className="font-semibold">
+															<button
+																onClick={() => toggleReadMore(index)}
+																className="text-sm hover:opacity-80"
+															>
+																Read more
+															</button>
+														</span>
+													)}
+											</span>
+
+											{isExpanded && (
+												<button
+													onClick={() => toggleReadMore(index)}
+													className="text-sm font-semibold hoverScaleDownEffect mt-2"
+												>
+													Show Less
+												</button>
 											)}
-										</p>
-									)}
+										</div>
+									</section>
+									{/* User Details */}
+									<div className="flex flex-col items-start justify-center gap-1 text-sm font-medium text-[#12131999]">
+										{fullName}
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-				))}
+					);
+				})}
 			</Slider>
-			{/* navigation */}
-			{creatorFeedbacks?.length > 1 && (
-				<div className="flex items-center justify-center w-full">
-					<div className="flex items-center max-w-[100px] py-[0.75px] overflow-x-scroll no-scrollbar bg-[#7070703D] rounded-xl">
-						{creatorFeedbacks?.map((_, index) => (
-							<button
-								key={index}
-								className={`w-10 h-1 rounded-xl flex gap-2 items-center justify-center hover:!bg-white`}
-								style={{
-									background: index === currentIndex ? theme : "transparent",
-								}}
-								onClick={() => {
-									sliderRef.current?.slickGoTo(index);
-								}}
-							/>
-						))}
-					</div>
-				</div>
-			)}
 		</>
 	);
 };

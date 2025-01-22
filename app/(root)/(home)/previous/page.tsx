@@ -48,10 +48,14 @@ const PreviousPage = () => {
 	const creatorURL = localStorage.getItem("creatorURL");
 
 	return (
-		<div>
-			<section className={`${userType === "creator" ? "lg:hidden" : "flex"} w-full h-screen flex-col gap-2 pb-5`}>
+		<>
+			<section
+				className={`${
+					userType === "creator" ? "lg:hidden" : "flex"
+				} flex size-full flex-col gap-2 pb-5`}
+			>
 				<section
-					className={`sticky top-0 lg:top-[76px] bg-white z-30 w-full p-4  pb-4 flex items-center justify-between transition-all duration-300`}
+					className={`sticky top-0 bg-white z-30 w-full p-4  pb-4 flex items-center justify-between transition-all duration-300`}
 				>
 					<section className="flex items-center gap-4">
 						<Link
@@ -79,8 +83,9 @@ const PreviousPage = () => {
 						{options.map((option) => (
 							<Button
 								key={option}
-								className={`text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 hover:text-white hover:bg-green-1 hoverScaleDownEffect ${historyType === option && "bg-green-1 text-white"
-									}`}
+								className={`text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 hover:text-white hover:bg-green-1 hoverScaleDownEffect ${
+									historyType === option && "bg-green-1 text-white"
+								}`}
 								onClick={() => setHistoryType(option)}
 							>
 								{option}
@@ -93,8 +98,9 @@ const PreviousPage = () => {
 					{options.map((option) => (
 						<Button
 							key={option}
-							className={`text-sm font-medium px-[20px] py-[7px] rounded-3xl border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1  ${historyType === option && "bg-green-1 text-white"
-								}`}
+							className={`text-sm font-medium px-[20px] py-[7px] rounded-3xl border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1  ${
+								historyType === option && "bg-green-1 text-white"
+							}`}
 							onClick={() => setHistoryType(option)}
 						>
 							{option}
@@ -102,36 +108,39 @@ const PreviousPage = () => {
 					))}
 				</div>
 
-				{!fetchingUser ? (
-				currentUser ? (
-						userType === "client" ? (
-							<CallListMobile callType={historyType} />
-						) : (
-							<CallListMobileCreator callType={historyType} />
-						)
+				{currentUser ? (
+					userType === "client" ? (
+						<CallListMobile callType={historyType} />
 					) : (
-						<div className="flex flex-col w-full items-center justify-center h-full">
-							<h1 className="text-2xl font-semibold text-red-500">
-								No Calls Found
-							</h1>
-							<h2 className="text-xl font-semibold text-red-500">
-								Please sign in to continue.
-							</h2>
-						</div>
-				)
-			) : (
-				<section className={`w-full h-full flex items-center justify-center`}>
-					<SinglePostLoader />
-				</section>
+						<CallListMobileCreator callType={historyType} />
+					)
+				) : (
+					<div className="flex flex-col w-full items-center justify-center h-full">
+						<h1 className="text-2xl font-semibold text-red-500">
+							No Calls Found
+						</h1>
+						<h2 className="text-xl font-semibold text-red-500">
+							Please sign in to continue.
+						</h2>
+					</div>
 				)}
 			</section>
+
 			{/* New Design */}
-			<section className={`${userType === "creator" ? "lg:flex" : "hidden"} hidden  size-full flex-col`}>
+			<section
+				className={`${
+					userType === "creator" ? "lg:flex" : "hidden"
+				} hidden  size-full flex-col`}
+			>
 				<div className="flex w-full gap-2 p-8 pb-2 items-center justify-end">
 					{options.map((option) => (
 						<Button
 							key={option}
-							className={`text-sm font-medium px-4 py-2 border-[1px] border-solid border-[#E5E7EB] text-[#6B7280] rounded-full hoverScaleDownEffect ${historyType === option ? "text-[#16BC88] bg-[#def4ed] border-0" : ""}
+							className={`text-sm font-medium px-4 py-2 border-[1px] border-solid border-[#E5E7EB] text-[#6B7280] rounded-full hoverScaleDownEffect ${
+								historyType === option
+									? "text-[#16BC88] bg-[#def4ed] border-0"
+									: ""
+							}
 								}`}
 							onClick={() => setHistoryType(option)}
 						>
@@ -153,7 +162,7 @@ const PreviousPage = () => {
 					</div>
 				)}
 			</section>
-		</div>
+		</>
 	);
 };
 

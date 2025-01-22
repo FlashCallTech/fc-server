@@ -47,92 +47,100 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			// Ensure PayPal SDK is loaded
 			if (paypal) {
 				// Cleanup any existing buttons
-				const paypalContainer = document.getElementById("paypal-button-container");
+				const paypalContainer = document.getElementById(
+					"paypal-button-container"
+				);
 				if (paypalContainer) paypalContainer.innerHTML = "";
 
 				// Render new PayPal buttons
-				paypal.Buttons({
-					style: {
-						layout: 'vertical', // Stack buttons vertically
-						color: 'gold',      // Button color
-						shape: 'rect',      // Button shape
-						label: 'paypal',    // Label type
-						height: 50,
-						disableMaxWidth: true
-					},
-					async createOrder(data: any, actions: any) {
-						const details = await actions.order.create({
-							purchase_units: [{
-								amount: {
-									currency_code: "USD",
-									value: rechargeAmount
+				paypal
+					.Buttons({
+						style: {
+							layout: "vertical", // Stack buttons vertically
+							color: "gold", // Button color
+							shape: "rect", // Button shape
+							label: "paypal", // Label type
+							height: 50,
+							disableMaxWidth: true,
+						},
+						async createOrder(data: any, actions: any) {
+							const details = await actions.order.create({
+								purchase_units: [
+									{
+										amount: {
+											currency_code: "USD",
+											value: rechargeAmount,
+										},
+									},
+								],
+								application_context: {
+									shipping_preference: "NO_SHIPPING",
+								},
+							});
+
+							return details;
+						},
+						async onApprove(data: any, actions: any) {
+							try {
+								const details = await actions.order.capture();
+								if (details.status === "COMPLETED") {
+									console.log("Payment completed:", details);
+									await fetch(`${backendBaseUrl}/wallet/addMoney`, {
+										method: "POST",
+										body: JSON.stringify({
+											userId: clientUser?._id,
+											userType: "Client",
+											amount: Number(details.purchase_units[0].amount.value),
+											category: "Recharge",
+											global: true,
+										}),
+										headers: { "Content-Type": "application/json" },
+									});
+									trackEvent("Recharge_Page_Payment_Completed", {
+										Client_ID: clientUser?._id,
+										Creator_ID: creator?._id,
+										Recharge_value: rechargeAmount,
+										Walletbalace_Available: clientUser?.walletBalance,
+										Order_ID: details.id,
+									});
+
+									router.push("/success");
 								}
-							}],
-							application_context: {
-								shipping_preference: "NO_SHIPPING",
+							} catch (error) {
+								console.error("Error capturing payment:", error);
+							} finally {
+								setShowPayPal(false);
+								form.reset();
 							}
-						});
-
-						return details;
-					},
-					async onApprove(data: any, actions: any) {
-						try {
-							const details = await actions.order.capture();
-							if (details.status === "COMPLETED") {
-								console.log("Payment completed:", details);
-								await fetch(`${backendBaseUrl}/wallet/addMoney`, {
-									method: "POST",
-									body: JSON.stringify({
-										userId: clientUser?._id,
-										userType: "Client",
-										amount: Number(details.purchase_units[0].amount.value),
-										category: "Recharge",
-										global: true,
-									}),
-									headers: { "Content-Type": "application/json" },
-								});
-								trackEvent("Recharge_Page_Payment_Completed", {
-									Client_ID: clientUser?._id,
-									Creator_ID: creator?._id,
-									Recharge_value: rechargeAmount,
-									Walletbalace_Available: clientUser?.walletBalance,
-									Order_ID: details.id,
-								});
-
-								router.push("/success");
-							}
-						} catch (error) {
-							console.error("Error capturing payment:", error);
-						} finally {
+						},
+						onCancel(data: any) {
+							console.warn("Payment was canceled by the user", data);
+							trackEvent("Recharge_Page_Payment_Canceled", {
+								Client_ID: clientUser?._id,
+								Creator_ID: creator?._id,
+								Recharge_value: rechargeAmount,
+								Walletbalace_Available: clientUser?.walletBalance,
+							});
+							alert("Payment was canceled. You can try again if you wish.");
 							setShowPayPal(false);
-							form.reset()
-						}
-					},
-					onCancel(data: any) {
-						console.warn("Payment was canceled by the user", data);
-						trackEvent("Recharge_Page_Payment_Canceled", {
-							Client_ID: clientUser?._id,
-							Creator_ID: creator?._id,
-							Recharge_value: rechargeAmount,
-							Walletbalace_Available: clientUser?.walletBalance,
-						});
-						alert("Payment was canceled. You can try again if you wish.");
-						setShowPayPal(false);
-					},
-					onError(err: any) {
-						console.error("PayPal error:", err);
-						trackEvent("Recharge_Page_Payment_Error", {
-							Client_ID: clientUser?._id,
-							Error_Message: err.message,
-						});
-						alert("An error occurred with PayPal. Please try again.");
-					},
-				}).render("#paypal-button-container");
+						},
+						onError(err: any) {
+							console.error("PayPal error:", err);
+							trackEvent("Recharge_Page_Payment_Error", {
+								Client_ID: clientUser?._id,
+								Error_Message: err.message,
+							});
+							alert("An error occurred with PayPal. Please try again.");
+						},
+					})
+					.render("#paypal-button-container");
 			} else {
 				console.error("PayPal SDK not loaded");
 			}
 		} else {
-			const paypalContainer = document.getElementById("paypal-button-container");
+			const paypalContainer = document.getElementById(
+				"paypal-button-container"
+			);
 			if (paypalContainer) paypalContainer.innerHTML = "";
 		}
 	}, [showPayPal]);
@@ -141,11 +149,11 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		const getPg = async () => {
 			const response = await axios.get(`${backendBaseUrl}/order/getPg`);
 			const data = response.data;
-			if (data.activePg) setPg(data.activePg)
-		}
+			if (data.activePg) setPg(data.activePg);
+		};
 
 		getPg();
-	}, [])
+	}, []);
 
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
@@ -171,13 +179,31 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		let rate: number | undefined;
 		switch (callType) {
 			case "video":
-				rate = currentUser?.global ? creator?.globalVideoRate ? parseFloat(creator.globalVideoRate) : undefined : creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
+				rate = currentUser?.global
+					? creator?.globalVideoRate
+						? parseFloat(creator.globalVideoRate)
+						: undefined
+					: creator?.videoRate
+					? parseFloat(creator.videoRate)
+					: undefined;
 				break;
 			case "audio":
-				rate = currentUser?.global ? creator?.globalAudioRate ? parseFloat(creator.globalAudioRate) : undefined : creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
+				rate = currentUser?.global
+					? creator?.globalAudioRate
+						? parseFloat(creator.globalAudioRate)
+						: undefined
+					: creator?.videoRate
+					? parseFloat(creator.videoRate)
+					: undefined;
 				break;
 			case "chat":
-				rate = currentUser?.global ? creator?.globalChatRate ? parseFloat(creator.globalChatRate) : undefined : creator?.videoRate ? parseFloat(creator.videoRate) : undefined;
+				rate = currentUser?.global
+					? creator?.globalChatRate
+						? parseFloat(creator.globalChatRate)
+						: undefined
+					: creator?.videoRate
+					? parseFloat(creator.videoRate)
+					: undefined;
 				break;
 			default:
 				rate = 0;
@@ -198,9 +224,11 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		const rate = getRateForCallType();
 		return rate
 			? [5, 10, 15, 30, 40, 60].map((multiplier) =>
-				(rate * multiplier).toFixed(2)
-			)
-			: currentUser?.global ? ["5", "10", "20", "50", "100", "200", "500", "1000", "2000"] : ["50", "100", "200", "500", "1000", "2000", "5000", "10000", "20000"];
+					(rate * multiplier).toFixed(2)
+			  )
+			: currentUser?.global
+			? ["5", "10", "20", "50", "100", "200", "500", "1000", "2000"]
+			: ["50", "100", "200", "500", "1000", "2000", "5000", "10000", "20000"];
 	};
 
 	const tileClicked = (index: any) => {
@@ -213,7 +241,9 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		});
 	};
 
-	const schema = currentUser?.global ? enterGlobalAmountSchema : enterAmountSchema;
+	const schema = currentUser?.global
+		? enterGlobalAmountSchema
+		: enterAmountSchema;
 
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof schema>>({
@@ -241,12 +271,12 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 			Creator_ID: creator?._id,
 			Recharge_value: rechargeAmount,
 			Walletbalace_Available: clientUser?.walletBalance,
-		})
+		});
 
 		localStorage.removeItem("cashfree_order_id");
 
 		if (currentUser?.global) {
-			setShowPayPal(true)
+			setShowPayPal(true);
 		} else {
 			pgHandler(
 				pg,
@@ -255,8 +285,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 				currentUser?.phone,
 				clientUser?.createdAt?.toString().split("T")[0],
 				currentUser?.walletBalance,
-				creator?._id,
-			)
+				creator?._id
+			);
 		}
 
 		return;
@@ -278,7 +308,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
 	return (
 		<>
-			<div className="sticky top-0 md:top-[76px] bg-white z-30 flex flex-col  text-gray-800 w-full h-full p-4 gap-5">
+			<div className="sticky top-0 lg:top-[76px] bg-white z-30 flex flex-col  text-gray-800 w-full h-full p-4 gap-5">
 				<section className="flex items-center gap-4 -ml-1">
 					<Link
 						href={`${creatorURL ? creatorURL : "/home"}`}
@@ -310,7 +340,9 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 								Total Balance
 							</h2>
 							<span className="w-fit text-3xl text-green-1 leading-7 font-bold">
-								{`${currentUser.global ? "$" : "Rs."} ${walletBalance.toFixed(2)}`}
+								{`${currentUser.global ? "$" : "Rs."} ${walletBalance.toFixed(
+									2
+								)}`}
 							</span>
 						</>
 					) : (
@@ -328,10 +360,14 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 				{/* Recharge Section */}
 				{!showPayPal && (
 					<section className="flex flex-col gap-5 items-start justify-center shadow border border-gray-100 p-5">
-						<h2 className="w-fit text-gray-500 font-normal leading-5">Add Money</h2>
+						<h2 className="w-fit text-gray-500 font-normal leading-5">
+							Add Money
+						</h2>
 						<Form {...form}>
 							<form className="w-full flex items-center justify-center text-center text-3xl leading-7 font-bold text-green-1">
-								<span className="text-3xl">{`${currentUser?.global ? "$" : "₹"}`}</span>
+								<span className="text-3xl">{`${
+									currentUser?.global ? "$" : "₹"
+								}`}</span>
 
 								<FormField
 									control={form.control}
@@ -359,8 +395,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 								{/* Display the amount due message if there's an amount due */}
 								{amountToBeDisplayed() !== undefined && (
 									<p className="text-red-500">
-										{`${currentUser?.global ? "$" : "₹"} ${amountToBeDisplayed()?.toFixed(2)}`} more required for 5 minutes
-										of {callType}
+										{`${
+											currentUser?.global ? "$" : "₹"
+										} ${amountToBeDisplayed()?.toFixed(2)}`}{" "}
+										more required for 5 minutes of {callType}
 									</p>
 								)}
 							</section>
@@ -368,9 +406,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 								{generateAmounts().map((amount, index) => (
 									<button
 										key={amount}
-										className={`capitalize text-sm font-medium p-2.5 rounded-md border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${amount === form.getValues("rechargeAmount") &&
+										className={`capitalize text-sm font-medium p-2.5 rounded-md border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${
+											amount === form.getValues("rechargeAmount") &&
 											"bg-green-1 text-white"
-											}`}
+										}`}
 										disabled={showPayPal}
 										onClick={() => {
 											form.setValue("rechargeAmount", amount);
@@ -383,30 +422,35 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 							</div>
 
 							<Button
-								disabled={!currentUser || !rechargeAmount || rechargeAmount === "0" || showPayPal}
+								disabled={
+									!currentUser ||
+									!rechargeAmount ||
+									rechargeAmount === "0" ||
+									showPayPal
+								}
 								onClick={(event: any) =>
 									form.handleSubmit((values) => onSubmit(event, values))(event)
 								}
-								className={`${(!rechargeAmount || rechargeAmount === "0") &&
+								className={`${
+									(!rechargeAmount || rechargeAmount === "0") &&
 									"!cursor-not-allowed opacity-80"
-									} w-full max-w-md mt-2 bg-green-1 text-white mx-auto hoverScaleDownEffect`}
+								} w-full max-w-md mt-2 bg-green-1 text-white mx-auto hoverScaleDownEffect`}
 							>
 								Recharge
 							</Button>
 						</Form>
 					</section>
-				)
-				}
+				)}
 				<div
-					className={`flex items-center justify-center shadow border border-gray-100 p-5 rounded-lg w-full ${showPayPal ? "block" : "hidden"
-						}`}
+					className={`flex items-center justify-center shadow border border-gray-100 p-5 rounded-lg w-full ${
+						showPayPal ? "block" : "hidden"
+					}`}
 				>
 					<div
 						id="paypal-button-container"
 						className={`w-full ${showPayPal ? "block" : "hidden"}`}
 					></div>
 				</div>
-
 			</div>
 		</>
 	);

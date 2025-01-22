@@ -1,16 +1,22 @@
 import React, { createContext, useContext, useState } from "react";
 import { Service } from "@/types";
 
-type SelectedServiceType = Service | null;
-type FinalServicesType = Service[] | null;
+export type SelectedServiceType = Service | null;
+export type SelectedServicesType = Service[] | null;
+export type FinalServicesType = Service[] | null;
 
 interface SelectedServiceContextType {
 	selectedService: SelectedServiceType;
 	setSelectedService: React.Dispatch<React.SetStateAction<SelectedServiceType>>;
+	selectedServices: SelectedServicesType;
+	setSelectedServices: React.Dispatch<
+		React.SetStateAction<SelectedServicesType>
+	>;
 	newUserService: SelectedServiceType;
 	setNewUserService: React.Dispatch<React.SetStateAction<SelectedServiceType>>;
 	resetServices: () => void;
 	getFinalServices: () => FinalServicesType;
+	getSpecificServiceOffer: (type: string) => SelectedServiceType;
 }
 
 const SelectedServiceContext = createContext<
@@ -22,6 +28,8 @@ export const SelectedServiceProvider: React.FC<{
 }> = ({ children }) => {
 	const [selectedService, setSelectedService] =
 		useState<SelectedServiceType>(null);
+	const [selectedServices, setSelectedServices] =
+		useState<SelectedServicesType>(null);
 	const [newUserService, setNewUserService] =
 		useState<SelectedServiceType>(null);
 
@@ -34,7 +42,7 @@ export const SelectedServiceProvider: React.FC<{
 	// Function to combine selected service and new user service into a single array
 	const getFinalServices = (): FinalServicesType => {
 		const servicesArray: Service[] = [];
-		if (newUserService) servicesArray.push(newUserService);
+
 		if (selectedService) {
 			if (Array.isArray(selectedService)) {
 				servicesArray.push(...selectedService);
@@ -45,15 +53,32 @@ export const SelectedServiceProvider: React.FC<{
 		return servicesArray.length > 0 ? servicesArray : null;
 	};
 
+	const getSpecificServiceOffer = (type: string): SelectedServiceType => {
+		const services = selectedServices || [];
+		const service = services.find(
+			(service) =>
+				service.type.toLowerCase() === type.toLowerCase() ||
+				service?.typeLabel?.toLowerCase() === type.toLowerCase() ||
+				service.type.toLowerCase() === "all"
+		);
+
+		return service || null;
+	};
+
+	console.log(selectedServices, selectedService);
+
 	return (
 		<SelectedServiceContext.Provider
 			value={{
+				selectedServices,
+				setSelectedServices,
 				selectedService,
 				setSelectedService,
 				newUserService,
 				setNewUserService,
 				resetServices,
 				getFinalServices,
+				getSpecificServiceOffer,
 			}}
 		>
 			{children}
