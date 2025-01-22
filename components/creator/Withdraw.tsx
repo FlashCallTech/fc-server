@@ -503,10 +503,16 @@ const Withdraw: React.FC = () => {
 
 					{isModalOpen && (
 						<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-							<div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-								<h2 className="text-lg font-semibold mb-4">
-									Enter Withdrawal Amount
-								</h2>
+							<div className="bg-white w-full max-w-md rounded-lg shadow-lg p-6">
+								<div className="flex justify-between items-center mb-4">
+									<h2 className="text-lg font-semibold">Enter Withdrawal Amount</h2>
+									<button
+										className="text-gray-500 text-xl hover:text-gray-700"
+										onClick={closeModal}
+									>
+										&times;
+									</button>
+								</div>
 								<input
 									type="text"
 									value={withdrawAmount}
@@ -514,7 +520,7 @@ const Withdraw: React.FC = () => {
 									placeholder="Enter amount"
 									className="p-2 border rounded w-full mb-4"
 								/>
-								<div className="flex justify-end gap-4">
+								<div className="flex justify-end gap-4 mt-6">
 									<Button onClick={closeModal} className="bg-gray-300 text-black">
 										Cancel
 									</Button>
@@ -537,7 +543,7 @@ const Withdraw: React.FC = () => {
 						{/* Sticky Balance and Recharge Section */}
 						<section className="flex flex-col gap-5 items-center justify-center md:items-start">
 							{/* Balance Section */}
-							{isStickyVisible && (
+							{/* {isStickyVisible && (
 								<div className="w-full flex gap-1 text-xl items-start font-semibold justify-start">
 									<p>
 										Welcome,
@@ -547,13 +553,20 @@ const Withdraw: React.FC = () => {
 										{creatorUser?.firstName} {creatorUser?.lastName}
 									</p>
 								</div>
-							)}
+							)} */}
 
 							{/* Recharge Section */}
-							<div className="flex flex-col gap-5 w-full items-center justify-center lg:items-start">
+							<div className="flex flex-col gap-5 w-full justify-center items-start">
 								{isStickyVisible && (
 									<>
-										<div className="w-full flex flex-row justify-between p-6 mb-6 items-center rounded-lg bg-white border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
+										<div
+											style={{
+												background:
+													"linear-gradient(0deg, rgba(0, 0, 0, 0.001), rgba(0, 0, 0, 0.001)), rgba(22, 188, 136, 0.1)",
+												boxShadow: "0px 1px 2px 0px rgba(0, 0, 0, 0.05)",
+											}}
+											className="w-full flex flex-row justify-between p-6 mb-6 items-center rounded-lg"
+										>
 											<div className="flex flex-col items-start pl-1">
 												<span className="text-[#6B7280] text-sm">Wallet Balance</span>
 												<p className="text-green-600 text-[30px] font-bold p-0">
@@ -768,8 +781,8 @@ const Withdraw: React.FC = () => {
 
 					{isModalOpen && (
 						<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-							<div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-								<div className="flex justify-between items-center">
+							<div className="bg-white w-full max-w-md rounded-lg shadow-lg p-6">
+								<div className="flex justify-between items-center mb-4">
 									<h2 className="text-lg font-semibold">Enter Withdrawal Amount</h2>
 									<button
 										className="text-gray-500 text-xl hover:text-gray-700"
@@ -785,13 +798,13 @@ const Withdraw: React.FC = () => {
 									placeholder="Enter amount"
 									className="p-2 border rounded w-full mb-4"
 								/>
-								<div className="flex mt-6 justify-end gap-4">
-									<Button onClick={closeModal} className="rounded-full text-gray-700 border border-gray-300 hoverScaleDownEffect">
+								<div className="flex justify-end gap-4 mt-6">
+									<Button onClick={closeModal} className="text-gray-700 border border-gray-300 rounded-full hoverScaleDownEffect">
 										Cancel
 									</Button>
 									<Button
 										onClick={handleWithdraw}
-										className="bg-black text-white rounded-full hoverScaleDownEffect"
+										className="text-white bg-black rounded-full hoverScaleDownEffect"
 									>
 										Confirm
 									</Button>

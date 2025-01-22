@@ -29,7 +29,7 @@ const CreatorSidebar = () => {
     });
 
     useEffect(() => {
-        if(pathname.includes("payment-settings") || pathname.includes("kyc")) setPaymentDropdownOpen(true);
+        if (pathname.includes("payment-settings") || pathname.includes("kyc")) setPaymentDropdownOpen(true);
     }, [pathname])
 
     useEffect(() => {
@@ -209,35 +209,37 @@ const CreatorSidebar = () => {
 
             {/* Footer Section */}
             <div
-                className={`flex flex-col p-4`}
+                className={`flex flex-col`}
             >
-                {/* Additional Links */}
-                <Link href="/terms-and-conditions" className="flex items-center gap-5 text-sm tracking-wide font-medium text-[#4B5563] px-4 py-2 rounded-lg">
-                    <Image
-                        src={"/creator/terms&conditions.svg"}
-                        width={100}
-                        height={100}
-                        alt="img"
-                        className="size-4 object-cover gray-color"
-                    />
-                    Terms & Conditions
-                </Link>
-                <Link href="/support" className="flex items-center gap-5 text-sm tracking-wide font-medium text-[#4B5563] px-4 py-2 rounded-lg">
-                    <Image
-                        src={"/creator/support.svg"}
-                        width={100}
-                        height={100}
-                        alt="img"
-                        className="size-4 object-cover gray-color"
-                    />
-                    Support
-                </Link>
+                <div className="px-2">
+                    {/* Additional Links */}
+                    <Link href="/terms-and-conditions" className="flex items-center gap-5 text-sm tracking-wide font-medium text-[#4B5563] px-4 py-2 rounded-lg">
+                        <Image
+                            src={"/creator/terms&conditions.svg"}
+                            width={100}
+                            height={100}
+                            alt="img"
+                            className="size-4 object-cover gray-color"
+                        />
+                        Terms & Conditions
+                    </Link>
+                    <Link href="/support" className="flex items-center gap-5 text-sm tracking-wide font-medium text-[#4B5563] px-4 py-2 rounded-lg">
+                        <Image
+                            src={"/creator/support.svg"}
+                            width={100}
+                            height={100}
+                            alt="img"
+                            className="size-4 object-cover gray-color"
+                        />
+                        Support
+                    </Link>
+                </div>
                 {currentUser ? (
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Link
                                 href={`/profile/${currentUser?._id}`}
-                                className={`flex p-2 gap-5 items-center border-t mt-2 justify-center`}
+                                className={`flex p-4 gap-5 items-center border-t mt-2 justify-center`}
                             >
                                 <Image
                                     src={imageSrc}
