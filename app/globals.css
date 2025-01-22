@@ -105,6 +105,22 @@ html {
 	bottom: 0 !important;
 }
 
+/* react rating styles */
+
+.rr--svg {
+	margin: 0px !important;
+}
+
+.rr--off .rr--svg {
+	stroke: none !important;
+	fill: #f0f0f0;
+}
+
+.rr--on .rr--svg {
+	stroke: none !important;
+	fill: #facc15;
+}
+
 /* stream custom styles */
 
 .str-video__video-preview-container {
@@ -365,7 +381,7 @@ input[type="number"] {
 	}
 
 	.callOptionContainer {
-		@apply flex flex-col p-4 border border-gray-300 bg-white rounded-[24px] h-fit gap-4 justify-between items-start w-full hoverScaleDownEffect cursor-pointer;
+		@apply flex flex-col py-3 px-4 border border-gray-300 bg-white rounded-[24px] h-fit gap-4 justify-between items-start w-full hoverScaleDownEffect cursor-pointer;
 	}
 
 	.text-balance {

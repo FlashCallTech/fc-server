@@ -75,7 +75,7 @@ const ClientSideDiscountheet = ({
 				}, 1500);
 			}
 		}
-	}, [creatorId, userServices]);
+	}, [creatorId, currentUser?._id]);
 
 	const onOpenChange = (open: boolean) => {
 		setIsDiscountModalOpen(open);

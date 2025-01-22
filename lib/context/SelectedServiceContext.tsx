@@ -54,14 +54,13 @@ export const SelectedServiceProvider: React.FC<{
 	};
 
 	const getSpecificServiceOffer = (type: string): SelectedServiceType => {
-		const service = selectedServices
-			? selectedServices.find(
-					(service) =>
-						service.type.toLowerCase() === type.toLowerCase() ||
-						service?.typeLabel?.toLowerCase() === type.toLowerCase() ||
-						service.type.toLowerCase() === "all"
-			  )
-			: null;
+		const services = selectedServices || [];
+		const service = services.find(
+			(service) =>
+				service.type.toLowerCase() === type.toLowerCase() ||
+				service?.typeLabel?.toLowerCase() === type.toLowerCase() ||
+				service.type.toLowerCase() === "all"
+		);
 
 		return service || null;
 	};
