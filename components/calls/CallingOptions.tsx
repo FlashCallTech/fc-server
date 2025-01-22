@@ -29,6 +29,7 @@ import {
 	sendNotification,
 	backendUrl,
 	sendCallNotification,
+	updateExpertStatus,
 } from "@/lib/utils";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import NotifyConsentSheet from "../client/NotifyConsentSheet";
@@ -51,7 +52,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [isConsentSheetOpen, setIsConsentSheetOpen] = useState(false);
-	const { handleChat, chatRequestsRef } = useChatRequest();
+	const { handleChat, chatRequestsRef, loading } = useChatRequest();
 	const [callInitiated, setcallInitiated] = useState(false);
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
@@ -230,7 +231,9 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
 					const data = docSnapshot.data();
 					if (data) {
-						if (data.status === "ended" || data.status === "rejected") {
+						console.log(data);
+						if (data.status === "ended" || data.status === "rejected" || data.status === "cancelled") {
+							updateExpertStatus(clientUser?.global ? clientUser?.email as string : clientUser?.phone as string, "Online");
 							setSheetOpen(false);
 							setChatReqSent(false);
 							setChatState(data.status);
@@ -240,10 +243,18 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 									title: "The user is busy, please try again later",
 									toastStatus: "negative",
 								});
-							} else {
+							}
+							if (data.status === "ended") {
 								toast({
 									variant: "destructive",
 									title: "User is not answering please try again later",
+									toastStatus: "negative",
+								});
+							}
+							if (data.status === "cancelled") {
+								toast({
+									variant: "destructive",
+									title: "You cancelled the request",
 									toastStatus: "negative",
 								});
 							}
@@ -339,8 +350,8 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 
 			const startsAt = new Date(Date.now()).toISOString();
 			const description = `${callType === "video"
-					? `Video Call With Expert ${creator.username}`
-					: `Audio Call With Expert ${creator.username}`
+				? `Video Call With Expert ${creator.username}`
+				: `Audio Call With Expert ${creator.username}`
 				}`;
 
 			const ratePerMinute =
@@ -605,7 +616,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 			let discounts = getFinalServices();
 			const filteredDiscounts = discounts?.filter(
 				(discount) => discount.type === "all" || discount.type === "chat"
-			  );
+			);
 			console.log(filteredDiscounts);
 
 			setChatReqSent(true);
@@ -725,7 +736,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						try {
 							const chatRequestId = localStorage.getItem("chatRequestId");
 							await updateDoc(doc(chatRequestsRef, chatRequestId as string), {
-								status: "ended",
+								status: "cancelled",
 							});
 						} catch (error) {
 							Sentry.captureException(error);
@@ -742,20 +753,27 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 					<SheetContent
 						side="bottom"
 						onInteractOutside={(event) => {
-							// Prevent sheet from closing when clicking outside
 							event.preventDefault();
 						}}
 						className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[200px] max-h-fit w-full sm:max-w-[444px] mx-auto"
 					>
-						<SheetTitle></SheetTitle>
-						<SheetDescription></SheetDescription>
-						<div className="relative flex flex-col items-center gap-7">
-							<div className="flex flex-col py-5 items-center justify-center gap-4 w-full text-center">
-								<span className="font-semibold text-xl">
-									Waiting for the creator to accept your chat request...
-								</span>
+						{loading ? (
+							<div className="flex flex-col items-center justify-center gap-4">
+								<span className="font-semibold text-xl">Preparing the request...</span>
 							</div>
-						</div>
+						) : (
+							<>
+								<SheetTitle></SheetTitle>
+								<SheetDescription></SheetDescription>
+								<div className="relative flex flex-col items-center gap-7">
+									<div className="flex flex-col py-5 items-center justify-center gap-4 w-full text-center">
+										<span className="font-semibold text-xl">
+											Waiting for the creator to accept your chat request...
+										</span>
+									</div>
+								</div>
+							</>
+						)}
 					</SheetContent>
 				</Sheet>
 			</div>
