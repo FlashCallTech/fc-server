@@ -20,7 +20,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 		isFetching,
 		isLoading,
 		refetch,
-	} = useGetUserServices(creator?._id as string, "all", true, "creator");
+	} = useGetUserServices(creator?._id as string, false, "creator");
 
 	const [sheetType, setSheetType] = useState<"Create" | "Update">("Create");
 	const [userServices, setUserServices] = useState<Service[]>([]);
@@ -120,6 +120,8 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 			[index]: !prevStates[index],
 		}));
 	};
+
+	console.log(userServices);
 
 	return (
 		<>

@@ -199,7 +199,7 @@ const Sidebar = () => {
 			) : (
 				<Button
 					asChild
-					className="hoverScaleDownEffect flex items-center gap-2 font-semibold w-full h-[40px] xl:h-[48px] mr-1 rounded-[24px] bg-black text-white"
+					className="hoverScaleDownEffect flex items-center gap-2 font-semibold w-full max-lg:hidden h-[40px] xl:h-[48px] mr-1 rounded-[24px] bg-black text-white"
 					size="lg"
 				>
 					<Link href="/authenticate">

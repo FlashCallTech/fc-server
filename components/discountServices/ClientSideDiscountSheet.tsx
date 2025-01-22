@@ -37,6 +37,7 @@ const ClientSideDiscountheet = ({
 	setIsAuthSheetOpen: any;
 }) => {
 	const [applyingOffer, setApplyingOffer] = useState(false);
+	const [validatedAppliedOffers, setValidatedAppliedOffers] = useState(false);
 	const [userServices, setUserServices] = useState<Service[]>([]);
 	const { setSelectedServices } = useSelectedServiceContext();
 	const { currentUser, fetchingUser } = useCurrentUsersContext();
@@ -48,7 +49,6 @@ const ClientSideDiscountheet = ({
 		refetch,
 	} = useGetUserServices(
 		creatorId,
-		"all",
 		true,
 		"client",
 		currentUser?._id as string,
@@ -68,14 +68,14 @@ const ClientSideDiscountheet = ({
 				`hasSeenDiscountSheet_${creatorId}`
 			);
 
-			if (!seenDiscountSheet && userServices.length > 0) {
+			if (!seenDiscountSheet) {
 				setTimeout(() => {
 					setIsDiscountModalOpen(true);
 					sessionStorage.setItem(`hasSeenDiscountSheet_${creatorId}`, "true");
 				}, 1500);
 			}
 		}
-	}, [creatorId, currentUser?._id]);
+	}, [creatorId, currentUser?._id, fetchingUser]);
 
 	const onOpenChange = (open: boolean) => {
 		setIsDiscountModalOpen(open);
@@ -91,12 +91,13 @@ const ClientSideDiscountheet = ({
 		}
 
 		setApplyingOffer(true);
-		setOfferApplied(true);
 		setSelectedServices(userServices);
 		setTimeout(() => {
 			setApplyingOffer(false);
+			setValidatedAppliedOffers(true);
 		}, 1000);
 		setTimeout(() => {
+			setOfferApplied(true);
 			onOpenChange(false);
 		}, 2500);
 	};
@@ -130,7 +131,7 @@ const ClientSideDiscountheet = ({
 				<Button
 					onClick={handleApplyOffer}
 					className="rounded-full !py-4 bg-black w-full text-white hoverScaleDownEffect"
-					disabled={offerApplied}
+					disabled={offerApplied || validatedAppliedOffers}
 				>
 					{applyingOffer ? (
 						<span className="flex items-center justify-center gap-2">
@@ -144,7 +145,7 @@ const ClientSideDiscountheet = ({
 							/>{" "}
 							Applying ...
 						</span>
-					) : offerApplied ? (
+					) : offerApplied || validatedAppliedOffers ? (
 						<span className="flex items-center justify-center gap-2">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
