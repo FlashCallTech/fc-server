@@ -4,6 +4,7 @@ import { analytics, db } from "@/lib/firebase";
 import {
 	arrayUnion,
 	collection,
+	deleteField,
 	doc,
 	getDoc,
 	onSnapshot,
@@ -37,7 +38,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
 	const { getDevicePlatform } = usePlatform();
-	
+
 
 	// Function to update expert's status
 	const updateExpertStatus = async (phone: string, status: string) => {
@@ -126,9 +127,9 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		const callId = crypto.randomUUID();
 		localStorage.setItem("CallId", callId);
 
-		setSheetOpen(true);
-
 		try {
+			setLoading(true);
+			setSheetOpen(true);
 			const userChatsDocRef = doc(db, "userchats", clientUser?._id);
 			const creatorChatsDocRef = doc(db, "userchats", creator?._id);
 
@@ -194,6 +195,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					clientId: clientUser?._id,
 					creatorId: creator?._id,
 					discounts: [],
+					scheduled: deleteField(),
+					scheduledChatDetails: deleteField(),
 				},
 				{ merge: true }
 			);
@@ -306,6 +309,9 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					);
 				}
 			});
+
+			updateExpertStatus(currentUser?.global ? currentUser?.email as string : currentUser?.phone as string, "Busy");
+
 			trackEvent("BookCall_Chat_initiated", {
 				Client_ID: clientUser._id,
 				User_First_Seen: formattedDate,
@@ -314,6 +320,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				Walletbalace_Available: clientUser.walletBalance,
 			});
 		} catch (error) {
+			setSheetOpen(true);
 			Sentry.captureException(error);
 			console.error(error);
 			toast({
@@ -321,6 +328,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				title: "Failed to send chat request",
 				toastStatus: "negative",
 			});
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -537,6 +546,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		handleChat,
 		chatRequestsRef,
 		SheetOpen,
+		loading,
 	};
 };
 
