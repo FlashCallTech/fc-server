@@ -1,20 +1,23 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import Image from "next/image";
+import { boolean } from "zod";
 
 interface DeleteLinkProps {
   onClose: () => void;
   onSave: () => void;
+  isLoading: boolean;
 }
 
 const DeleteLink: React.FC<DeleteLinkProps> = ({
   onClose,
   onSave,
+  isLoading,
 }) => {
 
   const handleSave = () => {
-    onClose();
     onSave();
+    isLoading;
   }
 
   return (
@@ -29,15 +32,25 @@ const DeleteLink: React.FC<DeleteLinkProps> = ({
             <div className="flex flex-row w-full gap-2 justify-end text-sm">
               <button
                 onClick={onClose}
-                className="text-black border border-gray-300 rounded-md p-2 bg-white hoverScaleDownEffect"
+                className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-full hoverScaleDownEffect"
               >
                 No, Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="bg-black text-white rounded-md p-2 hoverScaleDownEffect"
+                className="bg-black text-white px-4 py-2 rounded-full hoverScaleDownEffect"
               >
-                Yes, Delete
+                {isLoading ? (
+                  <Image
+                    src="/icons/loading-circle.svg"
+                    alt="Loading..."
+                    width={24}
+                    height={24}
+                    priority
+                  />
+                ) : (
+                  "Yes, Delete"
+                )}
               </button>
             </div>
           </div>

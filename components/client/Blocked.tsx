@@ -53,7 +53,7 @@ const Blocked = ({
 				<div className="size-full flex flex-col gap-4 items-center justify-center text-xl font-semibold text-center text-gray-500">
 					No Blocked Clients Found
 					<Button
-						className={`text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 hoverScaleDownEffect bg-green-1 text-white`}
+						className={`text-sm font-medium px-4 py-2 lg:rounded-full rounded-lg border border-gray-300 hoverScaleDownEffect lg:bg-black bg-green-1 text-white`}
 						onClick={() => setClientListType("All")}
 					>
 						Browse Clients

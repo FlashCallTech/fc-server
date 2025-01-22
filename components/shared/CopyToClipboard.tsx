@@ -116,7 +116,7 @@ const CopyToClipboard = ({
 			{/* New Design */}
 			<div className="hidden md:flex justify-between items-center w-full gap-2">
 				<div
-					className="relative flex border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] w-full rounded-xl p-4 justify-between items-center gap-2 group cursor-pointer"
+					className="relative flex bg-white border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] w-full rounded-xl p-4 justify-between items-center gap-2 group cursor-pointer"
 					onClick={() => copyToClipboard(link)}
 				>
 					<Image
@@ -126,7 +126,7 @@ const CopyToClipboard = ({
 						alt="link"
 						className="w-5 h-5"
 					/>
-					<div className="grid items-start justify-start px-3 py-2 text-[#4B5563] overflow-x-hidden w-full group-hover:text-[#16BC88]">
+					<div className="grid items-start justify-start px-3 py-2 text-[#4B5563] overflow-x-hidden w-full group-hover:text-black">
 						<p className="text-ellipsis whitespace-nowrap min-w-0 overflow-hidden text-base font-normal leading-6 tracking-normal">
 							{link}
 						</p>

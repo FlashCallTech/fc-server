@@ -227,6 +227,8 @@ export async function updateCreatorUser(
 
 export async function deleteCreatorLink(userId: string, link: LinkType) {
 	try {
+		await connectToDatabase();
+		
 		const { title, url } = link;
 
 		// Update the creator document by pulling (removing) the matching link
@@ -239,6 +241,8 @@ export async function deleteCreatorLink(userId: string, link: LinkType) {
 			},
 			{ new: true } // Return the updated document
 		);
+
+		console.log(updatedCreator);
 
 		return updatedCreator;
 	} catch (error) {
