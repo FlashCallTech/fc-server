@@ -40,7 +40,7 @@ export const WalletBalanceProvider = ({
 }: {
 	children: ReactNode;
 }) => {
-	const { currentUser, userType } = useCurrentUsersContext();
+	const { currentUser, userType, fetchingUser } = useCurrentUsersContext();
 	const [walletBalance, setWalletBalance] = useState<number>(0);
 	const [isInitialized, setIsInitialized] = useState(false);
 
@@ -89,7 +89,7 @@ export const WalletBalanceProvider = ({
 		} else {
 			updateAndSetWalletBalance();
 		}
-	}, [currentUser]);
+	}, [fetchingUser]);
 
 	// Listen for real-time updates using Firebase
 	useEffect(() => {
@@ -124,7 +124,7 @@ export const WalletBalanceProvider = ({
 		return () => {
 			unsubscribe();
 		};
-	}, [currentUser, userType]);
+	}, [fetchingUser, userType]);
 
 	return (
 		<WalletBalanceContext.Provider

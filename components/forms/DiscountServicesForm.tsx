@@ -35,7 +35,7 @@ import { Service } from "@/types";
 const predefinedConditions = [
 	"New User",
 	"Seasonal Offer",
-	// "30+ Minutes Call",
+	// "30 Minutes Call",
 	// "60 Minutes Call",
 ] as const;
 
@@ -119,11 +119,6 @@ const DiscountServicesForm = ({
 	sheetType: "Create" | "Update";
 	service: Service | null;
 }) => {
-	const [selectedFile, setSelectedFile] = useState<File | String>(
-		service?.photo ||
-			"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7"
-	);
-
 	const { currentUser } = useCurrentUsersContext();
 	const { toast } = useToast();
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -148,7 +143,8 @@ const DiscountServicesForm = ({
 				: {
 						title: "",
 						description: "",
-						photo: "",
+						photo:
+							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
 						type: "all",
 						isActive: true,
 						currency: "INR",
@@ -215,7 +211,7 @@ const DiscountServicesForm = ({
 				toastStatus: "negative",
 			});
 			console.warn(error);
-			form.reset();
+			// form.reset();
 		}
 	}
 
@@ -256,7 +252,6 @@ const DiscountServicesForm = ({
 									<FileUploaderServices
 										fieldChange={field.onChange}
 										mediaUrl={mediaUrl}
-										onFileSelect={setSelectedFile}
 									/>
 								</FormControl>
 								<FormMessage />
@@ -465,14 +460,12 @@ const DiscountServicesForm = ({
 																	let updatedConditions = [];
 
 																	if (condition === "New User") {
-																		// If "New User" is selected, deselect other conditions
 																		updatedConditions = isSelected
 																			? conditions.filter(
 																					(item) => item !== condition
 																			  )
 																			: ["New User"];
 																	} else {
-																		// If another condition is selected, deselect "New User"
 																		updatedConditions = isSelected
 																			? conditions.filter(
 																					(item) => item !== condition

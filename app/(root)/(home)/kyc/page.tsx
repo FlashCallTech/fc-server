@@ -4,7 +4,9 @@ import React from 'react'
 
 const page = () => {
   return (
-    <KYC />
+    <div className='size-full'>
+      <KYC />
+    </div>
   )
 }
 

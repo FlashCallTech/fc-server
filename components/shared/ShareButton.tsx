@@ -63,7 +63,7 @@ const ShareButton = ({
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<button
-					className={`h-[36px] w-full flex items-center justify-center gap-2 rounded-[6px] bg-transparent border border-black hoverScaleDownEffect text-sm font-bold whitespace-nowrap`}
+					className={`h-[40px] w-full flex items-center justify-center gap-2 rounded-[24px] bg-transparent border border-black hoverScaleDownEffect text-sm font-medium whitespace-nowrap`}
 					onClick={shareLink}
 				>
 					<svg

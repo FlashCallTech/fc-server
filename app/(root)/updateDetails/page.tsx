@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import EditProfile from "@/components/forms/EditProfile";
 
 const UpdateProfilePage = () => {
-	const { currentUser, userType, refreshCurrentUser } =
+	const { currentUser, userType, fetchingUser, refreshCurrentUser } =
 		useCurrentUsersContext();
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
@@ -20,9 +20,9 @@ const UpdateProfilePage = () => {
 		firstName: currentUser?.firstName || "",
 		lastName: currentUser?.lastName || "",
 		username:
-			currentUser?.username === currentUser?.phone
-				? currentUser?._id || `${currentUser?._id}`
-				: currentUser?.username || `${currentUser?._id}`,
+			(currentUser?.username === currentUser?.phone
+				? currentUser?._id
+				: currentUser?.username) ?? "",
 		profession: currentUser?.profession || "",
 		themeSelected: currentUser?.themeSelected || "#88D8C0",
 		phone: currentUser?.phone || "",
@@ -40,14 +40,16 @@ const UpdateProfilePage = () => {
 		useState<UpdateUserParams>(getInitialState);
 
 	useEffect(() => {
-		if (currentUser) {
+		if (!fetchingUser && currentUser) {
 			setLoading(true);
 			const updatedInitialState = getInitialState();
 			setUserData(updatedInitialState);
 			setInitialState(updatedInitialState);
 			setLoading(false);
+		} else {
+			setLoading(true);
 		}
-	}, [currentUser?._id, userType]);
+	}, [fetchingUser, currentUser?._id, userType]);
 
 	const handleUpdate = async (newUserData: UpdateUserParams) => {
 		refreshCurrentUser();
@@ -57,7 +59,7 @@ const UpdateProfilePage = () => {
 
 	// const isInitialState = userData.id === "";
 
-	if (loading)
+	if (loading || fetchingUser)
 		return (
 			<section className="w-full h-screen flex items-center justify-center">
 				<SinglePostLoader />

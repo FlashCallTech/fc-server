@@ -7,33 +7,7 @@ const SupportPage = () => {
 
 	return (
 		<section className="w-full h-fit flex flex-col gap-6 items-start justify-start p-4 lg:p-8">
-			<section className="w-full flex items-center justify-start gap-4 -ml-1">
-				<Link
-					href={`${creatorURL ? creatorURL : "/home"}`}
-					className="text-xl font-bold hoverScaleDownEffect"
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						strokeWidth={1.5}
-						stroke="currentColor"
-						className="size-6"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="M15.75 19.5 8.25 12l7.5-7.5"
-						/>
-					</svg>
-				</Link>
-				<h1 className="text-xl md:text-2xl font-bold">
-					{creatorURL
-						? `Explore ${creatorURL.split("/")[1]}'s Profile`
-						: "Return Home"}
-				</h1>
-			</section>
-			<h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-[#50A65C]">
+			<h2 className="text-xl md:text-2xl lg:text-xl font-semibold text-black">
 				Hey we&apos;re here to help
 			</h2>
 			<p className="text-base text-gray-700">
@@ -46,7 +20,7 @@ const SupportPage = () => {
 				<section className="w-fit flex items-center justify-start gap-4">
 					<a
 						href="mailto:support@Flashcall.me"
-						className="text-base font-medium hoverScaleDownEffect text-green-1"
+						className="text-base font-medium hoverScaleDownEffect text-[#16BC88]"
 					>
 						support@flashcall.me
 					</a>

@@ -9,18 +9,16 @@ import DeleteLink from "./DeleteLink";
 import * as Sentry from "@sentry/nextjs";
 
 const CreatorLinks = () => {
-	const { creatorUser, refreshCurrentUser } = useCurrentUsersContext();
-	const [links, setLinks] = useState(creatorUser?.links);
+	const { creatorUser } = useCurrentUsersContext();
+	const [linkData, setLinkData] = useState({ title: "", link: "" });
+	const [links, setLinks] = useState<LinkType[] | undefined>(creatorUser?.links);
 	const [isLoading, setIsLoading] = useState(false);
 	const [selectedLinkIndex, setSelectedLinkIndex] = useState<number | null>(
 		null
 	);
 	const [isLinkActionsOpen, setIsLinkActionsOpen] = useState(false);
 	const [editLinkOpen, setEditLinkOpen] = useState(false);
-	const [linkToEdit, setLinkToEdit] = useState<{
-		title: string;
-		url: string;
-	} | null>(null);
+	const [linkToEdit, setLinkToEdit] = useState<LinkType | null>(null);
 	const [isDeleteLink, setIsDeleteLink] = useState(false);
 	const [addLinkOpen, setAddLinkOpen] = useState(false);
 
@@ -34,8 +32,8 @@ const CreatorLinks = () => {
 	};
 
 	const handleEdit = () => {
-		if (selectedLinkIndex !== null && creatorUser?.links) {
-			const link = creatorUser.links[selectedLinkIndex];
+		if (selectedLinkIndex !== null && links) {
+			const link = links[selectedLinkIndex];
 			setIsLinkActionsOpen(false);
 			setLinkToEdit(link);
 			setEditLinkOpen(true);
@@ -48,17 +46,24 @@ const CreatorLinks = () => {
 	};
 
 	const handleLinkToggle = async (index: number) => {
-		const updatedLinks = creatorUser?.links?.map((link, i) =>
-			i === index ? { ...link, isActive: !link.isActive } : link
-		);
-
-		setLinks(updatedLinks);
-		// Save the updated links to the server
-		saveUpdatedLinks(updatedLinks!);
+		try {
+			setIsLoading(true);
+			if (links) {
+				const updatedLinks = links?.map((link, i) =>
+					i === index ? { ...link, isActive: !link.isActive } : link
+				);
+				// Save the updated links to the server
+				await saveUpdatedLinks(updatedLinks);
+			}
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("An error occurred while updating the user links:", error);
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const saveUpdatedLinks = async (updatedLinks: LinkType[]) => {
-		setIsLoading(true);
 		try {
 			const response = await fetch("/api/v1/creator/updateUser", {
 				method: "PUT",
@@ -71,50 +76,50 @@ const CreatorLinks = () => {
 				}),
 			});
 
+			const result = await response.json();
+
 			if (response.ok) {
-				await refreshCurrentUser(); // Refresh the current user data to reflect changes
+				setLinks(result.updatedUser.links);
 			} else {
 				console.error("Failed to update the user links");
 			}
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("An error occurred while updating the user links:", error);
-		} finally {
-			setIsLoading(false);
 		}
 	};
 
-	const handleSaveEditLink = async (LinkData: {
-		title: string;
-		url: string;
-	}) => {
+	const handleSaveEditLink = async (LinkData: LinkType) => {
 		if (selectedLinkIndex !== null && creatorUser) {
+			setIsLoading(true);
 			try {
-				if (creatorUser.links) {
-					const updatedLinks = creatorUser.links.map((link, index) =>
+				if (links) {
+					const updatedLinks = links.map((link, index) =>
 						index === selectedLinkIndex ? { ...link, ...LinkData } : link
 					);
-
 					// Save the updated links to the server
 					await saveUpdatedLinks(updatedLinks);
 				}
 				// Refresh the user data to reflect the changes
-				refreshCurrentUser();
-				setEditLinkOpen(false);
-				setSelectedLinkIndex(null);
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Failed to update the link:", error);
+			} finally {
+				setLinkToEdit(null);
+				setSelectedLinkIndex(null);
+				setEditLinkOpen(false);
+				setIsLoading(false);
 			}
 		}
 	};
 
 	const handleDeleteLink = async () => {
 		if (selectedLinkIndex !== null && creatorUser) {
+			setIsLoading(true);
 			try {
 				// Get the link to be deleted
-				if (creatorUser.links) {
-					const linkToDelete = creatorUser.links[selectedLinkIndex];
+				if (links) {
+					const linkToDelete = links[selectedLinkIndex];
 
 					// Send a request to delete the link from the database
 					const response = await fetch("/api/v1/creator/deleteLink", {
@@ -130,11 +135,12 @@ const CreatorLinks = () => {
 
 					if (response.ok) {
 						// Update the local state by removing the deleted link
+						const updatedLinks = links?.filter(
+							(_, index) => index !== selectedLinkIndex
+						);
+						setLinks(updatedLinks); // Update the local state
 					}
-					const updatedLinks = creatorUser.links.filter(
-						(_, index) => index !== selectedLinkIndex
-					);
-					refreshCurrentUser(); // Refresh the current user data to reflect changes
+					// refreshCurrentUser(); // Refresh the current user data to reflect changes
 				} else {
 					console.error("Failed to delete the link");
 				}
@@ -144,12 +150,15 @@ const CreatorLinks = () => {
 			} finally {
 				setIsLinkActionsOpen(false);
 				setSelectedLinkIndex(null);
+				setIsDeleteLink(false);
+				setIsLoading(false);
 			}
 		}
 	};
 
 	const handleAddLink = async (linkData: { title: string; link: string }) => {
 		try {
+			setIsLoading(true);
 			// Assuming you have the userId available
 			const userId = creatorUser?._id; // Replace this with the actual userId
 
@@ -178,17 +187,21 @@ const CreatorLinks = () => {
 				body: JSON.stringify({ userId, user: updateParams }),
 			});
 
+			const result = await response.json()
+
 			if (response.ok) {
-				const updatedUser = await response.json();
-				console.log("User updated successfully:", updatedUser);
-				refreshCurrentUser();
 				// Handle the updated user data (e.g., update the state, notify the user)
+				setLinks(result.updatedUser.links);
 			} else {
 				console.error("Failed to update the user");
 			}
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("An error occurred while updating the user:", error);
+		} finally {
+			setLinkData({ title: "", link: "" });
+			setAddLinkOpen(false);
+			setIsLoading(false);
 		}
 	};
 
@@ -211,7 +224,7 @@ const CreatorLinks = () => {
 									{link.title}
 								</a>
 								<div className="flex flex-row gap-2">
-									<label className="relative inline-block w-14 h-6">
+									<label className="relative inline-block w-10 h-6">
 										<input
 											type="checkbox"
 											className="toggle-checkbox absolute w-0 h-0"
@@ -220,17 +233,15 @@ const CreatorLinks = () => {
 											disabled={isLoading}
 										/>
 										<p
-											className={`toggle-label block overflow-hidden h-6 rounded-full ${
-												link.isActive ? "bg-green-600" : "bg-gray-500"
-											} servicesCheckbox ${
-												isLoading ? "cursor-not-allowed" : "cursor-pointer"
-											}`}
+											className={`toggle-label block overflow-hidden h-6 rounded-full ${link.isActive ? "bg-green-600" : "bg-gray-500"
+												} servicesCheckbox ${isLoading ? "cursor-not-allowed" : "cursor-pointer"
+												}`}
 										>
 											<span
 												className="servicesCheckboxContent"
 												style={{
 													transform: link.isActive
-														? "translateX(2.1rem)"
+														? "translateX(1.1rem)"
 														: "translateX(0)",
 												}}
 											/>
@@ -262,14 +273,16 @@ const CreatorLinks = () => {
 					link={linkToEdit}
 					onSave={handleSaveEditLink}
 					onClose={() => setEditLinkOpen(false)}
+					setLink={setLinkToEdit}
+					isLoading={isLoading}
 				/>
 			)}
 
 			{addLinkOpen && (
-				<AddLink onClose={() => setAddLinkOpen(false)} onSave={handleAddLink} />
+				<AddLink onClose={() => setAddLinkOpen(false)} onSave={handleAddLink} linkData={linkData} setLinkData={setLinkData} isLoading={isLoading} />
 			)}
 			<section
-				className="flex justify-center border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg bg-white p-2 py-4 hover:cursor-pointer"
+				className="flex justify-center  border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg bg-white p-2 py-4 hover:cursor-pointer"
 				onClick={() => setAddLinkOpen(true)}
 			>
 				<div>Add your links</div>
@@ -279,6 +292,7 @@ const CreatorLinks = () => {
 				<DeleteLink
 					onClose={() => setIsDeleteLink(false)}
 					onSave={handleDeleteLink}
+					isLoading={isLoading}
 				/>
 			)}
 		</>

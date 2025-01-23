@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { UpdateCreatorParams, UpdateUserParams } from "@/types";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	UpdateProfileFormSchema,
 	UpdateProfileFormSchemaClient,
@@ -37,7 +37,6 @@ import {
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
 import FileUploader from "../uploaders/FileUploader";
-import { updateCreatorUser } from "@/lib/actions/creator.actions";
 import { updateUser } from "@/lib/actions/client.actions";
 import { usePathname } from "next/navigation";
 import axios from "axios";
@@ -62,6 +61,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../ui/select";
+import { isEqual } from "lodash";
 
 export type EditProfileProps = {
 	userData: UpdateUserParams;
@@ -241,16 +241,23 @@ const EditProfile = ({
 
 	const { formState } = form;
 	const { errors, isValid } = formState;
+	const initialValues = useRef(form.getValues());
+	const hasChangesRef = useRef(false);
 
 	// Watch form values to detect changes
 	const watchedValues: any = useWatch({ control: form.control });
 
 	useEffect(() => {
-		const hasChanged = Object.keys(watchedValues).some((key) => {
-			return watchedValues[key] !== initialState[key];
+		const subscription = form.watch((values) => {
+			const currentValues = values;
+			const changes = !isEqual(currentValues, initialValues.current);
+			if (hasChangesRef.current !== changes) {
+				hasChangesRef.current = changes;
+				setIsChanged(changes);
+			}
 		});
-		setIsChanged(hasChanged);
-	}, [watchedValues, initialState]);
+		return () => subscription.unsubscribe();
+	}, [form, isValid]);
 
 	useEffect(() => {
 		if (!selectedFile) {
@@ -384,6 +391,7 @@ const EditProfile = ({
 			}
 
 			if (response.error) {
+				console.log("Error Found");
 				// Display the error if an existing user is found
 				setFormError(response.error);
 				toast({
@@ -448,40 +456,6 @@ const EditProfile = ({
 
 	return (
 		<Form {...form}>
-			<section
-				className={`sticky ${
-					pathname.includes("/updateDetails") ? "top-0" : "top-0 md:top-[76px]"
-				}  bg-white z-30 p-4 pl-0 flex flex-col items-start justify-start gap-4 w-full h-fit`}
-			>
-				<section className="flex items-center gap-4">
-					{pathname.includes("/profile") && (
-						<section
-							onClick={() => {
-								form.reset();
-								setEditData && setEditData((prev) => !prev);
-							}}
-							className="text-xl font-bold hoverScaleDownEffect cursor-pointer"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								strokeWidth={1.5}
-								stroke="currentColor"
-								className="size-6"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M15.75 19.5 8.25 12l7.5-7.5"
-								/>
-							</svg>
-						</section>
-					)}
-					<h1 className="text-xl md:text-2xl font-bold">Edit User Details</h1>
-				</section>
-			</section>
-
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
 				className="relative space-y-8 w-full flex flex-col items-center"
@@ -887,7 +861,7 @@ const EditProfile = ({
 												style={{ paddingBottom: "0px !important" }}
 											>
 												{field.value ? (
-													format(new Date(field.value), "PPP") // Format the stored string value back to a readable format
+													format(new Date(field.value), "PPP")
 												) : (
 													<span>Pick a date</span>
 												)}
@@ -946,10 +920,10 @@ const EditProfile = ({
 											selected={selectedDate}
 											onSelect={(date) => {
 												setSelectedDate(date);
-												// Convert the date to a string format before setting it in the form
+
 												field.onChange(
 													format(date as Date | string, "yyyy-MM-dd")
-												); // Format as 'yyyy-MM-dd' (ISO format)
+												);
 											}}
 											month={new Date(selectedYear, selectedMonth)}
 											disabled={(date) =>

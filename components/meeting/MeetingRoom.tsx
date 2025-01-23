@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React from "react";
 import { useEffect, useState, useMemo, useRef } from "react";
 import {
 	CallParticipantsList,
@@ -15,7 +15,6 @@ import { Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
 import CallTimer from "../calls/CallTimer";
 import { useToast } from "../ui/use-toast";
-import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
 import SinglePostLoader from "../shared/SinglePostLoader";
@@ -26,13 +25,14 @@ import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
-import { backendBaseUrl } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 import { CallTimerProvider } from "@/lib/context/CallTimerContext";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import TipModal from "../calls/TipModal";
 import MyCallConnectingUI from "./MyCallConnectigUI";
+import { backendBaseUrl } from "@/lib/utils";
+import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -126,15 +126,7 @@ const MeetingRoom = () => {
 	const [hasVisited, setHasVisited] = useState(false);
 	const firestore = getFirestore();
 
-	const countdownDuration = ongoingCallStatus === "ongoing" ? 30 : 15;
-
-	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
-		navigator.sendBeacon(
-			`${backendBaseUrl}/user/setCallStatus/${currentUser?._id as string}`
-		);
-
-		call?.endCall();
-	});
+	const countdownDuration = 30;
 
 	const isMobile = useScreenSize();
 	const mobileDevice = isMobileDevice();
@@ -142,6 +134,14 @@ const MeetingRoom = () => {
 	const handleCallRejected = async () => {
 		await call?.endCall().catch((err) => console.warn(err));
 	};
+
+	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
+		if (currentUser?._id) {
+			navigator.sendBeacon(
+				`${backendBaseUrl}/user/setCallStatus/${currentUser._id}`
+			);
+		}
+	});
 
 	useEffect(() => {
 		if (isMobile) {
@@ -170,10 +170,10 @@ const MeetingRoom = () => {
 					toast({
 						variant: "destructive",
 						title: "Already in Call",
-						description: "You are already in this meeting in another tab.",
+						description: "You are already in this meeting.",
 						toastStatus: "positive",
 					});
-					router.replace("/home");
+					router.replace("/");
 					return;
 				}
 				if (callingState === CallingState.IDLE) {
@@ -228,7 +228,7 @@ const MeetingRoom = () => {
 			return;
 		}
 
-		if (participants.length === 1) {
+		if (participants.length < 2) {
 			setShowCountdown(true);
 			setCountdown(countdownDuration);
 
@@ -321,7 +321,7 @@ const MeetingRoom = () => {
 	return (
 		<section className="relative w-full overflow-hidden pt-4 md:pt-0 text-white bg-dark-2 h-dvh">
 			{call &&
-				participants.length === 1 &&
+				participants.length < 2 &&
 				isMeetingOwner &&
 				ongoingCallStatus === "initiate" && <MyCallConnectingUI call={call} />}
 			{showCountdown && countdown && <CountdownDisplay />}
@@ -421,7 +421,7 @@ const MeetingRoom = () => {
 					{/* End Call Button */}
 					<Tooltip>
 						<TooltipTrigger>
-							<EndCallButton />
+							<EndCallButton callType={"instant"} />
 						</TooltipTrigger>
 						<TooltipContent className="hidden md:block mb-2 bg-red-500  border-none">
 							<p className="!text-white">End Call</p>

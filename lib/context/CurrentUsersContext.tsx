@@ -19,7 +19,6 @@ import { useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { backendBaseUrl } from "../utils";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import Image from "next/image";
 
 interface CurrentUsersContextValue {
 	clientUser: clientUser | null;
@@ -318,6 +317,7 @@ export const CurrentUsersProvider = ({
 
 	const fetchGlobalCurrentUser = async (email: string) => {
 		try {
+			console.log("Fetching global client");
 			setFetchingUser(true);
 
 			if (email) {
@@ -351,7 +351,7 @@ export const CurrentUsersProvider = ({
 			return;
 		}
 
-		// Initialize listener only if region is "India"
+		// Initialize listener only if region is "Global"
 		const unsubscribe = onAuthStateChanged(auth, (user) => {
 			if (user && user.email) {
 				fetchGlobalCurrentUser(user.email);
@@ -373,7 +373,7 @@ export const CurrentUsersProvider = ({
 		if (region === "India") await fetchCurrentUser();
 		else {
 			const email = auth.currentUser?.email;
-			console.log(email);
+			console.log("Email: ", email);
 			if (email) await fetchGlobalCurrentUser(email);
 		}
 	};

@@ -3,54 +3,99 @@ import Image from "next/image";
 import { creatorUser } from "@/types";
 import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
-import { backendBaseUrl } from "@/lib/utils";
+import { backendBaseUrl, getDisplayName } from "@/lib/utils";
 import UnfollowAlert from "../alerts/UnfollowAlert";
-import { debounce } from "lodash";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { useToast } from "../ui/use-toast";
+import AuthenticationSheet from "./AuthenticationSheet";
 
 const Favorites = memo(
 	({
-		setMarkedFavorite,
-		markedFavorite,
-		handleToggleFavorite,
-		addingFavorite,
 		creator,
-		user,
+		userId,
+		onFavoriteToggle,
 		isFavoritesPath,
 	}: {
-		setMarkedFavorite: React.Dispatch<React.SetStateAction<boolean>>;
-		markedFavorite: boolean;
-		handleToggleFavorite: () => Promise<void>;
-		addingFavorite: boolean;
 		creator: creatorUser;
-		user: any;
+		userId: string;
+		onFavoriteToggle?: (
+			updatedCreator: creatorUser,
+			isFavorited: boolean
+		) => void;
 		isFavoritesPath?: boolean;
 	}) => {
 		const [showUnfollowDialog, setShowUnfollowDialog] = useState(false);
-		const [loading, setLoading] = useState(user?._id ? true : false);
+		const [loading, setLoading] = useState(false);
+		const [addingFavorite, setAddingFavorite] = useState(false);
+		const [markedFavorite, setMarkedFavorite] = useState(false);
+		const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
+		const { setAuthenticationSheetOpen } = useCurrentUsersContext();
+		const { toast } = useToast();
+		const fullName = getDisplayName(creator);
 
-		const fetchFavorites = debounce(
-			async (userId: string, creatorId: string) => {
-				try {
-					const response = await axios.get(
-						`${backendBaseUrl}/favorites/${userId}`
+		const fetchFavorites = async (userId: string, creatorId: string) => {
+			try {
+				setLoading(true);
+				const response = await axios.get(
+					`${backendBaseUrl}/favorites/${userId}`
+				);
+				if (response.data?.paginatedData) {
+					const isFavorite = response.data.paginatedData.some(
+						(fav: any) => fav._id === creatorId
 					);
-					if (response.data?.paginatedData) {
-						const isFavorite = response.data.paginatedData.some(
-							(fav: any) => fav._id === creatorId
-						);
-						setMarkedFavorite(isFavorite);
-					} else {
-						console.error("Unexpected favorites response:", response.data);
-					}
-				} catch (error) {
-					Sentry.captureException(error);
-					console.error("Error fetching favorites:", error);
-				} finally {
-					setLoading(false);
+					setMarkedFavorite(isFavorite);
+				} else {
+					console.error("Unexpected favorites response:", response.data);
 				}
-			},
-			300
-		);
+			} catch (error) {
+				Sentry.captureException(error);
+				console.error("Error fetching favorites:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		useEffect(() => {
+			setAuthenticationSheetOpen(isAuthSheetOpen);
+		}, [isAuthSheetOpen]);
+
+		const handleToggleFavorite = async () => {
+			if (!userId) {
+				setIsAuthSheetOpen(true);
+				return;
+			}
+			const clientId = userId;
+			setAddingFavorite(true);
+			try {
+				const response = await axios.post(
+					`${backendBaseUrl}/favorites/upsertFavorite`,
+					{
+						clientId: clientId as string,
+						creatorId: creator?._id,
+					}
+				);
+
+				if (response.status === 200) {
+					const isFavorited = !markedFavorite;
+					setMarkedFavorite(isFavorited);
+					onFavoriteToggle && onFavoriteToggle(creator, isFavorited);
+
+					toast({
+						title: `${
+							isFavorited
+								? `You are now following ${fullName}`
+								: `You have unfollowed ${fullName}`
+						}`,
+						toastStatus: !isFavorited ? "negative" : "positive",
+					});
+				}
+			} catch (error) {
+				Sentry.captureException(error);
+				console.log(error);
+			} finally {
+				setAddingFavorite(false);
+			}
+		};
 
 		const handleUnfollowClick = useCallback(() => {
 			if (markedFavorite) {
@@ -68,15 +113,13 @@ const Favorites = memo(
 		}, [handleToggleFavorite]);
 
 		useEffect(() => {
-			if (!user?._id || !creator?._id) {
+			if (!userId || !creator?._id) {
 				setLoading(false);
 				return;
 			}
 
-			setLoading(true);
-
-			fetchFavorites(user._id, creator._id);
-		}, [user?._id, creator?._id]);
+			fetchFavorites(userId, creator._id);
+		}, []);
 
 		if (loading) {
 			return (
@@ -84,7 +127,7 @@ const Favorites = memo(
 					className={`flex items-center justify-center w-full hoverScaleDownEffect ${
 						isFavoritesPath
 							? "p-2 rounded-full "
-							: "h-[36px] w-full rounded-[6px] border border-black"
+							: "h-[36px] w-full rounded-[24px] border border-black"
 					} ${
 						markedFavorite
 							? isFavoritesPath && "bg-transparent"
@@ -103,20 +146,20 @@ const Favorites = memo(
 			);
 		}
 
-		if (!user?._id || !creator?._id) {
+		if (!userId || !creator?._id) {
 			return (
 				<div
 					className={`flex items-center justify-center w-full hoverScaleDownEffect cursor-pointer ${
 						isFavoritesPath
 							? "p-2 rounded-full "
-							: "h-[36px] w-full rounded-[6px] border border-black"
+							: "h-[36px] w-full rounded-[24px] border border-black"
 					} ${
 						markedFavorite
 							? isFavoritesPath && "bg-transparent"
 							: "bg-transparent"
 					} flex gap-2 items-center`}
 				>
-					<span className="text-center w-full font-bold text-sm">Follow</span>
+					<span className="text-center w-full font-medium text-sm">Follow</span>
 				</div>
 			);
 		}
@@ -135,7 +178,7 @@ const Favorites = memo(
 					className={` flex items-center justify-center w-full hoverScaleDownEffect ${
 						isFavoritesPath
 							? "p-2 rounded-full "
-							: "h-[36px] w-full rounded-[6px] border border-black"
+							: "h-[40px] w-full rounded-[24px] border border-black"
 					}  ${
 						markedFavorite
 							? isFavoritesPath && "bg-transparent"
@@ -161,7 +204,7 @@ const Favorites = memo(
 									/>
 								</svg>
 							) : (
-								<span className="text-center w-full font-bold text-sm">
+								<span className="text-center w-full font-medium text-sm">
 									Follow
 								</span>
 							)
@@ -175,7 +218,7 @@ const Favorites = memo(
 								<path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
 							</svg>
 						) : (
-							<span className="text-center w-full font-bold text-sm">
+							<span className="text-center w-full font-medium text-sm">
 								Following
 							</span>
 						)
@@ -190,6 +233,13 @@ const Favorites = memo(
 						/>
 					)}
 				</button>
+
+				{isAuthSheetOpen && (
+					<AuthenticationSheet
+						isOpen={isAuthSheetOpen}
+						onOpenChange={setIsAuthSheetOpen}
+					/>
+				)}
 			</>
 		);
 	}
