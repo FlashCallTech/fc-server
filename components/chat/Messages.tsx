@@ -13,17 +13,18 @@ interface Chat {
 	creatorName: string;
 	creatorId: string;
 	clientId: string;
-	messages: {
-		senderId: string;
-		replyIndex: number;
-		text: string;
-		createdAt: number;
-		img: string;
-		audio: string;
-		seen: boolean;
-		tip: string;
-		global?: boolean;
-	}[];
+}
+
+interface Messages {
+	senderId: string;
+	replyIndex: number;
+	text: string;
+	createdAt: number;
+	img: string;
+	audio: string;
+	seen: boolean;
+	tip: string;
+	global?: boolean;
 }
 
 interface Img {
@@ -33,12 +34,13 @@ interface Img {
 
 interface Props {
 	chat: Chat;
+	messages: Messages[];
 	currentUserMessageSent: boolean;
 	setReplyIndex: any;
 	setText: any;
 }
 
-const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex, setText }) => {
+const Messages: React.FC<Props> = ({ chat, messages, currentUserMessageSent, setReplyIndex, setText }) => {
 	const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
 	const [isTyping, setIsTyping] = useState(false); // Track typing status
 	const [imagesLoaded, setImagesLoaded] = useState(0); // Track loaded images
@@ -144,7 +146,7 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 
 	// Scroll to the bottom when images finish loading
 	useEffect(() => {
-		if (imagesLoaded === chat.messages.filter((msg) => msg.img).length) {
+		if (imagesLoaded === messages.filter((msg) => msg.img).length) {
 			scrollToBottom();
 		}
 	}, [imagesLoaded]);
@@ -159,7 +161,7 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 
 	const handleUnsend = async (index: number) => {
 		try {
-			const updatedMessages = chat.messages.filter((_, i) => i !== index);
+			const updatedMessages = messages.filter((_, i) => i !== index);
 			await updateDoc(doc(db, "chats", chat.chatId), { messages: updatedMessages });
 		} catch (error) {
 			console.log(error);
@@ -190,12 +192,12 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 	return (
 		<div className="flex-1 p-4 overflow-y-auto scrollbar-hide">
 			<div className="mb-4 text-left">
-				{chat?.messages?.map((message, index) => {
+				{messages?.map((message, index) => {
 					const isCurrentUserMessage =
 						message.senderId === (currentUser?._id as string);
 					const isNextMessageDifferentSender =
-						index < chat.messages.length - 1 &&
-						chat.messages[index + 1].senderId !== message.senderId;
+						index < messages.length - 1 &&
+						messages[index + 1].senderId !== message.senderId;
 
 					// Apply different margin if the next message is from a different sender
 					const marginBottom = isNextMessageDifferentSender ? "mb-3" : "mb-1";
@@ -204,7 +206,7 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 						index === 0 ||
 						!isSameDay(
 							new Date(message.createdAt),
-							new Date(chat.messages[index - 1]?.createdAt)
+							new Date(messages[index - 1]?.createdAt)
 						);
 
 					const isSliding = slidingIndex === index;
@@ -244,7 +246,7 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 									onContextMenu={(e) => handleRightClick(e, message)}
 								>
 
-									{message.replyIndex !== undefined && chat.messages[message.replyIndex] && (
+									{message.replyIndex !== undefined && messages[message.replyIndex] && (
 										<div
 											className={`p-2 mb-2 border-l-4 ${isCurrentUserMessage ? "border-green-500" : "border-blue-500"
 												} bg-gray-100 rounded cursor-pointer`} // Add cursor-pointer for clarity
@@ -267,13 +269,13 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 										>
 											<div className="truncate text-sm text-gray-600">
 												<span className="font-semibold">
-													{chat.messages[message.replyIndex].text || "Media"}
+													{messages[message.replyIndex].text || "Media"}
 												</span>
 											</div>
-											{chat.messages[message.replyIndex].img && (
+											{messages[message.replyIndex].img && (
 												<div className="mt-1">
 													<Image
-														src={chat.messages[message.replyIndex].img}
+														src={messages[message.replyIndex].img}
 														alt="Replied Image"
 														width={200}
 														height={200}
@@ -281,7 +283,7 @@ const Messages: React.FC<Props> = ({ chat, currentUserMessageSent, setReplyIndex
 													/>
 												</div>
 											)}
-											{chat.messages[message.replyIndex].audio && (
+											{messages[message.replyIndex].audio && (
 												<div className="mt-1">
 													Audio Message
 												</div>
