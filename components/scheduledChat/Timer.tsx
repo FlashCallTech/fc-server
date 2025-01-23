@@ -1,19 +1,30 @@
 import React, { useEffect, useState } from "react";
 
 interface CountdownProps {
-    timeInSeconds: number | undefined; // Time in seconds
+    timerDetails: {
+        startTime: {
+            seconds: number;
+            nanoseconds: number;
+        };
+        maxDuration: number; // Time in seconds
+    };
 }
 
-const Countdown: React.FC<CountdownProps> = ({ timeInSeconds }) => {
+const Countdown: React.FC<CountdownProps> = ({ timerDetails }) => {
     const [timeLeft, setTimeLeft] = useState<string>("00:00");
     const [isTimeRunningOut, setIsTimeRunningOut] = useState<boolean>(false);
 
     useEffect(() => {
-        if (timeInSeconds !== undefined) {
-            let remainingTime = timeInSeconds;
-            const tenPercentTime = timeInSeconds * 0.1;
+        if (timerDetails) {
+            const { startTime, maxDuration } = timerDetails;
+            const startTimeInSeconds = startTime.seconds; // Use the seconds part of Timestamp
+            const endTime = startTimeInSeconds + maxDuration;
+            const tenPercentTime = maxDuration * 0.1;
 
             const calculateTimeLeft = () => {
+                const now = Math.floor(Date.now() / 1000); // Current time in seconds
+                const remainingTime = endTime - now;
+
                 if (remainingTime <= 0) {
                     clearInterval(interval);
                     setTimeLeft("00:00");
@@ -30,9 +41,7 @@ const Countdown: React.FC<CountdownProps> = ({ timeInSeconds }) => {
                     setTimeLeft(
                         `${hours.toString().padStart(2, "0")}:${minutes
                             .toString()
-                            .padStart(2, "0")}:${seconds
-                            .toString()
-                            .padStart(2, "0")}`
+                            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
                     );
                 } else {
                     setTimeLeft(
@@ -41,8 +50,6 @@ const Countdown: React.FC<CountdownProps> = ({ timeInSeconds }) => {
                             .padStart(2, "0")}`
                     );
                 }
-
-                remainingTime -= 1;
             };
 
             const interval = setInterval(calculateTimeLeft, 1000);
@@ -50,9 +57,9 @@ const Countdown: React.FC<CountdownProps> = ({ timeInSeconds }) => {
 
             return () => clearInterval(interval); // Cleanup interval on unmount
         }
-    }, [timeInSeconds]);
+    }, [timerDetails]);
 
-    if (timeInSeconds === undefined) {
+    if (!timerDetails) {
         return <div className="text-[10px] text-white font-medium">Loading...</div>;
     }
 
@@ -60,7 +67,7 @@ const Countdown: React.FC<CountdownProps> = ({ timeInSeconds }) => {
         <div
             className={`text-[10px] font-medium ${isTimeRunningOut ? "text-red-500" : "text-white"}`}
         >
-            {timeLeft} mins
+            {timeLeft}
         </div>
     );
 };
