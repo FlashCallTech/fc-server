@@ -34,6 +34,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [SheetOpen, setSheetOpen] = useState(false); // State to manage sheet visibility
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
+	const messagesRef = collection(db, "messages");
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
 	const { getDevicePlatform } = usePlatform();
@@ -175,6 +176,15 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			}
 
 			const chatId = existingChatId || doc(chatRef).id;
+
+			const messagesDocRef = doc(messagesRef, chatId);
+			const messagesDocSnapshot = await getDoc(messagesDocRef);
+			if(!messagesDocSnapshot.exists()) {
+				await setDoc(messagesDocSnapshot.ref, {
+					messages: []
+				})
+			}
+
 			const chatDocRef = doc(db, "callTimer", chatId as string);
 			const callDoc = await getDoc(chatDocRef);
 			if (callDoc.exists()) {
