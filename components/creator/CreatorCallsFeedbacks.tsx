@@ -280,13 +280,11 @@ const CreatorCallsFeedbacks = ({
 															<Image
 																src={
 																	feedback?.clientId?.photo &&
-																		isValidUrl(feedback.clientId.photo)
+																	isValidUrl(feedback.clientId.photo)
 																		? feedback.clientId.photo
 																		: GetRandomImage()
 																}
-																alt={
-																	feedback?.clientId?.username || "Default User"
-																}
+																alt={"Username"}
 																height={1000}
 																width={1000}
 																className="rounded-full w-12 h-12 object-cover"
@@ -302,7 +300,9 @@ const CreatorCallsFeedbacks = ({
 																		/(\+91)(\d+)/,
 																		(match, p1, p2) =>
 																			`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-																	) || feedback?.clientId?._id || "Deleted User"}
+																	) ||
+																		feedback?.clientId?._id ||
+																		"Deleted Account"}
 																</span>
 																<p className="text-sm tracking-wide">
 																	{feedback?.clientId?.username.startsWith(
@@ -319,7 +319,10 @@ const CreatorCallsFeedbacks = ({
 																			)}
 																		</>
 																	) : (
-																		<>{feedback?.clientId?.username || "Deleted User"}</>
+																		<>
+																			{feedback?.clientId?.username ||
+																				"Deleted Account"}
+																		</>
 																	)}
 																</p>
 															</div>
@@ -418,13 +421,11 @@ const CreatorCallsFeedbacks = ({
 															<Image
 																src={
 																	feedback?.clientId?.photo &&
-																		isValidUrl(feedback.clientId.photo)
+																	isValidUrl(feedback.clientId.photo)
 																		? feedback.clientId.photo
 																		: GetRandomImage()
 																}
-																alt={
-																	feedback?.clientId?.username || "Default User"
-																}
+																alt={"Username"}
 																height={1000}
 																width={1000}
 																className="rounded-full w-12 h-12 object-cover"
@@ -440,7 +441,9 @@ const CreatorCallsFeedbacks = ({
 																		/(\+91)(\d+)/,
 																		(match, p1, p2) =>
 																			`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-																	) || feedback?.clientId?._id || "Deleted Account"}
+																	) ||
+																		feedback?.clientId?._id ||
+																		"Deleted Account"}
 																</span>
 																<p className="text-sm tracking-wide">
 																	{feedback?.clientId?.username.startsWith(
@@ -457,7 +460,10 @@ const CreatorCallsFeedbacks = ({
 																			)}
 																		</>
 																	) : (
-																		<>{feedback?.clientId?.username || "Deleted Account"}</>
+																		<>
+																			{feedback?.clientId?.username ||
+																				"Deleted Account"}
+																		</>
 																	)}
 																</p>
 															</div>

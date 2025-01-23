@@ -14,7 +14,6 @@ import { backendBaseUrl } from "@/lib/utils";
 import Image from "next/image";
 import { useCreatorQuery } from "@/lib/react-query/queries";
 import ContentLoading from "../shared/ContentLoading";
-import ClientSideDiscountSheet from "../discountServices/ClientSideDiscountSheet";
 
 const CreatorCard = () => {
 	const { username } = useParams();
@@ -146,10 +145,6 @@ const CreatorCard = () => {
 		<React.Suspense fallback={<ContentLoading />}>
 			<section className="size-full grid grid-cols-1 items-start justify-center">
 				<CreatorDetails creator={creatorUser} />
-				<ClientSideDiscountSheet
-					creatorId={creatorUser._id || ""}
-					theme={creatorUser.themeSelected}
-				/>
 			</section>
 		</React.Suspense>
 	);

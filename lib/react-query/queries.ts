@@ -50,25 +50,27 @@ export const useGetScheduledCalls = (
 	userType: string,
 	callType?: string
 ) => {
-	const limit = 10; 
+	const limit = 10;
 
 	return useInfiniteQuery({
 		queryKey: [QUERY_KEYS.GET_USER_CALLS, userId, userType, callType],
 		queryFn: async ({ pageParam = 1 }) => {
-			const response = await axios.get(`${backendBaseUrl}/calls/scheduled/getUserCalls`, {
-				params: {
-					userId,
-					userType,
-					callType,
-					page: pageParam,
-					limit,
-				},
-			});
+			const response = await axios.get(
+				`${backendBaseUrl}/calls/scheduled/getUserCalls`,
+				{
+					params: {
+						userId,
+						userType,
+						callType,
+						page: pageParam,
+						limit,
+					},
+				}
+			);
 
 			if (response.status === 200) {
-				console.log(response.data)
+				console.log(response.data);
 				return response.data;
-
 			} else {
 				throw new Error("Error fetching calls");
 			}
@@ -274,11 +276,12 @@ export const useGetCreatorNotifications = (userId: string) => {
 // Hook for fetching user services
 export const useGetUserServices = (
 	creatorId: string,
-	filter: "all" | "audio" | "video" | "chat" | "" = "all",
 	fetchAll: boolean = false,
 	requestFrom: "creator" | "client",
 	clientId?: string,
-	clientType?: string
+	clientType?: string,
+	fetchBestOffers?: boolean,
+	filter?: "all" | "audio" | "video" | "chat" | ""
 ) => {
 	const limit = 10;
 
@@ -291,6 +294,7 @@ export const useGetUserServices = (
 			filter,
 			fetchAll,
 			requestFrom,
+			fetchBestOffers,
 		],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
@@ -305,6 +309,7 @@ export const useGetUserServices = (
 						filter,
 						fetchAll,
 						requestFrom,
+						fetchBestOffers,
 					},
 				}
 			);
@@ -342,7 +347,7 @@ export const useGetUserAvailabilityServices = (
 			fetchAll,
 			requestFrom,
 			clientType,
-			clientId
+			clientId,
 		],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
@@ -355,7 +360,7 @@ export const useGetUserAvailabilityServices = (
 						fetchAll,
 						requestFrom,
 						clientType,
-						clientId
+						clientId,
 					},
 				}
 			);
@@ -443,15 +448,20 @@ export const useGetUserTransactionsByType = (
 	userId: string,
 	type: "debit" | "credit" | "all",
 	range: {
-		startDate: string | null,
-		endDate: string | null,
+		startDate: string | null;
+		endDate: string | null;
 	}
-
 ) => {
 	const limit = 10;
 
 	return useInfiniteQuery({
-		queryKey: ["userTransactions", userId, type, range.startDate, range.endDate],
+		queryKey: [
+			"userTransactions",
+			userId,
+			type,
+			range.startDate,
+			range.endDate,
+		],
 		queryFn: async ({ pageParam = 1 }) => {
 			const baseUrl = `${backendBaseUrl}/wallet/transactions/paginated/${userId}/type/${type}/range`;
 			const url =
@@ -507,21 +517,22 @@ export const useGetUserAvailability = (userId: string) => {
 	});
 };
 
-export const useGetUserReferrals = (
-	userId: string,
-) => {
+export const useGetUserReferrals = (userId: string) => {
 	const limit = 10; // Define the limit per page
 
 	return useInfiniteQuery({
 		queryKey: [QUERY_KEYS.GET_USER_REFERRALS, userId],
 		queryFn: async ({ pageParam = 1 }) => {
-			const response = await axios.get(`${backendBaseUrl}/referral/getReferrals`, {
-				params: {
-					userId,
-					page: pageParam,
-					limit,
-				},
-			});
+			const response = await axios.get(
+				`${backendBaseUrl}/referral/getReferrals`,
+				{
+					params: {
+						userId,
+						page: pageParam,
+						limit,
+					},
+				}
+			);
 
 			if (response.status === 200) {
 				return response.data;

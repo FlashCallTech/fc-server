@@ -411,7 +411,7 @@ const MeetingRoom = () => {
 					{/* End Call Button */}
 					<Tooltip>
 						<TooltipTrigger>
-							<EndCallButton />
+							<EndCallButton callType={"instant"} />
 						</TooltipTrigger>
 						<TooltipContent className="hidden md:block mb-2 bg-red-500  border-none">
 							<p className="!text-white">End Call</p>

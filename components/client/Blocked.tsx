@@ -90,7 +90,7 @@ const Blocked = ({
 						You have reached the end of the list.
 					</div>
 				)}
-			{hasNextPage && <div ref={ref} className=" pt-10 w-full" />}{" "}
+			{hasNextPage && <div ref={ref} className="py-4 w-full" />}{" "}
 		</section>
 	);
 };

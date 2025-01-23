@@ -1,12 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-} from "@/components/ui/sheet";
+
 import {
 	Dialog,
 	DialogContent,
@@ -14,116 +8,53 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+
 import { Service } from "@/types";
 import { useGetUserServices } from "@/lib/react-query/queries";
-import ClientServiceCard from "./ClientServiceCard";
-import { useInView } from "react-intersection-observer";
-import Image from "next/image";
 import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import axios from "axios";
-import { backendBaseUrl } from "@/lib/utils";
 import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
-
-// Filter Buttons Component
-const FilterButtons = ({
-	selectedFilter,
-	setSelectedFilter,
-	removeFilter,
-	setRemoveFilter,
-}: {
-	selectedFilter: any;
-	setSelectedFilter: any;
-	removeFilter: any;
-	setRemoveFilter: any;
-}) => (
-	<section className="z-40 py-2.5 bg-white sticky top-0 left-0 size-full min-h-fit flex items-center justify-start gap-4 overflow-x-scroll no-scrollbar">
-		<button
-			className={`text-sm px-4 py-2 rounded-lg border whitespace-nowrap ${
-				removeFilter ? "bg-green-1 text-white" : ""
-			}`}
-			onClick={() => {
-				setSelectedFilter("");
-				setRemoveFilter(true);
-			}}
-		>
-			All Discounts
-		</button>
-		{["all", "video", "audio", "chat"].map((filter) => (
-			<button
-				key={filter}
-				className={`text-sm px-4 py-2 rounded-lg border whitespace-nowrap ${
-					selectedFilter === filter ? "bg-green-1 text-white" : ""
-				}`}
-				onClick={() => {
-					setSelectedFilter(filter);
-					setRemoveFilter(false);
-				}}
-			>
-				{filter === "all"
-					? "Include All"
-					: filter.charAt(0).toUpperCase() + filter.slice(1)}
-			</button>
-		))}
-	</section>
-);
+import { Button } from "../ui/button";
+import Image from "next/image";
 
 const ClientSideDiscountheet = ({
 	creatorId,
+	creatorName,
 	theme,
+	isDiscountModalOpen,
+	setIsDiscountModalOpen,
+	offerApplied,
+	setOfferApplied,
+	setIsAuthSheetOpen,
 }: {
 	creatorId: string;
+	creatorName: string;
 	theme: string;
+	isDiscountModalOpen: boolean;
+	setIsDiscountModalOpen: any;
+	offerApplied: boolean;
+	setOfferApplied: any;
+	setIsAuthSheetOpen: any;
 }) => {
-	const [isMobileView, setIsMobileView] = useState(false);
-	const [selectedFilter, setSelectedFilter] = useState<
-		"all" | "audio" | "video" | "chat" | ""
-	>("");
-	const [isOpen, setIsOpen] = useState(false);
+	const [applyingOffer, setApplyingOffer] = useState(false);
+	const [validatedAppliedOffers, setValidatedAppliedOffers] = useState(false);
 	const [userServices, setUserServices] = useState<Service[]>([]);
-	const [removeFilter, setRemoveFilter] = useState(true);
-	const [hasPreviousCall, setHasPreviousCall] = useState(false);
-	const { selectedService, newUserService } = useSelectedServiceContext();
+	const { setSelectedServices } = useSelectedServiceContext();
 	const { currentUser, fetchingUser } = useCurrentUsersContext();
-	const { ref, inView } = useInView({
-		threshold: 0.1,
-		triggerOnce: false,
-	});
 
-	let discount = selectedService ?? (!hasPreviousCall ? newUserService : null);
 	const {
 		data: servicesData,
 		isLoading: servicesLoading,
 		isError: servicesError,
-		fetchNextPage,
-		hasNextPage,
-		isFetching,
+		refetch,
 	} = useGetUserServices(
 		creatorId,
-		selectedFilter,
-		removeFilter,
+		true,
 		"client",
 		currentUser?._id as string,
-		currentUser ? (currentUser?.email ? "Global" : "Indian") : ""
+		currentUser ? (currentUser?.email ? "Global" : "Indian") : "",
+		true
 	);
-
-	// Handle mobile view detection
-	useEffect(() => {
-		const checkMobileView = () => {
-			setIsMobileView(window.innerWidth <= 584);
-		};
-		checkMobileView();
-		window.addEventListener("resize", checkMobileView);
-		return () => {
-			window.removeEventListener("resize", checkMobileView);
-		};
-	}, []);
-
-	useEffect(() => {
-		if (inView && hasNextPage && !isFetching) {
-			fetchNextPage();
-		}
-	}, [inView, hasNextPage, isFetching]);
 
 	useEffect(() => {
 		const flattenedServices =
@@ -137,52 +68,38 @@ const ClientSideDiscountheet = ({
 				`hasSeenDiscountSheet_${creatorId}`
 			);
 
-			if (!seenDiscountSheet && userServices.length > 0) {
+			if (!seenDiscountSheet) {
 				setTimeout(() => {
-					setIsOpen(true);
+					setIsDiscountModalOpen(true);
 					sessionStorage.setItem(`hasSeenDiscountSheet_${creatorId}`, "true");
 				}, 1500);
 			}
 		}
-	}, [creatorId, userServices, fetchingUser]);
-
-	// Check if user has had any prior calls with the creator
-	useEffect(() => {
-		if (currentUser) {
-			const fetchCallData = async () => {
-				try {
-					const response = await axios.get(
-						`${backendBaseUrl}/calls/getClientCreatorCall`,
-						{
-							params: {
-								clientId: currentUser?._id,
-								creatorId,
-								...(["video", "audio", "chat"].includes(selectedFilter) && {
-									callType: selectedFilter,
-								}),
-							},
-						}
-					);
-					const { data } = response;
-
-					// If there's no previous call, data should be empty
-					setHasPreviousCall(data.exists);
-				} catch (error) {
-					console.error("Error fetching prior call data", error);
-					setHasPreviousCall(false);
-				}
-			};
-
-			fetchCallData();
-		}
-	}, [currentUser, creatorId]);
-
-	const resetFilter = () => {
-		setSelectedFilter("all");
-	};
+	}, [creatorId, currentUser?._id, fetchingUser]);
 
 	const onOpenChange = (open: boolean) => {
-		setIsOpen(open);
+		setIsDiscountModalOpen(open);
+		refetch();
+	};
+
+	const handleApplyOffer = () => {
+		if (!currentUser) {
+			onOpenChange(false);
+			setIsAuthSheetOpen(true);
+			sessionStorage.removeItem(`hasSeenDiscountSheet_${creatorId}`);
+			return;
+		}
+
+		setApplyingOffer(true);
+		setSelectedServices(userServices);
+		setTimeout(() => {
+			setApplyingOffer(false);
+			setValidatedAppliedOffers(true);
+		}, 1000);
+		setTimeout(() => {
+			setOfferApplied(true);
+			onOpenChange(false);
+		}, 2500);
 	};
 
 	if (servicesError) {
@@ -196,166 +113,117 @@ const ClientSideDiscountheet = ({
 			return <ContentLoading />;
 		}
 
-		if (userServices.length === 0) {
+		if (currentUser && userServices.length === 0) {
 			return (
-				<div className="size-full flex flex-col gap-4 items-center justify-center text-center text-gray-500 my-4">
-					<h2 className="text-2xl font-bold">No Discount Found</h2>
-					<p className="text-lg text-gray-400 px-5">
-						{selectedFilter !== ""
-							? `No Discount were found for the "${selectedFilter}" category.`
-							: "No services are available at the moment. Please check back later."}
-					</p>
-					{selectedFilter !== "" && (
-						<button
-							className="px-6 py-2 rounded-lg bg-green-1 text-white font-semibold hoverScaleDownEffect"
-							onClick={resetFilter}
-						>
-							Reset Filters
-						</button>
-					)}
+				<div className="size-full flex items-center justify-center text-center my-4">
+					<Button
+						onClick={() => setIsDiscountModalOpen(false)}
+						className="rounded-full bg-black w-full text-white hoverScaleDownEffect"
+					>
+						Close
+					</Button>
 				</div>
 			);
 		}
 
 		return (
 			<section className="size-full grid grid-cols-1 items-center gap-4 mt-4">
-				{userServices.map((service: Service) => (
-					<ClientServiceCard key={service._id} service={service} />
-				))}
-				{hasNextPage && isFetching && (
-					<Image
-						src="/icons/loading-circle.svg"
-						alt="Loading..."
-						width={50}
-						height={50}
-						className="mx-auto invert my-5 mt-10 z-20"
-					/>
-				)}
-				{(!hasNextPage || !isFetching) && userServices.length > 4 && (
-					<div className="text-center text-gray-500 pt-4">
-						You have reached the end of the list
-					</div>
-				)}
-				{hasNextPage && <div ref={ref} className="w-full" />}
+				<Button
+					onClick={handleApplyOffer}
+					className="rounded-full !py-4 bg-black w-full text-white hoverScaleDownEffect"
+					disabled={offerApplied || validatedAppliedOffers}
+				>
+					{applyingOffer ? (
+						<span className="flex items-center justify-center gap-2">
+							<Image
+								src="/icons/loading-circle.svg"
+								alt="Loading..."
+								width={1000}
+								height={1000}
+								className="size-6"
+								priority
+							/>{" "}
+							Applying ...
+						</span>
+					) : offerApplied || validatedAppliedOffers ? (
+						<span className="flex items-center justify-center gap-2">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 24 24"
+								fill="currentColor"
+								className="size-6 text-white"
+							>
+								<path
+									fillRule="evenodd"
+									d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z"
+									clipRule="evenodd"
+								/>
+							</svg>
+							Offers Applied
+						</span>
+					) : (
+						"Claim Offer"
+					)}
+				</Button>
 			</section>
 		);
 	};
 
 	return (
-		<section className="fixed grid grid-cols-1 items-center bottom-5 right-4 lg:right-8 z-40 shadow-lg">
-			{/* Toggle Button */}
-			<button onClick={() => setIsOpen((prev) => !prev)}>
-				{currentUser?._id && discount ? (
-					<section
-						key={discount._id}
-						className="flex flex-col items-center justify-center gap-2.5 p-4 bg-white rounded-xl shadow-md hoverScaleDownEffect"
-					>
-						{/* Service Image */}
-						<Image
-							src={discount.photo}
-							alt={discount.title}
-							width={1000}
-							height={1000}
-							className="w-12 h-12 rounded-full object-cover"
-						/>
+		<>
+			<Dialog open={isDiscountModalOpen} onOpenChange={onOpenChange}>
+				<DialogContent
+					onOpenAutoFocus={(e) => e.preventDefault()}
+					className="flex flex-col items-center justify-start w-full max-h-[90vh] outline-none border-none rounded-xl bg-white mx-auto px-7 !pt-0 pb-5 overflow-y-auto no-scrollbar max-w-[95%]"
+				>
+					<DialogHeader className="flex flex-col items-center justify-center w-full pt-5">
+						<DialogTitle>
+							<div className="flex flex-col items-center justify-center gap-2.5">
+								<div className="bg-black/10 size-14 flex flex-col items-center justify-center border border-[#E5E7EB] rounded-full">
+									{currentUser && userServices.length === 0 ? (
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											viewBox="0 0 24 24"
+											fill="currentColor"
+											className="size-6"
+										>
+											<path
+												fillRule="evenodd"
+												d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"
+												clipRule="evenodd"
+											/>
+										</svg>
+									) : (
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											viewBox="0 0 24 24"
+											fill="currentColor"
+											className="size-6"
+										>
+											<path d="M9.375 3a1.875 1.875 0 0 0 0 3.75h1.875v4.5H3.375A1.875 1.875 0 0 1 1.5 9.375v-.75c0-1.036.84-1.875 1.875-1.875h3.193A3.375 3.375 0 0 1 12 2.753a3.375 3.375 0 0 1 5.432 3.997h3.943c1.035 0 1.875.84 1.875 1.875v.75c0 1.036-.84 1.875-1.875 1.875H12.75v-4.5h1.875a1.875 1.875 0 1 0-1.875-1.875V6.75h-1.5V4.875C11.25 3.839 10.41 3 9.375 3ZM11.25 12.75H3v6.75a2.25 2.25 0 0 0 2.25 2.25h6v-9ZM12.75 12.75v9h6.75a2.25 2.25 0 0 0 2.25-2.25v-6.75h-9Z" />
+										</svg>
+									)}
+								</div>
 
-						{/* Service Details */}
-						<div className="text-center">
-							<p className="text-sm font-medium text-gray-500 capitalize">
-								{discount.type !== "all" && discount.type}{" "}
-								{discount.type === "all" ? "All Services" : "Service"}
-							</p>
-							<p className="text-sm text-green-600 font-semibold">
-								{discount.currency === "USD" ? "$" : "₹"}{" "}
-								{discount.discountRules[0]?.discountAmount || "0"}
-								{discount.discountRules[0]?.discountType === "percentage"
-									? "%"
-									: ""}
-							</p>
-						</div>
-					</section>
-				) : (
-					<div
-						className={`p-4 ${
-							theme ? `text-black` : "bg-green-1 text-white"
-						} rounded-full hoverScaleEffect relative`}
-						style={{ background: theme && theme }}
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							strokeWidth={1.5}
-							stroke="currentColor"
-							className="size-6"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"
-							/>
-						</svg>
-					</div>
-				)}
-			</button>
+								<h2 className="text-xl">
+									{currentUser && userServices.length === 0
+										? "Not Eligible"
+										: "Special Offer!"}
+								</h2>
+							</div>
+						</DialogTitle>
+						<DialogDescription className="text-sm mb-5">
+							{currentUser && userServices.length === 0
+								? "No discounts are available at the moment."
+								: `Get Discount on your consultation with expert ${creatorName}`}
+						</DialogDescription>
+					</DialogHeader>
 
-			{/* Mobile View Sheet */}
-			{isMobileView ? (
-				<Sheet open={isOpen} onOpenChange={onOpenChange}>
-					<SheetContent
-						onOpenAutoFocus={(e) => e.preventDefault()}
-						side="bottom"
-						className="flex flex-col items-center justify-start w-full max-h-[90vh] outline-none border-none rounded-t-xl bg-white mx-auto px-7 !pt-0 pb-5 overflow-y-auto no-scrollbar"
-					>
-						<SheetHeader className="flex flex-col items-start justify-center w-full pt-5">
-							<SheetTitle>Available Discount</SheetTitle>
-							<SheetDescription className="text-start mb-5 pr-5">
-								Explore all the discount set up by the creator. Choose the best
-								deals tailored to your preferences and save on services.
-							</SheetDescription>
-						</SheetHeader>
-
-						{/* Filter Buttons */}
-						<FilterButtons
-							selectedFilter={selectedFilter}
-							setSelectedFilter={setSelectedFilter}
-							removeFilter={removeFilter}
-							setRemoveFilter={setRemoveFilter}
-						/>
-
-						{/* Render Content */}
-						{renderContent()}
-					</SheetContent>
-				</Sheet>
-			) : (
-				// Desktop View Dialog
-				<Dialog open={isOpen} onOpenChange={onOpenChange}>
-					<DialogContent
-						onOpenAutoFocus={(e) => e.preventDefault()}
-						className="flex flex-col items-center justify-start w-full max-h-[90vh] outline-none border-none rounded-t-xl bg-white mx-auto px-7 !pt-0 pb-5 overflow-y-auto no-scrollbar"
-					>
-						<DialogHeader className="flex flex-col items-start justify-center w-full pt-5">
-							<DialogTitle>Available Discount</DialogTitle>
-							<DialogDescription className="text-start mb-5 pr-5">
-								Explore all the discount set up by the creator. Choose the best
-								deals tailored to your preferences and save on services.
-							</DialogDescription>
-						</DialogHeader>
-
-						{/* Filter Buttons */}
-						<FilterButtons
-							selectedFilter={selectedFilter}
-							setSelectedFilter={setSelectedFilter}
-							removeFilter={removeFilter}
-							setRemoveFilter={setRemoveFilter}
-						/>
-
-						{/* Render Content */}
-						{renderContent()}
-					</DialogContent>
-				</Dialog>
-			)}
-		</section>
+					{/* Render Content */}
+					{renderContent()}
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 };
 

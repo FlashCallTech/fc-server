@@ -28,8 +28,9 @@ const BlockedClients = () => {
 						{options.map((option) => (
 							<Button
 								key={option}
-								className={`text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 hoverScaleDownEffect ${clientListType === option && "bg-green-1 text-white"
-									}`}
+								className={`text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 hoverScaleDownEffect ${
+									clientListType === option && "bg-green-1 text-white"
+								}`}
 								onClick={() => setClientListType(option)}
 							>
 								{option}
@@ -61,8 +62,9 @@ const BlockedClients = () => {
 						{options.map((option) => (
 							<Button
 								key={option}
-								className={`text-sm font-medium px-4 py-2 rounded-full border border-gray-300 hoverScaleDownEffect ${clientListType === option && "bg-black text-white"
-									}`}
+								className={`text-sm font-medium px-4 py-2 rounded-full border border-gray-300 hoverScaleDownEffect ${
+									clientListType === option && "bg-black text-white"
+								}`}
 								onClick={() => setClientListType(option)}
 							>
 								{option}

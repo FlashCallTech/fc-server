@@ -313,7 +313,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 
 	if (isLoading) {
 		return (
-			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
+			<div className="size-full h-[calc(100vh-4rem)] flex flex-col items-center justify-center text-2xl font-semibold text-center">
 				<SinglePostLoader />
 			</div>
 		);
@@ -321,11 +321,9 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 
 	return (
 		<div className="relative size-full mx-auto py-4 px-1.5">
-			<h2 className="text-2xl font-bold mb-4">
-				Great! Let&apos;s set your availability
-			</h2>
+			<h2 className="text-2xl font-bold mb-2">Availability</h2>
 			<p className="text-gray-500 mb-6">
-				Let your clients know when you&apos;re available.
+				Set your available time slots for each day of the week.
 			</p>
 
 			<AvailabilityServiceCards
@@ -339,7 +337,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 			/>
 
 			<Form {...form}>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
 					{fields.map((dayItem, dayIndex) => (
 						<FormField
 							key={dayItem.id}
@@ -347,8 +345,8 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 							name={`weeklyAvailability.${dayIndex}`}
 							render={({ field }) => (
 								<FormItem>
-									<Card className="shadow-md">
-										<CardHeader>
+									<Card>
+										<CardHeader className="p-4">
 											<div className="flex justify-between items-center">
 												<div className="flex items-center space-x-2">
 													<Checkbox
@@ -361,35 +359,17 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																Boolean(value)
 															)
 														}
+														className={`${
+															watch(
+																`weeklyAvailability.${dayIndex}.isActive`
+															) && "bg-black text-white"
+														} border border-gray-400 size-[20px] p-0.5 rounded-[6px]`}
 													/>
 													<CardTitle className="text-lg">
 														{dayItem.day}
 													</CardTitle>
 												</div>
 												<div className="flex item-center justify-end gap-4">
-													<Button
-														type="button"
-														variant="ghost"
-														onClick={() => addSlot(dayIndex)}
-														className="hoverScaleDownEffect !px-0"
-													>
-														{/* Add Slot Icon */}
-														<svg
-															xmlns="http://www.w3.org/2000/svg"
-															fill="none"
-															viewBox="0 0 24 24"
-															strokeWidth={1.5}
-															stroke="currentColor"
-															className="size-5 mr-1"
-														>
-															<path
-																strokeLinecap="round"
-																strokeLinejoin="round"
-																d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-															/>
-														</svg>
-														Add Slot
-													</Button>
 													{dayIndex === 0 && (
 														<Button
 															type="button"
@@ -404,130 +384,160 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																viewBox="0 0 24 24"
 																strokeWidth={1.5}
 																stroke="currentColor"
-																className="size-4 mr-1"
+																className="hidden sm:block size-4 mr-1"
 															>
 																<path
 																	strokeLinecap="round"
 																	strokeLinejoin="round"
-																	d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"
+																	d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z"
 																/>
 															</svg>
 															Copy to All
 														</Button>
 													)}
+
+													<Button
+														type="button"
+														variant="ghost"
+														onClick={() => addSlot(dayIndex)}
+														className="hoverScaleDownEffect !px-0"
+													>
+														{/* Add Slot Icon */}
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															fill="none"
+															viewBox="0 0 24 24"
+															strokeWidth={1.5}
+															stroke="currentColor"
+															className="hidden sm:block size-4 mr-1"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																d="M12 4.5v15m7.5-7.5h-15"
+															/>
+														</svg>
+														Add Slot
+													</Button>
 												</div>
 											</div>
 										</CardHeader>
 										{watch(`weeklyAvailability.${dayIndex}.isActive`) && (
-											<CardContent>
+											<CardContent className="p-4 pt-0">
 												{(watch(`weeklyAvailability.${dayIndex}.slots`) ?? [])
 													?.length > 0 ? (
 													watch(`weeklyAvailability.${dayIndex}.slots`)?.map(
 														(slot, slotIndex) => (
-															<div
+															<section
 																key={slotIndex}
-																className="flex flex-wrap items-center gap-4 mb-2"
+																className="w-full flex flex-col gap-2 items-start"
 															>
-																{/* Start Time */}
-																<FormField
-																	control={form.control}
-																	name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`}
-																	render={({ field }) => (
-																		<FormControl>
-																			<Select
-																				value={field.value}
-																				onValueChange={(value) => {
-																					field.onChange(value);
-																					validateSlot(
-																						dayIndex,
-																						slotIndex,
-																						value,
-																						watch(
-																							`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`
-																						)
-																					);
-																				}}
-																			>
-																				<SelectTrigger className="w-1/3">
-																					<SelectValue placeholder="From" />
-																				</SelectTrigger>
-																				<SelectContent className="bg-white">
-																					{timeSlots.map((time) => (
-																						<SelectItem
-																							key={time}
-																							value={time}
-																							className="cursor-pointer hover:bg-gray-100"
-																						>
-																							{time}
-																						</SelectItem>
-																					))}
-																				</SelectContent>
-																			</Select>
-																		</FormControl>
-																	)}
-																/>
-																<span>-</span>
-																{/* End Time */}
-																<FormField
-																	control={form.control}
-																	name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`}
-																	render={({ field }) => (
-																		<FormControl>
-																			<Select
-																				value={field.value}
-																				onValueChange={(value) => {
-																					field.onChange(value);
-																					validateSlot(
-																						dayIndex,
-																						slotIndex,
-																						watch(
-																							`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`
-																						),
-																						value
-																					);
-																				}}
-																			>
-																				<SelectTrigger className="w-1/3">
-																					<SelectValue placeholder="To" />
-																				</SelectTrigger>
-																				<SelectContent className="bg-white">
-																					{timeSlots.map((time) => (
-																						<SelectItem
-																							key={time}
-																							value={time}
-																							className="cursor-pointer hover:bg-gray-100"
-																						>
-																							{time}
-																						</SelectItem>
-																					))}
-																				</SelectContent>
-																			</Select>
-																		</FormControl>
-																	)}
-																/>
+																<div className="w-full flex items-center gap-2 mb-2">
+																	{/* Start Time */}
+																	<FormField
+																		control={form.control}
+																		name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`}
+																		render={({ field }) => (
+																			<FormControl>
+																				<Select
+																					value={field.value}
+																					onValueChange={(value) => {
+																						field.onChange(value);
+																						validateSlot(
+																							dayIndex,
+																							slotIndex,
+																							value,
+																							watch(
+																								`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`
+																							)
+																						);
+																					}}
+																				>
+																					<SelectTrigger className="w-full border border-[#D1D5DB] drop-shadow-sm">
+																						<SelectValue placeholder="From" />
+																					</SelectTrigger>
+																					<SelectContent className="bg-white">
+																						{timeSlots.map((time) => (
+																							<SelectItem
+																								key={time}
+																								value={time}
+																								className="cursor-pointer hover:bg-gray-100"
+																							>
+																								{time}
+																							</SelectItem>
+																						))}
+																					</SelectContent>
+																				</Select>
+																			</FormControl>
+																		)}
+																	/>
+																	<span>-</span>
+																	{/* End Time */}
+																	<FormField
+																		control={form.control}
+																		name={`weeklyAvailability.${dayIndex}.slots.${slotIndex}.endTime`}
+																		render={({ field }) => (
+																			<FormControl>
+																				<Select
+																					value={field.value}
+																					onValueChange={(value) => {
+																						field.onChange(value);
+																						validateSlot(
+																							dayIndex,
+																							slotIndex,
+																							watch(
+																								`weeklyAvailability.${dayIndex}.slots.${slotIndex}.startTime`
+																							),
+																							value
+																						);
+																					}}
+																				>
+																					<SelectTrigger className="w-full border border-[#D1D5DB] drop-shadow-sm">
+																						<SelectValue placeholder="To" />
+																					</SelectTrigger>
+																					<SelectContent className="bg-white">
+																						{timeSlots.map((time) => (
+																							<SelectItem
+																								key={time}
+																								value={time}
+																								className="cursor-pointer hover:bg-gray-100"
+																							>
+																								{time}
+																							</SelectItem>
+																						))}
+																					</SelectContent>
+																				</Select>
+																			</FormControl>
+																		)}
+																	/>
 
-																<Button
-																	type="button"
-																	variant="destructive"
-																	size="icon"
-																	onClick={() => removeSlot(dayIndex, slot.id)}
-																	className="hoverScaleDownEffect"
-																>
-																	<svg
-																		xmlns="http://www.w3.org/2000/svg"
-																		viewBox="0 0 24 24"
-																		fill="currentColor"
-																		className="size-6"
+																	<Button
+																		type="button"
+																		variant="destructive"
+																		size="icon"
+																		onClick={() =>
+																			removeSlot(dayIndex, slot.id)
+																		}
+																		className="hoverScaleDownEffect group"
 																	>
-																		<path
-																			fillRule="evenodd"
-																			d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z"
-																			clipRule="evenodd"
-																		/>
-																	</svg>
-																</Button>
+																		<svg
+																			xmlns="http://www.w3.org/2000/svg"
+																			fill="none"
+																			viewBox="0 0 24 24"
+																			strokeWidth={2.5}
+																			stroke="currentColor"
+																			className="size-4 text-[#9CA3AF] group-hover:text-red-500"
+																		>
+																			<path
+																				strokeLinecap="round"
+																				strokeLinejoin="round"
+																				d="M6 18 18 6M6 6l12 12"
+																			/>
+																		</svg>
+																	</Button>
+																</div>
 
-																<section className="flex flex-col items-start justify-center gap-2.5">
+																<section className="w-full flex flex-col items-start justify-center gap-2.5">
 																	{errors[
 																		`day_${dayIndex}_slot_${slotIndex}_startTime`
 																	] && (
@@ -552,7 +562,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																		</p>
 																	)}
 																</section>
-															</div>
+															</section>
 														)
 													)
 												) : (
@@ -570,7 +580,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 
 					{Object.keys(errors).length === 0 && hasChanges && isValid && (
 						<Button
-							className="sticky bottom-2 text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
+							className="sticky bottom-2 text-base bg-black hoverScaleDownEffect w-full mx-auto text-white"
 							type="submit"
 							disabled={!isValid || isSubmitting}
 						>

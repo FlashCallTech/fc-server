@@ -1,12 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-
-import {
-	DropdownMenu,
-	DropdownMenuTrigger,
-	DropdownMenuContent,
-	DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import {
 	backendBaseUrl,
@@ -18,7 +12,6 @@ import {
 } from "@/lib/utils";
 import { AvailabilityService, creatorUser } from "@/types";
 import Image from "next/image";
-import ClientSideDiscountCard from "./ClientSideDiscountCard";
 import { Button } from "../ui/button";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -48,10 +41,8 @@ const AvailabilityFinalConsentForm = ({
 	themeColor,
 	toggleSchedulingSheet,
 }: params) => {
-	const [isDiscountSelected, setIsDiscountSelected] = useState(false);
-	const [showDiscountCards, setShowDiscountCards] = useState(false);
-	const [showInfo, setShowInfo] = useState(false);
-	const [payUsing, setPayUsing] = useState<"wallet" | "other">("wallet");
+	const [isDiscountUtilized, setIsDiscountUtilized] = useState(false);
+	const [payUsingWallet, setPayUsingWallet] = useState(true);
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
 	const { clientUser } = useCurrentUsersContext();
@@ -63,7 +54,7 @@ const AvailabilityFinalConsentForm = ({
 		total: service.basePrice.toFixed(2),
 		currency: service.currency,
 	});
-	const { pgHandler, loading } = useScheduledPayment();
+	const { pgHandler } = useScheduledPayment();
 
 	const [preparingTransaction, setPreparingTransaction] = useState(false);
 	const { toast } = useToast();
@@ -80,14 +71,20 @@ const AvailabilityFinalConsentForm = ({
 	let customDateValue = formattedData.day.split(", ")[1].split(" ") ?? "";
 
 	useEffect(() => {
+		service.discountRules &&
+			!service.utilizedBy.some(
+				(clientId) => clientId.toString() === clientUser?._id.toString()
+			) &&
+			setIsDiscountUtilized(true);
+
 		const updateTotal = async () => {
 			const { total, currency } = await calculateTotal();
 			setTotalAmount({ total, currency });
 		};
 		updateTotal();
-	}, [isDiscountSelected]);
+	}, []);
 
-	const handlePayPal = async (): Promise<boolean> => {
+	const handlePayPal = async (amountToPay: number): Promise<boolean> => {
 		return new Promise((resolve) => {
 			const paypal = (window as any).paypal;
 			if (paypal) {
@@ -100,7 +97,7 @@ const AvailabilityFinalConsentForm = ({
 										{
 											amount: {
 												currency_code: "USD",
-												value: totalAmount.total,
+												value: amountToPay,
 											},
 										},
 									],
@@ -149,7 +146,7 @@ const AvailabilityFinalConsentForm = ({
 		let total = basePrice;
 
 		// Apply Discount
-		if (isDiscountSelected && discountRules) {
+		if (discountRules) {
 			const { discountAmount, discountType } = discountRules;
 
 			if (discountType === "percentage") {
@@ -160,7 +157,7 @@ const AvailabilityFinalConsentForm = ({
 		}
 
 		// Add Platform Fee
-		const platformFee = 10;
+		const platformFee = 0;
 		total += platformFee;
 
 		// Currency Conversion if required
@@ -274,52 +271,68 @@ const AvailabilityFinalConsentForm = ({
 	const handlePaySchedule = async () => {
 		setPreparingTransaction(true);
 		try {
-			if (payUsing === "other") {
-				if (clientUser?.global) {
-					try {
-						const paypalSuccess = await handlePayPal();
-						if (!paypalSuccess) {
-							toast({
-								variant: "destructive",
-								title: "Payment Failed",
-								description: "Your PayPal payment could not be processed.",
-							});
+			let amountToPay = parseFloat(totalAmount.total);
+			let walletPaymentAmount = 0;
 
-							return;
-						}
-					} catch (error) {
-						console.error("PayPal Payment Error:", error);
-						toast({
-							variant: "destructive",
-							title: "Payment Failed",
-							description:
-								"An error occurred while processing your PayPal payment.",
-							toastStatus: "negative",
-						});
-					}
+			// Wallet Payment Logic
+			if (payUsingWallet) {
+				if (walletBalance < amountToPay) {
+					walletPaymentAmount = walletBalance;
+					amountToPay -= walletPaymentAmount;
 				} else {
-					// Call Razorpay payment handler
+					walletPaymentAmount = amountToPay;
+					amountToPay = 0;
+				}
+
+				if (walletPaymentAmount > 0) {
+					const walletUpdatePayload = {
+						userId: clientUser?._id,
+						userType: "Client",
+						amount: walletPaymentAmount,
+						transactionType: "credit",
+					};
+
+					let walletUpdateResponse = await axios.post(
+						`${backendBaseUrl}/wallet/temporary/update`,
+						walletUpdatePayload
+					);
+
+					if (walletUpdateResponse.status !== 200) {
+						throw new Error("Failed to update wallet balance");
+					}
+				}
+			}
+
+			if (amountToPay > 0) {
+				let paymentSuccess = false;
+
+				if (clientUser?.global) {
+					paymentSuccess = await handlePayPal(amountToPay);
+				} else {
 					await pgHandler(
 						clientUser?._id as string,
-						parseFloat(totalAmount.total),
+						amountToPay,
 						clientUser?.phone,
 						setIsPaymentHandlerSuccess
 					);
 
-					if (!isPaymentHandlerSuccess) {
-						toast({
-							variant: "destructive",
-							title: "Payment Failed",
-							description: "Your Razorpay payment could not be processed.",
-						});
-						return;
-					}
+					paymentSuccess = isPaymentHandlerSuccess;
 				}
-			} else {
-				if (walletBalance < parseFloat(totalAmount.total)) {
+
+				if (!paymentSuccess) {
+					if (walletPaymentAmount > 0) {
+						await axios.post(`${backendBaseUrl}/wallet/temporary/update`, {
+							userId: clientUser?._id,
+							userType: "Client",
+							amount: walletPaymentAmount,
+							transactionType: "debit",
+						});
+					}
+
 					toast({
 						variant: "destructive",
-						title: "Insufficient Wallet Balance",
+						title: "Payment Failed",
+						description: "Your payment could not be processed.",
 						toastStatus: "negative",
 					});
 					return;
@@ -332,27 +345,7 @@ const AvailabilityFinalConsentForm = ({
 				throw new Error("Failed to create meeting");
 			}
 
-			// Step 2: Deduct wallet balance if the meeting was created
-			if (payUsing === "wallet") {
-				const walletUpdateAPI = "/wallet/temporary/update";
-				const walletUpdatePayload = {
-					userId: clientUser?._id,
-					userType: "Client",
-					amount: parseFloat(totalAmount.total),
-					transactionType: "credit",
-				};
-
-				let walletUpdateResponse = await axios.post(
-					`${backendBaseUrl}${walletUpdateAPI}`,
-					walletUpdatePayload
-				);
-
-				if (walletUpdateResponse.status !== 200) {
-					throw new Error("Failed to update wallet balance");
-				}
-			}
-
-			// Step 3: Register the scheduled call
+			// Step 2: Register the scheduled call
 			const registerUpcomingCallAPI = "/calls/scheduled/createCall";
 			const registerUpcomingCallPayload = {
 				callId: callDetails.callId,
@@ -367,7 +360,7 @@ const AvailabilityFinalConsentForm = ({
 				duration: callDetails.duration,
 				amount: totalAmount.total,
 				currency: totalAmount.currency,
-				discounts: isDiscountSelected ? service.discountRules._id : [],
+				discounts: isDiscountUtilized ? service.discountRules._id : [],
 			};
 
 			let registerCallResponse = await axios.post(
@@ -412,7 +405,7 @@ const AvailabilityFinalConsentForm = ({
 					global: clientUser?.global ?? false,
 				});
 
-				isDiscountSelected &&
+				isDiscountUtilized &&
 					(await axios.put(`${backendBaseUrl}/availability/${service._id}`, {
 						clientId: callDetails.meetingOwner || clientUser?._id,
 					}));
@@ -435,7 +428,7 @@ const AvailabilityFinalConsentForm = ({
 				throw new Error("Failed to register the call");
 			}
 
-			// Step 4: Success flow completed
+			// Step 3: Success flow completed
 			console.log("Call scheduled successfully:", registerCallResponse.data);
 		} catch (error: any) {
 			console.error(error);
@@ -470,15 +463,57 @@ const AvailabilityFinalConsentForm = ({
 		}
 	};
 
-	const handlePaymentMethod = (method: "wallet" | "other") => {
-		setPayUsing(method);
+	const getServiceIcon = (service: string) => {
+		switch (service) {
+			case "video":
+				return (
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+						className="size-4"
+					>
+						<path d="M4.5 4.5a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h8.25a3 3 0 0 0 3-3v-9a3 3 0 0 0-3-3H4.5ZM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06Z" />
+					</svg>
+				);
+			case "audio":
+				return (
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+						className="size-4"
+					>
+						<path
+							fillRule="evenodd"
+							d="M1.5 4.5a3 3 0 0 1 3-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 0 0 6.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 0 1 1.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 0 1-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5Z"
+							clipRule="evenodd"
+						/>
+					</svg>
+				);
+			case "chat":
+				return (
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+						className="size-4"
+					>
+						<path
+							fillRule="evenodd"
+							d="M4.848 2.771A49.144 49.144 0 0 1 12 2.25c2.43 0 4.817.178 7.152.52 1.978.292 3.348 2.024 3.348 3.97v6.02c0 1.946-1.37 3.678-3.348 3.97a48.901 48.901 0 0 1-3.476.383.39.39 0 0 0-.297.17l-2.755 4.133a.75.75 0 0 1-1.248 0l-2.755-4.133a.39.39 0 0 0-.297-.17 48.9 48.9 0 0 1-3.476-.384c-1.978-.29-3.348-2.024-3.348-3.97V6.741c0-1.946 1.37-3.68 3.348-3.97ZM6.75 8.25a.75.75 0 0 1 .75-.75h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1-.75-.75Zm.75 2.25a.75.75 0 0 0 0 1.5H12a.75.75 0 0 0 0-1.5H7.5Z"
+							clipRule="evenodd"
+						/>
+					</svg>
+				);
+		}
 	};
 
 	return (
 		<>
 			{!isSuccess ? (
-				<div className="relative w-full grid grid-cols-1 items-center overflow-y-scroll no-scrollbar scroll-smooth">
-					<section className="flex items-center gap-4">
+				<div className="relative size-full grid grid-cols-1 items-start overflow-y-scroll no-scrollbar scroll-smooth">
+					<section className="flex items-center gap-4 px-4 pt-2">
 						<button
 							onClick={() => setShowConsentForm(false)}
 							className="text-xl font-bold hoverScaleDownEffect"
@@ -487,14 +522,14 @@ const AvailabilityFinalConsentForm = ({
 								xmlns="http://www.w3.org/2000/svg"
 								fill="none"
 								viewBox="0 0 24 24"
-								strokeWidth={1.5}
+								strokeWidth={2}
 								stroke="currentColor"
-								className="size-6"
+								className="size-5 cursor-pointer hoverScaleDownEffect"
 							>
 								<path
 									strokeLinecap="round"
 									strokeLinejoin="round"
-									d="M15.75 19.5 8.25 12l7.5-7.5"
+									d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
 								/>
 							</svg>
 						</button>
@@ -515,222 +550,197 @@ const AvailabilityFinalConsentForm = ({
 						</section>
 					</section>
 
-					<hr className="col-span-full border-t-2 border-gray-100 my-2.5" />
-					<span className="font-bold text-2xl mt-2.5">{service.title}</span>
-					<span className="text-gray-500 text-sm capitalize">
-						{service.type} {service.type === "chat" ? "Service" : "Call"} |{" "}
-						{service.timeDuration}mins
-					</span>
-
-					<div className="w-full flex items-center justify-center mt-4 px-2.5 py-4 border-2 border-gray-300 rounded-xl">
-						<section className="pl-2 w-full flex flex-wrap items-center justify-between">
-							<div className="flex items-center justify-center gap-2.5">
-								<section className="w-fit flex flex-col items-center justify-center border border-gray-300 rounded-lg">
-									<p className="bg-gray-100 w-full px-2.5 font-bold text-sm">
-										{customDateValue[0]}
-									</p>
-									<span className="font-bold text-base">
-										{customDateValue[1]}
-									</span>
-								</section>
-
-								<section className="flex flex-col items-start justify-start">
-									<span className="font-bold">{formattedData.day}</span>
-									<div className="flex items-center justify-start gap-2">
-										<span className="text-sm">{formattedData.timeRange}</span>
-										<span className="text-xs">{formattedData.timezone}</span>
-									</div>
-								</section>
-							</div>
-							<Button
-								className={`font-medium tracking-widest rounded-full px-2 w-fit min-w-[80px] min-h-[36px] text-[15px] text-black flex items-center justify-center hoverScaleDownEffect`}
-								style={{ background: themeColor }}
-								onClick={() => setShowConsentForm(false)}
-								disabled={preparingTransaction}
-							>
-								<span className="py-2.5 text-white text-sm">Change</span>
-							</Button>
-						</section>
+					<hr className="col-span-full border-t-2 border-[#E5E7EB] my-2" />
+					<div className="flex flex-col px-4 items-start justify-start gap-2.5  mt-2">
+						<span className="font-bold text-2xl">{service.title}</span>
+						<span className="flex items-center gap-2 text-sm capitalize">
+							{getServiceIcon(service.type)}
+							{service.type} {service.type === "chat" ? "Service" : "Call"} |{" "}
+							{service.timeDuration}mins
+						</span>
 					</div>
 
-					{clientUser?._id &&
-						!service.utilizedBy.some(
-							(clientId) => clientId.toString() === clientUser?._id.toString()
-						) &&
-						service.discountRules && (
-							<div className="w-full grid grid-cols-1 gap-4 mt-5">
-								{showDiscountCards && (
-									<ClientSideDiscountCard
-										service={service}
-										clientUserId={clientUser?._id as string}
-										isDiscountSelected={isDiscountSelected}
-										setIsDiscountSelected={setIsDiscountSelected}
-									/>
-								)}
-
-								<button
-									onClick={() => setShowDiscountCards((prev) => !prev)}
-									className={`w-fit ml-auto px-4 py-2 bg-black text-white text-sm rounded-lg font-medium hoverScaleDownEffect`}
-								>
-									{showDiscountCards ? "Hide Discount Cards" : "View Discounts"}
-								</button>
-							</div>
-						)}
-
-					{/* Order Summary Section */}
-					<div className="mt-4 w-full">
-						<h4 className="text-xl font-bold text-gray-800 mb-2.5">
-							Order Summary
-						</h4>
-						<div className="border-2 border-gray-300 rounded-lg p-4 pt-5 shadow-inner  w-full flex flex-col items-start justify-start gap-2.5">
-							<section className="w-full pb-2.5 border-b-2 border-dashed border-gray-300 flex justify-between text-sm text-gray-800">
-								<p>1 x {service.title}</p>
-								<p className="font-bold">
-									{service.currency === "INR" ? "₹" : "$"} {service.basePrice}
-								</p>
-							</section>
-
-							<section className="relative w-full pb-2.5 flex justify-between text-sm text-gray-800 border-b-2 border-dashed border-gray-300">
-								<p className="flex items-center gap-2 ">
-									Platform Fee{" "}
-									<span
-										className="text-gray-500 cursor-pointer"
-										onClick={() => setShowInfo((prev) => !prev)}
-									>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											fill="none"
-											viewBox="0 0 24 24"
-											strokeWidth={1.5}
-											stroke="currentColor"
-											className="size-4"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
-											/>
-										</svg>
-									</span>
-									{showInfo && (
-										<p
-											onMouseLeave={() => setShowInfo(false)}
-											className="absolute bg-black text-white rounded-lg w-3/4 p-4 -right-1 top-0 whitespace-pre-wrap"
-										>
-											This fee helps us operate and improve our platform,
-											delivering a seamless experience
+					<div className="flex flex-col px-4 items-start justify-start gap-2.5 mt-2">
+						<div className="w-full flex items-center justify-center p-4 border-2 border-[#E5E7EB] rounded-xl">
+							<section className="w-full flex flex-wrap items-center justify-between">
+								<div className="flex items-center justify-center gap-2.5">
+									<section className="bg-black/10 size-16 flex flex-col items-center justify-center border border-[#E5E7EB] rounded-lg">
+										<p className="w-full text-center px-2.5 font-bold text-sm uppercase">
+											{customDateValue[0]}
 										</p>
-									)}
-								</p>
-								<p className="font-bold">
-									{service.currency === "INR" ? "₹" : "$"} 10
-								</p>
-							</section>
-							{isDiscountSelected && service.discountRules && (
-								<section className="w-full pb-2.5 border-b-2 border-dashed border-gray-300 flex justify-between text-sm text-gray-800">
-									<p className="bg-green-100 text-green-800 px-2.5 py-1 rounded-full text-xs whitespace-nowrap">
-										Discount
-										<span className="text-sm ml-1">
-											{service.discountRules.discountType === "percentage"
-												? `${service.discountRules.discountAmount}%`
-												: `${service.currency === "INR" ? "₹" : "$"} ${
-														service.discountRules.discountAmount
-												  }`}{" "}
-											off
+										<span className="font-bold text-lg">
+											{customDateValue[1]}
 										</span>
-									</p>
-									<p className="text-green-1 font-bold">
-										- {service.currency === "INR" ? "₹" : "$"}{" "}
-										{service.discountRules.discountType === "percentage"
-											? (
-													(service.basePrice *
-														service.discountRules.discountAmount) /
-													100
-											  ).toFixed(2)
-											: service.discountRules.discountAmount.toFixed(2)}
+									</section>
+
+									<section className="flex flex-col items-start justify-start">
+										<span className="font-bold">{formattedData.day}</span>
+										<div className="flex flex-col items-start justify-start">
+											<span className="text-sm">{formattedData.timeRange}</span>
+											<span className="text-xs">{formattedData.timezone}</span>
+										</div>
+									</section>
+								</div>
+								<Button
+									className={`font-medium rounded-full px-2 w-fit min-w-[80px] min-h-[36px] text-[15px] border border-black text-black flex items-center justify-center hoverScaleDownEffect`}
+									onClick={() => setShowConsentForm(false)}
+									disabled={preparingTransaction}
+								>
+									<span className="py-2.5 text-sm font-semibold">Change</span>
+								</Button>
+							</section>
+						</div>
+
+						{/* Order Summary Section */}
+						<div className="mt-4 w-full">
+							<h4 className="text-xl font-bold text-gray-800 mb-2.5">
+								Order Summary
+							</h4>
+							<div className="border-2 border-[#E5E7EB] rounded-lg p-4 pt-5  w-full flex flex-col items-start justify-start gap-2.5">
+								<section className="w-full pb-2.5 flex justify-between text-sm text-gray-800">
+									<p>1 x {service.title}</p>
+									<p className="font-bold">
+										{service.currency === "INR" ? "₹" : "$"} {service.basePrice}
 									</p>
 								</section>
-							)}
-							<section className="w-full flex justify-between font-bold text-gray-800 mt-4 pt-2">
-								<p>Service Total</p>
-								{totalAmount.currency === "INR" ? "₹" : "$"} {totalAmount.total}
-							</section>
+
+								{isDiscountUtilized && service.discountRules && (
+									<section className="w-full pb-2.5 flex items-center justify-between text-sm text-gray-800">
+										<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="currentColor"
+												className="size-4"
+											>
+												<path
+													fillRule="evenodd"
+													d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
+													clipRule="evenodd"
+												/>
+											</svg>
+
+											<p className="text-xs whitespace-nowrap">
+												<span className="text-sm ml-1">
+													{service.discountRules.discountType === "percentage"
+														? `${service.discountRules.discountAmount}%`
+														: `${service.currency === "INR" ? "₹" : "$"} ${
+																service.discountRules.discountAmount
+														  }`}{" "}
+													OFF Applied
+												</span>
+											</p>
+										</div>
+										<p className="text-green-1 font-bold">
+											- {service.currency === "INR" ? "₹" : "$"}{" "}
+											{service.discountRules.discountType === "percentage"
+												? (
+														(service.basePrice *
+															service.discountRules.discountAmount) /
+														100
+												  ).toFixed(2)
+												: service.discountRules.discountAmount.toFixed(2)}
+										</p>
+									</section>
+								)}
+
+								<div className="border-t border-[#E5E7EB] w-full" />
+
+								<section className="w-full flex items-center justify-between font-bold text-gray-800 pt-2">
+									<p>Service Total</p>
+									<span className="text-lg">
+										{totalAmount.currency === "INR" ? "₹" : "$"}{" "}
+										{totalAmount.total}
+									</span>
+								</section>
+							</div>
+						</div>
+
+						{/* wallet balance section */}
+						<div className="mt-4 w-full">
+							<h4 className="text-xl font-bold text-gray-800 mb-2.5">
+								Wallet Balance
+							</h4>
+							<div className="w-full p-4 bg-white border-2 border-gray-200 rounded-xl">
+								<div className="flex flex-row-reverse items-center flex-wrap justify-between gap-4">
+									<div className="flex flex-col items-start justify-start">
+										<p className="text-gray-900 text-xl font-bold">
+											{!clientUser?.global ? "₹" : "$"}{" "}
+											{walletBalance.toFixed(2)}
+										</p>
+									</div>
+
+									<div className="flex items-center space-x-2">
+										<Checkbox
+											id="wallet"
+											checked={payUsingWallet}
+											onCheckedChange={() => setPayUsingWallet(!payUsingWallet)}
+											className={`${
+												payUsingWallet && "bg-green-500 text-white"
+											} border border-gray-400 size-[20px] p-0.5 rounded-[6px]`}
+										/>
+										<label
+											htmlFor="terms"
+											className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										>
+											Use wallet balance
+										</label>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 
 					{/* Payment Confirmation */}
-					<div className="bg-white shadow-md mt-4 w-full flex items-center justify-center gap-4 py-2.5 sticky bottom-0">
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<section className="bg-white flex items-center gap-2 border-2 border-gray-300 rounded-full py-2 px-4 whitespace-nowrap cursor-pointer">
-									<span className="text-sm font-bold">
-										{totalAmount.currency === "INR" ? "₹" : "$"}{" "}
-										{totalAmount.total}
+					<div className="bg-white mt-4 w-full sticky bottom-0 border-t border-[#E5E7EB]">
+						<div className="w-full px-4 flex flex-col items-center justify-center gap-2 py-2.5">
+							{payUsingWallet &&
+								parseFloat(totalAmount.total) > walletBalance && (
+									<div className="w-full flex items-center justify-between">
+										<span className="text-sm text-[#4B5563]">
+											Amount to Pay
+										</span>
+										<span className="text-gray-900 text-lg font-bold">
+											{`₹ ${(
+												parseFloat(totalAmount.total) -
+												(payUsingWallet ? walletBalance : 0)
+											).toFixed(2)}`}
+										</span>
+									</div>
+								)}
+							<Button
+								className="text-base bg-black hoverScaleDownEffect w-full mx-auto text-white rounded-full"
+								type="submit"
+								onClick={handlePaySchedule}
+								disabled={preparingTransaction}
+							>
+								{preparingTransaction ? (
+									<Image
+										src="/icons/loading-circle.svg"
+										alt="Loading..."
+										width={1000}
+										height={1000}
+										className="size-6"
+										priority
+									/>
+								) : (
+									<span className="text-sm">
+										{`Pay ₹ ${
+											parseFloat(totalAmount.total) > walletBalance
+												? (
+														parseFloat(totalAmount.total) -
+														(payUsingWallet ? walletBalance : 0)
+												  ).toFixed(2)
+												: parseFloat(totalAmount.total).toFixed(2)
+										}`}
 									</span>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										strokeWidth={1.5}
-										stroke="currentColor"
-										className="size-5"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
-										/>
-									</svg>
-								</section>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent className="!m-0 !ml-6 !min-w-[15rem] p-5 bg-white border-2 border-gray-300 shadow-md">
-								<h3 className="text-lg font-semibold mb-3">
-									Select Payment Method
-								</h3>
-								<DropdownMenuItem
-									onSelect={() => handlePaymentMethod("wallet")}
-									className={`w-full py-2.5 rounded-md text-left justify-start ${
-										payUsing === "wallet" ? "bg-blue-500 text-white px-2.5" : ""
-									}`}
-								>
-									Pay Using Wallet
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onSelect={() => handlePaymentMethod("other")}
-									className={`w-full py-2.5 rounded-md text-left justify-start ${
-										payUsing === "other" ? "bg-blue-500 text-white px-2.5" : ""
-									}`}
-								>
-									Use Other Methods
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-
-						<Button
-							className="text-base bg-blue-500 hoverScaleDownEffect w-full mx-auto text-white"
-							type="submit"
-							onClick={handlePaySchedule}
-							disabled={preparingTransaction}
-						>
-							{preparingTransaction ? (
-								<Image
-									src="/icons/loading-circle.svg"
-									alt="Loading..."
-									width={1000}
-									height={1000}
-									className="size-6"
-									priority
-								/>
-							) : (
-								<span className="text-base">
-									{payUsing === "wallet" ? "Pay via Wallet" : "Confirm Payment"}
-								</span>
-							)}
-						</Button>
+								)}
+							</Button>
+						</div>
 					</div>
 				</div>
 			) : (
-				<div className="flex flex-col items-center justify-center min-w-full h-fit gap-4 py-5">
+				<div className="flex flex-col items-center justify-center min-w-full h-fit gap-4 py-5 px-4">
 					{success}
 					<span className="font-semibold text-lg">
 						Meeting scheduled for {customDateValue}

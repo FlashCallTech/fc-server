@@ -105,6 +105,22 @@ html {
 	bottom: 0 !important;
 }
 
+/* react rating styles */
+
+.rr--svg {
+	margin: 0px !important;
+}
+
+.rr--off .rr--svg {
+	stroke: none !important;
+	fill: #f0f0f0;
+}
+
+.rr--on .rr--svg {
+	stroke: none !important;
+	fill: #facc15;
+}
+
 /* stream custom styles */
 
 .str-video__video-preview-container {
@@ -365,7 +381,7 @@ input[type="number"] {
 	}
 
 	.callOptionContainer {
-		@apply flex px-4 border border-white/20 bg-[#4E515C4D] rounded-[24px] h-[52px]  justify-between items-center w-full hoverScaleDownEffect cursor-pointer;
+		@apply flex flex-col py-3 px-4 border border-gray-300 bg-white rounded-[24px] h-fit gap-4 justify-between items-start w-full hoverScaleDownEffect cursor-pointer;
 	}
 
 	.text-balance {
@@ -464,12 +480,11 @@ input[type="number"] {
 }
 
 .sliding {
-    transform: translateX(50px); /* Adjust the slide distance as needed */
-    transition: transform 0.3s ease-in-out; /* Smooth animation */
+	transform: translateX(50px); /* Adjust the slide distance as needed */
+	transition: transform 0.3s ease-in-out; /* Smooth animation */
 }
 
 .gray-color {
-    filter: invert(33%) sepia(12%) saturate(700%) hue-rotate(180deg) brightness(92%) contrast(88%);
+	filter: invert(33%) sepia(12%) saturate(700%) hue-rotate(180deg)
+		brightness(92%) contrast(88%);
 }
-
-

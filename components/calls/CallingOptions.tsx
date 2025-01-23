@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useMemo, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { audio, chat, video } from "@/constants/icons";
-import { creatorUser, Service } from "@/types";
+import { creatorUser, DiscountRule, Service } from "@/types";
 import { useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
@@ -34,20 +34,17 @@ import {
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import NotifyConsentSheet from "../client/NotifyConsentSheet";
 import { Cursor, Typewriter } from "react-simple-typewriter";
-import usePlatform from "@/hooks/usePlatform";
-import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
+import {
+	SelectedServiceType,
+	useSelectedServiceContext,
+} from "@/lib/context/SelectedServiceContext";
 
 interface CallingOptions {
 	creator: creatorUser;
 }
 
 const CallingOptions = memo(({ creator }: CallingOptions) => {
-	const router = useRouter();
-	const { walletBalance } = useWalletBalanceContext();
 	const client = useStreamVideoClient();
-	const { clientUser, userType, setAuthenticationSheetOpen, region } =
-		useCurrentUsersContext();
-	const { toast } = useToast();
 	const [isSheetOpen, setSheetOpen] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
@@ -59,6 +56,19 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [isClientBusy, setIsClientBusy] = useState(false);
 	const [onlineStatus, setOnlineStatus] = useState<String>("");
+
+	const { walletBalance } = useWalletBalanceContext();
+	const { clientUser, userType, setAuthenticationSheetOpen, region } =
+		useCurrentUsersContext();
+	const {
+		getFinalServices,
+		getSpecificServiceOffer,
+		setSelectedService,
+		resetServices,
+	} = useSelectedServiceContext();
+
+	const router = useRouter();
+	const { toast } = useToast();
 	const themeColor = isValidHexColor(creator?.themeSelected)
 		? creator?.themeSelected
 		: "#50A65C";
@@ -76,11 +86,6 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	});
 
 	const fullName = getDisplayName(creator);
-
-	const { getDevicePlatform } = usePlatform();
-	const { getFinalServices, resetServices } = useSelectedServiceContext();
-
-	const devicePlatform = getDevicePlatform();
 
 	const handleTabClose = () => {
 		const chatRequestId = localStorage.getItem("chatRequestId");
@@ -349,21 +354,22 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${callType === "video"
-				? `Video Call With Expert ${creator.username}`
-				: `Audio Call With Expert ${creator.username}`
-				}`;
+			const description = `${
+				callType === "video"
+					? `Video Call With Expert ${creator.username}`
+					: `Audio Call With Expert ${creator.username}`
+			}`;
 
 			const ratePerMinute =
 				callType === "video"
 					? parseInt(
-						clientUser.global ? creator.globalVideoRate : creator?.videoRate,
-						10
-					)
+							clientUser.global ? creator.globalVideoRate : creator?.videoRate,
+							10
+					  )
 					: parseInt(
-						clientUser.global ? creator.globalAudioRate : creator?.audioRate,
-						10
-					);
+							clientUser.global ? creator.globalAudioRate : creator?.audioRate,
+							10
+					  );
 			let maxCallDuration = (walletBalance / ratePerMinute) * 60;
 			maxCallDuration =
 				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
@@ -473,6 +479,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error(error);
+			resetServices();
 			toast({
 				variant: "destructive",
 				title: "Failed to create Meeting",
@@ -481,7 +488,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		}
 	};
 
-	const handleClickOption = async (callType: string) => {
+	const handleClickOption = async (
+		callType: string,
+		selectedOffer?: Service
+	) => {
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",
@@ -545,6 +555,9 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						});
 					}
 					if (clientUser && !storedCallId) {
+						if (selectedOffer) {
+							setSelectedService(selectedOffer);
+						}
 						createMeeting(callType);
 					} else if (clientUser && storedCallId) {
 						toast({
@@ -561,7 +574,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 					Sentry.captureException(error);
 					console.error("Error in handleClickOption:", error);
 				} finally {
-					setIsProcessing(false); // Reset processing state after completion
+					setIsProcessing(false);
 				}
 			} else {
 				return;
@@ -617,10 +630,9 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 			const filteredDiscounts = discounts?.filter(
 				(discount) => discount.type === "all" || discount.type === "chat"
 			);
-			console.log(filteredDiscounts);
 
 			setChatReqSent(true);
-			handleChat(creator, clientUser, discounts as Service[]);
+			handleChat(creator, clientUser, filteredDiscounts as Service[]);
 			let maxCallDuration =
 				(walletBalance /
 					(clientUser?.global
@@ -642,30 +654,44 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 			label: "Video Call",
 			icon: video,
 			rate: updatedCreator.videoRate,
+			discountApplicable: getSpecificServiceOffer("video"),
+			discountRules: getSpecificServiceOffer("video")?.discountRules,
+			description: "Real-time video consultation",
 			enabled:
 				onlineStatus === "Offline"
 					? true
 					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
-					!isClientBusy &&
-					onlineStatus !== "Busy" &&
-					updatedCreator.videoAllowed &&
-					Number(updatedCreator.videoRate) > 0,
-			onClick: () => handleClickOption("video"),
+					  !isClientBusy &&
+					  onlineStatus !== "Busy" &&
+					  updatedCreator.videoAllowed &&
+					  Number(updatedCreator.videoRate) > 0,
+			onClick: () =>
+				handleClickOption(
+					"video",
+					getSpecificServiceOffer("video") || undefined
+				),
 		},
 		{
 			type: "audio",
 			label: "Audio Call",
 			icon: audio,
 			rate: updatedCreator.audioRate,
+			discountApplicable: getSpecificServiceOffer("audio"),
+			discountRules: getSpecificServiceOffer("audio")?.discountRules,
+			description: "Voice consultation",
 			enabled:
 				onlineStatus === "Offline"
 					? true
 					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
-					!isClientBusy &&
-					onlineStatus !== "Busy" &&
-					updatedCreator.audioAllowed &&
-					Number(updatedCreator.audioRate) > 0,
-			onClick: () => handleClickOption("audio"),
+					  !isClientBusy &&
+					  onlineStatus !== "Busy" &&
+					  updatedCreator.audioAllowed &&
+					  Number(updatedCreator.audioRate) > 0,
+			onClick: () =>
+				handleClickOption(
+					"audio",
+					getSpecificServiceOffer("audio") || undefined
+				),
 		},
 
 		{
@@ -673,14 +699,17 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 			label: "Chat Now",
 			icon: chat,
 			rate: updatedCreator.chatRate,
+			discountApplicable: getSpecificServiceOffer("chat"),
+			discountRules: getSpecificServiceOffer("chat")?.discountRules,
+			description: "Text-based consultation",
 			enabled:
 				onlineStatus === "Offline"
 					? true
 					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
-					!isClientBusy &&
-					onlineStatus !== "Busy" &&
-					updatedCreator.chatAllowed &&
-					Number(updatedCreator.chatRate) > 0,
+					  !isClientBusy &&
+					  onlineStatus !== "Busy" &&
+					  updatedCreator.chatAllowed &&
+					  Number(updatedCreator.chatRate) > 0,
 			onClick: () => handleChatClick(),
 		},
 	];
@@ -696,38 +725,122 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		});
 	}, [services]);
 
+	const calculateDiscountedRate = (
+		rate: string,
+		discountRule: DiscountRule
+	) => {
+		const rateNum = Number(rate);
+		if (discountRule.discountType === "percentage") {
+			return rateNum - (rateNum * discountRule.discountAmount) / 100;
+		}
+		return rate;
+	};
+
 	return (
 		<>
 			<div className="flex flex-col w-full items-center justify-center gap-4">
-				{sortedServices.map((service) => (
-					<button
-						disabled={!service.enabled}
-						key={service.type}
-						className={`callOptionContainer ${(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
-							"!cursor-not-allowed"
-							}`}
-						onClick={service.onClick}
-					>
-						<div className={`flex gap-4 items-center font-bold text-white`}>
-							{service.icon}
-							{service.label}
-						</div>
+				{sortedServices.map((service) => {
+					const priceButton = (
 						<p
-							className={`font-medium tracking-widest rounded-[18px] px-2 min-w-[100px] h-[36px] text-[15px] text-black flex items-center justify-center ${(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
-								"border border-white/50 text-white"
-								}`}
-							style={{
-								backgroundColor:
-									!service.enabled || onlineStatus === "Busy"
-										? "transparent"
-										: themeColor,
-							}}
+							className={`font-medium tracking-widest rounded-full px-3 py-1 w-fit min-w-[115px] min-h-[36px] bg-black text-white flex flex-col-reverse items-center justify-center ${
+								(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
+								"bg-black/40 cursor-not-allowed"
+							}`}
 						>
-							{region === "India" ? "Rs." : "$"}
-							<span>{service.rate}</span>/min
+							<>
+								{service.discountApplicable && service.discountRules ? (
+									service.discountRules[0].discountType === "percentage" ||
+									(service.discountRules[0].discountType === "flat" &&
+										Number(service.rate) >
+											service.discountRules[0].discountAmount) ? (
+										<>
+											<s className="text-gray-300 text-xs">
+												{region === "India" ? "Rs." : "$"}
+												{service.rate}
+											</s>
+											{region === "India" ? "Rs." : "$"}
+											{calculateDiscountedRate(
+												service.rate,
+												service.discountRules[0]
+											)}
+										</>
+									) : (
+										<>
+											{region === "India" ? "Rs." : "$"}
+											{service.rate}
+										</>
+									)
+								) : (
+									<>
+										{region === "India" ? "Rs." : "$"}
+										{service.rate}
+									</>
+								)}
+							</>
+							/min
 						</p>
-					</button>
-				))}
+					);
+
+					return (
+						<button
+							disabled={!service.enabled}
+							key={service.type}
+							className={`callOptionContainer ${
+								(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
+								"!cursor-not-allowed"
+							}`}
+							onClick={service.onClick}
+						>
+							{service.discountApplicable && service.discountRules && (
+								<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										fill="currentColor"
+										className="size-4"
+									>
+										<path
+											fillRule="evenodd"
+											d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
+											clipRule="evenodd"
+										/>
+									</svg>
+
+									<p className=" text-xs whitespace-nowrap font-medium">
+										<span className="text-sm ml-1">
+											{service.discountRules[0].discountType === "percentage"
+												? `${service.discountRules[0].discountAmount}%`
+												: `${
+														service.discountApplicable.currency === "INR"
+															? "₹"
+															: "$"
+												  } ${service.discountRules[0].discountAmount}`}{" "}
+											OFF Applied
+										</span>
+									</p>
+								</div>
+							)}
+							<div className="w-full flex items-center justify-between">
+								<div className="w-full flex items-center">
+									<div className="w-full flex flex-col items-start justify-center gap-2">
+										<div className={`flex gap-4 items-center font-bold`}>
+											<div className="bg-[#f3f5f8] size-[40px] flex flex-col items-center justify-center border border-[#E5E7EB] rounded-full">
+												{service.icon}
+											</div>
+											{service.label}
+										</div>
+										<div className="w-full flex items-end justify-between">
+											<p className="text-sm">{service.description}</p>
+										</div>
+									</div>
+								</div>
+								<div className="flex flex-col items-center self-end xl:self-center">
+									{priceButton}
+								</div>
+							</div>
+						</button>
+					);
+				})}
 
 				<Sheet
 					open={isSheetOpen}
@@ -816,10 +929,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 								<p className="font-semibold text-xl">
 									{creator?.username?.startsWith("+91")
 										? creator?.username?.replace(
-											/(\+91)(\d+)/,
-											(match, p1, p2) =>
-												`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-										)
+												/(\+91)(\d+)/,
+												(match, p1, p2) =>
+													`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+										  )
 										: creator?.username}
 								</p>
 							</div>
