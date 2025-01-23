@@ -8,7 +8,6 @@ import {
 	formatDisplay,
 	getDisplayName,
 	getImageSource,
-	updateFirestoreSessions,
 	updatePastFirestoreSessions,
 } from "@/lib/utils";
 import { AvailabilityService, creatorUser } from "@/types";
@@ -174,7 +173,6 @@ const AvailabilityFinalConsentForm = ({
 	};
 
 	const createMeeting = async () => {
-		console.log(client, clientUser);
 		if (!client || !clientUser) throw new Error("Invalid data provided.");
 		try {
 			const id = crypto.randomUUID();
@@ -434,9 +432,6 @@ const AvailabilityFinalConsentForm = ({
 			} else {
 				throw new Error("Failed to register the call");
 			}
-
-			// Step 3: Success flow completed
-			console.log("Call scheduled successfully:", registerCallResponse.data);
 		} catch (error: any) {
 			console.error(error);
 			if (error.message.includes("Failed to register the call")) {

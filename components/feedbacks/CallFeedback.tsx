@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "../ui/sheet";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
@@ -52,7 +52,16 @@ const CallFeedback = ({
 		),
 	};
 
-	let callDuration = fetchCallDuration(callId);
+	const [callDuration, setCallDuration] = useState("");
+
+	useEffect(() => {
+		const fetchDuration = async () => {
+			const duration = await fetchCallDuration(callId);
+			setCallDuration(duration);
+		};
+
+		fetchDuration();
+	}, [callId]);
 
 	const handleSliderChange = (value: any) => {
 		setRating(value);

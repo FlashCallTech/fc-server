@@ -6,7 +6,10 @@ import { Button } from "../ui/button";
 
 import EndCallDecision from "./EndCallDecision";
 import Image from "next/image";
-import { updateFirestoreSessions } from "@/lib/utils";
+import {
+	updateFirestoreSessions,
+	updatePastFirestoreSessions,
+} from "@/lib/utils";
 import LeaveCallDecision from "./LeaveCallDecision";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -34,6 +37,11 @@ const EndCallButton = ({ callType }: { callType: "scheduled" | "instant" }) => {
 		await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
 			status: "payment pending",
 		});
+
+		call?.state?.custom?.type === "scheduled" &&
+			(await updatePastFirestoreSessions(call.id as string, {
+				status: "payment pending",
+			}));
 
 		const callDocRef = doc(db, "calls", call?.id);
 		await updateDoc(callDocRef, {
