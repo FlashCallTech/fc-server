@@ -45,7 +45,7 @@ const CountdownTimer: React.FC<CountdownProps> = ({ chat, timeLeft, userType, jo
       <h1 className="text-4xl font-bold mb-6">
         {timeLeft === "The call has started!"
           ? "Your Call is Ready"
-          : "Waiting for Your Scheduled Call"}
+          : "Waiting for Your Scheduled Chat"}
       </h1>
       <p className="text-xl font-light mb-10">
         {timeLeft === "The call has started!"

@@ -195,7 +195,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					clientId: clientUser?._id,
 					creatorId: creator?._id,
 					discounts: [],
-					scheduled: deleteField(),
 					scheduledChatDetails: deleteField(),
 				},
 				{ merge: true }
@@ -233,7 +232,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				maxCallDuration,
 				global: currentUser?.global ?? false,
 				createdAt: Date.now(),
-				discounts
+				discounts: discounts ?? null,
 			});
 
 			const docSnap = await getDoc(newChatRequestRef);
