@@ -9,6 +9,7 @@ import {
 	getDisplayName,
 	getImageSource,
 	updateFirestoreSessions,
+	updatePastFirestoreSessions,
 } from "@/lib/utils";
 import { AvailabilityService, creatorUser } from "@/types";
 import Image from "next/image";
@@ -21,6 +22,7 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import axios from "axios";
 import { success } from "@/constants/icons";
 import useScheduledPayment from "@/hooks/useScheduledPayment";
+import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
 
 interface params {
 	service: AvailabilityService;
@@ -46,6 +48,7 @@ const AvailabilityFinalConsentForm = ({
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
 	const { clientUser } = useCurrentUsersContext();
+	const { getFinalServices } = useSelectedServiceContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const [totalAmount, setTotalAmount] = useState<{
 		total: string;
@@ -171,6 +174,7 @@ const AvailabilityFinalConsentForm = ({
 	};
 
 	const createMeeting = async () => {
+		console.log(client, clientUser);
 		if (!client || !clientUser) throw new Error("Invalid data provided.");
 		try {
 			const id = crypto.randomUUID();
@@ -234,10 +238,12 @@ const AvailabilityFinalConsentForm = ({
 						duration: service.timeDuration * 60,
 						type: "scheduled",
 						serviceId: service._id,
+						startsAt: startsAt,
 					},
 					settings_override: {
 						limits: {
 							max_participants: 2,
+							max_duration_seconds: service.timeDuration * 60,
 						},
 					},
 				},
@@ -391,7 +397,7 @@ const AvailabilityFinalConsentForm = ({
 					headers: { "Content-Type": "application/json" },
 				});
 
-				await updateFirestoreSessions(clientUser?._id as string, {
+				await updatePastFirestoreSessions(callDetails.callId as string, {
 					callId: callDetails.callId,
 					status: "upcoming",
 					callType: "scheduled",
@@ -403,6 +409,7 @@ const AvailabilityFinalConsentForm = ({
 						? clientUser?.email
 						: clientUser?.phone,
 					global: clientUser?.global ?? false,
+					discount: getFinalServices(),
 				});
 
 				isDiscountUtilized &&
@@ -512,8 +519,10 @@ const AvailabilityFinalConsentForm = ({
 	return (
 		<>
 			{!isSuccess ? (
-				<div className="relative size-full grid grid-cols-1 items-start overflow-y-scroll no-scrollbar scroll-smooth">
-					<section className="flex items-center gap-4 px-4 pt-2">
+				<div
+					className={`relative size-full flex flex-col items-start overflow-y-scroll no-scrollbar scroll-smooth`}
+				>
+					<section className="w-full flex items-center gap-4 px-4 pt-2">
 						<button
 							onClick={() => setShowConsentForm(false)}
 							className="text-xl font-bold hoverScaleDownEffect"
@@ -550,8 +559,8 @@ const AvailabilityFinalConsentForm = ({
 						</section>
 					</section>
 
-					<hr className="col-span-full border-t-2 border-[#E5E7EB] my-2" />
-					<div className="flex flex-col px-4 items-start justify-start gap-2.5  mt-2">
+					<hr className="col-span-full w-full border-t-2 border-[#E5E7EB] my-2" />
+					<div className="w-full flex flex-col px-4 items-start justify-start gap-2.5  mt-2">
 						<span className="font-bold text-2xl">{service.title}</span>
 						<span className="flex items-center gap-2 text-sm capitalize">
 							{getServiceIcon(service.type)}
@@ -560,8 +569,8 @@ const AvailabilityFinalConsentForm = ({
 						</span>
 					</div>
 
-					<div className="flex flex-col px-4 items-start justify-start gap-2.5 mt-2">
-						<div className="w-full flex items-center justify-center p-4 border-2 border-[#E5E7EB] rounded-xl">
+					<div className="size-full flex flex-1 flex-col px-4 items-start justify-start gap-2.5 mt-2">
+						<div className="w-full flex items-center justify-center p-4 border-2 border-[#E5E7EB] rounded-xl mt-4">
 							<section className="w-full flex flex-wrap items-center justify-between">
 								<div className="flex items-center justify-center gap-2.5">
 									<section className="bg-black/10 size-16 flex flex-col items-center justify-center border border-[#E5E7EB] rounded-lg">
@@ -692,8 +701,8 @@ const AvailabilityFinalConsentForm = ({
 					</div>
 
 					{/* Payment Confirmation */}
-					<div className="bg-white mt-4 w-full sticky bottom-0 border-t border-[#E5E7EB]">
-						<div className="w-full px-4 flex flex-col items-center justify-center gap-2 py-2.5">
+					<div className="flex items-center justify-center bg-white mt-4 size-full h-fit sticky bottom-0 border-t border-[#E5E7EB] py-2.5">
+						<div className="w-full px-4 flex flex-col items-center justify-center gap-2">
 							{payUsingWallet &&
 								parseFloat(totalAmount.total) > walletBalance && (
 									<div className="w-full flex items-center justify-between">
@@ -709,7 +718,7 @@ const AvailabilityFinalConsentForm = ({
 									</div>
 								)}
 							<Button
-								className="text-base bg-black hoverScaleDownEffect w-full mx-auto text-white rounded-full"
+								className="text-base bg-black hoverScaleDownEffect w-full mx-auto text-white rounded-full self-center"
 								type="submit"
 								onClick={handlePaySchedule}
 								disabled={preparingTransaction}
@@ -740,7 +749,7 @@ const AvailabilityFinalConsentForm = ({
 					</div>
 				</div>
 			) : (
-				<div className="flex flex-col items-center justify-center min-w-full h-fit gap-4 py-5 px-4">
+				<div className="flex flex-col items-center justify-center min-w-full h-full gap-4 py-5 px-4">
 					{success}
 					<span className="font-semibold text-lg">
 						Meeting scheduled for {customDateValue}

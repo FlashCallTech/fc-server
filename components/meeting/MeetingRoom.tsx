@@ -31,6 +31,8 @@ import { CallTimerProvider } from "@/lib/context/CallTimerContext";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import TipModal from "../calls/TipModal";
 import MyCallConnectingUI from "./MyCallConnectigUI";
+import { backendBaseUrl } from "@/lib/utils";
+import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -133,6 +135,14 @@ const MeetingRoom = () => {
 		await call?.endCall().catch((err) => console.warn(err));
 	};
 
+	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
+		if (currentUser?._id) {
+			navigator.sendBeacon(
+				`${backendBaseUrl}/user/setCallStatus/${currentUser._id}`
+			);
+		}
+	});
+
 	useEffect(() => {
 		if (isMobile) {
 			setLayout("speaker-bottom");
@@ -218,7 +228,7 @@ const MeetingRoom = () => {
 			return;
 		}
 
-		if (participants.length === 1) {
+		if (participants.length < 2) {
 			setShowCountdown(true);
 			setCountdown(countdownDuration);
 
@@ -311,7 +321,7 @@ const MeetingRoom = () => {
 	return (
 		<section className="relative w-full overflow-hidden pt-4 md:pt-0 text-white bg-dark-2 h-dvh">
 			{call &&
-				participants.length === 1 &&
+				participants.length < 2 &&
 				isMeetingOwner &&
 				ongoingCallStatus === "initiate" && <MyCallConnectingUI call={call} />}
 			{showCountdown && countdown && <CountdownDisplay />}

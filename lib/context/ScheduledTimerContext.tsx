@@ -1,23 +1,31 @@
 import { useEffect, useState } from "react";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { useToast } from "@/components/ui/use-toast";
 
 interface TimerParams {
 	callId: string;
-	callDuration: number; // in seconds
+	callDuration: number;
 	participants: number;
+	startsAt: Date | undefined;
+	handleCallRejected: () => Promise<void>;
 }
 
 const ScheduledTimerHook = ({
 	callId,
 	callDuration,
 	participants,
+	startsAt,
+	handleCallRejected,
 }: TimerParams) => {
+	const normalizedStartsAt = startsAt ? new Date(startsAt) : undefined;
 	const [timeLeft, setTimeLeft] = useState(callDuration || 0);
 	const [hasLowTimeLeft, setHasLowTimeLeft] = useState(false);
 	const [isTimerRunning, setIsTimerRunning] = useState(true);
 	const [endTime, setEndTime] = useState<Date | null>(null);
-
+	const [startTime, setStartTime] = useState<Date | null>(null);
+	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
+	const { toast } = useToast();
 	const pauseTimer = () => setIsTimerRunning(false);
 
 	const resumeTimer = () => {
@@ -38,15 +46,23 @@ const ScheduledTimerHook = ({
 				status: "ended",
 				timeLeft: 0,
 			});
+			toast({
+				variant: "destructive",
+				title: "Call Ended ...",
+				description: "Time Limit Exceeded",
+				toastStatus: "negative",
+			});
+			handleCallRejected();
 		} catch (error) {
-			console.error("Error ending the call in Firestore:", error);
+			console.error("Error ending the call:", error);
 		}
 	};
 
 	useEffect(() => {
 		const initializeTimer = async () => {
 			try {
-				if (participants !== 2) {
+				const now = new Date();
+				if (participants < 2) {
 					console.warn("Timer not initialized as participants count is not 2.");
 					setIsTimerRunning(false);
 					return;
@@ -70,6 +86,10 @@ const ScheduledTimerHook = ({
 
 						setEndTime(end);
 
+						if (storedStartTime !== undefined) {
+							setStartTime(storedStartTime);
+						}
+
 						if (storedTimeLeft !== undefined) {
 							setTimeLeft(storedTimeLeft);
 						}
@@ -82,13 +102,23 @@ const ScheduledTimerHook = ({
 					// Initialize Firebase document
 					const currentTime = new Date();
 					const calculatedEndTime = new Date(
-						currentTime.getTime() + callDuration * 1000
+						(normalizedStartsAt
+							? normalizedStartsAt.getTime()
+							: currentTime.getTime()) +
+							callDuration * 1000
 					);
 
 					await setDoc(callDocRef, {
-						startTime: currentTime.toISOString(),
+						callType: "scheduled",
+						status: "active",
+						startTime: normalizedStartsAt
+							? normalizedStartsAt.toISOString()
+							: currentTime.toISOString(),
 						endTime: calculatedEndTime.toISOString(),
-						timeLeft: callDuration,
+						timeLeft: normalizedStartsAt
+							? (now.getTime() - normalizedStartsAt.getTime()) / 1000
+							: (now.getTime() - currentTime.getTime()) / 1000 || callDuration,
+						timeUtilized: 0,
 					});
 
 					setEndTime(calculatedEndTime);
@@ -103,7 +133,12 @@ const ScheduledTimerHook = ({
 	}, [callId, callDuration, participants]);
 
 	useEffect(() => {
-		if (!endTime || !callId) return;
+		if (participants >= 2 && !isTimerRunning) {
+			console.log("Resuming timer as participants count is now valid.");
+			resumeTimer();
+		}
+
+		if (!endTime || !callId || !startTime || !normalizedStartsAt) return;
 
 		const updateTimeLeft = () => {
 			const now = new Date();
@@ -113,20 +148,23 @@ const ScheduledTimerHook = ({
 				return;
 			}
 
-			if (participants !== 2) {
+			if (participants < 2) {
 				console.warn("Pausing timer due to invalid participants count.");
 				setIsTimerRunning(false);
 				return;
 			}
 
 			const remainingTime = (endTime.getTime() - now.getTime()) / 1000;
+			const elapsedTime = (now.getTime() - normalizedStartsAt.getTime()) / 1000;
 			setTimeLeft(Math.max(remainingTime, 0));
+			setTotalTimeUtilized(elapsedTime);
 			setHasLowTimeLeft(remainingTime <= 300);
 
 			try {
 				const callDocRef = doc(db, "calls", callId);
 				updateDoc(callDocRef, {
 					timeLeft: Math.max(remainingTime, 0),
+					timeUtilized: elapsedTime,
 				});
 			} catch (error) {
 				console.error("Error updating timer in Firestore:", error);
@@ -148,6 +186,7 @@ const ScheduledTimerHook = ({
 		pauseTimer,
 		resumeTimer,
 		hasLowTimeLeft,
+		totalTimeUtilized,
 	};
 };
 
