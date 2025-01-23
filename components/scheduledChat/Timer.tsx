@@ -8,9 +8,10 @@ interface CountdownProps {
         };
         maxDuration: number; // Time in seconds
     };
+    setChatEnded: any
 }
 
-const Countdown: React.FC<CountdownProps> = ({ timerDetails }) => {
+const Countdown: React.FC<CountdownProps> = ({ timerDetails, setChatEnded }) => {
     const [timeLeft, setTimeLeft] = useState<string>("00:00");
     const [isTimeRunningOut, setIsTimeRunningOut] = useState<boolean>(false);
 
@@ -26,6 +27,7 @@ const Countdown: React.FC<CountdownProps> = ({ timerDetails }) => {
                 const remainingTime = endTime - now;
 
                 if (remainingTime <= 0) {
+                    setChatEnded(true);
                     clearInterval(interval);
                     setTimeLeft("00:00");
                     return;
