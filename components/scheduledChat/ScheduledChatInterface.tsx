@@ -32,6 +32,7 @@ const ScheduledChatInterface: React.FC = () => {
 	const [isTyping, setIsTyping] = useState(false);
 	const [replyIndex, setReplyIndex] = useState<number>();
 	const [loading, setLoading] = useState<boolean>(true);
+	const [joinLoading, setJoinLoading] = useState<boolean>(false);
 	const [currentUserMessageSent, setCurrentUserMessageSent] = useState<boolean>(false);
 	const [timeLeft, setTimeLeft] = useState("");
 
@@ -68,7 +69,7 @@ const ScheduledChatInterface: React.FC = () => {
 					const data = doc.data();
 					setChat(data);
 					setMembersCount(data?.membersCount ?? 0);
-					if(data.scheduled === false) {
+					if (data.scheduled === false) {
 						router.replace(`/chat-ended/${chatId}/${data?.callId}/${data?.clientId}`);
 					}
 				}
@@ -91,19 +92,19 @@ const ScheduledChatInterface: React.FC = () => {
 
 				if (difference <= 0) {
 					if (chat.status === "active" || chat.scheduled === false) return;
-					try {
-						const response = await axios.post(`${backendBaseUrl}/endChat/scheduledChatStart`, {
-							chatId: chat.chatId, // Ensure `chat.chatId` is passed correctly
-						});
+					// try {
+					// 	const response = await axios.post(`${backendBaseUrl}/endChat/scheduledChatStart`, {
+					// 		chatId: chat.chatId, // Ensure `chat.chatId` is passed correctly
+					// 	});
 
-						if (response.status === 200) {
-							console.log("Chat status updated to 'active'");
-						} else {
-							throw new Error("Failed to update chat status");
-						}
-					} catch (error) {
-						console.error("Error updating chat status:", error);
-					}
+					// 	if (response.status === 200) {
+					// 		console.log("Chat status updated to 'active'");
+					// 	} else {
+					// 		throw new Error("Failed to update chat status");
+					// 	}
+					// } catch (error) {
+					// 	console.error("Error updating chat status:", error);
+					// }
 					setTimeLeft("The call has started!");
 					setLoading(false);
 					return;
@@ -390,7 +391,10 @@ const ScheduledChatInterface: React.FC = () => {
 			<div
 				className={`hidden md:flex items-center justify-center h-screen w-full bg-black`}
 			>
-				{timeLeft === "The call has started!" && chat ? (
+				{chat && (
+					userType === "client" && chat.scheduledChatDetails?.clientJoined ||
+					userType === "creator" && chat.scheduledChatDetails?.creatorJoined
+				) ? (
 					<div
 						className="md:w-[50%] lg:w-[70%] h-[98%] md:flex flex-col rounded-md bg-cover bg-center"
 						style={{ backgroundImage: 'url(/back.png)' }}
@@ -409,7 +413,7 @@ const ScheduledChatInterface: React.FC = () => {
 									<div className="text-white font-bold text-xs md:text-lg">
 										{userType === "client" ? chat?.creatorName : chat?.clientName}
 									</div>
-									<Countdown timeInSeconds={chat?.scheduledChatDetails?.maxDuration} />
+									<Countdown timerDetails={chat?.scheduledChatDetails} />
 									<p className="text-[10px] md:text-sm text-green-500">
 										Ongoing chat
 									</p>
@@ -498,6 +502,9 @@ const ScheduledChatInterface: React.FC = () => {
 						<CountdownTimer
 							chat={chat}
 							timeLeft={timeLeft}
+							userType={userType}
+							joinLoading={joinLoading}
+							setJoinLoading={setJoinLoading}
 						/>
 					</div>
 				)}
