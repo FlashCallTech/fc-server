@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useToast } from "../ui/use-toast";
+import React from "react";
 
 import Image from "next/image";
 import ScheduledTimerHook from "@/lib/context/ScheduledTimerContext";
@@ -11,6 +10,7 @@ interface TimerParams {
 	callId: string;
 	callDuration: number;
 	participants: number;
+	startsAt: Date | undefined;
 }
 
 const ScheduledTimer = ({
@@ -18,15 +18,15 @@ const ScheduledTimer = ({
 	callId,
 	callDuration,
 	participants,
+	startsAt,
 }: TimerParams) => {
 	const { timeLeft, hasLowTimeLeft } = ScheduledTimerHook({
 		callId,
 		callDuration,
 		participants,
+		startsAt,
+		handleCallRejected,
 	});
-	const [isToastShown, setIsToastShown] = useState(false);
-
-	const { toast } = useToast();
 
 	const timeLeftInSeconds = timeLeft;
 	const isLoading = isNaN(timeLeftInSeconds);
@@ -37,21 +37,6 @@ const ScheduledTimer = ({
 	const seconds = Math.floor(timeLeftInSeconds % 60)
 		.toString()
 		.padStart(2, "0");
-
-	useEffect(() => {
-		if (!isLoading && timeLeftInSeconds <= 0) {
-			!isToastShown &&
-				toast({
-					variant: "destructive",
-					title: "Call Ended ...",
-					description: "Time Limit Exceeded",
-					toastStatus: "negative",
-				});
-			setIsToastShown(true);
-
-			handleCallRejected();
-		}
-	}, [timeLeftInSeconds, handleCallRejected, isLoading]);
 
 	return (
 		<div

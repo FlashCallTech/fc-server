@@ -16,13 +16,11 @@ import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import {
-	backendBaseUrl,
 	getDarkHexCode,
 	stopMediaStreams,
 	updateExpertStatus,
 	updateFirestoreSessions,
 } from "@/lib/utils";
-import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { trackEvent } from "@/lib/mixpanel";
 import MeetingNotStarted from "@/components/meeting/MeetingNotStarted";
 import MeetingRoomScheduled from "@/components/meeting/MeetingRoomScheduled";
@@ -34,14 +32,6 @@ const MeetingPage = () => {
 	const { call, isCallLoading } = useGetCallById(id);
 	const { currentUser, fetchingUser } = useCurrentUsersContext();
 	const creatorURL = localStorage.getItem("creatorURL");
-
-	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
-		if (currentUser?._id) {
-			navigator.sendBeacon(
-				`${backendBaseUrl}/user/setCallStatus/${currentUser._id}`
-			);
-		}
-	});
 
 	useEffect(() => {
 		const preventBackNavigation = () => {
