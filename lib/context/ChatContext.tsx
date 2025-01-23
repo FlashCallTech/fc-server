@@ -9,6 +9,7 @@ import { useCurrentUsersContext } from "./CurrentUsersContext";
 interface ChatContextProps {
 	chatId: string | null;
 	chat: any;
+	messages: any
 	chatEnded: boolean;
 	startedAt: number;
 	loading: boolean;
@@ -27,6 +28,7 @@ export const useChatContext = () => {
 
 export const ChatProvider = ({ children, chatId }: { children: React.ReactNode, chatId: string }) => {
 	const [chat, setChat] = useState<any>(null);
+	const [messages, setMessages] = useState<any>();
 	const [chatEnded, setChatEnded] = useState(false);
 	const [startedAt, setStartedAt] = useState<number>(0);
 	const [loading, setLoading] = useState(false);
@@ -38,20 +40,29 @@ export const ChatProvider = ({ children, chatId }: { children: React.ReactNode, 
 	useEffect(() => {
 		if (chatId) {
 			const officialChatDocRef = doc(db, "chats", chatId as string);
-			const unSub = onSnapshot(officialChatDocRef, (doc) => {
+			const messagesDocRef = doc(db, "messages", chatId as string);
+			const chatUnSub = onSnapshot(officialChatDocRef, (doc) => {
 				if (doc.exists()) {
 					const data = doc.data();
 					setChat(data);
 					setStartedAt(data.startedAt);
 					if (data?.status === "ended") {
 						setChatEnded(true);
-						unSub(); // Unsubscribe the listener
+						chatUnSub(); // Unsubscribe the listener
 					}
 				}
 			});
 
+			const messageUnSub = onSnapshot(messagesDocRef, (doc) => {
+				if (doc.exists()) {
+					const data = doc.data();
+					setMessages(data.messages);
+				}
+			});
+
 			return () => {
-				unSub();
+				chatUnSub();
+				messageUnSub();
 			};
 		}
 	}, [chatId]);
@@ -124,6 +135,7 @@ export const ChatProvider = ({ children, chatId }: { children: React.ReactNode, 
 			value={{
 				chatId,
 				chat,
+				messages,
 				chatEnded,
 				startedAt,
 				loading,
