@@ -26,7 +26,7 @@ import {
 	sendNotification,
 } from "@/lib/utils";
 import axios from "axios";
-import { clientUser, creatorUser } from "@/types";
+import { clientUser, creatorUser, Service } from "@/types";
 
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
@@ -34,9 +34,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [SheetOpen, setSheetOpen] = useState(false); // State to manage sheet visibility
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
+	const messagesRef = collection(db, "messages");
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
 	const { getDevicePlatform } = usePlatform();
+	
 
 	// Function to update expert's status
 	const updateExpertStatus = async (phone: string, status: string) => {
@@ -86,7 +88,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	};
 
-	const handleChat = async (creator: creatorUser, clientUser: clientUser) => {
+	const handleChat = async (creator: creatorUser, clientUser: clientUser, discounts?: Service[]) => {
 		if (!clientUser) router.push("sign-in");
 		if (!clientUser) router.push("sign-in");
 
@@ -174,6 +176,15 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			}
 
 			const chatId = existingChatId || doc(chatRef).id;
+
+			const messagesDocRef = doc(messagesRef, chatId);
+			const messagesDocSnapshot = await getDoc(messagesDocRef);
+			if(!messagesDocSnapshot.exists()) {
+				await setDoc(messagesDocSnapshot.ref, {
+					messages: []
+				})
+			}
+
 			const chatDocRef = doc(db, "callTimer", chatId as string);
 			const callDoc = await getDoc(chatDocRef);
 			if (callDoc.exists()) {
@@ -192,6 +203,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				{
 					clientId: clientUser?._id,
 					creatorId: creator?._id,
+					discounts: [],
 				},
 				{ merge: true }
 			);
@@ -228,9 +240,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				maxCallDuration,
 				global: currentUser?.global ?? false,
 				createdAt: Date.now(),
+				discounts
 			});
 
 			const docSnap = await getDoc(newChatRequestRef);
+			console.log("Inside HandleChat: ", docSnap.data());
 
 			if (docSnap.exists()) {
 				const chatRequestData = docSnap.data();
@@ -321,6 +335,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	};
 
 	const handleAcceptChat = async (chatRequest: any) => {
+		console.log("Inside Accept Function: ", chatRequest);
 		const userChatsRef = collection(db, "userchats");
 		const chatId = chatRequest.chatId;
 		const response = await getUserById(chatRequest.clientId as string);
@@ -394,6 +409,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					maxChatDuration,
 					global: chatRequest.global ?? false,
 					clientBalance: response.walletBalance ?? "",
+					discounts: chatRequest?.discounts ?? [],
 				});
 			}
 

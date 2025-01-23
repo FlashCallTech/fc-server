@@ -16,14 +16,14 @@ import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import ContentLoading from "@/components/shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import {
-	backendBaseUrl,
 	getDarkHexCode,
 	stopMediaStreams,
 	updateExpertStatus,
 	updateFirestoreSessions,
 } from "@/lib/utils";
-import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 import { trackEvent } from "@/lib/mixpanel";
+import MeetingNotStarted from "@/components/meeting/MeetingNotStarted";
+import MeetingRoomScheduled from "@/components/meeting/MeetingRoomScheduled";
 
 const MeetingPage = () => {
 	const { id } = useParams();
@@ -32,14 +32,6 @@ const MeetingPage = () => {
 	const { call, isCallLoading } = useGetCallById(id);
 	const { currentUser, fetchingUser } = useCurrentUsersContext();
 	const creatorURL = localStorage.getItem("creatorURL");
-
-	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
-		if (currentUser?._id) {
-			navigator.sendBeacon(
-				`${backendBaseUrl}/user/setCallStatus/${currentUser._id}`
-			);
-		}
-	});
 
 	useEffect(() => {
 		const preventBackNavigation = () => {
@@ -84,12 +76,9 @@ const MeetingPage = () => {
 
 	useEffect(() => {
 		if (!isCallLoading && call) {
-			const expert = call.state?.members?.find(
-				(member: any) => member.custom.type === "expert"
-			);
 			const isAuthorized =
-				currentUser?._id === call.state?.createdBy?.id ||
-				currentUser?._id === expert?.user_id;
+				call.isCreatedByMe ||
+				call.state.members.find((m) => m.user_id === currentUser?._id);
 
 			if (!isAuthorized) {
 				toast({
@@ -122,7 +111,7 @@ const MeetingPage = () => {
 	}
 
 	return (
-		<main className="h-full w-full">
+		<main className="size-full">
 			<StreamCall call={call}>
 				<StreamTheme>
 					<MeetingRoomWrapper toast={toast} router={router} call={call} />
@@ -132,19 +121,54 @@ const MeetingPage = () => {
 	);
 };
 
-const MeetingRoomWrapper = ({ toast, router, call }: any) => {
-	const { useCallEndedAt } = useCallStateHooks();
+const MeetingRoomWrapper = ({
+	toast,
+	router,
+	call,
+}: {
+	toast: any;
+	router: any;
+	call: Call;
+}) => {
+	const { useCallEndedAt, useCallStartsAt } = useCallStateHooks();
+	const callStartsAt = useCallStartsAt();
 	const callEndedAt = useCallEndedAt();
+	const [hasJoinedCall, setHasJoinedCall] = useState(false);
+
+	const callTimeNotArrived =
+		!hasJoinedCall && callStartsAt && new Date(callStartsAt) > new Date();
+
 	const callHasEnded = !!callEndedAt;
+
+	if (callTimeNotArrived)
+		return (
+			<MeetingNotStarted
+				call={call}
+				startsAt={callStartsAt}
+				onJoinCall={() => setHasJoinedCall(true)}
+			/>
+		);
 
 	if (callHasEnded) {
 		return <CallEnded toast={toast} router={router} call={call} />;
 	} else {
-		return <MeetingRoom />;
+		return call.state.custom.type !== "scheduled" ? (
+			<MeetingRoom />
+		) : (
+			<MeetingRoomScheduled />
+		);
 	}
 };
 
-const CallEnded = ({ toast, router, call }: any) => {
+const CallEnded = ({
+	toast,
+	router,
+	call,
+}: {
+	toast: any;
+	router: any;
+	call: Call;
+}) => {
 	const [loading, setLoading] = useState(false);
 	const transactionHandled = useRef(false);
 	const { currentUser, currentTheme, userType } = useCurrentUsersContext();

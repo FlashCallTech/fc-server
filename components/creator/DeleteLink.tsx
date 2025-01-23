@@ -1,44 +1,57 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import Image from "next/image";
+import { boolean } from "zod";
 
 interface DeleteLinkProps {
   onClose: () => void;
   onSave: () => void;
+  isLoading: boolean;
 }
 
 const DeleteLink: React.FC<DeleteLinkProps> = ({
   onClose,
   onSave,
+  isLoading,
 }) => {
 
   const handleSave = () => {
-    onClose();
     onSave();
+    isLoading;
   }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-40">
-      <div className="flex bg-white border rounded-lg shadow-sm p-2">
+      <div className="flex bg-white border rounded-lg shadow-sm p-4">
         <div className="flex flex-col gap-4 items-center justify-center bg-white w-full">
           <Image src={'/link-delete.svg'} width={0} height={0} alt="link-delete" className="w-auto h-auto" />
           <div className="font-bold text-lg p-2 mb-2">
             Do you want to delete this link?
           </div>
           <div className="flex w-full">
-            <div className="flex flex-row w-full justify-between">
-              <Button
+            <div className="flex flex-row w-full gap-2 justify-end text-sm">
+              <button
                 onClick={onClose}
-                className="text-black rounded-md px-6 bg-gray-300 hover:bg-gray-400"
+                className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-full hoverScaleDownEffect"
               >
                 No, Cancel
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={handleSave}
-                className="bg-gray-800 text-white rounded-md px-6 hover:bg-black"
+                className="bg-black text-white px-4 py-2 rounded-full hoverScaleDownEffect"
               >
-                Yes, Delete
-              </Button>
+                {isLoading ? (
+                  <Image
+                    src="/icons/loading-circle.svg"
+                    alt="Loading..."
+                    width={24}
+                    height={24}
+                    priority
+                  />
+                ) : (
+                  "Yes, Delete"
+                )}
+              </button>
             </div>
           </div>
         </div>

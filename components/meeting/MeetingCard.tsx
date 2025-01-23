@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import FeedbackCheck from "../feedbacks/FeedbackCheck";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 interface MeetingCardProps {
@@ -22,7 +20,6 @@ const MeetingCard = ({
 	callId,
 	members,
 }: MeetingCardProps) => {
-	const pathname = usePathname();
 	const [isLoading, setIsLoading] = useState(true);
 
 	const expert = members?.find((member) => member.custom.type === "expert");
@@ -114,7 +111,6 @@ const MeetingCard = ({
 						))}
 					</div>
 				)}
-				<FeedbackCheck callId={callId} />
 			</article>
 		</section>
 	);

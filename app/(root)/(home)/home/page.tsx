@@ -5,7 +5,7 @@ import { useInView } from "react-intersection-observer";
 import { creatorUser } from "@/types";
 import CreatorHome from "@/components/creator/CreatorHome";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import PostLoader from "@/components/shared/PostLoader";
 import Image from "next/image";
 import { trackEvent } from "@/lib/mixpanel";
@@ -132,7 +132,7 @@ const HomePage = () => {
 
 	if (isLoading || loadingCard || fetchingUser) {
 		return (
-			<div className="size-full flex flex-col gap-2 items-center justify-center">
+			<div className="size-full h-[calc(100vh-4rem)] flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
 			</div>
 		);
@@ -140,9 +140,9 @@ const HomePage = () => {
 
 	if (userType === "creator") {
 		return (
-			<main className="size-full flex flex-col pt-0 md:pt-5">
+			<main className="size-full flex flex-col">
 				<Suspense fallback={<PostLoader count={6} />}>
-					<CreatorHome />;
+					<CreatorHome />
 				</Suspense>
 			</main>
 		);
@@ -158,7 +158,7 @@ const HomePage = () => {
 					</div>
 				) : (
 					<section className="grid grid-rows-[auto,1fr] grid-cols-1 size-full px-4 lg:px-0">
-						<section className="sticky top-0 md:top-[76px] bg-white z-30">
+						<section className="sticky top-0 lg:top-[76px] bg-white z-30">
 							<HomepageFilter
 								selectedProfession={selectedProfession}
 								handleProfessionChange={handleProfessionChange}
@@ -234,7 +234,7 @@ const HomePage = () => {
 						</div>
 					)}
 
-				{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
+				{hasNextPage && <div ref={ref} className="py-4 w-full" />}
 			</Suspense>
 		</main>
 	);

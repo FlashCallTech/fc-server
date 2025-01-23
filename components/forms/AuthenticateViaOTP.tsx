@@ -19,7 +19,11 @@ import Image from "next/image";
 import { success } from "@/constants/icons";
 import { usePathname, useRouter } from "next/navigation";
 import { useToast } from "../ui/use-toast";
-import { CreateCreatorParams, CreateForeignUserParams, CreateUserParams } from "@/types";
+import {
+	CreateCreatorParams,
+	CreateForeignUserParams,
+	CreateUserParams,
+} from "@/types";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { trackEvent } from "@/lib/mixpanel";
@@ -257,7 +261,7 @@ const AuthenticateViaOTP = ({
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);
 			let newErrors = { ...error };
-			newErrors.otpVerificationError = error.message;
+			newErrors.otpVerificationError = "Error verifying OTP";
 			setError(newErrors);
 			otpForm.reset(); // Reset OTP form
 			setIsVerifyingOTP(false);
@@ -291,6 +295,7 @@ const AuthenticateViaOTP = ({
 
 	const handleGoogleSignIn = async () => {
 		try {
+			console.log("Inside the google sign in function");
 			let result: any;
 			let email: string = "";
 
@@ -316,22 +321,30 @@ const AuthenticateViaOTP = ({
 
 			// Check if the user exists or create a new user
 			await handleUserExistenceAndCreation(email, result, payload);
-
 		} catch (error) {
 			console.error("Error during sign-in:", error);
-			await signOut(auth);  // Sign out if an error occurs
+			await signOut(auth); // Sign out if an error occurs
 			throw new Error(error as string);
 		}
 	};
 
 	// Helper function to check if the user exists and create if necessary
-	const handleUserExistenceAndCreation = async (email: string, result: any, payload: any) => {
+	const handleUserExistenceAndCreation = async (
+		email: string,
+		result: any,
+		payload: any
+	) => {
+		console.log("Inside user existence function");
 		let userExists = true;
 
 		try {
-			const response = await axios.post(`${backendBaseUrl}/client/getGlobalUserByEmail/${email}`, payload, {
-				headers: { "Content-Type": "application/json" }
-			});
+			const response = await axios.post(
+				`${backendBaseUrl}/client/getGlobalUserByEmail/${email}`,
+				payload,
+				{
+					headers: { "Content-Type": "application/json" },
+				}
+			);
 			localStorage.setItem("currentUserID", response.data._id);
 			userExists = response.status !== 404;
 		} catch (error: any) {
@@ -350,6 +363,7 @@ const AuthenticateViaOTP = ({
 
 	// Helper function to create a new user
 	const createNewUser = async (result: any, email: string, payload: any) => {
+		console.log("Inside createNewUser function");
 		const newUser: CreateForeignUserParams = {
 			username: result.user.uid,
 			photo: GetRandomImage() || "",
@@ -360,6 +374,7 @@ const AuthenticateViaOTP = ({
 			bio: "",
 			walletBalance: 0,
 			global: true,
+			fcmToken: payload.fcmToken,
 		};
 
 		try {
@@ -372,7 +387,10 @@ const AuthenticateViaOTP = ({
 			);
 
 			if (createUserResponse.status === 201) {
-				localStorage.setItem("currentUserID", createUserResponse.data.client_id);
+				localStorage.setItem(
+					"currentUserID",
+					createUserResponse.data.client_id
+				);
 				console.log("New user created successfully.");
 				refreshCurrentUser();
 			} else {
@@ -383,7 +401,6 @@ const AuthenticateViaOTP = ({
 			throw error; // Propagate the error to be handled in the main function
 		}
 	};
-
 
 	return (
 		<section className="relative bg-[#F8F8F8] rounded-t-3xl sm:rounded-xl flex flex-col items-center justify-start gap-4 px-8 pt-2 shadow-lg w-screen h-fit sm:w-full sm:min-w-[24rem] sm:max-w-sm mx-auto">
@@ -474,7 +491,6 @@ const AuthenticateViaOTP = ({
 							Continue with Google
 						</Button>
 					)}
-
 				</>
 			) : verificationSuccess ? (
 				<div className="flex flex-col items-center justify-center w-full sm:min-w-[24rem] sm:max-w-[24rem]  gap-4 pt-7 pb-14">

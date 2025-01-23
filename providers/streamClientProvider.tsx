@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StreamVideo, StreamVideoClient } from "@stream-io/video-react-sdk";
 import MyCallUI from "@/components/meeting/MyCallUI";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -14,83 +14,94 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 	const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(
 		null
 	);
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, fetchingUser } = useCurrentUsersContext();
 	const userId = currentUser?._id as string | undefined;
-	let firstName = currentUser?.firstName || "";
-	let lastName = currentUser?.lastName || "";
-	let username = currentUser?.username || "";
-	const fullName = getDisplayName({ firstName, lastName, username });
+	const initializationRef = useRef(false);
+	const fullName = getDisplayName({
+		firstName: currentUser?.firstName || "",
+		lastName: currentUser?.lastName || "",
+		username: currentUser?.username || "",
+	});
 
 	useEffect(() => {
+		let isMounted = true;
+
 		const initializeVideoClient = async (retries = 3) => {
-			if (!currentUser || !userId) {
-				console.error("No current user or user ID");
-				return;
-			}
+			if (initializationRef.current || !currentUser || !userId) return;
 
-			if (!API_KEY) throw new Error("Stream API key is missing");
+			initializationRef.current = true;
 
-			let attempts = 0;
+			try {
+				if (!API_KEY) throw new Error("Stream API key is missing");
 
-			while (attempts < retries) {
-				try {
-					const token = await tokenProvider(
-						userId,
-						fullName,
-						currentUser.photo,
-						currentUser.phone,
-						currentUser.global ?? false,
-						currentUser.email ?? null
-					);
+				let attempts = 0;
 
-					if (!token) {
-						throw new Error("Token was not generated successfully");
-					}
-
-					const client = new StreamVideoClient({
-						apiKey: API_KEY,
-						user: {
-							id: userId,
-							name: currentUser?.username.startsWith("+91")
-								? currentUser.username.replace(
-										/(\+91)(\d+)/,
-										(match, p1, p2) =>
-											`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-								  )
-								: currentUser.username,
-							image: currentUser?.photo as string,
-							custom: {
-								phone: currentUser?.phone as string,
-							},
-						},
-						tokenProvider: async () => token,
-						options: {
-							timeout: 10000,
-							timeoutErrorMessage: "Connection Timed Out",
-						},
-					});
-
-					setVideoClient(client);
-					return;
-				} catch (error) {
-					attempts++;
-					console.error(
-						`Attempt ${attempts} failed to initialize StreamVideoClient:`,
-						error
-					);
-
-					if (attempts >= retries) {
-						Sentry.captureException(error);
-						throw new Error(
-							"Failed to initialize StreamVideoClient after retries"
+				while (attempts < retries) {
+					try {
+						const token = await tokenProvider(
+							userId,
+							fullName,
+							currentUser.photo,
+							currentUser.phone,
+							currentUser.global ?? false,
+							currentUser.email ?? null
 						);
+
+						if (!token) {
+							throw new Error("Token was not generated successfully");
+						}
+
+						const client = new StreamVideoClient({
+							apiKey: API_KEY,
+							user: {
+								id: userId,
+								name: fullName || "Flashcall User",
+								image: currentUser?.photo as string,
+								custom: {
+									phone: global
+										? (currentUser.email as string)
+										: (currentUser?.phone as string),
+								},
+							},
+							tokenProvider: async () => token,
+							options: {
+								timeout: 10000,
+								timeoutErrorMessage: "Connection Timed Out",
+							},
+						});
+
+						if (isMounted) {
+							setVideoClient(client);
+						}
+						break;
+					} catch (error) {
+						attempts++;
+						console.error(
+							`Attempt ${attempts} failed to initialize StreamVideoClient:`,
+							error
+						);
+
+						if (attempts >= retries) {
+							Sentry.captureException(error);
+							throw new Error(
+								"Failed to initialize StreamVideoClient after retries"
+							);
+						}
 					}
 				}
+			} finally {
+				initializationRef.current = false;
 			}
 		};
 
-		initializeVideoClient();
-	}, [currentUser?._id, userId]);
+		if (!fetchingUser && currentUser && userId && !videoClient) {
+			initializeVideoClient();
+		}
+
+		return () => {
+			isMounted = false;
+		};
+	}, [currentUser, userId, fetchingUser, videoClient, fullName]);
 
 	return videoClient && currentUser ? (
 		<StreamVideo client={videoClient}>

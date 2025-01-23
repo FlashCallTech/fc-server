@@ -1,6 +1,7 @@
 export enum QUERY_KEYS {
 	GET_CREATOR = "get_creator",
 	GET_CREATOR_DISCOUNT_SERVICES = "get_creator_discount_services",
+	GET_CREATOR_AVAILABILITY_SERVICES = "get_creator_availability_services",
 	GET_CREATORS = "get_creators",
 	GET_CLIENTS = "get_clients",
 	GET_CREATOR_FEEDBACKS = "get_creator_feedbacks",
@@ -9,4 +10,5 @@ export enum QUERY_KEYS {
 	GET_BLOCKED_CLIENTS = "get_blocked_clients",
 	GET_CREATOR_NOTIFICATION = "get_creator_notification",
 	GET_USER_AVAILABILITY = "get_user_availability",
+	GET_USER_REFERRALS = "get_user_referrals",
 }

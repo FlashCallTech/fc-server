@@ -40,15 +40,13 @@ const CopyToClipboard = ({
 
 	const shareLink = async () => {
 		const pronounPart = gender
-			? `I had a wonderful session with ${
-					gender === "other" ? "them" : gender === "male" ? "him" : "her"
-			  }.`
+			? `I had a wonderful session with ${gender === "other" ? "them" : gender === "male" ? "him" : "her"
+			}.`
 			: `I had a wonderful session with ${fullName}.`;
-		const message = `Hi 👋,\n\n${fullName} is an amazing ${profession}. ${pronounPart}\n\nYou should consult with ${
-			gender
-				? `${gender === "other" ? "them" : gender === "male" ? "him" : "her"}`
-				: "them"
-		} too.\n\nClick here to talk to ${fullName}.👇\n`;
+		const message = `Hi 👋,\n\n${fullName} is an amazing ${profession}. ${pronounPart}\n\nYou should consult with ${gender
+			? `${gender === "other" ? "them" : gender === "male" ? "him" : "her"}`
+			: "them"
+			} too.\n\nClick here to talk to ${fullName}.👇\n`;
 
 		if (navigator.share) {
 			try {
@@ -79,40 +77,85 @@ const CopyToClipboard = ({
 	};
 
 	return (
-		<div className="flex justify-between items-center w-full gap-2 p-1">
-			<div
-				className="relative flex border w-full rounded-full px-4 p-2 bg-white justify-between items-center shadow-sm gap-2 group cursor-pointer"
-				onClick={() => copyToClipboard(link)}
-			>
-				<Image
-					src={"/link.svg"}
-					width={24}
-					height={24}
-					alt="link"
-					className="w-5 h-5"
-				/>
-				<div className="grid items-start justify-start overflow-x-hidden w-full group-hover:text-green-1">
-					<p className="text-ellipsis whitespace-nowrap min-w-0 overflow-hidden">
-						{link}
-					</p>
-				</div>
+		<div>
+			<div className="flex justify-between items-center w-full gap-2 p-1 md:hidden">
+				<div
+					className="relative flex border w-full rounded-full px-4 p-2 bg-white justify-between items-center shadow-sm gap-2 group cursor-pointer"
+					onClick={() => copyToClipboard(link)}
+				>
+					<Image
+						src={"/link.svg"}
+						width={24}
+						height={24}
+						alt="link"
+						className="w-5 h-5"
+					/>
+					<div className="grid items-start justify-start overflow-x-hidden w-full group-hover:text-green-1">
+						<p className="text-ellipsis whitespace-nowrap min-w-0 overflow-hidden">
+							{link}
+						</p>
+					</div>
 
+					<Image
+						src={"/copy.svg"}
+						width={24}
+						height={24}
+						alt="copy"
+						className="w-10 h-10 p-2 object-fit rounded-full bg-gray-50 hoverScaleDownEffect hover:bg-gray-200"
+					/>
+				</div>
 				<Image
-					src={"/copy.svg"}
+					src="/share.svg"
 					width={24}
 					height={24}
-					alt="copy"
-					className="w-10 h-10 p-2 object-fit rounded-full bg-gray-50 hoverScaleDownEffect hover:bg-gray-200"
+					alt="share"
+					className="w-10 h-10 p-2 bg-gray-800 rounded-full hoverScaleDownEffect cursor-pointer"
+					onClick={shareLink}
 				/>
 			</div>
-			<Image
+			{/* New Design */}
+			<div className="hidden md:flex justify-between items-center w-full gap-2">
+				<div
+					className="relative flex bg-white border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] w-full rounded-xl p-4 justify-between items-center gap-2 group cursor-pointer"
+					onClick={() => copyToClipboard(link)}
+				>
+					<Image
+						src={"/link.svg"}
+						width={24}
+						height={24}
+						alt="link"
+						className="w-5 h-5"
+					/>
+					<div className="grid items-start justify-start px-3 py-2 text-[#4B5563] overflow-x-hidden w-full group-hover:text-black">
+						<p className="text-ellipsis whitespace-nowrap min-w-0 overflow-hidden text-base font-normal leading-6 tracking-normal">
+							{link}
+						</p>
+					</div>
+
+					<Image
+						src={"/copy.svg"}
+						width={24}
+						height={24}
+						alt="copy"
+						className="size-9 p-2 object-fit rounded hoverScaleDownEffect"
+					/>
+					<Image
+						src={"/creator/refer.svg"}
+						width={24}
+						height={24}
+						alt="copy"
+						className="size-9 p-2 object-fit rounded hoverScaleDownEffect filter grayscale brightness-[0.3] sepia hue-rotate-[220deg]"
+					/>
+				</div>
+				{/* <Image
 				src="/share.svg"
 				width={24}
 				height={24}
 				alt="share"
 				className="w-10 h-10 p-2 bg-gray-800 rounded-full hoverScaleDownEffect cursor-pointer"
 				onClick={shareLink}
-			/>
+				/> */}
+			</div>
 		</div>
 	);
 };

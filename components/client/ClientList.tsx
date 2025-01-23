@@ -113,7 +113,7 @@ const ClientList = () => {
 					onClick={handleSearch}
 					className={`absolute ${
 						searchQuery ? "right-16" : "right-4 cursor-not-allowed"
-					}  p-2 bg-green-1 text-white rounded-full hoverScaleDownEffect`}
+					}  p-2 bg-green-1 lg:bg-black text-white rounded-full hoverScaleDownEffect`}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

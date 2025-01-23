@@ -14,7 +14,6 @@ import { backendBaseUrl } from "@/lib/utils";
 import Image from "next/image";
 import { useCreatorQuery } from "@/lib/react-query/queries";
 import ContentLoading from "../shared/ContentLoading";
-import ClientSideDiscountSheet from "../creatorServices/ClientSideDiscountSheet";
 
 const CreatorCard = () => {
 	const { username } = useParams();
@@ -30,14 +29,13 @@ const CreatorCard = () => {
 		data: creatorUser,
 		isLoading,
 		isError,
-		error,
 	} = useCreatorQuery(username as string);
 
 	useEffect(() => {
 		let isMounted = true;
 
 		if (currentUser && userType === "creator") {
-			router.replace("/home");
+			router.replace("/");
 			return;
 		}
 
@@ -125,10 +123,12 @@ const CreatorCard = () => {
 	}
 
 	if (isError) {
-		console.error("Error fetching creator:", error);
 		return (
-			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-400">
-				<p>Failed to load creator details.</p>
+			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-gray-400">
+				Oops! We couldn&apos;t find the creator you&apos;re looking for.
+				<span className="text-lg">
+					Don&apos;t worry double-check the username and try again!
+				</span>
 			</div>
 		);
 	}
@@ -136,7 +136,7 @@ const CreatorCard = () => {
 	if (!creatorUser) {
 		return (
 			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-400">
-				<p>No creators found.</p>
+				<p>Oops! We couldn&apos;t find the creator you&apos;re looking for.</p>
 			</div>
 		);
 	}
@@ -145,13 +145,6 @@ const CreatorCard = () => {
 		<React.Suspense fallback={<ContentLoading />}>
 			<section className="size-full grid grid-cols-1 items-start justify-center">
 				<CreatorDetails creator={creatorUser} />
-
-				{/* {currentUser && (
-					<ClientSideDiscountSheet
-						creatorId={creatorUser._id || ""}
-						theme={creatorUser?.themeSelected}
-					/>
-				)} */}
 			</section>
 		</React.Suspense>
 	);

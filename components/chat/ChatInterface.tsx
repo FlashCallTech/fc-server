@@ -38,7 +38,7 @@ const ChatInterface: React.FC = () => {
 	});
 	// const typingTimeout = 2000; // Time in milliseconds to wait before resetting isTyping
 
-	const { handleEnd, chat, chatId } = useChatContext();
+	const { handleEnd, chat, messages, chatId } = useChatContext();
 	// const { markMessagesAsSeen } = useMarkAsSeen();
 	const { currentUser, userType } = useCurrentUsersContext();
 	const {
@@ -197,7 +197,7 @@ const ChatInterface: React.FC = () => {
 			if (!chatId) {
 				return;
 			}
-			await updateDoc(doc(db, "chats", chatId as string), {
+			await updateDoc(doc(db, "messages", chatId as string), {
 				messages: arrayUnion({
 					senderId: currentUser?._id as string,
 					createdAt: Date.now(),
@@ -237,10 +237,10 @@ const ChatInterface: React.FC = () => {
 				audioUrl = await handleAudio();
 				setIsAudioUploading(false);
 			}
-			await updateDoc(doc(db, "chats", chatId as string), {
+			await updateDoc(doc(db, "messages", chatId as string), {
 				messages: arrayUnion({
 					senderId: currentUser?._id as string,
-					replyIndex,
+					replyIndex : replyIndex ?? null,
 					createdAt: Date.now(),
 					seen: true,
 					text,
@@ -274,10 +274,10 @@ const ChatInterface: React.FC = () => {
 
 		try {
 			const audioUploadUrl = await upload(audioBlob, "audio");
-			await updateDoc(doc(db, "chats", chatId as string), {
+			await updateDoc(doc(db, "messages", chatId as string), {
 				messages: arrayUnion({
 					senderId: currentUser?._id as string,
-					replyIndex,
+					replyIndex: replyIndex ?? null,
 					createdAt: Date.now(),
 					seen: true,
 					text: null,
@@ -354,19 +354,6 @@ const ChatInterface: React.FC = () => {
 	const handleCloseDialog = () => {
 		setShowDialog(false);
 	};
-
-	function maskPhoneNumber(phoneNumber: string) {
-		// Remove the '+91' prefix
-		if (phoneNumber) {
-			let cleanedNumber = phoneNumber.replace("+91", "");
-
-			// Mask the next 5 digits, leaving the first 2 digits unmasked
-			let maskedNumber =
-				cleanedNumber.substring(0, 2) + "*****" + cleanedNumber.substring(7);
-
-			return maskedNumber;
-		}
-	}
 
 	const discardReply = () => {
 		setReplyIndex(undefined);
@@ -465,7 +452,7 @@ const ChatInterface: React.FC = () => {
 					) : (
 						chat && (
 							<div className="mb-[56px] z-20">
-								<Messages chat={chat} currentUserMessageSent={currentUserMessageSent} setReplyIndex={setReplyIndex} />
+								<Messages chat={chat} messages={messages} currentUserMessageSent={currentUserMessageSent} setReplyIndex={setReplyIndex} setText={setText} />
 							</div>
 						)
 					)}
@@ -584,7 +571,7 @@ const ChatInterface: React.FC = () => {
 						) : (
 							chat && (
 								<div className="z-20">
-									<Messages chat={chat} currentUserMessageSent={currentUserMessageSent} setReplyIndex={setReplyIndex} />
+									<Messages chat={chat} messages={messages} currentUserMessageSent={currentUserMessageSent} setReplyIndex={setReplyIndex} setText={setText} />
 								</div>
 							)
 						)}

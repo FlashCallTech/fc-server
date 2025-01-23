@@ -22,9 +22,18 @@ interface Transaction {
 	global?: boolean;
 }
 
+interface dateRange {
+	startDate: string | null;
+	endDate: string | null;
+}
+
 const Transactions = () => {
 	const [btn, setBtn] = useState<"all" | "credit" | "debit">("all");
 	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [dateRange, setDateRange] = useState<dateRange>({
+		startDate: "",
+		endDate: "",
+	});
 	const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
 
 	const { currentUser } = useCurrentUsersContext();
@@ -40,7 +49,7 @@ const Transactions = () => {
 		isFetching,
 		isError,
 		isLoading,
-	} = useGetUserTransactionsByType(currentUser?._id as string, btn);
+	} = useGetUserTransactionsByType(currentUser?._id as string, btn, dateRange);
 
 	useEffect(() => {
 		if (inView && hasNextPage && !isFetching) {
@@ -103,7 +112,7 @@ const Transactions = () => {
 		<section className="size-full grid grid-cols-1 grid-rows-[auto,auto,1fr]">
 			{/* Transaction History Section */}
 			<section
-				className={`sticky top-0 md:top-[76px] bg-white z-30 p-4 flex flex-col items-start justify-start gap-4 w-full h-fit`}
+				className={`sticky top-0 lg:top-[76px] bg-white z-30 p-4 flex flex-col items-start justify-start gap-4 w-full h-fit`}
 			>
 				<InvoiceModal
 					isOpen={isModalOpen}
@@ -295,8 +304,12 @@ const Transactions = () => {
 													} `}
 												>
 													{transaction?.type === "credit"
-														? `+ ${currentUser?.global ? "$" : "₹" }${transaction?.amount?.toFixed(2)}`
-														: `- ${currentUser?.global ? "$" : "₹" }${transaction?.amount?.toFixed(2)}`}
+														? `+ ${
+																currentUser?.global ? "$" : "₹"
+														  }${transaction?.amount?.toFixed(2)}`
+														: `- ${
+																currentUser?.global ? "$" : "₹"
+														  }${transaction?.amount?.toFixed(2)}`}
 												</span>
 
 												{transaction.type === "credit" && (
@@ -342,7 +355,7 @@ const Transactions = () => {
 					</div>
 				)}
 
-			{hasNextPage && <div ref={ref} className=" pt-10 w-full" />}
+			{hasNextPage && <div ref={ref} className="py-4 w-full" />}
 		</section>
 	);
 };
