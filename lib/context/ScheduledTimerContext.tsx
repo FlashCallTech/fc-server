@@ -25,6 +25,9 @@ const ScheduledTimerHook = ({
 	const [endTime, setEndTime] = useState<Date | null>(null);
 	const [startTime, setStartTime] = useState<Date | null>(null);
 	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
+	const [previousParticipants, setPreviousParticipants] =
+		useState(participants);
+
 	const { toast } = useToast();
 	const pauseTimer = () => setIsTimerRunning(false);
 
@@ -48,11 +51,11 @@ const ScheduledTimerHook = ({
 			});
 			toast({
 				variant: "destructive",
-				title: "Call Ended ...",
-				description: "Time Limit Exceeded",
+				title: "Session Time Up ...",
+				description: "The session time has expired.",
 				toastStatus: "negative",
 			});
-			handleCallRejected();
+			// handleCallRejected();
 		} catch (error) {
 			console.error("Error ending the call:", error);
 		}
@@ -62,8 +65,14 @@ const ScheduledTimerHook = ({
 		const initializeTimer = async () => {
 			try {
 				const now = new Date();
-				if (participants < 2) {
-					console.warn("Timer not initialized as participants count is not 2.");
+				// if (participants < 2) {
+				// 	console.warn("Timer not initialized as participants count is not 2.");
+				// 	setIsTimerRunning(false);
+				// 	return;
+				// }
+
+				if (!callId) {
+					console.warn("Timer not initialized as call id is not valid");
 					setIsTimerRunning(false);
 					return;
 				}
@@ -119,6 +128,7 @@ const ScheduledTimerHook = ({
 							? (now.getTime() - normalizedStartsAt.getTime()) / 1000
 							: (now.getTime() - currentTime.getTime()) / 1000 || callDuration,
 						timeUtilized: 0,
+						joinedParticipants: participants,
 					});
 
 					setEndTime(calculatedEndTime);
@@ -162,10 +172,19 @@ const ScheduledTimerHook = ({
 
 			try {
 				const callDocRef = doc(db, "calls", callId);
-				updateDoc(callDocRef, {
-					timeLeft: Math.max(remainingTime, 0),
-					timeUtilized: elapsedTime,
-				});
+				if (participants !== previousParticipants) {
+					updateDoc(callDocRef, {
+						timeLeft: Math.max(remainingTime, 0),
+						timeUtilized: elapsedTime,
+						joinedParticipants: participants,
+					});
+					setPreviousParticipants(participants);
+				} else {
+					updateDoc(callDocRef, {
+						timeLeft: Math.max(remainingTime, 0),
+						timeUtilized: elapsedTime,
+					});
+				}
 			} catch (error) {
 				console.error("Error updating timer in Firestore:", error);
 			}
