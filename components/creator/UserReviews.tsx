@@ -1,7 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import ReviewSlider from "./ReviewSlider";
-import SinglePostLoader from "../shared/SinglePostLoader";
 import { useToast } from "../ui/use-toast";
 import { useGetCreatorFeedbacks } from "@/lib/react-query/queries";
 import ContentLoading from "../shared/ContentLoading";
@@ -17,8 +16,6 @@ const UserReviews = ({
 	creatorId: string;
 	creatorUsername: string;
 }) => {
-	const [isExpanded, setIsExpanded] = useState(false);
-
 	const { toast } = useToast();
 	const {
 		data: feedbackData,
@@ -27,37 +24,6 @@ const UserReviews = ({
 		fetchNextPage,
 		hasNextPage,
 	} = useGetCreatorFeedbacks(creatorId);
-
-	const useScreenSize = () => {
-		const [isMobile, setIsMobile] = useState(false);
-
-		const handleResize = () => {
-			setIsMobile(window.innerWidth < 600);
-		};
-
-		useEffect(() => {
-			handleResize();
-			window.addEventListener("resize", handleResize);
-			return () => window.removeEventListener("resize", handleResize);
-		}, []);
-
-		return isMobile;
-	};
-
-	const isMobile = useScreenSize();
-
-	const toggleReadMore = () => {
-		setIsExpanded(!isExpanded);
-	};
-
-	const getClampedText = (text: string) => {
-		if (!text) return;
-		let charLen = isMobile ? 100 : 200;
-		if (text?.length > 100 && !isExpanded) {
-			return text.slice(0, charLen) + "... ";
-		}
-		return text;
-	};
 
 	if (isLoading) {
 		return (
@@ -92,18 +58,18 @@ const UserReviews = ({
 						<span className="text-lg">Please try again later.</span>
 					</div>
 				) : (
-					<section className="flex flex-col">
+					<section className="flex flex-col items-center justify-center">
 						{feedbackData && feedbackData?.pages[0]?.length === 0 ? (
-							<section className="size-full grid gap-5 items-center">
+							<section className="size-full grid gap-5 items-center mb-4">
 								{/* No Feedback Indication */}
-								<section className="flex flex-col px-4 bg-[#4E515C4D] rounded-[24px] w-full mx-auto h-[100px] border border-b-2 border-white/20 justify-center items-center gap-2.5">
+								<section className="flex flex-col px-4 rounded-[24px] w-full mx-auto h-[100px] border border-b-2 border-gray-300 justify-center items-center gap-2.5">
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										fill="none"
 										viewBox="0 0 24 24"
 										strokeWidth={1.5}
 										stroke="currentColor"
-										className="size-6 text-[#99999980]/50"
+										className="size-6"
 									>
 										<path
 											strokeLinecap="round"
@@ -115,19 +81,12 @@ const UserReviews = ({
 								</section>
 							</section>
 						) : (
-							<section className={`relative text-white size-full pb-4`}>
-								<h2 className="xl:ml-2 text-base font-bold">
-									Happy Client&apos;s
-								</h2>
+							<section className={`relative size-full`}>
+								<h2 className="xl:ml-2 text-base font-bold">Feedbacks</h2>
 								{feedbackData?.pages?.map((page, index) => (
 									<ReviewSlider
 										key={index}
 										creatorFeedbacks={page.creatorFeedbacks}
-										getClampedText={getClampedText}
-										isExpanded={isExpanded}
-										setIsExpanded={setIsExpanded}
-										toggleReadMore={toggleReadMore}
-										theme={theme}
 										fetchNextPage={fetchNextPage}
 										hasNextPage={hasNextPage}
 									/>
@@ -135,12 +94,12 @@ const UserReviews = ({
 							</section>
 						)}
 
-						<section className="size-full flex flex-col items-center justify-center xl:flex-row xl:justify-between gap-4 mt-5 xl:mt-10">
+						<section className="size-full flex flex-col items-center justify-center xl:flex-row xl:justify-between gap-4">
 							{/* External Link */}
 							<Link
 								href="https://play.google.com/store/apps/details?id=com.flashcall.me"
 								target="_blank"
-								className="flex items-center justify-center gap-2 bg-white/20 rounded-3xl mx-auto w-full px-[16px] py-[10px]  min-w-[233px] max-w-fit h-[40px] hoverScaleDownEffect cursor-pointer"
+								className="flex items-center justify-center gap-2 border border-gray-300 rounded-3xl mx-auto w-full px-[16px] py-[10px]  min-w-[233px] max-w-fit h-[40px] hoverScaleDownEffect cursor-pointer"
 							>
 								<p className="text-center text-sm">
 									Join <span className="capitalize">{creatorUsername} </span> on
@@ -162,16 +121,16 @@ const UserReviews = ({
 								</svg>
 							</Link>
 							{/* Logo and Info */}
-							<section className="w-full flex items-center justify-center xl:justify-end">
+							<section className="w-full flex gap-2 items-center justify-center xl:justify-end">
 								{/* heading */}
 								<p className="text-xs">Powered By</p>
 								{/* Logo */}
 								<Image
-									src="/icons/logo_new_dark.png"
+									src="/icons/logo_footer.png"
 									alt="flashcall"
 									width={1000}
 									height={1000}
-									className="aspect-square w-[100px] h-[40px]"
+									className="aspect-square w-[84px] h-[28px]"
 								/>
 							</section>
 						</section>

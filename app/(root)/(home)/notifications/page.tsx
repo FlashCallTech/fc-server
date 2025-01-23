@@ -84,7 +84,7 @@ const Notifications = () => {
 	return (
 		<section className="flex size-full flex-col px-4">
 			<section
-				className={`sticky flex w-full items-center justify-between top-0 md:top-[76px] bg-white z-30 py-4 pb-0 transition-all duration-300`}
+				className={`sticky flex w-full items-center justify-between top-0 lg:top-[76px] bg-white z-30 py-4 pb-0 transition-all duration-300`}
 			>
 				{/* <section className="flex items-center gap-4">
 					<Link
@@ -168,7 +168,7 @@ const Notifications = () => {
 						You have reached the end of the list.
 					</div>
 				)}
-			{hasNextPage && <div ref={ref} className="pt-10 w-full" />}
+			{hasNextPage && <div ref={ref} className="py-4 w-full" />}
 		</section>
 	);
 };

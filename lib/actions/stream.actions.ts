@@ -51,7 +51,5 @@ export const tokenProvider = async (
 
 	const token = streamClient.createToken(userId, expirationTime, issuedAt);
 
-	console.log("Token: ", token);
-
 	return token;
 };

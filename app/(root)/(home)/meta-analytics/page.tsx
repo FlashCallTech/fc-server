@@ -29,10 +29,9 @@ const MetaAnalytics = () => {
 
 	return (
 		<div>
-
 			<section className="size-full flex flex-col items-start justify-start gap-7 px-5 lg:hidden">
 				<section
-					className={`sticky flex w-full items-center justify-between top-0 md:top-[76px] bg-white z-30 px-2 pl-0 p-4 pb-0 transition-all duration-300`}
+					className={`sticky flex w-full items-center justify-between top-0 lg:top-[76px] bg-white z-30 px-2 pl-0 p-4 pb-0 transition-all duration-300`}
 				>
 					<section className="flex items-center gap-4">
 						<Link
@@ -63,8 +62,8 @@ const MetaAnalytics = () => {
 					<PixelIntegration creatorId={currentUser?._id} />
 					<section className="flex items-center justify-center pt-4">
 						<div className="text-center text-[13px] text-gray-400">
-							If you are interested in learning how to set up a <b>Meta Pixel</b>{" "}
-							account and how it works, <br />{" "}
+							If you are interested in learning how to set up a{" "}
+							<b>Meta Pixel</b> account and how it works, <br />{" "}
 							<Link href={"/home"} className="text-green-1">
 								<b> please click here. </b>{" "}
 							</Link>
@@ -78,8 +77,8 @@ const MetaAnalytics = () => {
 					<PixelIntegration creatorId={currentUser?._id} />
 					<section className="flex items-center justify-center pt-4">
 						<div className="text-center text-[13px] text-gray-400">
-							If you are interested in learning how to set up a <b>Meta Pixel</b>{" "}
-							account and how it works, <br />{" "}
+							If you are interested in learning how to set up a{" "}
+							<b>Meta Pixel</b> account and how it works, <br />{" "}
 							<Link href={"/home"} className="text-black">
 								<b> please click here. </b>{" "}
 							</Link>

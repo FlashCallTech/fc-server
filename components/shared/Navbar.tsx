@@ -27,7 +27,7 @@ const NavLoader = () => {
 	);
 };
 
-const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
+const Navbar = () => {
 	const {
 		currentUser,
 		fetchingUser,
@@ -35,14 +35,11 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 		setAuthenticationSheetOpen,
 		currentTheme,
 		creatorURL,
-		userFetched,
-		ongoingCallStatus,
 	} = useCurrentUsersContext();
 	const router = useRouter();
 	const [creator, setCreator] = useState<creatorUser>();
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const pathname = usePathname();
-	const isCreatorHome = pathname.includes("home") && userType === "creator";
 	const isCreatorOrExpertPath =
 		creatorURL && creatorURL !== "" && pathname.includes(`${creatorURL}`);
 	const followCreatorTheme = isCreatorOrExpertPath ? "#ffffff" : "#000000";
@@ -65,7 +62,6 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 			router.push("/authenticate?usertype=creator");
 		} else {
 			trackEvent("Login_TopNav_Clicked", {
-				// utm_source: "google",
 				Creator_ID: creator?._id,
 			});
 			setIsAuthSheetOpen(true);
@@ -87,22 +83,9 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 
 	const AppLink = () => (
 		<Button
-			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
+			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[24px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
 			style={{
-				boxShadow: `4px 4px 0px 0px #000000`,
-				color: `${isMobile && isCreatorOrExpertPath
-						? currentTheme
-							? "#000000"
-							: "#ffffff"
-						: followCreatorTheme
-					}`,
 				border: `1px solid #000000`,
-				backgroundColor: `${isCreatorOrExpertPath
-						? isMobile
-							? currentTheme
-							: "#333333"
-						: "#ffffff"
-					}`,
 			}}
 			onClick={handleAppRedirect}
 		>
@@ -120,27 +103,18 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 		</Button>
 	);
 
-	if(userType === "creator") {
-		return <CreatorNavbar />
+	if (userType === "creator") {
+		return <CreatorNavbar />;
 	}
 
 	return (
 		<nav
 			id="navbar"
-			className={`flex justify-between items-center sticky h-[76px] z-40 top-0 left-0 ${
+			className={`bg-white flex justify-between items-center sticky h-[76px] z-40 top-0 left-0 ${
 				isCreatorOrExpertPath
 					? "border-b border-white/20"
 					: "border-b border-[#A7A8A180]/50 md:border-none"
 			} w-full px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}
-			style={{
-				background: `${
-					isCreatorOrExpertPath
-						? isMobile
-							? currentTheme
-							: "#121319"
-						: "#ffffff"
-				}`,
-			}}
 		>
 			{currentUser ? (
 				userType === "creator" ? (
@@ -153,22 +127,9 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 							width={1000}
 							height={1000}
 							alt="flashcall logo"
-							className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[150px] xl:h-[48px]"
+							className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[24px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[150px] xl:h-[48px]"
 							style={{
-								boxShadow: `4px 4px 0px 0px #000000`,
-								color: `${
-									isMobile && followCreatorTheme
-										? "#000000"
-										: followCreatorTheme
-								}`,
 								border: `1px solid #000000`,
-								backgroundColor: `${
-									isCreatorOrExpertPath
-										? isMobile
-											? currentTheme
-											: "#333333"
-										: "#ffffff"
-								}`,
 							}}
 						/>
 					</Link>
@@ -182,25 +143,14 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 			{fetchingUser ? (
 				<NavLoader />
 			) : currentUser ? (
-				<div className="flex justify-end items-center gap-4 h-full text-white">
+				<div className="flex justify-end items-center gap-4 h-full">
 					<Link
 						href="/payment"
-						className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] ${
+						className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[24px] hoverScaleDownEffect h-[40px] xl:h-[48px] ${
 							pathname.includes("/payment") && "!bg-green-1 !text-white"
 						}`}
 						style={{
-							boxShadow: `4px 4px 0px 0px #000000`,
-							color: `${
-								isMobile && followCreatorTheme ? "#000000" : followCreatorTheme
-							}`,
 							border: `1px solid #000000`,
-							backgroundColor: `${
-								isCreatorOrExpertPath
-									? isMobile
-										? currentTheme
-										: invertCreatorTheme
-									: "#ffffff"
-							}`,
 						}}
 					>
 						<Image
@@ -208,14 +158,12 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 							width={100}
 							height={100}
 							alt="wallet"
-							className={`w-4 h-4 ${
-								(pathname.includes("/payment") ||
-									(isCreatorOrExpertPath && !isMobile)) &&
-								"invert"
-							}`}
+							className={`w-4 h-4 ${pathname.includes("/payment") && "invert"}`}
 						/>
 						<span className="w-full mt-[2px] text-center align-middle text-xs font-semibold">
-							{`${currentUser.global ? "$" : "RS."} ${Math.round(walletBalance)}`}
+							{`${currentUser.global ? "$" : "RS."} ${Math.round(
+								walletBalance
+							)}`}
 						</span>
 					</Link>
 
@@ -223,17 +171,27 @@ const Navbar = ({ isMobile }: { isMobile?: boolean }) => {
 				</div>
 			) : (
 				<Button
-					className="hoverScaleDownEffect font-semibold w-fit h-[40px] xl:h-[48px] mr-1 rounded-md"
+					className="hoverScaleDownEffect flex items-center gap-2 font-semibold w-fit h-[40px] xl:h-[48px] mr-1 rounded-[24px] bg-black text-white"
 					size="lg"
 					onClick={handleRouting}
-					style={{
-						boxShadow: `4px 4px 0px 0px #000000`,
-						color: `${followCreatorTheme}`,
-						border: `1px solid #000000`,
-						backgroundColor: `${invertCreatorTheme}`,
-					}}
 				>
-					Login
+					<span>Login</span>
+					<div className="border-2 border-white/40 rounded-full p-1">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							strokeWidth={2.5}
+							stroke="currentColor"
+							className="size-2.5"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25"
+							/>
+						</svg>
+					</div>
 				</Button>
 			)}
 

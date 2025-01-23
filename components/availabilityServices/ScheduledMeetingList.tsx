@@ -308,7 +308,7 @@ const ScheduledMeetingList = ({
 							</div>
 						)}
 
-					{hasNextPage && <div ref={ref} className="w-full" />}
+					{hasNextPage && <div ref={ref} className="py-4 w-full" />}
 				</>
 			)}
 		</>

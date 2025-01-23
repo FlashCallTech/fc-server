@@ -75,19 +75,18 @@ const Sidebar = () => {
 	const imageSrc =
 		getImageSource(currentUser as clientUser | creatorUser) ?? "";
 
-
-	if(userType === "creator") {
-		return <CreatorSidebar />
+	if (userType === "creator") {
+		return <CreatorSidebar />;
 	}
 
 	return (
 		<section
 			id="sidebar"
-			className={`sticky left-0 ${isCreatorHome ? "top-0" : "top-[76px]"}  flex h-screen flex-col justify-between p-6  max-md:hidden lg:w-[264px] shadow-md ${isExpertPath && "border-r border-white/20"
-				}`}
+			className={`sticky left-0 ${
+				isCreatorHome ? "top-0" : "top-[76px]"
+			}  flex h-screen flex-col justify-between p-6  max-md:hidden lg:w-[264px] shadow-md `}
 			style={{
 				maxHeight: `calc(100dvh - ${isCreatorHome ? "0px" : "76px"} )`,
-				backgroundColor: isExpertPath ? "transparent" : "#ffffff",
 			}}
 		>
 			<div className="flex flex-1 flex-col gap-2.5 max-h-[88%] overflow-y-scroll no-scrollbar">
@@ -97,7 +96,7 @@ const Sidebar = () => {
 					const showBadge =
 						item.label === "Notifications" && pendingNotifications > 0;
 					return (
-						!(item.route === "/home" && isExpertPath) && (
+						!(item.route === "/home") && (
 							<Tooltip key={item.label + index}>
 								<TooltipTrigger asChild>
 									<Link
@@ -106,15 +105,14 @@ const Sidebar = () => {
 												? currentUser
 													? item.route
 													: userType === "creator"
-														? "/authenticate?usertype=creator"
-														: "/authenticate"
+													? "/authenticate?usertype=creator"
+													: "/authenticate"
 												: item.route
 										}
 										className={`flex w-full gap-4 items-center p-4 rounded-lg justify-center lg:justify-start 
-                  group ${isExpertPath
-												? "text-white bg-[#333333] hoverScaleDownEffect"
-												: "text-black hover:bg-green-1"
-											} ${isActive && " bg-green-1 text-white"}`}
+                  group text-black hover:bg-green-1 ${
+										isActive && " bg-green-1 text-white"
+									}`}
 										onClick={() => handleLogEvent(item)}
 									>
 										<Image
@@ -122,8 +120,9 @@ const Sidebar = () => {
 											alt={item.label}
 											width={100}
 											height={100}
-											className={`w-6 h-6 object-cover invert group-hover:invert-0 group-hover:brightness-200 ${(isActive || isExpertPath) && "invert-0 brightness-200"
-												}`}
+											className={`w-6 h-6 object-cover invert group-hover:invert-0 group-hover:brightness-200 ${
+												isActive && "invert-0 brightness-200"
+											}`}
 											priority
 										/>
 
@@ -151,8 +150,9 @@ const Sidebar = () => {
 					<TooltipTrigger asChild>
 						<Link
 							href={`/profile/${currentUser?._id}`}
-							className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start hoverScaleDownEffect overflow-hidden ${userType === "client" && isExpertPath && "bg-[#333333] py-2.5"
-								}  ${pathname.includes("/profile/") && "opacity-80"}`}
+							className={`flex gap-4 items-center rounded-lg  justify-center lg:px-2 lg:justify-start hoverScaleDownEffect overflow-hidden  ${
+								pathname.includes("/profile/") && "opacity-80"
+							}`}
 						>
 							<Image
 								src={imageSrc}
@@ -163,8 +163,7 @@ const Sidebar = () => {
 							/>
 							<div className="flex flex-col w-full items-start justify-center max-lg:hidden">
 								<span
-									className={`${isExpertPath && "text-white"
-										} text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap`}
+									className={` text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap`}
 								>
 									{fullName}
 								</span>
@@ -200,15 +199,28 @@ const Sidebar = () => {
 			) : (
 				<Button
 					asChild
-					className={`text-white hoverScaleDownEffect `}
-					style={{
-						backgroundColor: isExpertPath
-							? (getDarkHexCode(currentTheme) as string)
-							: "#50A65C",
-					}}
+					className="hoverScaleDownEffect flex items-center gap-2 font-semibold w-full max-lg:hidden h-[40px] xl:h-[48px] mr-1 rounded-[24px] bg-black text-white"
 					size="lg"
 				>
-					<Link href="/authenticate">Login</Link>
+					<Link href="/authenticate">
+						<span>Login</span>
+						<div className="border-2 border-white/40 rounded-full p-1">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								strokeWidth={2.5}
+								stroke="currentColor"
+								className="size-2.5"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25"
+								/>
+							</svg>
+						</div>
+					</Link>
 				</Button>
 			)}
 		</section>
