@@ -29,11 +29,13 @@ import {
 	formatTime,
 	sendCallNotification,
 	sendNotification,
+	updateFirestoreSessions,
 } from "@/lib/utils";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
-import MyCallConnectingUI from "./MyCallConnectigUI";
 import ScheduledTimer from "../calls/ScheduledTimer";
+import CreatorCallTimer from "../creator/CreatorCallTimer";
+import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
 
 type CallLayoutType = "grid" | "speaker-bottom";
 
@@ -104,6 +106,7 @@ const MeetingRoomScheduled = () => {
 	const { useCallCallingState, useCallEndedAt, useParticipants } =
 		useCallStateHooks();
 	const { currentUser, userType, ongoingCallStatus } = useCurrentUsersContext();
+	const { getFinalServices } = useSelectedServiceContext();
 
 	const hasAlreadyJoined = useRef(false);
 	const [showParticipants, setShowParticipants] = useState(false);
@@ -130,6 +133,10 @@ const MeetingRoomScheduled = () => {
 
 	const expert = call?.state?.members?.find(
 		(member) => member.custom.type === "expert"
+	);
+
+	const client = call?.state?.members?.find(
+		(member) => member.custom.type === "client"
 	);
 
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
@@ -182,8 +189,24 @@ const MeetingRoomScheduled = () => {
 					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
 
-					if (isMeetingOwner && participants.length === 1) {
-						if (!localStorage.getItem(notificationSentKey)) {
+					await updateFirestoreSessions(client?.user_id as string, {
+						callId: call.id,
+						status: "ongoing",
+						callType: "scheduled",
+						clientId: client?.user_id as string,
+						expertId: expert?.user_id,
+						isVideoCall: call.type === "default" ? "video" : "audio",
+						creatorPhone: expert?.custom?.phone,
+						clientPhone: client?.custom?.phone,
+						global: client?.custom?.phone.includes("+91") ? false : true,
+						discount: getFinalServices(),
+					});
+
+					console.log("Nice: ", call.id, isMeetingOwner, participants.length);
+
+					if (!localStorage.getItem(notificationSentKey)) {
+						if (isMeetingOwner && participants.length < 2) {
+							console.log("Hello");
 							await sendCallNotification(
 								expert?.custom?.phone as string,
 								callType,
@@ -315,7 +338,7 @@ const MeetingRoomScheduled = () => {
 				excludeLocalParticipant={true}
 			/>
 		);
-	}, [layout, isVideoCall]);
+	}, [call, layout, isVideoCall]);
 
 	if (callingState !== CallingState.JOINED) {
 		return (
@@ -334,10 +357,6 @@ const MeetingRoomScheduled = () => {
 
 	return (
 		<section className="relative w-full overflow-hidden pt-4 md:pt-0 text-white bg-dark-2 h-dvh">
-			{call &&
-				participants.length === 1 &&
-				isMeetingOwner &&
-				ongoingCallStatus === "initiate" && <MyCallConnectingUI call={call} />}
 			{showCountdown && countdown && <CountdownDisplay />}
 			<div className="relative flex size-full items-center justify-center transition-all">
 				<div className="flex size-full max-w-[95%] md:max-w-[1000px] items-center transition-all">
@@ -355,13 +374,18 @@ const MeetingRoomScheduled = () => {
 				<TipAnimation amount={tipAmount} />
 			)}
 
-			{!callHasEnded && isMeetingOwner && !showCountdown && call && (
+			{!callHasEnded && isMeetingOwner && !showCountdown && call ? (
 				<ScheduledTimer
 					handleCallRejected={handleCallRejected}
 					callId={call.id}
+					startsAt={call.state.custom.startsAt || call.state.startsAt}
 					callDuration={call.state.custom.duration}
 					participants={participants.length}
 				/>
+			) : (
+				!showCountdown &&
+				call &&
+				participants.length > 1 && <CreatorCallTimer callId={call.id} />
 			)}
 
 			{/* Call Controls */}
