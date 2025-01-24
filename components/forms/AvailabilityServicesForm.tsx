@@ -680,13 +680,14 @@ const AvailabilityServicesForm = ({
 							type="button"
 							variant="outline"
 							className="text-blue-500 border-blue-500 hover:bg-blue-50"
-							onClick={() =>
+							onClick={() => {
 								form.setValue("discountRules", {
 									conditions: ["30 Minutes Call"],
 									discountType: "percentage",
 									discountAmount: 10,
-								})
-							}
+								});
+								form.setValue("timeDuration", 30);
+							}}
 						>
 							Add Discount
 						</Button>

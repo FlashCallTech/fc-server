@@ -11,7 +11,10 @@ import { isValidHexColor } from "@/lib/utils";
 import { audio, chat, video } from "@/constants/icons";
 import AvailabilitySelectionSheet from "./AvailabilitySelectionSheet";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
-import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
+import {
+	SelectedServiceType,
+	useSelectedServiceContext,
+} from "@/lib/context/SelectedServiceContext";
 
 const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 	const [userServices, setUserServices] = useState<AvailabilityService[]>([]);
@@ -21,12 +24,11 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		{}
 	);
 
-	const { getSpecificServiceOffer } = useSelectedServiceContext();
+	const { getSpecificServiceOffer, setSelectedService } =
+		useSelectedServiceContext();
 	const { currentUser, fetchingUser, setAuthenticationSheetOpen } =
 		useCurrentUsersContext();
-	const themeColor = isValidHexColor(creator?.themeSelected)
-		? creator?.themeSelected
-		: "#50A65C";
+
 	const {
 		data: creatorAvailabilityServices,
 		fetchNextPage,
@@ -95,10 +97,28 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		return null;
 	}
 
-	const handleCallClick = () => {
+	const handleCallClick = (
+		service: AvailabilityService,
+		discountApplicable: SelectedServiceType
+	) => {
 		if (!currentUser) {
 			setIsAuthSheetOpen(true);
 		} else {
+			if (discountApplicable) {
+				discountApplicable.discountRules.forEach(
+					({ discountAmount, discountType }) => {
+						if (discountType === "percentage") {
+							setSelectedService(discountApplicable);
+						} else if (
+							discountType === "flat" &&
+							service.basePrice >= discountAmount
+						) {
+							setSelectedService(discountApplicable);
+						}
+					}
+				);
+			}
+
 			setIsSheetOpen(true);
 		}
 	};
@@ -214,7 +234,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 
 								<button
 									className="w-full flex items-center justify-center p-2 pl-3 hoverScaleDownEffect cursor-pointer border-2 border-gray-300 rounded-full"
-									onClick={handleCallClick}
+									onClick={() => handleCallClick(service, discountApplicable)}
 								>
 									<section className="pl-2 w-full flex items-center justify-between">
 										<div className="flex items-center justify-center gap-4">
