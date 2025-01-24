@@ -29,10 +29,10 @@ const OfficialPage = () => {
 				<h1 className="text-2xl font-extrabold text-blue-600 tracking-wide">
 					Thank You for Visiting
 				</h1>
-				<p className="text-base mt-6 text-gray-700 leading-relaxed">
+				<p className="text-base mt-6 text-gray-700 leading-relaxed font-medium">
 					We appreciate your interest! Unfortunately, this page is not
-					available, but don't worry—we're taking you back to the official site
-					shortly.
+					available, but don&apos;t worry—we&apos;re taking you back to the
+					official site shortly.
 				</p>
 				<p className="mt-4 text-sm">
 					Redirecting in{" "}
