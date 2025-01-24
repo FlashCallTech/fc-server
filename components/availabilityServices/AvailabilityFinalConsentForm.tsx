@@ -56,6 +56,7 @@ const AvailabilityFinalConsentForm = ({
 		total: service.basePrice.toFixed(2),
 		currency: service.currency,
 	});
+	const applicableDiscounts = getFinalServices();
 	const { pgHandler } = useScheduledPayment();
 
 	const [preparingTransaction, setPreparingTransaction] = useState(false);
@@ -77,12 +78,17 @@ const AvailabilityFinalConsentForm = ({
 			!service.utilizedBy.some(
 				(clientId) => clientId.toString() === clientUser?._id.toString()
 			) &&
+			!(
+				service.discountRules.discountType === "flat" &&
+				service.discountRules.discountAmount > service.basePrice
+			) &&
 			setIsDiscountUtilized(true);
 
 		const updateTotal = async () => {
 			const { total, currency } = await calculateTotal();
 			setTotalAmount({ total, currency });
 		};
+
 		updateTotal();
 	}, []);
 
@@ -153,16 +159,31 @@ const AvailabilityFinalConsentForm = ({
 
 			if (discountType === "percentage") {
 				total -= (basePrice * discountAmount) / 100;
-			} else if (discountType === "flat") {
+			} else if (discountType === "flat" && total >= discountAmount) {
 				total -= discountAmount;
+			} else {
+				setIsDiscountUtilized(false);
 			}
 		}
 
-		// Add Platform Fee
+		// applicable global discounts
+		if (applicableDiscounts && applicableDiscounts.length > 0) {
+			applicableDiscounts.forEach((discount) => {
+				discount.discountRules.forEach(({ discountAmount, discountType }) => {
+					if (discountType === "percentage") {
+						total -= (basePrice * discountAmount) / 100;
+					} else if (discountType === "flat" && total >= discountAmount) {
+						total -= discountAmount;
+					}
+				});
+			});
+		}
+
+		// Platform Fee
 		const platformFee = 0;
 		total += platformFee;
 
-		// Currency Conversion if required
+		// Currency Conversion
 		if (currency === "USD") {
 			const exchangeRate = await fetchExchangeRate();
 			total = total * exchangeRate;
@@ -609,44 +630,110 @@ const AvailabilityFinalConsentForm = ({
 								</section>
 
 								{isDiscountUtilized && service.discountRules && (
-									<section className="w-full pb-2.5 flex items-center justify-between text-sm text-gray-800">
-										<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												viewBox="0 0 24 24"
-												fill="currentColor"
-												className="size-4"
-											>
-												<path
-													fillRule="evenodd"
-													d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
-													clipRule="evenodd"
-												/>
-											</svg>
-
-											<p className="text-xs whitespace-nowrap">
-												<span className="text-sm ml-1">
-													{service.discountRules.discountType === "percentage"
-														? `${service.discountRules.discountAmount}%`
-														: `${service.currency === "INR" ? "₹" : "$"} ${
-																service.discountRules.discountAmount
-														  }`}{" "}
-													OFF Applied
-												</span>
+									<section
+										className={`${
+											service.discountRules.discountType === "flat" &&
+											service.basePrice <
+												service.discountRules.discountAmount &&
+											"hidden"
+										} w-full pb-2.5 flex items-center justify-between text-sm text-gray-800`}
+									>
+										<>
+											<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													viewBox="0 0 24 24"
+													fill="currentColor"
+													className="size-4"
+												>
+													<path
+														fillRule="evenodd"
+														d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
+														clipRule="evenodd"
+													/>
+												</svg>
+												<p className="ml-1 text-xs">Additional</p>
+												<p className="text-xs whitespace-nowrap">
+													<span className="text-sm">
+														{service.discountRules.discountType === "percentage"
+															? `${service.discountRules.discountAmount}%`
+															: `${service.currency === "INR" ? "₹" : "$"} ${
+																	service.discountRules.discountAmount
+															  }`}{" "}
+														OFF Applied
+													</span>
+												</p>
+											</div>
+											<p className="text-green-1 font-bold">
+												- {service.currency === "INR" ? "₹" : "$"}{" "}
+												{service.discountRules.discountType === "percentage"
+													? (
+															(service.basePrice *
+																service.discountRules.discountAmount) /
+															100
+													  ).toFixed(2)
+													: service.discountRules.discountAmount.toFixed(2)}
 											</p>
-										</div>
-										<p className="text-green-1 font-bold">
-											- {service.currency === "INR" ? "₹" : "$"}{" "}
-											{service.discountRules.discountType === "percentage"
-												? (
-														(service.basePrice *
-															service.discountRules.discountAmount) /
-														100
-												  ).toFixed(2)
-												: service.discountRules.discountAmount.toFixed(2)}
-										</p>
+										</>
 									</section>
 								)}
+
+								{applicableDiscounts &&
+									applicableDiscounts.length > 0 &&
+									applicableDiscounts.map((discount) =>
+										discount.discountRules.map(
+											({ discountAmount, discountType }) => {
+												const isFlatDiscountInvalid =
+													discountType === "flat" &&
+													service.basePrice < discountAmount;
+
+												if (isFlatDiscountInvalid) {
+													return null;
+												}
+
+												return (
+													<section
+														key={`${discountType}-${discountAmount}`}
+														className="w-full pb-2.5 flex items-center justify-between text-sm text-gray-800"
+													>
+														<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																viewBox="0 0 24 24"
+																fill="currentColor"
+																className="size-4"
+															>
+																<path
+																	fillRule="evenodd"
+																	d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
+																	clipRule="evenodd"
+																/>
+															</svg>
+															<p className="text-xs whitespace-nowrap">
+																<span className="text-sm ml-1">
+																	{discountType === "percentage"
+																		? `${discountAmount}%`
+																		: `${
+																				service.currency === "INR" ? "₹" : "$"
+																		  } ${discountAmount}`}{" "}
+																	OFF Applied
+																</span>
+															</p>
+														</div>
+														<p className="text-green-1 font-bold">
+															- {service.currency === "INR" ? "₹" : "$"}{" "}
+															{discountType === "percentage"
+																? (
+																		(service.basePrice * discountAmount) /
+																		100
+																  ).toFixed(2)
+																: discountAmount.toFixed(2)}
+														</p>
+													</section>
+												);
+											}
+										)
+									)}
 
 								<div className="border-t border-[#E5E7EB] w-full" />
 
