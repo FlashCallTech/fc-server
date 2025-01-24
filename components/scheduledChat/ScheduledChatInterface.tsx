@@ -25,6 +25,7 @@ import Countdown from "./Timer";
 const ScheduledChatInterface: React.FC = () => {
 	const [membersCount, setMembersCount] = useState<number>(0);
 	const [chat, setChat] = useState<any>();
+	const [messages, setMessages] = useState<any>();
 	const [text, setText] = useState<string>("");
 	const [isImgUploading, setIsImgUploading] = useState(false);
 	const [isAudioUploading, setIsAudioUploading] = useState(false);
@@ -65,19 +66,28 @@ const ScheduledChatInterface: React.FC = () => {
 	useEffect(() => {
 		if (chatId) {
 			const officialChatDocRef = doc(db, "chats", chatId as string);
-			const unSub = onSnapshot(officialChatDocRef, (doc) => {
+			const messagesDocRef = doc(db, "messages", chatId as string);
+
+			const chatUnSub = onSnapshot(officialChatDocRef, (doc) => {
 				if (doc.exists()) {
 					const data = doc.data();
 					setChat(data);
 					setMembersCount(data?.membersCount ?? 0);
-					if (data.scheduledChatDetails.scheduled === false) {
+					if (data.status === "ended") {
 						router.replace(`/chat-ended/${chatId}/${data?.callId}/${data?.clientId}`);
 					}
 				}
 			});
+			const messageUnSub = onSnapshot(messagesDocRef, (doc) => {
+				if (doc.exists()) {
+					const data = doc.data();
+					setMessages(data.messages);
+				}
+			});
 
 			return () => {
-				unSub();
+				chatUnSub();
+				messageUnSub();
 			};
 		}
 	}, [chatId]);
@@ -221,7 +231,7 @@ const ScheduledChatInterface: React.FC = () => {
 			if (!chatId) {
 				return;
 			}
-			await updateDoc(doc(db, "chats", chatId as string), {
+			await updateDoc(doc(db, "messages", chatId as string), {
 				messages: arrayUnion({
 					senderId: currentUser?._id as string,
 					createdAt: Date.now(),
@@ -261,7 +271,7 @@ const ScheduledChatInterface: React.FC = () => {
 				audioUrl = await handleAudio();
 				setIsAudioUploading(false);
 			}
-			await updateDoc(doc(db, "chats", chatId as string), {
+			await updateDoc(doc(db, "messages", chatId as string), {
 				messages: arrayUnion({
 					senderId: currentUser?._id as string,
 					replyIndex: replyIndex ?? null,
@@ -300,7 +310,7 @@ const ScheduledChatInterface: React.FC = () => {
 
 		try {
 			const audioUploadUrl = await upload(audioBlob, "audio");
-			await updateDoc(doc(db, "chats", chatId as string), {
+			await updateDoc(doc(db, "messages", chatId as string), {
 				messages: arrayUnion({
 					senderId: currentUser?._id as string,
 					replyIndex: replyIndex ?? null,
@@ -480,7 +490,7 @@ const ScheduledChatInterface: React.FC = () => {
 							) : (
 								chat && (
 									<div className="z-20">
-										<Messages chat={chat} currentUserMessageSent={currentUserMessageSent} setReplyIndex={setReplyIndex} setText={setText} />
+										<Messages chat={chat} messages={messages} currentUserMessageSent={currentUserMessageSent} setReplyIndex={setReplyIndex} setText={setText} />
 									</div>
 								)
 							)}

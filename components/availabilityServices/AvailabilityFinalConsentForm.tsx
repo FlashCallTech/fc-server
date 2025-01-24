@@ -23,6 +23,9 @@ import axios from "axios";
 import { success } from "@/constants/icons";
 import useScheduledPayment from "@/hooks/useScheduledPayment";
 import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
+import { collection, doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Timestamp } from "firebase/firestore"; // Import Timestamp
 
 interface params {
 	service: AvailabilityService;
@@ -73,6 +76,10 @@ const AvailabilityFinalConsentForm = ({
 
 	let customDateValue = formattedData.day.split(", ")[1].split(" ") ?? "";
 
+	const chatRef = collection(db, "chats");
+	const scheduledChatsRef = collection(db, "scheduledChats");
+	const DEFAULT_IMAGE_URL: string = "https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7";
+
 	useEffect(() => {
 		service.discountRules &&
 			!service.utilizedBy.some(
@@ -86,6 +93,19 @@ const AvailabilityFinalConsentForm = ({
 		};
 		updateTotal();
 	}, []);
+
+	function maskPhoneNumber(phoneNumber: string) {
+		// Remove the '+91' prefix
+		if (phoneNumber) {
+			let cleanedNumber = phoneNumber.replace("+91", "");
+
+			// Mask the next 5 digits, leaving the first 2 digits unmasked
+			let maskedNumber =
+				cleanedNumber.substring(0, 2) + "*****" + cleanedNumber.substring(7);
+
+			return maskedNumber;
+		}
+	}
 
 	const handlePayPal = async (amountToPay: number): Promise<boolean> => {
 		return new Promise((resolve) => {
@@ -192,8 +212,7 @@ const AvailabilityFinalConsentForm = ({
 						name: fullName,
 						type: "expert",
 						image:
-							creator.photo ||
-							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
+							creator.photo || DEFAULT_IMAGE_URL,
 						phone: creator.phone,
 					},
 					role: "admin",
@@ -204,8 +223,7 @@ const AvailabilityFinalConsentForm = ({
 						name: clientUser.username || "Flashcall Client",
 						type: "client",
 						image:
-							clientUser.photo ||
-							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
+							clientUser.photo || DEFAULT_IMAGE_URL,
 						phone: clientUser.phone,
 					},
 					role: "admin",
@@ -221,11 +239,10 @@ const AvailabilityFinalConsentForm = ({
 			}
 
 			const startsAt = parsedDate.toISOString();
-			const description = `${
-				service.type === "video"
-					? `Scheduled Video Call With Expert ${creator.username}`
-					: `Scheduled Audio Call With Expert ${creator.username}`
-			}`;
+			const description = `${service.type === "video"
+				? `Scheduled Video Call With Expert ${creator.username}`
+				: `Scheduled Audio Call With Expert ${creator.username}`
+				}`;
 
 			await call.getOrCreate({
 				members_limit: 2,
@@ -262,6 +279,7 @@ const AvailabilityFinalConsentForm = ({
 				meetingOwner: clientUser?._id,
 				description: description,
 				members: members,
+				chatId: null,
 			};
 		} catch (error) {
 			Sentry.captureException(error);
@@ -273,6 +291,133 @@ const AvailabilityFinalConsentForm = ({
 			});
 		}
 	};
+
+	const createUpcomingChat = async () => {
+		if (!client || !clientUser) throw new Error("Client or client user is missing.");
+
+		try {
+			const callId = crypto.randomUUID();
+
+			// Create chat members
+			const members = [
+				{
+					user_id: creator?._id,
+					custom: {
+						name: creator?.fullName || "Expert",
+						type: "expert",
+						image: creator?.photo || DEFAULT_IMAGE_URL,
+						phone: creator?.phone,
+					},
+					role: "admin",
+				},
+				{
+					user_id: clientUser?._id,
+					custom: {
+						name: clientUser?.username || "Flashcall Client",
+						type: "client",
+						image: clientUser?.photo || DEFAULT_IMAGE_URL,
+						phone: clientUser?.phone,
+					},
+					role: "admin",
+				},
+			];
+
+			// Parse start time
+			const dateTimeString = `${selectedDay} ${selectedTimeSlot}`;
+			const startsAt = new Date(dateTimeString).toISOString();
+			console.log(startsAt);
+
+			if (!startsAt || isNaN(new Date(startsAt).getTime())) {
+				throw new Error("Invalid date or time format.");
+			}
+
+			const description = `Scheduled Chat With Expert ${creator?.username || "Unknown"}`;
+
+			// Firestore document references
+			const userChatsDocRef = doc(db, "userchats", clientUser?._id);
+			const creatorChatsDocRef = doc(db, "userchats", creator?._id);
+
+			// Fetch Firestore documents
+			const [userChatsDocSnapshot, creatorChatsDocSnapshot] = await Promise.all([
+				getDoc(userChatsDocRef),
+				getDoc(creatorChatsDocRef),
+			]);
+
+			let chatId;
+
+			// Check if a chat already exists
+			if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
+				const userChatsData = userChatsDocSnapshot.data();
+				const creatorChatsData = creatorChatsDocSnapshot.data();
+
+				const existingChat = userChatsData?.chats.find(
+					(chat: any) => chat.receiverId === creator?._id
+				) &&
+					creatorChatsData?.chats.find(
+						(chat: any) => chat.receiverId === clientUser?._id
+					);
+
+				chatId = existingChat?.chatId || doc(chatRef).id;
+			} else {
+				// Initialize Firestore documents if they don't exist
+				await Promise.all([
+					setDoc(userChatsDocRef, { isTyping: false }, { merge: true }),
+					setDoc(creatorChatsDocRef, { isTyping: false }, { merge: true }),
+				]);
+				chatId = doc(chatRef).id;
+			}
+
+			// Prepare discounts
+			const discounts = getFinalServices()?.filter(
+				(discount) => discount.type === "all" || discount.type === "chat"
+			);
+
+			// Create the scheduled chat
+			await setDoc(doc(db, "scheduledChats", callId), {
+				callId,
+				chatId,
+				creatorId: creator?._id,
+				creatorName: creator?.fullName || maskPhoneNumber(creator?.phone as string),
+				creatorPhone: creator?.phone,
+				creatorImg: creator?.photo,
+				clientId: clientUser?._id,
+				clientPhone: clientUser?.phone || "",
+				clientName: clientUser?.fullName || maskPhoneNumber(clientUser?.phone as string),
+				clientImg: clientUser?.photo,
+				client_balance: clientUser?.walletBalance,
+				global: clientUser?.global || false,
+				totalAmount: service.basePrice,
+				paidAmount: totalAmount.total,
+				paid: false,
+				maxDuration: service.timeDuration,
+				clientJoined: false,
+				creatorJoined: false,
+				startTime: Timestamp.fromDate(new Date(startsAt)), // Use Timestamp here
+				status: "upcoming",
+				discounts: discounts || null,
+			});
+
+			return {
+				callId,
+				startsAt,
+				duration: service.timeDuration,
+				meetingOwner: clientUser?._id,
+				description,
+				members,
+				chatId,
+			};
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error creating scheduled chat: ", error);
+
+			toast({
+				variant: "destructive",
+				title: "Failed to create chat",
+				toastStatus: "negative",
+			});
+		}
+	};
+
 
 	const handlePaySchedule = async () => {
 		setPreparingTransaction(true);
@@ -346,15 +491,21 @@ const AvailabilityFinalConsentForm = ({
 			}
 
 			// Step 1: Attempt to create a meeting
-			let callDetails = await createMeeting();
+			let callDetails;
+			if (service.type === "audio" || service.type === "video") {
+				callDetails = await createMeeting();
+			} else {
+				callDetails = await createUpcomingChat();
+			}
+
 			if (!callDetails) {
 				throw new Error("Failed to create meeting");
 			}
-
 			// Step 2: Register the scheduled call
 			const registerUpcomingCallAPI = "/calls/scheduled/createCall";
 			const registerUpcomingCallPayload = {
 				callId: callDetails.callId,
+				chatId: callDetails.chatId,
 				type: service.type,
 				status: "upcoming",
 				meetingOwner: callDetails.meetingOwner,
@@ -385,32 +536,34 @@ const AvailabilityFinalConsentForm = ({
 					callType: service.type,
 				});
 
-				await fetch(`${backendBaseUrl}/calls/registerCall`, {
-					method: "POST",
-					body: JSON.stringify({
-						callId: callDetails.callId as string,
-						type: service.type as string,
-						status: "Scheduled",
-						creator: String(clientUser?._id),
-						members: callDetails.members,
-					}),
-					headers: { "Content-Type": "application/json" },
-				});
+				if (service.type !== "chat") {
+					await fetch(`${backendBaseUrl}/calls/registerCall`, {
+						method: "POST",
+						body: JSON.stringify({
+							callId: callDetails.callId as string,
+							type: service.type as string,
+							status: "Scheduled",
+							creator: String(clientUser?._id),
+							members: callDetails.members,
+						}),
+						headers: { "Content-Type": "application/json" },
+					});
 
-				await updatePastFirestoreSessions(callDetails.callId as string, {
-					callId: callDetails.callId,
-					status: "upcoming",
-					callType: "scheduled",
-					clientId: clientUser?._id as string,
-					expertId: creator._id,
-					isVideoCall: service.type,
-					creatorPhone: creator.phone,
-					clientPhone: clientUser?.global
-						? clientUser?.email
-						: clientUser?.phone,
-					global: clientUser?.global ?? false,
-					discount: getFinalServices(),
-				});
+					await updatePastFirestoreSessions(callDetails.callId as string, {
+						callId: callDetails.callId,
+						status: "upcoming",
+						callType: "scheduled",
+						clientId: clientUser?._id as string,
+						expertId: creator._id,
+						isVideoCall: service.type,
+						creatorPhone: creator.phone,
+						clientPhone: clientUser?.global
+							? clientUser?.email
+							: clientUser?.phone,
+						global: clientUser?.global ?? false,
+						discount: getFinalServices(),
+					});
+				}
 
 				isDiscountUtilized &&
 					(await axios.put(`${backendBaseUrl}/availability/${service._id}`, {
@@ -633,9 +786,8 @@ const AvailabilityFinalConsentForm = ({
 												<span className="text-sm ml-1">
 													{service.discountRules.discountType === "percentage"
 														? `${service.discountRules.discountAmount}%`
-														: `${service.currency === "INR" ? "₹" : "$"} ${
-																service.discountRules.discountAmount
-														  }`}{" "}
+														: `${service.currency === "INR" ? "₹" : "$"} ${service.discountRules.discountAmount
+														}`}{" "}
 													OFF Applied
 												</span>
 											</p>
@@ -644,10 +796,10 @@ const AvailabilityFinalConsentForm = ({
 											- {service.currency === "INR" ? "₹" : "$"}{" "}
 											{service.discountRules.discountType === "percentage"
 												? (
-														(service.basePrice *
-															service.discountRules.discountAmount) /
-														100
-												  ).toFixed(2)
+													(service.basePrice *
+														service.discountRules.discountAmount) /
+													100
+												).toFixed(2)
 												: service.discountRules.discountAmount.toFixed(2)}
 										</p>
 									</section>
@@ -684,9 +836,8 @@ const AvailabilityFinalConsentForm = ({
 											id="wallet"
 											checked={payUsingWallet}
 											onCheckedChange={() => setPayUsingWallet(!payUsingWallet)}
-											className={`${
-												payUsingWallet && "bg-green-500 text-white"
-											} border border-gray-400 size-[20px] p-0.5 rounded-[6px]`}
+											className={`${payUsingWallet && "bg-green-500 text-white"
+												} border border-gray-400 size-[20px] p-0.5 rounded-[6px]`}
 										/>
 										<label
 											htmlFor="terms"
@@ -734,14 +885,13 @@ const AvailabilityFinalConsentForm = ({
 									/>
 								) : (
 									<span className="text-sm">
-										{`Pay ₹ ${
-											parseFloat(totalAmount.total) > walletBalance
-												? (
-														parseFloat(totalAmount.total) -
-														(payUsingWallet ? walletBalance : 0)
-												  ).toFixed(2)
-												: parseFloat(totalAmount.total).toFixed(2)
-										}`}
+										{`Pay ₹ ${parseFloat(totalAmount.total) > walletBalance
+											? (
+												parseFloat(totalAmount.total) -
+												(payUsingWallet ? walletBalance : 0)
+											).toFixed(2)
+											: parseFloat(totalAmount.total).toFixed(2)
+											}`}
 									</span>
 								)}
 							</Button>
