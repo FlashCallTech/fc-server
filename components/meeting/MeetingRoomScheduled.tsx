@@ -34,7 +34,6 @@ import {
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 import ScheduledTimer from "../calls/ScheduledTimer";
-import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
 
 type CallLayoutType = "grid" | "speaker-bottom";
@@ -160,14 +159,7 @@ const MeetingRoomScheduled = () => {
 
 	useEffect(() => {
 		const joinCall = async () => {
-			if (
-				!call ||
-				!currentUser ||
-				hasAlreadyJoined.current ||
-				callingState === CallingState.JOINED ||
-				callingState === CallingState.JOINING ||
-				callHasEnded
-			) {
+			if (!call || !currentUser || hasAlreadyJoined.current || callHasEnded) {
 				return;
 			}
 			try {
@@ -178,50 +170,48 @@ const MeetingRoomScheduled = () => {
 					toast({
 						variant: "destructive",
 						title: "Already in Call",
-						description: "You are already in this meeting in another tab.",
+						description: "You are already in this meeting.",
 						toastStatus: "positive",
 					});
 					router.replace("/");
 					return;
 				}
+
+				await updateFirestoreSessions(client?.user_id as string, {
+					callId: call.id,
+					status: "ongoing",
+					callType: "scheduled",
+					clientId: client?.user_id as string,
+					expertId: expert?.user_id,
+					isVideoCall: call.type === "default" ? "video" : "audio",
+					creatorPhone: expert?.custom?.phone,
+					clientPhone: client?.custom?.phone,
+					global: client?.custom?.phone.includes("+91") ? false : true,
+					discount: getFinalServices(),
+				});
+
+				if (!localStorage.getItem(notificationSentKey)) {
+					if (isMeetingOwner && participants.length < 2) {
+						await sendCallNotification(
+							expert?.custom?.phone as string,
+							callType,
+							currentUser.username,
+							currentUser._id as string,
+							call,
+							"call.ring",
+							fetchFCMToken,
+							sendNotification,
+							backendUrl as string
+						);
+
+						localStorage.setItem(notificationSentKey, "true");
+					}
+				}
+
 				if (callingState === CallingState.IDLE) {
 					await call?.join();
-					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
-
-					await updateFirestoreSessions(client?.user_id as string, {
-						callId: call.id,
-						status: "ongoing",
-						callType: "scheduled",
-						clientId: client?.user_id as string,
-						expertId: expert?.user_id,
-						isVideoCall: call.type === "default" ? "video" : "audio",
-						creatorPhone: expert?.custom?.phone,
-						clientPhone: client?.custom?.phone,
-						global: client?.custom?.phone.includes("+91") ? false : true,
-						discount: getFinalServices(),
-					});
-
-					console.log("Nice: ", call.id, isMeetingOwner, participants.length);
-
-					if (!localStorage.getItem(notificationSentKey)) {
-						if (isMeetingOwner && participants.length < 2) {
-							console.log("Hello");
-							await sendCallNotification(
-								expert?.custom?.phone as string,
-								callType,
-								currentUser.username,
-								currentUser._id as string,
-								call,
-								"call.ring",
-								fetchFCMToken,
-								sendNotification,
-								backendUrl as string
-							);
-
-							localStorage.setItem(notificationSentKey, "true");
-						}
-					}
+					localStorage.setItem(localSessionKey, "joined");
 				}
 			} catch (error) {
 				console.warn("Error Joining Call ", error);
@@ -374,18 +364,16 @@ const MeetingRoomScheduled = () => {
 				<TipAnimation amount={tipAmount} />
 			)}
 
-			{!callHasEnded && isMeetingOwner && !showCountdown && call ? (
+			{!callHasEnded && !showCountdown && call && (
 				<ScheduledTimer
 					handleCallRejected={handleCallRejected}
 					callId={call.id}
+					ownerId={client?.user_id as string}
 					startsAt={call.state.custom.startsAt || call.state.startsAt}
 					callDuration={call.state.custom.duration}
 					participants={participants.length}
+					isMeetingOwner={isMeetingOwner}
 				/>
-			) : (
-				!showCountdown &&
-				call &&
-				participants.length > 1 && <CreatorCallTimer callId={call.id} />
 			)}
 
 			{/* Call Controls */}

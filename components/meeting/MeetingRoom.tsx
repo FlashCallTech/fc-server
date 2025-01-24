@@ -170,7 +170,7 @@ const MeetingRoom = () => {
 					toast({
 						variant: "destructive",
 						title: "Already in Call",
-						description: "You are already in this meeting in another tab.",
+						description: "You are already in this meeting.",
 						toastStatus: "positive",
 					});
 					router.replace("/");
