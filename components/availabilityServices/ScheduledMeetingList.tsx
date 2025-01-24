@@ -49,7 +49,13 @@ const ScheduledMeetingList = ({
 		}
 	}, [inView, hasNextPage, isFetching]);
 
-	const copyToClipboard = (text: string) => {
+	const copyToClipboard = (userCall: ScheduledCallParams) => {
+		let text: string;
+		if(userCall.type === "chat") {
+			text = `${frontendBaseUrl}/scheduledChat/${userCall.chatId}`;
+		} else {
+			text = `${frontendBaseUrl}/meeting/${userCall.callId}`;
+		}
 		navigator.clipboard
 			.writeText(text)
 			.then(() => {
@@ -259,7 +265,7 @@ const ScheduledMeetingList = ({
 													className="max-sm:absolute top-4 right-4 p-2 bg-green-1 rounded-full hoverScaleDownEffect"
 													onClick={() =>
 														copyToClipboard(
-															`${frontendBaseUrl}/meeting/${userCall.callId}`
+															userCall
 														)
 													}
 												>

@@ -258,6 +258,7 @@ export type RegisterCallParams = {
 export type ScheduledCallParams = {
 	_id: string;
 	callId: string;
+	chatId?: string;
 	type: "video" | "audio" | "chat";
 	status: string;
 	meetingOwner: clientUser;
