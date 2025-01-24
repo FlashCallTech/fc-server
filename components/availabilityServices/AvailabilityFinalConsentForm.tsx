@@ -78,7 +78,8 @@ const AvailabilityFinalConsentForm = ({
 
 	const chatRef = collection(db, "chats");
 	const scheduledChatsRef = collection(db, "scheduledChats");
-	const DEFAULT_IMAGE_URL: string = "https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7";
+	const DEFAULT_IMAGE_URL: string =
+		"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7";
 
 	useEffect(() => {
 		service.discountRules &&
@@ -100,11 +101,9 @@ const AvailabilityFinalConsentForm = ({
 	}, []);
 
 	function maskPhoneNumber(phoneNumber: string) {
-		// Remove the '+91' prefix
 		if (phoneNumber) {
 			let cleanedNumber = phoneNumber.replace("+91", "");
 
-			// Mask the next 5 digits, leaving the first 2 digits unmasked
 			let maskedNumber =
 				cleanedNumber.substring(0, 2) + "*****" + cleanedNumber.substring(7);
 
@@ -230,8 +229,7 @@ const AvailabilityFinalConsentForm = ({
 					custom: {
 						name: fullName,
 						type: "expert",
-						image:
-							creator.photo || DEFAULT_IMAGE_URL,
+						image: creator.photo || DEFAULT_IMAGE_URL,
 						phone: creator.phone,
 					},
 					role: "admin",
@@ -241,8 +239,7 @@ const AvailabilityFinalConsentForm = ({
 					custom: {
 						name: clientUser.username || "Flashcall Client",
 						type: "client",
-						image:
-							clientUser.photo || DEFAULT_IMAGE_URL,
+						image: clientUser.photo || DEFAULT_IMAGE_URL,
 						phone: clientUser.phone,
 					},
 					role: "admin",
@@ -258,10 +255,11 @@ const AvailabilityFinalConsentForm = ({
 			}
 
 			const startsAt = parsedDate.toISOString();
-			const description = `${service.type === "video"
-				? `Scheduled Video Call With Expert ${creator.username}`
-				: `Scheduled Audio Call With Expert ${creator.username}`
-				}`;
+			const description = `${
+				service.type === "video"
+					? `Scheduled Video Call With Expert ${creator.username}`
+					: `Scheduled Audio Call With Expert ${creator.username}`
+			}`;
 
 			await call.getOrCreate({
 				members_limit: 2,
@@ -312,7 +310,8 @@ const AvailabilityFinalConsentForm = ({
 	};
 
 	const createUpcomingChat = async () => {
-		if (!client || !clientUser) throw new Error("Client or client user is missing.");
+		if (!client || !clientUser)
+			throw new Error("Client or client user is missing.");
 
 		try {
 			const callId = crypto.randomUUID();
@@ -350,17 +349,18 @@ const AvailabilityFinalConsentForm = ({
 				throw new Error("Invalid date or time format.");
 			}
 
-			const description = `Scheduled Chat With Expert ${creator?.username || "Unknown"}`;
+			const description = `Scheduled Chat With Expert ${
+				creator?.username || "Unknown"
+			}`;
 
 			// Firestore document references
 			const userChatsDocRef = doc(db, "userchats", clientUser?._id);
 			const creatorChatsDocRef = doc(db, "userchats", creator?._id);
 
 			// Fetch Firestore documents
-			const [userChatsDocSnapshot, creatorChatsDocSnapshot] = await Promise.all([
-				getDoc(userChatsDocRef),
-				getDoc(creatorChatsDocRef),
-			]);
+			const [userChatsDocSnapshot, creatorChatsDocSnapshot] = await Promise.all(
+				[getDoc(userChatsDocRef), getDoc(creatorChatsDocRef)]
+			);
 
 			let chatId;
 
@@ -369,9 +369,10 @@ const AvailabilityFinalConsentForm = ({
 				const userChatsData = userChatsDocSnapshot.data();
 				const creatorChatsData = creatorChatsDocSnapshot.data();
 
-				const existingChat = userChatsData?.chats.find(
-					(chat: any) => chat.receiverId === creator?._id
-				) &&
+				const existingChat =
+					userChatsData?.chats.find(
+						(chat: any) => chat.receiverId === creator?._id
+					) &&
 					creatorChatsData?.chats.find(
 						(chat: any) => chat.receiverId === clientUser?._id
 					);
@@ -396,12 +397,14 @@ const AvailabilityFinalConsentForm = ({
 				callId,
 				chatId,
 				creatorId: creator?._id,
-				creatorName: creator?.fullName || maskPhoneNumber(creator?.phone as string),
+				creatorName:
+					creator?.fullName || maskPhoneNumber(creator?.phone as string),
 				creatorPhone: creator?.phone,
 				creatorImg: creator?.photo,
 				clientId: clientUser?._id,
 				clientPhone: clientUser?.phone || "",
-				clientName: clientUser?.fullName || maskPhoneNumber(clientUser?.phone as string),
+				clientName:
+					clientUser?.fullName || maskPhoneNumber(clientUser?.phone as string),
 				clientImg: clientUser?.photo,
 				client_balance: clientUser?.walletBalance,
 				global: clientUser?.global || false,
@@ -436,7 +439,6 @@ const AvailabilityFinalConsentForm = ({
 			});
 		}
 	};
-
 
 	const handlePaySchedule = async () => {
 		setPreparingTransaction(true);
@@ -919,8 +921,9 @@ const AvailabilityFinalConsentForm = ({
 											id="wallet"
 											checked={payUsingWallet}
 											onCheckedChange={() => setPayUsingWallet(!payUsingWallet)}
-											className={`${payUsingWallet && "bg-green-500 text-white"
-												} border border-gray-400 size-[20px] p-0.5 rounded-[6px]`}
+											className={`${
+												payUsingWallet && "bg-green-500 text-white"
+											} border border-gray-400 size-[20px] p-0.5 rounded-[6px]`}
 										/>
 										<label
 											htmlFor="terms"
@@ -968,13 +971,14 @@ const AvailabilityFinalConsentForm = ({
 									/>
 								) : (
 									<span className="text-sm">
-										{`Pay ₹ ${parseFloat(totalAmount.total) > walletBalance
-											? (
-												parseFloat(totalAmount.total) -
-												(payUsingWallet ? walletBalance : 0)
-											).toFixed(2)
-											: parseFloat(totalAmount.total).toFixed(2)
-											}`}
+										{`Pay ₹ ${
+											parseFloat(totalAmount.total) > walletBalance
+												? (
+														parseFloat(totalAmount.total) -
+														(payUsingWallet ? walletBalance : 0)
+												  ).toFixed(2)
+												: parseFloat(totalAmount.total).toFixed(2)
+										}`}
 									</span>
 								)}
 							</Button>
