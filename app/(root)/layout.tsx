@@ -13,13 +13,17 @@ import axios from "axios";
 import Image from "next/image";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import Script from "next/script";
+import { usePathname } from "next/navigation";
+import OfficialPage from "./(home)/official/page";
+import { isAccessiblePage } from "@/lib/utils";
 
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	const [isMounted, setIsMounted] = useState(false);
 	const [region, setRegion] = useState<"India" | "Global" | null>(null);
 	const [isSplashVisible, setIsSplashVisible] = useState(true);
+	const pathname = usePathname();
+
 	useEffect(() => {
-		// Calculate the region based on timezone
 		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 		setRegion(
 			timezone === "Asia/Calcutta" || timezone === "Asia/Kolkata"
@@ -39,6 +43,12 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 			setIsSplashVisible(false);
 		}
 	}, [isMounted]);
+
+	const currentPath = pathname;
+
+	if (!isAccessiblePage(currentPath)) {
+		return <OfficialPage />;
+	}
 
 	const renderContent = () => {
 		if (isSplashVisible) {

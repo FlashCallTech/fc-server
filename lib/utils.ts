@@ -45,6 +45,19 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
+// Restrictions for official content
+
+export const accessibleRoutes = [
+	{
+		path: "/official/meeting",
+		regex: /^\/official\/meeting\/[a-f0-9\-]+\/client\/[a-f0-9\-]+/,
+	},
+];
+
+export const isAccessiblePage = (path: string) => {
+	return accessibleRoutes.some((route) => route.regex.test(path));
+};
+
 // Base URL's
 
 export const frontendBaseUrl = process.env.NEXT_PUBLIC_BASE_URL;

@@ -13,32 +13,32 @@ import MovePageToTop from "@/components/shared/MovePageToTop";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-	title: "Flashcall.me",
-	description: "Book your first consultation",
+	title: "official.me",
+	description: "Welcome to your Official Platform",
 	icons: {
 		icon: "/icons/logo_icon_dark.png",
 	},
 
 	openGraph: {
 		type: "website",
-		url: "https://flashcall.me",
-		title: "FlashCall",
-		description: "Book your first consultation",
+		url: "https://official.me",
+		title: "Official",
+		description: "Welcome to your Official Platform",
 		images: [
 			{
-				url: "/icons/logo_icon_dark.png",
+				url: "/icons/OfficialLogo.png",
 				width: 800,
 				height: 600,
-				alt: "FlashCall Logo",
+				alt: "Official Logo",
 			},
 		],
-		siteName: "Flashcall.me",
+		siteName: "Official.me",
 		locale: "en_US",
 	},
 
 	metadataBase:
 		process.env.NODE_ENV === "production"
-			? new URL("https://flashcall.me")
+			? new URL("https://official.me")
 			: new URL("http://localhost:3000"),
 };
 
