@@ -10,23 +10,29 @@ import { backendBaseUrl, getImageSource, placeholderImages } from "@/lib/utils";
 import DeleteAlert from "@/components/alerts/DeleteAlert";
 import Edit from "@/components/forms/NewEdit";
 import axios from "axios";
-import { UpdateProfileFormSchema, UpdateProfileFormSchemaClient } from "@/lib/validator";
+import {
+	UpdateProfileFormSchema,
+	UpdateProfileFormSchemaClient,
+} from "@/lib/validator";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import GetRandomImage from "@/utils/GetRandomImage";
 
 const UserProfilePage = () => {
-	const { currentUser, fetchingUser, userType, refreshCurrentUser } = useCurrentUsersContext();
+	const { currentUser, fetchingUser, userType, refreshCurrentUser } =
+		useCurrentUsersContext();
 
 	const getInitialState = (): UpdateUserParams => ({
 		id: currentUser?._id ?? "",
-		fullName: (currentUser?.firstName ?? "") + " " + (currentUser?.lastName ?? ""),
+		fullName:
+			(currentUser?.firstName ?? "") + " " + (currentUser?.lastName ?? ""),
 		firstName: currentUser?.firstName ?? "",
 		lastName: currentUser?.lastName ?? "",
-		username: currentUser?.username === currentUser?.phone
-			? currentUser?._id || `${currentUser?._id}`
-			: currentUser?.username || `${currentUser?._id}`,
+		username:
+			(currentUser?.username === currentUser?.phone
+				? currentUser?._id
+				: currentUser?.username) ?? "",
 		profession: currentUser?.profession ?? "",
 		themeSelected: currentUser?.themeSelected ?? "#88D8C0",
 		phone: currentUser?.phone ?? "",
@@ -68,7 +74,8 @@ const UserProfilePage = () => {
 	const [customProfession, setCustomProfession] = useState("");
 
 	const pathname = usePathname();
-	const [initialState, setInitialState] = useState<UpdateUserParams>(getInitialState);
+	const [initialState, setInitialState] =
+		useState<UpdateUserParams>(getInitialState);
 	const [editData, setEditData] = useState(false);
 
 	useEffect(() => {
@@ -119,7 +126,6 @@ const UserProfilePage = () => {
 		fetchThemes();
 	}, []);
 
-
 	// Conditionally select the schema based on user role
 	const schema =
 		userData.role === "creator"
@@ -151,7 +157,7 @@ const UserProfilePage = () => {
 		if (!selectedFile) {
 			const newPhoto =
 				placeholderImages[
-				watchedValues.gender as "male" | "female" | "other"
+					watchedValues.gender as "male" | "female" | "other"
 				] || GetRandomImage();
 
 			if (
@@ -197,16 +203,19 @@ const UserProfilePage = () => {
 									</span>
 									<span className="text-[#6B7280] text-sm font-medium capitalize">
 										{userData.phone
-											? userData.phone.replace(/(\+91)(\d+)/, (match, p1, p2) => `${p1} ${p2}`)
+											? userData.phone.replace(
+													/(\+91)(\d+)/,
+													(match, p1, p2) => `${p1} ${p2}`
+											  )
 											: userData.username
-												? `@${userData.username}`
-												: "@guest"}
+											? `@${userData.username}`
+											: "@guest"}
 									</span>
 								</section>
 								<section className="flex gap-2 justify-start items-center">
 									<DeleteAlert />
 									<button
-										className="flex gap-3 text-sm items-center rounded-lg border-[1px] border-[#16BC88] px-3 py-1 text-[#16BC88] hoverScaleDownEffect"
+										className="flex gap-3 text-sm items-center rounded-full bg-black px-4 py-2 text-white hoverScaleDownEffect"
 										onClick={() => setEditData((prev) => !prev)}
 									>
 										<svg
@@ -230,66 +239,86 @@ const UserProfilePage = () => {
 						</section>
 
 						{/* New section for displaying initial state details */}
-						<section className="flex text-sm flex-col gap-3 w-full text-[#4B5563] p-4 rounded-lg bg-[#F9FAFB] border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] mx-auto space-y-2">
+						<section className="flex text-sm flex-col gap-3 w-full text-[#4B5563] p-4 rounded-lg border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] mx-auto space-y-2">
 							<h2 className="text-lg font-semibold text-black">User Details</h2>
 							{initialState.fullName && (
 								<div className="flex justify-between w-full">
 									Full Name:
-									<span className="font-medium text-[#111827]">{initialState.fullName}</span>
+									<span className="font-medium text-[#111827]">
+										{initialState.fullName}
+									</span>
 								</div>
 							)}
 							{initialState.firstName && (
 								<div className="flex justify-between w-full">
 									First Name:
-									<span className="font-medium text-[#111827]">{initialState.firstName}</span>
+									<span className="font-medium text-[#111827]">
+										{initialState.firstName}
+									</span>
 								</div>
 							)}
 							{initialState.lastName && (
 								<div className="flex justify-between w-full">
 									Last Name:
-									<span className="font-medium text-[#111827]">{initialState.lastName}</span>
+									<span className="font-medium text-[#111827]">
+										{initialState.lastName}
+									</span>
 								</div>
 							)}
 							{initialState.username && (
 								<div className="flex justify-between w-full">
 									Username:
-									<span className="font-medium text-[#111827]">{initialState.username}</span>
+									<span className="font-medium text-[#111827]">
+										{initialState.username}
+									</span>
 								</div>
 							)}
 							{initialState.profession && (
 								<div className="flex justify-between w-full">
 									Profession:
-									<span className="font-medium text-[#111827]">{initialState.profession}</span>
+									<span className="font-medium text-[#111827]">
+										{initialState.profession}
+									</span>
 								</div>
 							)}
 							{initialState.phone && (
 								<div className="flex justify-between w-full">
 									Phone:
-									<span className="font-medium text-[#111827]">{initialState.phone}</span>
+									<span className="font-medium text-[#111827]">
+										{initialState.phone}
+									</span>
 								</div>
 							)}
 							{initialState.role && (
 								<div className="flex justify-between w-full">
 									Role:
-									<span className="font-medium text-[#111827]">{initialState.role}</span>
+									<span className="font-medium text-[#111827]">
+										{initialState.role}
+									</span>
 								</div>
 							)}
 							{initialState.gender && (
 								<div className="flex justify-between w-full">
 									Gender:
-									<span className="font-medium text-[#111827]">{initialState.gender}</span>
+									<span className="font-medium text-[#111827]">
+										{initialState.gender}
+									</span>
 								</div>
 							)}
 							{initialState.dob && (
 								<div className="flex justify-between w-full">
 									Date of Birth:
-									<span className="font-medium text-[#111827]">{initialState.dob}</span>
+									<span className="font-medium text-[#111827]">
+										{initialState.dob}
+									</span>
 								</div>
 							)}
 							{initialState.referredBy && (
 								<div className="flex justify-between w-full">
 									Referred By:
-									<span className="font-medium text-[#111827]">{initialState.referredBy}</span>
+									<span className="font-medium text-[#111827]">
+										{initialState.referredBy}
+									</span>
 								</div>
 							)}
 						</section>

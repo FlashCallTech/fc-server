@@ -517,10 +517,18 @@ const Withdraw: React.FC = () => {
 
 					{isModalOpen && (
 						<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-							<div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-								<h2 className="text-lg font-semibold mb-4">
-									Enter Withdrawal Amount
-								</h2>
+							<div className="bg-white w-full max-w-md rounded-lg shadow-lg p-6">
+								<div className="flex justify-between items-center mb-4">
+									<h2 className="text-lg font-semibold">
+										Enter Withdrawal Amount
+									</h2>
+									<button
+										className="text-gray-500 text-xl hover:text-gray-700"
+										onClick={closeModal}
+									>
+										&times;
+									</button>
+								</div>
 								<input
 									type="text"
 									value={withdrawAmount}
@@ -528,7 +536,7 @@ const Withdraw: React.FC = () => {
 									placeholder="Enter amount"
 									className="p-2 border rounded w-full mb-4"
 								/>
-								<div className="flex justify-end gap-4">
+								<div className="flex justify-end gap-4 mt-6">
 									<Button
 										onClick={closeModal}
 										className="bg-gray-300 text-black"
@@ -558,7 +566,7 @@ const Withdraw: React.FC = () => {
 						{/* Sticky Balance and Recharge Section */}
 						<section className="flex flex-col gap-5 items-center justify-center md:items-start">
 							{/* Balance Section */}
-							{isStickyVisible && (
+							{/* {isStickyVisible && (
 								<div className="w-full flex gap-1 text-xl items-start font-semibold justify-start">
 									<p>
 										Welcome,
@@ -568,24 +576,31 @@ const Withdraw: React.FC = () => {
 										{creatorUser?.firstName} {creatorUser?.lastName}
 									</p>
 								</div>
-							)}
+							)} */}
 
 							{/* Recharge Section */}
-							<div className="flex flex-col gap-5 w-full items-center justify-center lg:items-start">
+							<div className="flex flex-col gap-5 w-full justify-center items-start">
 								{isStickyVisible && (
 									<>
-										<div className="w-full flex flex-row justify-between p-6 mb-6 items-center rounded-lg bg-white border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
+										<div
+											style={{
+												background:
+													"linear-gradient(0deg, rgba(0, 0, 0, 0.001), rgba(0, 0, 0, 0.001)), rgba(22, 188, 136, 0.1)",
+												boxShadow: "0px 1px 2px 0px rgba(0, 0, 0, 0.05)",
+											}}
+											className="w-full flex flex-row justify-between p-6 mb-6 items-center rounded-lg"
+										>
 											<div className="flex flex-col items-start pl-1">
 												<span className="text-[#6B7280] text-sm">
 													Wallet Balance
 												</span>
-												<p className="text-[#16BC88] text-[30px] font-bold p-0">
+												<p className="text-green-600 text-[30px] font-bold p-0">
 													₹ {walletBalance.toFixed(2)}
 												</p>
 											</div>
 											<Button
 												onClick={openModal}
-												className="right-0 w-auto px-4 py-3 shadow bg-[#16BC88] text-white font-bold leading-4 text-sm rounded-full hoverScaleDownEffect"
+												className="right-0 w-auto px-4 py-3 shadow bg-black text-white font-bold leading-4 text-sm rounded-full hoverScaleDownEffect"
 											>
 												Withdraw
 											</Button>
@@ -601,7 +616,7 @@ const Withdraw: React.FC = () => {
 								<div className="flex items-center gap-3 text-xs font-bold text-[#4B5563]">
 									<div className="relative">
 										<select
-											className="border-[1px] bg-white border-solid border-[#E5E7EB] px-6 py-3 rounded-lg focus:outline-none hover:cursor-pointer hoverScaleDownEffect pr-10 appearance-none"
+											className="border-[1px] bg-white border-solid border-[#E5E7EB] px-6 py-3 rounded-full focus:outline-none hover:cursor-pointer hoverScaleDownEffect pr-10 appearance-none"
 											value={selectedOption}
 											onChange={(e) => setSelectedOption(e.target.value)}
 										>
@@ -670,10 +685,10 @@ const Withdraw: React.FC = () => {
 											onClick={() => {
 												setBtn(filter as "all" | "credit" | "debit");
 											}}
-											className={`capitalize px-4 py-2 border-[1px] border-solid border-[#E5E7EB] rounded-lg ${
+											className={`capitalize px-4 py-2 border-[1px] border-solid border-[#E5E7EB] rounded-full ${
 												filter === btn
-													? "bg-gray-800 text-white"
-													: "bg-white text-[#4B5563] dark:bg-gray-700 dark:text-white hoverScaleDownEffect"
+													? "bg-black text-white"
+													: "bg-white text-[#4B5563] hoverScaleDownEffect"
 											}`}
 										>
 											{filter === "all"
@@ -691,7 +706,7 @@ const Withdraw: React.FC = () => {
 						<section className="flex flex-col gap-3 border-[1px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg p-6 w-full">
 							<span>Total Earnings</span>
 							<span
-								className={`text-[#16BC88] ${
+								className={`text-green-600 ${
 									isFetching ? "text-sm" : "text-[30px]"
 								} font-bold`}
 							>{`${
@@ -860,10 +875,18 @@ const Withdraw: React.FC = () => {
 
 					{isModalOpen && (
 						<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-							<div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-								<h2 className="text-lg font-semibold mb-4">
-									Enter Withdrawal Amount
-								</h2>
+							<div className="bg-white w-full max-w-md rounded-lg shadow-lg p-6">
+								<div className="flex justify-between items-center mb-4">
+									<h2 className="text-lg font-semibold">
+										Enter Withdrawal Amount
+									</h2>
+									<button
+										className="text-gray-500 text-xl hover:text-gray-700"
+										onClick={closeModal}
+									>
+										&times;
+									</button>
+								</div>
 								<input
 									type="text"
 									value={withdrawAmount}
@@ -871,16 +894,16 @@ const Withdraw: React.FC = () => {
 									placeholder="Enter amount"
 									className="p-2 border rounded w-full mb-4"
 								/>
-								<div className="flex justify-end gap-4">
+								<div className="flex justify-end gap-4 mt-6">
 									<Button
 										onClick={closeModal}
-										className="bg-gray-300 text-black"
+										className="text-gray-700 border border-gray-300 rounded-full hoverScaleDownEffect"
 									>
 										Cancel
 									</Button>
 									<Button
 										onClick={handleWithdraw}
-										className="bg-[#16BC88] text-white font-bold"
+										className="text-white bg-black rounded-full hoverScaleDownEffect"
 									>
 										Confirm
 									</Button>

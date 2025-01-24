@@ -131,6 +131,7 @@ export const CallTimerProvider = ({
 					const currentTime = new Date();
 
 					await setDoc(callDocRef, {
+						callType: "instant",
 						startTime: currentTime.toISOString(),
 						timeLeft: initialMaxCallDuration,
 						timeUtilized: 0,

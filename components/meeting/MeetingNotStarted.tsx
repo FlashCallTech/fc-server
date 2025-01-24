@@ -17,6 +17,7 @@ const MeetingNotStarted = ({
 	onJoinCall: () => void;
 }) => {
 	const [remainingTime, setRemainingTime] = useState<string | null>(null);
+	const [joiningCall, setJoiningCall] = useState(false);
 	const { currentUser } = useCurrentUsersContext();
 	const videoCall = call.type === "default";
 	const meetingDescription = call.state.custom.description;
@@ -51,7 +52,10 @@ const MeetingNotStarted = ({
 
 	useEffect(() => {
 		if (remainingTime === "00:00:00") {
-			handleJoinCall();
+			setJoiningCall(true);
+			setTimeout(() => {
+				handleJoinCall();
+			}, 1000);
 		}
 	}, [remainingTime]);
 
@@ -75,7 +79,7 @@ const MeetingNotStarted = ({
 				<div className="size-full flex flex-col items-center justify-center">
 					{/* Heading Section */}
 					<div className="text-center mb-6">
-						<h1 className="text-3xl font-bold text-green-400">
+						<h1 className="text-3xl font-bold text-green-1">
 							Upcoming Meeting
 						</h1>
 						<p className="text-sm text-gray-400">
@@ -102,7 +106,7 @@ const MeetingNotStarted = ({
 								className="rounded-full w-14 h-14 object-cover"
 							/>
 							<div className="flex flex-col items-start justify-center">
-								<span className="text-lg text-green-400">
+								<span className="text-lg text-green-1">
 									{currentUser?.username}
 								</span>
 								<span className="text-sm text-gray-400">
@@ -127,9 +131,7 @@ const MeetingNotStarted = ({
 
 					{/* Tips Section */}
 					<div className="p-4 bg-gray-800 rounded-lg shadow-md">
-						<h4 className="text-lg font-semibold text-green-400">
-							Meeting Tips
-						</h4>
+						<h4 className="text-lg font-semibold text-green-1">Meeting Tips</h4>
 						<ul className="list-disc list-inside text-sm text-gray-400">
 							<li>Ensure your microphone and camera are enabled.</li>
 							<li>Find a quiet place with good lighting.</li>
@@ -147,19 +149,30 @@ const MeetingNotStarted = ({
 					>
 						{remainingTime && remainingTime !== "00:00:00" ? (
 							<>
-								<h3 className="text-xl font-bold text-green-400">Time Left</h3>
+								<h3 className="text-xl font-bold text-green-1">Time Left</h3>
 								{formatCountdown(remainingTime)}
 							</>
 						) : (
-							<div className="text-white flex flex-col items-center justify-center w-full gap-2.5 max-w-[15rem]">
-								<p className="text-xl font-bold text-green-400">
+							<div className="text-white flex flex-col items-center justify-center w-full gap-3 max-w-[15rem] my-2">
+								<p className="text-lg font-bold text-green-1">
 									Meeting is ready to start!
 								</p>
 								<button
-									className="w-full bg-green-500 px-4 py-2 rounded-full hoverScaleDownEffect"
+									className="w-full flex items-center justify-center bg-green-1 px-4 py-2 rounded-full hoverScaleDownEffect"
 									onClick={handleJoinCall}
 								>
-									Join Now
+									{joiningCall ? (
+										<Image
+											src="/icons/loading-circle.svg"
+											alt="Loading..."
+											width={1000}
+											height={1000}
+											className="size-6"
+											priority
+										/>
+									) : (
+										"Join Now"
+									)}
 								</button>
 							</div>
 						)}

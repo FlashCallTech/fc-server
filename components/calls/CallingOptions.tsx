@@ -745,7 +745,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 								{service.discountApplicable && service.discountRules ? (
 									service.discountRules[0].discountType === "percentage" ||
 									(service.discountRules[0].discountType === "flat" &&
-										Number(service.rate) <
+										Number(service.rate) >
 											service.discountRules[0].discountAmount) ? (
 										<>
 											<s className="text-gray-300 text-xs">

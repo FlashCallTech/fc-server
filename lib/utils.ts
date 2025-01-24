@@ -584,6 +584,7 @@ type UpdateSessionParams = {
 	creatorPhone?: string;
 	clientPhone?: string;
 	global?: boolean;
+	discount?: any;
 };
 
 export const updateFirestoreSessions = async (
@@ -597,7 +598,7 @@ export const updateFirestoreSessions = async (
 
 		if (params.callId) ongoingCallUpdate.callId = params.callId;
 		if (params.status) ongoingCallUpdate.status = params.status;
-		if (params.callType) ongoingCallUpdate.status = params.callType;
+		if (params.callType) ongoingCallUpdate.callType = params.callType;
 		if (params.clientId) ongoingCallUpdate.clientId = params.clientId;
 		if (params.expertId) ongoingCallUpdate.expertId = params.expertId;
 		if (params.isVideoCall) ongoingCallUpdate.isVideoCall = params.isVideoCall;
@@ -605,6 +606,47 @@ export const updateFirestoreSessions = async (
 			ongoingCallUpdate.creatorPhone = params.creatorPhone;
 		if (params?.clientPhone) ongoingCallUpdate.clientPhone = params.clientPhone;
 		if (params?.global) ongoingCallUpdate.global = params.global ?? false;
+		if (params?.discount) ongoingCallUpdate.discount = params.discount;
+
+		if (SessionDoc.exists()) {
+			const existingOngoingCall = SessionDoc.data()?.ongoingCall || {};
+			await updateDoc(SessionDocRef, {
+				ongoingCall: {
+					...existingOngoingCall,
+					...ongoingCallUpdate,
+				},
+			});
+		} else {
+			await setDoc(SessionDocRef, {
+				ongoingCall: ongoingCallUpdate,
+			});
+		}
+	} catch (error) {
+		Sentry.captureException(error);
+		console.error("Error updating Firestore Sessions: ", error);
+	}
+};
+
+export const updatePastFirestoreSessions = async (
+	callId: string,
+	params: UpdateSessionParams
+) => {
+	try {
+		const SessionDocRef = doc(db, "pastSessions", callId);
+		const SessionDoc = await getDoc(SessionDocRef);
+		const ongoingCallUpdate: { [key: string]: any } = {};
+
+		if (params.callId) ongoingCallUpdate.callId = callId || params.callId;
+		if (params.status) ongoingCallUpdate.status = params.status;
+		if (params.callType) ongoingCallUpdate.callType = params.callType;
+		if (params.clientId) ongoingCallUpdate.clientId = params.clientId;
+		if (params.expertId) ongoingCallUpdate.expertId = params.expertId;
+		if (params.isVideoCall) ongoingCallUpdate.isVideoCall = params.isVideoCall;
+		if (params.creatorPhone)
+			ongoingCallUpdate.creatorPhone = params.creatorPhone;
+		if (params?.clientPhone) ongoingCallUpdate.clientPhone = params.clientPhone;
+		if (params?.global) ongoingCallUpdate.global = params.global ?? false;
+		if (params?.discount) ongoingCallUpdate.discount = params.discount;
 
 		if (SessionDoc.exists()) {
 			const existingOngoingCall = SessionDoc.data()?.ongoingCall || {};

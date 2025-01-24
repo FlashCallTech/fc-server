@@ -36,6 +36,8 @@ const UserFeedbacks = () => {
 		}
 	}, [userType, creatorURL, router]);
 
+	console.log(feedbackData);
+
 	useEffect(() => {
 		if (inView && hasNextPage && !isFetching) {
 			fetchNextPage();
@@ -136,7 +138,7 @@ const UserFeedbacks = () => {
 					/>
 				)}
 
-				{!hasNextPage && !isFetching && creatorUser && (
+				{!hasNextPage && !isFetching && creatorUser && feedbackData?.pages[0].totalFeedbacks > 0 && (
 					<div className="text-center text-gray-500 py-4">
 						You have reached the end of the list
 					</div>

@@ -199,7 +199,7 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 					<div className="grid grid-cols-2 gap-4 justify-between">
 						<Button
 							onClick={onClose}
-							className="text-black rounded-md px-8 bg-gray-200 hover:bg-gray-400 hover:text-white w-full"
+							className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-full hoverScaleDownEffect"
 						>
 							Cancel
 						</Button>
@@ -208,8 +208,8 @@ const PriceEditModal: React.FC<PriceEditModalProps> = ({
 							onClick={handleSave}
 							className={`${notSaved
 									? "bg-black/20 !cursor-not-allowed"
-									: "bg-[#16BC88] text-white hoverScaleDownEffect"
-								}  rounded-md px-8 w-full`}
+									: "bg-black text-white hoverScaleDownEffect"
+								}  rounded-full px-8 w-full`}
 						>
 							Save
 						</Button>

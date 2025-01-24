@@ -641,14 +641,14 @@ const PaymentSettings = () => {
 											resetStates()
 											setIsAddBankModalOpen(true)
 										}}
-											className="flex gap-3 text-sm items-center rounded-lg border-[1px] border-[#16BC88] px-3 py-1 text-[#16BC88] hoverScaleDownEffect">
+											className="flex gap-3 text-sm items-center rounded-full bg-black text-white px-4 py-2 hoverScaleDownEffect">
 											<svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="16" height="16" viewBox="0 0 16 16"><defs><clipPath id="master_svg0_3_05263"><rect x="0" y="0" width="16" height="16" rx="0" /></clipPath></defs><g clipPath="url(#master_svg0_3_05263)"><g transform="matrix(1,0,0,-1,0,32.68752670288086)"><g><path d="M14.8955,31.65626335144043Q14.3274,32.18756335144043,13.6331,32.18756335144043Q12.9389,32.18756335144043,12.3708,31.65626335144043L11.4241,30.71876335144043L14.5168,27.65626335144043L15.4635,28.59376335144043Q16,29.15626335144043,16,29.84376335144043Q16,30.53126335144043,15.4635,31.09376335144043L14.8955,31.65626335144043ZM5.42801,24.78126335144043Q5.14398,24.50001335144043,5.01775,24.09376335144043L4.07101,21.34376335144043Q3.94477,20.90626335144043,4.26035,20.56251335144043Q4.6075,20.25001335144043,5.04931,20.37501335144043L7.85799,21.31251335144043Q8.23669,21.43751335144043,8.52071,21.71876335144043L13.8225,26.96876335144043L10.7298,30.03126335144043L5.42801,24.78126335144043ZM3.02959,30.34376335144043Q1.7357,30.31256335144043,0.883629,29.46876335144043Q0.0315582,28.624963351440428,0,27.34376335144043L0,19.34376335144043Q0.0315582,18.06251335144043,0.883629,17.21876335144043Q1.7357,16.37501335144043,3.02959,16.34376335144043L11.1085,16.34376335144043Q12.4024,16.37501335144043,13.2544,17.21876335144043Q14.1065,18.06251335144043,14.1381,19.34376335144043L14.1381,22.34376335144043Q14.1381,22.78126335144043,13.854,23.06251335144043Q13.57,23.34376335144043,13.1282,23.34376335144043Q12.6864,23.34376335144043,12.4024,23.06251335144043Q12.1183,22.78126335144043,12.1183,22.34376335144043L12.1183,19.34376335144043Q12.1183,18.90626335144043,11.8343,18.62501335144043Q11.5503,18.34376335144043,11.1085,18.34376335144043L3.02959,18.34376335144043Q2.58777,18.34376335144043,2.30375,18.62501335144043Q2.01972,18.90626335144043,2.01972,19.34376335144043L2.01972,27.34376335144043Q2.01972,27.78126335144043,2.30375,28.06256335144043Q2.58777,28.34376335144043,3.02959,28.34376335144043L6.05917,28.34376335144043Q6.50099,28.34376335144043,6.78501,28.624963351440428Q7.06903,28.90626335144043,7.06903,29.34376335144043Q7.06903,29.78126335144043,6.78501,30.06256335144043Q6.50099,30.34376335144043,6.05917,30.34376335144043L3.02959,30.34376335144043Z" fill="currentColor" fillOpacity="1" /></g></g></g></svg>
 											<span>Edit</span>
 										</button>
 									)}
 								</section>
 								{details?.bankDetails ? (
-									<section className="flex text-sm flex-col gap-3 text-[#4B5563] p-4 rounded-lg bg-[#F9FAFB] border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
+									<section className="flex text-sm flex-col gap-3 text-[#4B5563] p-4 rounded-lg border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
 										<div className="flex justify-between">
 											<span>Account Holder</span>
 											<span className="font-medium text-[#111827]">{details?.bankDetails.name}</span>
@@ -667,7 +667,7 @@ const PaymentSettings = () => {
 										</div>
 									</section>
 								) : (
-									<section className="p-8 border-2 border-spacing-4 border-dotted border-gray-300 bg-gray-100 rounded-lg flex flex-col items-center gap-6">
+									<section className="p-8 border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg flex flex-col items-center gap-6">
 										<div className="p-5 bg-gray-200 rounded-full flex justify-center items-center">
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
@@ -694,7 +694,7 @@ const PaymentSettings = () => {
 												resetStates()
 												setIsAddBankModalOpen(true)
 											}}
-											className="flex text-sm items-center gap-2 text-white bg-[#16BC88] rounded-lg px-6 py-2 hoverScaleDownEffect"
+											className="flex text-sm items-center gap-2 bg-black text-white rounded-full px-6 py-2 hoverScaleDownEffect"
 										>
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
@@ -758,7 +758,7 @@ const PaymentSettings = () => {
 											resetStates()
 											setIsUPIModalOpen(true)
 										}}
-											className="flex gap-3 text-sm items-center rounded-lg border-[1px] border-[#16BC88] px-3 py-1 text-[#16BC88] hoverScaleDownEffect"
+											className="flex gap-3 text-sm items-center rounded-full px-4 py-2 bg-black text-white hoverScaleDownEffect"
 										>
 											<svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="16" height="16" viewBox="0 0 16 16"><defs><clipPath id="master_svg0_3_05263"><rect x="0" y="0" width="16" height="16" rx="0" /></clipPath></defs><g clipPath="url(#master_svg0_3_05263)"><g transform="matrix(1,0,0,-1,0,32.68752670288086)"><g><path d="M14.8955,31.65626335144043Q14.3274,32.18756335144043,13.6331,32.18756335144043Q12.9389,32.18756335144043,12.3708,31.65626335144043L11.4241,30.71876335144043L14.5168,27.65626335144043L15.4635,28.59376335144043Q16,29.15626335144043,16,29.84376335144043Q16,30.53126335144043,15.4635,31.09376335144043L14.8955,31.65626335144043ZM5.42801,24.78126335144043Q5.14398,24.50001335144043,5.01775,24.09376335144043L4.07101,21.34376335144043Q3.94477,20.90626335144043,4.26035,20.56251335144043Q4.6075,20.25001335144043,5.04931,20.37501335144043L7.85799,21.31251335144043Q8.23669,21.43751335144043,8.52071,21.71876335144043L13.8225,26.96876335144043L10.7298,30.03126335144043L5.42801,24.78126335144043ZM3.02959,30.34376335144043Q1.7357,30.31256335144043,0.883629,29.46876335144043Q0.0315582,28.624963351440428,0,27.34376335144043L0,19.34376335144043Q0.0315582,18.06251335144043,0.883629,17.21876335144043Q1.7357,16.37501335144043,3.02959,16.34376335144043L11.1085,16.34376335144043Q12.4024,16.37501335144043,13.2544,17.21876335144043Q14.1065,18.06251335144043,14.1381,19.34376335144043L14.1381,22.34376335144043Q14.1381,22.78126335144043,13.854,23.06251335144043Q13.57,23.34376335144043,13.1282,23.34376335144043Q12.6864,23.34376335144043,12.4024,23.06251335144043Q12.1183,22.78126335144043,12.1183,22.34376335144043L12.1183,19.34376335144043Q12.1183,18.90626335144043,11.8343,18.62501335144043Q11.5503,18.34376335144043,11.1085,18.34376335144043L3.02959,18.34376335144043Q2.58777,18.34376335144043,2.30375,18.62501335144043Q2.01972,18.90626335144043,2.01972,19.34376335144043L2.01972,27.34376335144043Q2.01972,27.78126335144043,2.30375,28.06256335144043Q2.58777,28.34376335144043,3.02959,28.34376335144043L6.05917,28.34376335144043Q6.50099,28.34376335144043,6.78501,28.624963351440428Q7.06903,28.90626335144043,7.06903,29.34376335144043Q7.06903,29.78126335144043,6.78501,30.06256335144043Q6.50099,30.34376335144043,6.05917,30.34376335144043L3.02959,30.34376335144043Z" fill="currentColor" fillOpacity="1" /></g></g></g></svg>
 											<span>Edit</span>
@@ -766,14 +766,14 @@ const PaymentSettings = () => {
 									)}
 								</section>
 								{initialBankDetails?.upiId ? (
-									<section className="flex flex-col gap-3 text-[#4B5563] p-4 rounded-lg bg-[#F9FAFB] border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
+									<section className="flex flex-col gap-3 text-[#4B5563] p-4 rounded-lg border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
 										<div className="flex text-sm justify-between">
 											<span>UPI ID</span>
 											<span className="font-medium text-[#111827]">{initialBankDetails?.upiId}</span>
 										</div>
 									</section>
 								) : (
-									<section className="p-8 border-2 border-spacing-4 border-dotted border-gray-300 bg-gray-100 rounded-lg flex flex-col items-center gap-6">
+									<section className="p-8 border-2 border-spacing-4 border-dotted border-gray-300 rounded-lg flex flex-col items-center gap-6">
 										<div className="p-[21px] bg-gray-200 rounded-full flex justify-center items-center">
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
@@ -800,7 +800,7 @@ const PaymentSettings = () => {
 												resetStates()
 												setIsUPIModalOpen(true)
 											}}
-											className="flex items-center text-sm gap-2 text-white bg-[#16BC88] rounded-lg px-6 py-2 hoverScaleDownEffect"
+											className="flex items-center text-sm gap-2 bg-black text-white rounded-lg px-6 py-2 hoverScaleDownEffect"
 										>
 											<svg
 												xmlns="http://www.w3.org/2000/svg"

@@ -158,54 +158,54 @@ const AvailabilityServiceCards = ({
 									className="absolute top-4 right-4"
 								/>
 								<div className="size-full p-4 flex flex-col justify-between">
-									<div>
-										<div className="flex items-start justify-start gap-4">
-											<Image
-												width={80}
-												height={80}
-												src={service.photo}
-												alt={service.title}
-												className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-											/>
-											<div className="flex flex-col items-start">
-												<h3 className="text-lg font-semibold text-gray-800">
-													{service.title}
-												</h3>
-												<p className="text-sm text-gray-600">
-													{service.description
-														? getClampedText(service.description, isExpanded)
-														: "No Description Provided"}
+									<div className="flex items-start justify-start gap-4">
+										<Image
+											width={80}
+											height={80}
+											src={service.photo}
+											alt={service.title}
+											className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+										/>
+										<div className="flex flex-col items-start">
+											<h3 className="text-lg font-semibold text-gray-800">
+												{service.title}
+											</h3>
+											<p className="text-sm text-gray-600 mt-1">
+												{service.description
+													? getClampedText(service.description, isExpanded)
+													: "No Description Provided"}
 
-													{service.description &&
-														!isExpanded &&
-														service.description.length > 100 && (
-															<span className="text-sm font-semibold">
-																<button
-																	onClick={() => toggleReadMore(index)}
-																	className="text-sm hover:opacity-80"
-																>
-																	Read more
-																</button>
-															</span>
-														)}
-												</p>
+												{service.description &&
+													!isExpanded &&
+													service.description.length > 100 && (
+														<span className="text-sm font-semibold">
+															<button
+																onClick={() => toggleReadMore(index)}
+																className="text-sm hover:opacity-80"
+															>
+																Read more
+															</button>
+														</span>
+													)}
+											</p>
 
-												{isExpanded && (
-													<button
-														onClick={() => toggleReadMore(index)}
-														className="text-sm font-semibold hoverScaleDownEffect mt-2"
-													>
-														Show Less
-													</button>
-												)}
+											{isExpanded && (
+												<button
+													onClick={() => toggleReadMore(index)}
+													className="text-sm font-semibold hoverScaleDownEffect mt-2"
+												>
+													Show Less
+												</button>
+											)}
 
-												<p className="mt-2 text-sm font-medium text-gray-500">
-													Duration: {service.timeDuration} minutes
-												</p>
-												<p className="text-sm font-medium text-gray-500 capitalize">
-													Included Services: {service.type}
-												</p>
+											<p className="mt-2 text-sm font-medium text-gray-500">
+												Duration: {service.timeDuration} minutes
+											</p>
+											<p className="text-sm font-medium text-gray-500 capitalize">
+												Included Services: {service.type}
+											</p>
 
+											{service.discountRules && (
 												<p className="text-sm font-medium text-gray-500">
 													Discount:{" "}
 													<span className="text-green-600 font-bold">
@@ -219,12 +219,8 @@ const AvailabilityServiceCards = ({
 														)}
 													</span>
 												</p>
-											</div>
+											)}
 										</div>
-
-										<p className="text-sm text-gray-500 mt-4">
-											Extra Details: {service.extraDetails}
-										</p>
 									</div>
 
 									{/* Footer */}

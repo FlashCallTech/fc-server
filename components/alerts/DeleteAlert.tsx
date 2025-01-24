@@ -136,10 +136,10 @@ const DeleteAlert = () => {
 	};
 
 	return (
-		<div className="flex justify-center items-center w-fit flex-col gap-7 text-black border-[1px] border-red-500 rounded-lg px-3 py-1">
+		<div className="flex justify-center items-center w-fit flex-col gap-7 text-black bg-red-500 rounded-full px-4 py-2">
 			{/* Other profile content */}
 			<button
-				className="text-red-500 flex items-center justify-center gap-2 hoverScaleDownEffect"
+				className="text-white flex items-center justify-center gap-2 hoverScaleDownEffect"
 				onClick={() => setShowDeleteDialog(true)} // Trigger dialog on click
 			>
 				<svg
@@ -222,14 +222,14 @@ const DeleteAlert = () => {
 								variant="outline"
 								onClick={() => setShowDeleteDialog(false)}
 								disabled={loading}
-								className="hoverScaleDownEffect text-[#A7A8A1] hover:border border-gray-300 hover:bg-gray-50"
+								className="hoverScaleDownEffect rounded-full text-gray-700 border border-gray-300"
 							>
 								Cancel
 							</Button>
 							<Button
 								onClick={handleDeleteUser}
 								disabled={loading}
-								className="border border-gray-300 bg-black text-white hoverScaleDownEffect"
+								className="bg-black rounded-full text-white hoverScaleDownEffect"
 							>
 								{loading ? "Deleting..." : "Confirm Delete"}
 							</Button>

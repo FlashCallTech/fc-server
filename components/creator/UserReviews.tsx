@@ -58,9 +58,9 @@ const UserReviews = ({
 						<span className="text-lg">Please try again later.</span>
 					</div>
 				) : (
-					<section className="flex flex-col">
+					<section className="flex flex-col items-center justify-center">
 						{feedbackData && feedbackData?.pages[0]?.length === 0 ? (
-							<section className="size-full grid gap-5 items-center">
+							<section className="size-full grid gap-5 items-center mb-4">
 								{/* No Feedback Indication */}
 								<section className="flex flex-col px-4 rounded-[24px] w-full mx-auto h-[100px] border border-b-2 border-gray-300 justify-center items-center gap-2.5">
 									<svg

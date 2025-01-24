@@ -160,7 +160,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 										/>
 									</svg>
 
-									<p className=" text-xs whitespace-nowrap font-medium">
+									<div className=" text-xs whitespace-nowrap font-medium">
 										<span className="text-sm ml-1">
 											{discountApplicable.discountRules[0].discountType ===
 											"percentage"
@@ -172,7 +172,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 												  }`}{" "}
 											OFF Applied
 										</span>
-									</p>
+									</div>
 								</div>
 							)}
 							<div className="w-full flex flex-col xl:flex-row items-start xl:items-end justify-between gap-2">
@@ -183,7 +183,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 										<span className="font-bold text-lg">{service.title}</span>
 									</div>
 
-									<p className="text-base">
+									<div className="text-base">
 										{service.description
 											? getClampedText(service.description, isExpanded)
 											: "No Description Provided"}
@@ -200,7 +200,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 													</button>
 												</span>
 											)}
-									</p>
+									</div>
 
 									{isExpanded && (
 										<button
