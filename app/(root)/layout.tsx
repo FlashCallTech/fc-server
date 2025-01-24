@@ -44,9 +44,7 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 		}
 	}, [isMounted]);
 
-	const currentPath = pathname;
-
-	if (!isAccessiblePage(currentPath)) {
+	if (!isAccessiblePage(pathname)) {
 		return <OfficialPage />;
 	}
 
