@@ -13,7 +13,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
-import CallTimer from "../calls/CallTimer";
+import CallTimer from "../official/CallTimer";
 import { useToast } from "../ui/use-toast";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
@@ -21,16 +21,11 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import SwitchCameraType from "../calls/SwitchCameraType";
 import AudioDeviceList from "../calls/AudioDeviceList";
 import CustomParticipantViewUI from "../calls/CustomParticipantViewUI";
-import CreatorCallTimer from "../creator/CreatorCallTimer";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
 import { Cursor, Typewriter } from "react-simple-typewriter";
-import { doc, getFirestore, onSnapshot } from "firebase/firestore";
-import { CallTimerProvider } from "@/lib/context/CallTimerContext";
-import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import TipModal from "../calls/TipModal";
-import MyCallConnectingUI from "./MyCallConnectigUI";
+
 import { backendBaseUrl } from "@/lib/utils";
 import useWarnOnUnload from "@/hooks/useWarnOnUnload";
 
@@ -38,7 +33,6 @@ type CallLayoutType = "grid" | "speaker-bottom";
 
 const NoParticipantsView = () => (
 	<section className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center whitespace-nowrap flex flex-col items-center justify-center">
-		{/* <p className="text-white text-xl">No other participants in the call</p> */}
 		<div className="size-full flex items-center justify-center">
 			<h1
 				className="text-xl md:text-2xl font-semibold"
@@ -63,14 +57,6 @@ const NoParticipantsView = () => (
 	</section>
 );
 
-const TipAnimation = ({ amount }: { amount: number }) => {
-	return (
-		<div className="absolute top-6 left-6 sm:top-4 sm:left-4 z-40 w-fit rounded-md px-4 py-2 h-10 bg-[#ffffff4d] text-white flex items-center justify-center">
-			<p>Tip {`₹ ${amount}`}</p>
-		</div>
-	);
-};
-
 // Custom hook to track screen size
 const useScreenSize = () => {
 	const [isMobile, setIsMobile] = useState(false);
@@ -80,7 +66,7 @@ const useScreenSize = () => {
 	};
 
 	useEffect(() => {
-		handleResize(); // Set initial value
+		handleResize();
 		window.addEventListener("resize", handleResize);
 		return () => window.removeEventListener("resize", handleResize);
 	}, []);
@@ -102,15 +88,11 @@ export const isMobileDevice = () => {
 const MeetingRoom = () => {
 	const { useCallCallingState, useCallEndedAt, useParticipants } =
 		useCallStateHooks();
-	const { currentUser, userType, ongoingCallStatus } = useCurrentUsersContext();
-	const { walletBalance, setWalletBalance, updateWalletBalance } =
-		useWalletBalanceContext();
+	const { currentUser } = useCurrentUsersContext();
 
 	const hasAlreadyJoined = useRef(false);
 	const [showParticipants, setShowParticipants] = useState(false);
 	const [showAudioDeviceList, setShowAudioDeviceList] = useState(false);
-	const [tipReceived, setTipReceived] = useState(false);
-	const [tipAmount, setTipAmount] = useState(0);
 	const call = useCall();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
@@ -124,7 +106,6 @@ const MeetingRoom = () => {
 	const [showCountdown, setShowCountdown] = useState(false);
 	const [countdown, setCountdown] = useState<number | null>(null);
 	const [hasVisited, setHasVisited] = useState(false);
-	const firestore = getFirestore();
 
 	const countdownDuration = 30;
 
@@ -135,11 +116,29 @@ const MeetingRoom = () => {
 		await call?.endCall().catch((err) => console.warn(err));
 	};
 
+	const expert = call?.state?.members?.find(
+		(member: any) => member.custom.type === "expert"
+	);
+
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
-		if (currentUser?._id) {
+		let callData = {
+			client_id: call?.state?.createdBy?.id || "unknown_client",
+			influencer_id:
+				expert?.user_id ||
+				call?.state?.members?.[0]?.user_id ||
+				"unknown_influencer",
+			started_at: call?.state?.startedAt || new Date().toISOString(),
+			ended_at: call?.state?.endedAt || new Date().toISOString(),
+			meeting_id: call?.id || "unknown_meeting",
+		};
+
+		try {
 			navigator.sendBeacon(
-				`${backendBaseUrl}/user/setCallStatus/${currentUser._id}`
+				`${backendBaseUrl}/official/call/end/${call?.id || "unknown_meeting"}`,
+				JSON.stringify(callData)
 			);
+		} catch (error) {
+			console.error("Error sending beacon:", error);
 		}
 	});
 
@@ -190,33 +189,6 @@ const MeetingRoom = () => {
 			joinCall();
 		}
 	}, [call, callingState, currentUser, callHasEnded]);
-
-	useEffect(() => {
-		if (userType === "creator") {
-			const expert = call?.state?.members?.find(
-				(member) => member.custom.type === "expert"
-			);
-			const userTipsRef = doc(firestore, "userTips", expert?.user_id as string);
-
-			const unsubscribe = onSnapshot(userTipsRef, async (doc) => {
-				const data = doc.data();
-				if (data) {
-					const currentTip = data[call?.id as string];
-					if (currentTip) {
-						setTipAmount(currentTip.amount);
-						setTipReceived(true);
-						setTimeout(() => {
-							setTipReceived(false);
-						}, 5000);
-					} else {
-						console.log("No tip for this call ID:", call?.id);
-					}
-				}
-			});
-
-			return () => unsubscribe();
-		}
-	}, [userType, call]);
 
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout | null = null;
@@ -320,10 +292,6 @@ const MeetingRoom = () => {
 
 	return (
 		<section className="relative w-full overflow-hidden pt-4 md:pt-0 text-white bg-dark-2 h-dvh">
-			{call &&
-				participants.length < 2 &&
-				isMeetingOwner &&
-				ongoingCallStatus === "initiate" && <MyCallConnectingUI call={call} />}
 			{showCountdown && countdown && <CountdownDisplay />}
 			<div className="relative flex size-full items-center justify-center transition-all">
 				<div className="flex size-full max-w-[95%] md:max-w-[1000px] items-center transition-all">
@@ -337,40 +305,14 @@ const MeetingRoom = () => {
 				)}
 			</div>
 
-			{userType === "creator" && tipReceived && (
-				<TipAnimation amount={tipAmount} />
+			{!callHasEnded && isMeetingOwner && !showCountdown && call && (
+				<CallTimer
+					handleCallRejected={handleCallRejected}
+					callId={call.id}
+					callDuration={call.state.custom.duration}
+					participants={participants.length}
+				/>
 			)}
-
-			<CallTimerProvider
-				isVideoCall={isVideoCall}
-				isMeetingOwner={isMeetingOwner}
-				call={call}
-				participants={participants.length}
-			>
-				{!callHasEnded && isMeetingOwner && !showCountdown && call ? (
-					<CallTimer
-						handleCallRejected={handleCallRejected}
-						isVideoCall={isVideoCall}
-						callId={call.id}
-					/>
-				) : (
-					!showCountdown &&
-					call &&
-					participants.length > 1 && <CreatorCallTimer callId={call.id} />
-				)}
-
-				{isMeetingOwner && (
-					<section className="pl-4 absolute bottom-[5.75rem] left-4 z-50 w-fit">
-						<TipModal
-							walletBalance={walletBalance}
-							setWalletBalance={setWalletBalance}
-							updateWalletBalance={updateWalletBalance}
-							isVideoCall={isVideoCall}
-							callId={call?.id as string}
-						/>
-					</section>
-				)}
-			</CallTimerProvider>
 
 			{/* Call Controls */}
 

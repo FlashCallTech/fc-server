@@ -5,7 +5,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { fetchFCMToken, sendNotification } from "@/lib/utils";
 
 import { useEffect, useRef, useState } from "react";
-import MeetingRoom from "../official/MeetingRoom";
+import MeetingRoom from "./MeetingRoom";
 import { useToast } from "../ui/use-toast";
 import ContentLoading from "../shared/ContentLoading";
 
@@ -84,9 +84,9 @@ const MeetingSetup = () => {
 				}
 			}
 
-			await call.leave();
-			await call.join();
-			localStorage.setItem(localSessionKey, "joined");
+			// await call.leave();
+			// await call.join();
+			// localStorage.setItem(localSessionKey, "joined");
 			setIsSetupComplete(true);
 		} catch (error) {
 			console.log(error);
