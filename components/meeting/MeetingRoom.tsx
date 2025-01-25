@@ -107,7 +107,7 @@ const MeetingRoom = () => {
 	const [countdown, setCountdown] = useState<number | null>(null);
 	const [hasVisited, setHasVisited] = useState(false);
 
-	const countdownDuration = 30;
+	const countdownDuration = 60;
 
 	const isMobile = useScreenSize();
 	const mobileDevice = isMobileDevice();
