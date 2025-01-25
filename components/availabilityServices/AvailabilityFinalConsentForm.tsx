@@ -255,6 +255,11 @@ const AvailabilityFinalConsentForm = ({
 			}
 
 			const startsAt = parsedDate.toISOString();
+			const startsAtDate = new Date(parsedDate.toISOString());
+			const endsAt = new Date(
+				startsAtDate.getTime() + service.timeDuration * 60000
+			).toISOString();
+
 			const description = `${
 				service.type === "video"
 					? `Scheduled Video Call With Expert ${creator.username}`
@@ -292,6 +297,7 @@ const AvailabilityFinalConsentForm = ({
 			return {
 				callId: call.id,
 				startsAt: startsAt,
+				endsAt: endsAt,
 				duration: service.timeDuration,
 				meetingOwner: clientUser?._id,
 				description: description,
@@ -343,7 +349,10 @@ const AvailabilityFinalConsentForm = ({
 			// Parse start time
 			const dateTimeString = `${selectedDay} ${selectedTimeSlot}`;
 			const startsAt = new Date(dateTimeString).toISOString();
-			console.log(startsAt);
+			const startsAtDate = new Date(startsAt);
+			const endsAt = new Date(
+				startsAtDate.getTime() + service.timeDuration * 60000
+			).toISOString();
 
 			if (!startsAt || isNaN(new Date(startsAt).getTime())) {
 				throw new Error("Invalid date or time format.");
@@ -422,6 +431,7 @@ const AvailabilityFinalConsentForm = ({
 			return {
 				callId,
 				startsAt,
+				endsAt,
 				duration: service.timeDuration,
 				meetingOwner: clientUser?._id,
 				description,
@@ -572,7 +582,9 @@ const AvailabilityFinalConsentForm = ({
 
 					await updatePastFirestoreSessions(callDetails.callId as string, {
 						callId: callDetails.callId,
-						status: "upcoming",
+						status: "initiated",
+						startsAt: callDetails.startsAt,
+						endsAt: callDetails.endsAt,
 						callType: "scheduled",
 						clientId: clientUser?._id as string,
 						expertId: creator._id,
@@ -582,7 +594,7 @@ const AvailabilityFinalConsentForm = ({
 							? clientUser?.email
 							: clientUser?.phone,
 						global: clientUser?.global ?? false,
-						discount: getFinalServices(),
+						discount: applicableDiscounts,
 					});
 				}
 

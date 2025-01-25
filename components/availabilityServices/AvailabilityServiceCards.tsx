@@ -57,7 +57,7 @@ const AvailabilityServiceCards = ({
 	const removeService = async (serviceId: string) => {
 		try {
 			setDeletingService(true);
-			await axios.delete(`${backendBaseUrl}/services/${serviceId}`);
+			await axios.delete(`${backendBaseUrl}/availability/${serviceId}`);
 			setShowDeleteServiceAlert(false);
 			toast({
 				variant: "destructive",
