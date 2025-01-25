@@ -87,7 +87,7 @@ const formSchema = z.object({
 		.string()
 		.min(10, "Description must be at least 10 characters."),
 	photo: z.string().optional(),
-	type: z.enum(["all", "audio", "video", "chat"], {
+	type: z.enum(["audio", "video", "chat"], {
 		required_error: "Service type is required.",
 	}),
 	timeDuration: z
@@ -152,7 +152,7 @@ const AvailabilityServicesForm = ({
 						description: "",
 						photo:
 							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
-						type: "all",
+						type: "video",
 						isActive: true,
 						timeDuration: 15,
 						basePrice: 10,

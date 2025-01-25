@@ -585,6 +585,8 @@ type UpdateSessionParams = {
 	clientPhone?: string;
 	global?: boolean;
 	discount?: any;
+	startsAt?: string;
+	endsAt?: string;
 };
 
 export const updateFirestoreSessions = async (
@@ -638,6 +640,8 @@ export const updatePastFirestoreSessions = async (
 
 		if (params.callId) ongoingCallUpdate.callId = callId || params.callId;
 		if (params.status) ongoingCallUpdate.status = params.status;
+		if (params.startsAt) ongoingCallUpdate.status = params.startsAt;
+		if (params.endsAt) ongoingCallUpdate.status = params.endsAt;
 		if (params.callType) ongoingCallUpdate.callType = params.callType;
 		if (params.clientId) ongoingCallUpdate.clientId = params.clientId;
 		if (params.expertId) ongoingCallUpdate.expertId = params.expertId;
