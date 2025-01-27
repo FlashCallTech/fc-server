@@ -27,7 +27,7 @@ const ServicePreview = ({ service }: { service: DiscountService }) => {
 			<p className="text-gray-500 mb-6">
 				This is how your campaign will appear
 			</p>
-			<div className="w-full grid grid-cols-1 md:grid-cols-2 3xl:grid-cols-4 gap-4">
+			<div className="w-full grid grid-cols-1 gap-4">
 				<div className="w-full relative shadow-md border rounded-lg p-4 hover:shadow-lg transition-shadow duration-200 ease-in-out">
 					<div
 						className={`absolute top-4 right-4 px-2.5 py-1 rounded-full ${
