@@ -11,6 +11,7 @@ import { useToast } from "../ui/use-toast";
 import { Switch } from "../ui/switch";
 import { divide } from "lodash";
 import PayPerMinuteCallsCards from "./PayPerMinuteCallsCards";
+import Link from "next/link";
 
 const AvailabilityServiceCards = ({
 	creator,
@@ -128,6 +129,8 @@ const AvailabilityServiceCards = ({
 		}));
 	};
 
+	const creatorURL = localStorage.getItem("creatorURL");
+
 	return (
 		<>
 			<DeleteCreatorServiceAlert
@@ -140,7 +143,30 @@ const AvailabilityServiceCards = ({
 
 			<div className="flex flex-col size-full gap-5 pb-4 pt-2">
 				<div className="w-full flex items-center justify-between flex-wrap gap-2.5">
-					<h2 className="text-2xl font-bold">Service Management</h2>
+					<section className="w-fit flex items-center gap-4">
+						<Link
+							href={`${creatorURL ? creatorURL : "/home"}`}
+							className="lg:hidden text-xl font-bold hoverScaleDownEffect"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								strokeWidth={1.5}
+								stroke="currentColor"
+								className="size-6"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M15.75 19.5 8.25 12l7.5-7.5"
+								/>
+							</svg>
+						</Link>
+						<h1 className="text-xl md:text-2xl font-bold whitespace-nowrap">
+							Service Management
+						</h1>
+					</section>
 					<div className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect">
 						{isAvailabilityServiceSheetOpen ? (
 							<svg

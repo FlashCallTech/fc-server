@@ -56,6 +56,31 @@ export const newSidebarLinksCreator = [
 		label: "Transaction History",
 		protected: true,
 	},
+	,
+	{
+		imgURL: "/creator/upcoming.svg",
+		route: "/upcoming",
+		label: "Scheduled",
+		protected: true,
+	},
+	{
+		imgURL: "/creator/calendar.svg",
+		route: "/calendar",
+		label: "Calendar",
+		protected: true,
+	},
+	{
+		imgURL: "/creator/discountCampaign.svg",
+		route: "/campaign/discount",
+		label: "Discount Campaigns",
+		protected: true,
+	},
+	{
+		imgURL: "/creator/serviceManagement.svg",
+		route: "/service-management",
+		label: "Service Management",
+		protected: true,
+	},
 	{
 		imgURL: "/creator/feedback.svg",
 		route: "/userFeedbacks",
