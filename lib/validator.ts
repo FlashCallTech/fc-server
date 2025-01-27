@@ -1,6 +1,93 @@
 import * as z from "zod";
 const usernameRegex = /^[a-zA-Z0-9_\-+]+$/;
 
+export const discountServiceFormSchema = z.object({
+	title: z.string().min(2, "Title must be at least 2 characters."),
+	description: z
+		.string()
+		.min(10, "Description must be at least 10 characters."),
+	photo: z.string().optional(),
+	type: z.enum(["all", "audio", "video", "chat"], {
+		required_error: "Service type is required.",
+	}),
+	isActive: z.boolean({
+		required_error: "isActive is required.",
+	}),
+	currency: z.enum(["INR", "USD"], {
+		required_error: "Currency is required.",
+	}),
+	discountRules: z
+		.array(
+			z.object({
+				conditions: z
+					.array(z.string())
+					.nonempty("At least one condition is required."),
+				discountType: z.enum(["percentage", "flat"]),
+				discountAmount: z.union([
+					z.number({
+						required_error: "Discount amount is required.",
+					}),
+					z.literal(null),
+				]),
+			})
+		)
+		.optional(),
+	extraDetails: z.string().optional(),
+});
+
+export type DiscountService = z.infer<typeof discountServiceFormSchema>;
+
+export const availabilityServiceFormSchema = z.object({
+	title: z.string().min(2, "Title must be at least 2 characters."),
+	description: z
+		.string()
+		.min(10, "Description must be at least 10 characters."),
+	photo: z.string().optional(),
+	type: z.enum(["audio", "video", "chat"], {
+		required_error: "Service type is required.",
+	}),
+	timeDuration: z
+		.number()
+		.int()
+		.positive("Duration must be a positive number.")
+		.min(15, "Duration must be at least 15 minutes.")
+		.optional(),
+	basePrice: z.preprocess(
+		(value) => (value === null || value === undefined ? NaN : value),
+		z
+			.number({
+				required_error: "Base price is required.",
+				invalid_type_error: "Base price must be a valid number.",
+			})
+			.int()
+			.positive("Price must be greater than 0.")
+			.min(10, "Price must be greater than 10.")
+	),
+	isActive: z.boolean({
+		required_error: "isActive is required.",
+	}),
+	currency: z.enum(["INR", "USD"], {
+		required_error: "Currency is required.",
+	}),
+	discountRules: z
+		.object({
+			conditions: z
+				.array(z.string())
+				.nonempty("At least one condition is required."),
+			discountType: z.enum(["percentage", "flat"]),
+			discountAmount: z.union([
+				z.number({
+					required_error: "Discount amount is required.",
+				}),
+				z.literal(null),
+			]),
+		})
+		.optional(),
+	extraDetails: z.string().optional(),
+});
+
+export type AvailabilityService = z.infer<typeof availabilityServiceFormSchema>;
+
 export const UpdateProfileFormSchema = z.object({
 	firstName: z
 		.string()
@@ -69,7 +156,10 @@ export const enterAmountSchema = z.object({
 export const enterGlobalAmountSchema = z.object({
 	rechargeAmount: z
 		.string()
-		.refine((val) => parseFloat(val) >= 0.1, "Amount must be at least 0.1 dollar")
+		.refine(
+			(val) => parseFloat(val) >= 0.1,
+			"Amount must be at least 0.1 dollar"
+		)
 		.refine(
 			(val) => parseFloat(val) <= 100000,
 			"Amount must be at most 1,00,000 dollars"

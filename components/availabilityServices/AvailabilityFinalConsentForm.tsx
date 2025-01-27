@@ -288,11 +288,11 @@ const AvailabilityFinalConsentForm = ({
 				},
 			});
 
-			toast({
-				variant: "destructive",
-				title: `Meeting scheduled on ${customDateValue} from ${formattedData.timeRange}`,
-				toastStatus: "positive",
-			});
+			// toast({
+			// 	variant: "destructive",
+			// 	title: `Meeting scheduled on ${customDateValue} from ${formattedData.timeRange}`,
+			// 	toastStatus: "positive",
+			// });
 
 			return {
 				callId: call.id,
