@@ -9,9 +9,24 @@ import { backendBaseUrl, formatDateTime } from "@/lib/utils";
 import DeleteCreatorServiceAlert from "../alerts/DeleteCreatorServiceAlert";
 import { useToast } from "../ui/use-toast";
 import { Switch } from "../ui/switch";
-import { divide } from "lodash";
 import PayPerMinuteCallsCards from "./PayPerMinuteCallsCards";
 import Link from "next/link";
+
+const useScreenSize = () => {
+	const [isMobile, setIsMobile] = useState(false);
+
+	const handleResize = () => {
+		setIsMobile(window.innerWidth < 400);
+	};
+
+	useEffect(() => {
+		handleResize(); // Set initial value
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
+
+	return isMobile;
+};
 
 const AvailabilityServiceCards = ({
 	creator,
@@ -45,6 +60,8 @@ const AvailabilityServiceCards = ({
 	const [expandedStates, setExpandedStates] = useState<Record<number, boolean>>(
 		{}
 	);
+
+	const isMobile = useScreenSize();
 
 	const [displayServiceType, setDisplayServiceType] = useState<
 		"all" | "payPerMinute" | "scheduled"
@@ -113,9 +130,13 @@ const AvailabilityServiceCards = ({
 		}
 	};
 
-	const getClampedText = (text: string, isExpanded: boolean) => {
+	const getClampedText = (
+		text: string,
+		isExpanded: boolean,
+		length?: number
+	) => {
 		if (!text) return;
-		const charLen = 100;
+		const charLen = length ?? 100;
 		if (text.length > charLen && !isExpanded) {
 			return text.slice(0, charLen) + "... ";
 		}
@@ -293,11 +314,13 @@ const AvailabilityServiceCards = ({
 														height={80}
 														src={service.photo}
 														alt={service.title}
-														className="w-12 h-12 object-cover rounded-lg border border-gray-200"
+														className="self-start w-12 h-12 object-cover rounded-lg border border-gray-200"
 													/>
 													<div className="flex flex-col">
 														<h3 className="-mt-1 text-lg font-semibold text-gray-800">
-															{service.title}
+															{isMobile
+																? getClampedText(service.title, false, 20)
+																: service.title}
 														</h3>
 														<p className="text-sm text-[#6B7280]">
 															# {service._id}

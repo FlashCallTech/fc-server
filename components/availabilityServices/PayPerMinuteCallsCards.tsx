@@ -1,17 +1,35 @@
 "use client";
 
-import { audio, chat, serviceIcon, video } from "@/constants/icons";
+import { serviceIcon } from "@/constants/icons";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { backendBaseUrl, updateFirestoreCallServices } from "@/lib/utils";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Switch } from "../ui/switch";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import axios from "axios";
 
+const useScreenSize = () => {
+	const [isMobile, setIsMobile] = useState(false);
+
+	const handleResize = () => {
+		setIsMobile(window.innerWidth < 400);
+	};
+
+	useEffect(() => {
+		handleResize(); // Set initial value
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
+
+	return isMobile;
+};
+
 const PayPerMinuteCallsCards = () => {
 	const { creatorUser } = useCurrentUsersContext();
+	const isMobile = useScreenSize();
+
 	const [services, setServices] = useState([
 		{
 			label: "videoCall" as "videoCall" | "audioCall" | "chat",
@@ -47,6 +65,19 @@ const PayPerMinuteCallsCards = () => {
 			globalRate: creatorUser?.globalChatRate,
 		},
 	]);
+
+	const getClampedText = (
+		text: string,
+		isExpanded: boolean,
+		length?: number
+	) => {
+		if (!text) return;
+		const charLen = length ?? 100;
+		if (text.length > charLen && !isExpanded) {
+			return text.slice(0, charLen) + "... ";
+		}
+		return text;
+	};
 
 	const handleToggle = async (
 		service: "videoCall" | "audioCall" | "chat",
@@ -126,11 +157,13 @@ const PayPerMinuteCallsCards = () => {
 										"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7"
 									}
 									alt={service.title}
-									className="w-12 h-12 object-cover rounded-lg border border-gray-200"
+									className="self-start w-12 h-12 object-cover rounded-lg border border-gray-200"
 								/>
 								<div className="flex flex-col items-start justify-center">
 									<h3 className="-mt-1 text-lg font-semibold text-gray-800">
-										{service.title}
+										{isMobile
+											? getClampedText(service.title, false, 20)
+											: service.title}
 									</h3>
 									<p className="text-sm text-[#9CA3AF]">
 										{service.description}
