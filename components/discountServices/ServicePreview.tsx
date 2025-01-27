@@ -181,6 +181,7 @@ const ServicePreview = ({ service }: { service: DiscountService }) => {
 								{service.type === "all" ? (
 									["video", "audio", "chat"].map((type) => (
 										<span
+											key={type}
 											className={`p-2 text-sm border transition-all rounded-full ${
 												service.isActive
 													? "bg-[#F0FDF4] text-[#16A34A]"
