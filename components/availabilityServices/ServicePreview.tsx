@@ -4,13 +4,35 @@ import { serviceIcon } from "@/constants/icons";
 import { formatDateTime } from "@/lib/utils";
 import { AvailabilityService } from "@/lib/validator";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+
+const useScreenSize = () => {
+	const [isMobile, setIsMobile] = useState(false);
+
+	const handleResize = () => {
+		setIsMobile(window.innerWidth < 400);
+	};
+
+	useEffect(() => {
+		handleResize(); // Set initial value
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
+
+	return isMobile;
+};
 
 const ServicePreview = ({ service }: { service: AvailabilityService }) => {
 	const [isExpanded, setIsExpanded] = useState(false);
-	const getClampedText = (text: string, isExpanded: boolean) => {
+	const isMobile = useScreenSize();
+
+	const getClampedText = (
+		text: string,
+		isExpanded: boolean,
+		length?: number
+	) => {
 		if (!text) return;
-		const charLen = 100;
+		const charLen = length ?? 100;
 		if (text.length > charLen && !isExpanded) {
 			return text.slice(0, charLen) + "... ";
 		}
@@ -34,7 +56,9 @@ const ServicePreview = ({ service }: { service: AvailabilityService }) => {
 								: "bg-[#FFEDD5] text-[#9A3412]"
 						}  text-sm hoverScaleDownEffect flex items-center gap-1`}
 					>
-						{service.isActive ? "Active" : "Disabled"}
+						<span className="max-xm:hidden">
+							{service.isActive ? "Active" : "Disabled"}
+						</span>
 						{service.isActive ? (
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -73,11 +97,13 @@ const ServicePreview = ({ service }: { service: AvailabilityService }) => {
 									"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7"
 								}
 								alt={service.title}
-								className="w-12 h-12 object-cover rounded-lg border border-gray-200"
+								className="self-start w-12 h-12 object-cover rounded-lg border border-gray-200"
 							/>
 							<div className="flex flex-col items-start justify-center">
 								<h3 className="-mt-1 text-lg font-semibold text-gray-800">
-									{service.title}
+									{isMobile
+										? getClampedText(service.title, false, 20)
+										: service.title}
 								</h3>
 								{service.discountRules && (
 									<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
@@ -183,7 +209,9 @@ const ServicePreview = ({ service }: { service: AvailabilityService }) => {
 								</p>
 							</div>
 							<div className="h-full mt-2 flex items-end gap-2 justify-center">
-								<p className="text-sm text-[#4B5563]">Selected Service</p>
+								<p className="max-xm:hidden text-sm text-[#4B5563]">
+									Selected Service
+								</p>
 
 								<span
 									className={`p-2 text-sm border transition-all rounded-full ${

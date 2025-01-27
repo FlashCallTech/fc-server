@@ -328,7 +328,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																viewBox="0 0 24 24"
 																strokeWidth={1.5}
 																stroke="currentColor"
-																className="size-4 mr-1"
+																className="max-xm:hidden size-4 mr-1"
 															>
 																<path
 																	strokeLinecap="round"
@@ -353,7 +353,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 															viewBox="0 0 24 24"
 															strokeWidth={1.5}
 															stroke="currentColor"
-															className="size-4 mr-1"
+															className="max-xm:hidden size-4 mr-1"
 														>
 															<path
 																strokeLinecap="round"
