@@ -174,7 +174,7 @@ const ClientSideDiscountheet = ({
 			<Dialog open={isDiscountModalOpen} onOpenChange={onOpenChange}>
 				<DialogContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
-					className="flex flex-col items-center justify-start w-full max-h-[90vh] xl:max-w-[444px] outline-none border-none rounded-xl bg-white mx-auto px-7 !pt-0 pb-5 overflow-y-auto no-scrollbar max-w-[95%]"
+					className="flex flex-col items-center justify-start w-full max-h-[90vh] md:max-w-[444px] outline-none border-none rounded-xl bg-white mx-auto px-7 !pt-0 pb-5 overflow-y-auto no-scrollbar max-w-[95%]"
 				>
 					<DialogHeader className="flex flex-col items-center justify-center w-full pt-5">
 						<DialogTitle>

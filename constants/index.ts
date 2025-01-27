@@ -126,6 +126,24 @@ export const sidebarLinksCreator = [
 		protected: true,
 	},
 	{
+		imgURL: "/icons/calendar.svg",
+		route: "/calendar",
+		label: "Calendar",
+		protected: true,
+	},
+	{
+		imgURL: "/icons/discount.svg",
+		route: "/campaign/discount",
+		label: "Discount Campaigns",
+		protected: true,
+	},
+	{
+		imgURL: "/icons/serviceManagement.svg",
+		route: "/service-management",
+		label: "Service Management",
+		protected: true,
+	},
+	{
 		imgURL: "/icons/favorites.svg",
 		route: "/userFeedbacks",
 		label: "User Feedback's",
@@ -135,12 +153,6 @@ export const sidebarLinksCreator = [
 		imgURL: "/icons/blocked.svg",
 		route: "/blocked-accounts",
 		label: "Blocked Users",
-		protected: true,
-	},
-	{
-		imgURL: "/icons/calendar.svg",
-		route: "/calendar",
-		label: "Calendar",
 		protected: true,
 	},
 	{

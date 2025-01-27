@@ -280,7 +280,11 @@ export const useGetUserServices = (
 	clientId?: string,
 	clientType?: string,
 	fetchBestOffers?: boolean,
-	filter?: "all" | "audio" | "video" | "chat" | ""
+	filter?: "all" | "audio" | "video" | "chat" | "",
+	startDate?: string,
+	endDate?: string,
+	discountType?: "percentage" | "flat",
+	isActive?: boolean
 ) => {
 	const limit = 10;
 
@@ -294,6 +298,10 @@ export const useGetUserServices = (
 			fetchAll,
 			requestFrom,
 			fetchBestOffers,
+			startDate,
+			endDate,
+			discountType,
+			isActive,
 		],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
@@ -309,6 +317,10 @@ export const useGetUserServices = (
 						fetchAll,
 						requestFrom,
 						fetchBestOffers,
+						startDate,
+						endDate,
+						discountType,
+						isActive,
 					},
 				}
 			);
@@ -321,8 +333,8 @@ export const useGetUserServices = (
 		},
 		getNextPageParam: (lastPage, allPages) => {
 			if (fetchAll) return null;
-			const totalPages = lastPage.pagination.pages;
-			const nextPage = allPages.length + 1;
+			const totalPages = lastPage?.pagination?.pages;
+			const nextPage = allPages?.length + 1;
 			return nextPage <= totalPages ? nextPage : null;
 		},
 		initialPageParam: 1,
