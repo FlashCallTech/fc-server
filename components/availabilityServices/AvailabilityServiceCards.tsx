@@ -241,7 +241,7 @@ const AvailabilityServiceCards = ({
 				{(displayServiceType === "all" ||
 					displayServiceType === "payPerMinute") && (
 					<>
-						<h2 className="text-xl font-bold">Pay Per Minute Services</h2>
+						<h2 className="text-xl font-bold mt-4">Pay Per Minute Services</h2>
 						<div
 							className={`grid ${
 								userServices && userServices.length === 0
@@ -257,7 +257,7 @@ const AvailabilityServiceCards = ({
 				{(displayServiceType === "all" ||
 					displayServiceType === "scheduled") && (
 					<>
-						<h2 className="text-xl font-bold">Scheduled Services</h2>
+						<h2 className="text-xl font-bold mt-4">Scheduled Services</h2>
 
 						<div
 							className={`grid ${

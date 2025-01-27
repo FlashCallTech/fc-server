@@ -87,7 +87,9 @@ const CreatorNavbar = () => {
 		else if (pathname.includes("payment")) return "Transaction History";
 		else if (pathname.includes("previous")) return "Order History";
 		else if (pathname.includes("userFeedbacks")) return "User Feedbacks";
-		else if (pathname.includes("discount")) return "Discount Campaign";
+		else if (pathname.includes("upcoming")) return "Scheduled Calls";
+		else if (pathname.includes("campaign") || pathname.includes("discount"))
+			return "Discount Campaign";
 		else if (pathname.includes("service-management"))
 			return "Service Management";
 		else if (pathname.includes("terms-and-conditions"))
