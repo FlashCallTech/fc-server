@@ -498,7 +498,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 						userServices && userServices.length === 0
 							? "grid-cols-1"
 							: "grid-cols-1 md:grid-cols-2 3xl:grid-cols-4"
-					}  gap-6`}
+					}  gap-6 mt-4`}
 				>
 					{userServices && userServices.length > 0 ? (
 						userServices.map((service, index) => {

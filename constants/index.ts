@@ -14,7 +14,7 @@ export const sidebarLinks = [
 	{
 		imgURL: "/icons/upcoming.svg",
 		route: "/upcoming",
-		label: "Scheduled",
+		label: "Scheduled Calls",
 		protected: true,
 	},
 	{
@@ -60,7 +60,7 @@ export const newSidebarLinksCreator = [
 	{
 		imgURL: "/creator/upcoming.svg",
 		route: "/upcoming",
-		label: "Scheduled",
+		label: "Scheduled Calls",
 		protected: true,
 	},
 	{
@@ -147,7 +147,7 @@ export const sidebarLinksCreator = [
 	{
 		imgURL: "/icons/upcoming.svg",
 		route: "/upcoming",
-		label: "Scheduled",
+		label: "Scheduled Calls",
 		protected: true,
 	},
 	{
