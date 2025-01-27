@@ -216,7 +216,15 @@ const AvailabilityServiceCards = ({
 					displayServiceType === "payPerMinute") && (
 					<>
 						<h2 className="text-xl font-bold">Pay Per Minute Services</h2>
-						<PayPerMinuteCallsCards />
+						<div
+							className={`grid ${
+								userServices && userServices.length === 0
+									? "grid-cols-1"
+									: "grid-cols-1 md:grid-cols-2 3xl:grid-cols-4"
+							}  gap-6`}
+						>
+							<PayPerMinuteCallsCards />
+						</div>
 					</>
 				)}
 

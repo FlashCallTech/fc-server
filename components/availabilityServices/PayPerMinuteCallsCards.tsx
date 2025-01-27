@@ -106,62 +106,60 @@ const PayPerMinuteCallsCards = () => {
 				services.map((service) => (
 					<div
 						key={service.tag}
-						className="w-full grid grid-cols-1 md:grid-cols-2 3xl:grid-cols-4 gap-4"
+						className="w-full relative shadow-md border rounded-lg p-4 hover:shadow-lg transition-shadow duration-200 ease-in-out"
 					>
-						<div className="w-full relative shadow-md border rounded-lg p-4 hover:shadow-lg transition-shadow duration-200 ease-in-out">
-							<Switch
-								id={`serviceToggle-${service.tag}`}
-								checked={!!service?.isActive}
-								onCheckedChange={() =>
-									handleToggle(service.label, !service.isActive)
-								}
-								className="absolute top-4 right-4 hoverScaleDownEffect"
-							/>
-							<div className="w-full flex flex-col items-start gap-4">
-								<div className="w-full flex items-center gap-2.5">
-									<Image
-										width={80}
-										height={80}
-										src={
-											service.image ||
-											"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7"
-										}
-										alt={service.title}
-										className="w-12 h-12 object-cover rounded-lg border border-gray-200"
-									/>
-									<div className="flex flex-col items-start justify-center">
-										<h3 className="-mt-1 text-lg font-semibold text-gray-800">
-											{service.title}
-										</h3>
-										<p className="text-sm text-[#9CA3AF]">
-											{service.description}
-										</p>
-									</div>
+						<Switch
+							id={`serviceToggle-${service.tag}`}
+							checked={!!service?.isActive}
+							onCheckedChange={() =>
+								handleToggle(service.label, !service.isActive)
+							}
+							className="absolute top-4 right-4 hoverScaleDownEffect"
+						/>
+						<div className="w-full flex flex-col items-start gap-4">
+							<div className="w-full flex items-center gap-2.5">
+								<Image
+									width={80}
+									height={80}
+									src={
+										service.image ||
+										"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7"
+									}
+									alt={service.title}
+									className="w-12 h-12 object-cover rounded-lg border border-gray-200"
+								/>
+								<div className="flex flex-col items-start justify-center">
+									<h3 className="-mt-1 text-lg font-semibold text-gray-800">
+										{service.title}
+									</h3>
+									<p className="text-sm text-[#9CA3AF]">
+										{service.description}
+									</p>
 								</div>
 							</div>
-							<div className="w-full flex justify-between items-center gap-4 mt-2.5">
-								<div className="self-end flex items-center gap-1 text-sm text-[#6B7280]">
-									Price{" "}
-									<span className="ml-1 text-green-1 font-medium tracking-wider">
-										₹{parseFloat(String(service.rate)).toFixed(2)}/Min
-									</span>
-									{", "}
-									<span className="text-green-1 font-medium tracking-wider">
-										${parseFloat(String(service.globalRate)).toFixed(2)}/Min
-									</span>
-								</div>
+						</div>
+						<div className="w-full flex justify-between items-center gap-4 mt-2.5">
+							<div className="self-end flex items-center gap-1 text-sm text-[#6B7280]">
+								Price{" "}
+								<span className="ml-1 text-green-1 font-medium tracking-wider">
+									₹{parseFloat(String(service.rate)).toFixed(2)}/Min
+								</span>
+								{", "}
+								<span className="text-green-1 font-medium tracking-wider">
+									${parseFloat(String(service.globalRate)).toFixed(2)}/Min
+								</span>
+							</div>
 
-								<div className="h-full mt-2 flex items-center gap-2 justify-center">
-									<span
-										className={`p-2 text-sm border transition-all rounded-full ${
-											service.isActive
-												? "bg-[#F0FDF4] text-[#16A34A]"
-												: "bg-[#FFEDD5] text-[#9A3412]"
-										}`}
-									>
-										{serviceIcon(service.tag)}
-									</span>
-								</div>
+							<div className="h-full mt-2 flex items-center gap-2 justify-center">
+								<span
+									className={`p-2 text-sm border transition-all rounded-full ${
+										service.isActive
+											? "bg-[#F0FDF4] text-[#16A34A]"
+											: "bg-[#FFEDD5] text-[#9A3412]"
+									}`}
+								>
+									{serviceIcon(service.tag)}
+								</span>
 							</div>
 						</div>
 					</div>
