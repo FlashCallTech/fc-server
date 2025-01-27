@@ -23,11 +23,9 @@ const ServicePreview = ({ service }: { service: AvailabilityService }) => {
 
 	return (
 		<div className="w-full flex flex-col items-start justify-center">
-			<h2 className="text-2xl font-bold mb-2">Campaign Preview</h2>
-			<p className="text-gray-500 mb-6">
-				This is how your campaign will appear
-			</p>
-			<div className="w-full grid grid-cols-1 md:grid-cols-2 3xl:grid-cols-4 gap-4">
+			<h2 className="text-2xl font-bold mb-2">Service Preview</h2>
+			<p className="text-gray-500 mb-6">This is how your service will appear</p>
+			<div className="w-full grid grid-cols-1 gap-4">
 				<div className="w-full relative shadow-md border rounded-lg p-4 hover:shadow-lg transition-shadow duration-200 ease-in-out">
 					<div
 						className={`absolute top-4 right-4 px-2.5 py-1 rounded-full ${
