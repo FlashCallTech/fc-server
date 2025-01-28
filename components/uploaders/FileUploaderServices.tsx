@@ -107,7 +107,7 @@ const FileUploaderServices = ({
 		return (
 			<div className="flex flex-col items-center justify-center">
 				<div
-					className={`size-20 md:size-32 rounded-full bg-slate-300 animate-pulse mx-auto`}
+					className={`size-32 rounded-full bg-slate-300 animate-pulse mx-auto`}
 				/>
 				<div className="flex flex-col items-center justify-normal">
 					<Image
@@ -145,7 +145,7 @@ const FileUploaderServices = ({
 					</Button>
 				</div>
 			) : (
-				<div className="relative flex justify-center items-center size-20 md:size-32">
+				<div className="relative flex justify-center items-center size-32">
 					<div className="absolute inset-0 bg-black/30 rounded-full flex justify-center items-center">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -172,7 +172,7 @@ const FileUploaderServices = ({
 						<img
 							src={fileUrl}
 							alt="Current image"
-							className={`size-20 md:size-32 rounded-full border-2 border-white object-cover`}
+							className={`size-32 rounded-full border-2 border-white object-cover`}
 						/>
 					)}
 				</div>

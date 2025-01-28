@@ -44,6 +44,7 @@
 		"@stream-io/video-react-sdk": "^1.6.2",
 		"@svgr/webpack": "^8.1.0",
 		"@tanstack/react-query": "^5.56.2",
+		"@tanstack/react-table": "^8.20.6",
 		"@types/mongoose": "^5.11.97",
 		"@types/react-datepicker": "^6.2.0",
 		"@uploadthing/react": "^7.1.2",

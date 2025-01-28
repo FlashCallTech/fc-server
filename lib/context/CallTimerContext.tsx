@@ -11,6 +11,7 @@ import { creatorUser } from "@/types";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import * as Sentry from "@sentry/nextjs";
+import { updatePastFirestoreSessions } from "../utils";
 
 interface CallTimerContextProps {
 	timeLeft: string;
@@ -113,6 +114,10 @@ export const CallTimerProvider = ({
 			try {
 				const callDocRef = doc(db, "calls", callId);
 				const callDoc = await getDoc(callDocRef);
+
+				updatePastFirestoreSessions(callId, {
+					status: "active",
+				});
 
 				if (callDoc.exists()) {
 					const data = callDoc.data();

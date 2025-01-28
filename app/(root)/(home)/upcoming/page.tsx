@@ -9,7 +9,7 @@ import SinglePostLoader from "@/components/shared/SinglePostLoader";
 
 const UpcomingPage = () => {
 	const creatorURL = localStorage.getItem("creatorURL");
-	const { currentUser, fetchingUser } = useCurrentUsersContext();
+	const { currentUser, userType, fetchingUser } = useCurrentUsersContext();
 	const [historyType, setHistoryType] = useState<
 		"All" | "Audio" | "Video" | "Chat"
 	>("All");
@@ -20,14 +20,16 @@ const UpcomingPage = () => {
 		"Chat",
 	];
 	return (
-		<section className="flex size-full flex-col gap-2 pb-5">
+		<section className="h-[calc(100vh-6rem)] flex size-full flex-col gap-2 pb-5">
 			<section
 				className={`sticky top-0 lg:top-[76px] bg-white z-30 w-full p-4  pb-4 flex items-center justify-between transition-all duration-300`}
 			>
 				<section className="flex items-center gap-4">
 					<Link
 						href={`${creatorURL ? creatorURL : "/home"}`}
-						className="text-xl font-bold"
+						className={`${
+							userType === "creator" && "lg:hidden"
+						} text-xl font-bold`}
 					>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"

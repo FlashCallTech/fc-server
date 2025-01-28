@@ -52,11 +52,11 @@ const DiscountServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className="flex flex-col items-center justify-start w-full max-h-[90vh] outline-none border-none rounded-t-xl bg-white mx-auto px-7 py-5 overflow-y-auto no-scrollbar"
+					className="flex flex-col items-center justify-start size-full outline-none border-none rounded-t-xl bg-white mx-auto px-7 py-5 overflow-y-auto no-scrollbar"
 				>
 					<SheetHeader className="flex flex-col items-start justify-center w-full">
-						<SheetTitle>Create and Customize Your Service</SheetTitle>
-						<SheetDescription className="text-start mb-5 pr-5">
+						<SheetTitle>{sheetType} Your Discount Campaign</SheetTitle>
+						<SheetDescription className="sr-only">
 							Define your service details, pricing, and set flexible discount
 							rules tailored to your customers&apos; needs.
 						</SheetDescription>
@@ -78,7 +78,7 @@ const DiscountServiceSheet: React.FC<DiscountConsentSheetProps> = ({
 					className="flex flex-col items-center justify-start w-full max-h-[90vh] outline-none border-none rounded-t-xl bg-white mx-auto px-7 py-5 overflow-y-auto no-scrollbar"
 				>
 					<DialogHeader className="flex flex-col items-start justify-center w-full">
-						<DialogTitle>Create and Customize Your Service</DialogTitle>
+						<DialogTitle>{sheetType} Your Discount Campaign</DialogTitle>
 						<DialogDescription className="text-start mb-5 pr-5">
 							Define your service details, pricing, and set flexible discount
 							rules tailored to your customers&apos; needs.

@@ -14,7 +14,7 @@ export const sidebarLinks = [
 	{
 		imgURL: "/icons/upcoming.svg",
 		route: "/upcoming",
-		label: "Scheduled",
+		label: "Scheduled Calls",
 		protected: true,
 	},
 	{
@@ -54,6 +54,31 @@ export const newSidebarLinksCreator = [
 		imgURL: "/creator/transactionHistory.svg",
 		route: "/payment",
 		label: "Transaction History",
+		protected: true,
+	},
+	,
+	{
+		imgURL: "/creator/upcoming.svg",
+		route: "/upcoming",
+		label: "Scheduled Calls",
+		protected: true,
+	},
+	{
+		imgURL: "/creator/calendar.svg",
+		route: "/calendar",
+		label: "Calendar",
+		protected: true,
+	},
+	{
+		imgURL: "/creator/discountCampaign.svg",
+		route: "/campaign/discount",
+		label: "Discount Campaigns",
+		protected: true,
+	},
+	{
+		imgURL: "/creator/serviceManagement.svg",
+		route: "/service-management",
+		label: "Service Management",
 		protected: true,
 	},
 	{
@@ -122,7 +147,25 @@ export const sidebarLinksCreator = [
 	{
 		imgURL: "/icons/upcoming.svg",
 		route: "/upcoming",
-		label: "Scheduled",
+		label: "Scheduled Calls",
+		protected: true,
+	},
+	{
+		imgURL: "/icons/calendar.svg",
+		route: "/calendar",
+		label: "Calendar",
+		protected: true,
+	},
+	{
+		imgURL: "/icons/discount.svg",
+		route: "/campaign/discount",
+		label: "Discount Campaigns",
+		protected: true,
+	},
+	{
+		imgURL: "/icons/serviceManagement.svg",
+		route: "/service-management",
+		label: "Service Management",
 		protected: true,
 	},
 	{
@@ -135,12 +178,6 @@ export const sidebarLinksCreator = [
 		imgURL: "/icons/blocked.svg",
 		route: "/blocked-accounts",
 		label: "Blocked Users",
-		protected: true,
-	},
-	{
-		imgURL: "/icons/calendar.svg",
-		route: "/calendar",
-		label: "Calendar",
 		protected: true,
 	},
 	{

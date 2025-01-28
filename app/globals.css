@@ -488,3 +488,36 @@ input[type="number"] {
 	filter: invert(33%) sepia(12%) saturate(700%) hue-rotate(180deg)
 		brightness(92%) contrast(88%);
 }
+
+.day_in_range::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: rgba(59, 130, 246, 0.2);
+	z-index: -1;
+}
+
+.day_range_start::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 50%;
+	right: 0;
+	background-color: rgba(59, 130, 246, 0.2);
+	z-index: -1;
+}
+
+.day_range_end::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 50%;
+	background-color: rgba(59, 130, 246, 0.2);
+	z-index: -1;
+}
