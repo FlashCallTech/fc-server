@@ -20,16 +20,16 @@ const CountdownTimer: React.FC<CountdownProps> = ({ chat, timeLeft, userType, jo
       console.log("Joining the call...");
 
       // Reference to the chat document in Firestore
-      const chatDocRef = doc(db, "chats", chat.chatId);
+      const scheduledChatsDocRef = doc(db, "scheduledChats", chat.callId);
 
       // Determine the field to update based on userType
       const updateField =
         userType === "client"
-          ? { "scheduledChatDetails.clientJoined": true }
-          : { "scheduledChatDetails.creatorJoined": true };
+          ? { "clientJoined": true }
+          : { "creatorJoined": true };
 
       // Update the Firestore document
-      await updateDoc(chatDocRef, updateField);
+      await updateDoc(scheduledChatsDocRef, updateField);
 
       console.log("Chat document updated successfully!");
     } catch (error) {
@@ -40,76 +40,96 @@ const CountdownTimer: React.FC<CountdownProps> = ({ chat, timeLeft, userType, jo
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6">
-      {/* Header Section */}
-      <h1 className="text-4xl font-bold mb-6">
-        {timeLeft === "The call has started!"
-          ? "Your Call is Ready"
-          : "Waiting for Your Scheduled Chat"}
-      </h1>
-      <p className="text-xl font-light mb-10">
-        {timeLeft === "The call has started!"
-          ? "Click below to join the call."
-          : "Your chat will start soon!"}
-      </p>
+    <div className="flex size-full items-center justify-center">
+      <div className="flex flex-col px-6 py-12 items-center justify-center">
+        {/* Header Section */}
+        <h1 className="text-3xl font-semibold mb-3">
+          {timeLeft === "The call has started!"
+            ? "Your Call is Ready"
+            : "Waiting for Your Scheduled Chat"}
+        </h1>
+        <p className="text-lg font-light mb-12">
+          {timeLeft === "The call has started!"
+            ? "Click below to join the call."
+            : "Your chat will start soon!"}
+        </p>
 
-      {/* Timer Section */}
-      <div className="flex flex-col items-center justify-center bg-white bg-opacity-20 rounded-lg p-8 shadow-lg">
-        {timeLeft === "The call has started!" ? (
-          <button
-            onClick={handleJoinNow}
-            className="bg-black text-white px-4 py-2 rounded-full hoverScaleDownEffect"
+        {/* Timer Section */}
+        <div
+          className="flex flex-col w-full items-center justify-centerrounded-lg p-8"
+          style={{
+            background: "linear-gradient(0deg, rgba(0, 0, 0, 0.001), rgba(0, 0, 0, 0.001)), #F9FAFB",
+            boxShadow: "0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          {timeLeft === "The call has started!" ? (
+            <button
+              onClick={handleJoinNow}
+              className="bg-black text-white px-4 py-2 rounded-full hoverScaleDownEffect"
+            >
+              {
+                joinLoading ? (
+                  <Image
+                    src="/icons/loading-circle.svg"
+                    alt="Loading..."
+                    width={24}
+                    height={24}
+                    priority
+                  />
+
+                ) : (
+                  "Join Now"
+                )
+              }
+            </button>
+          ) : (
+            <>
+              <p className="text-xl font-normal">Countdown to Start:</p>
+              <p className="text-5xl font-semibold tracking-3px mt-4">{timeLeft}</p>
+            </>
+          )}
+        </div>
+
+        {/* User Info Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 w-full">
+          {/* Client Info */}
+          <div
+            className="rounded-lg p-6 text-center"
+            style={{
+              background: "linear-gradient(0deg, rgba(0, 0, 0, 0.001), rgba(0, 0, 0, 0.001)), #F9FAFB",
+              boxShadow: "0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)",
+            }}
           >
-            {
-              joinLoading ? (
-                <Image
-                  src="/icons/loading-circle.svg"
-                  alt="Loading..."
-                  width={24}
-                  height={24}
-                  priority
-                />
+            <img
+              src={chat?.clientImg}
+              alt="Client"
+              className="w-20 h-20 rounded-full object-cover mx-auto mb-4"
+            />
+            <h2 className="text-base font-semibold">{chat?.clientName}</h2>
+          </div>
 
-              ) : (
-                "Join Now"
-              )
-            }
-          </button>
-        ) : (
-          <>
-            <p className="text-2xl font-semibold">Countdown to Start:</p>
-            <p className="text-5xl font-bold mt-4">{timeLeft}</p>
-          </>
-        )}
-      </div>
-
-      {/* User Info Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 w-full max-w-4xl">
-        {/* Client Info */}
-        <div className="bg-white bg-opacity-10 rounded-lg p-6 text-center shadow-md">
-          <img
-            src={chat?.clientImg}
-            alt="Client"
-            className="w-20 h-20 rounded-full object-cover mx-auto mb-4"
-          />
-          <h2 className="text-xl font-bold">{chat?.clientName}</h2>
+          {/* Creator Info */}
+          <div
+            className="rounded-lg p-6 text-center"
+            style={{
+              background: "linear-gradient(0deg, rgba(0, 0, 0, 0.001), rgba(0, 0, 0, 0.001)), #F9FAFB",
+              boxShadow: "0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <img
+              src={chat?.creatorImg}
+              alt="Creator"
+              className="w-20 h-20 rounded-full object-cover mx-auto mb-4"
+            />
+            <h2 className="text-base font-semibold">{chat?.creatorName}</h2>
+          </div>
         </div>
 
-        {/* Creator Info */}
-        <div className="bg-white bg-opacity-10 rounded-lg p-6 text-center shadow-md">
-          <img
-            src={chat?.creatorImg}
-            alt="Creator"
-            className="w-20 h-20 rounded-full object-cover mx-auto mb-4"
-          />
-          <h2 className="text-xl font-bold">{chat?.creatorName}</h2>
-        </div>
+        {/* Footer */}
+        <p className="text-base mt-12 text-[#4B5563]">
+          Please stay on this page until the call begins.
+        </p>
       </div>
-
-      {/* Footer */}
-      <p className="text-sm mt-12 opacity-75">
-        Please stay on this page until the call begins.
-      </p>
     </div>
   );
 };

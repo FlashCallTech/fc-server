@@ -89,6 +89,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 										method: "POST",
 										body: JSON.stringify({
 											userId: clientUser?._id,
+											PG: "Paypal",
 											userType: "Client",
 											amount: Number(details.purchase_units[0].amount.value),
 											category: "Recharge",

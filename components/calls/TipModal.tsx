@@ -28,6 +28,7 @@ import {
 import RechargeModal from "./RechargeModal";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import axios from "axios";
+import { db } from "@/lib/firebase";
 
 // Custom hook to track screen size
 const useScreenSize = () => {
@@ -142,6 +143,36 @@ const TipModal = ({
 		setShowRechargeModal(false);
 	};
 
+	const fetchActivePg = async (global: boolean) => {
+		try {
+			if (global) return "paypal";
+
+			const pgDocRef = doc(db, "pg", "paymentGatways");
+			const pgDoc = await getDoc(pgDocRef);
+
+			if (pgDoc.exists()) {
+				const { activePg } = pgDoc.data();
+				return activePg;
+			}
+
+			return "razorpay";
+		} catch (error) {
+			return error;
+		}
+	};
+
+	const fetchPgCharges = async (pg: string) => {
+		try {
+			const response = await axios.get(
+				`https://backend.flashcall.me/api/v1/pgCharges/fetch`
+			); // Replace with your API endpoint
+			const data = response.data;
+			return data[pg];
+		} catch (error) {
+			console.error("Error fetching PG Charges", error);
+		}
+	};
+
 	const handleTransaction = async () => {
 		// Check if the user is trying to tip more than the available balance
 		if (parseInt(rechargeAmount) > adjustedWalletBalance) {
@@ -161,14 +192,45 @@ const TipModal = ({
 			const response = await axios.get(
 				`${backendBaseUrl}/creator/getUser/${creatorId}`
 			);
-			const data = response.data;
 			const exchangeRate = await fetchExchangeRate();
-			const amountAdded = currentUser?.global ? (Number(rechargeAmount) * (1 - (Number(data?.commission ?? 20) / 100))) * exchangeRate : (Number(rechargeAmount) * (1 - (Number(data.commission ?? 20) / 100)));
+			const global = currentUser?.global ?? false;
+			const data = response.data;
+			const activePg: string = await fetchActivePg(global);
+			const pgChargesRate: number = await fetchPgCharges(activePg);
+			const commissionRate = Number(data?.commission ?? 20);
+			const commissionAmt = Number(
+				global
+					? (
+						((Number(rechargeAmount) * commissionRate) / 100) *
+						exchangeRate
+					).toFixed(2)
+					: ((Number(rechargeAmount) * commissionRate) / 100).toFixed(2)
+			);
+			const pgChargesAmt = Number(
+				global
+					? (
+						((Number(rechargeAmount) * pgChargesRate) / 100) *
+						exchangeRate
+					).toFixed(2)
+					: ((Number(rechargeAmount) * pgChargesRate) / 100).toFixed(2)
+			);
+			const gstAmt = Number((commissionAmt * 0.18).toFixed(2));
+			const totalDeduction = Number(
+				(commissionAmt + gstAmt + pgChargesAmt).toFixed(2)
+			);
+			const amountAdded = Number(
+				global
+					? (Number(rechargeAmount) * exchangeRate - totalDeduction).toFixed(2)
+					: (Number(rechargeAmount) - totalDeduction).toFixed(2)
+			);
 			await Promise.all([
 				fetch(`${backendBaseUrl}/wallet/payout`, {
 					method: "POST",
 					body: JSON.stringify({
 						userId: clientId,
+						user2Id: creatorId,
+						fcCommission: commissionAmt,
+						PGCharge: pgChargesRate,
 						userType: "Client",
 						amount: rechargeAmount,
 						category: "Tip",
@@ -180,6 +242,9 @@ const TipModal = ({
 					method: "POST",
 					body: JSON.stringify({
 						userId: creatorId,
+						user2Id: clientId,
+						fcCommission: commissionAmt,
+						PGCharge: pgChargesRate,
 						userType: "Creator",
 						amount: amountAdded,
 						category: "Tip",
@@ -342,7 +407,7 @@ const TipModal = ({
 									) : (
 										<Button
 											className={`absolute right-2 bg-green-1 text-white hoverScaleDownEffect ${(!rechargeAmount ||
-													parseInt(rechargeAmount) > adjustedWalletBalance) &&
+												parseInt(rechargeAmount) > adjustedWalletBalance) &&
 												"cursor-not-allowed"
 												}`}
 											onClick={handleTransaction}
@@ -369,8 +434,8 @@ const TipModal = ({
 								{
 									<div
 										className={`${!isMobile
-												? "grid grid-cols-4 gap-4 mt-4 w-full"
-												: "flex justify-start items-center mt-4 space-x-4 w-full overflow-x-scroll overflow-y-hidden no-scrollbar"
+											? "grid grid-cols-4 gap-4 mt-4 w-full"
+											: "flex justify-start items-center mt-4 space-x-4 w-full overflow-x-scroll overflow-y-hidden no-scrollbar"
 											}`}
 									>
 										{predefinedOptions.map((amount) => (

@@ -112,6 +112,7 @@ export type creatorUser = {
 	restricted?: boolean;
 	blocked?: any[];
 	global?: boolean;
+	commission?: number;
 };
 
 export type CreateCreatorParams = {

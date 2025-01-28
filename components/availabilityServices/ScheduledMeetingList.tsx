@@ -52,7 +52,7 @@ const ScheduledMeetingList = ({
 	const copyToClipboard = (userCall: ScheduledCallParams) => {
 		let text: string;
 		if(userCall.type === "chat") {
-			text = `${frontendBaseUrl}/scheduledChat/${userCall.chatId}`;
+			text = `${frontendBaseUrl}/scheduledChat/${userCall.callId}/${userCall.chatId}`;
 		} else {
 			text = `${frontendBaseUrl}/meeting/${userCall.callId}`;
 		}
@@ -150,7 +150,8 @@ const ScheduledMeetingList = ({
 											toastStatus: "negative",
 										});
 									} else {
-										router.push(`/meeting/${userCall.callId}`);
+										(userCall.type === "audio" || userCall.type === "video") && router.push(`/meeting/${userCall.callId}`);
+										userCall.type === "chat" && router.push(`${frontendBaseUrl}/scheduledChat/${userCall.callId}/${userCall.chatId}`)
 									}
 								};
 

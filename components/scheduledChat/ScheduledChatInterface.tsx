@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import {
 	arrayUnion,
+	collection,
 	doc,
 	getDoc,
 	onSnapshot,
@@ -18,12 +19,10 @@ import useMediaRecorder from "@/hooks/useMediaRecorder";
 import upload from "@/lib/upload";
 import CountdownTimer from "./TimerBeforeStart";
 import Loader from "../shared/Loader";
-import axios from "axios";
-import { backendBaseUrl } from "@/lib/utils";
 import Countdown from "./Timer";
+import EndChatDecision from "./EndChatDecision";
 
 const ScheduledChatInterface: React.FC = () => {
-	const [membersCount, setMembersCount] = useState<number>(0);
 	const [chat, setChat] = useState<any>();
 	const [messages, setMessages] = useState<any>();
 	const [text, setText] = useState<string>("");
@@ -36,7 +35,7 @@ const ScheduledChatInterface: React.FC = () => {
 	const [joinLoading, setJoinLoading] = useState<boolean>(false);
 	const [currentUserMessageSent, setCurrentUserMessageSent] = useState<boolean>(false);
 	const [timeLeft, setTimeLeft] = useState("");
-	const [chatEnded, setChatEnded] = useState<boolean>(false);
+	const [chatEnded, setChatEnded] = useState(false);
 
 	const [img, setImg] = useState({
 		file: null,
@@ -47,7 +46,7 @@ const ScheduledChatInterface: React.FC = () => {
 		url: "",
 	});
 
-	const { chatId } = useParams();
+	const { callId, chatId } = useParams();
 	const { userType, currentUser } = useCurrentUsersContext();
 	const {
 		audioStream,
@@ -62,19 +61,18 @@ const ScheduledChatInterface: React.FC = () => {
 	} = useMediaRecorder();
 
 	const router = useRouter();
+	const scheduledChatDocRef = doc(db, "scheduledChats", callId as string);
 
 	useEffect(() => {
-		if (chatId) {
-			const officialChatDocRef = doc(db, "chats", chatId as string);
+		if (callId) {
 			const messagesDocRef = doc(db, "messages", chatId as string);
-
-			const chatUnSub = onSnapshot(officialChatDocRef, (doc) => {
+			const chatUnSub = onSnapshot(scheduledChatDocRef, (doc) => {
 				if (doc.exists()) {
 					const data = doc.data();
 					setChat(data);
-					setMembersCount(data?.membersCount ?? 0);
 					if (data.status === "ended") {
-						router.replace(`/chat-ended/${chatId}/${data?.callId}/${data?.clientId}`);
+						userType === "client" && router.replace(`/chat-ended/${chatId}/${callId}/${chat?.clientId}`);
+						userType === "creator" && router.replace(`/home`);
 					}
 				}
 			});
@@ -90,16 +88,11 @@ const ScheduledChatInterface: React.FC = () => {
 				messageUnSub();
 			};
 		}
-	}, [chatId]);
+	}, [callId, chatId]);
 
 	useEffect(() => {
-		if (chatEnded)
-			router.replace(`/chat-ended/${chatId}/${chat?.callId}/${chat?.clientId}`);
-	}, [chatEnded]);
-
-	useEffect(() => {
-		if (chat?.scheduledChatDetails?.startTime && chat?.scheduledChatDetails?.scheduled) {
-			const { seconds } = chat.scheduledChatDetails.startTime;
+		if (chat?.startTime) {
+			const { seconds } = chat.startTime;
 			const startTime = new Date(seconds * 1000);
 
 			const calculateTimeLeft = async () => {
@@ -107,23 +100,6 @@ const ScheduledChatInterface: React.FC = () => {
 				const difference = startTime.getTime() - now.getTime();
 
 				if (difference <= 0) {
-					try {
-						if (chat.status === "active") {
-							setTimeLeft("The call has started!");
-							return;
-						}
-						const response = await axios.post(`${backendBaseUrl}/endChat/scheduledChatStart`, {
-							chatId: chat.chatId, // Ensure `chat.chatId` is passed correctly
-						});
-
-						if (response.status === 200) {
-							console.log("Chat status updated to 'active'");
-						} else {
-							throw new Error("Failed to update chat status");
-						}
-					} catch (error) {
-						console.error("Error updating chat status:", error);
-					}
 					setTimeLeft("The call has started!");
 					setLoading(false);
 					return;
@@ -145,7 +121,7 @@ const ScheduledChatInterface: React.FC = () => {
 
 			return () => clearInterval(interval); // Cleanup interval on unmount
 		}
-	}, [chat?.scheduledChatDetails?.startTime]);
+	}, [chat?.startTime]);
 
 	useEffect(() => {
 		let link;
@@ -187,7 +163,14 @@ const ScheduledChatInterface: React.FC = () => {
 
 	const handleDecisionDialog = async () => {
 		// localStorage.setItem("EndedBy", "client");
-		// await handleEnd(chatId as string, userType as string);
+		if (chatEnded) {
+			await updateDoc(scheduledChatDocRef, {
+				status: "ended"
+			})
+		} else {
+			userType === "client" && router.replace(`/chat-ended/${chatId}/${callId}/${chat?.clientId}`);
+			userType === "creator" && router.replace(`/home`);
+		}
 		setShowDialog(false);
 	};
 
@@ -300,9 +283,6 @@ const ScheduledChatInterface: React.FC = () => {
 		}
 	};
 
-	console.log(chat);
-
-
 	const handleSendAudio = async (audioBlob: Blob, audioUrl: string) => {
 		setCurrentUserMessageSent(false);
 		setIsAudioUploading(true);
@@ -413,8 +393,8 @@ const ScheduledChatInterface: React.FC = () => {
 				className={`hidden md:flex items-center justify-center h-screen w-full bg-black`}
 			>
 				{chat && (
-					userType === "client" && chat.scheduledChatDetails?.clientJoined ||
-					userType === "creator" && chat.scheduledChatDetails?.creatorJoined
+					userType === "client" && chat?.clientJoined ||
+					userType === "creator" && chat?.creatorJoined
 				) ? (
 					<div
 						className="md:w-[50%] lg:w-[70%] h-[98%] md:flex flex-col rounded-md bg-cover bg-center"
@@ -435,7 +415,7 @@ const ScheduledChatInterface: React.FC = () => {
 										{userType === "client" ? chat?.creatorName : chat?.clientName}
 									</div>
 									<Countdown
-										timerDetails={chat?.scheduledChatDetails}
+										timerDetails={chat}
 										setChatEnded={setChatEnded}
 									/>
 									<p className="text-[10px] md:text-sm text-green-500">
@@ -449,15 +429,16 @@ const ScheduledChatInterface: React.FC = () => {
 										onClick={endCall}
 										className="bg-[rgba(255,81,81,1)] text-white p-2 text-[10px] md:text-sm rounded-lg hoverScaleDownEffect"
 									>
-										End
+										{chatEnded ? "End" : "Leave"}
 									</button>
 								</div>
 							</div>
 						</div>
 						{showDialog && (
-							<EndCallDecision
+							<EndChatDecision
 								handleDecisionDialog={handleDecisionDialog}
 								setShowDialog={handleCloseDialog}
+								chatEnded={chatEnded}
 							/>
 						)}
 						<div className="mt-auto overflow-y-auto scrollbar-hide">
@@ -521,8 +502,7 @@ const ScheduledChatInterface: React.FC = () => {
 						</div>
 					</div>
 				) : (
-					chat?.scheduledChatDetails?.scheduled &&
-					<div className="text-white">
+					<div className="text-[#1F2937] bg-white size-full">
 						<CountdownTimer
 							chat={chat}
 							timeLeft={timeLeft}

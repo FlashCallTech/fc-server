@@ -8,7 +8,7 @@ interface CountdownProps {
         };
         maxDuration: number; // Time in seconds
     };
-    setChatEnded: any
+    setChatEnded: any;
 }
 
 const Countdown: React.FC<CountdownProps> = ({ timerDetails, setChatEnded }) => {
@@ -19,7 +19,7 @@ const Countdown: React.FC<CountdownProps> = ({ timerDetails, setChatEnded }) => 
         if (timerDetails) {
             const { startTime, maxDuration } = timerDetails;
             const startTimeInSeconds = startTime.seconds; // Use the seconds part of Timestamp
-            const endTime = startTimeInSeconds + maxDuration;
+            const endTime = startTimeInSeconds + maxDuration * 60;
             const tenPercentTime = maxDuration * 0.1;
 
             const calculateTimeLeft = () => {
@@ -27,8 +27,8 @@ const Countdown: React.FC<CountdownProps> = ({ timerDetails, setChatEnded }) => 
                 const remainingTime = endTime - now;
 
                 if (remainingTime <= 0) {
-                    setChatEnded(true);
                     clearInterval(interval);
+                    setChatEnded(true);
                     setTimeLeft("00:00");
                     return;
                 }

@@ -49,6 +49,7 @@ const AvailabilityFinalConsentForm = ({
 	const [payUsingWallet, setPayUsingWallet] = useState(true);
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
+	const [payoutTransactionId, setPayoutTransactionId] = useState();
 	const { clientUser } = useCurrentUsersContext();
 	const { getFinalServices } = useSelectedServiceContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
@@ -344,7 +345,6 @@ const AvailabilityFinalConsentForm = ({
 			// Parse start time
 			const dateTimeString = `${selectedDay} ${selectedTimeSlot}`;
 			const startsAt = new Date(dateTimeString).toISOString();
-			console.log(startsAt);
 
 			if (!startsAt || isNaN(new Date(startsAt).getTime())) {
 				throw new Error("Invalid date or time format.");
@@ -406,7 +406,8 @@ const AvailabilityFinalConsentForm = ({
 				client_balance: clientUser?.walletBalance,
 				global: clientUser?.global || false,
 				totalAmount: service.basePrice,
-				paidAmount: totalAmount.total,
+				paidAmount: Number(totalAmount.total),
+				payoutTransactionId,
 				paid: false,
 				maxDuration: service.timeDuration,
 				clientJoined: false,
@@ -467,6 +468,8 @@ const AvailabilityFinalConsentForm = ({
 						walletUpdatePayload
 					);
 
+					console.log(walletUpdateResponse);
+
 					if (walletUpdateResponse.status !== 200) {
 						throw new Error("Failed to update wallet balance");
 					}
@@ -520,6 +523,7 @@ const AvailabilityFinalConsentForm = ({
 			if (!callDetails) {
 				throw new Error("Failed to create meeting");
 			}
+			
 			// Step 2: Register the scheduled call
 			const registerUpcomingCallAPI = "/calls/scheduled/createCall";
 			const registerUpcomingCallPayload = {
@@ -548,12 +552,16 @@ const AvailabilityFinalConsentForm = ({
 				registerCallResponse.status === 200 ||
 				registerCallResponse.status === 201
 			) {
-				await axios.post(`${backendBaseUrl}/wallet/payout`, {
+				const response = await axios.post(`${backendBaseUrl}/wallet/payout`, {
 					userId: clientUser?._id as string,
+					user2Id: creator._id,
 					userType: "Client",
 					amount: totalAmount.total,
 					callType: service.type,
 				});
+
+				console.log(response.data);
+				setPayoutTransactionId(response.data.wallet._id);
 
 				if (service.type !== "chat") {
 					await fetch(`${backendBaseUrl}/calls/registerCall`, {
@@ -564,6 +572,7 @@ const AvailabilityFinalConsentForm = ({
 							status: "Scheduled",
 							creator: String(clientUser?._id),
 							members: callDetails.members,
+							payoutTransactionId,
 						}),
 						headers: { "Content-Type": "application/json" },
 					});

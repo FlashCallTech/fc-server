@@ -113,6 +113,7 @@ const RechargeModal = ({
 									method: "POST",
 									body: JSON.stringify({
 										userId: currentUser?._id,
+										PG: "Paypal",
 										userType: "Client",
 										amount: Number(details.purchase_units[0].amount.value),
 										category: "Recharge",
