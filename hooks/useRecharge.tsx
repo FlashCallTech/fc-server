@@ -196,6 +196,7 @@ const useRecharge = () => {
 							method: "POST",
 							body: JSON.stringify({
 								userId,
+								PG: "Razorpay",
 								userType: "Client",
 								amount: totalPayable,
 								category: "Recharge",
