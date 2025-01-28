@@ -132,7 +132,7 @@ const HomePage = () => {
 
 	if (isLoading || loadingCard || fetchingUser) {
 		return (
-			<div className="size-full h-[calc(100vh-4rem)] flex flex-col gap-2 items-center justify-center">
+			<div className="size-full h-[calc(100vh-6rem)] flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
 			</div>
 		);
@@ -141,7 +141,7 @@ const HomePage = () => {
 	if (userType === "creator") {
 		return (
 			<main className="size-full flex flex-col">
-				<Suspense fallback={<PostLoader count={6} />}>
+				<Suspense fallback={<SinglePostLoader />}>
 					<CreatorHome />
 				</Suspense>
 			</main>

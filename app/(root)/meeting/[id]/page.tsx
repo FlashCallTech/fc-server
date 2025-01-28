@@ -20,6 +20,7 @@ import {
 	stopMediaStreams,
 	updateExpertStatus,
 	updateFirestoreSessions,
+	updatePastFirestoreSessions,
 } from "@/lib/utils";
 import { trackEvent } from "@/lib/mixpanel";
 import MeetingNotStarted from "@/components/meeting/MeetingNotStarted";
@@ -197,6 +198,10 @@ const CallEnded = ({
 				await updateExpertStatus(expertPhone, "Online");
 
 				await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
+					status: "payment pending",
+				});
+
+				updatePastFirestoreSessions(call.id, {
 					status: "payment pending",
 				});
 

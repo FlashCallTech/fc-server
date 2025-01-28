@@ -46,7 +46,7 @@ const UserFeedbacks = () => {
 
 	if (isLoading) {
 		return (
-			<section className="w-full size-full h-[calc(100vh-4rem)] flex items-center justify-center">
+			<section className="w-full size-full h-[calc(100vh-6rem)] flex items-center justify-center">
 				<SinglePostLoader />
 			</section>
 		);
@@ -138,11 +138,14 @@ const UserFeedbacks = () => {
 					/>
 				)}
 
-				{!hasNextPage && !isFetching && creatorUser && feedbackData?.pages[0].totalFeedbacks > 0 && (
-					<div className="text-center text-gray-500 py-4">
-						You have reached the end of the list
-					</div>
-				)}
+				{!hasNextPage &&
+					!isFetching &&
+					creatorUser &&
+					feedbackData?.pages[0].totalFeedbacks > 0 && (
+						<div className="text-center text-gray-500 py-4">
+							You have reached the end of the list
+						</div>
+					)}
 
 				{hasNextPage && <div ref={ref} className="py-4 w-full" />}
 			</section>
