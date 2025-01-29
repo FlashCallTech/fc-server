@@ -187,7 +187,7 @@ const UserProfilePage = () => {
 				</section>
 			) : (
 				<>
-					<div className="flex lg:w-[60%] w-full rounded-lg flex-col items-center justify-center gap-10 p-8 lg:border-[1px] lg:shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
+					<div className="flex xl:w-[60%] w-full rounded-lg flex-col items-center justify-center gap-10 p-8 lg:border-[1px] lg:shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
 						<section className="flex size-full items-center justify-start gap-4">
 							<Image
 								src={imageSrc}
@@ -201,7 +201,7 @@ const UserProfilePage = () => {
 									<span className="font-bold text-xl overflow-hidden capitalize">
 										{userData.fullName ? userData.fullName : "guest"}
 									</span>
-									<span className="text-[#6B7280] text-sm font-medium capitalize">
+									<span className="text-[#6B7280] text-sm font-medium text-ellipsis capitalize">
 										{userData.phone
 											? userData.phone.replace(
 													/(\+91)(\d+)/,
@@ -367,6 +367,7 @@ const UserProfilePage = () => {
 							predefinedColors={predefinedColors}
 							form={form}
 							schema={schema}
+							global={currentUser?.global ?? false}
 						/>
 					</div>
 				</>

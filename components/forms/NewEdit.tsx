@@ -95,6 +95,7 @@ export type EditProfileProps = {
 	predefinedColors: any;
 	form: any;
 	schema: any;
+	global: boolean;
 };
 
 const Edit = ({
@@ -140,8 +141,9 @@ const Edit = ({
 	predefinedColors,
 	form,
 	schema,
+	global,
 }: EditProfileProps) => {
-	if(!isOpen) return;
+	if (!isOpen) return;
 
 	const handleMonthChange = (month: number) => {
 		setSelectedMonth(month);
@@ -320,10 +322,18 @@ const Edit = ({
 					} as UpdateCreatorParams
 				);
 			} else {
-				response = await updateUser(
-					userData.id!,
-					commonValues as UpdateUserParams
-				);
+				if (global) {
+					response = await axios.put(
+						`${backendBaseUrl}/client/globalClient/update/${userData.id}`, {
+							...commonValues
+						} as UpdateUserParams
+					);
+				} else {
+					response = await updateUser(
+						userData.id!,
+						commonValues as UpdateUserParams
+					);
+				}
 			}
 
 			if (response.error) {
@@ -337,7 +347,7 @@ const Edit = ({
 				// 	toastStatus: "negative",
 				// });
 			} else {
-				const updatedUser = userType === "creator" ? response.data.updatedUser : response.updatedUser;
+				const updatedUser = userType === "creator" ? response.data.updatedUser : global? response.data.data : response.updatedUser;
 				const newUserDetails = {
 					...userData,
 					fullName: `${updatedUser.firstName} ${updatedUser.lastName}`,
