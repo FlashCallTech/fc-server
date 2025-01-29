@@ -205,7 +205,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					clientId: clientUser?._id,
 					creatorId: creator?._id,
 					discounts: [],
-					scheduledChatDetails: deleteField(),
 				},
 				{ merge: true }
 			);
