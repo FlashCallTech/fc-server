@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { CreatorFeedback } from "@/types";
-import { Rating } from "@smastrom/react-rating";
+import { Rating, ThinStar } from "@smastrom/react-rating";
 import Slider from "react-slick";
 import { getDisplayName } from "@/lib/utils";
 
@@ -97,7 +97,7 @@ const ReviewSlider = ({
 								<div className="size-full flex flex-col items-start justify-between gap-4 w-full rounded-[24px] m-2 p-4 border-2 border-gray-300 overflow-hidden">
 									<section className="size-full grid items-center gap-4">
 										{/* Rating */}
-										<div className="flex gap-1 items-center">
+										<div className="flex gap-1 items-center custom-rating">
 											<Rating
 												style={{
 													maxWidth: 120,

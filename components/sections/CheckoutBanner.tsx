@@ -1,43 +1,33 @@
 // section 4
 
 import React from "react";
-import { Button } from "../ui/button";
-import Image from "next/image";
 
 const CheckoutBanner = () => {
 	const theme = `5px 5px 5px 0px #232323`;
 	return (
-		<section className="w-full h-fit flex items-center justify-center py-14 bg-pattern bg-cover max-md:px-4">
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-7 lg:gap-0 items-center md:px-14 md:py-7 bg-[#6D60F8] text-white w-full lg:w-4/5 rounded-xl ">
-				<div className="flex flex-col items-center md:items-start justify-center gap-7 w-full p-4">
-					<Image
-						src="/web/images/rupee.png"
-						alt="logo"
-						width={100}
-						height={100}
-						className="rounded-xl w-auto h-auto"
-					/>
+		<section className="w-full h-fit pb-10 md:pb-20 bg-white grid grid-cols-1 text-center md:text-start md:grid-cols-2 gap-10 items-center md:px-14 lg:px-24 max-md:px-4">
+			{/* heading and content */}
 
-					{/* heading and content */}
-					<h2 className="text-4xl md:text-5xl font-semibold !leading-snug text-center md:text-start">
-						Withdraw your earnings instantly to your bank account
-					</h2>
+			<h2 className="text-3xl md:text-4xl font-semibold !leading-relaxed">
+				Withdraw your earnings instantly to your bank account
+			</h2>
+
+			{/* banner */}
+			<div className="bg-[#F9FAFB] rounded-[12px] p-4 md:px-14 md:py-10">
+				<div className="flex flex-col w-full items-center justify-center gap-4 bg-white rounded-[12px] p-7">
+					<div className="w-full flex flex-col items-center justify-center">
+						<p className="text-sm">Welcome, </p>
+						<span className="text-lg font-semibold">Nitra Sahgal</span>
+					</div>
+					<div className="w-full flex flex-col items-center justify-center border border-[#CBD5E1] rounded-[12px] px-4 py-3">
+						<p className="text-xs">Wallet Balance</p>
+						<span className="text-2xl text-green-1 font-bold">₹ 4500.00</span>
+					</div>
+
+					<p className="px-4 py-2 bg-green-1 text-white w-full rounded-md text-center text-sm font-semibold">
+						Withdraw
+					</p>
 				</div>
-				{/* banner */}
-				<Image
-					src="/web/images/Checkout.png"
-					alt="logo"
-					width={2000}
-					height={2000}
-					className="hidden lg:block rounded-xl w-full h-full object-contain"
-				/>
-				<Image
-					src="/web/images/checkoutMobile.png"
-					alt="logo"
-					width={2000}
-					height={2000}
-					className="lg:hidden rounded-xl w-full h-full object-contain"
-				/>
 			</div>
 		</section>
 	);
