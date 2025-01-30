@@ -51,7 +51,8 @@ const AvailabilityFinalConsentForm = ({
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
 	const [payoutTransactionId, setPayoutTransactionId] = useState();
 	const { clientUser } = useCurrentUsersContext();
-	const { getFinalServices } = useSelectedServiceContext();
+	const { getFinalServices, selectedService, resetServices } =
+		useSelectedServiceContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const [totalAmount, setTotalAmount] = useState<{
 		total: string;
@@ -197,6 +198,8 @@ const AvailabilityFinalConsentForm = ({
 					}
 				});
 			});
+
+			setIsDiscountUtilized(true);
 		}
 
 		// Platform Fee
@@ -288,12 +291,6 @@ const AvailabilityFinalConsentForm = ({
 					},
 				},
 			});
-
-			// toast({
-			// 	variant: "destructive",
-			// 	title: `Meeting scheduled on ${customDateValue} from ${formattedData.timeRange}`,
-			// 	toastStatus: "positive",
-			// });
 
 			return {
 				callId: call.id,
@@ -553,7 +550,7 @@ const AvailabilityFinalConsentForm = ({
 				duration: callDetails.duration,
 				amount: totalAmount.total,
 				currency: totalAmount.currency,
-				discounts: isDiscountUtilized ? service.discountRules._id : [],
+				discounts: applicableDiscounts,
 			};
 
 			let registerCallResponse = await axios.post(
@@ -604,7 +601,6 @@ const AvailabilityFinalConsentForm = ({
 							? clientUser?.email
 							: clientUser?.phone,
 						global: clientUser?.global ?? false,
-						discount: applicableDiscounts,
 					});
 				}
 
@@ -612,6 +608,14 @@ const AvailabilityFinalConsentForm = ({
 					(await axios.put(`${backendBaseUrl}/availability/${service._id}`, {
 						clientId: callDetails.meetingOwner || clientUser?._id,
 					}));
+
+				if (selectedService && (callDetails.meetingOwner || clientUser?._id)) {
+					await axios.put(`${backendBaseUrl}/services/${selectedService._id}`, {
+						clientId: callDetails.meetingOwner || clientUser?._id,
+					});
+
+					resetServices();
+				}
 
 				updateWalletBalance();
 
