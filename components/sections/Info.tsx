@@ -10,34 +10,30 @@ import {
 import { queries } from "@/constants";
 
 const Info = () => {
-	// Split the queries into two columns for larger screens
 	const midIndex = Math.ceil(queries.length / 2);
 	const firstColumnQueries = queries.slice(0, midIndex);
 	const secondColumnQueries = queries.slice(midIndex);
 	const theme = `5px 5px 0px 0px #232323`;
 
 	return (
-		<section className="w-full h-fit py-10 md:py-20 bg-white grid grid-cols-1 gap-10 items-center md:px-14 lg:px-24 max-md:px-4">
-			<h2 className="text-4xl md:text-5xl font-semibold !leading-relaxed">
+		<section className="flex flex-col gap-8 md:gap-12 items-center justify-center pb-10 md:pb-20 md:px-14 lg:px-24 max-md:px-4">
+			<h2 className="text-3xl md:text-4xl font-semibold !leading-snug">
 				Frequently Asked Questions
 			</h2>
 
 			{/* queries on small screens */}
-			<div className="grid grid-cols-1 md:hidden items-start justify-center md:gap-20">
+			<div className="w-full grid grid-cols-1 md:hidden items-start justify-center md:gap-20">
 				<Accordion type="single" collapsible>
 					{queries.map((query, index) => (
 						<AccordionItem
 							key={index}
 							value={`item-${index}`}
-							className="mb-7 border-2 border-black rounded-lg"
-							style={{
-								boxShadow: theme,
-							}}
+							className="mb-7 px-4 py-2 bg-[#F9FAFB] rounded-lg"
 						>
-							<AccordionTrigger className="px-4 text-start text-sm">
+							<AccordionTrigger className="px-4 text-start text-lg">
 								{query.label}
 							</AccordionTrigger>
-							<AccordionContent className="bg-black text-white p-4">
+							<AccordionContent className="bg-white rounded-lg p-4">
 								{query.explanation}
 							</AccordionContent>
 						</AccordionItem>
@@ -52,15 +48,12 @@ const Info = () => {
 						<AccordionItem
 							key={index}
 							value={`item-${index}`}
-							className="mb-7 border-2 border-black rounded-lg"
-							style={{
-								boxShadow: theme,
-							}}
+							className="mb-7 px-4 py-2 bg-[#F9FAFB] rounded-lg"
 						>
-							<AccordionTrigger className="px-4 text-start text-sm">
+							<AccordionTrigger className="px-4 text-start text-lg">
 								{query.label}
 							</AccordionTrigger>
-							<AccordionContent className="bg-black text-white p-4">
+							<AccordionContent className="bg-white rounded-lg p-4">
 								{query.explanation}
 							</AccordionContent>
 						</AccordionItem>
@@ -71,15 +64,12 @@ const Info = () => {
 						<AccordionItem
 							key={index + midIndex}
 							value={`item-${index + midIndex}`}
-							className="mb-7 border-2 border-black rounded-lg"
-							style={{
-								boxShadow: theme,
-							}}
+							className="mb-7 px-4 py-2 bg-[#F9FAFB] rounded-lg"
 						>
-							<AccordionTrigger className="px-4 text-start text-sm">
+							<AccordionTrigger className="px-4 text-start text-lg">
 								{query.label}
 							</AccordionTrigger>
-							<AccordionContent className="bg-black text-white p-4">
+							<AccordionContent className="bg-white rounded-lg p-4">
 								{query.explanation}
 							</AccordionContent>
 						</AccordionItem>

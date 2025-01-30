@@ -8,6 +8,7 @@ import MakingMoney from "@/components/sections/MakingMoney";
 import OwnApp from "@/components/sections/OwnApp";
 import ShareLink from "@/components/sections/ShareLink";
 import SwitchToggle from "@/components/sections/SwitchToggle";
+import Testimonials from "@/components/sections/Testimonials";
 import Footer from "@/components/shared/Footer";
 import NavbarWeb from "@/components/shared/NavbarWeb";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
@@ -36,8 +37,8 @@ const HomePage = () => {
 			<CheckoutBanner />
 			{/* Share Link Section */}
 			<ShareLink />
-			{/* Making Money */}
-			{/* <MakingMoney /> */}
+			{/* Testimonials */}
+			<Testimonials />
 			{/* Own App Section */}
 			<OwnApp />
 			{/* Accordion Section */}
