@@ -243,7 +243,10 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 							Discount Campaign
 						</h1>
 					</section>
-					<div className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect">
+					<button
+						className="flex items-center mt-2 gap-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect"
+						onClick={toggleDiscountServiceSheet}
+					>
 						{isDiscountServiceSheetOpen ? (
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -276,15 +279,12 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 							</svg>
 						)}
 
-						<button
-							className="flex items-center justify-center text-sm sm:text-base whitespace-nowrap"
-							onClick={toggleDiscountServiceSheet}
-						>
+						<section className="flex items-center justify-center text-sm sm:text-base">
 							{isDiscountServiceSheetOpen
 								? "Creating Campaign"
 								: "Create new Campaign"}
-						</button>
-					</div>
+						</section>
+					</button>
 				</div>
 
 				{/* Filter Bar */}
@@ -706,7 +706,10 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 								Create your first campaign to get started
 							</span>
 
-							<div className="flex items-center mt-2 gap-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect">
+							<button
+								className="flex items-center mt-2 gap-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect"
+								onClick={toggleDiscountServiceSheet}
+							>
 								{isDiscountServiceSheetOpen ? (
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
@@ -739,15 +742,12 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 									</svg>
 								)}
 
-								<button
-									className="flex items-center justify-center text-sm sm:text-base"
-									onClick={toggleDiscountServiceSheet}
-								>
+								<section className="flex items-center justify-center text-sm sm:text-base">
 									{isDiscountServiceSheetOpen
 										? "Creating Campaign"
 										: "Create new Campaign"}
-								</button>
-							</div>
+								</section>
+							</button>
 						</div>
 					)}
 				</div>
