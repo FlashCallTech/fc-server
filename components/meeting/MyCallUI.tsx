@@ -86,7 +86,8 @@ const MyCallUI = () => {
 				await updateExpertStatus(expertPhone, "Online");
 			}
 
-			let discounts = getFinalServices();
+			let discounts =
+				updatedCall.state.custom.type !== "scheduled" && getFinalServices();
 
 			await handleInterruptedCall(
 				currentUser?._id as string,

@@ -237,8 +237,17 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 					const data = docSnapshot.data();
 					if (data) {
 						console.log(data);
-						if (data.status === "ended" || data.status === "rejected" || data.status === "cancelled") {
-							updateExpertStatus(clientUser?.global ? clientUser?.email as string : clientUser?.phone as string, "Online");
+						if (
+							data.status === "ended" ||
+							data.status === "rejected" ||
+							data.status === "cancelled"
+						) {
+							updateExpertStatus(
+								clientUser?.global
+									? (clientUser?.email as string)
+									: (clientUser?.phone as string),
+								"Online"
+							);
 							setSheetOpen(false);
 							setChatReqSent(false);
 							setChatState(data.status);
@@ -872,7 +881,9 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 					>
 						{loading ? (
 							<div className="flex flex-col items-center justify-center gap-4">
-								<span className="font-semibold text-xl">Preparing the request...</span>
+								<span className="font-semibold text-xl">
+									Preparing the request...
+								</span>
 							</div>
 						) : (
 							<>
