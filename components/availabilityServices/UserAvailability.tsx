@@ -306,7 +306,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 														className={`${
 															watch(
 																`weeklyAvailability.${dayIndex}.isActive`
-															) && "bg-black text-white"
+															) && "bg-green-1 text-white"
 														} border border-gray-400 size-[20px] p-0.5 rounded-[6px]`}
 													/>
 													<CardTitle className="text-lg">
