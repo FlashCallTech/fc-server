@@ -22,7 +22,7 @@ import axios from "axios";
 import { success } from "@/constants/icons";
 import useScheduledPayment from "@/hooks/useScheduledPayment";
 import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
-import { collection, doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Timestamp } from "firebase/firestore"; // Import Timestamp
 
@@ -417,7 +417,6 @@ const AvailabilityFinalConsentForm = ({
 				global: clientUser?.global || false,
 				totalAmount: service.basePrice,
 				paidAmount: Number(totalAmount.total),
-				payoutTransactionId,
 				paid: false,
 				maxDuration: service.timeDuration,
 				clientJoined: false,
@@ -571,7 +570,9 @@ const AvailabilityFinalConsentForm = ({
 				});
 
 				console.log(response.data);
-				setPayoutTransactionId(response.data.wallet._id);
+				await updateDoc(doc(db, "scheduledChats", callDetails.callId), {
+					payoutTransactionId: response.data.result._id,
+				});
 
 				if (service.type !== "chat") {
 					await fetch(`${backendBaseUrl}/calls/registerCall`, {
