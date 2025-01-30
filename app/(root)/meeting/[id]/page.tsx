@@ -201,9 +201,10 @@ const CallEnded = ({
 					status: "payment pending",
 				});
 
-				updatePastFirestoreSessions(call.id, {
-					status: "payment pending",
-				});
+				call.state.custom.type === "scheduled" &&
+					updatePastFirestoreSessions(call.id, {
+						status: "payment pending",
+					});
 
 				const creatorURL = localStorage.getItem("creatorURL");
 				const hasVisitedFeedbackPage = localStorage.getItem(
