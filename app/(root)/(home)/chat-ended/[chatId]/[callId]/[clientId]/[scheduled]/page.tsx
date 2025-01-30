@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import CallFeedback from "@/components/feedbacks/CallFeedback";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useToast } from "@/components/ui/use-toast";
 import { useParams, useRouter } from "next/navigation";
-import * as Sentry from "@sentry/nextjs";
 import ChatFeedback from "@/components/feedbacks/ChatFeedback";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
@@ -56,13 +54,16 @@ const ChatFeedbackPage = () => {
 			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
 			className="w-full flex items-center justify-center bg-"
 		>
-			{clientId === currentUser?._id && (
+			{clientId === currentUser?._id ? (
 				<ChatFeedback
 					chatId={chatId as string}
 					callId={callId as string}
+					clientId={clientId}
 					isOpen={showFeedback}
 					onOpenChange={handleFeedbackClose}
 				/>
+			) : (
+				<div>The chat you are looking for has ended</div>
 			)}
 		</section>
 	);

@@ -79,7 +79,7 @@ export const ChatProvider = ({ children, chatId }: { children: React.ReactNode, 
 				localStorage.removeItem("chatId");
 				localStorage.removeItem("user2");
 				localStorage.removeItem("EndedBy");
-				router.replace(`/chat-ended/${chatId}/${chat?.callId}/${chat?.clientId}`);
+				router.replace(`/chat-ended/${chatId}/${chat?.callId}/${chat?.clientId}/false`);
 			}
 		}
 	}, [chatEnded, userType, router, chatId, chat]);

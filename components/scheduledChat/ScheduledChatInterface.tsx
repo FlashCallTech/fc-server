@@ -21,6 +21,7 @@ import CountdownTimer from "./TimerBeforeStart";
 import Loader from "../shared/Loader";
 import Countdown from "./Timer";
 import EndChatDecision from "./EndChatDecision";
+import Tip from "./Tip";
 
 const ScheduledChatInterface: React.FC = () => {
 	const [chat, setChat] = useState<any>();
@@ -71,7 +72,7 @@ const ScheduledChatInterface: React.FC = () => {
 					const data = doc.data();
 					setChat(data);
 					if (data.status === "ended") {
-						userType === "client" && router.replace(`/chat-ended/${chatId}/${callId}/${chat?.clientId}`);
+						userType === "client" && router.replace(`/chat-ended/${chatId}/${callId}/true/${chat?.clientId}/true`);
 						userType === "creator" && router.replace(`/home`);
 					}
 				}
@@ -167,9 +168,9 @@ const ScheduledChatInterface: React.FC = () => {
 			await updateDoc(scheduledChatDocRef, {
 				status: "ended"
 			})
-		} else {
-			userType === "client" && router.replace(`/chat-ended/${chatId}/${callId}/${chat?.clientId}`);
-			userType === "creator" && router.replace(`/home`);
+		} 
+		else {
+			router.replace(`/home`);
 		}
 		setShowDialog(false);
 	};
@@ -382,27 +383,18 @@ const ScheduledChatInterface: React.FC = () => {
 
 	return (
 		<div className="w-full h-screen">
-			{/* Mobile Layout */}
-			<div
-				className={`flex flex-col h-screen justify-between w-full bg-cover bg-center overflow-y-auto scrollbar-hide md:hidden`}
-				style={{ backgroundImage: 'url(/back.png)' }}
-			>
-			</div>
-			{/* Large Screen Layout */}
-			<div
-				className={`hidden md:flex items-center justify-center h-screen w-full bg-black`}
-			>
-				{chat && (
-					userType === "client" && chat?.clientJoined ||
-					userType === "creator" && chat?.creatorJoined
-				) ? (
+			{chat && (
+				userType === "client" && chat?.clientJoined ||
+				userType === "creator" && chat?.creatorJoined
+			) ? (
+				<div>
+					{/* Mobile Layout */}
 					<div
-						className="md:w-[50%] lg:w-[70%] h-[98%] md:flex flex-col rounded-md bg-cover bg-center"
+						className={`flex flex-col h-screen justify-between w-full bg-cover bg-center overflow-y-auto scrollbar-hide md:hidden`}
 						style={{ backgroundImage: 'url(/back.png)' }}
 					>
-						<div className="flex w-full justify-between rounded-t-md items-center px-2 bg-gray-500">
+						<div className="fixed top-0 left-0 w-full flex justify-between items-center px-4 py-[2px] bg-gray-500 z-30 md:hidden">
 							<div className="flex items-center gap-2">
-								<div className="lg:flex items-center gap-2"></div>
 								<Image
 									src={`${userType === "client" ? chat?.creatorPhoto ?? 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0' : chat?.clienPhoto ?? 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'}`}
 									alt="profile"
@@ -423,28 +415,30 @@ const ScheduledChatInterface: React.FC = () => {
 									</p>
 								</div>
 							</div>
-							<div>
-								<div className="flex gap-2">
-									<button
-										onClick={endCall}
-										className="bg-[rgba(255,81,81,1)] text-white p-2 text-[10px] md:text-sm rounded-lg hoverScaleDownEffect"
-									>
-										{chatEnded ? "End" : "Leave"}
-									</button>
-								</div>
+							<div className="flex gap-2">
+								<Tip
+									handleSendTip={handleSendTip}
+									setText={setText}
+									creatorId={chat.creatorId as string}
+								/>
+								<button
+									onClick={endCall}
+									className="bg-[rgba(255,81,81,1)] text-white p-2 text-[10px] md:text-sm rounded-lg hoverScaleDownEffect"
+								>
+									End
+								</button>
 							</div>
 						</div>
 						{showDialog && (
-							<EndChatDecision
+							<EndCallDecision
 								handleDecisionDialog={handleDecisionDialog}
 								setShowDialog={handleCloseDialog}
-								chatEnded={chatEnded}
 							/>
 						)}
-						<div className="mt-auto overflow-y-auto scrollbar-hide">
+						<div className="mt-auto pt-[50px]">
 							{/* Chat Messages */}
 							{img?.url ? (
-								<div className="relative z-20 p-2 h-full bg-black">
+								<div className="relative mb-[48px] z-20 p-2 bg-black">
 									<div className={`relative ${isImgUploading ? "opacity-50" : ""}`}>
 										{/* Show the image */}
 										<Image
@@ -470,49 +464,172 @@ const ScheduledChatInterface: React.FC = () => {
 								</div>
 							) : (
 								chat && (
-									<div className="z-20">
+									<div className="mb-[56px] z-20">
 										<Messages chat={chat} messages={messages} currentUserMessageSent={currentUserMessageSent} setReplyIndex={setReplyIndex} setText={setText} />
 									</div>
 								)
 							)}
-						</div>
-						{/* Sticky Chat Input at the Bottom */}
-						<div className={`w-full z-30 p-safe-bottom ${img.url ? "bg-black" : ""}`}>
-							<ChatInput
-								isRecording={isRecording}
-								discardAudio={discardAudio}
-								text={text}
-								setText={setText}
-								handleImg={handleImg}
-								handleSend={handleSend}
-								toggleRecording={toggleRecording}
-								img={img}
-								audio={audio}
-								audioStream={audioStream!}
-								handleCapturedImg={handleCapturedImg}
-								isImgUploading={isImgUploading}
-								isAudioUploading={isAudioUploading}
-								discardImage={discardImage}
-								isTyping={isTyping}
-								setIsTyping={setIsTyping}
-								replyIndex={replyIndex}
-								chat={chat}
-								discardReply={discardReply}
-							/>
+
+							{/* Sticky Chat Input at the Bottom */}
+							<div
+								className="fixed bottom-0 w-full z-30 bg-cover bg-center p-safe-bottom md:hidden"
+								style={{
+									backgroundImage: img.url ? 'none' : 'url(/back.png)',
+									backgroundColor: img.url ? 'black' : 'transparent',
+								}}
+							>
+								<ChatInput
+									isRecording={isRecording}
+									discardAudio={discardAudio}
+									text={text}
+									setText={setText}
+									handleImg={handleImg}
+									handleSend={handleSend}
+									toggleRecording={toggleRecording}
+									img={img}
+									audio={audio}
+									audioStream={audioStream!}
+									handleCapturedImg={handleCapturedImg}
+									isImgUploading={isImgUploading}
+									isAudioUploading={isAudioUploading}
+									discardImage={discardImage}
+									isTyping={isTyping}
+									setIsTyping={setIsTyping}
+									replyIndex={replyIndex}
+									chat={chat}
+									discardReply={discardReply}
+								/>
+							</div>
 						</div>
 					</div>
-				) : (
-					<div className="text-[#1F2937] bg-white size-full">
-						<CountdownTimer
-							chat={chat}
-							timeLeft={timeLeft}
-							userType={userType}
-							joinLoading={joinLoading}
-							setJoinLoading={setJoinLoading}
-						/>
+					{/* Large Screen Layout */}
+					<div
+						className={`hidden md:flex items-center justify-center h-screen w-full bg-black`}
+					>
+
+						<div
+							className="md:w-[50%] lg:w-[70%] h-[98%] md:flex flex-col rounded-md bg-cover bg-center"
+							style={{ backgroundImage: 'url(/back.png)' }}
+						>
+							<div className="flex w-full justify-between rounded-t-md items-center px-2 bg-gray-500">
+								<div className="flex items-center gap-2">
+									<div className="lg:flex items-center gap-2"></div>
+									<Image
+										src={`${userType === "client" ? chat?.creatorPhoto ?? 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0' : chat?.clienPhoto ?? 'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'}`}
+										alt="profile"
+										width={1000}
+										height={1000}
+										className="size-10 min-w-10 rounded-full object-cover"
+									/>
+									<div className="flex flex-col">
+										<div className="text-white font-bold text-xs md:text-lg">
+											{userType === "client" ? chat?.creatorName : chat?.clientName}
+										</div>
+										<Countdown
+											timerDetails={chat}
+											setChatEnded={setChatEnded}
+										/>
+										<p className="text-[10px] md:text-sm text-green-500">
+											Ongoing chat
+										</p>
+									</div>
+								</div>
+								<div>
+									<div className="flex gap-2">
+										<Tip
+											handleSendTip={handleSendTip}
+											setText={setText}
+											creatorId={chat.creatorId as string}
+										/>
+										<button
+											onClick={endCall}
+											className="bg-[rgba(255,81,81,1)] text-white p-2 text-[10px] md:text-sm rounded-lg hoverScaleDownEffect"
+										>
+											{chatEnded ? "End" : "Leave"}
+										</button>
+									</div>
+								</div>
+							</div>
+							{showDialog && (
+								<EndChatDecision
+									handleDecisionDialog={handleDecisionDialog}
+									setShowDialog={handleCloseDialog}
+									chatEnded={chatEnded}
+								/>
+							)}
+							<div className="mt-auto overflow-y-auto scrollbar-hide">
+								{/* Chat Messages */}
+								{img?.url ? (
+									<div className="relative z-20 p-2 h-full bg-black">
+										<div className={`relative ${isImgUploading ? "opacity-50" : ""}`}>
+											{/* Show the image */}
+											<Image
+												src={img.url}
+												alt="Uploaded content"
+												width={500}
+												height={500}
+												className="object-contain mx-auto"
+											/>
+
+											{isImgUploading && (
+												<div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+													<div className="w-10 h-10 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
+												</div>
+											)}
+										</div>
+
+										<div className="absolute top-2 right-2 bg-white text-xs font-bold rounded-sm">
+											<button onClick={discardImage}>
+												Close
+											</button>
+										</div>
+									</div>
+								) : (
+									chat && (
+										<div className="z-20">
+											<Messages chat={chat} messages={messages} currentUserMessageSent={currentUserMessageSent} setReplyIndex={setReplyIndex} setText={setText} />
+										</div>
+									)
+								)}
+							</div>
+							{/* Sticky Chat Input at the Bottom */}
+							<div className={`w-full z-30 p-safe-bottom ${img.url ? "bg-black" : ""}`}>
+								<ChatInput
+									isRecording={isRecording}
+									discardAudio={discardAudio}
+									text={text}
+									setText={setText}
+									handleImg={handleImg}
+									handleSend={handleSend}
+									toggleRecording={toggleRecording}
+									img={img}
+									audio={audio}
+									audioStream={audioStream!}
+									handleCapturedImg={handleCapturedImg}
+									isImgUploading={isImgUploading}
+									isAudioUploading={isAudioUploading}
+									discardImage={discardImage}
+									isTyping={isTyping}
+									setIsTyping={setIsTyping}
+									replyIndex={replyIndex}
+									chat={chat}
+									discardReply={discardReply}
+								/>
+							</div>
+						</div>
 					</div>
-				)}
-			</div>
+				</div>
+			) : (
+				<div className="text-[#1F2937] bg-white size-full">
+					<CountdownTimer
+						chat={chat}
+						timeLeft={timeLeft}
+						userType={userType}
+						joinLoading={joinLoading}
+						setJoinLoading={setJoinLoading}
+					/>
+				</div>
+			)}
 		</div>
 	);
 };

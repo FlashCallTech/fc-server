@@ -43,7 +43,7 @@ const CountdownTimer: React.FC<CountdownProps> = ({ chat, timeLeft, userType, jo
     <div className="flex size-full items-center justify-center">
       <div className="flex flex-col px-6 py-12 items-center justify-center">
         {/* Header Section */}
-        <h1 className="text-3xl font-semibold mb-3">
+        <h1 className="text-3xl text-center font-semibold mb-3">
           {timeLeft === "The call has started!"
             ? "Your Call is Ready"
             : "Waiting for Your Scheduled Chat"}
