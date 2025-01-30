@@ -168,7 +168,7 @@ const ScheduledChatInterface: React.FC = () => {
 			await updateDoc(scheduledChatDocRef, {
 				status: "ended"
 			})
-		} 
+		}
 		else {
 			router.replace(`/home`);
 		}
@@ -425,7 +425,7 @@ const ScheduledChatInterface: React.FC = () => {
 									onClick={endCall}
 									className="bg-[rgba(255,81,81,1)] text-white p-2 text-[10px] md:text-sm rounded-lg hoverScaleDownEffect"
 								>
-									End
+									{chatEnded ? "End" : "Leave"}
 								</button>
 							</div>
 						</div>
@@ -620,7 +620,7 @@ const ScheduledChatInterface: React.FC = () => {
 					</div>
 				</div>
 			) : (
-				<div className="text-[#1F2937] bg-white size-full">
+				<div className="text-[#1F2937] bg-white size-full flex items-center justify-center">
 					<CountdownTimer
 						chat={chat}
 						timeLeft={timeLeft}
