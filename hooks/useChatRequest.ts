@@ -40,7 +40,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	const { walletBalance } = useWalletBalanceContext();
 	const { getDevicePlatform } = usePlatform();
 
-
 	// Function to update expert's status
 	const updateExpertStatus = async (phone: string, status: string) => {
 		try {
@@ -49,7 +48,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ phone, status }),
+				body: JSON.stringify({ phone, status, global: currentUser?.global ?? false }),
 			});
 
 			const data = await response.json();
@@ -180,7 +179,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 			const messagesDocRef = doc(messagesRef, chatId);
 			const messagesDocSnapshot = await getDoc(messagesDocRef);
-			if(!messagesDocSnapshot.exists()) {
+			if (!messagesDocSnapshot.exists()) {
 				await setDoc(messagesDocSnapshot.ref, {
 					messages: []
 				})
@@ -215,25 +214,15 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				: new Date();
 			const formattedDate = createdAtDate.toISOString().split("T")[0];
 
-			await setDoc(newChatRequestRef, {
+			const chatRequestData: any = {
 				id: newChatRequestRef.id,
 				callId,
 				creatorId: creator?._id,
-				creatorName: creator.fullName
-					? creator.fullName
-					: maskPhoneNumber(creator.phone as string),
-				creatorPhone: creator.phone,
 				creatorImg: creator.photo,
 				clientId: clientUser?._id,
-				clientPhone: clientUser?.phone ?? "",
-				clientName: clientUser?.fullName
-					? clientUser.fullName
-					: maskPhoneNumber(clientUser.phone as string),
 				clientImg: clientUser?.photo,
 				client_first_seen: formattedDate,
-				creator_first_seen: creator.createdAt
-					? creator.createdAt.toString().split("T")[0]
-					: "",
+				creator_first_seen: creator.createdAt ? creator.createdAt.toString().split("T")[0] : "",
 				client_balance: clientUser.walletBalance,
 				status: "pending",
 				chatId: chatId,
@@ -242,7 +231,35 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				global: currentUser?.global ?? false,
 				createdAt: Date.now(),
 				discounts: discounts ?? null,
-			});
+			};
+
+			// Conditionally add fields if they exist
+			if (creator.fullName) {
+				chatRequestData.creatorName = creator.fullName;
+			} else if (creator.phone) {
+				chatRequestData.creatorName = maskPhoneNumber(creator.phone as string);
+			}
+
+			if (creator.phone) {
+				chatRequestData.creatorPhone = creator.phone;
+			}
+
+			if (clientUser?.phone) {
+				chatRequestData.clientPhone = clientUser.phone;
+			}
+
+			if (clientUser?.email) {
+				chatRequestData.clientEmail = clientUser.email;
+			}
+
+			if (clientUser?.fullName) {
+				chatRequestData.clientName = clientUser.fullName;
+			} else if (clientUser?.phone) {
+				chatRequestData.clientName = maskPhoneNumber(clientUser.phone as string);
+			}
+
+			await setDoc(newChatRequestRef, chatRequestData);
+
 
 			const docSnap = await getDoc(newChatRequestRef);
 			console.log("Inside HandleChat: ", docSnap.data());
@@ -354,12 +371,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
 			if (!existingChatDoc.data()?.status) {
-				await setDoc(doc(db, "chats", chatId), {
+				const chatData: any = {
 					callId: chatRequest.callId,
 					chatId: chatRequest.chatId,
 					clientId: chatRequest.clientId,
 					clientName: chatRequest.clientName,
-					clientPhone: chatRequest.clientPhone ?? "",
 					clientImg: chatRequest.clientImg,
 					creatorId: chatRequest.creatorId,
 					creatorName: chatRequest.creatorName,
@@ -370,7 +386,20 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					timerSet: false,
 					global: chatRequest.global ?? false,
 					chatRate: chatRequest.chatRate,
-				});
+				};
+
+				// Only add `clientPhone` if it exists
+				if (chatRequest.clientPhone) {
+					chatData.clientPhone = chatRequest.clientPhone;
+				}
+
+				// Only add `clientEmail` if it exists
+				if (chatRequest.clientEmail) {
+					chatData.clientEmail = chatRequest.clientEmail;
+				}
+
+				await setDoc(doc(db, "chats", chatId), chatData);
+
 
 				const creatorChatUpdate = updateDoc(
 					doc(userChatsRef, chatRequest.creatorId),
@@ -399,25 +428,35 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				);
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
 			} else {
-				await updateDoc(doc(db, "chats", chatId), {
+				const chatData: any = {
 					callId: chatRequest.callId,
 					chatId: chatRequest.chatId,
 					clientId: chatRequest.clientId,
 					clientName: chatRequest.clientName,
-					clientPhone: chatRequest.clientPhone ?? "",
 					clientImg: chatRequest.clientImg,
 					creatorId: chatRequest.creatorId,
 					creatorName: chatRequest.creatorName,
 					creatorPhone: chatRequest.creatorPhone,
 					creatorImg: chatRequest.creatorImg,
 					status: "active",
+					messages: [],
 					timerSet: false,
-					chatRate: chatRequest.chatRate,
-					maxChatDuration,
 					global: chatRequest.global ?? false,
-					clientBalance: response.walletBalance ?? "",
-					discounts: chatRequest?.discounts ?? [],
-				});
+					chatRate: chatRequest.chatRate,
+				};
+
+				// Only add `clientPhone` if it exists
+				if (chatRequest.clientPhone) {
+					chatData.clientPhone = chatRequest.clientPhone;
+				}
+
+				// Only add `clientEmail` if it exists
+				if (chatRequest.clientEmail) {
+					chatData.clientEmail = chatRequest.clientEmail;
+				}
+
+				await updateDoc(doc(db, "chats", chatId), chatData);
+
 			}
 
 			await updateDoc(doc(chatRef, chatId), {

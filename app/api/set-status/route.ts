@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
 	try {
-		const { phone, status } = await request.json();
+		const { phone, status, global } = await request.json();
 
 		// Check if phone and status are provided
 		if (!phone || !status) {
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 		}
 
 		// Format phone number by adding the country code if missing
-		const formattedPhone = phone.startsWith("+91") ? phone : `+91${phone}`;
+		const formattedPhone = global ? phone : phone.startsWith("+91") ? phone : `+91${phone}`;
 
 		const statusDocRef = doc(db, "userStatus", formattedPhone);
 
