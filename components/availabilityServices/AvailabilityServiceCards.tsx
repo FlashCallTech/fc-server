@@ -188,7 +188,10 @@ const AvailabilityServiceCards = ({
 							Service Management
 						</h1>
 					</section>
-					<div className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect">
+					<button
+						className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect"
+						onClick={toggleAvailabilityServiceSheet}
+					>
 						{isAvailabilityServiceSheetOpen ? (
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -221,15 +224,12 @@ const AvailabilityServiceCards = ({
 							</svg>
 						)}
 
-						<button
-							className="flex items-center justify-center text-sm sm:text-base"
-							onClick={toggleAvailabilityServiceSheet}
-						>
+						<section className="flex items-center justify-center text-sm sm:text-base">
 							{isAvailabilityServiceSheetOpen
 								? "Creating Service"
 								: "Create new Service"}
-						</button>
-					</div>
+						</section>
+					</button>
 				</div>
 
 				{isAvailabilityServiceSheetOpen && (
@@ -493,7 +493,10 @@ const AvailabilityServiceCards = ({
 										Create your first service to get started
 									</span>
 
-									<div className="flex items-center mt-2 gap-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect">
+									<button
+										className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect"
+										onClick={toggleAvailabilityServiceSheet}
+									>
 										{isAvailabilityServiceSheetOpen ? (
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
@@ -526,15 +529,12 @@ const AvailabilityServiceCards = ({
 											</svg>
 										)}
 
-										<button
-											className="flex items-center justify-center text-sm sm:text-base"
-											onClick={toggleAvailabilityServiceSheet}
-										>
+										<section className="flex items-center justify-center text-sm sm:text-base">
 											{isAvailabilityServiceSheetOpen
 												? "Creating Service"
 												: "Create new Service"}
-										</button>
-									</div>
+										</section>
+									</button>
 								</div>
 							)}
 						</div>

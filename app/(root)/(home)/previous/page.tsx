@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import CallListMobile from "@/components/calls/CallListMobile";
@@ -10,7 +10,7 @@ import { creatorUser } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
 import CallListMobileCreator from "@/components/calls/CallListMobileCreator";
 import Link from "next/link";
-import SinglePostLoader from "@/components/shared/SinglePostLoader";
+import ContentLoading from "@/components/shared/ContentLoading";
 
 const PreviousPage = () => {
 	const [creator, setCreator] = useState<creatorUser>();
@@ -114,8 +114,12 @@ const PreviousPage = () => {
 					) : (
 						<CallListMobileCreator callType={historyType} />
 					)
+				) : fetchingUser ? (
+					<div className="size-full h-[calc(100vh-6rem)] flex flex-col items-center justify-center text-2xl font-semibold text-center">
+						<ContentLoading />
+					</div>
 				) : (
-					<div className="flex flex-col w-full items-center justify-center h-full">
+					<div className="flex flex-col w-full items-center justify-center h-[calc(100vh-6rem)]">
 						<h1 className="text-2xl font-semibold text-red-500">
 							No Calls Found
 						</h1>
