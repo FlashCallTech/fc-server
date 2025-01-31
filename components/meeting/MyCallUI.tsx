@@ -490,7 +490,7 @@ const MyCallUI = () => {
 		return <MyCallConnectingUI call={connectingCall} />;
 	}
 
-	if (incomingCalls.length > 0 && showCallUI && !hide) {
+	if (incomingCalls.length > 0 && showCallUI) {
 		return <MyIncomingCallUI call={incomingCalls[0]} />;
 	}
 
