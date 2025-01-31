@@ -25,6 +25,7 @@ import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext"
 import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Timestamp } from "firebase/firestore"; // Import Timestamp
+import { useRouter } from "next/navigation";
 
 interface params {
 	service: AvailabilityService;
@@ -69,6 +70,7 @@ const AvailabilityFinalConsentForm = ({
 	const client = useStreamVideoClient();
 	const imageSrc = getImageSource(creator);
 	const fullName = getDisplayName(creator);
+	const router = useRouter();
 
 	let formattedData = formatDisplay(
 		selectedDay,
@@ -477,8 +479,6 @@ const AvailabilityFinalConsentForm = ({
 						walletUpdatePayload
 					);
 
-					console.log(walletUpdateResponse);
-
 					if (walletUpdateResponse.status !== 200) {
 						throw new Error("Failed to update wallet balance");
 					}
@@ -498,8 +498,11 @@ const AvailabilityFinalConsentForm = ({
 						setIsPaymentHandlerSuccess
 					);
 
+					await new Promise((resolve) => setTimeout(resolve, 500));
 					paymentSuccess = isPaymentHandlerSuccess;
 				}
+
+				console.log("nice ", paymentSuccess);
 
 				if (!paymentSuccess) {
 					if (walletPaymentAmount > 0) {
@@ -532,7 +535,7 @@ const AvailabilityFinalConsentForm = ({
 			if (!callDetails) {
 				throw new Error("Failed to create meeting");
 			}
-			
+
 			// Step 2: Register the scheduled call
 			const registerUpcomingCallAPI = "/calls/scheduled/createCall";
 			const registerUpcomingCallPayload = {
@@ -569,25 +572,26 @@ const AvailabilityFinalConsentForm = ({
 					callType: service.type,
 				});
 
-				console.log(response.data);
-				await updateDoc(doc(db, "scheduledChats", callDetails.callId), {
-					payoutTransactionId: response.data.result._id,
+				if (service.type === "chat") {
+					await updateDoc(doc(db, "scheduledChats", callDetails.callId), {
+						payoutTransactionId: response.data.result._id,
+					});
+				}
+
+				await fetch(`${backendBaseUrl}/calls/registerCall`, {
+					method: "POST",
+					body: JSON.stringify({
+						callId: callDetails.callId as string,
+						type: service.type as string,
+						status: "Scheduled",
+						creator: String(clientUser?._id),
+						members: callDetails.members,
+						payoutTransactionId,
+					}),
+					headers: { "Content-Type": "application/json" },
 				});
 
 				if (service.type !== "chat") {
-					await fetch(`${backendBaseUrl}/calls/registerCall`, {
-						method: "POST",
-						body: JSON.stringify({
-							callId: callDetails.callId as string,
-							type: service.type as string,
-							status: "Scheduled",
-							creator: String(clientUser?._id),
-							members: callDetails.members,
-							payoutTransactionId,
-						}),
-						headers: { "Content-Type": "application/json" },
-					});
-
 					await updatePastFirestoreSessions(callDetails.callId as string, {
 						callId: callDetails.callId,
 						status: "initiated",
@@ -625,12 +629,14 @@ const AvailabilityFinalConsentForm = ({
 				localStorage.removeItem("hasVisitedFeedbackPage");
 
 				setTimeout(() => {
-					toggleSchedulingSheet(false);
+					// toggleSchedulingSheet(false);
 					toast({
 						variant: "destructive",
 						title: `Meeting scheduled on ${formattedData.day} from ${formattedData.timeRange}`,
 						toastStatus: "positive",
 					});
+
+					router.push("/upcoming");
 				}, 2000);
 			} else {
 				throw new Error("Failed to register the call");

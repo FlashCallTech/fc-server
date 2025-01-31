@@ -274,7 +274,7 @@ const ScheduledMeetingList = ({
 
 											<div className="flex items-center justify-center gap-2">
 												<button
-													className="py-2 px-4 bg-green-1 rounded-full hoverScaleDownEffect text-sm text-white"
+													className="py-2 px-4 bg-black rounded-full hoverScaleDownEffect text-sm text-white"
 													onClick={() => handleMeetingRedirect(userCall)}
 												>
 													{timeToStart > 5 * 60 * 1000 ? (
@@ -308,7 +308,7 @@ const ScheduledMeetingList = ({
 													)}
 												</button>
 												<button
-													className="max-sm:absolute top-4 right-4 p-2 bg-green-1 rounded-full hoverScaleDownEffect"
+													className="max-sm:absolute top-4 right-4 p-2 bg-black rounded-full hoverScaleDownEffect"
 													onClick={() => copyToClipboard(userCall)}
 												>
 													<svg

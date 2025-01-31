@@ -143,7 +143,7 @@ const CreatorCard = () => {
 
 	return (
 		<React.Suspense fallback={<ContentLoading />}>
-			<section className="size-full grid grid-cols-1 items-start justify-center">
+			<section className="size-full grid grid-cols-1 items-start justify-center xl:px-14">
 				<CreatorDetails creator={creatorUser} />
 			</section>
 		</React.Suspense>

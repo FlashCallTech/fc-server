@@ -7,7 +7,6 @@ import React, { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { isValidHexColor } from "@/lib/utils";
 import { audio, chat, video } from "@/constants/icons";
 import AvailabilitySelectionSheet from "./AvailabilitySelectionSheet";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
@@ -203,7 +202,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 										<span className="font-bold text-lg">{service.title}</span>
 									</div>
 
-									<div className="text-base">
+									<div className="text-sm mt-2">
 										{service.description
 											? getClampedText(service.description, isExpanded)
 											: "No Description Provided"}
