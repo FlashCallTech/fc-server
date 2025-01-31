@@ -223,6 +223,8 @@ const TipModal = ({
 					? (Number(rechargeAmount) * exchangeRate - totalDeduction).toFixed(2)
 					: (Number(rechargeAmount) - totalDeduction).toFixed(2)
 			);
+
+			const tipId = crypto.randomUUID();
 			await Promise.all([
 				fetch(`${backendBaseUrl}/wallet/payout`, {
 					method: "POST",
@@ -235,6 +237,7 @@ const TipModal = ({
 						amount: rechargeAmount,
 						category: "Tip",
 						global: currentUser?.global ?? false,
+						tipId,
 					}),
 					headers: { "Content-Type": "application/json" },
 				}),
@@ -248,10 +251,17 @@ const TipModal = ({
 						userType: "Creator",
 						amount: amountAdded,
 						category: "Tip",
+						tipId,
 					}),
 					headers: { "Content-Type": "application/json" },
 				}),
 			]);
+
+			await axios.post(`${backendBaseUrl}/tip`, {
+				tipId,
+				amountAdded,
+				amountPaid: rechargeAmount,
+			})
 
 			const userDocRef = doc(firestore, "userTips", creatorId as string);
 

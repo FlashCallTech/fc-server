@@ -167,6 +167,8 @@ const TipModal: React.FC<Props> = ({
 						: (Number(tipAmount) - totalDeduction).toFixed(2)
 				);
 				amountINR = currentUser?.global ? (Number(tipAmount) * exchangeRate) : (Number(tipAmount));
+
+				const tipId = crypto.randomUUID();
 				await Promise.all([
 					fetch(`${backendBaseUrl}/wallet/payout`, {
 						method: "POST",
@@ -179,6 +181,7 @@ const TipModal: React.FC<Props> = ({
 							amount: tipAmount,
 							category: "Tip",
 							global: currentUser?.global ?? false,
+							tipId,
 						}),
 						headers: { "Content-Type": "application/json" },
 					}),
@@ -192,10 +195,17 @@ const TipModal: React.FC<Props> = ({
 							userType: "Creator",
 							amount: amountAdded.toFixed(2),
 							category: "Tip",
+							tipId,
 						}),
 						headers: { "Content-Type": "application/json" },
 					}),
 				]);
+
+				await axios.post(`${backendBaseUrl}/tip`, {
+					tipId,
+					amountAdded,
+					amountPaid: tipAmount,
+				})
 
 				// Firestore tip document update
 				const tipRef = doc(db, "userTips", creatorId as string);
