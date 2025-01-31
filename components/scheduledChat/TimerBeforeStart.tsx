@@ -126,7 +126,7 @@ const CountdownTimer: React.FC<CountdownProps> = ({ chat, timeLeft, userType, jo
         </div>
 
         {/* Footer */}
-        <p className="text-base mt-12 text-[#4B5563]">
+        <p className="text-base mt-12 text-[#4B5563] text-center">
           Please stay on this page until the call begins.
         </p>
       </div>
