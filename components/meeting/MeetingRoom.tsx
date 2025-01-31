@@ -12,7 +12,7 @@ import {
 } from "@stream-io/video-react-sdk";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Users } from "lucide-react";
-import EndCallButton from "../calls/EndCallButton";
+import EndCallButton from "../official/EndCallButton";
 import CallTimer from "../official/CallTimer";
 import { useToast } from "../ui/use-toast";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
@@ -363,7 +363,7 @@ const MeetingRoom = () => {
 					{/* End Call Button */}
 					<Tooltip>
 						<TooltipTrigger>
-							<EndCallButton callType={"instant"} />
+							<EndCallButton />
 						</TooltipTrigger>
 						<TooltipContent className="hidden md:block mb-2 bg-red-500  border-none">
 							<p className="!text-white">End Call</p>

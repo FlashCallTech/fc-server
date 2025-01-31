@@ -32,6 +32,7 @@ const EndCallButton = () => {
 	const handleDecisionDialog = async () => {
 		try {
 			stopMediaStreams();
+			await call?.endCall();
 			const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
 			if (fcmToken) {
 				sendNotification(
@@ -50,7 +51,6 @@ const EndCallButton = () => {
 					}
 				);
 			}
-			await call?.endCall();
 		} catch (error) {
 			console.error("Error ending call:", error);
 		} finally {
