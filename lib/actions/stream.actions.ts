@@ -31,10 +31,10 @@ export const tokenProvider = async (
 		phone: global ? email : phone,
 		role: "admin",
 		devices: [
-			...(fcmToken.token
+			...(fcmToken?.token
 				? [{ id: fcmToken.token, push_provider: "firebase" }]
 				: []),
-			...(fcmToken.voip_token
+			...(fcmToken?.voip_token
 				? [{ id: fcmToken.voip_token, push_provider: "voip" }]
 				: []),
 		],

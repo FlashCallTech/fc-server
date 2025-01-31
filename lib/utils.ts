@@ -1005,7 +1005,6 @@ export const sendCallNotification = async (
 
 	if (fcmToken) {
 		try {
-			// Send push notification for regular FCM
 			sendNotification(
 				fcmToken.token,
 				`Incoming ${callType} Call`,
@@ -1020,7 +1019,7 @@ export const sendCallNotification = async (
 					notificationType,
 				}
 			);
-			if (fcmToken.voip_token) {
+			if (fcmToken.voip_token && notificationType !== "call.missed") {
 				await axios.post(`${backendUrl}/send-notification`, {
 					deviceToken: fcmToken.voip_token,
 					message: `Incoming ${callType} Call Request from ${clientUsername}`,
@@ -1085,7 +1084,7 @@ export const sendChatNotification = async (
 				}
 			);
 
-			if (fcmToken.voip_token) {
+			if (fcmToken.voip_token && notificationType !== "chat.missed") {
 				await axios.post(`${backendUrl}/send-notification`, {
 					deviceToken: fcmToken.voip_token,
 					message: `Incoming ${callType} Call Request from ${clientUsername}`,
