@@ -282,6 +282,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 							clientUser?._id === data.clientId
 						) {
 							setChatState(data.status);
+							updateExpertStatus(creator.phone as string, "Busy");
 							unsubscribe();
 							trackEvent("BookCall_Chat_Connected", {
 								Client_ID: data.clientId,
