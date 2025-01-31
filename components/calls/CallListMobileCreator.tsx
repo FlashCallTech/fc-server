@@ -65,7 +65,7 @@ const CallListMobileCreator = ({
 			<>
 				{isLoading || (currentUser && walletBalance < 0) ? (
 					<section
-						className={`lg:hidden w-full h-full flex items-center justify-center`}
+						className={`lg:hidden w-full h-[calc(100vh-6rem)] flex items-center justify-center`}
 					>
 						<SinglePostLoader />
 					</section>
@@ -252,7 +252,12 @@ const CallListMobileCreator = ({
 													<OptionsList
 														callId={userCall.callId}
 														currentCreator={currentUser}
-														creatorId={userCall.members[0].user_id as string}
+														creatorId={
+															(userCall?.members.find(
+																(member) => member?.custom?.type === "expert"
+															)?.user_id as string) ??
+															(userCall?.members[0]?.user_id as string)
+														}
 														clientId={currentUser?._id as string}
 														userCall={userCall}
 													/>

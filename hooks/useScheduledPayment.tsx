@@ -153,8 +153,6 @@ const useScheduledPayment = () => {
 							response.error.description || "Payment was unsuccessful.",
 						toastStatus: "negative",
 					});
-
-					router.push("/payment");
 				}
 			);
 
@@ -175,8 +173,6 @@ const useScheduledPayment = () => {
 					"An error occurred while initiating the payment. Please try again.",
 				toastStatus: "negative",
 			});
-
-			router.push("/payment");
 		} finally {
 			setLoading(false);
 		}

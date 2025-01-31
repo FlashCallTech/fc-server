@@ -1197,7 +1197,7 @@ export const getTimeSlots = (
 		let start = parse(startTime, "hh:mm a", new Date());
 		const end = parse(endTime, "hh:mm a", new Date());
 
-		while (isBefore(start, end) || isEqual(start, end)) {
+		while (isBefore(start, end)) {
 			if (isSameDay(selectedDate, now) && selectedDay === currentDay) {
 				if (isBefore(now, start) || isEqual(now, start)) {
 					slots.push(format(start, "hh:mm a"));
