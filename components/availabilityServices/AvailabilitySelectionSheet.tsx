@@ -39,6 +39,8 @@ const AvailabilitySelectionSheet = ({
 	const [isFetchingSlots, setIsFetchingSlots] = useState(true);
 	const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
+	const modalRef = useRef<HTMLDivElement | null>(null);
+
 	const dayRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
 	const themeColor = isValidHexColor(creator?.themeSelected)
@@ -72,6 +74,22 @@ const AvailabilitySelectionSheet = ({
 
 		return dates;
 	};
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				modalRef.current &&
+				!modalRef.current.contains(event.target as Node)
+			) {
+				onOpenChange(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, [onOpenChange]);
 
 	useEffect(() => {
 		if (data?.weekAvailability) {
@@ -374,19 +392,18 @@ const AvailabilitySelectionSheet = ({
 		);
 	};
 
-	return (
-		<Dialog open={isOpen} onOpenChange={onOpenChange}>
-			<DialogContent
-				onOpenAutoFocus={(e) => e.preventDefault()}
-				hideCloseButton={true}
-				className={`flex flex-col items-start justify-start border-none rounded-xl bg-white mx-auto w-full h-dvh sm:max-h-[644px] sm:max-w-[444px] p-0 overflow-scroll no-scrollbar`}
+	return isOpen ? (
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+			<div
+				ref={modalRef}
+				className="flex flex-col items-start justify-start border-none rounded-xl bg-white mx-auto w-full h-dvh sm:max-h-[90vh] sm:max-w-[444px] p-0 overflow-scroll no-scrollbar"
 			>
-				<DialogHeader
+				<header
 					className={`${
 						showConsentForm && "sr-only"
 					} text-start w-full pt-4 px-4`}
 				>
-					<DialogTitle className="flex flex-col w-full items-start justify-start gap-5">
+					<div className="flex flex-col w-full items-start justify-start gap-5">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
@@ -410,8 +427,8 @@ const AvailabilitySelectionSheet = ({
 								{service.timeDuration} Min
 							</span>
 						</div>
-					</DialogTitle>
-					<DialogDescription className="font-bold text-gray-400 text-sm">
+					</div>
+					<div className="font-bold text-gray-400 text-sm mt-2">
 						<p
 							className={`text-sm text-start block ${
 								isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
@@ -441,8 +458,8 @@ const AvailabilitySelectionSheet = ({
 								view less
 							</button>
 						)}
-					</DialogDescription>
-				</DialogHeader>
+					</div>
+				</header>
 
 				{selectedDay && selectedTimeSlot && showConsentForm ? (
 					<AvailabilityFinalConsentForm
@@ -458,19 +475,21 @@ const AvailabilitySelectionSheet = ({
 					<div className="size-full px-4">
 						{renderContent()}
 						{selectedDay && selectedTimeSlot && (
-							<Button
-								className="rounded-full bg-black hoverScaleDownEffect w-full mx-auto text-white sticky bottom-1 text-sm py-3"
-								type="submit"
-								onClick={() => setShowConsentForm(true)}
-							>
-								Confirm Booking
-							</Button>
+							<div className="flex items-center justify-center bg-white mt-4 size-full h-fit sticky bottom-0 border-t border-[#E5E7EB] py-2.5">
+								<button
+									className="rounded-full bg-black hoverScaleDownEffect w-full mx-auto text-white text-sm py-3"
+									type="submit"
+									onClick={() => setShowConsentForm(true)}
+								>
+									Confirm Booking
+								</button>
+							</div>
 						)}
 					</div>
 				)}
-			</DialogContent>
-		</Dialog>
-	);
+			</div>
+		</div>
+	) : null;
 };
 
 export default AvailabilitySelectionSheet;
