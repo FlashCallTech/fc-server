@@ -457,10 +457,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 			}
 
-			await updateDoc(doc(chatRef, chatId), {
-				status: "active",
-			});
-
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
 				status: "accepted",
 			});
