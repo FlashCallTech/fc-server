@@ -89,13 +89,22 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const handleTabClose = () => {
 		const chatRequestId = localStorage.getItem("chatRequestId");
 		const data = chatRequestId;
-		const url = `${backendBaseUrl}endChat/rejectChat`;
+		const url = `${backendBaseUrl}/endChat/rejectChat`;
+		if (!navigator.sendBeacon(url, data)) {
+			fetch(url, {
+				method: 'POST',
+				body: data,
+				keepalive: true
+			});
+		}
 		navigator.sendBeacon(url, data);
 	};
 
 	useEffect(() => {
+		window.addEventListener('pagehide', handleTabClose);
 		window.addEventListener("unload", handleTabClose);
 		return () => {
+			window.removeEventListener('pagehide', handleTabClose);
 			window.removeEventListener("unload", handleTabClose);
 		};
 	}, []);
