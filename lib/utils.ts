@@ -1149,7 +1149,7 @@ export const convertTo24Hour = (time: string): string => {
 export const generateTimeSlots = (): string[] => {
 	const slots: string[] = [];
 	let start = new Date();
-	start.setHours(0, 0, 0, 0); // Start from 12:00 AM
+	start.setHours(0, 0, 0, 0);
 
 	const now = new Date();
 	const currentSlotIndex = Math.floor(
@@ -1162,7 +1162,6 @@ export const generateTimeSlots = (): string[] => {
 		const period = hours >= 12 ? "PM" : "AM";
 		const displayHours = hours % 12 === 0 ? 12 : hours % 12;
 
-		// Format the time string
 		const timeString = `${displayHours}:${minutes
 			.toString()
 			.padStart(2, "0")} ${period}`;
@@ -1171,7 +1170,6 @@ export const generateTimeSlots = (): string[] => {
 		start.setMinutes(start.getMinutes() + 15);
 	}
 
-	// Sort the list so current time slot is the starting point
 	const reorderedSlots = [
 		...slots.slice(currentSlotIndex),
 		...slots.slice(0, currentSlotIndex),

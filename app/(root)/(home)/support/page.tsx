@@ -6,7 +6,7 @@ const SupportPage = () => {
 	const creatorURL = localStorage.getItem("creatorURL");
 
 	return (
-		<section className="w-full h-fit flex flex-col gap-6 items-start justify-start p-4 lg:p-8">
+		<section className="w-full h-fit flex flex-col gap-6 items-start justify-start p-4 lg:p-8 xl:px-2">
 			<h2 className="text-xl md:text-2xl lg:text-xl font-semibold text-black">
 				Hey we&apos;re here to help
 			</h2>

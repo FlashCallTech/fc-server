@@ -147,8 +147,8 @@ const Transactions = () => {
 					<button
 						key={filter}
 						onClick={() => setBtn(filter as "all" | "credit" | "debit")}
-						className={`capitalize text-sm font-medium px-[20px] py-[7px] rounded-3xl border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${
-							filter === btn && "bg-green-1 text-white"
+						className={`capitalize text-sm font-medium px-[20px] py-[7px] rounded-3xl border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-black ${
+							filter === btn && "bg-black text-white"
 						}`}
 					>
 						{filter}

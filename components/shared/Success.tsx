@@ -1,17 +1,15 @@
 "use client";
 
-import { success } from "@/constants/icons";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
-// Define the type for the component props
 export type SuccessProps = {
 	redirect?: string;
 	event?: string;
 };
 
-// Update the Success component to use the defined props type
 const Success = ({
 	redirect = "payment",
 	event = "Amount Added",
@@ -19,7 +17,7 @@ const Success = ({
 	const router = useRouter();
 	const creatorURL = localStorage.getItem("creatorURL");
 	const redirectURL = `/${redirect}`;
-	const {updateWalletBalance} = useWalletBalanceContext()
+	const { updateWalletBalance } = useWalletBalanceContext();
 	useEffect(() => {
 		localStorage.removeItem("cashfree_order_id");
 		updateWalletBalance();
@@ -30,7 +28,13 @@ const Success = ({
 
 	return (
 		<div className="flex flex-col items-center justify-center min-w-full h-full gap-7">
-			{success}
+			<Image
+				src="/images/success.png"
+				alt="success"
+				height={150}
+				width={150}
+				className="size-auto"
+			/>
 			<div className="flex flex-col items-center justify-center gap-2 tracking-wider">
 				<span className="font-semibold text-xl">{event}</span>
 				<span className="font-semibold text-lg text-green-1">Successfully</span>
