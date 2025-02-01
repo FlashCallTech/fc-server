@@ -88,7 +88,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	};
 
-	const handleChat = async (creator: creatorUser, clientUser: clientUser, setChatState: any, discounts?: Service[]) => {
+	const handleChat = async (creator: creatorUser, clientUser: clientUser, setChatState: any, discounts?: any) => {
 		if (!clientUser) router.push("sign-in");
 		if (!clientUser) router.push("sign-in");
 

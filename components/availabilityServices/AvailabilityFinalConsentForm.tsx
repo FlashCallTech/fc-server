@@ -52,7 +52,7 @@ const AvailabilityFinalConsentForm = ({
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
 	const [payoutTransactionId, setPayoutTransactionId] = useState();
 	const { clientUser } = useCurrentUsersContext();
-	const { getFinalServices, selectedService, resetServices } =
+	const { getFinalServices, selectedService, resetServices, getSpecificServiceOffer, } =
 		useSelectedServiceContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const [totalAmount, setTotalAmount] = useState<{
@@ -397,9 +397,7 @@ const AvailabilityFinalConsentForm = ({
 			}
 
 			// Prepare discounts
-			const discounts = getFinalServices()?.filter(
-				(discount) => discount.type === "all" || discount.type === "chat"
-			);
+			const discounts = getSpecificServiceOffer("chat");
 
 			// Create the scheduled chat
 			await setDoc(doc(db, "scheduledChats", callId), {
