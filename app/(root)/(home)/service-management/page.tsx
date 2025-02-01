@@ -10,10 +10,9 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
 const ServiceManagement = () => {
-	const [userServices, setUserServices] = useState<AvailabilityService[]>([]);
 	const { currentUser, userType, fetchingUser } = useCurrentUsersContext();
-
 	const isAuthenticated = !!currentUser;
+	const [userServices, setUserServices] = useState<AvailabilityService[]>([]);
 
 	const {
 		data: creatorAvailabilityServices,

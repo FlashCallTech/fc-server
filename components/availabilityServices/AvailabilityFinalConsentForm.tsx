@@ -398,7 +398,9 @@ const AvailabilityFinalConsentForm = ({
 
 			// Prepare discounts
 			const discounts = getFinalServices()?.filter(
-				(discount) => discount.type === "all" || discount.type === "chat"
+				(discount) =>
+					discount.type.some((t) => t === "chat") ||
+					discount.type.some((t) => t === "all")
 			);
 
 			// Create the scheduled chat
@@ -1020,9 +1022,15 @@ const AvailabilityFinalConsentForm = ({
 				</div>
 			) : (
 				<div className="flex flex-col items-center justify-center min-w-full h-full gap-4 py-5 px-4">
-					{success}
+					<Image
+						src="/images/success.png"
+						alt="success"
+						height={150}
+						width={150}
+						className="size-[150px]"
+					/>
 					<span className="font-semibold text-lg">
-						Meeting scheduled for {customDateValue}
+						Meeting scheduled for {formattedData.day}
 					</span>
 				</div>
 			)}

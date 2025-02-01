@@ -476,7 +476,7 @@ export interface Service {
 	title: string;
 	description: string;
 	photo: string;
-	type: "all" | "audio" | "video" | "chat";
+	type: string[];
 	isActive: boolean;
 	currency: "INR" | "USD";
 	discountRules: DiscountRule[];

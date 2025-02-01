@@ -71,7 +71,7 @@ const CallListMobile = ({
 			) : (
 				<>
 					<section
-						className={`w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 text-black px-4`}
+						className={`w-full h-fit grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 items-center gap-5 text-black px-4`}
 					>
 						{userCalls?.pages?.flatMap((page: any) =>
 							page?.calls?.map((userCall: RegisterCallParams) => {
@@ -99,7 +99,7 @@ const CallListMobile = ({
 								return (
 									<section
 										key={userCall.callId}
-										className={`flex h-full w-full items-start justify-between p-2.5 xm:p-4 xl:max-w-[568px] border rounded-xl border-gray-300`}
+										className={`flex h-full w-full items-start justify-between p-2.5 xm:p-4 2xl:max-w-[568px] border rounded-xl border-gray-300`}
 									>
 										<section className="flex flex-col items-start justify-start w-full gap-2">
 											{/* Expert's Details */}

@@ -78,7 +78,7 @@ const ScheduledMeetingList = ({
 					<SinglePostLoader />
 				</section>
 			) : (userCalls && userCalls.pages[0].totalCalls === 0) || isError ? (
-				<div className="size-full mt-4 md:mt-14 flex flex-col gap-2 items-center justify-center  text-center">
+				<div className="size-full mt-4 md:mt-10 xl:mt-12 flex flex-col gap-2 items-center justify-center  text-center">
 					<div className="bg-black/10 size-20 rounded-full flex items-center justify-center">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"

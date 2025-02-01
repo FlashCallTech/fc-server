@@ -236,7 +236,6 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
 					const data = docSnapshot.data();
 					if (data) {
-						console.log(data);
 						if (
 							data.status === "ended" ||
 							data.status === "rejected" ||
@@ -638,7 +637,9 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 
 			let discounts = getFinalServices();
 			const filteredDiscounts = discounts?.filter(
-				(discount) => discount.type === "all" || discount.type === "chat"
+				(discount) =>
+					discount.type.some((t) => t === "chat") ||
+					discount.type.some((t) => t === "all")
 			);
 
 			setChatReqSent(true);
@@ -736,12 +737,19 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	}, [services]);
 
 	const calculateDiscountedRate = (
-		rate: string,
+		rate: number,
 		discountRule: DiscountRule
 	) => {
 		const rateNum = Number(rate);
 		if (discountRule.discountType === "percentage") {
-			return rateNum - (rateNum * discountRule.discountAmount) / 100;
+			return (rateNum - (rateNum * discountRule.discountAmount) / 100).toFixed(
+				2
+			);
+		} else if (
+			discountRule.discountType === "flat" &&
+			rateNum > discountRule.discountAmount
+		) {
+			return rateNum - discountRule.discountAmount;
 		}
 		return rate;
 	};
@@ -770,7 +778,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 											</s>
 											{region === "India" ? "Rs." : "$"}
 											{calculateDiscountedRate(
-												service.rate,
+												Number(service.rate),
 												service.discountRules[0]
 											)}
 										</>

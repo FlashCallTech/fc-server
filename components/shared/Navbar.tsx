@@ -83,7 +83,7 @@ const Navbar = () => {
 
 	const AppLink = () => (
 		<Button
-			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[24px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
+			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-full hoverScaleDownEffect h-[40px] xl:h-[48px]"
 			style={{
 				border: `1px solid #000000`,
 			}}
@@ -94,7 +94,7 @@ const Navbar = () => {
 				width={100}
 				height={100}
 				alt="flashcall logo"
-				className={`size-6 xl:w-[28px] xl:h-[36px] rounded-full`}
+				className={`size-6 rounded-full`}
 				priority
 			/>
 			<span className="w-fit whitespace-nowrap text-xs font-semibold">
@@ -114,7 +114,7 @@ const Navbar = () => {
 				isCreatorOrExpertPath
 					? "border-b border-white/20"
 					: "border-b border-[#A7A8A180]/50 md:border-none"
-			} w-full px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}
+			} w-full px-4  md:px-10 xl:px-14 py-4 transition-transform duration-300 shadow-sm blurEffect`}
 		>
 			{currentUser ? (
 				userType === "creator" ? (
@@ -146,8 +146,8 @@ const Navbar = () => {
 				<div className="flex justify-end items-center gap-4 h-full">
 					<Link
 						href="/payment"
-						className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[24px] hoverScaleDownEffect h-[40px] xl:h-[48px] ${
-							pathname.includes("/payment") && "!bg-green-1 !text-white"
+						className={`w-fit flex items-center justify-center gap-2 p-3 rounded-full hoverScaleDownEffect h-[40px] xl:h-[48px] ${
+							pathname.includes("/payment") && "!bg-black !text-white"
 						}`}
 						style={{
 							border: `1px solid #000000`,
