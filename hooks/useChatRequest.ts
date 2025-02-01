@@ -32,7 +32,7 @@ import { clientUser, creatorUser, Service } from "@/types";
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
 	const { currentUser } = useCurrentUsersContext();
-	const [SheetOpen, setSheetOpen] = useState(false); // State to manage sheet visibility
+	const [isSheetOpen, setSheetOpen] = useState(false); // State to manage sheet visibility
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
 	const messagesRef = collection(db, "messages");
@@ -88,7 +88,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	};
 
-	const handleChat = async (creator: creatorUser, clientUser: clientUser, discounts?: Service[]) => {
+	const handleChat = async (creator: creatorUser, clientUser: clientUser, setChatState: any, discounts?: Service[]) => {
 		if (!clientUser) router.push("sign-in");
 		if (!clientUser) router.push("sign-in");
 
@@ -262,7 +262,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 
 			const docSnap = await getDoc(newChatRequestRef);
-			console.log("Inside HandleChat: ", docSnap.data());
 
 			if (docSnap.exists()) {
 				const chatRequestData = docSnap.data();
@@ -317,21 +316,82 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			const chatRequestDoc = doc(chatRequestsRef, newChatRequestRef.id);
 			const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
 				const data = doc.data();
-				if (data && data.status === "accepted") {
-					clearTimeout(timer);
-					unsubscribe();
-					localStorage.setItem(
-						"user2",
-						JSON.stringify({
-							clientId: data.clientId,
-							creatorId: data.creatorId,
-							User_First_Seen: formattedDate,
-							chatId: chatId,
-							requestId: doc.id,
-							fullName: creator.firstName + " " + creator?.lastName,
-							photo: creator.photo,
-						})
-					);
+				if (data) {
+					if (
+						data.status === "ended" ||
+						data.status === "rejected" ||
+						data.status === "cancelled"
+					) {
+						updateExpertStatus(
+							clientUser?.global
+								? (clientUser?.email as string)
+								: (clientUser?.phone as string),
+							"Online"
+						);
+						setSheetOpen(false);
+						setChatState(data.status);
+						if (data.status === "rejected") {
+							toast({
+								variant: "destructive",
+								title: "The user is busy, please try again later",
+								toastStatus: "negative",
+							});
+						}
+						if (data.status === "ended") {
+							toast({
+								variant: "destructive",
+								title: "User is not answering please try again later",
+								toastStatus: "negative",
+							});
+						}
+						if (data.status === "cancelled") {
+							toast({
+								variant: "destructive",
+								title: "You cancelled the request",
+								toastStatus: "negative",
+							});
+						}
+						localStorage.removeItem("user2");
+						localStorage.removeItem("chatRequestId");
+						localStorage.removeItem("chatId");
+						localStorage.removeItem("CallId");
+						unsubscribe();
+					} else if (
+						data.status === "accepted" &&
+						clientUser?._id === data.clientId
+					) {
+						setSheetOpen(false);
+						setChatState(data.status);
+						updateExpertStatus(creator.phone as string, "Busy");
+						unsubscribe();
+						trackEvent("BookCall_Chat_Connected", {
+							Client_ID: data.clientId,
+							User_First_Seen: data.client_first_seen,
+							Creator_ID: data.creatorId,
+							Time_Duration_Available: data.maxCallDuration,
+							Walletbalance_Available: clientUser?.walletBalance,
+						});
+						// updateExpertStatus(data.creatorPhone as string, "Busy");
+						console.log("Chat Accepted");
+						router.replace(`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`);
+					} else if (data.status === "accepted") {
+						clearTimeout(timer);
+						unsubscribe();
+						localStorage.setItem(
+							"user2",
+							JSON.stringify({
+								clientId: data.clientId,
+								creatorId: data.creatorId,
+								User_First_Seen: formattedDate,
+								chatId: chatId,
+								requestId: doc.id,
+								fullName: creator.firstName + " " + creator?.lastName,
+								photo: creator.photo,
+							})
+						);
+					} else {
+						setChatState(data.status);
+					}
 				}
 			});
 
@@ -586,7 +646,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		handleRejectChat,
 		handleChat,
 		chatRequestsRef,
-		SheetOpen,
+		isSheetOpen,
+		setSheetOpen,
 		loading,
 	};
 };
