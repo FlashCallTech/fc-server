@@ -110,7 +110,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 							setSelectedService(discountApplicable);
 						} else if (
 							discountType === "flat" &&
-							service.basePrice >= discountAmount
+							service.basePrice > discountAmount
 						) {
 							setSelectedService(discountApplicable);
 						}

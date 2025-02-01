@@ -55,15 +55,25 @@ export const SelectedServiceProvider: React.FC<{
 
 	const getSpecificServiceOffer = (type: string): SelectedServiceType => {
 		const services = selectedServices || [];
-		const service = services.find(
+		const lowerType = type.toLowerCase();
+
+		let exactMatch = services.find(
 			(service) =>
-				service.type.toLowerCase() === type.toLowerCase() ||
-				service?.typeLabel?.toLowerCase() === type.toLowerCase() ||
-				service.type.toLowerCase() === "all"
+				service.typeLabel?.toLowerCase() === lowerType ||
+				(Array.isArray(service.type) && service.type.includes(lowerType))
 		);
 
-		return service || null;
+		if (!exactMatch) {
+			exactMatch = services.find(
+				(service) => Array.isArray(service.type) && service.type.includes("all")
+			);
+		}
+
+		console.log("Matched service:", exactMatch);
+		return exactMatch || null;
 	};
+
+	// console.log(selectedServices);
 
 	return (
 		<SelectedServiceContext.Provider
