@@ -37,9 +37,11 @@ const Page = () => {
 
 	useEffect(() => {
 		window.addEventListener("beforeunload", handleTabCloseWarning);
+		window.addEventListener('pagehide', handleTabClose);
 		window.addEventListener("unload", handleTabClose);
 		return () => {
 			window.removeEventListener("beforeunload", handleTabCloseWarning);
+			window.addEventListener('pagehide', handleTabClose);
 			window.removeEventListener("unload", handleTabClose);
 		};
 	}, [chatId]);
