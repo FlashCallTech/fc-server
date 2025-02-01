@@ -20,7 +20,7 @@ const Sidebar = () => {
 	const {
 		currentUser,
 		userType,
-		currentTheme,
+		fetchingUser,
 		creatorURL,
 		pendingNotifications,
 	} = useCurrentUsersContext();
@@ -145,7 +145,7 @@ const Sidebar = () => {
 				})}
 			</div>
 
-			{currentUser ? (
+			{currentUser && !fetchingUser ? (
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<Link
@@ -196,7 +196,7 @@ const Sidebar = () => {
 						<p>Profile</p>
 					</TooltipContent>
 				</Tooltip>
-			) : (
+			) : fetchingUser ? null : (
 				<Button
 					asChild
 					className="hoverScaleDownEffect flex items-center gap-2 font-semibold w-full max-lg:hidden h-[40px] xl:h-[48px] mr-1 rounded-[24px] bg-black text-white"

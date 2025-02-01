@@ -256,6 +256,23 @@ const DiscountServicesForm = ({
 		return () => subscription.unsubscribe();
 	}, [form, isValid]);
 
+	const serviceOptions = useMemo(() => {
+		const predefinedOptions = [
+			{ label: "All", value: "all" },
+			{ label: "Audio", value: "audio" },
+			{ label: "Video", value: "video" },
+			{ label: "Chat", value: "chat" },
+		];
+
+		const fetchedOptions =
+			userServices.map((service) => ({
+				label: service.title,
+				value: service._id,
+			})) || [];
+
+		return [...predefinedOptions, ...fetchedOptions];
+	}, [userServices, creatorAvailabilityServices]);
+
 	return (
 		<Form {...form}>
 			<form
@@ -329,23 +346,6 @@ const DiscountServicesForm = ({
 						const isNewUserConditionSelected = form
 							.watch("discountRules")
 							?.some((rule) => rule.conditions.includes("New User"));
-
-						const serviceOptions = useMemo(() => {
-							const predefinedOptions = [
-								{ label: "All", value: "all" },
-								{ label: "Audio", value: "audio" },
-								{ label: "Video", value: "video" },
-								{ label: "Chat", value: "chat" },
-							];
-
-							const fetchedOptions =
-								userServices.map((service) => ({
-									label: service.title,
-									value: service._id,
-								})) || [];
-
-							return [...predefinedOptions, ...fetchedOptions];
-						}, [userServices, creatorAvailabilityServices]);
 
 						return (
 							<FormItem className="!mt-4">

@@ -253,10 +253,11 @@ const CallListMobile = ({
 													callId={userCall.callId}
 													currentCreator={currentUser}
 													creatorId={
-														(userCall?.members.find(
+														(userCall?.members?.find(
 															(member) => member?.custom?.type === "expert"
-														)?.user_id as string) ??
-														(userCall?.members[0]?.user_id as string)
+														)?.user_id as string) ||
+														userCall?.members?.[0]?.user_id ||
+														""
 													}
 													clientId={currentUser?._id as string}
 													userCall={userCall}

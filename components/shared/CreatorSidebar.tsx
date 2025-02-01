@@ -17,7 +17,8 @@ const CreatorSidebar = () => {
 	const [paymentDropdownOpen, setPaymentDropdownOpen] = useState(false); // Dropdown state
 	const pathname = usePathname();
 
-	const { currentUser, pendingNotifications } = useCurrentUsersContext();
+	const { currentUser, fetchingUser, pendingNotifications } =
+		useCurrentUsersContext();
 	const fullName = getDisplayName({
 		fullName: currentUser?.fullName,
 		firstName: currentUser?.firstName,
@@ -247,7 +248,7 @@ const CreatorSidebar = () => {
 						Support
 					</Link>
 				</div>
-				{currentUser ? (
+				{currentUser && !fetchingUser ? (
 					<Tooltip>
 						<TooltipTrigger asChild>
 							<Link
@@ -284,7 +285,7 @@ const CreatorSidebar = () => {
 							<p>Profile</p>
 						</TooltipContent>
 					</Tooltip>
-				) : (
+				) : fetchingUser ? null : (
 					<Button
 						asChild
 						className={`text-white hoverScaleDownEffect`}
