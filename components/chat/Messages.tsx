@@ -44,6 +44,7 @@ const Messages: React.FC<Props> = ({ chat, messages, currentUserMessageSent, set
 	const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
 	const [isTyping, setIsTyping] = useState(false); // Track typing status
 	const [imagesLoaded, setImagesLoaded] = useState(0); // Track loaded images
+	const [loadedImages, setLoadedImages] = useState<{ [key: string]: boolean }>({});
 	const [selectedMessage, setSelectedMessage] = useState<any | null>(null); // Track selected message for reply
 	const [highlightedMessage, setHighlightedMessage] = useState<number | null>(null);
 	const [swipeStartX, setSwipeStartX] = useState<number | null>(null);
@@ -55,6 +56,12 @@ const Messages: React.FC<Props> = ({ chat, messages, currentUserMessageSent, set
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const replyBoxRef = useRef<HTMLDivElement | null>(null);
 	const messageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+
+
+	const handleImageLoad = (index: number) => {
+		setLoadedImages((prev) => ({ ...prev, [index]: true })); // Track per-image load
+		setImagesLoaded((count) => count + 1); // Increment global counter
+	};
 
 	const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>, index: number) => {
 		setSwipeStartX(e.touches[0].clientX);
@@ -291,10 +298,13 @@ const Messages: React.FC<Props> = ({ chat, messages, currentUserMessageSent, set
 										</div>
 									)}
 									{message.img && (
-										<div
-											className="relative mb-3"
-											style={{ display: "inline-block" }}
-										>
+										<div className="relative mb-3" style={{ display: "inline-block" }}>
+											{!loadedImages[index] && ( // Show loader only if image isn't loaded
+												<div className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-md">
+													<span className="text-gray-500">Loading...</span>
+												</div>
+											)}
+
 											<Image
 												src={message.img}
 												width={1000}
@@ -302,9 +312,9 @@ const Messages: React.FC<Props> = ({ chat, messages, currentUserMessageSent, set
 												alt=""
 												className="cursor-pointer rounded-md"
 												onClick={() => handleImageClick(message.img)}
-												onContextMenu={(e) => handleRightClick(e, message)} // Right-click detection
-												onLoad={() => setImagesLoaded((count) => count + 1)} // Increment image load count
-												style={{ objectFit: "cover" }}
+												onContextMenu={(e) => handleRightClick(e, message)}
+												onLoad={() => handleImageLoad(index)}
+												style={{ objectFit: "cover", opacity: loadedImages[index] ? 1 : 0 }}
 											/>
 										</div>
 									)}
