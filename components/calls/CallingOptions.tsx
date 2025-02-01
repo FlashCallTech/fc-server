@@ -45,11 +45,11 @@ interface CallingOptions {
 
 const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const client = useStreamVideoClient();
-	const [isSheetOpen, setSheetOpen] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [isConsentSheetOpen, setIsConsentSheetOpen] = useState(false);
-	const { handleChat, chatRequestsRef, loading } = useChatRequest();
+	const { handleChat, chatRequestsRef, loading, isSheetOpen, setSheetOpen } =
+		useChatRequest();
 	const [callInitiated, setcallInitiated] = useState(false);
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
@@ -90,13 +90,22 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const handleTabClose = () => {
 		const chatRequestId = localStorage.getItem("chatRequestId");
 		const data = chatRequestId;
-		const url = `${backendBaseUrl}endChat/rejectChat`;
+		const url = `${backendBaseUrl}/endChat/rejectChat`;
+		if (!navigator.sendBeacon(url, data)) {
+			fetch(url, {
+				method: "POST",
+				body: data,
+				keepalive: true,
+			});
+		}
 		navigator.sendBeacon(url, data);
 	};
 
 	useEffect(() => {
+		window.addEventListener("pagehide", handleTabClose);
 		window.addEventListener("unload", handleTabClose);
 		return () => {
+			window.removeEventListener("pagehide", handleTabClose);
 			window.removeEventListener("unload", handleTabClose);
 		};
 	}, []);
@@ -219,94 +228,6 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 
 		return () => unsubscribe();
 	}, [creator?._id, creator?.phone]);
-
-	useEffect(() => {
-		if (!chatReqSent) {
-			return;
-		}
-
-		const intervalId = setInterval(() => {
-			const chatRequestId = localStorage.getItem("chatRequestId");
-
-			if (chatRequestId && chatReqSent) {
-				clearInterval(intervalId);
-
-				const chatRequestDoc = doc(db, "chatRequests", chatRequestId);
-
-				const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
-					const data = docSnapshot.data();
-					if (data) {
-						if (
-							data.status === "ended" ||
-							data.status === "rejected" ||
-							data.status === "cancelled"
-						) {
-							updateExpertStatus(
-								clientUser?.global
-									? (clientUser?.email as string)
-									: (clientUser?.phone as string),
-								"Online"
-							);
-							setSheetOpen(false);
-							setChatReqSent(false);
-							setChatState(data.status);
-							if (data.status === "rejected") {
-								toast({
-									variant: "destructive",
-									title: "The user is busy, please try again later",
-									toastStatus: "negative",
-								});
-							}
-							if (data.status === "ended") {
-								toast({
-									variant: "destructive",
-									title: "User is not answering please try again later",
-									toastStatus: "negative",
-								});
-							}
-							if (data.status === "cancelled") {
-								toast({
-									variant: "destructive",
-									title: "You cancelled the request",
-									toastStatus: "negative",
-								});
-							}
-							localStorage.removeItem("user2");
-							localStorage.removeItem("chatRequestId");
-							localStorage.removeItem("chatId");
-							localStorage.removeItem("CallId");
-							unsubscribe();
-						} else if (
-							data.status === "accepted" &&
-							clientUser?._id === data.clientId
-						) {
-							setChatState(data.status);
-							updateExpertStatus(creator.phone as string, "Busy");
-							unsubscribe();
-							trackEvent("BookCall_Chat_Connected", {
-								Client_ID: data.clientId,
-								User_First_Seen: data.client_first_seen,
-								Creator_ID: data.creatorId,
-								Time_Duration_Available: data.maxCallDuration,
-								Walletbalance_Available: clientUser?.walletBalance,
-							});
-							// updateExpertStatus(data.creatorPhone as string, "Busy");
-							setTimeout(() => {
-								router.replace(
-									`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`
-								);
-							});
-							setChatReqSent(false);
-						} else {
-							setChatState(data.status);
-						}
-					}
-				});
-			}
-		}, 1000);
-
-		return () => clearInterval(intervalId);
-	}, [router, chatReqSent]);
 
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
@@ -513,6 +434,8 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		}
 
 		try {
+			localStorage.removeItem("chatId");
+			localStorage.removeItem("chatRequestId");
 			setcallInitiated(true);
 
 			if (!clientUser) {
@@ -597,6 +520,8 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	};
 
 	const handleChatClick = async () => {
+		localStorage.removeItem("chatId");
+		localStorage.removeItem("chatRequestId");
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",
@@ -643,7 +568,12 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 			);
 
 			setChatReqSent(true);
-			handleChat(creator, clientUser, filteredDiscounts as Service[]);
+			handleChat(
+				creator,
+				clientUser,
+				setChatState,
+				filteredDiscounts as Service[]
+			);
 			let maxCallDuration =
 				(walletBalance /
 					(clientUser?.global
