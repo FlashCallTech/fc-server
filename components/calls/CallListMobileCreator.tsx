@@ -253,10 +253,11 @@ const CallListMobileCreator = ({
 														callId={userCall.callId}
 														currentCreator={currentUser}
 														creatorId={
-															(userCall?.members.find(
+															(userCall?.members?.find(
 																(member) => member?.custom?.type === "expert"
-															)?.user_id as string) ??
-															(userCall?.members[0]?.user_id as string)
+															)?.user_id as string) ||
+															userCall?.members?.[0]?.user_id ||
+															""
 														}
 														clientId={currentUser?._id as string}
 														userCall={userCall}
@@ -278,7 +279,7 @@ const CallListMobileCreator = ({
 			{/* New Design */}
 			<div className="hidden lg:block p-8 pt-0 bg-white">
 				{isLoading || (currentUser && walletBalance < 0) ? (
-					<section className="w-full h-full flex items-center justify-center">
+					<section className="w-full h-[calc(100vh-6rem)] flex items-center justify-center">
 						<SinglePostLoader />
 					</section>
 				) : isError ? (

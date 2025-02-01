@@ -17,6 +17,7 @@ interface SelectedServiceContextType {
 	resetServices: () => void;
 	getFinalServices: () => FinalServicesType;
 	getSpecificServiceOffer: (type: string) => SelectedServiceType;
+	getSpecificServiceOfferViaTitle: (type: string) => SelectedServiceType;
 }
 
 const SelectedServiceContext = createContext<
@@ -69,7 +70,19 @@ export const SelectedServiceProvider: React.FC<{
 			);
 		}
 
-		console.log("Matched service:", exactMatch);
+		return exactMatch || null;
+	};
+
+	const getSpecificServiceOfferViaTitle = (
+		type: string
+	): SelectedServiceType => {
+		const services = selectedServices || [];
+		const lowerType = type.toLowerCase();
+
+		let exactMatch = services.find(
+			(service) => service.title?.toLowerCase() === lowerType
+		);
+
 		return exactMatch || null;
 	};
 
@@ -87,6 +100,7 @@ export const SelectedServiceProvider: React.FC<{
 				resetServices,
 				getFinalServices,
 				getSpecificServiceOffer,
+				getSpecificServiceOfferViaTitle,
 			}}
 		>
 			{children}

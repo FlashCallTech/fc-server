@@ -805,12 +805,7 @@ const Withdraw: React.FC = () => {
 																	/>
 																</div>
 															</td>
-															{/* <td className="px-6 py-4">
-																{transaction?.category || (
-																	transaction?.callType === "video" ? "Video Call" :
-																		transaction?.callType === "audio" ? "Audio Call" : "Text Chat"
-																)}
-															</td> */}
+
 															<td className={`px-6 py-4 text-xs`}>
 																<span
 																	className={`px-2 py-1 rounded-full ${
