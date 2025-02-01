@@ -48,7 +48,8 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [isConsentSheetOpen, setIsConsentSheetOpen] = useState(false);
-	const { handleChat, chatRequestsRef, loading, isSheetOpen, setSheetOpen } = useChatRequest();
+	const { handleChat, chatRequestsRef, loading, isSheetOpen, setSheetOpen } =
+		useChatRequest();
 	const [callInitiated, setcallInitiated] = useState(false);
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
@@ -92,19 +93,19 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		const url = `${backendBaseUrl}/endChat/rejectChat`;
 		if (!navigator.sendBeacon(url, data)) {
 			fetch(url, {
-				method: 'POST',
+				method: "POST",
 				body: data,
-				keepalive: true
+				keepalive: true,
 			});
 		}
 		navigator.sendBeacon(url, data);
 	};
 
 	useEffect(() => {
-		window.addEventListener('pagehide', handleTabClose);
+		window.addEventListener("pagehide", handleTabClose);
 		window.addEventListener("unload", handleTabClose);
 		return () => {
-			window.removeEventListener('pagehide', handleTabClose);
+			window.removeEventListener("pagehide", handleTabClose);
 			window.removeEventListener("unload", handleTabClose);
 		};
 	}, []);
@@ -283,21 +284,22 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 			];
 
 			const startsAt = new Date(Date.now()).toISOString();
-			const description = `${callType === "video"
-				? `Video Call With Expert ${creator.username}`
-				: `Audio Call With Expert ${creator.username}`
-				}`;
+			const description = `${
+				callType === "video"
+					? `Video Call With Expert ${creator.username}`
+					: `Audio Call With Expert ${creator.username}`
+			}`;
 
 			const ratePerMinute =
 				callType === "video"
 					? parseInt(
-						clientUser.global ? creator.globalVideoRate : creator?.videoRate,
-						10
-					)
+							clientUser.global ? creator.globalVideoRate : creator?.videoRate,
+							10
+					  )
 					: parseInt(
-						clientUser.global ? creator.globalAudioRate : creator?.audioRate,
-						10
-					);
+							clientUser.global ? creator.globalAudioRate : creator?.audioRate,
+							10
+					  );
 			let maxCallDuration = (walletBalance / ratePerMinute) * 60;
 			maxCallDuration =
 				maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
@@ -590,10 +592,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				onlineStatus === "Offline"
 					? true
 					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
-					!isClientBusy &&
-					onlineStatus !== "Busy" &&
-					updatedCreator.videoAllowed &&
-					Number(updatedCreator.videoRate) > 0,
+					  !isClientBusy &&
+					  onlineStatus !== "Busy" &&
+					  updatedCreator.videoAllowed &&
+					  Number(updatedCreator.videoRate) > 0,
 			onClick: () =>
 				handleClickOption(
 					"video",
@@ -612,10 +614,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				onlineStatus === "Offline"
 					? true
 					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
-					!isClientBusy &&
-					onlineStatus !== "Busy" &&
-					updatedCreator.audioAllowed &&
-					Number(updatedCreator.audioRate) > 0,
+					  !isClientBusy &&
+					  onlineStatus !== "Busy" &&
+					  updatedCreator.audioAllowed &&
+					  Number(updatedCreator.audioRate) > 0,
 			onClick: () =>
 				handleClickOption(
 					"audio",
@@ -635,10 +637,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				onlineStatus === "Offline"
 					? true
 					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
-					!isClientBusy &&
-					onlineStatus !== "Busy" &&
-					updatedCreator.chatAllowed &&
-					Number(updatedCreator.chatRate) > 0,
+					  !isClientBusy &&
+					  onlineStatus !== "Busy" &&
+					  updatedCreator.chatAllowed &&
+					  Number(updatedCreator.chatRate) > 0,
 			onClick: () => handleChatClick(),
 		},
 	];
@@ -655,12 +657,19 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	}, [services]);
 
 	const calculateDiscountedRate = (
-		rate: string,
+		rate: number,
 		discountRule: DiscountRule
 	) => {
 		const rateNum = Number(rate);
 		if (discountRule.discountType === "percentage") {
-			return rateNum - (rateNum * discountRule.discountAmount) / 100;
+			return (rateNum - (rateNum * discountRule.discountAmount) / 100).toFixed(
+				2
+			);
+		} else if (
+			discountRule.discountType === "flat" &&
+			rateNum > discountRule.discountAmount
+		) {
+			return rateNum - discountRule.discountAmount;
 		}
 		return rate;
 	};
@@ -671,15 +680,16 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				{sortedServices.map((service) => {
 					const priceButton = (
 						<p
-							className={`font-medium tracking-widest rounded-full px-3 py-1 w-fit min-w-[115px] min-h-[36px] bg-black text-white flex flex-col-reverse items-center justify-center ${(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
+							className={`font-medium tracking-widest rounded-full px-3 py-1 w-fit min-w-[115px] min-h-[36px] bg-black text-white flex flex-col-reverse items-center justify-center ${
+								(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
 								"bg-black/40 cursor-not-allowed"
-								}`}
+							}`}
 						>
 							<>
 								{service.discountApplicable && service.discountRules ? (
 									service.discountRules[0].discountType === "percentage" ||
-										(service.discountRules[0].discountType === "flat" &&
-											Number(service.rate) >
+									(service.discountRules[0].discountType === "flat" &&
+										Number(service.rate) >
 											service.discountRules[0].discountAmount) ? (
 										<>
 											<s className="text-gray-300 text-xs">
@@ -688,7 +698,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 											</s>
 											{region === "India" ? "Rs." : "$"}
 											{calculateDiscountedRate(
-												service.rate,
+												Number(service.rate),
 												service.discountRules[0]
 											)}
 										</>
@@ -713,9 +723,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						<button
 							disabled={!service.enabled}
 							key={service.type}
-							className={`callOptionContainer ${(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
+							className={`callOptionContainer ${
+								(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
 								"!cursor-not-allowed"
-								}`}
+							}`}
 							onClick={service.onClick}
 						>
 							{service.discountApplicable && service.discountRules && (
@@ -737,10 +748,11 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 										<span className="text-sm ml-1">
 											{service.discountRules[0].discountType === "percentage"
 												? `${service.discountRules[0].discountAmount}%`
-												: `${service.discountApplicable.currency === "INR"
-													? "₹"
-													: "$"
-												} ${service.discountRules[0].discountAmount}`}{" "}
+												: `${
+														service.discountApplicable.currency === "INR"
+															? "₹"
+															: "$"
+												  } ${service.discountRules[0].discountAmount}`}{" "}
 											OFF Applied
 										</span>
 									</p>
@@ -857,10 +869,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 								<p className="font-semibold text-xl">
 									{creator?.username?.startsWith("+91")
 										? creator?.username?.replace(
-											/(\+91)(\d+)/,
-											(match, p1, p2) =>
-												`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-										)
+												/(\+91)(\d+)/,
+												(match, p1, p2) =>
+													`${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
+										  )
 										: creator?.username}
 								</p>
 							</div>

@@ -3,7 +3,6 @@
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { creatorUser } from "@/types";
 import React, { useEffect, useState } from "react";
-import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import FavoritesGrid from "@/components/creator/FavoritesGrid";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { trackEvent } from "@/lib/mixpanel";
@@ -151,7 +150,7 @@ const Favorites = () => {
 					</p>
 					{selectedProfession !== "All" && (
 						<Button
-							className="px-6 py-2 rounded-lg bg-green-1 text-white font-semibold hoverScaleDownEffect"
+							className="px-6 py-2 rounded-lg bg-black text-white font-semibold hoverScaleDownEffect"
 							onClick={() => setSelectedProfession("All")}
 						>
 							Reset Filters
@@ -171,7 +170,7 @@ const Favorites = () => {
 					/>
 
 					<section
-						className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-fit gap-3.5 lg:gap-5 2xl:gap-7 items-start overflow-hidden`}
+						className={`grid xs:grid-cols-2 xl:grid-cols-3 h-fit gap-3.5 lg:gap-5 2xl:gap-7 items-start overflow-hidden`}
 						style={{
 							WebkitTransform: "translateZ(0)",
 						}}

@@ -7,9 +7,11 @@ export const discountServiceFormSchema = z.object({
 		.string()
 		.min(10, "Description must be at least 10 characters."),
 	photo: z.string().optional(),
-	type: z.enum(["all", "audio", "video", "chat"], {
-		required_error: "Service type is required.",
-	}),
+	type: z
+		.array(z.string(), {
+			required_error: "At least one service type is required.",
+		})
+		.nonempty("You must select at least one type."),
 	isActive: z.boolean({
 		required_error: "isActive is required.",
 	}),

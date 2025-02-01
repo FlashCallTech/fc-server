@@ -175,7 +175,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 	return (
 		// Wrapper Section
-		<div className="xl:relative size-full md:mx-auto md:pt-8 flex flex-col xl:flex-row xl:gap-10 items-start justify-center max-xl:overflow-y-scroll no-scrollbar">
+		<div className="xl:relative size-full md:mx-auto md:pt-8 flex flex-col xl:flex-row xl:gap-14 items-start justify-center max-xl:overflow-y-scroll no-scrollbar">
 			<section className="xl:sticky xl:top-[100px] size-full h-fit xl:max-w-[400px] 3xl:max-w-[500px] flex flex-col items-center justify-center gap-4">
 				{/* Creator Details */}
 				<section
@@ -263,7 +263,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 			</section>
 
 			{/* About, Services and Reviews */}
-			<section className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between p-4 xl:pt-0 gap-2.5 bg-white overflow-y-scroll">
+			<section className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between p-4 xl:pt-0 xl:px-0 gap-2.5 bg-white overflow-y-scroll">
 				{/* Creator Bio */}
 				<section className="xl:hidden size-full">{renderCreatorBio()}</section>
 				{/* Discounts */}
