@@ -19,7 +19,6 @@ import * as Sentry from "@sentry/nextjs";
 import { useToast } from "../ui/use-toast";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import axios from "axios";
-import { success } from "@/constants/icons";
 import useScheduledPayment from "@/hooks/useScheduledPayment";
 import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
 import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
@@ -87,6 +86,7 @@ const AvailabilityFinalConsentForm = ({
 
 	useEffect(() => {
 		service.discountRules &&
+			service.discountRules.conditions.length > 0 &&
 			!service.utilizedBy.some(
 				(clientId) => clientId.toString() === clientUser?._id.toString()
 			) &&
@@ -102,7 +102,7 @@ const AvailabilityFinalConsentForm = ({
 		};
 
 		updateTotal();
-	}, []);
+	}, [service._id]);
 
 	function maskPhoneNumber(phoneNumber: string) {
 		if (phoneNumber) {
@@ -177,7 +177,7 @@ const AvailabilityFinalConsentForm = ({
 		let total = basePrice;
 
 		// Apply Discount
-		if (discountRules) {
+		if (discountRules && isDiscountUtilized) {
 			const { discountAmount, discountType } = discountRules;
 
 			if (discountType === "percentage") {
@@ -503,8 +503,6 @@ const AvailabilityFinalConsentForm = ({
 					await new Promise((resolve) => setTimeout(resolve, 500));
 					paymentSuccess = isPaymentHandlerSuccess;
 				}
-
-				console.log("nice ", paymentSuccess);
 
 				if (!paymentSuccess) {
 					if (walletPaymentAmount > 0) {

@@ -341,7 +341,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 								Total Balance
 							</h2>
 							<span className="w-fit text-3xl text-green-1 leading-7 font-bold">
-								{`${currentUser.global ? "$" : "Rs."} ${walletBalance.toFixed(
+								{`${currentUser?.global ? "$" : "Rs."} ${walletBalance.toFixed(
 									2
 								)}`}
 							</span>

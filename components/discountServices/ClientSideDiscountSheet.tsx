@@ -26,6 +26,7 @@ const ClientSideDiscountheet = ({
 	offerApplied,
 	setOfferApplied,
 	setIsAuthSheetOpen,
+	setIsEligible,
 }: {
 	creatorId: string;
 	creatorName: string;
@@ -35,6 +36,7 @@ const ClientSideDiscountheet = ({
 	offerApplied: boolean;
 	setOfferApplied: any;
 	setIsAuthSheetOpen: any;
+	setIsEligible: any;
 }) => {
 	const [applyingOffer, setApplyingOffer] = useState(false);
 	const [validatedAppliedOffers, setValidatedAppliedOffers] = useState(false);
@@ -60,6 +62,7 @@ const ClientSideDiscountheet = ({
 		const flattenedServices =
 			servicesData?.pages.flatMap((page: any) => page.data) || [];
 		setUserServices(flattenedServices);
+		userServices && userServices.length === 0 && setIsEligible(false);
 	}, [servicesData]);
 
 	useEffect(() => {

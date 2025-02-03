@@ -1,18 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { AvailabilityService, creatorUser } from "@/types";
 
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { useGetUserAvailability } from "@/lib/react-query/queries";
 import ContentLoading from "../shared/ContentLoading";
 import { backendBaseUrl, getTimeSlots, isValidHexColor } from "@/lib/utils";
 import AvailabilityFinalConsentForm from "./AvailabilityFinalConsentForm";
-import { Button } from "../ui/button";
 import axios from "axios";
 import SinglePostLoader from "../shared/SinglePostLoader";
 
@@ -38,8 +30,6 @@ const AvailabilitySelectionSheet = ({
 	const [bookedSlots, setBookedSlots] = useState<string[]>([]);
 	const [isFetchingSlots, setIsFetchingSlots] = useState(true);
 	const [isExpanded, setIsExpanded] = useState<boolean>(false);
-
-	const modalRef = useRef<HTMLDivElement | null>(null);
 
 	const dayRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
@@ -74,22 +64,6 @@ const AvailabilitySelectionSheet = ({
 
 		return dates;
 	};
-
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				modalRef.current &&
-				!modalRef.current.contains(event.target as Node)
-			) {
-				onOpenChange(false);
-			}
-		};
-
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, [onOpenChange]);
 
 	useEffect(() => {
 		if (data?.weekAvailability) {
@@ -392,12 +366,20 @@ const AvailabilitySelectionSheet = ({
 		);
 	};
 
-	return isOpen ? (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-			<div
-				ref={modalRef}
-				className="flex flex-col items-start justify-start border-none rounded-xl bg-white mx-auto w-full h-dvh sm:max-h-[90vh] sm:max-w-[444px] p-0 overflow-scroll no-scrollbar"
-			>
+	if (!isOpen) return null;
+
+	// console.log(service);
+
+	return (
+		<div
+			className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+			onClick={(e) => {
+				if (e.target === e.currentTarget) {
+					onOpenChange(false);
+				}
+			}}
+		>
+			<div className="flex flex-col items-start justify-start border-none rounded-xl bg-white mx-auto w-full h-dvh sm:max-h-[90vh] sm:max-w-[555px] p-0 overflow-scroll no-scrollbar">
 				<header
 					className={`${
 						showConsentForm && "sr-only"
@@ -489,7 +471,7 @@ const AvailabilitySelectionSheet = ({
 				)}
 			</div>
 		</div>
-	) : null;
+	);
 };
 
 export default AvailabilitySelectionSheet;

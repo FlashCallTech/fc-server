@@ -18,6 +18,9 @@ import {
 const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 	const [userServices, setUserServices] = useState<AvailabilityService[]>([]);
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
+	const [clientSelectedService, setClientSelectedService] =
+		useState<AvailabilityService | null>(null);
+
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [expandedStates, setExpandedStates] = useState<Record<number, boolean>>(
 		{}
@@ -25,7 +28,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 
 	const {
 		getSpecificServiceOffer,
-		getSpecificServiceOfferViaTitle,
+		getSpecificServiceOfferViaServiceId,
 		setSelectedService,
 	} = useSelectedServiceContext();
 	const { currentUser, fetchingUser, setAuthenticationSheetOpen } =
@@ -120,7 +123,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 					}
 				);
 			}
-
+			setClientSelectedService(service);
 			setIsSheetOpen(true);
 		}
 	};
@@ -161,7 +164,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 			<div className="flex flex-col w-full items-center justify-center gap-4">
 				{userServices.map((service: AvailabilityService, index: number) => {
 					const discountApplicable =
-						getSpecificServiceOfferViaTitle(service.title) ||
+						getSpecificServiceOfferViaServiceId(service._id) ||
 						getSpecificServiceOffer(service.type);
 					const isExpanded = expandedStates[index] || false;
 					return (
@@ -306,12 +309,12 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 									</section>
 								</button>
 							</div>
-							{isSheetOpen && (
+							{isSheetOpen && clientSelectedService && (
 								<AvailabilitySelectionSheet
 									isOpen={isSheetOpen}
 									onOpenChange={setIsSheetOpen}
 									creator={creator}
-									service={service}
+									service={clientSelectedService}
 								/>
 							)}
 						</div>

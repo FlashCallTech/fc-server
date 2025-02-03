@@ -539,7 +539,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 										className="absolute top-4 right-4 hoverScaleDownEffect"
 									/>
 
-									<div className="w-full flex flex-col items-start gap-4">
+									<div className="size-full flex flex-col items-start justify-between gap-4">
 										<div className="w-full flex items-center gap-2.5">
 											<Image
 												width={80}
@@ -561,7 +561,7 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 										</div>
 
 										<div className="w-full flex flex-col items-start">
-											<p className="text-gray-600">
+											<p className="text-gray-600 line-clamp-3 min-h-[60px]">
 												{service.description
 													? getClampedText(service.description, isExpanded)
 													: "No Description Provided"}

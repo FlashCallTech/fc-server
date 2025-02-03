@@ -182,7 +182,7 @@ const NavbarWeb = ({
 								)}
 							</>
 						) : (
-							<div className="flex items-center gap-4">{renderContent()}</div>
+							<div className="flex items-center gap-2">{renderContent()}</div>
 						)}
 					</div>
 				)}

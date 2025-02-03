@@ -115,6 +115,9 @@ const formSchema = z.object({
 		required_error: "Currency is required.",
 	}),
 	discountRules: discountRuleSchema.optional(),
+	email: z
+		.string({ required_error: "Email is required." })
+		.email("Invalid email format."),
 	extraDetails: z.string().optional(),
 });
 
@@ -145,7 +148,12 @@ const AvailabilityServicesForm = ({
 						basePrice: service.basePrice || 10,
 						isActive: service.isActive,
 						currency: service.currency,
-						discountRules: service.discountRules,
+						discountRules:
+							service.discountRules &&
+							service.discountRules.conditions.length > 0
+								? service.discountRules
+								: undefined,
+						email: currentUser?.email,
 						extraDetails: service.extraDetails,
 				  }
 				: {
@@ -159,14 +167,16 @@ const AvailabilityServicesForm = ({
 						basePrice: 10,
 						currency: "INR",
 						discountRules: undefined,
+						email: "",
 						extraDetails: "",
 				  },
 	});
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
+			const { email, ...restValues } = values;
 			const payload = {
-				...values,
+				...restValues,
 				timeDuration: values.timeDuration ?? 15,
 				basePrice: values.basePrice ?? 10,
 				discountRules:
@@ -189,6 +199,14 @@ const AvailabilityServicesForm = ({
 					: undefined;
 
 			await method(url, payload, params);
+
+			email &&
+				(await axios.put(
+					`${backendBaseUrl}/creator/updateUser/${currentUser?._id}`,
+					{
+						email: email,
+					}
+				));
 
 			refetch();
 
@@ -230,6 +248,8 @@ const AvailabilityServicesForm = ({
 		const subscription = form.watch((values) => {
 			const currentValues = values;
 			const changes = !isEqual(currentValues, initialValues.current);
+
+			console.log(currentValues, changes, isValid);
 			if (hasChangesRef.current !== changes) {
 				hasChangesRef.current = changes;
 				setHasChanges(changes);
@@ -653,7 +673,7 @@ const AvailabilityServicesForm = ({
 															placeholder={placeholder}
 															className={`w-full ${
 																discountType === "percentage" && "!px-1"
-															} py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0`}
+															} hover:bg-transparent py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0`}
 															{...field}
 															value={field.value ?? ""}
 															onChange={(e) => {
@@ -724,6 +744,26 @@ const AvailabilityServicesForm = ({
 						</Button>
 					)}
 				</div>
+
+				{/* Creator Email */}
+				<FormField
+					control={form.control}
+					name="email"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="!text-[#374151] !text-sm">Email</FormLabel>
+							<FormControl>
+								<Input
+									type="email"
+									className="flex flex-1 px-4 py-3 focus-visible:ring-transparent"
+									placeholder="Enter your email"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
 
 				{/* Extra Details */}
 				<FormField
