@@ -10,7 +10,7 @@ import {
 	getImageSource,
 	updatePastFirestoreSessions,
 } from "@/lib/utils";
-import { AvailabilityService, creatorUser } from "@/types";
+import { AvailabilityService, creatorUser, Service } from "@/types";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
@@ -51,7 +51,7 @@ const AvailabilityFinalConsentForm = ({
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
 	const [payoutTransactionId, setPayoutTransactionId] = useState();
 	const { clientUser } = useCurrentUsersContext();
-	const { getFinalServices, selectedService, resetServices } =
+	const { getFinalServices, selectedService, resetServices, getSpecificServiceOffer, } =
 		useSelectedServiceContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const [totalAmount, setTotalAmount] = useState<{
@@ -397,11 +397,7 @@ const AvailabilityFinalConsentForm = ({
 			}
 
 			// Prepare discounts
-			const discounts = getFinalServices()?.filter(
-				(discount) =>
-					discount.type.some((t) => t === "chat") ||
-					discount.type.some((t) => t === "all")
-			);
+			const discounts = getSpecificServiceOffer("chat");
 
 			// Create the scheduled chat
 			await setDoc(doc(db, "scheduledChats", callId), {
@@ -427,7 +423,7 @@ const AvailabilityFinalConsentForm = ({
 				creatorJoined: false,
 				startTime: Timestamp.fromDate(new Date(startsAt)), // Use Timestamp here
 				status: "upcoming",
-				discounts: discounts || null,
+				discounts: discounts as Service ?? null,
 			});
 
 			return {
