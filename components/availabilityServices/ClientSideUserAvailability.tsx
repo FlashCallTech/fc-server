@@ -23,8 +23,11 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		{}
 	);
 
-	const { getSpecificServiceOffer, setSelectedService } =
-		useSelectedServiceContext();
+	const {
+		getSpecificServiceOffer,
+		getSpecificServiceOfferViaTitle,
+		setSelectedService,
+	} = useSelectedServiceContext();
 	const { currentUser, fetchingUser, setAuthenticationSheetOpen } =
 		useCurrentUsersContext();
 
@@ -157,7 +160,9 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		<>
 			<div className="flex flex-col w-full items-center justify-center gap-4">
 				{userServices.map((service: AvailabilityService, index: number) => {
-					const discountApplicable = getSpecificServiceOffer(service.type);
+					const discountApplicable =
+						getSpecificServiceOfferViaTitle(service.title) ||
+						getSpecificServiceOffer(service.type);
 					const isExpanded = expandedStates[index] || false;
 					return (
 						<div

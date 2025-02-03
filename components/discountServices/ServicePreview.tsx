@@ -205,7 +205,7 @@ const ServicePreview = ({ service }: { service: DiscountService }) => {
 							</p>
 							<div className="flex items-center gap-2">
 								<p className="text-sm text-[#4B5563]">Selected Service</p>
-								{service.type === "all" ? (
+								{Array.isArray(service.type) || service.type === "all" ? (
 									["video", "audio", "chat"].map((type) => (
 										<span
 											key={type}
@@ -226,7 +226,7 @@ const ServicePreview = ({ service }: { service: DiscountService }) => {
 												: "bg-[#FFEDD5] text-[#9A3412]"
 										}`}
 									>
-										{serviceIcon(service.type)}
+										{serviceIcon(service.type as "video" | "audio" | "chat")}
 									</span>
 								)}
 							</div>
