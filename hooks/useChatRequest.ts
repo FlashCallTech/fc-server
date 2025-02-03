@@ -371,8 +371,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 							Time_Duration_Available: data.maxCallDuration,
 							Walletbalance_Available: clientUser?.walletBalance,
 						});
-						// updateExpertStatus(data.creatorPhone as string, "Busy");
-						console.log("Chat Accepted");
+						updateExpertStatus(data.creatorPhone as string, "Busy");
 						router.replace(`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`);
 					} else if (data.status === "accepted") {
 						clearTimeout(timer);
