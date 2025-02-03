@@ -250,8 +250,6 @@ const DiscountServicesForm = ({
 				hasChangesRef.current = changes;
 				setHasChanges(changes);
 			}
-
-			console.log(currentValues, initialValues.current, hasChanges, isValid);
 		});
 		return () => subscription.unsubscribe();
 	}, [form, isValid]);
@@ -654,7 +652,7 @@ const DiscountServicesForm = ({
 															placeholder={placeholder}
 															className={`w-full ${
 																discountType === "percentage" && "!px-1"
-															} py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0`}
+															} hover:bg-transparent py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0`}
 															{...field}
 															value={field.value ?? ""}
 															onChange={(e) => {

@@ -293,7 +293,7 @@ const AvailabilityServiceCards = ({
 									return (
 										<Card
 											key={service._id}
-											className="relative shadow-md border rounded-lg p-4 hover:shadow-lg transition-shadow duration-200 ease-in-out"
+											className="size-full relative shadow-md border rounded-lg p-4 hover:shadow-lg transition-shadow duration-200 ease-in-out"
 										>
 											<Switch
 												id={`serviceToggle-${service._id}`}
@@ -307,7 +307,7 @@ const AvailabilityServiceCards = ({
 												className="absolute top-4 right-4 hoverScaleDownEffect"
 											/>
 
-											<div className="w-full flex flex-col items-start gap-4">
+											<div className="size-full flex flex-col items-start justify-between gap-4">
 												<div className="w-full flex items-center gap-2.5">
 													<Image
 														width={80}
@@ -329,7 +329,7 @@ const AvailabilityServiceCards = ({
 												</div>
 
 												<div className="w-full flex flex-col items-start">
-													<p className="text-gray-600">
+													<p className="text-gray-600 line-clamp-3 min-h-[60px]">
 														{service.description
 															? getClampedText(service.description, isExpanded)
 															: "No Description Provided"}
@@ -356,7 +356,8 @@ const AvailabilityServiceCards = ({
 													)}
 
 													{service.discountRules &&
-														service.discountRules?.conditions && (
+														service.discountRules?.conditions &&
+														(service.discountRules?.conditions.length > 0 ? (
 															<div className="mt-2 space-y-1">
 																<p className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
 																	<span
@@ -389,7 +390,15 @@ const AvailabilityServiceCards = ({
 																	</span>
 																</p>
 															</div>
-														)}
+														) : (
+															<div>
+																<span
+																	className={`bg-[#ffd5d5] text-[#9a1212] text-[12px] px-2 py-1 rounded-full`}
+																>
+																	No Discount Offered
+																</span>
+															</div>
+														))}
 												</div>
 
 												{/* Right Section - Created At and Actions */}

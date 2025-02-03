@@ -307,29 +307,41 @@ const ScheduledMeetingList = ({
 														<>Join Now</>
 													)}
 												</button>
-												<button
-													className="max-sm:absolute top-4 right-4 p-2 bg-black rounded-full hoverScaleDownEffect"
-													onClick={() => copyToClipboard(userCall)}
-												>
-													<svg
-														xmlns="http://www.w3.org/2000/svg"
-														fill="none"
-														viewBox="0 0 24 24"
-														strokeWidth={1.5}
-														stroke="#C9DDFF"
-														className="size-5 sm:hidden"
+												{timeToStart < 5 * 60 * 1000 ? (
+													<button
+														className="max-sm:absolute top-4 right-4 p-2 bg-black rounded-full hoverScaleDownEffect"
+														onClick={() => copyToClipboard(userCall)}
 													>
-														<path
-															strokeLinecap="round"
-															strokeLinejoin="round"
-															d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
-														/>
-													</svg>
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															fill="none"
+															viewBox="0 0 24 24"
+															strokeWidth={1.5}
+															stroke="#C9DDFF"
+															className="size-5 sm:hidden"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+															/>
+														</svg>
 
-													<span className="hidden md:block text-sm text-white px-2">
-														Copy Link
-													</span>
-												</button>
+														<span className="hidden md:block text-sm text-white px-2">
+															Copy Link
+														</span>
+													</button>
+												) : (
+													<Link
+														href={`/meeting/${userCall.callId}`}
+														target="_blank"
+														className="max-sm:absolute top-4 right-4 p-2 bg-black rounded-full hoverScaleDownEffect"
+													>
+														<span className="text-sm text-white px-2">
+															Join Now
+														</span>
+													</Link>
+												)}
 											</div>
 										</div>
 									</div>

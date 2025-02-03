@@ -30,6 +30,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 	const [offerApplied, setOfferApplied] = useState(
 		selectedServices ? selectedServices.length > 0 : false
 	);
+	const [isEligible, setIsEligible] = useState(true);
 	const pathname = usePathname();
 	const creatorURL = pathname || localStorage.getItem("creatorURL");
 
@@ -267,7 +268,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				{/* Creator Bio */}
 				<section className="xl:hidden size-full">{renderCreatorBio()}</section>
 				{/* Discounts */}
-				{!offerApplied && (
+				{!offerApplied && isEligible && (
 					<div className="w-full flex-col items-start justify-center gap-2.5 p-4 bg-[#DCFCE7] rounded-xl">
 						<div className="flex items-center gap-2.5 text-[#166534] text-sm">
 							<svg
@@ -302,6 +303,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 							offerApplied={offerApplied}
 							setOfferApplied={setOfferApplied}
 							setIsAuthSheetOpen={setIsAuthSheetOpen}
+							setIsEligible={setIsEligible}
 						/>
 					</div>
 				)}
