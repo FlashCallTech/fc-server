@@ -80,7 +80,7 @@ const CallFeedback = ({
 				Creator_ID: creator?._id,
 				Walletbalace_Available: clientUser?.walletBalance,
 			});
-	}, []);
+	}, [clientUser, creator]);
 
 	useEffect(() => {
 		const fetchDuration = async () => {
