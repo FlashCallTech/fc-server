@@ -522,6 +522,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const handleChatClick = async () => {
 		localStorage.removeItem("chatId");
 		localStorage.removeItem("chatRequestId");
+		localStorage.removeItem("endedBy");
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",
