@@ -563,7 +563,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 			let discount = getSpecificServiceOffer("chat");
 
 			setChatReqSent(true);
-			handleChat(creator, clientUser, setChatState, discount);
+			handleChat(creator, clientUser, setChatState, discount as Service);
 			let maxCallDuration =
 				(walletBalance /
 					(clientUser?.global
