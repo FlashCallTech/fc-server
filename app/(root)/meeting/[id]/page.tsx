@@ -227,18 +227,21 @@ const CallEnded = ({
 
 		if (isMeetingOwner && !transactionHandled.current) {
 			stopMediaStreams();
+			const endedBy = localStorage.getItem("endedBy");
 			call.type === "default"
 				? trackEvent("BookCall_Video_Ended", {
 						Client_ID: currentUser?._id,
 						User_First_Seen: currentUser?.createdAt?.toString().split("T")[0],
 						Walletbalace_Available: currentUser?.walletBalance,
 						Creator_ID: call.state.members[0].user_id,
+						EndedBy: endedBy ?? "creator",
 				  })
 				: trackEvent("BookCall_Audio_Ended", {
 						Client_ID: currentUser?._id,
 						User_First_Seen: currentUser?.createdAt?.toString().split("T")[0],
 						Walletbalace_Available: currentUser?.walletBalance,
 						Creator_ID: call.state.members[0].user_id,
+						EndedBy: endedBy ?? "creator",
 				  });
 			handleCallEnd();
 		} else if (!isMeetingOwner) {

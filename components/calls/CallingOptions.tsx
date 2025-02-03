@@ -522,6 +522,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const handleChatClick = async () => {
 		localStorage.removeItem("chatId");
 		localStorage.removeItem("chatRequestId");
+		localStorage.removeItem("endedBy");
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",
@@ -560,20 +561,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				rate: updatedCreator.chatRate,
 			});
 
-			let discounts = getFinalServices();
-			const filteredDiscounts = discounts?.filter(
-				(discount) =>
-					discount.type.some((t) => t === "chat") ||
-					discount.type.some((t) => t === "all")
-			);
+			let discount = getSpecificServiceOffer("chat");
 
 			setChatReqSent(true);
-			handleChat(
-				creator,
-				clientUser,
-				setChatState,
-				filteredDiscounts as Service[]
-			);
+			handleChat(creator, clientUser, setChatState, discount as Service);
 			let maxCallDuration =
 				(walletBalance /
 					(clientUser?.global

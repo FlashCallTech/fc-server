@@ -13,9 +13,11 @@ import {
 import LeaveCallDecision from "./LeaveCallDecision";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const EndCallButton = ({ callType }: { callType: "scheduled" | "instant" }) => {
 	const call = useCall();
+	const { userType } = useCurrentUsersContext();
 	const [showDialog, setShowDialog] = useState(false);
 	const [showLeavingDialog, setShowLeavingDialog] = useState(false);
 
@@ -26,6 +28,7 @@ const EndCallButton = ({ callType }: { callType: "scheduled" | "instant" }) => {
 	}
 
 	const endCall = async () => {
+		localStorage.setItem("endedBy", userType as string);
 		setShowDialog(true);
 	};
 
