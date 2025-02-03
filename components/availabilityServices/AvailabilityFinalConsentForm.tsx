@@ -10,7 +10,7 @@ import {
 	getImageSource,
 	updatePastFirestoreSessions,
 } from "@/lib/utils";
-import { AvailabilityService, creatorUser } from "@/types";
+import { AvailabilityService, creatorUser, Service } from "@/types";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
@@ -423,7 +423,7 @@ const AvailabilityFinalConsentForm = ({
 				creatorJoined: false,
 				startTime: Timestamp.fromDate(new Date(startsAt)), // Use Timestamp here
 				status: "upcoming",
-				discounts: discounts || null,
+				discounts: discounts as Service ?? null,
 			});
 
 			return {

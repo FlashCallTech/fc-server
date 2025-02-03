@@ -88,7 +88,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	};
 
-	const handleChat = async (creator: creatorUser, clientUser: clientUser, setChatState: any, discounts?: any) => {
+	const handleChat = async (creator: creatorUser, clientUser: clientUser, setChatState: any, discounts?: Service) => {
 		if (!clientUser) router.push("sign-in");
 		if (!clientUser) router.push("sign-in");
 
@@ -203,7 +203,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				{
 					clientId: clientUser?._id,
 					creatorId: creator?._id,
-					discounts: [],
+					discounts: null,
 				},
 				{ merge: true }
 			);
@@ -445,6 +445,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					timerSet: false,
 					global: chatRequest.global ?? false,
 					chatRate: chatRequest.chatRate,
+					discounts: chatRequest.discounts ?? null
 				};
 
 				// Only add `clientPhone` if it exists
@@ -501,6 +502,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					timerSet: false,
 					global: chatRequest.global ?? false,
 					chatRate: chatRequest.chatRate,
+					discounts: chatRequest.discounts ?? null,
 				};
 
 				// Only add `clientPhone` if it exists
