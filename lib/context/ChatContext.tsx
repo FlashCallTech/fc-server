@@ -79,6 +79,14 @@ export const ChatProvider = ({ children, chatId }: { children: React.ReactNode, 
 				localStorage.removeItem("chatId");
 				localStorage.removeItem("user2");
 				localStorage.removeItem("EndedBy");
+				trackEvent("BookCall_Chat_Ended", {
+					Client_ID: chat?.clientId,
+					Creator_ID: chat?.creatorId,
+					Time_Duration_Consumed: chat?.startedAt
+						? (Date.now() - chat?.startedAt) / 1000
+						: null,
+					EndedBy: endedBy ?? "creator",
+				});
 				router.replace(`/chat-ended/${chatId}/${chat?.callId}/${chat?.clientId}/false`);
 			}
 		}
@@ -107,16 +115,6 @@ export const ChatProvider = ({ children, chatId }: { children: React.ReactNode, 
 					online: false,
 				});
 			}
-
-			// Track the event
-			trackEvent("BookCall_Chat_Ended", {
-				Client_ID: chat?.clientId,
-				Creator_ID: chat?.creatorId,
-				Time_Duration_Consumed: chat?.startedAt
-					? (now - chat?.startedAt) / 1000
-					: null,
-				EndedBy: endedBy,
-			});
 
 			// Clear localStorage
 			localStorage.removeItem("chatRequestId");
