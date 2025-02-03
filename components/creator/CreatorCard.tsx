@@ -14,6 +14,9 @@ import { backendBaseUrl } from "@/lib/utils";
 import Image from "next/image";
 import { useCreatorQuery } from "@/lib/react-query/queries";
 import ContentLoading from "../shared/ContentLoading";
+import { trackEvent } from "@/lib/mixpanel";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const CreatorCard = () => {
 	const { username } = useParams();
@@ -21,6 +24,7 @@ const CreatorCard = () => {
 	const router = useRouter();
 
 	const initializedPixelId = useRef<string | null>(null);
+	const hasTrackedEvent = useRef(false); // Add this ref to track event execution
 	const [lastCallTracked, setLastCallTracked] = useState(
 		() => localStorage.getItem("lastTrackedCallId") || null
 	);
@@ -47,6 +51,7 @@ const CreatorCard = () => {
 			fetchCreatorDataAndInitializePixel(creatorUser._id);
 			initializedPixelId.current = creatorUser._id;
 		}
+
 
 		const fetchAndTrackCall = async () => {
 			if (!creatorUser || fetchingUser || !currentUser) return;
@@ -103,6 +108,27 @@ const CreatorCard = () => {
 		lastCallTracked,
 		fetchingUser,
 	]);
+
+	// useEffect(() => {
+	// 	if (hasTrackedEvent.current) return;
+	// 	if (!currentUser || !creatorUser || isLoading) return;
+
+	// 	hasTrackedEvent.current = true; // Set BEFORE async call
+	// 	console.log("useEffect triggered", { currentUser, creatorUser, hasTrackedEvent });
+
+	// 	trackViewEvent();
+	// }, [currentUser, creatorUser]);
+
+	// const trackViewEvent = async () => {
+	// 	const creatorDocRef = doc(db, "userStatus", creatorUser.phone);
+	// 	const docSnap = await getDoc(creatorDocRef);
+
+	// 	trackEvent("Page_View", {
+	// 		Creator_ID: creatorUser._id,
+	// 		status: docSnap.data()?.status,
+	// 		Wallet_Balance: currentUser?.walletBalance,
+	// 	});
+	// };
 
 	if (fetchingUser || isLoading) {
 		return (
