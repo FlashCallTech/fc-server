@@ -99,7 +99,7 @@ const ChatFeedback = ({
 				Creator_ID: creator?._id,
 				Walletbalace_Available: clientUser?.walletBalance,
 			});
-	}, []);
+	}, [clientUser, creator]);
 
 	const handleSliderChange = (value: any) => {
 		setRating(value);
