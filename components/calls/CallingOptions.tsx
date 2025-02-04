@@ -256,7 +256,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		};
 	}, [chatState]);
 
-	const createMeeting = async (callType: string) => {
+	const createMeeting = async (callType: string, selectedOffer?: Service) => {
 		if (!client || !clientUser) return;
 
 		try {
@@ -403,6 +403,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 							? clientUser?.email
 							: clientUser?.phone,
 						global: clientUser?.global ?? false,
+						discount: selectedOffer,
 					});
 				})
 				.catch((err) => console.log("Unable to create Meeting", err));
@@ -490,7 +491,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						if (selectedOffer) {
 							setSelectedService(selectedOffer);
 						}
-						createMeeting(callType);
+						createMeeting(callType, selectedOffer);
 					} else if (clientUser && storedCallId) {
 						toast({
 							variant: "destructive",
