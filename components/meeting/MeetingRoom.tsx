@@ -136,7 +136,7 @@ const MeetingRoom = () => {
 	};
 
 	useWarnOnUnload("Are you sure you want to leave the meeting?", () => {
-		if (currentUser?._id) {
+		if (userType === "client" && currentUser?._id) {
 			navigator.sendBeacon(
 				`${backendBaseUrl}/user/setCallStatus/${currentUser._id}`
 			);
