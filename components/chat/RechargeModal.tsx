@@ -40,7 +40,6 @@ const RechargeModal = ({
 	const [showPayPal, setShowPayPal] = useState(false);
 	const [pg, setPg] = useState<string>("");
 	const { currentUser } = useCurrentUsersContext();
-	const { pauseTimer, resumeTimer } = useChatTimerContext();
 	const { pgHandler } = useRecharge();
 	const { toast } = useToast();
 
@@ -124,7 +123,6 @@ const RechargeModal = ({
 							setIsSheetOpen(false); // Close the sheet
 							setShowPayPal(false);
 							setOnGoingPayment(false);
-							resumeTimer();
 						}
 					},
 					onCancel(data: any) {
@@ -139,7 +137,6 @@ const RechargeModal = ({
 						setIsSheetOpen(false); // Close the sheet
 						setShowPayPal(false);
 						setOnGoingPayment(false);
-						resumeTimer();
 					},
 					onError(err: any) {
 						console.error("PayPal error:", err);
@@ -151,7 +148,6 @@ const RechargeModal = ({
 						setIsSheetOpen(false); // Close the sheet
 						setShowPayPal(false);
 						setOnGoingPayment(false);
-						resumeTimer();
 					},
 				}).render("#paypal-button-container");
 			} else {
@@ -162,14 +158,6 @@ const RechargeModal = ({
 			if (paypalContainer) paypalContainer.innerHTML = "";
 		}
 	}, [showPayPal]);
-
-	useEffect(() => {
-		if (isSheetOpen || onGoingPayment || showPayPal) {
-			pauseTimer();
-		} else {
-			resumeTimer();
-		}
-	}, [isSheetOpen, onGoingPayment, pauseTimer, resumeTimer, showPayPal]);
 
 	const PaymentHandler = () => {
 		try {
@@ -191,7 +179,6 @@ const RechargeModal = ({
 		} finally {
 			setIsSheetOpen(false);
 			setOnGoingPayment(false);
-			resumeTimer();
 		}
 	}
 
