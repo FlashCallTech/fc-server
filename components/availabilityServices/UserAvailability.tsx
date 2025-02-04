@@ -77,7 +77,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 				day: day.day,
 				isActive: day.isActive || false,
 				slots: day.timeSlots.map((slot: any) => ({
-					id: slot._id ?? uuidv4(),
+					id: slot._id || slot.id || uuidv4(),
 					startTime: slot.startTime,
 					endTime: slot.endTime,
 				})),
