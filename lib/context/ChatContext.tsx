@@ -98,6 +98,17 @@ export const ChatProvider = ({ children, chatId }: { children: React.ReactNode, 
 			setLoading(true);
 			const now = Date.now();
 
+			if(endedBy === "low_balance") {
+				trackEvent("BookCall_Chat_Ended", {
+					Client_ID: chat?.clientId,
+					Creator_ID: chat?.creatorId,
+					Time_Duration_Consumed: chat?.startedAt
+						? (Date.now() - chat?.startedAt) / 1000
+						: null,
+					EndedBy: endedBy,
+				});
+			}
+
 			// Update chat status
 			await updateDoc(doc(db, "chats", chatId as string), {
 				endedAt: now,

@@ -76,6 +76,15 @@ const HomePage = () => {
 		localStorage.setItem("creatorURL", `/${username}`);
 		setCurrentTheme(theme);
 
+		const creatorDocRef = doc(db, "userStatus", phone);
+		const docSnap = await getDoc(creatorDocRef);
+
+		trackEvent("Page_View", {
+			Creator_ID: id,
+			status: docSnap.data()?.status,
+			Wallet_Balance: currentUser?.walletBalance,
+		});
+
 		router.push(`/${username}`);
 	};
 
