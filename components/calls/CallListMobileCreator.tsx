@@ -311,6 +311,9 @@ const CallListMobileCreator = ({
 										Type
 									</th>
 									<th scope="col" className="px-6 py-3">
+										Category
+									</th>
+									<th scope="col" className="px-6 py-3">
 										Duration
 									</th>
 									<th scope="col" className="px-6 py-3">
@@ -465,6 +468,9 @@ const CallListMobileCreator = ({
 															? "Video"
 															: "Chat"}
 													</div>
+												</td>
+												<td className="px-6 py-4">
+													{userCall?.category ?? "PPM"}
 												</td>
 												<td className="px-6 py-4">
 													{formatDuration(

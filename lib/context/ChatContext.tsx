@@ -98,7 +98,7 @@ export const ChatProvider = ({ children, chatId }: { children: React.ReactNode, 
 			setLoading(true);
 			const now = Date.now();
 
-			if(endedBy === "low_balance") {
+			if(endedBy === "low_balance" || endedBy === "time_over") {
 				trackEvent("BookCall_Chat_Ended", {
 					Client_ID: chat?.clientId,
 					Creator_ID: chat?.creatorId,

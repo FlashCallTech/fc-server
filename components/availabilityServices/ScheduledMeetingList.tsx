@@ -195,7 +195,7 @@ const ScheduledMeetingList = ({
 											router.push(`/meeting/${userCall.callId}`);
 										userCall.type === "chat" &&
 											router.push(
-												`${frontendBaseUrl}/scheduledChat/${userCall.callId}/${userCall.chatId}`
+												`/scheduledChat/${userCall.callId}/${userCall.chatId}`
 											);
 									}
 								};

@@ -35,12 +35,16 @@ export const ChatTimerProvider = ({ children, clientId, chatId }: ChatTimerProvi
 	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
 	const [hasLowBalance, setHasLowBalance] = useState(false);
 	const lowBalanceNotifiedRef = useRef(false);
-	const lowBalanceThreshold = 300; // 5 minutes in seconds
+	const lowTimeRef = useRef(false);
+	const lowTimeThreshold = 300; // 5 minutes in seconds
 
 	const workerRef = useRef<Worker | null>(null);
 
 	useEffect(() => {
 		if (!chatId || !clientId || !walletBalance || !chat) return;
+
+		lowBalanceNotifiedRef.current = false;
+		lowTimeRef.current = false;
 
 		// Stop previous worker if exists
 		if (workerRef.current) {
@@ -54,15 +58,22 @@ export const ChatTimerProvider = ({ children, clientId, chatId }: ChatTimerProvi
                 if (e.data.type === "start") {
                     let timeLeft = e.data.data.remainingTime;
                     let elapsedTime = e.data.data.totalTimeUtilized;
+					let walletBalance = e.data.data.walletBalance;
+					let rate = e.data.data.rate;
+					let lowBalance = false;
                     
                     const interval = setInterval(() => {
                         if (timeLeft > 0) {
+							if (rate * 5 > walletBalance) {
+								lowBalance = true;
+							}
                             timeLeft--;
                             elapsedTime++;
-                            self.postMessage({ timeLeft, elapsedTime });
+							walletBalance -= (rate/60);
+                            self.postMessage({ timeLeft, elapsedTime, lowBalance });
                         } else {
                             clearInterval(interval);
-                            self.postMessage({ timeLeft: 0, elapsedTime });
+                            self.postMessage({ timeLeft: 0, elapsedTime, lowBalance });
                             self.close();
                         }
                     }, 1000);
@@ -78,16 +89,16 @@ export const ChatTimerProvider = ({ children, clientId, chatId }: ChatTimerProvi
 		const maxChatDuration = Math.min(totalTime, 3600);
 		const remainingTime = Math.max(maxChatDuration - totalTimeUtilized, 0);
 
-		console.log("Chat timer...", totalTime, maxChatDuration, remainingTime);
-
 		// Start worker
 		timerWorker.postMessage({
 			type: "start",
-			data: { remainingTime, totalTimeUtilized },
+			data: { remainingTime, totalTimeUtilized, walletBalance, rate: chat?.chatRate },
 		});
 
 		timerWorker.onmessage = async (event) => {
-			const { timeLeft, elapsedTime } = event.data;
+			const { timeLeft, elapsedTime, lowBalance } = event.data;
+
+			console.log("timer...", timeLeft, lowBalance);
 
 			setTimeLeft(timeLeft);
 			setTotalTimeUtilized(elapsedTime);
@@ -102,7 +113,7 @@ export const ChatTimerProvider = ({ children, clientId, chatId }: ChatTimerProvi
 			}
 
 			// Handle low balance state
-			if (timeLeft <= lowBalanceThreshold && timeLeft > 0 && !lowBalanceNotifiedRef.current) {
+			if (lowBalance && !lowBalanceNotifiedRef.current) {
 				setHasLowBalance(true);
 				lowBalanceNotifiedRef.current = true; // Update ref instead of state
 				toast({
@@ -112,15 +123,24 @@ export const ChatTimerProvider = ({ children, clientId, chatId }: ChatTimerProvi
 				});
 			}
 
+			// Handle low time state
+			if (timeLeft <= lowTimeThreshold && timeLeft > 0 && !lowTimeRef.current && !lowBalance) {
+				lowTimeRef.current = true; // Update ref instead of state
+				toast({
+					title: "Remaining time is 5 minutes",
+					description: "Your Chat will end in 5 minutes",
+					toastStatus: "negative",
+				});
+			}
+
 			// End chat if time runs out
 			if (timeLeft <= 0) {
-				timerWorker.terminate();
-				workerRef.current = null;
-				handleEnd(chatId, "low_balance");
+				handleEnd(chatId, lowBalance ? "low_balance" : "time_over").finally(() => {
+					timerWorker.terminate();
+					workerRef.current = null;
+				});
 			}
 		};
-
-		console.log(lowBalanceNotifiedRef.current);
 
 		return () => {
 			if (workerRef.current) {
