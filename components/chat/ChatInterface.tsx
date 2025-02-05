@@ -407,6 +407,7 @@ const ChatInterface: React.FC = () => {
 						<Tip
 							handleSendTip={handleSendTip}
 							setText={setText}
+							creatorId={chat?.creatorId}
 						/>
 						<button
 							onClick={endCall}
@@ -525,6 +526,7 @@ const ChatInterface: React.FC = () => {
 								<Tip
 									handleSendTip={handleSendTip}
 									setText={setText}
+									creatorId={chat?.creatorId}
 								/>
 								<button
 									onClick={endCall}

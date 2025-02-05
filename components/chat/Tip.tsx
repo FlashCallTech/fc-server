@@ -7,11 +7,13 @@ import RechargeModal from "./RechargeModal";
 interface Props {
     handleSendTip: (tipAmt: string) => Promise<void>;
     setText: React.Dispatch<React.SetStateAction<string>>;
+    creatorId: string;
 }
 
 const Tip: React.FC<Props> = ({
     handleSendTip,
-    setText
+    setText,
+    creatorId,
 }) => {
     const [userType, setUserType] = useState<string>();
     const { walletBalance, setWalletBalance, updateWalletBalance } = useWalletBalanceContext();
@@ -29,18 +31,28 @@ const Tip: React.FC<Props> = ({
             {!hasLowBalance && (
                 userType === 'client' && (
                     <div>
-                        <TipModal walletBalance={walletBalance} setWalletBalance={setWalletBalance} updateWalletBalance={updateWalletBalance} handleSendTip = {handleSendTip} setText = {setText} />
+                        <TipModal
+                            walletBalance={walletBalance}
+                            setWalletBalance={setWalletBalance}
+                            updateWalletBalance={updateWalletBalance}
+                            handleSendTip={handleSendTip}
+                            setText={setText}
+                        />
                     </div>
                 )
             )}
             {hasLowBalance && (
                 userType === 'client' && (
                     <div>
-                        <RechargeModal walletBalance={walletBalance} setWalletBalance={setWalletBalance} />
+                        <RechargeModal
+                            walletBalance={walletBalance}
+                            setWalletBalance={setWalletBalance}
+                            creatorId={creatorId}
+                        />
                     </div>
                 )
             )
-            
+
             }
         </>
     );

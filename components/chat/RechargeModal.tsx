@@ -30,9 +30,11 @@ import { trackEvent } from "@/lib/mixpanel";
 const RechargeModal = ({
 	setWalletBalance,
 	walletBalance,
+	creatorId,
 }: {
 	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
 	walletBalance: number;
+	creatorId: string;
 }) => {
 	const [rechargeAmount, setRechargeAmount] = useState("");
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -172,6 +174,8 @@ const RechargeModal = ({
 					currentUser?.phone,
 					currentUser?.createdAt?.toString().split("T")[0],
 					currentUser?.walletBalance,
+					creatorId,
+					true,
 				)
 			}
 		} catch (error) {
