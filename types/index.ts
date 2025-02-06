@@ -243,7 +243,6 @@ export type RegisterCallParams = {
 	callId: string;
 	title?: string;
 	type: string;
-	category?: string;
 	status: string;
 	creator: string;
 	expertDetails?: any;
