@@ -109,26 +109,26 @@ const CreatorCard = () => {
 		fetchingUser,
 	]);
 
-	// useEffect(() => {
-	// 	if (hasTrackedEvent.current) return;
-	// 	if (!currentUser || !creatorUser || isLoading) return;
+	useEffect(() => {
+		if (hasTrackedEvent.current) return;
+		if (!currentUser || !creatorUser || isLoading) return;
 
-	// 	hasTrackedEvent.current = true; // Set BEFORE async call
-	// 	console.log("useEffect triggered", { currentUser, creatorUser, hasTrackedEvent });
+		hasTrackedEvent.current = true; // Set BEFORE async call
+		console.log("useEffect triggered", { currentUser, creatorUser, hasTrackedEvent });
 
-	// 	trackViewEvent();
-	// }, [currentUser, creatorUser]);
+		trackViewEvent();
+	}, [currentUser, creatorUser]);
 
-	// const trackViewEvent = async () => {
-	// 	const creatorDocRef = doc(db, "userStatus", creatorUser.phone);
-	// 	const docSnap = await getDoc(creatorDocRef);
+	const trackViewEvent = async () => {
+		const creatorDocRef = doc(db, "userStatus", creatorUser.phone);
+		const docSnap = await getDoc(creatorDocRef);
 
-	// 	trackEvent("Page_View", {
-	// 		Creator_ID: creatorUser._id,
-	// 		status: docSnap.data()?.status,
-	// 		Wallet_Balance: currentUser?.walletBalance,
-	// 	});
-	// };
+		trackEvent("Page_View", {
+			Creator_ID: creatorUser._id,
+			status: docSnap.data()?.status,
+			Wallet_Balance: currentUser?.walletBalance,
+		});
+	};
 
 	if (fetchingUser || isLoading) {
 		return (

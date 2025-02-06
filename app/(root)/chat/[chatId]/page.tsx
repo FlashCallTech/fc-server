@@ -55,7 +55,6 @@ const Page = () => {
 			<ChatProvider chatId={chatId as string}>
 				<ChatTimerProvider
 					clientId={queryParams.clientId as string}
-					creatorId={queryParams.creatorId as string}
 					chatId={chatId as string}
 				>
 					<ChatInterface />
