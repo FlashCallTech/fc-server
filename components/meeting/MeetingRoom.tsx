@@ -27,7 +27,6 @@ import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
 import { Cursor, Typewriter } from "react-simple-typewriter";
 import { doc, getFirestore, onSnapshot } from "firebase/firestore";
-import { CallTimerProvider } from "@/lib/context/CallTimerContext";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import TipModal from "../calls/TipModal";
 import MyCallConnectingUI from "./MyCallConnectigUI";
@@ -164,21 +163,8 @@ const MeetingRoom = () => {
 				return;
 			}
 			try {
-				const localSessionKey = `meeting_${call.id}_${currentUser._id}`;
-
-				if (localStorage.getItem(localSessionKey) && participants.length > 1) {
-					toast({
-						variant: "destructive",
-						title: "Already in Call",
-						description: "You are already in this meeting.",
-						toastStatus: "positive",
-					});
-					router.replace("/");
-					return;
-				}
 				if (callingState === CallingState.IDLE) {
 					await call?.join();
-					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
 				}
 			} catch (error) {
@@ -341,36 +327,33 @@ const MeetingRoom = () => {
 				<TipAnimation amount={tipAmount} />
 			)}
 
-			<CallTimerProvider
-				isVideoCall={isVideoCall}
-				isMeetingOwner={isMeetingOwner}
-				call={call}
-				participants={participants.length}
-			>
-				{!callHasEnded && isMeetingOwner && !showCountdown && call ? (
-					<CallTimer
-						handleCallRejected={handleCallRejected}
-						isVideoCall={isVideoCall}
-						callId={call.id}
-					/>
-				) : (
-					!showCountdown &&
-					call &&
-					participants.length > 1 && <CreatorCallTimer callId={call.id} />
-				)}
+			{!callHasEnded && isMeetingOwner && !showCountdown && call ? (
+				<CallTimer
+					handleCallRejected={handleCallRejected}
+					isVideoCall={isVideoCall}
+					call={call}
+					callId={call.id}
+					isMeetingOwner={isMeetingOwner}
+				/>
+			) : (
+				!showCountdown &&
+				call &&
+				participants.length > 1 && <CreatorCallTimer callId={call.id} />
+			)}
 
-				{isMeetingOwner && (
-					<section className="pl-4 absolute bottom-[5.75rem] left-4 z-50 w-fit">
-						<TipModal
-							walletBalance={walletBalance}
-							setWalletBalance={setWalletBalance}
-							updateWalletBalance={updateWalletBalance}
-							isVideoCall={isVideoCall}
-							callId={call?.id as string}
-						/>
-					</section>
-				)}
-			</CallTimerProvider>
+			{isMeetingOwner && (
+				<section className="pl-4 absolute bottom-[5.75rem] left-4 z-50 w-fit">
+					<TipModal
+						walletBalance={walletBalance}
+						setWalletBalance={setWalletBalance}
+						updateWalletBalance={updateWalletBalance}
+						isVideoCall={isVideoCall}
+						call={call!}
+						callId={call?.id as string}
+						isMeetingOwner={isMeetingOwner}
+					/>
+				</section>
+			)}
 
 			{/* Call Controls */}
 

@@ -15,6 +15,11 @@ const UpcomingPage = () => {
 	const [historyType, setHistoryType] = useState<
 		"All" | "Audio" | "Video" | "Chat"
 	>("All");
+
+	const [listType, setListType] = useState<"Upcoming" | "Previous">("Upcoming");
+
+	const listOptions: ("Upcoming" | "Previous")[] = ["Upcoming", "Previous"];
+
 	const options: ("All" | "Audio" | "Video" | "Chat")[] = [
 		"All",
 		"Audio",
@@ -50,6 +55,20 @@ const UpcomingPage = () => {
 					<h1 className="text-xl md:text-2xl font-bold">Upcoming Calls</h1>
 				</section>
 				<div className="hidden xl:flex items-center justify-center w-fit gap-2">
+					{listOptions.map((option) => (
+						<Button
+							key={option}
+							className={`text-sm font-medium px-4 py-2 rounded-full border border-gray-300 hover:text-white hover:bg-black hoverScaleDownEffect flex items-center gap-2 ${
+								listType === option && "bg-black text-white"
+							}`}
+							onClick={() => setListType(option)}
+						>
+							{option}
+						</Button>
+					))}
+				</div>
+
+				<div className="hidden xl:flex items-center justify-center w-fit gap-2">
 					{options.map((option) => (
 						<Button
 							key={option}
@@ -67,6 +86,20 @@ const UpcomingPage = () => {
 					))}
 				</div>
 			</section>
+
+			<div className="flex xl:hidden items-center justify-start w-full gap-2 px-4 pb-2">
+				{listOptions.map((option) => (
+					<Button
+						key={option}
+						className={`text-sm font-medium px-[20px] py-[7px] rounded-full border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-black flex items-center gap-2 ${
+							listType === option && "bg-black text-white"
+						}`}
+						onClick={() => setListType(option)}
+					>
+						{option}
+					</Button>
+				))}
+			</div>
 
 			<div className="flex xl:hidden items-center justify-start w-full gap-2 px-4 pb-2">
 				{options.map((option) => (
@@ -88,7 +121,7 @@ const UpcomingPage = () => {
 
 			{!fetchingUser ? (
 				currentUser ? (
-					<ScheduledMeetingList callType={historyType} />
+					<ScheduledMeetingList callType={historyType} listType={listType} />
 				) : (
 					<div className="size-full mt-4 md:mt-10 xl:mt-12 flex flex-col gap-2 items-center justify-center  text-center">
 						<div className="bg-black/10 size-20 rounded-full flex items-center justify-center">
@@ -114,14 +147,16 @@ const UpcomingPage = () => {
 							Authenticate to see your upcoming calls here
 						</span>
 
-						<Link
-							href="/service-management"
-							className="flex items-center mt-2 gap-2 px-6 py-3 bg-black text-white rounded-full hoverScaleDownEffect"
-						>
-							<section className="flex items-center justify-center text-sm sm:text-base">
-								Add/Manage you services
-							</section>
-						</Link>
+						{userType === "creator" && (
+							<Link
+								href="/service-management"
+								className="flex items-center mt-2 gap-2 px-6 py-3 bg-black text-white rounded-full hoverScaleDownEffect"
+							>
+								<section className="flex items-center justify-center text-sm sm:text-base">
+									Add/Manage you services
+								</section>
+							</Link>
+						)}
 
 						<div className="w-full px-4 flex items-start text-center justify-center text-sm text-[#6B7280] mt-2 gap-2">
 							<svg

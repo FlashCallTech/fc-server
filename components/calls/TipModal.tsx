@@ -11,10 +11,8 @@ import {
 } from "@/components/ui/sheet";
 import * as Sentry from "@sentry/nextjs";
 import { useToast } from "../ui/use-toast";
-import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 import { creatorUser } from "@/types";
 import { success } from "@/constants/icons";
-import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { backendBaseUrl, fetchExchangeRate } from "@/lib/utils";
 import {
@@ -29,6 +27,8 @@ import RechargeModal from "./RechargeModal";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import axios from "axios";
 import { db } from "@/lib/firebase";
+import useCallTimer from "@/lib/context/CallTimerContext";
+import { Call } from "@stream-io/video-react-sdk";
 
 // Custom hook to track screen size
 const useScreenSize = () => {
@@ -64,13 +64,17 @@ const TipModal = ({
 	setWalletBalance,
 	updateWalletBalance,
 	isVideoCall,
+	call,
 	callId,
+	isMeetingOwner,
 }: {
 	walletBalance: number;
 	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
 	updateWalletBalance: () => Promise<void>;
 	isVideoCall: boolean;
 	callId: string;
+	call: Call;
+	isMeetingOwner: boolean;
 }) => {
 	const [rechargeAmount, setRechargeAmount] = useState("");
 	const [audioRatePerMinute, setAudioRatePerMinute] = useState(0);
@@ -85,7 +89,11 @@ const TipModal = ({
 	const [showRechargeModal, setShowRechargeModal] = useState(false);
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
-	const { totalTimeUtilized, hasLowBalance } = useCallTimerContext();
+	const { totalTimeUtilized, hasLowBalance } = useCallTimer({
+		isVideoCall,
+		isMeetingOwner,
+		call,
+	});
 	const isMobile = useScreenSize() && isMobileDevice();
 	const firestore = getFirestore();
 
@@ -201,17 +209,17 @@ const TipModal = ({
 			const commissionAmt = Number(
 				global
 					? (
-						((Number(rechargeAmount) * commissionRate) / 100) *
-						exchangeRate
-					).toFixed(2)
+							((Number(rechargeAmount) * commissionRate) / 100) *
+							exchangeRate
+					  ).toFixed(2)
 					: ((Number(rechargeAmount) * commissionRate) / 100).toFixed(2)
 			);
 			const pgChargesAmt = Number(
 				global
 					? (
-						((Number(rechargeAmount) * pgChargesRate) / 100) *
-						exchangeRate
-					).toFixed(2)
+							((Number(rechargeAmount) * pgChargesRate) / 100) *
+							exchangeRate
+					  ).toFixed(2)
 					: ((Number(rechargeAmount) * pgChargesRate) / 100).toFixed(2)
 			);
 			const gstAmt = Number((commissionAmt * 0.18).toFixed(2));
@@ -261,7 +269,7 @@ const TipModal = ({
 				tipId,
 				amountAdded,
 				amountPaid: rechargeAmount,
-			})
+			});
 
 			const userDocRef = doc(firestore, "userTips", creatorId as string);
 
@@ -371,8 +379,9 @@ const TipModal = ({
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className={`flex flex-col items-center justify-center ${!loading ? "px-7 py-5" : "px-4"
-						}  border-none rounded-t-xl bg-white mx-auto overflow-scroll no-scrollbar min-h-[350px] max-h-fit w-full h-dvh sm:max-w-[444px]`}
+					className={`flex flex-col items-center justify-center ${
+						!loading ? "px-7 py-5" : "px-4"
+					}  border-none rounded-t-xl bg-white mx-auto overflow-scroll no-scrollbar min-h-[350px] max-h-fit w-full h-dvh sm:max-w-[444px]`}
 				>
 					{loading ? (
 						<SinglePostLoader />
@@ -383,18 +392,24 @@ const TipModal = ({
 								<SheetDescription>
 									Balance Left
 									<span
-										className={`ml-2 ${hasLowBalance ? "text-red-500" : "text-green-1"
-											}`}
+										className={`ml-2 ${
+											hasLowBalance ? "text-red-500" : "text-green-1"
+										}`}
 									>
-										{`${currentUser?.global ? "$" : "₹"} ${adjustedWalletBalance.toFixed(2)}`}
+										{`${
+											currentUser?.global ? "$" : "₹"
+										} ${adjustedWalletBalance.toFixed(2)}`}
 									</span>
 								</SheetDescription>
 							</SheetHeader>
 							<section
-								className={`grid ${errorMessage ? "py-2 gap-2 " : "py-4 gap-4"
-									} w-full`}
+								className={`grid ${
+									errorMessage ? "py-2 gap-2 " : "py-4 gap-4"
+								} w-full`}
 							>
-								<span className="text-sm">{`Enter Desired amount in ${currentUser?.global ? "Dollars" : "INR"}`}</span>
+								<span className="text-sm">{`Enter Desired amount in ${
+									currentUser?.global ? "Dollars" : "INR"
+								}`}</span>
 								<section className="relative flex flex-col justify-center items-center">
 									<Input
 										id="rechargeAmount"
@@ -416,10 +431,11 @@ const TipModal = ({
 										</section>
 									) : (
 										<Button
-											className={`absolute right-2 bg-green-1 text-white hoverScaleDownEffect ${(!rechargeAmount ||
-												parseInt(rechargeAmount) > adjustedWalletBalance) &&
+											className={`absolute right-2 bg-green-1 text-white hoverScaleDownEffect ${
+												(!rechargeAmount ||
+													parseInt(rechargeAmount) > adjustedWalletBalance) &&
 												"cursor-not-allowed"
-												}`}
+											}`}
 											onClick={handleTransaction}
 											disabled={
 												!rechargeAmount ||
@@ -443,18 +459,20 @@ const TipModal = ({
 								<span className="text-sm">Predefined Options</span>
 								{
 									<div
-										className={`${!isMobile
-											? "grid grid-cols-4 gap-4 mt-4 w-full"
-											: "flex justify-start items-center mt-4 space-x-4 w-full overflow-x-scroll overflow-y-hidden no-scrollbar"
-											}`}
+										className={`${
+											!isMobile
+												? "grid grid-cols-4 gap-4 mt-4 w-full"
+												: "flex justify-start items-center mt-4 space-x-4 w-full overflow-x-scroll overflow-y-hidden no-scrollbar"
+										}`}
 									>
 										{predefinedOptions.map((amount) => (
 											<Button
 												key={amount}
 												onClick={() => handlePredefinedAmountClick(amount)}
-												className={`w-20 bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${rechargeAmount === amount &&
+												className={`w-20 bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${
+													rechargeAmount === amount &&
 													"bg-green-1 text-white hover:bg-green-1"
-													}`}
+												}`}
 											>
 												{`${currentUser?.global ? "$" : "₹"}${amount}`}
 											</Button>

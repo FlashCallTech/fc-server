@@ -45,7 +45,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		creator?._id as string,
 		false,
 		"client",
-		currentUser ? (currentUser?.email ? "Global" : "Indian") : ""
+		currentUser ? (currentUser?.global ? "Global" : "Indian") : ""
 	);
 
 	const getClampedText = (text: string, isExpanded: boolean) => {

@@ -21,6 +21,7 @@ interface Transaction {
 	createdAt: string;
 	type: "credit" | "debit";
 	category: string;
+	callCategory: string;
 	callType?: string;
 }
 
@@ -307,7 +308,7 @@ const Withdraw: React.FC = () => {
 											onClick={() => {
 												setBtn(filter as "all" | "credit" | "debit");
 											}}
-											className={`capitalize px-5 py-1 border-2 border-black rounded-full ${
+											className={`capitalize px-5 py-1 border border-black rounded-full ${
 												filter === btn
 													? "bg-gray-800 text-white"
 													: "bg-white text-black dark:bg-gray-700 dark:text-white hoverScaleDownEffect"
@@ -389,7 +390,7 @@ const Withdraw: React.FC = () => {
 																	/>
 																</svg>
 															</div>
-															<section className="flex items-center justify-start gap-2">
+															<section className="flex flex-wrap items-center justify-start gap-2">
 																{transaction?.category && (
 																	<section className="font-normal text-xs sm:text-sm whitespace-nowrap">
 																		{transaction?.callType ? (
@@ -447,7 +448,6 @@ const Withdraw: React.FC = () => {
 																	</section>
 																)}
 
-																{/* Separator */}
 																<span className="text-gray-400 text-xs sm:text-sm">
 																	•
 																</span>
@@ -459,6 +459,35 @@ const Withdraw: React.FC = () => {
 																		)?.dateTime
 																	}
 																</p>
+
+																<span className="text-gray-400 text-xs sm:text-sm max-xm:hidden">
+																	•
+																</span>
+
+																<p
+																	className={`
+																	 ${
+																			transaction.category === "Refund" ||
+																			transaction.category === "Tip"
+																				? "bg-[#F0FDF4] text-[#16A34A]"
+																				: "bg-[#DBEAFE] text-[#1E40AF]"
+																		} text-[12px] px-2 py-1 rounded-full`}
+																>
+																	{transaction.category}
+																</p>
+
+																{transaction.callCategory && (
+																	<p
+																		className={`
+																	 ${
+																			transaction.callCategory === "Scheduled"
+																				? "bg-[#F0FDF4] text-[#16A34A]"
+																				: "bg-[#DBEAFE] text-[#1E40AF]"
+																		} text-[12px] px-2 py-1 rounded-full`}
+																	>
+																		{transaction.callCategory}
+																	</p>
+																)}
 															</section>
 														</div>
 														<section className="flex flex-col justify-between items-center">

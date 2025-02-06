@@ -11,6 +11,7 @@ import { useToast } from "../ui/use-toast";
 import { Switch } from "../ui/switch";
 import PayPerMinuteCallsCards from "./PayPerMinuteCallsCards";
 import Link from "next/link";
+import { serviceIcon } from "@/constants/icons";
 
 const useScreenSize = () => {
 	const [isMobile, setIsMobile] = useState(false);
@@ -309,13 +310,17 @@ const AvailabilityServiceCards = ({
 
 											<div className="size-full flex flex-col items-start justify-between gap-4">
 												<div className="w-full flex items-center gap-2.5">
-													<Image
+													{/* <Image
 														width={80}
 														height={80}
 														src={service.photo}
 														alt={service.title}
 														className="self-start w-12 h-12 object-cover rounded-lg border border-gray-200"
-													/>
+													/> */}
+
+													<div className="bg-[#f3f5f8] size-[40px] flex flex-col items-center justify-center border border-[#E5E7EB] rounded-full">
+														{serviceIcon(service.type)}
+													</div>
 													<div className="flex flex-col">
 														<h3 className="-mt-1 text-lg font-semibold text-gray-800">
 															{isMobile
@@ -354,51 +359,6 @@ const AvailabilityServiceCards = ({
 															Show Less
 														</button>
 													)}
-
-													{service.discountRules &&
-														service.discountRules?.conditions &&
-														(service.discountRules?.conditions.length > 0 ? (
-															<div className="mt-2 space-y-1">
-																<p className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-																	<span
-																		className={`${
-																			service.discountRules?.conditions.includes(
-																				"60 Minutes Call"
-																			)
-																				? "bg-[#FFEDD5] text-[#9A3412]"
-																				: "bg-[#DBEAFE] text-[#1E40AF]"
-																		} text-[12px] px-2 py-1 rounded-full`}
-																	>
-																		On{" "}
-																		{service.discountRules?.conditions
-																			? service.discountRules?.conditions
-																			: "Offer"}{" "}
-																	</span>
-																	<span className="text-green-600 font-bold text-sm">
-																		{service.discountRules?.discountType ===
-																		"flat" ? (
-																			<>
-																				{service.currency === "INR" ? "₹" : "$"}
-																				{service.discountRules?.discountAmount}
-																			</>
-																		) : (
-																			<>
-																				{service.discountRules?.discountAmount}%
-																			</>
-																		)}{" "}
-																		OFF
-																	</span>
-																</p>
-															</div>
-														) : (
-															<div>
-																<span
-																	className={`bg-[#ffd5d5] text-[#9a1212] text-[12px] px-2 py-1 rounded-full`}
-																>
-																	No Discount Offered
-																</span>
-															</div>
-														))}
 												</div>
 
 												{/* Right Section - Created At and Actions */}

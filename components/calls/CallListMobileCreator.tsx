@@ -121,10 +121,21 @@ const CallListMobileCreator = ({
 														className="rounded-full max-w-12 min-w-12 h-12 object-cover hoverScaleDownEffect cursor-pointer"
 													/>
 													{/* creator details */}
-													<section className="size-full flex flex-col items-start justify-between gap-1">
-														<p className="text-base tracking-wide whitespace-nowrap capitalize hoverScaleDownEffect cursor-pointer">
-															{fullName || "Creator"}
-														</p>
+													<section className="size-full flex flex-col items-start justify-between gap-2">
+														<div className="flex items-center justify-start gap-2">
+															<p className="text-base tracking-wide whitespace-nowrap capitalize hoverScaleDownEffect cursor-pointer">
+																{fullName || "Creator"}
+															</p>
+
+															<span
+																className={`
+																	 bg-[#DBEAFE] text-[#1E40AF] text-[12px] px-2 py-1 rounded-full`}
+															>
+																{userCall.category === "scheduled"
+																	? "Scheduled"
+																	: "Pay Per Minute"}
+															</span>
+														</div>
 
 														{/* call details */}
 														<section className="flex items-center justify-start gap-2 text-[12.5px]">
@@ -484,7 +495,13 @@ const CallListMobileCreator = ({
 													<OptionsList
 														callId={userCall.callId}
 														currentCreator={currentUser}
-														creatorId={userCall.members[0].user_id}
+														creatorId={
+															(userCall?.members?.find(
+																(member) => member?.custom?.type === "expert"
+															)?.user_id as string) ||
+															userCall?.members?.[0]?.user_id ||
+															""
+														}
 														clientId={currentUser?._id as string}
 														userCall={userCall}
 													/>

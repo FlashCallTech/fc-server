@@ -103,7 +103,7 @@ const CallListMobile = ({
 									>
 										<section className="flex flex-col items-start justify-start w-full gap-2">
 											{/* Expert's Details */}
-											<section className="size-full flex items-center justify-start gap-4 ">
+											<section className="size-full flex items-center justify-start gap-4">
 												{/* creator image */}
 												<Image
 													src={
@@ -120,14 +120,28 @@ const CallListMobile = ({
 													className="rounded-full max-w-12 min-w-12 h-12 object-cover hoverScaleDownEffect cursor-pointer"
 												/>
 												{/* creator details */}
-												<section className="size-full flex flex-col items-start justify-between gap-1">
-													<p
-														className="text-base tracking-wide whitespace-nowrap capitalize hoverScaleDownEffect cursor-pointer"
-														onClick={handleRedirect}
-													>
-														{fullName || "Creator"}
-													</p>
+												<section className="size-full flex flex-col items-start justify-between gap-2">
+													<div className="flex items-center justify-start gap-2">
+														<p
+															className="text-base tracking-wide whitespace-nowrap capitalize hoverScaleDownEffect cursor-pointer"
+															onClick={handleRedirect}
+														>
+															{fullName || "Creator"}
+														</p>
 
+														<span
+															className={`
+																	 ${
+																			userCall.category !== "Scheduled"
+																				? "bg-[#DBEAFE] text-[#1E40AF]"
+																				: "bg-[#F0FDF4] text-[#16A34A]"
+																		} text-[12px] px-2 py-1 rounded-full`}
+														>
+															{userCall.category === "scheduled"
+																? "Scheduled"
+																: "Pay Per Minute"}
+														</span>
+													</div>
 													{/* call details */}
 													<section className="flex items-center justify-start gap-2 text-[12.5px]">
 														<span>

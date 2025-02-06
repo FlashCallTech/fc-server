@@ -29,15 +29,12 @@ import {
 	sendNotification,
 	backendUrl,
 	sendCallNotification,
-	updateExpertStatus,
+	updatePastFirestoreSessionsPPM,
 } from "@/lib/utils";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import NotifyConsentSheet from "../client/NotifyConsentSheet";
 import { Cursor, Typewriter } from "react-simple-typewriter";
-import {
-	SelectedServiceType,
-	useSelectedServiceContext,
-} from "@/lib/context/SelectedServiceContext";
+import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -384,6 +381,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						body: JSON.stringify({
 							callId: id as string,
 							type: callType as string,
+							category: "PPM",
 							status: "Initiated",
 							creator: String(clientUser?._id),
 							members: members,
@@ -404,6 +402,20 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 							: clientUser?.phone,
 						global: clientUser?.global ?? false,
 						discount: selectedOffer,
+					});
+
+					await updatePastFirestoreSessionsPPM(call.id as string, {
+						callId: call.id,
+						status: "initiated",
+						callType: "instant",
+						clientId: clientUser?._id as string,
+						expertId: creator._id,
+						isVideoCall: callType,
+						creatorPhone: creator.phone,
+						clientPhone: clientUser?.global
+							? clientUser?.email
+							: clientUser?.phone,
+						global: clientUser?.global ?? false,
 					});
 				})
 				.catch((err) => console.log("Unable to create Meeting", err));

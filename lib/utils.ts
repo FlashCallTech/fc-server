@@ -587,6 +587,7 @@ type UpdateSessionParams = {
 	discount?: any;
 	startsAt?: string;
 	endsAt?: string;
+	joined?: string[];
 };
 
 export const updateFirestoreSessions = async (
@@ -651,6 +652,38 @@ export const updatePastFirestoreSessions = async (
 		if (params.clientPhone) sessionUpdate.clientPhone = params.clientPhone;
 		if (params.global !== undefined) sessionUpdate.global = params.global;
 		if (params.discount) sessionUpdate.discount = params.discount;
+
+		// Update or create the document
+		await setDoc(SessionDocRef, sessionUpdate, { merge: true });
+	} catch (error) {
+		Sentry.captureException(error);
+		console.error("Error updating Firestore Sessions: ", error);
+	}
+};
+
+export const updatePastFirestoreSessionsPPM = async (
+	callId: string,
+	params: UpdateSessionParams
+) => {
+	try {
+		const SessionDocRef = doc(db, "pastSessionsPPM", callId);
+
+		// Prepare update payload
+		const sessionUpdate: { [key: string]: any } = {};
+
+		if (params.callId) sessionUpdate.callId = callId || params.callId;
+		if (params.status) sessionUpdate.status = params.status;
+		if (params.startsAt) sessionUpdate.startsAt = params.startsAt;
+		if (params.endsAt) sessionUpdate.endsAt = params.endsAt;
+		if (params.callType) sessionUpdate.callType = params.callType;
+		if (params.clientId) sessionUpdate.clientId = params.clientId;
+		if (params.expertId) sessionUpdate.expertId = params.expertId;
+		if (params.isVideoCall) sessionUpdate.isVideoCall = params.isVideoCall;
+		if (params.creatorPhone) sessionUpdate.creatorPhone = params.creatorPhone;
+		if (params.clientPhone) sessionUpdate.clientPhone = params.clientPhone;
+		if (params.global !== undefined) sessionUpdate.global = params.global;
+		if (params.discount) sessionUpdate.discount = params.discount;
+		if (params.joined) sessionUpdate.joined = params.joined;
 
 		// Update or create the document
 		await setDoc(SessionDocRef, sessionUpdate, { merge: true });
