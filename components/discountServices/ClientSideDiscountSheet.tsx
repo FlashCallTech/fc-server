@@ -56,7 +56,7 @@ const ClientSideDiscountheet = ({
 		true,
 		"client",
 		currentUser?._id as string,
-		currentUser ? (currentUser?.email ? "Global" : "Indian") : "",
+		currentUser ? (currentUser?.global ? "Global" : "Indian") : "",
 		true
 	);
 
@@ -68,7 +68,7 @@ const ClientSideDiscountheet = ({
 	}, [servicesData]);
 
 	useEffect(() => {
-		if (creatorId && !fetchingUser && isEligible) {
+		if (creatorId && !fetchingUser && servicesData && isEligible) {
 			const seenDiscountSheet = sessionStorage.getItem(
 				`hasSeenDiscountSheet_${creatorId}`
 			);
@@ -80,7 +80,7 @@ const ClientSideDiscountheet = ({
 				}, 1500);
 			}
 		}
-	}, [creatorId, currentUser?._id, fetchingUser]);
+	}, [creatorId, fetchingUser, servicesData, isEligible]);
 
 	const onOpenChange = (open: boolean) => {
 		setIsDiscountModalOpen(open);

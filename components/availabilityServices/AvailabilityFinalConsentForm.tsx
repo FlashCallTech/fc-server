@@ -25,6 +25,7 @@ import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Timestamp } from "firebase/firestore"; // Import Timestamp
 import { useRouter } from "next/navigation";
+import { Input } from "../ui/input";
 
 interface params {
 	service: AvailabilityService;
@@ -50,9 +51,16 @@ const AvailabilityFinalConsentForm = ({
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
 	const [payoutTransactionId, setPayoutTransactionId] = useState();
-	const { clientUser } = useCurrentUsersContext();
-	const { getFinalServices, selectedService, resetServices, getSpecificServiceOffer, } =
-		useSelectedServiceContext();
+	const { clientUser, refreshCurrentUser } = useCurrentUsersContext();
+	const [email, setEmail] = useState(clientUser?.email || "");
+	const [emailError, setEmailError] = useState("");
+
+	const {
+		getFinalServices,
+		selectedService,
+		resetServices,
+		getSpecificServiceOffer,
+	} = useSelectedServiceContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const [totalAmount, setTotalAmount] = useState<{
 		total: string;
@@ -423,7 +431,7 @@ const AvailabilityFinalConsentForm = ({
 				creatorJoined: false,
 				startTime: Timestamp.fromDate(new Date(startsAt)), // Use Timestamp here
 				status: "upcoming",
-				discounts: discounts as Service ?? null,
+				discounts: (discounts as Service) ?? null,
 			});
 
 			return {
@@ -451,6 +459,15 @@ const AvailabilityFinalConsentForm = ({
 	const handlePaySchedule = async () => {
 		setPreparingTransaction(true);
 		try {
+			if (email) {
+				await axios.put(
+					`${backendBaseUrl}/client/updateUser/${clientUser?._id}`,
+					{
+						email: email,
+					}
+				);
+			}
+
 			let amountToPay = parseFloat(totalAmount.total);
 			let walletPaymentAmount = 0;
 
@@ -537,6 +554,7 @@ const AvailabilityFinalConsentForm = ({
 			const registerUpcomingCallPayload = {
 				callId: callDetails.callId,
 				chatId: callDetails.chatId,
+				serviceTitle: service.title,
 				type: service.type,
 				status: "upcoming",
 				meetingOwner: callDetails.meetingOwner,
@@ -578,7 +596,9 @@ const AvailabilityFinalConsentForm = ({
 					method: "POST",
 					body: JSON.stringify({
 						callId: callDetails.callId as string,
+						serviceTitle: service.title,
 						type: service.type as string,
+						category: "Scheduled",
 						status: "Scheduled",
 						creator: String(clientUser?._id),
 						members: callDetails.members,
@@ -619,6 +639,8 @@ const AvailabilityFinalConsentForm = ({
 				}
 
 				updateWalletBalance();
+
+				refreshCurrentUser();
 
 				setIsSuccess(true);
 
@@ -714,6 +736,30 @@ const AvailabilityFinalConsentForm = ({
 					</svg>
 				);
 		}
+	};
+
+	const validateEmail = (email: string) => {
+		// Regular expression for simple email validation
+		const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+		if (!email) {
+			setEmailError("Email is required.");
+			return false;
+		}
+
+		if (!emailPattern.test(email)) {
+			setEmailError("Please enter a valid email address.");
+			return false;
+		}
+
+		setEmailError("");
+		return true;
+	};
+
+	const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const newEmail = e.target.value;
+		setEmail(newEmail);
+		validateEmail(newEmail);
 	};
 
 	return (
@@ -964,6 +1010,31 @@ const AvailabilityFinalConsentForm = ({
 								</div>
 							</div>
 						</div>
+
+						{/*user email*/}
+
+						<div className="mt-4 w-full">
+							<div className="mb-2">
+								<h4 className="text-xl font-bold text-gray-800 mb-2.5">
+									Email Address <span className="text-red-500">*</span>
+								</h4>
+								<p className="text-sm text-gray-500">
+									We need your email to add an event to your calendar.
+								</p>
+							</div>
+							<Input
+								type="email"
+								placeholder="Enter your email"
+								value={email}
+								onChange={handleEmailChange}
+								className="w-full border border-gray-300 !min-h-[54px]"
+							/>
+
+							{/* Email Validation Feedback */}
+							{emailError && (
+								<p className="text-sm text-red-500 mt-2">{emailError}</p>
+							)}
+						</div>
 					</div>
 
 					{/* Payment Confirmation */}
@@ -987,7 +1058,7 @@ const AvailabilityFinalConsentForm = ({
 								className="text-base bg-black hoverScaleDownEffect w-full mx-auto text-white rounded-full self-center"
 								type="submit"
 								onClick={handlePaySchedule}
-								disabled={preparingTransaction}
+								disabled={!!emailError || preparingTransaction}
 							>
 								{preparingTransaction ? (
 									<Image

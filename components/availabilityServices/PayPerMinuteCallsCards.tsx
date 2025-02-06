@@ -36,7 +36,7 @@ const PayPerMinuteCallsCards = () => {
 			tag: "video" as "video" | "audio" | "chat",
 			title: "PPM Video Consultation",
 			description: "Pay - Per - Minute Video call",
-			image: creatorUser?.photo,
+			image: serviceIcon("video"),
 			userType: creatorUser?.global ? "global" : "local",
 			isActive: creatorUser?.videoAllowed,
 			rate: creatorUser?.videoRate,
@@ -47,7 +47,7 @@ const PayPerMinuteCallsCards = () => {
 			tag: "audio" as "video" | "audio" | "chat",
 			title: "PPM Audio Consultation",
 			description: "Pay - Per - Minute Audio call",
-			image: creatorUser?.photo,
+			image: serviceIcon("audio"),
 			userType: creatorUser?.global ? "global" : "local",
 			isActive: creatorUser?.audioAllowed,
 			rate: creatorUser?.audioRate,
@@ -58,7 +58,7 @@ const PayPerMinuteCallsCards = () => {
 			tag: "chat" as "video" | "audio" | "chat",
 			title: "PPM Chat Consultation",
 			description: "Pay - Per - Minute Chat",
-			image: creatorUser?.photo,
+			image: serviceIcon("chat"),
 			userType: creatorUser?.global ? "global" : "local",
 			isActive: creatorUser?.chatAllowed,
 			rate: creatorUser?.chatRate,
@@ -149,7 +149,7 @@ const PayPerMinuteCallsCards = () => {
 						/>
 						<div className="w-full flex flex-col items-start gap-4">
 							<div className="w-full flex items-center gap-2.5">
-								<Image
+								{/* <Image
 									width={80}
 									height={80}
 									src={
@@ -158,7 +158,11 @@ const PayPerMinuteCallsCards = () => {
 									}
 									alt={service.title}
 									className="self-start w-12 h-12 object-cover rounded-lg border border-gray-200"
-								/>
+								/> */}
+
+								<div className="bg-[#f3f5f8] size-[40px] flex flex-col items-center justify-center border border-[#E5E7EB] rounded-full">
+									{service.image}
+								</div>
 								<div className="flex flex-col items-start justify-center">
 									<h3 className="-mt-1 text-lg font-semibold text-gray-800">
 										{isMobile
@@ -183,7 +187,7 @@ const PayPerMinuteCallsCards = () => {
 								</span>
 							</div>
 
-							<div className="h-full mt-2 flex items-center gap-2 justify-center">
+							{/* <div className="h-full mt-2 flex items-center gap-2 justify-center">
 								<span
 									className={`p-2 text-sm border transition-all rounded-full ${
 										service.isActive
@@ -193,7 +197,7 @@ const PayPerMinuteCallsCards = () => {
 								>
 									{serviceIcon(service.tag)}
 								</span>
-							</div>
+							</div> */}
 						</div>
 					</div>
 				))}

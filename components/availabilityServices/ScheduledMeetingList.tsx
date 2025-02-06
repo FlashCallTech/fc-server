@@ -18,12 +18,19 @@ import { useRouter } from "next/navigation";
 import GetRandomImage from "@/utils/GetRandomImage";
 import Link from "next/link";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
+
 const ScheduledMeetingList = ({
 	callType,
+	listType,
 }: {
 	callType: "All" | "Audio" | "Video" | "Chat";
+	listType: "Upcoming" | "Previous";
 }) => {
 	const { currentUser, userType, fetchingUser } = useCurrentUsersContext();
+	const queryClient = useQueryClient();
+
 	const {
 		data: userCalls,
 		fetchNextPage,
@@ -34,10 +41,12 @@ const ScheduledMeetingList = ({
 	} = useGetScheduledCalls(
 		currentUser?._id as string,
 		userType as string,
-		callType.toLowerCase()
+		callType.toLowerCase(),
+		listType.toLocaleLowerCase() as "upcoming" | "previous"
 	);
 
 	const { toast } = useToast();
+
 	const router = useRouter();
 	const { ref, inView } = useInView({
 		threshold: 0.1,
@@ -49,6 +58,20 @@ const ScheduledMeetingList = ({
 			fetchNextPage();
 		}
 	}, [inView, hasNextPage, isFetching]);
+
+	useEffect(() => {
+		if (listType) {
+			queryClient.invalidateQueries({
+				queryKey: [
+					QUERY_KEYS.GET_USER_SCHEDULED_CALLS,
+					currentUser?._id as string,
+					userType,
+					callType,
+					listType,
+				],
+			});
+		}
+	}, [listType, currentUser?._id, userType, callType]);
 
 	const copyToClipboard = (userCall: ScheduledCallParams) => {
 		let text: string;
@@ -102,14 +125,16 @@ const ScheduledMeetingList = ({
 						Your upcoming calls will appear here
 					</span>
 
-					<Link
-						href="/service-management"
-						className="flex items-center mt-2 gap-2 px-6 py-3 bg-black text-white rounded-full hoverScaleDownEffect"
-					>
-						<section className="flex items-center justify-center text-sm sm:text-base">
-							Add/Manage you services
-						</section>
-					</Link>
+					{userType === "creator" && (
+						<Link
+							href="/service-management"
+							className="flex items-center mt-2 gap-2 px-6 py-3 bg-black text-white rounded-full hoverScaleDownEffect"
+						>
+							<section className="flex items-center justify-center text-sm sm:text-base">
+								Add/Manage you services
+							</section>
+						</Link>
+					)}
 
 					<div className="w-full px-4 flex items-start text-center justify-center text-sm text-[#6B7280] mt-2 gap-2">
 						<svg
@@ -134,12 +159,12 @@ const ScheduledMeetingList = ({
 			) : (
 				<>
 					<section
-						className={`w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 text-black px-4`}
+						className={`w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 text-black px-4 pb-6`}
 					>
 						{userCalls?.pages?.flatMap((page: any) =>
 							page?.calls?.map((userCall: ScheduledCallParams) => {
-								const creator = userCall.expert;
-								const client = userCall.meetingOwner;
+								const creator = userCall.expert || {};
+								const client = userCall.meetingOwner || {};
 
 								let formattedData = formatDisplay(
 									userCall.selectedDay,
@@ -147,7 +172,12 @@ const ScheduledMeetingList = ({
 									userCall.duration
 								);
 
-								const formattedDate = formatDateTime(userCall.startsAt as Date);
+								const fullName = getDisplayName(creator);
+								const clientFullName = getDisplayName(client);
+
+								const formattedDate = formatDateTime(userCall.startsAt) || {
+									timeOnly: "N/A",
+								};
 
 								let customDateValue =
 									formattedData?.day?.split(", ")[1]?.split(" ") ?? "";
@@ -191,12 +221,11 @@ const ScheduledMeetingList = ({
 											toastStatus: "negative",
 										});
 									} else {
-										(userCall.type === "audio" || userCall.type === "video") &&
-											router.push(`/meeting/${userCall.callId}`);
-										userCall.type === "chat" &&
-											router.push(
-												`${frontendBaseUrl}/scheduledChat/${userCall.callId}/${userCall.chatId}`
-											);
+										userCall.type === "audio" || userCall.type === "video"
+											? router.push(`/meeting/${userCall.callId}`)
+											: router.push(
+													`${frontendBaseUrl}/scheduledChat/${userCall.callId}/${userCall.chatId}`
+											  );
 									}
 								};
 
@@ -228,7 +257,12 @@ const ScheduledMeetingList = ({
 											</section>
 										</div>
 
-										<p className="text-base">{userCall.description}</p>
+										<p className="text-base">
+											Scheduled Video Call With{" "}
+											{userType === "client"
+												? `Expert ${fullName}`
+												: `Client ${clientFullName}`}
+										</p>
 
 										{/* members */}
 										<div className="w-full flex items-center justify-between gap-2.5">
@@ -241,7 +275,10 @@ const ScheduledMeetingList = ({
 													onClick={handleRedirect}
 												>
 													<Image
-														src={creator?.photo}
+														src={
+															creator?.photo ||
+															"/images/defaultProfileImage.png"
+														}
 														alt="attendees"
 														width={1000}
 														height={1000}
@@ -272,77 +309,94 @@ const ScheduledMeetingList = ({
 												</article>
 											</div>
 
-											<div className="flex items-center justify-center gap-2">
-												<button
-													className="py-2 px-4 bg-black rounded-full hoverScaleDownEffect text-sm text-white"
-													onClick={() => handleMeetingRedirect(userCall)}
-												>
-													{timeToStart > 5 * 60 * 1000 ? (
-														<div className="flex items-center justify-center gap-2 text-white font-medium text-sm">
+											{listType === "Upcoming" && (
+												<div className="flex items-center justify-center gap-2">
+													<button
+														className="py-2 px-4 bg-black rounded-full hoverScaleDownEffect text-sm text-white"
+														onClick={() => handleMeetingRedirect(userCall)}
+													>
+														{timeToStart > 5 * 60 * 1000 ? (
+															<div className="flex items-center justify-center gap-2 text-white font-medium text-sm">
+																<svg
+																	xmlns="http://www.w3.org/2000/svg"
+																	fill="none"
+																	viewBox="0 0 24 24"
+																	strokeWidth={2}
+																	stroke="currentColor"
+																	className="size-5"
+																>
+																	<path
+																		strokeLinecap="round"
+																		strokeLinejoin="round"
+																		d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+																	/>
+																</svg>
+																<section>
+																	<span className="font-semibold">
+																		{customDateValue}
+																	</span>
+																	,{" "}
+																	<span className="font-semibold">
+																		{formattedDate.timeOnly}
+																	</span>
+																</section>
+															</div>
+														) : (
+															<>Join Now</>
+														)}
+													</button>
+													{timeToStart < 5 * 60 * 1000 ? (
+														<button
+															className="max-sm:absolute top-4 right-4 p-2 bg-black rounded-full hoverScaleDownEffect"
+															onClick={() => copyToClipboard(userCall)}
+														>
 															<svg
 																xmlns="http://www.w3.org/2000/svg"
 																fill="none"
 																viewBox="0 0 24 24"
-																strokeWidth={2}
-																stroke="currentColor"
-																className="size-5"
+																strokeWidth={1.5}
+																stroke="#ffffff"
+																className="size-5 sm:hidden"
 															>
 																<path
 																	strokeLinecap="round"
 																	strokeLinejoin="round"
-																	d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+																	d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
 																/>
 															</svg>
-															<section>
-																<span className="font-semibold">
-																	{customDateValue}
-																</span>
-																,{" "}
-																<span className="font-semibold">
-																	{formattedDate.timeOnly}
-																</span>
-															</section>
-														</div>
-													) : (
-														<>Join Now</>
-													)}
-												</button>
-												{timeToStart < 5 * 60 * 1000 ? (
-													<button
-														className="max-sm:absolute top-4 right-4 p-2 bg-black rounded-full hoverScaleDownEffect"
-														onClick={() => copyToClipboard(userCall)}
-													>
-														<svg
-															xmlns="http://www.w3.org/2000/svg"
-															fill="none"
-															viewBox="0 0 24 24"
-															strokeWidth={1.5}
-															stroke="#C9DDFF"
-															className="size-5 sm:hidden"
-														>
-															<path
-																strokeLinecap="round"
-																strokeLinejoin="round"
-																d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
-															/>
-														</svg>
 
-														<span className="hidden md:block text-sm text-white px-2">
-															Copy Link
-														</span>
-													</button>
-												) : (
-													<Link
-														href={`/meeting/${userCall.callId}`}
-														target="_blank"
-														className="max-sm:absolute top-4 right-4 p-2 bg-black rounded-full hoverScaleDownEffect"
-													>
-														<span className="text-sm text-white px-2">
-															Join Now
-														</span>
-													</Link>
-												)}
-											</div>
+															<span className="hidden md:block text-sm text-white px-2">
+																Copy Link
+															</span>
+														</button>
+													) : (
+														<Link
+															href={`/meeting/${userCall.callId}`}
+															target="_blank"
+															className="max-sm:absolute top-4 right-4 p-2 bg-black rounded-full hoverScaleDownEffect"
+														>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																fill="none"
+																viewBox="0 0 24 24"
+																strokeWidth={1.5}
+																stroke="#ffffff"
+																className="size-4 sm:hidden"
+															>
+																<path
+																	strokeLinecap="round"
+																	strokeLinejoin="round"
+																	d="m15 15 6-6m0 0-6-6m6 6H9a6 6 0 0 0 0 12h3"
+																/>
+															</svg>
+
+															<span className="hidden md:block text-sm text-white px-2">
+																Copy Link
+															</span>
+														</Link>
+													)}
+												</div>
+											)}
 										</div>
 									</div>
 								);
@@ -363,7 +417,7 @@ const ScheduledMeetingList = ({
 						!isFetching &&
 						userCalls?.pages.flatMap((page: any) => page.totalCalls)[0] >=
 							6 && (
-							<div className="text-center text-gray-500 pt-4">
+							<div className="text-center text-gray-500 py-4">
 								You have reached the end of the list
 							</div>
 						)}

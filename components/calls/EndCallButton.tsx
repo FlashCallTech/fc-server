@@ -9,6 +9,7 @@ import Image from "next/image";
 import {
 	updateFirestoreSessions,
 	updatePastFirestoreSessions,
+	updatePastFirestoreSessionsPPM,
 } from "@/lib/utils";
 import LeaveCallDecision from "./LeaveCallDecision";
 import { doc, updateDoc } from "firebase/firestore";
@@ -38,6 +39,10 @@ const EndCallButton = ({ callType }: { callType: "scheduled" | "instant" }) => {
 
 	const handleDecisionDialog = async () => {
 		await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
+			status: "payment pending",
+		});
+
+		await updatePastFirestoreSessionsPPM(call?.id as string, {
 			status: "payment pending",
 		});
 

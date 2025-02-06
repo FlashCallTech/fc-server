@@ -32,6 +32,13 @@ html {
 	display: none;
 }
 
+@media (hover: none) {
+	.hoverScaleDownEffect:hover {
+		background-color: transparent !important;
+		color: inherit !important;
+	}
+}
+
 @keyframes spin {
 	0% {
 		transform: rotate(0deg);
@@ -122,6 +129,14 @@ html {
 }
 
 /* stream custom styles */
+
+.str-video__speaker-layout
+	.str-video__speaker-layout__participants-bar-wrapper
+	.str-video__speaker-layout__participants-bar {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
 
 .str-video__video-preview-container {
 	height: 250px !important;

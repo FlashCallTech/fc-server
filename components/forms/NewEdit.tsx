@@ -53,8 +53,8 @@ import {
 } from "../ui/select";
 
 export type EditProfileProps = {
-	isOpen: boolean,
-	onClose: () => void,
+	isOpen: boolean;
+	onClose: () => void;
 	userData: UpdateUserParams;
 	setUserData: any;
 	initialState: any;
@@ -88,7 +88,7 @@ export type EditProfileProps = {
 	setDialogOpen: any;
 	dialogOpen: boolean;
 	setProfessions: any;
-	professions: any
+	professions: any;
 	setLoadingProfessions: any;
 	loadingProfessions: boolean;
 	setPredefinedColors: any;
@@ -324,8 +324,9 @@ const Edit = ({
 			} else {
 				if (global) {
 					response = await axios.put(
-						`${backendBaseUrl}/client/globalClient/update/${userData.id}`, {
-							...commonValues
+						`${backendBaseUrl}/client/globalClient/update/${userData.id}`,
+						{
+							...commonValues,
 						} as UpdateUserParams
 					);
 				} else {
@@ -347,7 +348,12 @@ const Edit = ({
 				// 	toastStatus: "negative",
 				// });
 			} else {
-				const updatedUser = userType === "creator" ? response.data.updatedUser : global? response.data.data : response.updatedUser;
+				const updatedUser =
+					userType === "creator"
+						? response.data.updatedUser
+						: global
+						? response.data.data
+						: response.updatedUser;
 				const newUserDetails = {
 					...userData,
 					fullName: `${updatedUser.firstName} ${updatedUser.lastName}`,
@@ -369,7 +375,6 @@ const Edit = ({
 				// 	description: "Changes are now visible ...",
 				// 	toastStatus: "positive",
 				// });
-
 			}
 		} catch (error) {
 			Sentry.captureException(error);
@@ -389,8 +394,9 @@ const Edit = ({
 	if (loading)
 		return (
 			<section
-				className={`w-full ${pathname.includes("/updateDetails") ? "h-screen" : "h-full"
-					} flex items-center justify-center`}
+				className={`w-full ${
+					pathname.includes("/updateDetails") ? "h-screen" : "h-full"
+				} flex items-center justify-center`}
 			>
 				<SinglePostLoader />
 			</section>
@@ -398,7 +404,7 @@ const Edit = ({
 
 	return (
 		<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-			<div className="bg-white w-full max-w-xl max-h-[80vh] overflow-y-auto scrollbar-hide rounded-lg p-8 pb-0">
+			<div className="bg-white w-full max-lg:max-w-[95%] max-w-xl max-h-[80vh] overflow-y-auto scrollbar-hide rounded-lg p-8 pb-0">
 				<div className="flex justify-between items-center">
 					<h2 className="text-lg font-semibold">Edit Details</h2>
 					<button
@@ -419,7 +425,8 @@ const Edit = ({
 							name="photo"
 							render={({ field }) => {
 								const gender = userData?.gender;
-								const mediaUrl = userData?.photo || getProfileImagePlaceholder(gender);
+								const mediaUrl =
+									userData?.photo || getProfileImagePlaceholder(gender);
 
 								return (
 									<FormItem>
@@ -451,7 +458,11 @@ const Edit = ({
 										Username
 									</FormLabel>
 									<FormControl>
-										<div className={`relative flex items-center ${userType === "creator" ? "gap-2.5" : ""}`}>
+										<div
+											className={`relative flex items-center ${
+												userType === "creator" ? "gap-2.5" : ""
+											}`}
+										>
 											{userType === "creator" && (
 												<span className="text-gray-500">
 													https://flashcall.me/
@@ -511,32 +522,33 @@ const Edit = ({
 							))}
 						</div>
 						{/* Referal Field */}
-						{userData.role === "creator" && pathname.includes("/updateDetails") && (
-							<FormField
-								control={form.control}
-								name="referredBy"
-								render={({ field }) => (
-									<FormItem className="w-full">
-										<FormLabel className="block text-sm text-gray-400 ml-1">
-											Referred By Someone?
-										</FormLabel>
-										<FormControl>
-											<Input
-												type="text"
-												placeholder={`Enter their referral ID`}
-												{...field}
-												readOnly={!initialReferralValue}
-												className="input-field"
-											/>
-										</FormControl>
+						{userData.role === "creator" &&
+							pathname.includes("/updateDetails") && (
+								<FormField
+									control={form.control}
+									name="referredBy"
+									render={({ field }) => (
+										<FormItem className="w-full">
+											<FormLabel className="block text-sm text-gray-400 ml-1">
+												Referred By Someone?
+											</FormLabel>
+											<FormControl>
+												<Input
+													type="text"
+													placeholder={`Enter their referral ID`}
+													{...field}
+													readOnly={!initialReferralValue}
+													className="input-field"
+												/>
+											</FormControl>
 
-										<FormMessage className="error-message">
-											{errors.referredBy?.message}
-										</FormMessage>
-									</FormItem>
-								)}
-							/>
-						)}
+											<FormMessage className="error-message">
+												{errors.referredBy?.message}
+											</FormMessage>
+										</FormItem>
+									)}
+								/>
+							)}
 						{/* profession */}
 						{userData.role === "creator" && (
 							<FormField
@@ -590,8 +602,8 @@ const Edit = ({
 																<ContentLoading />
 															</div>
 														) : !loadingProfessions &&
-															professions &&
-															professions.length === 0 ? (
+														  professions &&
+														  professions.length === 0 ? (
 															<p className="size-full flex items-center justify-center text-xl font-semibold text-center text-gray-500">
 																Error fetching the list
 															</p>
@@ -606,19 +618,22 @@ const Edit = ({
 																		}
 																	>
 																		<section
-																			className={`${(profession.name === field.value ||
-																				profession.name === selectedProfession) &&
+																			className={`${
+																				(profession.name === field.value ||
+																					profession.name ===
+																						selectedProfession) &&
 																				"ring-2 ring-offset-2 ring-green-1 lg:ring-black"
-																				} relative shadow-lg rounded-[12px]`}
+																			} relative shadow-lg rounded-[12px]`}
 																		>
 																			{/* Overlay */}
 
 																			<div
-																				className={`${profession.name === field.value ||
+																				className={`${
+																					profession.name === field.value ||
 																					profession.name === selectedProfession
-																					? "bg-black/60"
-																					: "bg-black/20"
-																					} absolute inset-0  rounded-[12px]`}
+																						? "bg-black/60"
+																						: "bg-black/20"
+																				} absolute inset-0  rounded-[12px]`}
 																			/>
 
 																			<Image
@@ -632,14 +647,16 @@ const Edit = ({
 
 																		<section className="flex flex-col gap-2 items-center justify-center absolute bottom-2">
 																			<button
-																				className={`${profession.name !== field.value ||
+																				className={`${
+																					profession.name !== field.value ||
 																					profession.name !== selectedProfession
-																					? "bg-white text-black "
-																					: "bg-green-1 lg:bg-black text-white"
-																					} rounded-full p-2 hoverScaleDownEffect cursor-pointer`}
+																						? "bg-white text-black "
+																						: "bg-green-1 lg:bg-black text-white"
+																				} rounded-full p-2 hoverScaleDownEffect cursor-pointer`}
 																			>
 																				{profession.name !== field.value ||
-																					profession.name !== selectedProfession ? (
+																				profession.name !==
+																					selectedProfession ? (
 																					<svg
 																						xmlns="http://www.w3.org/2000/svg"
 																						fill="none"
@@ -680,7 +697,8 @@ const Edit = ({
 															</div>
 														)}
 														<section className="sticky bottom-0 left-0 w-full flex flex-wrap items-start justify-center gap-2 mt-4 mb-2">
-															{(errorMessage || customProfession.length >= 30) && (
+															{(errorMessage ||
+																customProfession.length >= 30) && (
 																<section className="flex flex-wrap w-full rounded-[12px] border bg-white border-red-500 items-center justify-start gap-2 p-3 mb-2 shadow-sm">
 																	{customProfession.length >= 30 && (
 																		<span className="text-red-500 text-sm">
@@ -708,8 +726,9 @@ const Edit = ({
 
 																<Button
 																	type="button"
-																	className={`${loadingProfessions && "hidden"
-																		} bg-green-1 lg:bg-black rounded-full hoverScaleDownEffect text-white w-fit`}
+																	className={`${
+																		loadingProfessions && "hidden"
+																	} bg-green-1 lg:bg-black rounded-full hoverScaleDownEffect text-white w-fit`}
 																	onClick={handleConfirmProfession}
 																>
 																	Confirm Profession
@@ -790,7 +809,9 @@ const Edit = ({
 								name="dob"
 								render={({ field }) => (
 									<FormItem className="flex flex-col w-full">
-										<FormLabel className="block text-gray-400">Date of birth</FormLabel>
+										<FormLabel className="block text-gray-400">
+											Date of birth
+										</FormLabel>
 										<Popover>
 											<PopoverTrigger asChild>
 												<FormControl>
@@ -811,7 +832,10 @@ const Edit = ({
 													</Button>
 												</FormControl>
 											</PopoverTrigger>
-											<PopoverContent className="w-auto p-4 bg-white" align="start">
+											<PopoverContent
+												className="w-auto p-4 bg-white"
+												align="start"
+											>
 												<div className="flex space-x-2 mb-4">
 													{/* Month Selector */}
 													<Select
@@ -825,10 +849,16 @@ const Edit = ({
 														</SelectTrigger>
 														<SelectContent className="bg-white">
 															{Array.from({ length: 12 }, (_, index) => (
-																<SelectItem key={index} value={index.toString()}>
-																	{new Date(0, index).toLocaleString("default", {
-																		month: "long",
-																	})}
+																<SelectItem
+																	key={index}
+																	value={index.toString()}
+																>
+																	{new Date(0, index).toLocaleString(
+																		"default",
+																		{
+																			month: "long",
+																		}
+																	)}
 																</SelectItem>
 															))}
 														</SelectContent>
@@ -848,7 +878,10 @@ const Edit = ({
 															{Array.from({ length: 100 }, (_, index) => {
 																const year = new Date().getFullYear() - index;
 																return (
-																	<SelectItem key={year} value={year.toString()}>
+																	<SelectItem
+																		key={year}
+																		value={year.toString()}
+																	>
 																		{year}
 																	</SelectItem>
 																);
@@ -941,10 +974,11 @@ const Edit = ({
 													{predefinedColors.map((color: any, index: any) => (
 														<div
 															key={index}
-															className={`w-8 h-8 m-1 rounded-full cursor-pointer hoverScaleDownEffect ${selectedColor === color
-																? "ring-2 ring-offset-2 ring-blue-500"
-																: ""
-																}`}
+															className={`w-8 h-8 m-1 rounded-full cursor-pointer hoverScaleDownEffect ${
+																selectedColor === color
+																	? "ring-2 ring-offset-2 ring-blue-500"
+																	: ""
+															}`}
 															style={{ backgroundColor: color }}
 															onClick={() => {
 																handleColorSelect(color);
@@ -988,7 +1022,9 @@ const Edit = ({
 						)}
 
 						{formError && (
-							<div className="text-red-500 text-lg text-center">{formError}</div>
+							<div className="text-red-500 text-lg text-center">
+								{formError}
+							</div>
 						)}
 						<section
 							className={`sticky bottom-0 right-0 grid py-2 gap-4 items-center justify-end z-20 bg-white`}
@@ -1024,7 +1060,6 @@ const Edit = ({
 				</Form>
 			</div>
 		</div>
-
 	);
 };
 

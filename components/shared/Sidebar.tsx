@@ -84,7 +84,7 @@ const Sidebar = () => {
 			id="sidebar"
 			className={`${isExpertPath && "hidden"} sticky left-0 ${
 				isCreatorHome ? "top-0" : "top-[76px]"
-			}  flex h-screen flex-col justify-between p-6  max-md:hidden lg:w-[264px] shadow-md `}
+			}  flex h-screen flex-col justify-between p-6 max-md:hidden lg:max-w-[264px] shadow-md`}
 			style={{
 				maxHeight: `calc(100dvh - ${isCreatorHome ? "0px" : "76px"} )`,
 			}}

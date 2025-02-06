@@ -306,7 +306,9 @@ const DiscountServicesForm = ({
 					name="title"
 					render={({ field }) => (
 						<FormItem className="!mt-4">
-							<FormLabel className="!text-[#374151] !text-sm">Title</FormLabel>
+							<FormLabel className="!text-[#374151] !text-sm">
+								Title <span className="text-red-500">*</span>
+							</FormLabel>
 							<FormControl>
 								<Input placeholder="Service Title" {...field} />
 							</FormControl>
@@ -322,7 +324,7 @@ const DiscountServicesForm = ({
 					render={({ field }) => (
 						<FormItem className="!mt-4">
 							<FormLabel className="!text-[#374151] !text-sm">
-								Description
+								Description <span className="text-red-500">*</span>
 							</FormLabel>
 							<FormControl>
 								<Textarea
@@ -348,7 +350,7 @@ const DiscountServicesForm = ({
 						return (
 							<FormItem className="!mt-4">
 								<FormLabel className="!text-[#374151] !text-sm">
-									Select Services
+									Select Services<span className="text-red-500">*</span>
 								</FormLabel>
 
 								{isLoading ? (
@@ -435,7 +437,7 @@ const DiscountServicesForm = ({
 					render={({ field }) => (
 						<FormItem className="!mt-4">
 							<FormLabel className="!text-[#374151] !text-sm">
-								Campaign Status
+								Campaign Status <span className="text-red-500">*</span>
 							</FormLabel>
 							<Select
 								onValueChange={(value) => field.onChange(value === "true")}
@@ -500,7 +502,7 @@ const DiscountServicesForm = ({
 				{/* Discount Rules */}
 				<div className="space-y-4 !mt-4">
 					<FormLabel className="!text-[#374151] !text-sm">
-						Discount Rules
+						Discount Rules <span className="text-red-500">*</span>
 					</FormLabel>
 					{fields.map((field, index) => (
 						<div key={field.id} className="grid grid-cols-1 gap-2">
