@@ -333,7 +333,7 @@ const ScheduledMeetingList = ({
 													</button>
 												) : (
 													<Link
-														href={`/meeting/${userCall.callId}`}
+														href={`${userCall.type === "chat" ? `/scheduledChat/${userCall.callId}/${userCall.chatId}` : `/meeting/${userCall.callId}`}`}
 														target="_blank"
 														className="max-sm:absolute top-4 right-4 p-2 bg-black rounded-full hoverScaleDownEffect"
 													>
