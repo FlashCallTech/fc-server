@@ -579,6 +579,7 @@ const AvailabilityFinalConsentForm = ({
 					body: JSON.stringify({
 						callId: callDetails.callId as string,
 						type: service.type as string,
+						category: "Scheduled",
 						status: "Scheduled",
 						creator: String(clientUser?._id),
 						members: callDetails.members,
