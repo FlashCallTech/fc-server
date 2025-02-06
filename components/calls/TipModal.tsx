@@ -89,11 +89,12 @@ const TipModal = ({
 	const [showRechargeModal, setShowRechargeModal] = useState(false);
 	const { toast } = useToast();
 	const { currentUser } = useCurrentUsersContext();
-	const { totalTimeUtilized, hasLowBalance } = useCallTimer({
-		isVideoCall,
-		isMeetingOwner,
-		call,
-	});
+	const { totalTimeUtilized, hasLowBalance, pauseTimer, resumeTimer } =
+		useCallTimer({
+			isVideoCall,
+			isMeetingOwner,
+			call,
+		});
 	const isMobile = useScreenSize() && isMobileDevice();
 	const firestore = getFirestore();
 
@@ -427,6 +428,8 @@ const TipModal = ({
 												inTipModal={true}
 												walletBalance={walletBalance}
 												setWalletBalance={setWalletBalance}
+												pauseTimer={pauseTimer}
+												resumeTimer={resumeTimer}
 											/>
 										</section>
 									) : (
