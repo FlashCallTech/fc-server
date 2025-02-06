@@ -34,6 +34,7 @@ const useRecharge = () => {
 		User_First_Seen?: string,
 		Walletbalace_Available?: number,
 		creatorId?: string,
+		isCallRecharge?: boolean,
 	) => {
 		trackEvent("Recharge_Page_Proceed_Clicked", {
 			Client_ID: clientId,
@@ -56,6 +57,7 @@ const useRecharge = () => {
 				User_First_Seen,
 				Walletbalace_Available,
 				creatorId,
+				isCallRecharge,
 			);
 		} else
 			cashfreeHandler(
@@ -146,6 +148,7 @@ const useRecharge = () => {
 		User_First_Seen?: string,
 		Walletbalace_Available?: number,
 		creatorId?: string,
+		isCallRecharge?: boolean,
 	): Promise<void> => {
 		const totalPayableInPaise = totalPayable! * 100;
 		const rechargeAmount = parseInt(totalPayableInPaise.toFixed(2));
@@ -214,7 +217,7 @@ const useRecharge = () => {
 							PG: "Razorpay",
 						});
 
-						router.push("/success");
+						if (!isCallRecharge) router.push("/success");
 					} catch (error) {
 						Sentry.captureException(error);
 						console.error("Validation request failed:", error);
@@ -256,6 +259,8 @@ const useRecharge = () => {
 				description: "Redirecting ...",
 				toastStatus: "negative",
 			});
+		} finally {
+			updateWalletBalance();
 		}
 	};
 

@@ -45,7 +45,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [isConsentSheetOpen, setIsConsentSheetOpen] = useState(false);
-	const { handleChat, chatRequestsRef, loading, isSheetOpen, setSheetOpen } =
+	const { handleChat, chatRequestsRef, loading, setLoading, isSheetOpen, setSheetOpen } =
 		useChatRequest();
 	const [callInitiated, setcallInitiated] = useState(false);
 	const [chatState, setChatState] = useState();
@@ -533,6 +533,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	};
 
 	const handleChatClick = async () => {
+		setLoading(true);
 		localStorage.removeItem("chatId");
 		localStorage.removeItem("chatRequestId");
 		localStorage.removeItem("endedBy");
@@ -543,17 +544,20 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				description: "You are a Creator",
 				toastStatus: "negative",
 			});
+			setLoading(false);
 
 			return;
 		}
 
 		if (!clientUser) {
 			setIsAuthSheetOpen(true);
+			setLoading(false);
 			return;
 		}
 
 		if (onlineStatus === "Offline") {
 			setIsConsentSheetOpen(true);
+			setLoading(false);
 		} else if (onlineStatus === "Busy") {
 			toast({
 				variant: "destructive",
@@ -561,6 +565,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				description: "Can't Initiate the Call",
 				toastStatus: "negative",
 			});
+			setLoading(false);
 		} else if (updatedCreator?.chatAllowed) {
 			trackEvent("BookCall_Chat_Clicked", {
 				Creator_ID: creator._id,
@@ -797,6 +802,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				<Sheet
 					open={isSheetOpen}
 					onOpenChange={async () => {
+						if (loading) return;
 						setSheetOpen(false);
 						try {
 							const chatRequestId = localStorage.getItem("chatRequestId");

@@ -30,9 +30,11 @@ import { trackEvent } from "@/lib/mixpanel";
 const RechargeModal = ({
 	setWalletBalance,
 	walletBalance,
+	creatorId,
 }: {
 	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
 	walletBalance: number;
+	creatorId: string;
 }) => {
 	const [rechargeAmount, setRechargeAmount] = useState("");
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -40,7 +42,6 @@ const RechargeModal = ({
 	const [showPayPal, setShowPayPal] = useState(false);
 	const [pg, setPg] = useState<string>("");
 	const { currentUser } = useCurrentUsersContext();
-	const { pauseTimer, resumeTimer } = useChatTimerContext();
 	const { pgHandler } = useRecharge();
 	const { toast } = useToast();
 
@@ -124,7 +125,6 @@ const RechargeModal = ({
 							setIsSheetOpen(false); // Close the sheet
 							setShowPayPal(false);
 							setOnGoingPayment(false);
-							resumeTimer();
 						}
 					},
 					onCancel(data: any) {
@@ -139,7 +139,6 @@ const RechargeModal = ({
 						setIsSheetOpen(false); // Close the sheet
 						setShowPayPal(false);
 						setOnGoingPayment(false);
-						resumeTimer();
 					},
 					onError(err: any) {
 						console.error("PayPal error:", err);
@@ -151,7 +150,6 @@ const RechargeModal = ({
 						setIsSheetOpen(false); // Close the sheet
 						setShowPayPal(false);
 						setOnGoingPayment(false);
-						resumeTimer();
 					},
 				}).render("#paypal-button-container");
 			} else {
@@ -162,14 +160,6 @@ const RechargeModal = ({
 			if (paypalContainer) paypalContainer.innerHTML = "";
 		}
 	}, [showPayPal]);
-
-	useEffect(() => {
-		if (isSheetOpen || onGoingPayment || showPayPal) {
-			pauseTimer();
-		} else {
-			resumeTimer();
-		}
-	}, [isSheetOpen, onGoingPayment, pauseTimer, resumeTimer, showPayPal]);
 
 	const PaymentHandler = () => {
 		try {
@@ -184,6 +174,8 @@ const RechargeModal = ({
 					currentUser?.phone,
 					currentUser?.createdAt?.toString().split("T")[0],
 					currentUser?.walletBalance,
+					creatorId,
+					true,
 				)
 			}
 		} catch (error) {
@@ -191,7 +183,6 @@ const RechargeModal = ({
 		} finally {
 			setIsSheetOpen(false);
 			setOnGoingPayment(false);
-			resumeTimer();
 		}
 	}
 

@@ -192,8 +192,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 					? creator?.globalAudioRate
 						? parseFloat(creator.globalAudioRate)
 						: undefined
-					: creator?.videoRate
-					? parseFloat(creator.videoRate)
+					: creator?.audioRate
+					? parseFloat(creator.audioRate)
 					: undefined;
 				break;
 			case "chat":
@@ -201,8 +201,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 					? creator?.globalChatRate
 						? parseFloat(creator.globalChatRate)
 						: undefined
-					: creator?.videoRate
-					? parseFloat(creator.videoRate)
+					: creator?.chatRate
+					? parseFloat(creator.chatRate)
 					: undefined;
 				break;
 			default:
@@ -218,6 +218,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		const amountDue = costForFiveMinutes
 			? Math.max(0, costForFiveMinutes - walletBalance)
 			: undefined;
+		
+		console.log(ratePerMinute, costForFiveMinutes, walletBalance);
 		return amountDue;
 	};
 	const generateAmounts = () => {

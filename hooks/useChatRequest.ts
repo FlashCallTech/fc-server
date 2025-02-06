@@ -61,7 +61,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	};
 
-	function maskPhoneNumber(phoneNumber: string) {
+	const maskPhoneNumber = (phoneNumber: string) => {
 		// Remove the '+91' prefix
 		if (phoneNumber) {
 			let cleanedNumber = phoneNumber.replace("+91", "");
@@ -89,7 +89,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	};
 
 	const handleChat = async (creator: creatorUser, clientUser: clientUser, setChatState: any, discounts?: Service) => {
-		if (!clientUser) router.push("sign-in");
 		if (!clientUser) router.push("sign-in");
 
 		const chatRate = await getUserData(creator._id, clientUser.global ?? false);
@@ -128,7 +127,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		localStorage.setItem("CallId", callId);
 
 		try {
-			setLoading(true);
 			setSheetOpen(true);
 			const userChatsDocRef = doc(db, "userchats", clientUser?._id);
 			const creatorChatsDocRef = doc(db, "userchats", creator?._id);
@@ -232,6 +230,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				createdAt: Date.now(),
 				discounts: discounts ?? null,
 			};
+
+			console.log("discount...", discounts);
 
 			// Conditionally add fields if they exist
 			if (creator.fullName) {
@@ -404,7 +404,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				Walletbalace_Available: clientUser.walletBalance,
 			});
 		} catch (error) {
-			setSheetOpen(true);
+			setSheetOpen(false);
 			Sentry.captureException(error);
 			console.error(error);
 			toast({
@@ -650,6 +650,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		isSheetOpen,
 		setSheetOpen,
 		loading,
+		setLoading,
 	};
 };
 

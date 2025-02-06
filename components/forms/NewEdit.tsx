@@ -1039,7 +1039,7 @@ const Edit = ({
 								<Button
 									className="bg-green-1 lg:bg-black lg:rounded-full hoverScaleDownEffect rounded-lg text-white"
 									type="submit"
-									disabled={!isValid || form.formState.isSubmitting}
+									disabled={form.formState.isSubmitting}
 								>
 									{form.formState.isSubmitting ? (
 										<Image

@@ -1,177 +1,157 @@
-import React, {
-	createContext,
-	useContext,
-	useState,
-	useEffect,
-	ReactNode,
-} from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { ReactNode, useContext, useEffect, useState, useRef, createContext } from "react";
+import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
-import { useCurrentUsersContext } from "./CurrentUsersContext";
 import { useWalletBalanceContext } from "./WalletBalanceContext";
+import { useToast } from "@/components/ui/use-toast";
 import { useChatContext } from "./ChatContext";
 
-interface ChatTimerContextProps {
-	timeLeft: string;
-	hasLowBalance: boolean;
-	pauseTimer: () => void;
-	resumeTimer: () => void;
-	anyModalOpen: boolean;
-	setAnyModalOpen: (isOpen: boolean) => void;
-	totalTimeUtilized: number;
-	chatRatePerMinute: number;
-}
 interface ChatTimerProviderProps {
 	children: ReactNode;
 	clientId: string;
-	creatorId: string;
 	chatId: string;
 }
+
+interface ChatTimerContextProps {
+	timeLeft: number;
+	hasLowBalance: boolean;
+	totalTimeUtilized: number;
+}
+
 const ChatTimerContext = createContext<ChatTimerContextProps | null>(null);
 export const useChatTimerContext = () => {
 	const context = useContext(ChatTimerContext);
 	if (!context) {
-		throw new Error(
-			"useChatTimerContext must be used within a ChatTimerProvider"
-		);
+		throw new Error("useChatTimerContext must be used within a ChatTimerProvider");
 	}
 	return context;
 };
 
-const formatTimeLeft = (timeLeft: number): string => {
-	const minutes = Math.floor(timeLeft);
-	const seconds = Math.floor((timeLeft - minutes) * 60);
-	const paddedMinutes = minutes.toString().padStart(2, "0");
-	const paddedSeconds = seconds.toString().padStart(2, "0");
-	return `${paddedMinutes}:${paddedSeconds}`;
-};
-
-export const ChatTimerProvider = ({
-	children,
-	clientId,
-	creatorId,
-	chatId
-}: ChatTimerProviderProps) => {
-	const [anyModalOpen, setAnyModalOpen] = useState(false);
-	const [timeLeft, setTimeLeft] = useState(0);
-	const [chatRatePerMinute, setChatRatePerMinute] = useState<number>(0);
-	const [lowBalanceNotified, setLowBalanceNotified] = useState(false);
-	const [hasLowBalance, setHasLowBalance] = useState(false);
-	const [isTimerRunning, setIsTimerRunning] = useState(true);
-	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
-	const { handleEnd, startedAt, chat } = useChatContext();
+export const ChatTimerProvider = ({ children, clientId, chatId }: ChatTimerProviderProps) => {
 	const { walletBalance } = useWalletBalanceContext();
-	const { clientUser, userType } = useCurrentUsersContext();
 	const { toast } = useToast();
-	const lowBalanceThreshold = 300; // Threshold in seconds
+	const { handleEnd, chat } = useChatContext();
 
-	const pauseTimer = () => setIsTimerRunning(false);
-	const resumeTimer = () => setIsTimerRunning(true);
+	const [timeLeft, setTimeLeft] = useState(0);
+	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
+	const [hasLowBalance, setHasLowBalance] = useState(false);
+	const lowBalanceNotifiedRef = useRef(false);
+	const lowTimeRef = useRef(false);
+	const lowTimeThreshold = 300; // 5 minutes in seconds
+
+	const workerRef = useRef<Worker | null>(null);
 
 	useEffect(() => {
-		if (!chatId) {
-			return; // Exit early if not the meeting owner or callId is undefined
+		if (!chatId || !clientId || !walletBalance || !chat) return;
+
+		lowBalanceNotifiedRef.current = false;
+		lowTimeRef.current = false;
+
+		// Stop previous worker if exists
+		if (workerRef.current) {
+			workerRef.current.terminate();
+			workerRef.current = null;
 		}
-		if (userType === "client") {
-			const ratePerMinute: number = Number(chat?.chatRate);
-			let maxChatDuration = (walletBalance / ratePerMinute) * 60; // in seconds
-			maxChatDuration = maxChatDuration > 3600 ? 3600 : maxChatDuration; // Limit to 60 minutes (3600 seconds)
-			if (!startedAt) {
-				setTimeLeft(maxChatDuration);
-				return;
+
+		// Create an inline Web Worker
+		const workerCode = `
+            self.onmessage = function(e) {
+                if (e.data.type === "start") {
+                    let timeLeft = e.data.data.remainingTime;
+                    let elapsedTime = e.data.data.totalTimeUtilized;
+					let walletBalance = e.data.data.walletBalance;
+					let rate = e.data.data.rate;
+					let lowBalance = false;
+                    
+                    const interval = setInterval(() => {
+                        if (timeLeft > 0) {
+							if (rate * 5 > walletBalance) {
+								lowBalance = true;
+							}
+                            timeLeft--;
+                            elapsedTime++;
+							walletBalance -= (rate/60);
+                            self.postMessage({ timeLeft, elapsedTime, lowBalance });
+                        } else {
+                            clearInterval(interval);
+                            self.postMessage({ timeLeft: 0, elapsedTime, lowBalance });
+                            self.close();
+                        }
+                    }, 1000);
+                }
+            };
+        `;
+		const blob = new Blob([workerCode], { type: "application/javascript" });
+		const timerWorker = new Worker(URL.createObjectURL(blob));
+		workerRef.current = timerWorker;
+
+		// Calculate remaining time
+		const totalTime = (walletBalance / chat?.chatRate) * 60;
+		const maxChatDuration = Math.min(totalTime, 3600);
+		const remainingTime = Math.max(maxChatDuration - totalTimeUtilized, 0);
+
+		// Start worker
+		timerWorker.postMessage({
+			type: "start",
+			data: { remainingTime, totalTimeUtilized, walletBalance, rate: chat?.chatRate },
+		});
+
+		timerWorker.onmessage = async (event) => {
+			const { timeLeft, elapsedTime, lowBalance } = event.data;
+
+			console.log("timer...", timeLeft, lowBalance);
+
+			setTimeLeft(timeLeft);
+			setTotalTimeUtilized(elapsedTime);
+
+			// Update Firestore
+			const chatDocRef = doc(db, "callTimer", chatId);
+			const callDoc = await getDoc(chatDocRef);
+			if (callDoc.exists()) {
+				await updateDoc(chatDocRef, { timeLeft, timeUtilized: elapsedTime });
+			} else {
+				await setDoc(chatDocRef, { timeLeft, timeUtilized: elapsedTime });
 			}
 
-			const chatStartedTime = new Date(startedAt);
+			// Handle low balance state
+			if (lowBalance && !lowBalanceNotifiedRef.current) {
+				setHasLowBalance(true);
+				lowBalanceNotifiedRef.current = true; // Update ref instead of state
+				toast({
+					title: "Chat Will End Soon",
+					description: "Client's wallet balance is low.",
+					toastStatus: "negative",
+				});
+			}
 
-			const updateFirestoreTimer = async (
-				timeLeft: number,
-				timeUtilized: number
-			) => {
-				try {
-					const chatDocRef = doc(db, "callTimer", chatId as string);
-					const callDoc = await getDoc(chatDocRef);
-					if (callDoc.exists()) {
-						await updateDoc(chatDocRef, {
-							timeLeft,
-							timeUtilized,
-						});
-					} else {
-						await setDoc(chatDocRef, {
-							timeLeft,
-							timeUtilized,
-						});
-					}
-				} catch (error) {
-					console.error("Error updating Firestore timer: ", error);
-				}
-			};
+			// Handle low time state
+			if (timeLeft <= lowTimeThreshold && timeLeft > 0 && !lowTimeRef.current && !lowBalance) {
+				lowTimeRef.current = true; // Update ref instead of state
+				toast({
+					title: "Remaining time is 5 minutes",
+					description: "Your Chat will end in 5 minutes",
+					toastStatus: "negative",
+				});
+			}
 
-			const intervalId = setInterval(() => {
-				if (isTimerRunning) {
-					const now = new Date();
-					const timeUtilized =
-						(now.getTime() - chatStartedTime.getTime()) / 1000; // Time in seconds
-					const newTimeLeft = maxChatDuration - timeUtilized;
-					const clampedTimeLeft = newTimeLeft > 0 ? newTimeLeft : 0;
+			// End chat if time runs out
+			if (timeLeft <= 0) {
+				handleEnd(chatId, lowBalance ? "low_balance" : "time_over").finally(() => {
+					timerWorker.terminate();
+					workerRef.current = null;
+				});
+			}
+		};
 
-					setTimeLeft(clampedTimeLeft);
-					setTotalTimeUtilized(timeUtilized);
-					updateFirestoreTimer(clampedTimeLeft, timeUtilized);
-
-					if (clampedTimeLeft <= 0) {
-						clearInterval(intervalId);
-						if (clientId === clientUser?._id) {
-							handleEnd(chatId as string, "low_balance");
-						}
-					}
-
-					if (
-						clientId === clientUser?._id &&
-						newTimeLeft <= lowBalanceThreshold &&
-						newTimeLeft > 0
-					) {
-						setHasLowBalance(true);
-						if (!lowBalanceNotified) {
-							setLowBalanceNotified(true);
-							toast({
-								title: "Chat Will End Soon",
-								description: "Client's wallet balance is low.",
-								toastStatus: "negative",
-							});
-						}
-					} else if (clampedTimeLeft > lowBalanceThreshold) {
-						setHasLowBalance(false);
-						setLowBalanceNotified(false);
-					}
-				}
-			}, 1000);
-			return () => clearInterval(intervalId);
-		}
-	}, [
-		isTimerRunning,
-		clientId,
-		chatRatePerMinute,
-		lowBalanceNotified,
-		lowBalanceThreshold,
-		toast,
-		startedAt,
-		walletBalance,
-	]);
+		return () => {
+			if (workerRef.current) {
+				workerRef.current.terminate();
+				workerRef.current = null;
+			}
+		};
+	}, [chatId, clientId, walletBalance, chat]); // Restart when walletBalance changes
 
 	return (
-		<ChatTimerContext.Provider
-			value={{
-				timeLeft: formatTimeLeft(timeLeft),
-				hasLowBalance,
-				pauseTimer,
-				resumeTimer,
-				anyModalOpen,
-				setAnyModalOpen,
-				totalTimeUtilized,
-				chatRatePerMinute,
-			}}
-		>
+		<ChatTimerContext.Provider value={{ timeLeft, hasLowBalance, totalTimeUtilized }}>
 			{children}
 		</ChatTimerContext.Provider>
 	);
