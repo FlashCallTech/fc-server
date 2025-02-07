@@ -13,8 +13,8 @@ const ChatFeedbackPage = () => {
 	const [loadingFeedback, setLoadingFeedback] = useState(false);
 	const [showFeedback, setShowFeedback] = useState(true);
 	const creatorURL = localStorage.getItem("creatorURL");
-	const { chatId, callId, clientId } = useParams();
-	const { currentUser } = useCurrentUsersContext();
+	const { chatId, callId } = useParams();
+	const { currentUser, userType } = useCurrentUsersContext();
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -54,11 +54,11 @@ const ChatFeedbackPage = () => {
 			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
 			className="w-full flex items-center justify-center bg-"
 		>
-			{clientId === currentUser?._id ? (
+			{userType === "client" ? (
 				<ChatFeedback
 					chatId={chatId as string}
 					callId={callId as string}
-					clientId={clientId}
+					clientId={currentUser?._id as string}
 					isOpen={showFeedback}
 					onOpenChange={handleFeedbackClose}
 				/>

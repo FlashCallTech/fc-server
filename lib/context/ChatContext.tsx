@@ -10,10 +10,10 @@ interface ChatContextProps {
 	chatId: string | null;
 	chat: any;
 	messages: any
-	chatEnded: boolean;
 	startedAt: number;
 	loading: boolean;
 	handleEnd: (chatId: string | string[], endedBy: string) => Promise<void>;
+	chatLoading: boolean;
 }
 
 const ChatContext = createContext<ChatContextProps | null>(null);
@@ -26,15 +26,14 @@ export const useChatContext = () => {
 	return context;
 };
 
-export const ChatProvider = ({ children, chatId }: { children: React.ReactNode, chatId: string }) => {
+export const ChatProvider = ({ children, chatId, callId }: { children: React.ReactNode, chatId: string, callId: string }) => {
 	const [chat, setChat] = useState<any>(null);
+	const [chatLoading, setChatLoading] = useState(true);
 	const [messages, setMessages] = useState<any>();
-	const [chatEnded, setChatEnded] = useState(false);
 	const [startedAt, setStartedAt] = useState<number>(0);
 	const [loading, setLoading] = useState(false);
 	const { userType } = useCurrentUsersContext();
 	const router = useRouter();
-	const hasChatEnded = useRef(false);
 
 	// Sync chat data from Firestore
 	useEffect(() => {
@@ -47,8 +46,29 @@ export const ChatProvider = ({ children, chatId }: { children: React.ReactNode, 
 					setChat(data);
 					setStartedAt(data.startedAt);
 					if (data?.status === "ended") {
-						setChatEnded(true);
-						chatUnSub(); // Unsubscribe the listener
+						// setChatEnded(true);
+						// chatUnSub(); // Unsubscribe the listener
+						if (userType === "creator") {
+							router.replace(`/home`);
+						} else {
+							const endedBy = localStorage.getItem("EndedBy");
+							localStorage.removeItem("chatRequestId");
+							localStorage.removeItem("chatId");
+							localStorage.removeItem("user2");
+							localStorage.removeItem("EndedBy");
+							trackEvent("BookCall_Chat_Ended", {
+								Client_ID: chat?.clientId,
+								Creator_ID: chat?.creatorId,
+								Time_Duration_Consumed: chat?.startedAt
+									? (Date.now() - chat?.startedAt) / 1000
+									: null,
+								EndedBy: endedBy ?? "creator",
+							});
+							console.log("chat...", chat);
+							router.replace(`/chat-ended/${chatId}/${callId}/false`);
+						}
+					} else {
+						setChatLoading(false);
 					}
 				}
 			});
@@ -67,38 +87,13 @@ export const ChatProvider = ({ children, chatId }: { children: React.ReactNode, 
 		}
 	}, [chatId]);
 
-	// Handle chat end logic
-	useEffect(() => {
-		if (chatEnded && !hasChatEnded.current) {
-			hasChatEnded.current = true;
-			if (userType === "creator") {
-				router.replace(`/home`);
-			} else {
-				const endedBy = localStorage.getItem("EndedBy");
-				localStorage.removeItem("chatRequestId");
-				localStorage.removeItem("chatId");
-				localStorage.removeItem("user2");
-				localStorage.removeItem("EndedBy");
-				trackEvent("BookCall_Chat_Ended", {
-					Client_ID: chat?.clientId,
-					Creator_ID: chat?.creatorId,
-					Time_Duration_Consumed: chat?.startedAt
-						? (Date.now() - chat?.startedAt) / 1000
-						: null,
-					EndedBy: endedBy ?? "creator",
-				});
-				router.replace(`/chat-ended/${chatId}/${chat?.callId}/${chat?.clientId}/false`);
-			}
-		}
-	}, [chatEnded, userType, router, chatId, chat]);
-
 	// Function to end the chat
 	const handleEnd = async (chatId: string | string[], endedBy: string) => {
 		try {
 			setLoading(true);
 			const now = Date.now();
 
-			if(endedBy === "low_balance" || endedBy === "time_over") {
+			if (endedBy === "low_balance" || endedBy === "time_over") {
 				trackEvent("BookCall_Chat_Ended", {
 					Client_ID: chat?.clientId,
 					Creator_ID: chat?.creatorId,
@@ -145,10 +140,10 @@ export const ChatProvider = ({ children, chatId }: { children: React.ReactNode, 
 				chatId,
 				chat,
 				messages,
-				chatEnded,
 				startedAt,
 				loading,
 				handleEnd,
+				chatLoading,
 			}}
 		>
 			{children}

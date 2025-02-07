@@ -41,7 +41,10 @@ export const ChatTimerProvider = ({ children, clientId, chatId }: ChatTimerProvi
 	const workerRef = useRef<Worker | null>(null);
 
 	useEffect(() => {
-		if (!chatId || !clientId || !walletBalance || !chat) return;
+		if (!chatId || !clientId || !walletBalance || !chat) {
+			console.log("Missing dependencies:", { chatId, clientId, walletBalance, chat });
+			return;
+		}
 
 		lowBalanceNotifiedRef.current = false;
 		lowTimeRef.current = false;
@@ -98,8 +101,6 @@ export const ChatTimerProvider = ({ children, clientId, chatId }: ChatTimerProvi
 		timerWorker.onmessage = async (event) => {
 			const { timeLeft, elapsedTime, lowBalance } = event.data;
 
-			console.log("timer...", timeLeft, lowBalance);
-
 			setTimeLeft(timeLeft);
 			setTotalTimeUtilized(elapsedTime);
 
@@ -148,7 +149,7 @@ export const ChatTimerProvider = ({ children, clientId, chatId }: ChatTimerProvi
 				workerRef.current = null;
 			}
 		};
-	}, [chatId, clientId, walletBalance, chat]); // Restart when walletBalance changes
+	}, [walletBalance, chat]); // Restart when walletBalance changes
 
 	return (
 		<ChatTimerContext.Provider value={{ timeLeft, hasLowBalance, totalTimeUtilized }}>

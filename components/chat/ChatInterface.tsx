@@ -18,6 +18,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import CreatorChatTimer from "../creator/CreatorChatTimer";
 import Tip from "./Tip";
 import { useChatContext } from "@/lib/context/ChatContext";
+import Loader from "../shared/Loader";
 
 const ChatInterface: React.FC = () => {
 	const [text, setText] = useState<string>("");
@@ -38,7 +39,7 @@ const ChatInterface: React.FC = () => {
 	});
 	// const typingTimeout = 2000; // Time in milliseconds to wait before resetting isTyping
 
-	const { handleEnd, chat, messages, chatId } = useChatContext();
+	const { handleEnd, chat, messages, chatId, chatLoading } = useChatContext();
 	// const { markMessagesAsSeen } = useMarkAsSeen();
 	const { currentUser, userType } = useCurrentUsersContext();
 	const {
@@ -373,6 +374,10 @@ const ChatInterface: React.FC = () => {
 			window.removeEventListener("resize", handleResize);
 		};
 	}, []);
+
+	if(chatLoading) {
+		return <Loader />
+	}
 
 	return (
 		<div className="w-full h-screen">
