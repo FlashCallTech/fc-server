@@ -32,8 +32,8 @@ const RechargeModal = ({
 	inTipModal?: boolean;
 	walletBalance: number;
 	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
-	pauseTimer: any;
-	resumeTimer: any;
+	pauseTimer?: any;
+	resumeTimer?: any;
 }) => {
 	const [rechargeAmount, setRechargeAmount] = useState("");
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
