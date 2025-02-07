@@ -7,6 +7,7 @@ import {
 	addMinutes,
 	format,
 	isSameDay,
+	setHours,
 } from "date-fns";
 
 import Razorpay from "razorpay";
@@ -1228,10 +1229,16 @@ export const getTimeSlots = (
 	const selectedDate = new Date(dayDate);
 
 	timeSlots.forEach(({ startTime, endTime }: any) => {
-		let start = parse(startTime, "hh:mm a", new Date());
-		const end = parse(endTime, "hh:mm a", new Date());
+		let start = parse(startTime, "hh:mm a", selectedDate);
+		let end = parse(endTime, "hh:mm a", selectedDate);
+
+		// Handle case when endTime is past midnight
+		if (isBefore(end, start)) {
+			end = setHours(end, end.getHours() + 24);
+		}
 
 		while (isBefore(start, end)) {
+			// Ensure we don't add past times for today
 			if (isSameDay(selectedDate, now) && selectedDay === currentDay) {
 				if (isBefore(now, start) || isEqual(now, start)) {
 					slots.push(format(start, "hh:mm a"));
@@ -1243,6 +1250,7 @@ export const getTimeSlots = (
 		}
 	});
 
+	// Sort slots to ensure correct order
 	slots.sort(
 		(a, b) =>
 			parse(a, "hh:mm a", new Date()).getTime() -

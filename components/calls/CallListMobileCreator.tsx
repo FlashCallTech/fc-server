@@ -79,8 +79,10 @@ const CallListMobileCreator = ({
 						</h2>
 					</div>
 				) : isError ? (
-					<div className="lg:hidden size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
-						Failed to fetch User Calls
+					<div className="lg:hidden flex flex-col w-full items-center justify-center h-full">
+						<h1 className="text-2xl font-semibold text-red-500">
+							Failed to fetch User Calls
+						</h1>
 						<h2 className="text-lg">Please try again later.</h2>
 					</div>
 				) : (
@@ -122,7 +124,7 @@ const CallListMobileCreator = ({
 													/>
 													{/* creator details */}
 													<section className="size-full flex flex-col items-start justify-between gap-2">
-														<div className="flex items-center justify-start gap-2">
+														<div className="flex flex-wrap-reverse items-center justify-start gap-2">
 															<p className="text-base tracking-wide whitespace-nowrap capitalize hoverScaleDownEffect cursor-pointer">
 																{fullName || "Creator"}
 															</p>

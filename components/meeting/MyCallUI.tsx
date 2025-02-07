@@ -320,10 +320,11 @@ const MyCallUI = () => {
 				},
 			});
 
+			router.replace(`/meeting/${outgoingCall.id}`);
+
 			setShowCallUI(false);
 			setConnecting(false);
 			setRedirecting(false);
-			router.replace(`/meeting/${outgoingCall.id}`);
 		};
 
 		const handleCallRejected = async () => {

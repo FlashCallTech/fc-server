@@ -32,6 +32,7 @@ const AvailabilitySelectionSheet = ({
 	const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
 	const dayRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+	const sliderRef = useRef<HTMLDivElement>(null);
 
 	const themeColor = isValidHexColor(creator?.themeSelected)
 		? creator?.themeSelected
@@ -131,6 +132,15 @@ const AvailabilitySelectionSheet = ({
 		if (!text) return;
 		let charLen = 100;
 		if (text?.length > charLen && !isExpanded) {
+			return text.slice(0, charLen) + "... ";
+		}
+		return text;
+	};
+
+	const clampText = (text: string) => {
+		if (!text) return;
+		let charLen = 40;
+		if (text?.length > charLen) {
 			return text.slice(0, charLen) + "... ";
 		}
 		return text;
@@ -244,8 +254,9 @@ const AvailabilitySelectionSheet = ({
 				<button
 					className="rounded-full p-2 text-gray-400 hoverScaleDownEffect hover:bg-gray-100"
 					onClick={() => {
-						const slider = document.getElementById("days-slider");
-						slider?.scrollBy({ left: -200, behavior: "smooth" });
+						if (sliderRef.current) {
+							sliderRef.current.scrollBy({ left: -200, behavior: "smooth" });
+						}
 					}}
 				>
 					<svg
@@ -264,6 +275,7 @@ const AvailabilitySelectionSheet = ({
 					</svg>
 				</button>
 				<div
+					ref={sliderRef}
 					id="days-slider"
 					className="flex gap-2 overflow-x-auto no-scrollbar"
 				>
@@ -305,8 +317,9 @@ const AvailabilitySelectionSheet = ({
 				</div>
 				<button
 					onClick={() => {
-						const slider = document.getElementById("days-slider");
-						slider?.scrollBy({ left: 200, behavior: "smooth" });
+						if (sliderRef.current) {
+							sliderRef.current.scrollBy({ left: 200, behavior: "smooth" });
+						}
 					}}
 					className="rounded-full p-2 text-gray-400 hoverScaleDownEffect hover:bg-gray-100"
 				>
@@ -368,8 +381,6 @@ const AvailabilitySelectionSheet = ({
 
 	if (!isOpen) return null;
 
-	// console.log(service);
-
 	return (
 		<div
 			className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
@@ -401,9 +412,9 @@ const AvailabilitySelectionSheet = ({
 								d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
 							/>
 						</svg>
-						<div className="flex w-full items-center justify-between">
+						<div className="flex w-full items-center justify-between overflow-hidden">
 							<span className="font-bold text-2xl capitalize">
-								{service.title}
+								{clampText(service.title)}
 							</span>
 							<span className="bg-white flex items-center justify-center gap-2 border-2 border-[#E5E7EB] rounded-full min-w-[100px] text-center py-1 px-4 whitespace-nowrap cursor-pointer font-medium text-base">
 								{service.timeDuration} Min

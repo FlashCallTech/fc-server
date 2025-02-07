@@ -57,6 +57,15 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		return text;
 	};
 
+	const clampText = (text: string) => {
+		if (!text) return;
+		let charLen = 40;
+		if (text?.length > charLen) {
+			return text.slice(0, charLen) + "... ";
+		}
+		return text;
+	};
+
 	const toggleReadMore = (index: number) => {
 		setExpandedStates((prevStates) => ({
 			...prevStates,
@@ -204,10 +213,12 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 							)}
 							<div className="w-full flex flex-col xl:flex-row items-start xl:items-end justify-between gap-2">
 								<div className="w-full flex flex-col items-start justify-center xl:gap-2">
-									<div className="flex items-center justify-start gap-4 w-full">
+									<div className="flex items-center justify-start gap-4 w-full overflow-hidden">
 										{serviceIcon(service.type)}
 
-										<span className="font-bold text-lg">{service.title}</span>
+										<span className="font-bold text-lg">
+											{clampText(service.title)}
+										</span>
 									</div>
 
 									<div className="text-sm mt-2">

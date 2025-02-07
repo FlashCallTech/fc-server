@@ -42,13 +42,12 @@ const ScheduledTimer = ({
 
 	const [toggleEndSessionDialog, setToggleEndSessionDialog] = useState(false);
 
-	const timeLeftInSeconds = timeLeft;
-	const isLoading = isNaN(timeLeftInSeconds);
+	const isLoading = isNaN(timeLeft);
 
-	const minutes = Math.floor(timeLeftInSeconds / 60)
+	const minutes = Math.floor(timeLeft / 60)
 		.toString()
 		.padStart(2, "0");
-	const seconds = Math.floor(timeLeftInSeconds % 60)
+	const seconds = Math.floor(timeLeft % 60)
 		.toString()
 		.padStart(2, "0");
 
@@ -101,7 +100,7 @@ const ScheduledTimer = ({
 				</p>
 			)}
 
-			{!isMeetingOwner && timeLeftInSeconds < 0 && (
+			{!isMeetingOwner && timeLeft < 0 && (
 				<Button
 					onClick={endCall}
 					className="bg-red-500 font-semibold hover:opacity-80 w-full rounded-xl hoverScaleDownEffect"

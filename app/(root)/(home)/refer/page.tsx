@@ -225,9 +225,11 @@ const ReferralLink: React.FC = () => {
 							</span>
 						</div>
 					) : isError ? (
-						<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-red-500">
-							Failed to fetch User Calls
-							<h2 className="text-xl">Please try again later.</h2>
+						<div className="flex flex-col w-full items-center justify-center h-full">
+							<h1 className="text-2xl font-semibold text-red-500">
+								Failed to fetch User Calls
+							</h1>
+							<h2 className="text-lg">Please try again later.</h2>
 						</div>
 					) : (
 						<>

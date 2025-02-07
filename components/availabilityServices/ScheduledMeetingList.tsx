@@ -258,7 +258,13 @@ const ScheduledMeetingList = ({
 										</div>
 
 										<p className="text-base">
-											Scheduled {userCall.type === "chat" ? "Chat" : `${userCall.type === "video" ? "Video" : "Audio"} Call` } With{" "}
+											Scheduled{" "}
+											{userCall.type === "chat"
+												? "Chat"
+												: `${
+														userCall.type === "video" ? "Video" : "Audio"
+												  } Call`}{" "}
+											With{" "}
 											{userType === "client"
 												? `Expert ${fullName}`
 												: `Client ${clientFullName}`}
@@ -371,8 +377,11 @@ const ScheduledMeetingList = ({
 														</button>
 													) : (
 														<Link
-															href={`${userCall.type === "chat" ? `${frontendBaseUrl}/scheduledChat/${userCall.callId}/${userCall.chatId}` : `/meeting/${userCall.callId}`}`}
-															target="_blank"
+															href={`${
+																userCall.type === "chat"
+																	? `${frontendBaseUrl}/scheduledChat/${userCall.callId}/${userCall.chatId}`
+																	: `/meeting/${userCall.callId}`
+															}`}
 															className="max-sm:absolute top-4 right-4 p-2 bg-black rounded-full hoverScaleDownEffect"
 														>
 															<svg
