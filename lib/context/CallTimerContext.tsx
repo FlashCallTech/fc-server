@@ -13,7 +13,6 @@ import { db } from "../firebase";
 import * as Sentry from "@sentry/nextjs";
 import {
 	updateFirestoreSessions,
-	updatePastFirestoreSessions,
 	updatePastFirestoreSessionsPPM,
 } from "../utils";
 

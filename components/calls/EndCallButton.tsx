@@ -15,12 +15,16 @@ import LeaveCallDecision from "./LeaveCallDecision";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { useRouter } from "next/navigation";
 
 const EndCallButton = ({ callType }: { callType: "scheduled" | "instant" }) => {
 	const call = useCall();
 	const { userType } = useCurrentUsersContext();
 	const [showDialog, setShowDialog] = useState(false);
 	const [showLeavingDialog, setShowLeavingDialog] = useState(false);
+	const router = useRouter();
+
+	let creatorURL = localStorage.getItem("creatorURL");
 
 	if (!call) {
 		throw new Error(
@@ -65,6 +69,7 @@ const EndCallButton = ({ callType }: { callType: "scheduled" | "instant" }) => {
 	const handleLeavingDecisionDialog = async () => {
 		await call?.leave();
 		setShowLeavingDialog(false);
+		router.replace(creatorURL ? `/${creatorURL}` : "/home");
 		window.close();
 	};
 

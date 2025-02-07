@@ -32,7 +32,7 @@ const UpcomingPage = () => {
 				className={`sticky top-0 lg:top-[76px] bg-white z-30 w-full p-4  pb-4 flex items-center justify-between transition-all duration-300`}
 			>
 				<section
-					className={`flex items-center gap-4 ${
+					className={`flex items-center justify-start gap-4 ${
 						userType === "creator" && "lg:hidden"
 					} text-xl font-bold`}
 				>
@@ -53,20 +53,21 @@ const UpcomingPage = () => {
 						</svg>
 					</Link>
 					<h1 className="text-xl md:text-2xl font-bold">Upcoming Calls</h1>
+
+					<div className="hidden xl:flex items-center justify-center w-fit gap-2">
+						{listOptions.map((option) => (
+							<Button
+								key={option}
+								className={`text-sm font-medium px-4 py-2 rounded-full border border-gray-300 hover:text-white hover:bg-black hoverScaleDownEffect flex items-center gap-2 ${
+									listType === option && "bg-black text-white"
+								}`}
+								onClick={() => setListType(option)}
+							>
+								{option}
+							</Button>
+						))}
+					</div>
 				</section>
-				<div className="hidden xl:flex items-center justify-center w-fit gap-2">
-					{listOptions.map((option) => (
-						<Button
-							key={option}
-							className={`text-sm font-medium px-4 py-2 rounded-full border border-gray-300 hover:text-white hover:bg-black hoverScaleDownEffect flex items-center gap-2 ${
-								listType === option && "bg-black text-white"
-							}`}
-							onClick={() => setListType(option)}
-						>
-							{option}
-						</Button>
-					))}
-				</div>
 
 				<div className="hidden xl:flex items-center justify-center w-fit gap-2">
 					{options.map((option) => (

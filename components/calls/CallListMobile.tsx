@@ -64,9 +64,11 @@ const CallListMobile = ({
 					</h2>
 				</div>
 			) : isError ? (
-				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-red-500">
-					Failed to fetch User Calls
-					<h2 className="text-xl">Please try again later.</h2>
+				<div className="flex flex-col w-full items-center justify-center h-full">
+					<h1 className="text-2xl font-semibold text-red-500">
+						Failed to fetch User Calls
+					</h1>
+					<h2 className="text-lg">Please try again later.</h2>
 				</div>
 			) : (
 				<>
@@ -76,7 +78,9 @@ const CallListMobile = ({
 						{userCalls?.pages?.flatMap((page: any) =>
 							page?.calls?.map((userCall: RegisterCallParams) => {
 								const formattedDate = formatDateTime(
-									userCall.startedAt as Date
+									userCall.endedAt
+										? userCall.endedAt
+										: (userCall.startedAt as Date)
 								);
 
 								const creator = userCall.expertDetails;
@@ -121,7 +125,7 @@ const CallListMobile = ({
 												/>
 												{/* creator details */}
 												<section className="size-full flex flex-col items-start justify-between gap-2">
-													<div className="flex items-center justify-start gap-2">
+													<div className="flex flex-wrap-reverse items-center justify-start gap-2">
 														<p
 															className="text-base tracking-wide whitespace-nowrap capitalize hoverScaleDownEffect cursor-pointer"
 															onClick={handleRedirect}

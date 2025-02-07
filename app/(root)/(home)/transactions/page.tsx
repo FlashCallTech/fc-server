@@ -292,17 +292,19 @@ const Transactions = () => {
 																.dateTime
 														}
 													</p>{" "}
-													<p
-														className={`
+													{transaction.category !== "Call Transaction" && (
+														<p
+															className={`
 																	 ${
 																			transaction.category === "Refund" ||
 																			transaction.category === "Tip"
 																				? "bg-[#F0FDF4] text-[#16A34A]"
 																				: "bg-[#DBEAFE] text-[#1E40AF]"
 																		} text-[12px] px-2 py-1 rounded-full`}
-													>
-														{transaction.category}
-													</p>
+														>
+															{transaction.category}
+														</p>
+													)}
 													{transaction.callCategory && (
 														<p
 															className={`

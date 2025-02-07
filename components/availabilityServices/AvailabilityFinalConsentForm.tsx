@@ -53,6 +53,7 @@ const AvailabilityFinalConsentForm = ({
 	const [payoutTransactionId, setPayoutTransactionId] = useState();
 	const { clientUser, refreshCurrentUser } = useCurrentUsersContext();
 	const [email, setEmail] = useState(clientUser?.email || "");
+	const [emailChanged, setEmailChanged] = useState(false);
 	const [emailError, setEmailError] = useState("");
 
 	const {
@@ -459,7 +460,7 @@ const AvailabilityFinalConsentForm = ({
 	const handlePaySchedule = async () => {
 		setPreparingTransaction(true);
 		try {
-			if (email) {
+			if (emailChanged) {
 				await axios.put(
 					`${backendBaseUrl}/client/updateUser/${clientUser?._id}`,
 					{
@@ -641,20 +642,19 @@ const AvailabilityFinalConsentForm = ({
 
 				updateWalletBalance();
 
-				refreshCurrentUser();
-
 				setIsSuccess(true);
 
 				localStorage.removeItem("hasVisitedFeedbackPage");
 
 				setTimeout(() => {
-					// toggleSchedulingSheet(false);
+					emailChanged && refreshCurrentUser();
 					toast({
 						variant: "destructive",
 						title: `Meeting scheduled on ${formattedData.day} from ${formattedData.timeRange}`,
 						toastStatus: "positive",
 					});
 
+					setPreparingTransaction(false);
 					router.push("/upcoming");
 				}, 2000);
 			} else {
@@ -688,8 +688,6 @@ const AvailabilityFinalConsentForm = ({
 				title: "Failed to schedule the call",
 				toastStatus: "negative",
 			});
-		} finally {
-			setPreparingTransaction(false);
 		}
 	};
 
@@ -754,10 +752,11 @@ const AvailabilityFinalConsentForm = ({
 		}
 
 		setEmailError("");
+		setEmailChanged(true);
 		return true;
 	};
 
-	const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleEmailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const newEmail = e.target.value;
 		setEmail(newEmail);
 		validateEmail(newEmail);

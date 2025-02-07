@@ -122,7 +122,8 @@ const MeetingNotStarted = ({
 					{/* Meeting Info Section */}
 					<div className="text-center">
 						<h2 className="text-xl font-semibold text-green-500">
-							Video Call with Expert {call.state.custom.name}
+							{call.type === "default" ? "Video" : "Audio"} Call with Expert{" "}
+							{call.state.custom.name}
 						</h2>
 						<p className="text-sm text-gray-400">
 							Meeting Description: {meetingDescription}
