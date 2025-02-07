@@ -72,7 +72,7 @@ const ScheduledChatInterface: React.FC = () => {
 					const data = doc.data();
 					setChat(data);
 					if (data.status === "ended") {
-						userType === "client" && router.replace(`/chat-ended/${chatId}/${callId}/${chat?.clientId}/true`);
+						userType === "client" && router.replace(`/chat-ended/${chatId}/${callId}/true`);
 						userType === "creator" && router.replace(`/home`);
 					}
 				}

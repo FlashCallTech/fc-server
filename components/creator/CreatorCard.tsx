@@ -114,7 +114,6 @@ const CreatorCard = () => {
 		if (!currentUser || !creatorUser || isLoading) return;
 
 		hasTrackedEvent.current = true; // Set BEFORE async call
-		console.log("useEffect triggered", { currentUser, creatorUser, hasTrackedEvent });
 
 		trackViewEvent();
 	}, [currentUser, creatorUser]);

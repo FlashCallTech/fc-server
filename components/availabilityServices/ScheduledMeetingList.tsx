@@ -258,7 +258,7 @@ const ScheduledMeetingList = ({
 										</div>
 
 										<p className="text-base">
-											Scheduled Video Call With{" "}
+											Scheduled {userCall.type === "chat" ? "Chat" : `${userCall.type === "video" ? "Video" : "Audio"} Call` } With{" "}
 											{userType === "client"
 												? `Expert ${fullName}`
 												: `Client ${clientFullName}`}
@@ -371,7 +371,7 @@ const ScheduledMeetingList = ({
 														</button>
 													) : (
 														<Link
-															href={`/meeting/${userCall.callId}`}
+															href={`${userCall.type === "chat" ? `${frontendBaseUrl}/scheduledChat/${userCall.callId}/${userCall.chatId}` : `/meeting/${userCall.callId}`}`}
 															target="_blank"
 															className="max-sm:absolute top-4 right-4 p-2 bg-black rounded-full hoverScaleDownEffect"
 														>
@@ -391,7 +391,7 @@ const ScheduledMeetingList = ({
 															</svg>
 
 															<span className="hidden md:block text-sm text-white px-2">
-																Copy Link
+																Join Now
 															</span>
 														</Link>
 													)}

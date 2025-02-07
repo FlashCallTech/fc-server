@@ -583,6 +583,7 @@ const AvailabilityFinalConsentForm = ({
 					user2Id: creator._id,
 					userType: "Client",
 					amount: totalAmount.total,
+					callCategory: "Scheduled",
 					callType: service.type,
 				});
 

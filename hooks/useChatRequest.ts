@@ -372,7 +372,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 							Walletbalance_Available: clientUser?.walletBalance,
 						});
 						updateExpertStatus(data.creatorPhone as string, "Busy");
-						router.replace(`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`);
+						router.replace(`/chat/${data.callId}/${data.chatId}/${data.clientId}`);
 					} else if (data.status === "accepted") {
 						clearTimeout(timer);
 						unsubscribe();

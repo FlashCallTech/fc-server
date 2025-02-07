@@ -36,7 +36,7 @@ const ChatFeedback = ({
 	const [feedbackMessage, setFeedbackMessage] = useState("");
 	const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 	const [creator, setCreator] = useState<creatorUser>();
-	const [duration, setDuration] = useState("00:00");
+	const [duration, setDuration] = useState(null);
 	const { toast } = useToast();
 	const pathname = usePathname();
 	const { chat, isChatLoading } = useGetChatById(chatId as string);
@@ -177,7 +177,6 @@ const ChatFeedback = ({
 		const seconds = (durationInSeconds % 60).toString().padStart(2, "0");
 		return `${minutes}:${seconds}`;
 	};
-
 
 	if (!currentUser?._id || isChatLoading)
 		return (
