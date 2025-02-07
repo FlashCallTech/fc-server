@@ -391,7 +391,7 @@ const ScheduledMeetingList = ({
 															</svg>
 
 															<span className="hidden md:block text-sm text-white px-2">
-																Copy Link
+																Join Now
 															</span>
 														</Link>
 													)}
