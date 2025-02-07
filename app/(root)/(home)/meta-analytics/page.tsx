@@ -1,20 +1,37 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import PixelIntegration from "@/components/discountServices/PixelIntegration";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import { backendBaseUrl } from "@/lib/utils";
 
 const MetaAnalytics = () => {
 	const { currentUser, userType } = useCurrentUsersContext();
+	const [staticData, setStaticData] = useState({
+		description: "",
+		link: "",
+		metaDescription: "",
+		metaLink: "",
+	});
 	const router = useRouter();
 	useEffect(() => {
 		if (currentUser && userType === "client") {
 			router.replace("/");
 			return;
 		}
+
+		const getData = async () => {
+			const response = await axios.get(
+				`${backendBaseUrl}/others/getStaticLink`
+			);
+			setStaticData(response.data);
+		};
+
+		getData();
 	}, [currentUser]);
 
 	if (!currentUser) {
@@ -61,10 +78,12 @@ const MetaAnalytics = () => {
 				<section className="size-full h-fit grid grid-cols-1 items-center gap-4">
 					<PixelIntegration creatorId={currentUser?._id} />
 					<section className="flex items-center justify-center pt-4">
-						<div className="text-center text-[13px] text-gray-400">
-							If you are interested in learning how to set up a{" "}
-							<b>Meta Pixel</b> account and how it works, <br />{" "}
-							<Link href={"/home"} className="text-green-1">
+						<div className="text-center text-[13px] text-gray-400 flex flex-col gap-2 items-center justify-center">
+							<span>{staticData?.metaDescription}</span>
+							<Link
+								href={staticData?.metaLink}
+								className="text-black hover:text-green-1"
+							>
 								<b> please click here. </b>{" "}
 							</Link>
 						</div>
@@ -76,10 +95,12 @@ const MetaAnalytics = () => {
 				<section className="size-full h-fit grid grid-cols-1 items-center gap-4">
 					<PixelIntegration creatorId={currentUser?._id} />
 					<section className="flex items-center justify-center pt-4">
-						<div className="text-center text-[13px] text-gray-400">
-							If you are interested in learning how to set up a{" "}
-							<b>Meta Pixel</b> account and how it works, <br />{" "}
-							<Link href={"/home"} className="text-black">
+						<div className="text-center text-[13px] text-gray-400 flex flex-col gap-2 items-center justify-center">
+							<span>{staticData?.metaDescription}</span>
+							<Link
+								href={staticData?.metaLink}
+								className="text-black hover:text-green-1"
+							>
 								<b> please click here. </b>{" "}
 							</Link>
 						</div>
