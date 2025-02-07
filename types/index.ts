@@ -255,6 +255,7 @@ export type RegisterCallParams = {
 	amount?: number;
 	global?: boolean;
 	amountINR?: number;
+	category?: string;
 };
 
 export type ScheduledCallParams = {
