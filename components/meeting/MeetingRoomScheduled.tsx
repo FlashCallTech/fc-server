@@ -190,7 +190,8 @@ const MeetingRoomScheduled = () => {
 							"call.ring",
 							fetchFCMToken,
 							sendNotification,
-							backendUrl as string
+							backendUrl as string,
+							"Scheduled"
 						);
 
 						localStorage.setItem(notificationSentKey, "true");

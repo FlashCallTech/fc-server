@@ -1032,7 +1032,8 @@ export const sendCallNotification = async (
 		message: string,
 		payload: object
 	) => void,
-	backendUrl: string
+	backendUrl: string,
+	callCategory?: string
 ) => {
 	const fcmToken = await fetchFCMToken(creatorPhone, "voip");
 
@@ -1050,6 +1051,7 @@ export const sendCallNotification = async (
 					callType: call.type,
 					callId: call.id,
 					notificationType,
+					callCategory: callCategory || "PPM",
 				}
 			);
 			if (fcmToken.voip_token && notificationType !== "call.missed") {
@@ -1086,7 +1088,8 @@ export const sendChatNotification = async (
 		message: string,
 		payload: object
 	) => void,
-	backendUrl: string
+	backendUrl: string,
+	callCategory?: string
 ) => {
 	const fcmToken = await fetchFCMToken(creatorPhone, "voip");
 
@@ -1114,6 +1117,7 @@ export const sendChatNotification = async (
 					creator_first_seen: chatRequestData.creator_first_seen,
 					createdAt: String(chatRequestData.createdAt),
 					notificationType: "chat.ring",
+					callCategory: callCategory || "PPM",
 				}
 			);
 
