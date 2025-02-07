@@ -584,6 +584,7 @@ const AvailabilityFinalConsentForm = ({
 					userType: "Client",
 					amount: totalAmount.total,
 					callType: service.type,
+					callCategory: "Scheduled",
 				});
 
 				if (service.type === "chat") {

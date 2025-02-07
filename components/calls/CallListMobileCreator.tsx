@@ -129,9 +129,13 @@ const CallListMobileCreator = ({
 
 															<span
 																className={`
-																	 bg-[#DBEAFE] text-[#1E40AF] text-[12px] px-2 py-1 rounded-full`}
+																	 ${
+																			userCall.category !== "Scheduled"
+																				? "bg-[#DBEAFE] text-[#1E40AF]"
+																				: "bg-[#F0FDF4] text-[#16A34A]"
+																		} text-[12px] px-2 py-1 rounded-full`}
 															>
-																{userCall.category === "scheduled"
+																{userCall.category === "Scheduled"
 																	? "Scheduled"
 																	: "Pay Per Minute"}
 															</span>
