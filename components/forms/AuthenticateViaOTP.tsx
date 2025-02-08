@@ -437,7 +437,7 @@ const AuthenticateViaOTP = ({
 											<div className="flex items-center border-none pl-2 pr-1 py-1 rounded bg-gray-100">
 												<FormControl>
 													<div className="w-full flex justify-between items-center">
-														<div className="flex w-full items-center jusitfy-center">
+														<div className="flex w-full items-center justify-center">
 															<span className="text-gray-400">+91</span>
 															<span className="px-2 pr-0 text-lg text-gray-300 text-center self-center flex items-center">
 																│
