@@ -2,12 +2,14 @@
 import { useCall, useCallStateHooks } from "@stream-io/video-react-sdk";
 import Image from "next/image";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { fetchFCMToken, sendNotification } from "@/lib/utils";
+import { fetchFCMToken, getDisplayName, sendNotification } from "@/lib/utils";
 
 import { useEffect, useRef, useState } from "react";
-import MeetingRoom from "./MeetingRoom";
 import { useToast } from "../ui/use-toast";
 import ContentLoading from "../shared/ContentLoading";
+import MeetingRoom from "../official/MeetingRoom";
+import { trackEvent } from "@/lib/mixpanel";
+import { clientUser, creatorUser } from "@/types";
 
 const MeetingSetup = () => {
 	const [isJoining, setIsJoining] = useState(true);
@@ -17,11 +19,9 @@ const MeetingSetup = () => {
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
 	const call = useCall();
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 	const eventListenersSet = useRef(false);
 	const { toast } = useToast();
-
-	const localSessionKey = `meeting_${call?.id}_${currentUser?._id}`;
 
 	const isMeetingOwner = currentUser?._id === call?.state?.createdBy?.id;
 	const expert = call?.state.members?.find(
@@ -60,12 +60,28 @@ const MeetingSetup = () => {
 			setIsJoining(true);
 			const notificationSentKey = `meeting_${call.id}_notificationSent`;
 
+			trackEvent("User_Joined_Meeting", {
+				User_ID: currentUser?._id,
+				User_Type: userType,
+				Username: getDisplayName(currentUser as clientUser | creatorUser),
+				Call_Type: call.type,
+				Call_Id: call.id,
+			});
+
 			// Send notification if FCM token exists and there is no other participant
 			if (isMeetingOwner && participants && !callHasEnded) {
 				const fcmToken = await fetchFCMToken(expert?.user?.custom?.phone);
 
-				if (participants.length === 0 && fcmToken) {
+				if (participants.length <= 1 && fcmToken) {
 					if (!localStorage.getItem(notificationSentKey)) {
+						trackEvent("Notification_Sent", {
+							Client_ID: currentUser?._id,
+							Creator_ID: expert?.user_id,
+							Call_Type: call.type,
+							Call_Id: call.id,
+							Notification_Type: "call.ring",
+						});
+
 						sendNotification(
 							fcmToken,
 							`Incoming ${callType} Call`,
@@ -84,9 +100,6 @@ const MeetingSetup = () => {
 				}
 			}
 
-			// await call.leave();
-			// await call.join();
-			// localStorage.setItem(localSessionKey, "joined");
 			setIsSetupComplete(true);
 		} catch (error) {
 			console.log(error);

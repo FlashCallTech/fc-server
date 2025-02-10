@@ -16,6 +16,7 @@ import Image from "next/image";
 import ContentLoading from "@/components/shared/ContentLoading";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { Cursor, Typewriter } from "react-simple-typewriter";
+import { trackEvent } from "@/lib/mixpanel";
 
 const MeetingPage = () => {
 	const { meetingId, clientId } = useParams();
@@ -190,6 +191,8 @@ MeetingRoomWrapper.displayName = "MeetingRoomWrapper";
 const CallEnded = ({ call }: any) => {
 	const [loading, setLoading] = useState(false);
 	const transactionHandled = useRef(false);
+	const { currentUser } = useCurrentUsersContext();
+
 	const expert = call.state?.members?.find(
 		(member: any) => member.custom.type === "expert"
 	);
@@ -201,6 +204,23 @@ const CallEnded = ({ call }: any) => {
 			transactionHandled.current = true;
 			try {
 				setLoading(true);
+				const endedBy = localStorage.getItem("endedBy");
+
+				call.type === "default"
+					? trackEvent("BookCall_Video_Ended", {
+							Client_ID: currentUser?._id,
+							User_First_Seen: currentUser?.createdAt?.toString().split("T")[0],
+							Walletbalace_Available: currentUser?.walletBalance,
+							Creator_ID: call.state.members[0].user_id,
+							EndedBy: endedBy ?? "creator",
+					  })
+					: trackEvent("BookCall_Audio_Ended", {
+							Client_ID: currentUser?._id,
+							User_First_Seen: currentUser?.createdAt?.toString().split("T")[0],
+							Walletbalace_Available: currentUser?.walletBalance,
+							Creator_ID: call.state.members[0].user_id,
+							EndedBy: endedBy ?? "creator",
+					  });
 				await call?.endCall();
 				await axios.post(
 					`${backendBaseUrl}/official/call/end/${call?.id}`,
