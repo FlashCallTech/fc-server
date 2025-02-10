@@ -353,7 +353,7 @@ const Transactions = () => {
 						})
 					)
 				) : (
-					<div className="size-full  flex flex-col gap-2 items-center justify-center">
+					<div className="size-full mt-10 flex flex-col gap-2 items-center justify-center">
 						<ContentLoading />
 					</div>
 				)}

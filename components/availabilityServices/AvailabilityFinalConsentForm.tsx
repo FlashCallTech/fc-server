@@ -24,8 +24,9 @@ import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext"
 import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Timestamp } from "firebase/firestore"; // Import Timestamp
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Input } from "../ui/input";
+import { FaGoogle } from "react-icons/fa";
 
 interface params {
 	service: AvailabilityService;
@@ -53,8 +54,7 @@ const AvailabilityFinalConsentForm = ({
 	const [payoutTransactionId, setPayoutTransactionId] = useState();
 	const { clientUser, refreshCurrentUser } = useCurrentUsersContext();
 	const [email, setEmail] = useState(clientUser?.email || "");
-	const [emailChanged, setEmailChanged] = useState(false);
-	const [emailError, setEmailError] = useState("");
+	const [alreadyAuthenticated, setAlreadyAuthenticated] = useState(false);
 
 	const {
 		getFinalServices,
@@ -79,7 +79,7 @@ const AvailabilityFinalConsentForm = ({
 	const imageSrc = getImageSource(creator);
 	const fullName = getDisplayName(creator);
 	const router = useRouter();
-
+	const params = useParams();
 	let formattedData = formatDisplay(
 		selectedDay,
 		selectedTimeSlot,
@@ -460,15 +460,6 @@ const AvailabilityFinalConsentForm = ({
 	const handlePaySchedule = async () => {
 		setPreparingTransaction(true);
 		try {
-			if (emailChanged) {
-				await axios.put(
-					`${backendBaseUrl}/client/updateUser/${clientUser?._id}`,
-					{
-						email: email,
-					}
-				);
-			}
-
 			let amountToPay = parseFloat(totalAmount.total);
 			let walletPaymentAmount = 0;
 
@@ -647,7 +638,6 @@ const AvailabilityFinalConsentForm = ({
 				localStorage.removeItem("hasVisitedFeedbackPage");
 
 				setTimeout(() => {
-					emailChanged && refreshCurrentUser();
 					toast({
 						variant: "destructive",
 						title: `Meeting scheduled on ${formattedData.day} from ${formattedData.timeRange}`,
@@ -737,30 +727,54 @@ const AvailabilityFinalConsentForm = ({
 		}
 	};
 
-	const validateEmail = (email: string) => {
-		// Regular expression for simple email validation
-		const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	// Function to trigger Google OAuth
+	const handleGoogleAuth = async () => {
+		try {
+			const response = await fetch(
+				`${backendBaseUrl}/calendar/google?phoneNumber=${encodeURIComponent(
+					clientUser?.phone || ""
+				)}`
+			);
+			const { authUrl } = await response.json();
 
-		if (!email) {
-			setEmailError("Email is required.");
-			return false;
+			const width = 500;
+			const height = 600;
+			const left = (window.innerWidth - width) / 2;
+			const top = (window.innerHeight - height) / 2;
+
+			const authWindow = window.open(
+				authUrl,
+				"GoogleAuth",
+				`width=${width},height=${height},top=${top},left=${left}`
+			);
+
+			// Listen for message from popup
+			const receiveMessage = async (event: MessageEvent) => {
+				if (event.origin !== backendBaseUrl) return;
+
+				const { token, email } = event.data;
+				if (token && email) {
+					localStorage.setItem("google_token", token);
+					localStorage.setItem("google_email", email);
+					setEmail(email);
+					authWindow?.close();
+				}
+			};
+
+			window.addEventListener("message", receiveMessage, { once: true });
+		} catch (error) {
+			console.error("Google Auth Error:", error);
 		}
-
-		if (!emailPattern.test(email)) {
-			setEmailError("Please enter a valid email address.");
-			return false;
-		}
-
-		setEmailError("");
-		setEmailChanged(true);
-		return true;
 	};
 
-	const handleEmailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const newEmail = e.target.value;
-		setEmail(newEmail);
-		validateEmail(newEmail);
-	};
+	// Auto-fill email if user is already authenticated
+	useEffect(() => {
+		const savedEmail =
+			clientUser?.email || localStorage.getItem("google_email");
+		if (savedEmail) {
+			setEmail(savedEmail);
+		}
+	}, []);
 
 	return (
 		<>
@@ -1022,17 +1036,16 @@ const AvailabilityFinalConsentForm = ({
 									We need your email to add an event to your calendar.
 								</p>
 							</div>
-							<Input
-								type="email"
-								placeholder="Enter your email"
-								value={email}
-								onChange={handleEmailChange}
-								className="w-full border border-gray-300 !min-h-[54px]"
-							/>
 
-							{/* Email Validation Feedback */}
-							{emailError && (
-								<p className="text-sm text-red-500 mt-2">{emailError}</p>
+							{/* Google Sign-in Button */}
+							{(clientUser?.accessToken ||
+								!localStorage.getItem("google_token")) && (
+								<button
+									onClick={() => handleGoogleAuth()}
+									className="flex items-center gap-2 mt-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect"
+								>
+									<FaGoogle /> Sign in with Google
+								</button>
 							)}
 						</div>
 					</div>
@@ -1058,7 +1071,7 @@ const AvailabilityFinalConsentForm = ({
 								className="text-base bg-black hoverScaleDownEffect w-full mx-auto text-white rounded-full self-center"
 								type="submit"
 								onClick={handlePaySchedule}
-								disabled={!!emailError || preparingTransaction}
+								disabled={preparingTransaction}
 							>
 								{preparingTransaction ? (
 									<Image
