@@ -89,6 +89,7 @@ const EditProfile = ({
 	const [selectedColor, setSelectedColor] = useState(
 		userData.themeSelected ?? "#88D8C0"
 	);
+	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 	const [initialReferralValue, setInitialReferralValue] = useState<boolean>(
 		() => {
 			return Boolean(!userData.referredBy);
@@ -494,7 +495,7 @@ const EditProfile = ({
 					render={({ field }) => (
 						<FormItem className="w-full">
 							<FormLabel className="text-sm text-gray-400 ml-1">
-								Username
+								Username <span className="text-red-500">*</span>
 							</FormLabel>
 							<FormControl>
 								<div
@@ -542,7 +543,8 @@ const EditProfile = ({
 									<FormLabel className="font-medium text-sm text-gray-400 ml-1">
 										{field.name
 											.replace(/([a-z])([A-Z])/g, "$1 $2")
-											.replace(/^\w/, (c) => c.toUpperCase())}
+											.replace(/^\w/, (c) => c.toUpperCase())}{" "}
+										<span className="text-red-500">*</span>
 									</FormLabel>
 									<FormControl>
 										<Input
@@ -598,7 +600,10 @@ const EditProfile = ({
 						render={({ field }) => (
 							<FormItem className="w-full">
 								<FormLabel className="text-sm text-gray-400 ml-1">
-									Profession
+									Profession{" "}
+									{userType === "creator" && (
+										<span className="text-red-500">*</span>
+									)}
 								</FormLabel>
 								<section className="w-full flex gap-2.5 items-center justify-start">
 									<FormControl>
@@ -795,7 +800,10 @@ const EditProfile = ({
 						render={({ field }) => (
 							<FormItem className="w-full ">
 								<FormLabel className="text-sm text-gray-400 ml-1">
-									{field.name.charAt(0).toUpperCase() + field.name.slice(1)}
+									{field.name.charAt(0).toUpperCase() + field.name.slice(1)}{" "}
+									{userType === "creator" && (
+										<span className="text-red-500">*</span>
+									)}
 								</FormLabel>
 								<FormControl>
 									<div className="flex items-center justify-start gap-4">
@@ -848,8 +856,13 @@ const EditProfile = ({
 						name="dob"
 						render={({ field }) => (
 							<FormItem className="flex flex-col w-full">
-								<FormLabel className="text-gray-400">Date of birth</FormLabel>
-								<Popover>
+								<FormLabel className="text-gray-400">
+									Date of birth{" "}
+									{userType === "creator" && (
+										<span className="text-red-500">*</span>
+									)}
+								</FormLabel>
+								<Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
 									<PopoverTrigger asChild>
 										<FormControl>
 											<Button
@@ -924,6 +937,8 @@ const EditProfile = ({
 												field.onChange(
 													format(date as Date | string, "yyyy-MM-dd")
 												);
+
+												setIsPopoverOpen(false);
 											}}
 											month={new Date(selectedYear, selectedMonth)}
 											disabled={(date) =>

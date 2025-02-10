@@ -7,11 +7,7 @@ import ChatProvider from "@/lib/context/ChatContext";
 import { useParams } from "next/navigation";
 
 const Page = () => {
-	const [queryParams, setQueryParams] = useState<{
-		clientId: string | null;
-		creatorId: string | null;
-	}>({ clientId: null, creatorId: null });
-	const { chatId } = useParams();
+	const { chatId, clientId, callId } = useParams();
 
 	let isTabClosing = false;
 
@@ -29,32 +25,25 @@ const Page = () => {
 	};
 
 	useEffect(() => {
-		const params = new URLSearchParams(window.location.search);
-		const clientId = params.get("clientId");
-		const creatorId = params.get("creatorId");
-		setQueryParams({ clientId, creatorId });
-	}, []);
-
-	useEffect(() => {
 		window.addEventListener("beforeunload", handleTabCloseWarning);
+		window.addEventListener('pagehide', handleTabClose);
 		window.addEventListener("unload", handleTabClose);
 		return () => {
 			window.removeEventListener("beforeunload", handleTabCloseWarning);
+			window.addEventListener('pagehide', handleTabClose);
 			window.removeEventListener("unload", handleTabClose);
 		};
 	}, [chatId]);
 
-	if (!queryParams.clientId || !queryParams.creatorId) {
-		return null; // or Loading indicator or some error handling
-	}
-
 	return (
 		<div>
-			<ChatProvider chatId={chatId as string}>
+			<ChatProvider
+				chatId={chatId as string}
+				callId={callId as string}
+			>
 				<ChatTimerProvider
-					clientId={queryParams.clientId as string}
-					creatorId={queryParams.creatorId as string}
 					chatId={chatId as string}
+					clientId={clientId as string}
 				>
 					<ChatInterface />
 				</ChatTimerProvider>

@@ -7,7 +7,7 @@ import "rc-slider/assets/index.css";
 import { useToast } from "../ui/use-toast";
 import { success } from "@/constants/icons";
 import { Button } from "../ui/button";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import SinglePostLoader from "../shared/SinglePostLoader";
 import useGetChatById from "@/hooks/useGetChatById";
 import { logEvent } from "firebase/analytics";
@@ -22,11 +22,13 @@ import { doc, getDoc } from "firebase/firestore";
 const ChatFeedback = ({
 	chatId,
 	callId,
+	clientId,
 	isOpen,
 	onOpenChange,
 }: {
 	chatId: string;
 	callId: string;
+	clientId: string;
 	isOpen: boolean;
 	onOpenChange: (isOpen: boolean) => void;
 }) => {
@@ -34,10 +36,11 @@ const ChatFeedback = ({
 	const [feedbackMessage, setFeedbackMessage] = useState("");
 	const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 	const [creator, setCreator] = useState<creatorUser>();
-	const [duration, setDuration] = useState("00:00");
+	const [duration, setDuration] = useState(null);
 	const { toast } = useToast();
 	const pathname = usePathname();
 	const { chat, isChatLoading } = useGetChatById(chatId as string);
+	const { scheduled } = useParams();
 
 	const ratingItems = ["😒", "😞", "😑", "🙂", "😄"];
 	const { currentUser, clientUser } = useCurrentUsersContext();
@@ -60,7 +63,7 @@ const ChatFeedback = ({
 			</div>
 		),
 	};
-	
+
 	useEffect(() => {
 		const storedCreator = localStorage.getItem("currentCreator");
 		if (storedCreator) {
@@ -70,7 +73,7 @@ const ChatFeedback = ({
 			}
 		}
 	}, []);
-	
+
 	useEffect(() => {
 		const chatDuration = async () => {
 			const timerDocRef = doc(db, "callTimer", chatId);
@@ -80,7 +83,7 @@ const ChatFeedback = ({
 			}
 		};
 
-		chatDuration();
+		scheduled === "false" && chatDuration();
 	}, []);
 
 	useEffect(() => {
@@ -96,7 +99,7 @@ const ChatFeedback = ({
 				Creator_ID: creator?._id,
 				Walletbalace_Available: clientUser?.walletBalance,
 			});
-	}, []);
+	}, [clientUser, creator]);
 
 	const handleSliderChange = (value: any) => {
 		setRating(value);
@@ -175,7 +178,6 @@ const ChatFeedback = ({
 		return `${minutes}:${seconds}`;
 	};
 
-
 	if (!currentUser?._id || isChatLoading)
 		return (
 			<>
@@ -220,9 +222,11 @@ const ChatFeedback = ({
 			>
 				{/* Display the call duration */}
 				<section className="fixed top-[76px] grid items-center gap-2 text-white">
-					<div className="text-center text-2xl font-semibold mt-2">
-						{formatDuration(Math.ceil(Number(duration)))}
-					</div>
+					{duration &&
+						<div className="text-center text-2xl font-semibold mt-2">
+							{formatDuration(Math.ceil(Number(duration)))}
+						</div>
+					}
 					<span>Chat Ended</span>
 				</section>
 

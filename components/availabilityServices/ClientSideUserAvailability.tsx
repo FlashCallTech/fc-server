@@ -7,26 +7,33 @@ import React, { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import ContentLoading from "../shared/ContentLoading";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { isValidHexColor } from "@/lib/utils";
 import { audio, chat, video } from "@/constants/icons";
 import AvailabilitySelectionSheet from "./AvailabilitySelectionSheet";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
-import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
+import {
+	SelectedServiceType,
+	useSelectedServiceContext,
+} from "@/lib/context/SelectedServiceContext";
 
 const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 	const [userServices, setUserServices] = useState<AvailabilityService[]>([]);
 	const [isSheetOpen, setIsSheetOpen] = useState(false);
+	const [clientSelectedService, setClientSelectedService] =
+		useState<AvailabilityService | null>(null);
+
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [expandedStates, setExpandedStates] = useState<Record<number, boolean>>(
 		{}
 	);
 
-	const { getSpecificServiceOffer } = useSelectedServiceContext();
+	const {
+		getSpecificServiceOffer,
+		getSpecificServiceOfferViaServiceId,
+		setSelectedService,
+	} = useSelectedServiceContext();
 	const { currentUser, fetchingUser, setAuthenticationSheetOpen } =
 		useCurrentUsersContext();
-	const themeColor = isValidHexColor(creator?.themeSelected)
-		? creator?.themeSelected
-		: "#50A65C";
+
 	const {
 		data: creatorAvailabilityServices,
 		fetchNextPage,
@@ -38,13 +45,22 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		creator?._id as string,
 		false,
 		"client",
-		currentUser ? (currentUser?.email ? "Global" : "Indian") : ""
+		currentUser ? (currentUser?.global ? "Global" : "Indian") : ""
 	);
 
 	const getClampedText = (text: string, isExpanded: boolean) => {
 		if (!text) return;
 		const charLen = 100;
 		if (text.length > charLen && !isExpanded) {
+			return text.slice(0, charLen) + "... ";
+		}
+		return text;
+	};
+
+	const clampText = (text: string) => {
+		if (!text) return;
+		let charLen = 40;
+		if (text?.length > charLen) {
 			return text.slice(0, charLen) + "... ";
 		}
 		return text;
@@ -95,10 +111,28 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		return null;
 	}
 
-	const handleCallClick = () => {
+	const handleCallClick = (
+		service: AvailabilityService,
+		discountApplicable: SelectedServiceType
+	) => {
 		if (!currentUser) {
 			setIsAuthSheetOpen(true);
 		} else {
+			if (discountApplicable) {
+				discountApplicable.discountRules.forEach(
+					({ discountAmount, discountType }) => {
+						if (discountType === "percentage") {
+							setSelectedService(discountApplicable);
+						} else if (
+							discountType === "flat" &&
+							service.basePrice > discountAmount
+						) {
+							setSelectedService(discountApplicable);
+						}
+					}
+				);
+			}
+			setClientSelectedService(service);
 			setIsSheetOpen(true);
 		}
 	};
@@ -138,7 +172,9 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		<>
 			<div className="flex flex-col w-full items-center justify-center gap-4">
 				{userServices.map((service: AvailabilityService, index: number) => {
-					const discountApplicable = getSpecificServiceOffer(service.type);
+					const discountApplicable =
+						getSpecificServiceOfferViaServiceId(service._id) ||
+						getSpecificServiceOffer(service.type);
 					const isExpanded = expandedStates[index] || false;
 					return (
 						<div
@@ -177,13 +213,15 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 							)}
 							<div className="w-full flex flex-col xl:flex-row items-start xl:items-end justify-between gap-2">
 								<div className="w-full flex flex-col items-start justify-center xl:gap-2">
-									<div className="flex items-center justify-start gap-4 w-full">
+									<div className="flex items-center justify-start gap-4 w-full overflow-hidden">
 										{serviceIcon(service.type)}
 
-										<span className="font-bold text-lg">{service.title}</span>
+										<span className="font-bold text-lg">
+											{clampText(service.title)}
+										</span>
 									</div>
 
-									<div className="text-base">
+									<div className="text-sm mt-2">
 										{service.description
 											? getClampedText(service.description, isExpanded)
 											: "No Description Provided"}
@@ -214,7 +252,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 
 								<button
 									className="w-full flex items-center justify-center p-2 pl-3 hoverScaleDownEffect cursor-pointer border-2 border-gray-300 rounded-full"
-									onClick={handleCallClick}
+									onClick={() => handleCallClick(service, discountApplicable)}
 								>
 									<section className="pl-2 w-full flex items-center justify-between">
 										<div className="flex items-center justify-center gap-4">
@@ -282,12 +320,12 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 									</section>
 								</button>
 							</div>
-							{isSheetOpen && (
+							{isSheetOpen && clientSelectedService && (
 								<AvailabilitySelectionSheet
 									isOpen={isSheetOpen}
 									onOpenChange={setIsSheetOpen}
 									creator={creator}
-									service={service}
+									service={clientSelectedService}
 								/>
 							)}
 						</div>

@@ -136,6 +136,7 @@ export async function POST(request: NextRequest) {
 											userId: userId,
 											userType: "Creator",
 											amount: amountToBePaid,
+											category: "Wallet Withdrawal"
 										}),
 										headers: { "Content-Type": "application/json" },
 									}

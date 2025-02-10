@@ -90,6 +90,36 @@ const TipModal: React.FC<Props> = ({
 		setTipAmount(amount);
 	};
 
+	const fetchActivePg = async (global: boolean) => {
+		try {
+			if (global) return "paypal";
+
+			const pgDocRef = doc(db, "pg", "paymentGatways");
+			const pgDoc = await getDoc(pgDocRef);
+
+			if (pgDoc.exists()) {
+				const { activePg } = pgDoc.data();
+				return activePg;
+			}
+
+			return "razorpay";
+		} catch (error) {
+			return error;
+		}
+	};
+
+	const fetchPgCharges = async (pg: string) => {
+		try {
+			const response = await axios.get(
+				`https://backend.flashcall.me/api/v1/pgCharges/fetch`
+			); // Replace with your API endpoint
+			const data = response.data;
+			return data[pg];
+		} catch (error) {
+			console.error("Error fetching PG Charges", error);
+		}
+	};
+
 	const handleTransaction = async () => {
 		if (parseInt(tipAmount) > adjustedWalletBalance) {
 			toast({
@@ -105,19 +135,53 @@ const TipModal: React.FC<Props> = ({
 				const response = await axios.get(
 					`${backendBaseUrl}/creator/getUser/${creatorId}`
 				);
-				const data = response.data;
 				const exchangeRate = await fetchExchangeRate();
-				const amountAdded = currentUser?.global ? (Number(tipAmount) * (1 - (Number(data?.commission ?? 20) / 100))) * exchangeRate : (Number(tipAmount) * (1 - (Number(data.commission ?? 20) / 100)));
+				const global = currentUser?.global ?? false;
+				const data = response.data;
+				const activePg: string = await fetchActivePg(global);
+				const pgChargesRate: number = await fetchPgCharges(activePg);
+				const commissionRate = Number(data?.commission ?? 20);
+				const commissionAmt = Number(
+					global
+						? (
+							((Number(tipAmount) * commissionRate) / 100) *
+							exchangeRate
+						).toFixed(2)
+						: ((Number(tipAmount) * commissionRate) / 100).toFixed(2)
+				);
+				const pgChargesAmt = Number(
+					global
+						? (
+							((Number(tipAmount) * pgChargesRate) / 100) *
+							exchangeRate
+						).toFixed(2)
+						: ((Number(tipAmount) * pgChargesRate) / 100).toFixed(2)
+				);
+				const gstAmt = Number((commissionAmt * 0.18).toFixed(2));
+				const totalDeduction = Number(
+					(commissionAmt + gstAmt + pgChargesAmt).toFixed(2)
+				);
+				const amountAdded = Number(
+					global
+						? (Number(tipAmount) * exchangeRate - totalDeduction).toFixed(2)
+						: (Number(tipAmount) - totalDeduction).toFixed(2)
+				);
 				amountINR = currentUser?.global ? (Number(tipAmount) * exchangeRate) : (Number(tipAmount));
+
+				const tipId = crypto.randomUUID();
 				await Promise.all([
 					fetch(`${backendBaseUrl}/wallet/payout`, {
 						method: "POST",
 						body: JSON.stringify({
 							userId: clientId,
+							user2Id: creatorId,
+							fcCommission: commissionAmt,
+							PGCharge: pgChargesRate,
 							userType: "Client",
 							amount: tipAmount,
 							category: "Tip",
 							global: currentUser?.global ?? false,
+							tipId,
 						}),
 						headers: { "Content-Type": "application/json" },
 					}),
@@ -125,13 +189,23 @@ const TipModal: React.FC<Props> = ({
 						method: "POST",
 						body: JSON.stringify({
 							userId: creatorId,
+							user2Id: clientId,
+							fcCommission: commissionAmt,
+							PGCharge: pgChargesRate,
 							userType: "Creator",
 							amount: amountAdded.toFixed(2),
 							category: "Tip",
+							tipId,
 						}),
 						headers: { "Content-Type": "application/json" },
 					}),
 				]);
+
+				await axios.post(`${backendBaseUrl}/tip`, {
+					tipId,
+					amountAdded,
+					amountPaid: tipAmount,
+				})
 
 				// Firestore tip document update
 				const tipRef = doc(db, "userTips", creatorId as string);

@@ -1,13 +1,7 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	Card,
-	CardHeader,
-	CardTitle,
-	CardContent,
-	CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,18 +21,8 @@ import { useToast } from "../ui/use-toast";
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Image from "next/image";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormMessage,
-} from "@/components/ui/form";
-import { AvailabilityService, creatorUser } from "@/types";
-import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import AvailabilityServiceCards from "./AvailabilityServiceCards";
-import { useGetUserAvailabilityServices } from "@/lib/react-query/queries";
-import SinglePostLoader from "../shared/SinglePostLoader";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+
 import { isEqual } from "lodash";
 
 const DAYS_OF_WEEK = [
@@ -84,29 +68,7 @@ type TimeSlotFormValues = z.infer<typeof TimeSlotSchema>;
 const timeSlots = generateTimeSlots();
 
 const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
-	const { currentUser } = useCurrentUsersContext();
-	const [userServices, setUserServices] = useState<AvailabilityService[]>([]);
 	const [errors, setErrors] = useState<{ [key: string]: string }>({});
-	const {
-		data: creatorAvailabilityServices,
-		fetchNextPage,
-		hasNextPage,
-		isFetching,
-		isLoading,
-		refetch,
-	} = useGetUserAvailabilityServices(
-		currentUser?._id as string,
-		true,
-		"creator"
-	);
-
-	useEffect(() => {
-		const flattenedServices =
-			creatorAvailabilityServices?.pages.flatMap((page: any) => page.data) ||
-			[];
-		setUserServices(flattenedServices);
-	}, [creatorAvailabilityServices]);
-
 	const form = useForm<TimeSlotFormValues>({
 		mode: "onChange",
 		resolver: zodResolver(TimeSlotSchema),
@@ -115,7 +77,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 				day: day.day,
 				isActive: day.isActive || false,
 				slots: day.timeSlots.map((slot: any) => ({
-					id: slot._id ?? uuidv4(),
+					id: slot._id || slot.id || uuidv4(),
 					startTime: slot.startTime,
 					endTime: slot.endTime,
 				})),
@@ -311,30 +273,12 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 		}
 	};
 
-	if (isLoading) {
-		return (
-			<div className="size-full h-[calc(100vh-4rem)] flex flex-col items-center justify-center text-2xl font-semibold text-center">
-				<SinglePostLoader />
-			</div>
-		);
-	}
-
 	return (
 		<div className="relative size-full mx-auto py-4 px-1.5">
 			<h2 className="text-2xl font-bold mb-2">Availability</h2>
 			<p className="text-gray-500 mb-6">
 				Set your available time slots for each day of the week.
 			</p>
-
-			<AvailabilityServiceCards
-				creator={currentUser as creatorUser}
-				userServices={userServices}
-				setUserServices={setUserServices}
-				refetch={refetch}
-				hasNextPage={hasNextPage}
-				isFetching={isFetching}
-				fetchNextPage={fetchNextPage}
-			/>
 
 			<Form {...form}>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
@@ -362,7 +306,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 														className={`${
 															watch(
 																`weeklyAvailability.${dayIndex}.isActive`
-															) && "bg-black text-white"
+															) && "bg-green-1 text-white"
 														} border border-gray-400 size-[20px] p-0.5 rounded-[6px]`}
 													/>
 													<CardTitle className="text-lg">
@@ -384,7 +328,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 																viewBox="0 0 24 24"
 																strokeWidth={1.5}
 																stroke="currentColor"
-																className="hidden sm:block size-4 mr-1"
+																className="max-xm:hidden size-4 mr-1"
 															>
 																<path
 																	strokeLinecap="round"
@@ -409,7 +353,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 															viewBox="0 0 24 24"
 															strokeWidth={1.5}
 															stroke="currentColor"
-															className="hidden sm:block size-4 mr-1"
+															className="max-xm:hidden size-4 mr-1"
 														>
 															<path
 																strokeLinecap="round"

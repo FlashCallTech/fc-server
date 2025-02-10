@@ -18,6 +18,7 @@ interface Transaction {
 	createdAt: string;
 	type: "credit" | "debit";
 	category: string;
+	callCategory: string;
 	callType?: string;
 	global?: boolean;
 }
@@ -147,8 +148,8 @@ const Transactions = () => {
 					<button
 						key={filter}
 						onClick={() => setBtn(filter as "all" | "credit" | "debit")}
-						className={`capitalize text-sm font-medium px-[20px] py-[7px] rounded-3xl border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${
-							filter === btn && "bg-green-1 text-white"
+						className={`capitalize text-sm font-medium px-[20px] py-[7px] rounded-3xl border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-black ${
+							filter === btn && "bg-black text-white"
 						}`}
 					>
 						{filter}
@@ -224,7 +225,7 @@ const Transactions = () => {
 														/>
 													</svg>
 												</div>
-												<section className="flex items-center justify-start gap-2">
+												<section className="flex flex-wrap items-center justify-start gap-2">
 													{transaction?.category && (
 														<section className="font-normal text-xs sm:text-sm whitespace-nowrap">
 															{transaction?.callType ? (
@@ -281,18 +282,42 @@ const Transactions = () => {
 															)}
 														</section>
 													)}
-
 													{/* Separator */}
 													<span className="text-gray-400 text-xs sm:text-sm">
 														•
 													</span>
-
 													<p className=" text-gray-400 font-normal text-xs sm:text-sm leading-4">
 														{
 															formatDateTime(new Date(transaction.createdAt))
 																.dateTime
 														}
-													</p>
+													</p>{" "}
+													{transaction.category !== "Call Transaction" && (
+														<p
+															className={`
+																	 ${
+																			transaction.category === "Refund" ||
+																			transaction.category === "Tip"
+																				? "bg-[#F0FDF4] text-[#16A34A]"
+																				: "bg-[#DBEAFE] text-[#1E40AF]"
+																		} text-[12px] px-2 py-1 rounded-full`}
+														>
+															{transaction.category}
+														</p>
+													)}
+													{transaction.callCategory &&
+														transaction.category === "Call Transaction" && (
+															<p
+																className={`
+																	 ${
+																			transaction.callCategory === "Scheduled"
+																				? "bg-[#F0FDF4] text-[#16A34A]"
+																				: "bg-[#DBEAFE] text-[#1E40AF]"
+																		} text-[12px] px-2 py-1 rounded-full`}
+															>
+																{transaction.callCategory}
+															</p>
+														)}
 												</section>
 											</div>
 											<section className="flex flex-col gap-2 justify-between items-center">
@@ -328,7 +353,7 @@ const Transactions = () => {
 						})
 					)
 				) : (
-					<div className="size-full  flex flex-col gap-2 items-center justify-center">
+					<div className="size-full mt-10 flex flex-col gap-2 items-center justify-center">
 						<ContentLoading />
 					</div>
 				)}

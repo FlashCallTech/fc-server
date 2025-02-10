@@ -11,6 +11,9 @@ const config = {
 	prefix: "",
 	theme: {
 		extend: {
+			letterSpacing: {
+				'3px': '3px',
+			  },
 			padding: {
 				"safe-top": "env(safe-area-inset-top)",
 				"safe-bottom": "env(safe-area-inset-bottom)",

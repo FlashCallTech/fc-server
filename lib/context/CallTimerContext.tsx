@@ -1,57 +1,32 @@
-import React, {
-	createContext,
-	useContext,
-	useState,
-	useEffect,
-	ReactNode,
-} from "react";
+import { useEffect, useState } from "react";
 import { useWalletBalanceContext } from "./WalletBalanceContext";
 import { Call } from "@stream-io/video-react-sdk";
 import { creatorUser } from "@/types";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import {
+	doc,
+	getDoc,
+	setDoc,
+	updateDoc,
+	serverTimestamp,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import * as Sentry from "@sentry/nextjs";
+import {
+	updateFirestoreSessions,
+	updatePastFirestoreSessionsPPM,
+} from "../utils";
 
-interface CallTimerContextProps {
-	timeLeft: string;
-	setTimeLeft: React.Dispatch<React.SetStateAction<number>>;
-	maxCallDuration: number;
-	setMaxCallDuration: React.Dispatch<React.SetStateAction<number>>;
-	hasLowBalance: boolean;
-	pauseTimer: () => void;
-	resumeTimer: () => void;
-	anyModalOpen: boolean;
-	setAnyModalOpen: (isOpen: boolean) => void;
-	totalTimeUtilized: number;
-	callRatePerMinute: number;
-}
-
-interface CallTimerProviderProps {
-	children: ReactNode;
+interface CallTimerParams {
 	isVideoCall: boolean;
 	isMeetingOwner: boolean;
 	call?: Call;
-	participants?: number;
 }
 
-const CallTimerContext = createContext<CallTimerContextProps | null>(null);
-
-export const useCallTimerContext = () => {
-	const context = useContext(CallTimerContext);
-	if (!context) {
-		throw new Error(
-			"useCallTimerContext must be used within a CallTimerProvider"
-		);
-	}
-	return context;
-};
-
-export const CallTimerProvider = ({
-	children,
+const useCallTimer = ({
 	isVideoCall,
 	isMeetingOwner,
 	call,
-}: CallTimerProviderProps) => {
+}: CallTimerParams) => {
 	const [audioRatePerMinute, setAudioRatePerMinute] = useState(0);
 	const [videoRatePerMinute, setVideoRatePerMinute] = useState(0);
 	const [callRatePerMinute, setCallRatePerMinute] = useState(0);
@@ -75,19 +50,23 @@ export const CallTimerProvider = ({
 		if (storedCreator) {
 			const parsedCreator: creatorUser = JSON.parse(storedCreator);
 			if (call?.state.custom.global) {
-				if (parsedCreator.globalAudioRate) {
-					setAudioRatePerMinute(parseInt(parsedCreator.globalAudioRate, 10));
-				} else setAudioRatePerMinute(0.5);
-				if (parsedCreator.globalVideoRate) {
-					setVideoRatePerMinute(parseInt(parsedCreator.globalVideoRate, 10));
-				} else setVideoRatePerMinute(0.5);
+				setAudioRatePerMinute(
+					parsedCreator.globalAudioRate
+						? parseInt(parsedCreator.globalAudioRate, 10)
+						: 0.5
+				);
+				setVideoRatePerMinute(
+					parsedCreator.globalVideoRate
+						? parseInt(parsedCreator.globalVideoRate, 10)
+						: 0.5
+				);
 			} else {
-				if (parsedCreator.audioRate) {
-					setAudioRatePerMinute(parseInt(parsedCreator.audioRate, 10));
-				} else setAudioRatePerMinute(10);
-				if (parsedCreator.videoRate) {
-					setVideoRatePerMinute(parseInt(parsedCreator.videoRate, 10));
-				} else setVideoRatePerMinute(10);
+				setAudioRatePerMinute(
+					parsedCreator.audioRate ? parseInt(parsedCreator.audioRate, 10) : 10
+				);
+				setVideoRatePerMinute(
+					parsedCreator.videoRate ? parseInt(parsedCreator.videoRate, 10) : 10
+				);
 			}
 		}
 	}, []);
@@ -101,10 +80,8 @@ export const CallTimerProvider = ({
 				: audioRatePerMinute;
 			setCallRatePerMinute(ratePerMinute);
 
-			// Calculate the initial max call duration
 			let initialMaxCallDuration = (walletBalance / ratePerMinute) * 60;
-			initialMaxCallDuration =
-				initialMaxCallDuration > 3600 ? 3600 : initialMaxCallDuration;
+			initialMaxCallDuration = Math.min(initialMaxCallDuration, 3600);
 
 			if (maxCallDuration !== initialMaxCallDuration) {
 				setMaxCallDuration(initialMaxCallDuration);
@@ -114,6 +91,12 @@ export const CallTimerProvider = ({
 				const callDocRef = doc(db, "calls", callId);
 				const callDoc = await getDoc(callDocRef);
 
+				await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
+					status: "active",
+				});
+
+				updatePastFirestoreSessionsPPM(callId, { status: "active" });
+
 				if (callDoc.exists()) {
 					const data = callDoc.data();
 					const storedStartTime = data?.startTime;
@@ -122,7 +105,6 @@ export const CallTimerProvider = ({
 					if (storedStartTime) {
 						const startTime = new Date(storedStartTime);
 						setCallStartedAt(startTime);
-
 						if (storedTimeLeft !== undefined) {
 							setTimeLeft(storedTimeLeft);
 						}
@@ -132,9 +114,11 @@ export const CallTimerProvider = ({
 
 					await setDoc(callDocRef, {
 						callType: "instant",
+						callId: callId,
 						startTime: currentTime.toISOString(),
 						timeLeft: initialMaxCallDuration,
 						timeUtilized: 0,
+						lastUpdatedAt: serverTimestamp(),
 					});
 
 					setCallStartedAt(currentTime);
@@ -157,11 +141,11 @@ export const CallTimerProvider = ({
 	]);
 
 	useEffect(() => {
-		if (!callStartedAt || !callId) return;
+		if (!callStartedAt || !callId || !isTimerRunning) return;
 
 		const calculateTimeLeft = () => {
 			const now = new Date();
-			const elapsedTime = (now.getTime() - callStartedAt.getTime()) / 1000; // in seconds
+			const elapsedTime = (now.getTime() - callStartedAt.getTime()) / 1000;
 			const updatedTimeLeft = Math.max(maxCallDuration - elapsedTime, 0);
 
 			setTimeLeft(updatedTimeLeft);
@@ -173,6 +157,7 @@ export const CallTimerProvider = ({
 				updateDoc(callDocRef, {
 					timeLeft: updatedTimeLeft,
 					timeUtilized: elapsedTime,
+					lastUpdatedAt: serverTimestamp(),
 				});
 			} catch (error) {
 				Sentry.captureException(error);
@@ -194,23 +179,19 @@ export const CallTimerProvider = ({
 		return () => clearInterval(intervalId);
 	}, [callStartedAt, callId, isTimerRunning, maxCallDuration]);
 
-	return (
-		<CallTimerContext.Provider
-			value={{
-				timeLeft: String(timeLeft),
-				setTimeLeft,
-				maxCallDuration,
-				setMaxCallDuration,
-				hasLowBalance,
-				pauseTimer,
-				resumeTimer,
-				anyModalOpen,
-				setAnyModalOpen,
-				totalTimeUtilized,
-				callRatePerMinute,
-			}}
-		>
-			{children}
-		</CallTimerContext.Provider>
-	);
+	return {
+		timeLeft,
+		setTimeLeft,
+		maxCallDuration,
+		setMaxCallDuration,
+		hasLowBalance,
+		pauseTimer,
+		resumeTimer,
+		anyModalOpen,
+		setAnyModalOpen,
+		totalTimeUtilized,
+		callRatePerMinute,
+	};
 };
+
+export default useCallTimer;

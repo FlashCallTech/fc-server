@@ -12,6 +12,8 @@ import SinglePostLoader from "../shared/SinglePostLoader";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { backendBaseUrl, fetchCallDuration } from "@/lib/utils";
 import axios from "axios";
+import { trackEvent } from "@/lib/mixpanel";
+import { creatorUser } from "@/types";
 
 const CallFeedback = ({
 	callId,
@@ -25,12 +27,23 @@ const CallFeedback = ({
 	const [rating, setRating] = useState(5);
 	const [feedbackMessage, setFeedbackMessage] = useState("");
 	const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+	const [creator, setCreator] = useState<creatorUser>();
 	const { toast } = useToast();
 	const pathname = usePathname();
 	const { call, isCallLoading } = useGetCallById(String(callId));
 
 	const ratingItems = ["😒", "😞", "😑", "🙂", "😄"];
-	const { currentUser } = useCurrentUsersContext();
+	const { clientUser } = useCurrentUsersContext();
+
+	useEffect(() => {
+		const storedCreator = localStorage.getItem("currentCreator");
+		if (storedCreator) {
+			const parsedCreator: creatorUser = JSON.parse(storedCreator);
+			if (parsedCreator) {
+				setCreator(parsedCreator);
+			}
+		}
+	}, []);
 
 	const marks: { [key: number]: JSX.Element } = {
 		1: (
@@ -53,6 +66,21 @@ const CallFeedback = ({
 	};
 
 	const [callDuration, setCallDuration] = useState("");
+
+	useEffect(() => {
+		if (
+			clientUser?._id &&
+			clientUser?.createdAt?.toString().split("T")[0] &&
+			creator?._id &&
+			clientUser?.walletBalance
+		)
+			trackEvent("Feedback_bottomsheet_impression", {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+				Creator_ID: creator?._id,
+				Walletbalace_Available: clientUser?.walletBalance,
+			});
+	}, [clientUser, creator]);
 
 	useEffect(() => {
 		const fetchDuration = async () => {
@@ -78,7 +106,7 @@ const CallFeedback = ({
 	);
 
 	const handleSubmitFeedback = async () => {
-		if (!currentUser || !call) {
+		if (!clientUser || !call) {
 			toast({
 				variant: "destructive",
 				title: "Give it another try",
@@ -96,7 +124,7 @@ const CallFeedback = ({
 			return;
 		}
 		try {
-			const userId = currentUser?._id as string;
+			const userId = clientUser?._id as string;
 
 			await axios.post(`${backendBaseUrl}/feedback/call/create`, {
 				creatorId: expert?.user_id as string,
@@ -105,6 +133,14 @@ const CallFeedback = ({
 				feedbackText: feedbackMessage,
 				callId: callId,
 				createdAt: new Date(),
+			});
+			trackEvent("Feedback_bottomsheet_submitted", {
+				Client_ID: clientUser?._id,
+				User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+				Creator_ID: creator?._id,
+				Feedback_Value: rating,
+				Walletbalace_Available: clientUser?.walletBalance,
+				Text: feedbackMessage,
 			});
 			setFeedbackSubmitted(true);
 			setTimeout(() => {
@@ -140,7 +176,7 @@ const CallFeedback = ({
 	// Disable submit button if feedback message is less than 3 characters
 	const isSubmitDisabled = !rating;
 
-	if (!currentUser?._id || isCallLoading)
+	if (!clientUser?._id || isCallLoading)
 		return (
 			<>
 				{pathname.includes("meeting") ? (
@@ -166,7 +202,13 @@ const CallFeedback = ({
 			open={isOpen}
 			onOpenChange={(open) => {
 				if (!open) {
-					onOpenChange(false);
+					trackEvent("Feedback_bottomsheet_closed", {
+						Client_ID: clientUser?._id,
+						User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
+						Creator_ID: creator?._id,
+						Walletbalace_Available: clientUser?.walletBalance,
+					});
+					onOpenChange(false); // Trigger the closing function only when the sheet is closed
 				}
 			}}
 		>
@@ -232,10 +274,9 @@ const CallFeedback = ({
 
 						<button
 							onClick={handleSubmitFeedback}
-							className={`bg-green-1 font-semibold text-white px-4 py-2 rounded-lg hover:opacity-80 ${
-								isSubmitDisabled &&
+							className={`bg-green-1 font-semibold text-white px-4 py-2 rounded-lg hover:opacity-80 ${isSubmitDisabled &&
 								"!cursor-not-allowed opacity-50 hover:opacity-50"
-							}`}
+								}`}
 							disabled={isSubmitDisabled}
 						>
 							Submit Feedback

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import CallListMobile from "@/components/calls/CallListMobile";
@@ -10,7 +10,8 @@ import { creatorUser } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
 import CallListMobileCreator from "@/components/calls/CallListMobileCreator";
 import Link from "next/link";
-import SinglePostLoader from "@/components/shared/SinglePostLoader";
+import ContentLoading from "@/components/shared/ContentLoading";
+import { serviceIconBold } from "@/constants/icons";
 
 const PreviousPage = () => {
 	const [creator, setCreator] = useState<creatorUser>();
@@ -83,11 +84,15 @@ const PreviousPage = () => {
 						{options.map((option) => (
 							<Button
 								key={option}
-								className={`text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 hover:text-white hover:bg-green-1 hoverScaleDownEffect ${
-									historyType === option && "bg-green-1 text-white"
+								className={`text-sm font-medium px-[20px] py-[7px] rounded-full border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-black flex items-center gap-2 ${
+									historyType === option && "bg-black text-white"
 								}`}
 								onClick={() => setHistoryType(option)}
 							>
+								{option !== "All" &&
+									serviceIconBold(
+										option.toLowerCase() as "video" | "audio" | "chat"
+									)}
 								{option}
 							</Button>
 						))}
@@ -98,11 +103,15 @@ const PreviousPage = () => {
 					{options.map((option) => (
 						<Button
 							key={option}
-							className={`text-sm font-medium px-[20px] py-[7px] rounded-3xl border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1  ${
-								historyType === option && "bg-green-1 text-white"
+							className={`text-sm font-medium px-[20px] py-[7px] rounded-full border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-black flex items-center gap-2 ${
+								historyType === option && "bg-black text-white"
 							}`}
 							onClick={() => setHistoryType(option)}
 						>
+							{option !== "All" &&
+								serviceIconBold(
+									option.toLowerCase() as "video" | "audio" | "chat"
+								)}
 							{option}
 						</Button>
 					))}
@@ -114,8 +123,12 @@ const PreviousPage = () => {
 					) : (
 						<CallListMobileCreator callType={historyType} />
 					)
+				) : fetchingUser ? (
+					<div className="size-full h-[calc(100vh-6rem)] flex flex-col items-center justify-center text-2xl font-semibold text-center">
+						<ContentLoading />
+					</div>
 				) : (
-					<div className="flex flex-col w-full items-center justify-center h-full">
+					<div className="flex flex-col w-full items-center justify-center h-[calc(100vh-6rem)]">
 						<h1 className="text-2xl font-semibold text-red-500">
 							No Calls Found
 						</h1>
@@ -136,14 +149,15 @@ const PreviousPage = () => {
 					{options.map((option) => (
 						<Button
 							key={option}
-							className={`text-sm font-medium px-4 py-2 text-[#6B7280] rounded-full ${
-								historyType === option
-									? "bg-black text-white"
-									: "hoverScaleDownEffect bg-white text-[#4B5563] border-[1px] border-solid border-[#E5E7EB]"
-							}
-								}`}
+							className={`text-sm font-medium px-[20px] py-[7px] rounded-full border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-black flex items-center gap-2 ${
+								historyType === option && "bg-black text-white"
+							}`}
 							onClick={() => setHistoryType(option)}
 						>
+							{option !== "All" &&
+								serviceIconBold(
+									option.toLowerCase() as "video" | "audio" | "chat"
+								)}
 							{option}
 						</Button>
 					))}

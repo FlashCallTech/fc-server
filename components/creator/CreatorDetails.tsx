@@ -30,6 +30,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 	const [offerApplied, setOfferApplied] = useState(
 		selectedServices ? selectedServices.length > 0 : false
 	);
+	const [isEligible, setIsEligible] = useState(true);
 	const pathname = usePathname();
 	const creatorURL = pathname || localStorage.getItem("creatorURL");
 
@@ -175,7 +176,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 	return (
 		// Wrapper Section
-		<div className="xl:relative size-full md:mx-auto md:pt-8 flex flex-col xl:flex-row xl:gap-10 items-start justify-center max-xl:overflow-y-scroll no-scrollbar">
+		<div className="xl:relative size-full md:mx-auto md:pt-8 flex flex-col xl:flex-row xl:gap-14 items-start justify-center max-xl:overflow-y-scroll no-scrollbar">
 			<section className="xl:sticky xl:top-[100px] size-full h-fit xl:max-w-[400px] 3xl:max-w-[500px] flex flex-col items-center justify-center gap-4">
 				{/* Creator Details */}
 				<section
@@ -263,11 +264,11 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 			</section>
 
 			{/* About, Services and Reviews */}
-			<section className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between p-4 xl:pt-0 gap-2.5 bg-white overflow-y-scroll">
+			<section className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between p-4 xl:pt-0 xl:px-0 gap-2.5 bg-white overflow-y-scroll">
 				{/* Creator Bio */}
 				<section className="xl:hidden size-full">{renderCreatorBio()}</section>
 				{/* Discounts */}
-				{!offerApplied && (
+				{!offerApplied && isEligible && (
 					<div className="w-full flex-col items-start justify-center gap-2.5 p-4 bg-[#DCFCE7] rounded-xl">
 						<div className="flex items-center gap-2.5 text-[#166534] text-sm">
 							<svg
@@ -302,6 +303,8 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 							offerApplied={offerApplied}
 							setOfferApplied={setOfferApplied}
 							setIsAuthSheetOpen={setIsAuthSheetOpen}
+							isEligible={isEligible}
+							setIsEligible={setIsEligible}
 						/>
 					</div>
 				)}
@@ -313,6 +316,8 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				{/* Call Scheduling */}
 
 				<ClientSideUserAvailability creator={creator} />
+
+				<div />
 
 				<CallingOptions creator={creator} />
 

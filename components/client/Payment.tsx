@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import ContentLoading from "@/components/shared/ContentLoading";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -89,6 +88,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 										method: "POST",
 										body: JSON.stringify({
 											userId: clientUser?._id,
+											PG: "Paypal",
 											userType: "Client",
 											amount: Number(details.purchase_units[0].amount.value),
 											category: "Recharge",
@@ -192,8 +192,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 					? creator?.globalAudioRate
 						? parseFloat(creator.globalAudioRate)
 						: undefined
-					: creator?.videoRate
-					? parseFloat(creator.videoRate)
+					: creator?.audioRate
+					? parseFloat(creator.audioRate)
 					: undefined;
 				break;
 			case "chat":
@@ -201,8 +201,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 					? creator?.globalChatRate
 						? parseFloat(creator.globalChatRate)
 						: undefined
-					: creator?.videoRate
-					? parseFloat(creator.videoRate)
+					: creator?.chatRate
+					? parseFloat(creator.chatRate)
 					: undefined;
 				break;
 			default:
@@ -218,6 +218,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		const amountDue = costForFiveMinutes
 			? Math.max(0, costForFiveMinutes - walletBalance)
 			: undefined;
+		
+		console.log(ratePerMinute, costForFiveMinutes, walletBalance);
 		return amountDue;
 	};
 	const generateAmounts = () => {
@@ -340,7 +342,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 								Total Balance
 							</h2>
 							<span className="w-fit text-3xl text-green-1 leading-7 font-bold">
-								{`${currentUser.global ? "$" : "Rs."} ${walletBalance.toFixed(
+								{`${currentUser?.global ? "$" : "Rs."} ${walletBalance.toFixed(
 									2
 								)}`}
 							</span>

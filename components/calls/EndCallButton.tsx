@@ -9,15 +9,22 @@ import Image from "next/image";
 import {
 	updateFirestoreSessions,
 	updatePastFirestoreSessions,
+	updatePastFirestoreSessionsPPM,
 } from "@/lib/utils";
 import LeaveCallDecision from "./LeaveCallDecision";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { useRouter } from "next/navigation";
 
 const EndCallButton = ({ callType }: { callType: "scheduled" | "instant" }) => {
 	const call = useCall();
+	const { userType } = useCurrentUsersContext();
 	const [showDialog, setShowDialog] = useState(false);
 	const [showLeavingDialog, setShowLeavingDialog] = useState(false);
+	const router = useRouter();
+
+	let creatorURL = localStorage.getItem("creatorURL");
 
 	if (!call) {
 		throw new Error(
@@ -26,6 +33,7 @@ const EndCallButton = ({ callType }: { callType: "scheduled" | "instant" }) => {
 	}
 
 	const endCall = async () => {
+		localStorage.setItem("endedBy", userType as string);
 		setShowDialog(true);
 	};
 
@@ -35,6 +43,10 @@ const EndCallButton = ({ callType }: { callType: "scheduled" | "instant" }) => {
 
 	const handleDecisionDialog = async () => {
 		await updateFirestoreSessions(call?.state?.createdBy?.id as string, {
+			status: "payment pending",
+		});
+
+		await updatePastFirestoreSessionsPPM(call?.id as string, {
 			status: "payment pending",
 		});
 
@@ -57,7 +69,7 @@ const EndCallButton = ({ callType }: { callType: "scheduled" | "instant" }) => {
 	const handleLeavingDecisionDialog = async () => {
 		await call?.leave();
 		setShowLeavingDialog(false);
-		window.close();
+		router.replace(`${creatorURL ? creatorURL : "/home"}`);
 	};
 
 	const handleCloseDialog = () => {

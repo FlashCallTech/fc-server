@@ -74,6 +74,7 @@ export type clientUser = {
 	restricted?: boolean;
 	blocked?: any[];
 	global?: boolean;
+	accessToken?: string;
 };
 
 // Creator Params
@@ -113,6 +114,8 @@ export type creatorUser = {
 	restricted?: boolean;
 	blocked?: any[];
 	global?: boolean;
+	commission?: number;
+	accessToken?: string;
 };
 
 export type CreateCreatorParams = {
@@ -241,6 +244,7 @@ export type LinkType = {
 
 export type RegisterCallParams = {
 	callId: string;
+	title?: string;
 	type: string;
 	status: string;
 	creator: string;
@@ -254,11 +258,13 @@ export type RegisterCallParams = {
 	amount?: number;
 	global?: boolean;
 	amountINR?: number;
+	category?: string;
 };
 
 export type ScheduledCallParams = {
 	_id: string;
 	callId: string;
+	chatId?: string;
 	type: "video" | "audio" | "chat";
 	status: string;
 	meetingOwner: clientUser;
@@ -475,7 +481,7 @@ export interface Service {
 	title: string;
 	description: string;
 	photo: string;
-	type: "all" | "audio" | "video" | "chat";
+	type: string[];
 	isActive: boolean;
 	currency: "INR" | "USD";
 	discountRules: DiscountRule[];

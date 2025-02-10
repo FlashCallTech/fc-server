@@ -7,6 +7,7 @@ import {
 	addMinutes,
 	format,
 	isSameDay,
+	setHours,
 } from "date-fns";
 
 import Razorpay from "razorpay";
@@ -598,6 +599,9 @@ type UpdateSessionParams = {
 	clientPhone?: string;
 	global?: boolean;
 	discount?: any;
+	startsAt?: string;
+	endsAt?: string;
+	joined?: string[];
 };
 
 export const updateFirestoreSessions = async (
@@ -646,34 +650,57 @@ export const updatePastFirestoreSessions = async (
 ) => {
 	try {
 		const SessionDocRef = doc(db, "pastSessions", callId);
-		const SessionDoc = await getDoc(SessionDocRef);
-		const ongoingCallUpdate: { [key: string]: any } = {};
 
-		if (params.callId) ongoingCallUpdate.callId = callId || params.callId;
-		if (params.status) ongoingCallUpdate.status = params.status;
-		if (params.callType) ongoingCallUpdate.callType = params.callType;
-		if (params.clientId) ongoingCallUpdate.clientId = params.clientId;
-		if (params.expertId) ongoingCallUpdate.expertId = params.expertId;
-		if (params.isVideoCall) ongoingCallUpdate.isVideoCall = params.isVideoCall;
-		if (params.creatorPhone)
-			ongoingCallUpdate.creatorPhone = params.creatorPhone;
-		if (params?.clientPhone) ongoingCallUpdate.clientPhone = params.clientPhone;
-		if (params?.global) ongoingCallUpdate.global = params.global ?? false;
-		if (params?.discount) ongoingCallUpdate.discount = params.discount;
+		// Prepare update payload
+		const sessionUpdate: { [key: string]: any } = {};
 
-		if (SessionDoc.exists()) {
-			const existingOngoingCall = SessionDoc.data()?.ongoingCall || {};
-			await updateDoc(SessionDocRef, {
-				ongoingCall: {
-					...existingOngoingCall,
-					...ongoingCallUpdate,
-				},
-			});
-		} else {
-			await setDoc(SessionDocRef, {
-				ongoingCall: ongoingCallUpdate,
-			});
-		}
+		if (params.callId) sessionUpdate.callId = callId || params.callId;
+		if (params.status) sessionUpdate.status = params.status;
+		if (params.startsAt) sessionUpdate.startsAt = params.startsAt;
+		if (params.endsAt) sessionUpdate.endsAt = params.endsAt;
+		if (params.callType) sessionUpdate.callType = params.callType;
+		if (params.clientId) sessionUpdate.clientId = params.clientId;
+		if (params.expertId) sessionUpdate.expertId = params.expertId;
+		if (params.isVideoCall) sessionUpdate.isVideoCall = params.isVideoCall;
+		if (params.creatorPhone) sessionUpdate.creatorPhone = params.creatorPhone;
+		if (params.clientPhone) sessionUpdate.clientPhone = params.clientPhone;
+		if (params.global !== undefined) sessionUpdate.global = params.global;
+		if (params.discount) sessionUpdate.discount = params.discount;
+
+		// Update or create the document
+		await setDoc(SessionDocRef, sessionUpdate, { merge: true });
+	} catch (error) {
+		Sentry.captureException(error);
+		console.error("Error updating Firestore Sessions: ", error);
+	}
+};
+
+export const updatePastFirestoreSessionsPPM = async (
+	callId: string,
+	params: UpdateSessionParams
+) => {
+	try {
+		const SessionDocRef = doc(db, "pastSessionsPPM", callId);
+
+		// Prepare update payload
+		const sessionUpdate: { [key: string]: any } = {};
+
+		if (params.callId) sessionUpdate.callId = callId || params.callId;
+		if (params.status) sessionUpdate.status = params.status;
+		if (params.startsAt) sessionUpdate.startsAt = params.startsAt;
+		if (params.endsAt) sessionUpdate.endsAt = params.endsAt;
+		if (params.callType) sessionUpdate.callType = params.callType;
+		if (params.clientId) sessionUpdate.clientId = params.clientId;
+		if (params.expertId) sessionUpdate.expertId = params.expertId;
+		if (params.isVideoCall) sessionUpdate.isVideoCall = params.isVideoCall;
+		if (params.creatorPhone) sessionUpdate.creatorPhone = params.creatorPhone;
+		if (params.clientPhone) sessionUpdate.clientPhone = params.clientPhone;
+		if (params.global !== undefined) sessionUpdate.global = params.global;
+		if (params.discount) sessionUpdate.discount = params.discount;
+		if (params.joined) sessionUpdate.joined = params.joined;
+
+		// Update or create the document
+		await setDoc(SessionDocRef, sessionUpdate, { merge: true });
 	} catch (error) {
 		Sentry.captureException(error);
 		console.error("Error updating Firestore Sessions: ", error);
@@ -1019,13 +1046,13 @@ export const sendCallNotification = async (
 		message: string,
 		payload: object
 	) => void,
-	backendUrl: string
+	backendUrl: string,
+	callCategory?: string
 ) => {
 	const fcmToken = await fetchFCMToken(creatorPhone, "voip");
 
 	if (fcmToken) {
 		try {
-			// Send push notification for regular FCM
 			sendNotification(
 				fcmToken.token,
 				`Incoming ${callType} Call`,
@@ -1038,9 +1065,10 @@ export const sendCallNotification = async (
 					callType: call.type,
 					callId: call.id,
 					notificationType,
+					callCategory: callCategory || "PPM",
 				}
 			);
-			if (fcmToken.voip_token) {
+			if (fcmToken.voip_token && notificationType !== "call.missed") {
 				await axios.post(`${backendUrl}/send-notification`, {
 					deviceToken: fcmToken.voip_token,
 					message: `Incoming ${callType} Call Request from ${clientUsername}`,
@@ -1074,7 +1102,8 @@ export const sendChatNotification = async (
 		message: string,
 		payload: object
 	) => void,
-	backendUrl: string
+	backendUrl: string,
+	callCategory?: string
 ) => {
 	const fcmToken = await fetchFCMToken(creatorPhone, "voip");
 
@@ -1102,10 +1131,11 @@ export const sendChatNotification = async (
 					creator_first_seen: chatRequestData.creator_first_seen,
 					createdAt: String(chatRequestData.createdAt),
 					notificationType: "chat.ring",
+					callCategory: callCategory || "PPM",
 				}
 			);
 
-			if (fcmToken.voip_token) {
+			if (fcmToken.voip_token && notificationType !== "chat.missed") {
 				await axios.post(`${backendUrl}/send-notification`, {
 					deviceToken: fcmToken.voip_token,
 					message: `Incoming ${callType} Call Request from ${clientUsername}`,
@@ -1170,7 +1200,7 @@ export const convertTo24Hour = (time: string): string => {
 export const generateTimeSlots = (): string[] => {
 	const slots: string[] = [];
 	let start = new Date();
-	start.setHours(0, 0, 0, 0); // Start from 12:00 AM
+	start.setHours(0, 0, 0, 0);
 
 	const now = new Date();
 	const currentSlotIndex = Math.floor(
@@ -1183,7 +1213,6 @@ export const generateTimeSlots = (): string[] => {
 		const period = hours >= 12 ? "PM" : "AM";
 		const displayHours = hours % 12 === 0 ? 12 : hours % 12;
 
-		// Format the time string
 		const timeString = `${displayHours}:${minutes
 			.toString()
 			.padStart(2, "0")} ${period}`;
@@ -1192,7 +1221,6 @@ export const generateTimeSlots = (): string[] => {
 		start.setMinutes(start.getMinutes() + 15);
 	}
 
-	// Sort the list so current time slot is the starting point
 	const reorderedSlots = [
 		...slots.slice(currentSlotIndex),
 		...slots.slice(0, currentSlotIndex),
@@ -1214,10 +1242,16 @@ export const getTimeSlots = (
 	const selectedDate = new Date(dayDate);
 
 	timeSlots.forEach(({ startTime, endTime }: any) => {
-		let start = parse(startTime, "hh:mm a", new Date());
-		const end = parse(endTime, "hh:mm a", new Date());
+		let start = parse(startTime, "hh:mm a", selectedDate);
+		let end = parse(endTime, "hh:mm a", selectedDate);
 
-		while (isBefore(start, end) || isEqual(start, end)) {
+		// Handle case when endTime is past midnight
+		if (isBefore(end, start)) {
+			end = setHours(end, end.getHours() + 24);
+		}
+
+		while (isBefore(start, end)) {
+			// Ensure we don't add past times for today
 			if (isSameDay(selectedDate, now) && selectedDay === currentDay) {
 				if (isBefore(now, start) || isEqual(now, start)) {
 					slots.push(format(start, "hh:mm a"));
@@ -1229,6 +1263,7 @@ export const getTimeSlots = (
 		}
 	});
 
+	// Sort slots to ensure correct order
 	slots.sort(
 		(a, b) =>
 			parse(a, "hh:mm a", new Date()).getTime() -

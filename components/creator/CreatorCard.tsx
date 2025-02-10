@@ -14,6 +14,9 @@ import { backendBaseUrl } from "@/lib/utils";
 import Image from "next/image";
 import { useCreatorQuery } from "@/lib/react-query/queries";
 import ContentLoading from "../shared/ContentLoading";
+import { trackEvent } from "@/lib/mixpanel";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const CreatorCard = () => {
 	const { username } = useParams();
@@ -21,6 +24,7 @@ const CreatorCard = () => {
 	const router = useRouter();
 
 	const initializedPixelId = useRef<string | null>(null);
+	const hasTrackedEvent = useRef(false); // Add this ref to track event execution
 	const [lastCallTracked, setLastCallTracked] = useState(
 		() => localStorage.getItem("lastTrackedCallId") || null
 	);
@@ -47,6 +51,7 @@ const CreatorCard = () => {
 			fetchCreatorDataAndInitializePixel(creatorUser._id);
 			initializedPixelId.current = creatorUser._id;
 		}
+
 
 		const fetchAndTrackCall = async () => {
 			if (!creatorUser || fetchingUser || !currentUser) return;
@@ -104,6 +109,26 @@ const CreatorCard = () => {
 		fetchingUser,
 	]);
 
+	useEffect(() => {
+		if (hasTrackedEvent.current) return;
+		if (!currentUser || !creatorUser || isLoading) return;
+
+		hasTrackedEvent.current = true; // Set BEFORE async call
+
+		trackViewEvent();
+	}, [currentUser, creatorUser]);
+
+	const trackViewEvent = async () => {
+		const creatorDocRef = doc(db, "userStatus", creatorUser.phone);
+		const docSnap = await getDoc(creatorDocRef);
+
+		trackEvent("Page_View", {
+			Creator_ID: creatorUser._id,
+			status: docSnap.data()?.status,
+			Wallet_Balance: currentUser?.walletBalance,
+		});
+	};
+
 	if (fetchingUser || isLoading) {
 		return (
 			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center">
@@ -124,7 +149,7 @@ const CreatorCard = () => {
 
 	if (isError) {
 		return (
-			<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-gray-400">
+			<div className="size-full h-[calc(100vh-6rem)] flex flex-col items-center justify-center text-2xl font-semibold text-center text-gray-400">
 				Oops! We couldn&apos;t find the creator you&apos;re looking for.
 				<span className="text-lg">
 					Don&apos;t worry double-check the username and try again!
@@ -135,7 +160,7 @@ const CreatorCard = () => {
 
 	if (!creatorUser) {
 		return (
-			<div className="size-full flex items-center justify-center text-2xl font-semibold text-center text-gray-400">
+			<div className="size-full h-[calc(100vh-6rem)] flex items-center justify-center text-2xl font-semibold text-center text-gray-400">
 				<p>Oops! We couldn&apos;t find the creator you&apos;re looking for.</p>
 			</div>
 		);

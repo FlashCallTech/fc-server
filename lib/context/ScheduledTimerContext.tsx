@@ -65,11 +65,6 @@ const ScheduledTimerHook = ({
 		const initializeTimer = async () => {
 			try {
 				const now = new Date();
-				// if (participants < 2) {
-				// 	console.warn("Timer not initialized as participants count is not 2.");
-				// 	setIsTimerRunning(false);
-				// 	return;
-				// }
 
 				if (!callId) {
 					console.warn("Timer not initialized as call id is not valid");
@@ -142,11 +137,6 @@ const ScheduledTimerHook = ({
 	}, [callId, callDuration, participants]);
 
 	useEffect(() => {
-		if (participants >= 2 && !isTimerRunning) {
-			console.log("Resuming timer as participants count is now valid.");
-			resumeTimer();
-		}
-
 		if (!endTime || !callId || !startTime || !normalizedStartsAt) return;
 
 		const updateTimeLeft = () => {

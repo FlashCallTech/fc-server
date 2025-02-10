@@ -1,3 +1,4 @@
+# Action Name
 name: Deploy to EC2
 
 # Trigger this workflow on push to the main branch or when the "Build and Push Docker Images" workflow completes

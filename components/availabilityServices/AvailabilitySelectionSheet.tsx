@@ -1,18 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { AvailabilityService, creatorUser } from "@/types";
 
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { useGetUserAvailability } from "@/lib/react-query/queries";
 import ContentLoading from "../shared/ContentLoading";
 import { backendBaseUrl, getTimeSlots, isValidHexColor } from "@/lib/utils";
 import AvailabilityFinalConsentForm from "./AvailabilityFinalConsentForm";
-import { Button } from "../ui/button";
 import axios from "axios";
 import SinglePostLoader from "../shared/SinglePostLoader";
 
@@ -40,6 +32,7 @@ const AvailabilitySelectionSheet = ({
 	const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
 	const dayRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+	const sliderRef = useRef<HTMLDivElement>(null);
 
 	const themeColor = isValidHexColor(creator?.themeSelected)
 		? creator?.themeSelected
@@ -139,6 +132,15 @@ const AvailabilitySelectionSheet = ({
 		if (!text) return;
 		let charLen = 100;
 		if (text?.length > charLen && !isExpanded) {
+			return text.slice(0, charLen) + "... ";
+		}
+		return text;
+	};
+
+	const clampText = (text: string) => {
+		if (!text) return;
+		let charLen = 40;
+		if (text?.length > charLen) {
 			return text.slice(0, charLen) + "... ";
 		}
 		return text;
@@ -252,8 +254,9 @@ const AvailabilitySelectionSheet = ({
 				<button
 					className="rounded-full p-2 text-gray-400 hoverScaleDownEffect hover:bg-gray-100"
 					onClick={() => {
-						const slider = document.getElementById("days-slider");
-						slider?.scrollBy({ left: -200, behavior: "smooth" });
+						if (sliderRef.current) {
+							sliderRef.current.scrollBy({ left: -200, behavior: "smooth" });
+						}
 					}}
 				>
 					<svg
@@ -272,6 +275,7 @@ const AvailabilitySelectionSheet = ({
 					</svg>
 				</button>
 				<div
+					ref={sliderRef}
 					id="days-slider"
 					className="flex gap-2 overflow-x-auto no-scrollbar"
 				>
@@ -313,8 +317,9 @@ const AvailabilitySelectionSheet = ({
 				</div>
 				<button
 					onClick={() => {
-						const slider = document.getElementById("days-slider");
-						slider?.scrollBy({ left: 200, behavior: "smooth" });
+						if (sliderRef.current) {
+							sliderRef.current.scrollBy({ left: 200, behavior: "smooth" });
+						}
 					}}
 					className="rounded-full p-2 text-gray-400 hoverScaleDownEffect hover:bg-gray-100"
 				>
@@ -374,19 +379,24 @@ const AvailabilitySelectionSheet = ({
 		);
 	};
 
+	if (!isOpen) return null;
+
 	return (
-		<Dialog open={isOpen} onOpenChange={onOpenChange}>
-			<DialogContent
-				onOpenAutoFocus={(e) => e.preventDefault()}
-				hideCloseButton={true}
-				className={`flex flex-col items-start justify-start border-none rounded-xl bg-white mx-auto w-full h-dvh sm:max-h-[644px] sm:max-w-[444px] p-0 overflow-scroll no-scrollbar`}
-			>
-				<DialogHeader
+		<div
+			className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+			onClick={(e) => {
+				if (e.target === e.currentTarget) {
+					onOpenChange(false);
+				}
+			}}
+		>
+			<div className="flex flex-col items-start justify-start border-none rounded-xl bg-white mx-auto w-full h-dvh sm:max-h-[90vh] sm:max-w-[555px] p-0 overflow-scroll no-scrollbar">
+				<header
 					className={`${
 						showConsentForm && "sr-only"
 					} text-start w-full pt-4 px-4`}
 				>
-					<DialogTitle className="flex flex-col w-full items-start justify-start gap-5">
+					<div className="flex flex-col w-full items-start justify-start gap-5">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
@@ -402,16 +412,16 @@ const AvailabilitySelectionSheet = ({
 								d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
 							/>
 						</svg>
-						<div className="flex w-full items-center justify-between">
+						<div className="flex w-full items-center justify-between overflow-hidden">
 							<span className="font-bold text-2xl capitalize">
-								{service.title}
+								{clampText(service.title)}
 							</span>
 							<span className="bg-white flex items-center justify-center gap-2 border-2 border-[#E5E7EB] rounded-full min-w-[100px] text-center py-1 px-4 whitespace-nowrap cursor-pointer font-medium text-base">
 								{service.timeDuration} Min
 							</span>
 						</div>
-					</DialogTitle>
-					<DialogDescription className="font-bold text-gray-400 text-sm">
+					</div>
+					<div className="font-bold text-gray-400 text-sm mt-2">
 						<p
 							className={`text-sm text-start block ${
 								isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
@@ -441,8 +451,8 @@ const AvailabilitySelectionSheet = ({
 								view less
 							</button>
 						)}
-					</DialogDescription>
-				</DialogHeader>
+					</div>
+				</header>
 
 				{selectedDay && selectedTimeSlot && showConsentForm ? (
 					<AvailabilityFinalConsentForm
@@ -458,18 +468,20 @@ const AvailabilitySelectionSheet = ({
 					<div className="size-full px-4">
 						{renderContent()}
 						{selectedDay && selectedTimeSlot && (
-							<Button
-								className="rounded-full bg-black hoverScaleDownEffect w-full mx-auto text-white sticky bottom-1 text-sm py-3"
-								type="submit"
-								onClick={() => setShowConsentForm(true)}
-							>
-								Confirm Booking
-							</Button>
+							<div className="flex items-center justify-center bg-white mt-4 size-full h-fit sticky bottom-0 border-t border-[#E5E7EB] py-2.5">
+								<button
+									className="rounded-full bg-black hoverScaleDownEffect w-full mx-auto text-white text-sm py-3"
+									type="submit"
+									onClick={() => setShowConsentForm(true)}
+								>
+									Confirm Booking
+								</button>
+							</div>
 						)}
 					</div>
 				)}
-			</DialogContent>
-		</Dialog>
+			</div>
+		</div>
 	);
 };
 

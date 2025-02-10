@@ -26,6 +26,8 @@ const ClientSideDiscountheet = ({
 	offerApplied,
 	setOfferApplied,
 	setIsAuthSheetOpen,
+	setIsEligible,
+	isEligible,
 }: {
 	creatorId: string;
 	creatorName: string;
@@ -35,6 +37,8 @@ const ClientSideDiscountheet = ({
 	offerApplied: boolean;
 	setOfferApplied: any;
 	setIsAuthSheetOpen: any;
+	isEligible: boolean;
+	setIsEligible: any;
 }) => {
 	const [applyingOffer, setApplyingOffer] = useState(false);
 	const [validatedAppliedOffers, setValidatedAppliedOffers] = useState(false);
@@ -52,7 +56,7 @@ const ClientSideDiscountheet = ({
 		true,
 		"client",
 		currentUser?._id as string,
-		currentUser ? (currentUser?.email ? "Global" : "Indian") : "",
+		currentUser ? (currentUser?.global ? "Global" : "Indian") : "",
 		true
 	);
 
@@ -60,10 +64,11 @@ const ClientSideDiscountheet = ({
 		const flattenedServices =
 			servicesData?.pages.flatMap((page: any) => page.data) || [];
 		setUserServices(flattenedServices);
+		setIsEligible(flattenedServices.length > 0);
 	}, [servicesData]);
 
 	useEffect(() => {
-		if (creatorId && !fetchingUser) {
+		if (creatorId && !fetchingUser && servicesData && isEligible) {
 			const seenDiscountSheet = sessionStorage.getItem(
 				`hasSeenDiscountSheet_${creatorId}`
 			);
@@ -75,7 +80,7 @@ const ClientSideDiscountheet = ({
 				}, 1500);
 			}
 		}
-	}, [creatorId, currentUser?._id, fetchingUser]);
+	}, [creatorId, fetchingUser, servicesData, isEligible]);
 
 	const onOpenChange = (open: boolean) => {
 		setIsDiscountModalOpen(open);
@@ -174,7 +179,7 @@ const ClientSideDiscountheet = ({
 			<Dialog open={isDiscountModalOpen} onOpenChange={onOpenChange}>
 				<DialogContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
-					className="flex flex-col items-center justify-start w-full max-h-[90vh] outline-none border-none rounded-xl bg-white mx-auto px-7 !pt-0 pb-5 overflow-y-auto no-scrollbar max-w-[95%]"
+					className="flex flex-col items-center justify-start w-full max-h-[90vh] md:max-w-[444px] outline-none border-none rounded-xl bg-white mx-auto px-7 !pt-0 pb-5 overflow-y-auto no-scrollbar max-w-[95%]"
 				>
 					<DialogHeader className="flex flex-col items-center justify-center w-full pt-5">
 						<DialogTitle>

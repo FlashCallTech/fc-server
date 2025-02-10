@@ -32,54 +32,7 @@ import { useToast } from "../ui/use-toast";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { AvailabilityService } from "@/types";
 import { isEqual } from "lodash";
-
-const predefinedConditions = ["30 Minutes Call", "60 Minutes Call"] as const;
-
-const discountRuleSchema = z
-	.object({
-		conditions: z
-			.array(z.string(), {
-				errorMap: () => ({
-					message: "Conditions must be valid selection.",
-				}),
-			})
-			.nonempty("At least one condition is required."),
-		discountAmount: z
-			.number({
-				required_error: "Discount amount is required.",
-			})
-			.refine((val) => val > 0, {
-				message: "Discount amount must be a valid number greater than 0.",
-			}),
-		discountType: z.enum(["percentage", "flat"], {
-			required_error: "Discount type is required.",
-		}),
-	})
-	.superRefine((data, ctx) => {
-		if (data.discountAmount === null) {
-			ctx.addIssue({
-				code: "custom",
-				path: ["discountAmount"],
-				message: "Discount amount is required and cannot be null.",
-			});
-			return;
-		}
-
-		if (data.discountType === "percentage" && data.discountAmount > 100) {
-			ctx.addIssue({
-				code: "custom",
-				path: ["discountAmount"],
-				message: "Percentage discount cannot exceed 100.",
-			});
-		}
-		if (data.discountType === "flat" && data.discountAmount > 10000) {
-			ctx.addIssue({
-				code: "custom",
-				path: ["discountAmount"],
-				message: "Flat discount cannot exceed 10,000.",
-			});
-		}
-	});
+import ServicePreview from "../availabilityServices/ServicePreview";
 
 const formSchema = z.object({
 	title: z.string().min(2, "Title must be at least 2 characters."),
@@ -87,7 +40,7 @@ const formSchema = z.object({
 		.string()
 		.min(10, "Description must be at least 10 characters."),
 	photo: z.string().optional(),
-	type: z.enum(["all", "audio", "video", "chat"], {
+	type: z.enum(["audio", "video", "chat"], {
 		required_error: "Service type is required.",
 	}),
 	timeDuration: z
@@ -113,7 +66,9 @@ const formSchema = z.object({
 	currency: z.enum(["INR", "USD"], {
 		required_error: "Currency is required.",
 	}),
-	discountRules: discountRuleSchema.optional(),
+	email: z
+		.string({ required_error: "Email is required." })
+		.email("Invalid email format."),
 	extraDetails: z.string().optional(),
 });
 
@@ -128,7 +83,7 @@ const AvailabilityServicesForm = ({
 	sheetType: "Create" | "Update";
 	service: AvailabilityService | null;
 }) => {
-	const { currentUser } = useCurrentUsersContext();
+	const { currentUser, refreshCurrentUser } = useCurrentUsersContext();
 	const { toast } = useToast();
 	const form = useForm<z.infer<typeof formSchema>>({
 		mode: "onChange",
@@ -144,7 +99,8 @@ const AvailabilityServicesForm = ({
 						basePrice: service.basePrice || 10,
 						isActive: service.isActive,
 						currency: service.currency,
-						discountRules: service.discountRules,
+
+						email: currentUser?.email || "",
 						extraDetails: service.extraDetails,
 				  }
 				: {
@@ -152,26 +108,25 @@ const AvailabilityServicesForm = ({
 						description: "",
 						photo:
 							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
-						type: "all",
+						type: "video",
 						isActive: true,
 						timeDuration: 15,
 						basePrice: 10,
 						currency: "INR",
-						discountRules: undefined,
+
+						email: currentUser?.email || "",
 						extraDetails: "",
 				  },
 	});
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
+			const { email, ...restValues } = values;
 			const payload = {
-				...values,
+				...restValues,
 				timeDuration: values.timeDuration ?? 15,
 				basePrice: values.basePrice ?? 10,
-				discountRules:
-					values.discountRules && Object.keys(values.discountRules).length > 0
-						? values.discountRules
-						: null,
+
 				photo:
 					values.photo ||
 					"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
@@ -188,6 +143,16 @@ const AvailabilityServicesForm = ({
 					: undefined;
 
 			await method(url, payload, params);
+
+			email &&
+				(await axios.put(
+					`${backendBaseUrl}/creator/updateUser/${currentUser?._id}`,
+					{
+						email: email,
+					}
+				));
+
+			refreshCurrentUser();
 
 			refetch();
 
@@ -229,6 +194,8 @@ const AvailabilityServicesForm = ({
 		const subscription = form.watch((values) => {
 			const currentValues = values;
 			const changes = !isEqual(currentValues, initialValues.current);
+
+			console.log(currentValues, changes, isValid);
 			if (hasChangesRef.current !== changes) {
 				hasChangesRef.current = changes;
 				setHasChanges(changes);
@@ -271,7 +238,9 @@ const AvailabilityServicesForm = ({
 					name="title"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Title</FormLabel>
+							<FormLabel className="!text-[#374151] !text-sm">
+								Title <span className="text-red-500">*</span>
+							</FormLabel>
 							<FormControl>
 								<Input placeholder="Service Title" {...field} />
 							</FormControl>
@@ -285,7 +254,9 @@ const AvailabilityServicesForm = ({
 					name="description"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Description</FormLabel>
+							<FormLabel className="!text-[#374151] !text-sm">
+								Description <span className="text-red-500">*</span>
+							</FormLabel>
 							<FormControl>
 								<Textarea
 									className="flex flex-1 px-4 py-3  focus-visible:ring-transparent max-h-32"
@@ -304,7 +275,9 @@ const AvailabilityServicesForm = ({
 					render={({ field }) => {
 						return (
 							<FormItem>
-								<FormLabel>Services</FormLabel>
+								<FormLabel className="!text-[#374151] !text-sm">
+									Select Service <span className="text-red-500">*</span>
+								</FormLabel>
 								<Select
 									onValueChange={(value) => {
 										field.onChange(value);
@@ -348,21 +321,12 @@ const AvailabilityServicesForm = ({
 					name="timeDuration"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Service Duration (minutes)</FormLabel>
+							<FormLabel className="!text-[#374151] !text-sm">
+								Service Duration (minutes)
+							</FormLabel>
 							<Select
 								onValueChange={(value) => {
 									const selectedDuration = Number(value);
-									const selectedConditions =
-										form.watch("discountRules.conditions") || [];
-
-									if (
-										(selectedDuration < 30 &&
-											selectedConditions.includes("30 Minutes Call")) ||
-										(selectedDuration < 60 &&
-											selectedConditions.includes("60 Minutes Call"))
-									) {
-										form.setValue("discountRules", undefined);
-									}
 
 									field.onChange(selectedDuration);
 								}}
@@ -454,10 +418,12 @@ const AvailabilityServicesForm = ({
 					name="isActive"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Toggle Service Status</FormLabel>
+							<FormLabel className="!text-[#374151] !text-sm">
+								Service Status <span className="text-red-500">*</span>
+							</FormLabel>
 							<Select
 								onValueChange={(value) => field.onChange(value === "true")}
-								value={field.value ? "true" : "false"} // Ensures correct selection is displayed
+								value={field.value ? "true" : "false"}
 							>
 								<SelectTrigger>
 									<SelectValue placeholder="Select status" />
@@ -487,17 +453,19 @@ const AvailabilityServicesForm = ({
 					name="currency"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>User Type</FormLabel>
+							<FormLabel className="!text-[#374151] !text-sm">
+								User Region
+							</FormLabel>
 							<Select onValueChange={field.onChange} defaultValue={field.value}>
 								<SelectTrigger>
-									<SelectValue placeholder="Select Type" />
+									<SelectValue placeholder="Select Region" />
 								</SelectTrigger>
 								<SelectContent className="!bg-white">
 									<SelectItem
 										className="cursor-pointer hover:bg-gray-50"
 										value="INR"
 									>
-										Indian
+										India
 									</SelectItem>
 									<SelectItem
 										className="cursor-pointer hover:bg-gray-50"
@@ -511,199 +479,21 @@ const AvailabilityServicesForm = ({
 						</FormItem>
 					)}
 				/>
-				{/* Discount Rules */}
-				<div className="space-y-4 flex flex-col item-start justify-start">
-					<FormLabel>Discount Rules</FormLabel>
-					{form.watch("discountRules") ? (
-						<div className="grid grid-cols-1 gap-4 border p-4 rounded-md">
-							<FormField
-								control={form.control}
-								name="discountRules.conditions"
-								render={({ field }) => {
-									const conditions =
-										form.watch("discountRules.conditions") || [];
-									const selectedDuration = form.watch("timeDuration");
-									const selectedCondition = conditions[0] || null;
 
-									const handleConditionClick = (condition: string) => {
-										let updatedDuration = selectedDuration;
-										if (condition === "30 Minutes Call") {
-											updatedDuration = 30;
-										} else if (condition === "60 Minutes Call") {
-											updatedDuration = 60;
-										}
-
-										field.onChange([condition]);
-										form.setValue("timeDuration", updatedDuration);
-									};
-
-									return (
-										<FormItem>
-											<FormLabel>Conditions</FormLabel>
-											<FormControl>
-												<div className="grid grid-cols-2 gap-4">
-													{predefinedConditions.map((condition) => {
-														const isSelected = selectedCondition === condition;
-
-														return (
-															<section
-																key={condition}
-																className={cn(
-																	"cursor-pointer p-4 border transition-all rounded-lg",
-																	isSelected
-																		? "bg-gray-100 border-gray-300"
-																		: "hover:bg-gray-50"
-																)}
-																onClick={() => handleConditionClick(condition)}
-															>
-																<section className="flex items-center justify-center text-sm font-medium">
-																	{condition}
-																</section>
-															</section>
-														);
-													})}
-												</div>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
-							<FormField
-								control={form.control}
-								name="discountRules.discountType"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Discount Type</FormLabel>
-										<Select
-											onValueChange={field.onChange}
-											defaultValue={field.value}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select type" />
-											</SelectTrigger>
-											<SelectContent className="!bg-white">
-												<SelectItem
-													className="cursor-pointer hover:bg-gray-50"
-													value="percentage"
-												>
-													Percentage
-												</SelectItem>
-												<SelectItem
-													className="cursor-pointer hover:bg-gray-50"
-													value="flat"
-												>
-													Flat
-												</SelectItem>
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="discountRules.discountAmount"
-								render={({ field }) => {
-									const discountType = form.watch("discountRules.discountType");
-									const discountCurrency = form.watch("currency");
-
-									const placeholder =
-										discountType === "percentage"
-											? "e.g. 10%"
-											: discountCurrency === "INR"
-											? "e.g. ₹100"
-											: "e.g. $100";
-
-									return (
-										<FormItem>
-											<FormLabel className="block mb-2 text-sm font-medium text-gray-700">
-												Discount Amount
-											</FormLabel>
-											<FormControl>
-												<section className="flex items-center w-full space-x-2 border border-gray-300 rounded-lg px-3 py-2">
-													{discountType === "flat" &&
-														(discountCurrency === "INR" ? (
-															<span className="text-gray-500">₹</span>
-														) : (
-															<span className="text-gray-500">$</span>
-														))}
-													<Input
-														type="number"
-														min={0}
-														max={discountType === "percentage" ? 100 : 10000}
-														placeholder={placeholder}
-														className={`w-full ${
-															discountType === "percentage" && "!px-1"
-														} py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0`}
-														{...field}
-														value={field.value ?? ""}
-														onChange={(e) => {
-															const rawValue = e.target.value;
-															const sanitizedValue = rawValue.replace(
-																/^0+(?!$)/,
-																""
-															);
-															field.onChange(
-																sanitizedValue !== ""
-																	? Number(sanitizedValue)
-																	: null
-															);
-														}}
-													/>
-													{discountType === "percentage" && (
-														<span className="text-gray-500">%</span>
-													)}
-												</section>
-											</FormControl>
-											<FormMessage className="mt-1 text-sm text-red-500" />
-										</FormItem>
-									);
-								}}
-							/>
-							{/* Remove Discount Button */}
-							<div className="flex justify-end">
-								<Button
-									type="button"
-									variant="outline"
-									className="text-red-500 border-red-500 hover:bg-red-50"
-									onClick={() => {
-										form.setValue("discountRules", undefined);
-									}}
-								>
-									Remove Discount
-								</Button>
-							</div>
-						</div>
-					) : (
-						<Button
-							type="button"
-							variant="outline"
-							className="text-blue-500 border-blue-500 hover:bg-blue-50"
-							onClick={() =>
-								form.setValue("discountRules", {
-									conditions: ["30 Minutes Call"],
-									discountType: "percentage",
-									discountAmount: 10,
-								})
-							}
-						>
-							Add Discount
-						</Button>
-					)}
-				</div>
-
-				{/* Extra Details */}
+				{/* Creator Email */}
 				<FormField
 					control={form.control}
-					name="extraDetails"
+					name="email"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Extra Details</FormLabel>
+							<FormLabel className="!text-[#374151] !text-sm">
+								Email <span className="text-red-500">*</span>
+							</FormLabel>
 							<FormControl>
-								<Textarea
-									className="flex flex-1 px-4 py-3  focus-visible:ring-transparent max-h-32"
-									placeholder="Additional information"
+								<Input
+									type="email"
+									className="flex flex-1 px-4 py-3 focus-visible:ring-transparent"
+									placeholder="Enter your email"
 									{...field}
 								/>
 							</FormControl>
@@ -711,28 +501,67 @@ const AvailabilityServicesForm = ({
 						</FormItem>
 					)}
 				/>
-				{isValid && hasChanges && (
+
+				{/* Extra Details */}
+				<FormField
+					control={form.control}
+					name="extraDetails"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="!text-[#374151] !text-sm">
+								Extra Details
+							</FormLabel>
+							<FormControl>
+								<Textarea
+									className="flex flex-1 px-4 py-3  focus-visible:ring-transparent max-h-32"
+									placeholder="Any extra details about your service"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* Preview */}
+				{isValid && <ServicePreview service={form.getValues()} />}
+
+				{/* Action Buttons */}
+				<div className="sticky -bottom-5 py-2.5 w-full flex items-center justify-end gap-2.5 bg-white">
 					<Button
-						className="sticky -bottom-2.5 text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
-						type="submit"
-						disabled={!isValid || form.formState.isSubmitting}
+						className={`text-base ${
+							isValid && hasChanges
+								? "border border-[#D1D5DB] hover:bg-gray-100 bg-white"
+								: "bg-black text-white"
+						} hoverScaleDownEffect w-fit rounded-full !px-[24px] !py-2`}
+						onClick={() => sheetOpen(false)}
 					>
-						{form.formState.isSubmitting ? (
-							<Image
-								src="/icons/loading-circle.svg"
-								alt="Loading..."
-								width={24}
-								height={24}
-								className=""
-								priority
-							/>
-						) : sheetType === "Create" ? (
-							"Submit Details"
-						) : (
-							"Update Details"
-						)}
+						Cancel
 					</Button>
-				)}
+
+					{isValid && hasChanges && (
+						<Button
+							className="text-base bg-black hoverScaleDownEffect w-fit  text-white rounded-full !px-[24px] !py-2"
+							type="submit"
+							disabled={!isValid || form.formState.isSubmitting}
+						>
+							{form.formState.isSubmitting ? (
+								<Image
+									src="/icons/loading-circle.svg"
+									alt="Loading..."
+									width={24}
+									height={24}
+									className=""
+									priority
+								/>
+							) : sheetType === "Create" ? (
+								"Create Service"
+							) : (
+								"Update Service"
+							)}
+						</Button>
+					)}
+				</div>
 			</form>
 		</Form>
 	);

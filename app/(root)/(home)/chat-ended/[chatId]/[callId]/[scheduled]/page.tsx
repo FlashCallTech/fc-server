@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import CallFeedback from "@/components/feedbacks/CallFeedback";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import { useToast } from "@/components/ui/use-toast";
 import { useParams, useRouter } from "next/navigation";
-import * as Sentry from "@sentry/nextjs";
 import ChatFeedback from "@/components/feedbacks/ChatFeedback";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
@@ -15,8 +13,8 @@ const ChatFeedbackPage = () => {
 	const [loadingFeedback, setLoadingFeedback] = useState(false);
 	const [showFeedback, setShowFeedback] = useState(true);
 	const creatorURL = localStorage.getItem("creatorURL");
-	const { chatId, callId, clientId } = useParams();
-	const { currentUser } = useCurrentUsersContext();
+	const { chatId, callId } = useParams();
+	const { currentUser, userType } = useCurrentUsersContext();
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -56,13 +54,16 @@ const ChatFeedbackPage = () => {
 			style={{ height: "calc(var(--vh, 1vh) * 100)" }}
 			className="w-full flex items-center justify-center bg-"
 		>
-			{clientId === currentUser?._id && (
+			{userType === "client" ? (
 				<ChatFeedback
 					chatId={chatId as string}
 					callId={callId as string}
+					clientId={currentUser?._id as string}
 					isOpen={showFeedback}
 					onOpenChange={handleFeedbackClose}
 				/>
+			) : (
+				<div>The chat you are looking for has ended</div>
 			)}
 		</section>
 	);

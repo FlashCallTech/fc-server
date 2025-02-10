@@ -163,21 +163,8 @@ const MeetingRoom = () => {
 				return;
 			}
 			try {
-				const localSessionKey = `meeting_${call.id}_${currentUser._id}`;
-
-				if (localStorage.getItem(localSessionKey) && participants.length > 1) {
-					toast({
-						variant: "destructive",
-						title: "Already in Call",
-						description: "You are already in this meeting.",
-						toastStatus: "positive",
-					});
-					router.replace("/");
-					return;
-				}
 				if (callingState === CallingState.IDLE) {
 					await call?.join();
-					localStorage.setItem(localSessionKey, "joined");
 					hasAlreadyJoined.current = true;
 				}
 			} catch (error) {

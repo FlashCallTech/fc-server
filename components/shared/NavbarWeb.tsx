@@ -1,5 +1,7 @@
+"use client";
+
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { clientUser, creatorUser } from "@/types";
@@ -16,6 +18,22 @@ const NavLoader = () => {
 	);
 };
 
+const useScreenSize = () => {
+	const [isMobile, setIsMobile] = useState(false);
+
+	const handleResize = () => {
+		setIsMobile(window.innerWidth < 584);
+	};
+
+	useEffect(() => {
+		handleResize();
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
+
+	return isMobile;
+};
+
 const NavbarWeb = ({
 	fetchingUser,
 	currentUser,
@@ -25,36 +43,87 @@ const NavbarWeb = ({
 	currentUser: clientUser | creatorUser | null;
 	handleSignout: () => void;
 }) => {
-	const theme = `5px 5px 5px 0px #232323`;
+	const isMobile = useScreenSize();
+	const [toggleMenu, setToggleMenu] = useState(false);
+	const menuRef = useRef<HTMLDivElement>(null);
+
+	const handleClickOutside = (event: MouseEvent) => {
+		if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+			setToggleMenu(false);
+		}
+	};
+
+	useEffect(() => {
+		if (toggleMenu) {
+			document.addEventListener("click", handleClickOutside);
+		} else {
+			document.removeEventListener("click", handleClickOutside);
+		}
+
+		return () => document.removeEventListener("click", handleClickOutside);
+	}, [toggleMenu]);
+
+	const renderContent = () => {
+		return (
+			<>
+				{currentUser ? (
+					<>
+						{/* Home Button */}
+						<Link href="/home">
+							<Button className="min-w-[130px] bg-black text-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7">
+								Home
+							</Button>
+						</Link>
+						{/* Sign Out Button */}
+						<Button
+							className="min-w-[130px] bg-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7"
+							onClick={handleSignout}
+						>
+							Sign Out
+						</Button>
+					</>
+				) : (
+					<>
+						{/* Sign Up Button */}
+						<Link href="/authenticate?usertype=creator">
+							<Button className="min-w-[130px] bg-black text-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7">
+								For Creator
+							</Button>
+						</Link>
+						{/* Login Button */}
+						<Link href="/home">
+							<Button className="min-w-[130px] bg-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7">
+								Discover
+							</Button>
+						</Link>
+					</>
+				)}
+			</>
+		);
+	};
 
 	return (
-		<nav className="sticky top-0 bg-white md:bg-transparent blurEffect w-full md:px-14 lg:px-24 z-40 pb-1 md:py-2">
-			<section className="flex items-center justify-between px-3 xs:px-5 md:px-10 py-2 md:bg-green-1 rounded-full border border-white">
+		<nav className="sticky top-0 blurEffect bg-gradient-to-r from-[#ecf5de] via-white to-[#dff7fb] w-full px-6 py-4 md:px-14 lg:px-24 z-40">
+			<section className="flex bg-white items-center justify-between p-4 rounded-full border border-gray-300">
 				{/* logo */}
 				<Link href="#" className="hidden md:block">
 					<Image
-						src="/icons/logo_new_light.png"
+						src="/icons/newLogo.png"
 						alt="logo"
 						width={1000}
 						height={1000}
-						className="bg-white flex items-center justify-center gap-2 px-4 border border-black rounded-[6px] hoverScaleDownEffect  w-[150px] h-[48px]"
-						style={{
-							boxShadow: theme,
-						}}
+						className="w-[120px] h-[25px] ml-7"
 						priority
 					/>
 				</Link>
 
 				<Link href="#" className="md:hidden">
 					<Image
-						src="/icons/logo_icon.png"
+						src="/icons/newLogo.png"
 						alt="logo"
 						width={1000}
 						height={1000}
-						className="rounded-[6px] p-1 object-contain size-12 border border-black hoverScaleEffect"
-						style={{
-							boxShadow: theme,
-						}}
+						className="w-[120px] h-[25px]"
 						priority
 					/>
 				</Link>
@@ -63,56 +132,57 @@ const NavbarWeb = ({
 				{fetchingUser ? (
 					<NavLoader />
 				) : (
-					<div className="flex items-center justify-center gap-4 px-2 md:px-4 md:py-2">
-						{currentUser ? (
+					<div className="relative flex items-center justify-center gap-2.5">
+						{isMobile ? (
 							<>
-								{/* Home Button */}
-								<Link href="/home">
-									<Button
-										className="uppercase bg-green-1 text-white rounded-[6px] hoverScaleDownEffect text-xs border border-black md:!px-7"
-										style={{
-											boxShadow: theme,
-										}}
-									>
-										Home
-									</Button>
-								</Link>
-								{/* Sign Out Button */}
-								<Button
-									className="uppercase bg-white hover:bg-white rounded-[6px] hoverScaleDownEffect text-xs border border-black md:!px-7"
-									onClick={handleSignout}
-									style={{
-										boxShadow: theme,
-									}}
+								<button
+									className="hoverScaleDownEffect flex items-center"
+									onClick={() => setToggleMenu((prev) => !prev)}
 								>
-									Sign Out
-								</Button>
+									{toggleMenu ? (
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+											strokeWidth={1.5}
+											stroke="currentColor"
+											className="size-6"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												d="M6 18 18 6M6 6l12 12"
+											/>
+										</svg>
+									) : (
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+											strokeWidth={1.5}
+											stroke="currentColor"
+											className="size-6"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+											/>
+										</svg>
+									)}
+								</button>
+
+								{toggleMenu && (
+									<div
+										ref={menuRef}
+										className="absolute right-4 top-4 mt-2 bg-white border border-gray-300 shadow-lg rounded-lg p-4 flex flex-col items-center gap-2.5"
+									>
+										{renderContent()}
+									</div>
+								)}
 							</>
 						) : (
-							<>
-								{/* Sign Up Button */}
-								<Link href="/authenticate?usertype=creator">
-									<Button
-										className="uppercase bg-green-1 text-white rounded-[6px] hoverScaleDownEffect text-xs border border-black md:!px-7"
-										style={{
-											boxShadow: theme,
-										}}
-									>
-										For Creator
-									</Button>
-								</Link>
-								{/* Login Button */}
-								<Link href="/home">
-									<Button
-										className="uppercase bg-white hover:bg-white rounded-[6px] hoverScaleDownEffect text-xs border border-black md:!px-7"
-										style={{
-											boxShadow: theme,
-										}}
-									>
-										Discover
-									</Button>
-								</Link>
-							</>
+							<div className="flex items-center gap-2">{renderContent()}</div>
 						)}
 					</div>
 				)}

@@ -166,17 +166,6 @@ const MeetingRoomScheduled = () => {
 				const localSessionKey = `meeting_${call.id}_${currentUser._id}`;
 				const notificationSentKey = `meeting_${call.id}_notificationSent`;
 
-				if (localStorage.getItem(localSessionKey) && participants.length > 1) {
-					toast({
-						variant: "destructive",
-						title: "Already in Call",
-						description: "You are already in this meeting.",
-						toastStatus: "positive",
-					});
-					router.replace("/");
-					return;
-				}
-
 				await updateFirestoreSessions(client?.user_id as string, {
 					callId: call.id,
 					status: "ongoing",
@@ -201,7 +190,8 @@ const MeetingRoomScheduled = () => {
 							"call.ring",
 							fetchFCMToken,
 							sendNotification,
-							backendUrl as string
+							backendUrl as string,
+							"Scheduled"
 						);
 
 						localStorage.setItem(notificationSentKey, "true");
@@ -211,7 +201,6 @@ const MeetingRoomScheduled = () => {
 				if (callingState === CallingState.IDLE) {
 					await call?.join();
 					hasAlreadyJoined.current = true;
-					localStorage.setItem(localSessionKey, "joined");
 				}
 			} catch (error) {
 				console.warn("Error Joining Call ", error);

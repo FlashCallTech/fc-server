@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -23,14 +23,19 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 
+import { default as SelectInput } from "react-select";
+
 import Image from "next/image";
 import FileUploaderServices from "../uploaders/FileUploaderServices";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { backendBaseUrl, cn } from "@/lib/utils";
 import { useToast } from "../ui/use-toast";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { Service } from "@/types";
+import { AvailabilityService, Service } from "@/types";
+import ServicePreview from "../discountServices/ServicePreview";
+import { useGetUserAvailabilityServices } from "@/lib/react-query/queries";
+import { isEqual } from "lodash";
 
 const predefinedConditions = [
 	"New User",
@@ -94,9 +99,11 @@ const formSchema = z.object({
 		.string()
 		.min(10, "Description must be at least 10 characters."),
 	photo: z.string().optional(),
-	type: z.enum(["all", "audio", "video", "chat"], {
-		required_error: "Service type is required.",
-	}),
+	type: z
+		.array(z.string(), {
+			required_error: "At least one service type is required.",
+		})
+		.nonempty("You must select at least one type."),
 	isActive: z.boolean({
 		required_error: "isActive is required.",
 	}),
@@ -120,6 +127,19 @@ const DiscountServicesForm = ({
 }) => {
 	const { currentUser } = useCurrentUsersContext();
 	const { toast } = useToast();
+
+	const [userServices, setUserServices] = useState<AvailabilityService[]>([]);
+
+	const { data: creatorAvailabilityServices, isLoading } =
+		useGetUserAvailabilityServices(currentUser?._id as string, true, "creator");
+
+	useEffect(() => {
+		const flattenedServices =
+			creatorAvailabilityServices?.pages.flatMap((page: any) => page.data) ||
+			[];
+		setUserServices(flattenedServices);
+	}, [creatorAvailabilityServices]);
+
 	const form = useForm<z.infer<typeof formSchema>>({
 		mode: "onChange",
 		resolver: zodResolver(formSchema),
@@ -129,7 +149,7 @@ const DiscountServicesForm = ({
 						title: service.title,
 						description: service.description,
 						photo: service.photo,
-						type: service.type,
+						type: service.type || [],
 						isActive: service.isActive,
 						currency: service.currency,
 						discountRules: service.discountRules.map((rule) => ({
@@ -144,7 +164,7 @@ const DiscountServicesForm = ({
 						description: "",
 						photo:
 							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
-						type: "all",
+						type: [],
 						isActive: true,
 						currency: "INR",
 						discountRules: [
@@ -219,22 +239,42 @@ const DiscountServicesForm = ({
 
 	const [hasChanges, setHasChanges] = useState(false);
 	const initialValues = useRef(form.getValues());
+	const hasChangesRef = useRef(false);
 
 	useEffect(() => {
 		const subscription = form.watch((values) => {
 			const currentValues = values;
-			setHasChanges(
-				JSON.stringify(currentValues) !== JSON.stringify(initialValues.current)
-			);
+			const changes = !isEqual(currentValues, initialValues.current);
+			if (hasChangesRef.current !== changes) {
+				hasChangesRef.current = changes;
+				setHasChanges(changes);
+			}
 		});
 		return () => subscription.unsubscribe();
-	}, [form]);
+	}, [form, isValid]);
+
+	const serviceOptions = useMemo(() => {
+		const predefinedOptions = [
+			{ label: "All", value: "all" },
+			{ label: "Audio", value: "audio" },
+			{ label: "Video", value: "video" },
+			{ label: "Chat", value: "chat" },
+		];
+
+		const fetchedOptions =
+			userServices.map((service) => ({
+				label: service.title,
+				value: service._id,
+			})) || [];
+
+		return [...predefinedOptions, ...fetchedOptions];
+	}, [userServices, creatorAvailabilityServices]);
 
 	return (
 		<Form {...form}>
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
-				className="space-y-8 size-full relative mt-5"
+				className="space-y-8 size-full relative"
 			>
 				{/* Thumbnail Photo */}
 				<FormField
@@ -264,8 +304,10 @@ const DiscountServicesForm = ({
 					control={form.control}
 					name="title"
 					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Title</FormLabel>
+						<FormItem className="!mt-4">
+							<FormLabel className="!text-[#374151] !text-sm">
+								Title <span className="text-red-500">*</span>
+							</FormLabel>
 							<FormControl>
 								<Input placeholder="Service Title" {...field} />
 							</FormControl>
@@ -279,8 +321,10 @@ const DiscountServicesForm = ({
 					control={form.control}
 					name="description"
 					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Description</FormLabel>
+						<FormItem className="!mt-4">
+							<FormLabel className="!text-[#374151] !text-sm">
+								Description <span className="text-red-500">*</span>
+							</FormLabel>
 							<FormControl>
 								<Textarea
 									className="flex flex-1 px-4 py-3  focus-visible:ring-transparent max-h-32"
@@ -298,54 +342,82 @@ const DiscountServicesForm = ({
 					control={form.control}
 					name="type"
 					render={({ field }) => {
-						// Check if any discount rule contains the "New User" condition
 						const isNewUserConditionSelected = form
 							.watch("discountRules")
 							?.some((rule) => rule.conditions.includes("New User"));
 
 						return (
-							<FormItem>
-								<FormLabel>Services</FormLabel>
-								<Select
-									onValueChange={(value) => {
-										// Only allow changing type if "New User" is not selected
-										if (!isNewUserConditionSelected) {
-											field.onChange(value);
+							<FormItem className="!mt-4">
+								<FormLabel className="!text-[#374151] !text-sm">
+									Select Services<span className="text-red-500">*</span>
+								</FormLabel>
+
+								{isLoading ? (
+									<div className="flex items-center justify-center p-4">
+										<div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+										<span className="ml-2 text-sm text-gray-500">
+											Loading...
+										</span>
+									</div>
+								) : (
+									<SelectInput
+										isMulti
+										options={serviceOptions}
+										onChange={(selectedOptions) => {
+											const hasAllSelected = selectedOptions.some(
+												(option) => option.value === "all"
+											);
+
+											if (hasAllSelected) {
+												// If "all" is selected, deselect all others
+												field.onChange(["all"]);
+											} else {
+												// Remove "all" if another option is selected
+												field.onChange(
+													selectedOptions.map((option) => option.value)
+												);
+											}
+										}}
+										value={
+											isNewUserConditionSelected
+												? serviceOptions.filter(
+														(option) => option.value === "all"
+												  )
+												: serviceOptions.filter((option) =>
+														field.value?.includes(option.value)
+												  )
 										}
-									}}
-									value={field.value}
-									disabled={isNewUserConditionSelected} // Disable dropdown if "New User" is selected
-								>
-									<SelectTrigger>
-										<SelectValue placeholder="Select service type" />
-									</SelectTrigger>
-									<SelectContent className="!bg-white">
-										<SelectItem
-											className="cursor-pointer hover:bg-gray-50"
-											value="all"
-										>
-											All
-										</SelectItem>
-										<SelectItem
-											className="cursor-pointer hover:bg-gray-50"
-											value="audio"
-										>
-											Audio
-										</SelectItem>
-										<SelectItem
-											className="cursor-pointer hover:bg-gray-50"
-											value="video"
-										>
-											Video
-										</SelectItem>
-										<SelectItem
-											className="cursor-pointer hover:bg-gray-50"
-											value="chat"
-										>
-											Chat
-										</SelectItem>
-									</SelectContent>
-								</Select>
+										isDisabled={isNewUserConditionSelected}
+										styles={{
+											control: (base) => ({
+												...base,
+												borderColor: "#E5E7EB",
+												padding: "0.25rem 0.5rem",
+												boxShadow: "none",
+											}),
+											multiValue: (base) => ({
+												...base,
+												backgroundColor: "#0000001A",
+												borderRadius: "9999px",
+												padding: "0.25rem 0.5rem",
+											}),
+											multiValueLabel: (base) => ({
+												...base,
+												color: "#1F2937",
+											}),
+											multiValueRemove: (base) => ({
+												...base,
+												color: "#1F2937",
+												cursor: "pointer",
+												":hover": {
+													backgroundColor: "#D1D5DB",
+													color: "#111827",
+												},
+											}),
+										}}
+									/>
+								)}
+
 								{isNewUserConditionSelected && (
 									<p className="mt-2 text-sm text-gray-500">
 										Type is locked to &quot;All&quot; because &quot;New
@@ -362,8 +434,10 @@ const DiscountServicesForm = ({
 					control={form.control}
 					name="isActive"
 					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Toggle Service Status</FormLabel>
+						<FormItem className="!mt-4">
+							<FormLabel className="!text-[#374151] !text-sm">
+								Campaign Status <span className="text-red-500">*</span>
+							</FormLabel>
 							<Select
 								onValueChange={(value) => field.onChange(value === "true")}
 								value={field.value ? "true" : "false"} // Ensures correct selection is displayed
@@ -396,8 +470,10 @@ const DiscountServicesForm = ({
 					control={form.control}
 					name="currency"
 					render={({ field }) => (
-						<FormItem>
-							<FormLabel>User Type</FormLabel>
+						<FormItem className="!mt-4">
+							<FormLabel className="!text-[#374151] !text-sm">
+								Service Region
+							</FormLabel>
 							<Select onValueChange={field.onChange} defaultValue={field.value}>
 								<SelectTrigger>
 									<SelectValue placeholder="Select Type" />
@@ -407,7 +483,7 @@ const DiscountServicesForm = ({
 										className="cursor-pointer hover:bg-gray-50"
 										value="INR"
 									>
-										Indian
+										India
 									</SelectItem>
 									<SelectItem
 										className="cursor-pointer hover:bg-gray-50"
@@ -423,26 +499,24 @@ const DiscountServicesForm = ({
 				/>
 
 				{/* Discount Rules */}
-				<div className="space-y-4">
-					<FormLabel>Discount Rules</FormLabel>
+				<div className="space-y-4 !mt-4">
+					<FormLabel className="!text-[#374151] !text-sm">
+						Discount Rules <span className="text-red-500">*</span>
+					</FormLabel>
 					{fields.map((field, index) => (
-						<div
-							key={field.id}
-							className="grid grid-cols-1 gap-4 border p-4 rounded-md"
-						>
+						<div key={field.id} className="grid grid-cols-1 gap-2">
 							<FormField
 								control={form.control}
 								name={`discountRules.${index}.conditions`}
 								render={({ field }) => {
 									const conditions =
 										form.watch(`discountRules.${index}.conditions`) || [];
-									const isNewUserSelected = conditions.includes("New User");
 
 									return (
 										<FormItem>
-											<FormLabel>Conditions</FormLabel>
+											<FormLabel className="sr-only">Conditions</FormLabel>
 											<FormControl>
-												<div className="grid grid-cols-2 gap-4">
+												<div className="flex items-center justify-start gap-4 !mt-0">
 													{predefinedConditions.map((condition) => {
 														const isSelected = conditions.includes(condition);
 
@@ -450,9 +524,9 @@ const DiscountServicesForm = ({
 															<section
 																key={condition}
 																className={cn(
-																	"cursor-pointer p-4 border transition-all rounded-lg",
+																	"cursor-pointer px-3 py-1 border transition-all rounded-full",
 																	isSelected
-																		? "bg-gray-100 border-gray-300"
+																		? "bg-black/10 border-gray-300"
 																		: "hover:bg-gray-50"
 																)}
 																onClick={() => {
@@ -477,12 +551,26 @@ const DiscountServicesForm = ({
 																	field.onChange(updatedConditions);
 
 																	if (updatedConditions.includes("New User")) {
-																		form.setValue("type", "all");
+																		form.setValue("type", ["all"]);
 																	}
 																}}
 															>
-																<section className="flex items-center justify-center text-sm font-medium">
-																	{condition}
+																<section className="flex items-center justify-center text-sm font-medium gap-2">
+																	{condition}{" "}
+																	{isSelected && (
+																		<svg
+																			xmlns="http://www.w3.org/2000/svg"
+																			viewBox="0 0 24 24"
+																			fill="currentColor"
+																			className="size-5"
+																		>
+																			<path
+																				fillRule="evenodd"
+																				d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z"
+																				clipRule="evenodd"
+																			/>
+																		</svg>
+																	)}
 																</section>
 															</section>
 														);
@@ -494,104 +582,107 @@ const DiscountServicesForm = ({
 									);
 								}}
 							/>
-
-							<FormField
-								control={form.control}
-								name={`discountRules.${index}.discountType`}
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Discount Type</FormLabel>
-										<Select
-											onValueChange={field.onChange}
-											defaultValue={field.value}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select type" />
-											</SelectTrigger>
-											<SelectContent className="!bg-white">
-												<SelectItem
-													className="cursor-pointer hover:bg-gray-50"
-													value="percentage"
-												>
-													Percentage
-												</SelectItem>
-												<SelectItem
-													className="cursor-pointer hover:bg-gray-50"
-													value="flat"
-												>
-													Flat
-												</SelectItem>
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name={`discountRules.${index}.discountAmount`}
-								render={({ field }) => {
-									const discountType = form.watch(
-										`discountRules.${index}.discountType`
-									);
-									const discountCurrency = form.watch(`currency`);
-
-									const placeholder =
-										discountType === "percentage"
-											? "e.g. 10%"
-											: discountCurrency === "INR"
-											? "e.g. ₹100"
-											: "e.g. $100";
-
-									return (
-										<FormItem>
-											<FormLabel className="block mb-2 text-sm font-medium text-gray-700">
-												Discount Amount
+							<div className="grid grid-cols-2 items-center gap-4">
+								<FormField
+									control={form.control}
+									name={`discountRules.${index}.discountType`}
+									render={({ field }) => (
+										<FormItem className="!mt-4">
+											<FormLabel className="!text-[#374151] !text-sm">
+												Discount Type
 											</FormLabel>
-											<FormControl>
-												<section className="flex items-center w-full space-x-2 border border-gray-300 rounded-lg px-3 py-2">
-													{discountType === "flat" &&
-														(discountCurrency === "INR" ? (
-															<span className="text-gray-500">₹</span>
-														) : (
-															<span className="text-gray-500">$</span>
-														))}
-													<Input
-														type="number"
-														min={0}
-														max={discountType === "percentage" ? 100 : 10000}
-														placeholder={placeholder}
-														className={`w-full ${
-															discountType === "percentage" && "!px-1"
-														} py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0`}
-														{...field}
-														value={field.value ?? ""}
-														onChange={(e) => {
-															const rawValue = e.target.value;
-															const sanitizedValue = rawValue.replace(
-																/^0+(?!$)/,
-																""
-															);
-															field.onChange(
-																sanitizedValue !== ""
-																	? Number(sanitizedValue)
-																	: null
-															);
-														}}
-													/>
-													{discountType === "percentage" && (
-														<span className="text-gray-500">%</span>
-													)}
-												</section>
-											</FormControl>
-											<FormMessage className="mt-1 text-sm text-red-500" />
+											<Select
+												onValueChange={field.onChange}
+												defaultValue={field.value}
+											>
+												<SelectTrigger>
+													<SelectValue placeholder="Select type" />
+												</SelectTrigger>
+												<SelectContent className="!bg-white">
+													<SelectItem
+														className="cursor-pointer hover:bg-gray-50"
+														value="percentage"
+													>
+														Percentage
+													</SelectItem>
+													<SelectItem
+														className="cursor-pointer hover:bg-gray-50"
+														value="flat"
+													>
+														Flat
+													</SelectItem>
+												</SelectContent>
+											</Select>
+											<FormMessage />
 										</FormItem>
-									);
-								}}
-							/>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name={`discountRules.${index}.discountAmount`}
+									render={({ field }) => {
+										const discountType = form.watch(
+											`discountRules.${index}.discountType`
+										);
+										const discountCurrency = form.watch(`currency`);
+
+										const placeholder =
+											discountType === "percentage"
+												? "e.g. 10%"
+												: discountCurrency === "INR"
+												? "e.g. ₹100"
+												: "e.g. $100";
+
+										return (
+											<FormItem className="!mt-4">
+												<FormLabel className="!text-[#374151] !text-sm">
+													Discount Amount
+												</FormLabel>
+												<FormControl>
+													<section className="flex items-center w-full space-x-2 border border-gray-300 rounded-lg px-3">
+														{discountType === "flat" &&
+															(discountCurrency === "INR" ? (
+																<span className="text-gray-500">₹</span>
+															) : (
+																<span className="text-gray-500">$</span>
+															))}
+														<Input
+															type="number"
+															min={0}
+															max={discountType === "percentage" ? 100 : 10000}
+															placeholder={placeholder}
+															className={`w-full ${
+																discountType === "percentage" && "!px-1"
+															} hover:bg-transparent py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0`}
+															{...field}
+															value={field.value ?? ""}
+															onChange={(e) => {
+																const rawValue = e.target.value;
+																const sanitizedValue = rawValue.replace(
+																	/^0+(?!$)/,
+																	""
+																);
+																field.onChange(
+																	sanitizedValue !== ""
+																		? Number(sanitizedValue)
+																		: null
+																);
+															}}
+														/>
+														{discountType === "percentage" && (
+															<span className="text-gray-500">%</span>
+														)}
+													</section>
+												</FormControl>
+												<FormMessage className="mt-1 text-sm text-red-500" />
+											</FormItem>
+										);
+									}}
+								/>
+							</div>
 							{/* <Button
 								type="button"
-								className="text-sm bg-red-500 hoverScaleDownEffect w-fit text-white mt-2"
+								className="rounded-full text-sm bg-red-500 hoverScaleDownEffect w-fit text-white mt-2"
 								variant="destructive"
 								onClick={() => remove(index)}
 							>
@@ -601,7 +692,7 @@ const DiscountServicesForm = ({
 					))}
 					{/* <Button
 						type="button"
-						className="text-sm bg-black hoverScaleDownEffect w-full mx-auto text-white"
+						className="rounded-full text-sm bg-black hoverScaleDownEffect w-full mx-auto text-white"
 						onClick={() => {
 							const randomIndex = Math.floor(
 								Math.random() * predefinedConditions.length
@@ -624,12 +715,14 @@ const DiscountServicesForm = ({
 					control={form.control}
 					name="extraDetails"
 					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Extra Details</FormLabel>
+						<FormItem className="!mt-4">
+							<FormLabel className="!text-[#374151] !text-sm">
+								Extra Details
+							</FormLabel>
 							<FormControl>
 								<Textarea
 									className="flex flex-1 px-4 py-3  focus-visible:ring-transparent max-h-32"
-									placeholder="Additional information"
+									placeholder="Any extra details about your campaign"
 									{...field}
 								/>
 							</FormControl>
@@ -638,28 +731,45 @@ const DiscountServicesForm = ({
 					)}
 				/>
 
-				{isValid && hasChanges && (
+				{/* Preview */}
+				{isValid && <ServicePreview service={form.getValues()} />}
+
+				{/* Action Buttons */}
+				<div className="sticky -bottom-5 py-2.5 w-full flex items-center justify-end gap-2.5 bg-white">
 					<Button
-						className="sticky -bottom-2.5 text-base bg-green-1 hoverScaleDownEffect w-full mx-auto text-white"
-						type="submit"
-						disabled={!isValid || form.formState.isSubmitting}
+						className={`text-base ${
+							isValid && hasChanges
+								? "border border-[#D1D5DB] hover:bg-gray-100 bg-white"
+								: "bg-black text-white"
+						} hoverScaleDownEffect w-fit rounded-full !px-[24px] !py-2`}
+						onClick={() => sheetOpen(false)}
 					>
-						{form.formState.isSubmitting ? (
-							<Image
-								src="/icons/loading-circle.svg"
-								alt="Loading..."
-								width={24}
-								height={24}
-								className=""
-								priority
-							/>
-						) : sheetType === "Create" ? (
-							"Submit Details"
-						) : (
-							"Update Details"
-						)}
+						Cancel
 					</Button>
-				)}
+
+					{isValid && hasChanges && (
+						<Button
+							className="text-base bg-black hoverScaleDownEffect w-fit  text-white rounded-full !px-[24px] !py-2"
+							type="submit"
+							disabled={!isValid || form.formState.isSubmitting}
+						>
+							{form.formState.isSubmitting ? (
+								<Image
+									src="/icons/loading-circle.svg"
+									alt="Loading..."
+									width={24}
+									height={24}
+									className=""
+									priority
+								/>
+							) : sheetType === "Create" ? (
+								"Create Campaign"
+							) : (
+								"Update Campaign"
+							)}
+						</Button>
+					)}
+				</div>
 			</form>
 		</Form>
 	);

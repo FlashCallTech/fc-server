@@ -21,6 +21,7 @@ interface Transaction {
 	createdAt: string;
 	type: "credit" | "debit";
 	category: string;
+	callCategory: string;
 	callType?: string;
 }
 
@@ -42,9 +43,6 @@ const Withdraw: React.FC = () => {
 	});
 	const [selectedOption, setSelectedOption] = useState("");
 	const [withdrawAmount, setWithdrawAmount] = useState<string>("");
-	const [totalEarnings, setTotalEarnings] = useState<number>();
-	const [totalWithdrawals, setTotalWithdrawals] = useState();
-	const [fetching, setFetching] = useState(true);
 	const [isStickyVisible, setIsStickyVisible] = useState(true);
 	const topRef = useRef(null);
 	const openModal = () => setIsModalOpen(true);
@@ -310,7 +308,7 @@ const Withdraw: React.FC = () => {
 											onClick={() => {
 												setBtn(filter as "all" | "credit" | "debit");
 											}}
-											className={`capitalize px-5 py-1 border-2 border-black rounded-full ${
+											className={`capitalize px-5 py-1 border border-black rounded-full ${
 												filter === btn
 													? "bg-gray-800 text-white"
 													: "bg-white text-black dark:bg-gray-700 dark:text-white hoverScaleDownEffect"
@@ -352,7 +350,7 @@ const Withdraw: React.FC = () => {
 												className="p-5 bg-white rounded-lg shadow border border-gray-100 w-full animate-enterFromBottom"
 											>
 												<h3 className="text-base items-start font-normal  text-gray-400 mb-2">
-													{groupedDate.dateOnly}
+													{groupedDate?.dateOnly}
 												</h3>
 												{transactions.map((transaction) => (
 													<li
@@ -364,12 +362,12 @@ const Withdraw: React.FC = () => {
 																<p className="flex items-center justify-start gap-2 font-normal text-sm leading-4">
 																	ID{" "}
 																	<span className="text-sm sm:block">
-																		<span className="block xm:hidden">{`${transaction._id.slice(
+																		<span className="block xm:hidden">{`${transaction?._id.slice(
 																			0,
 																			11
 																		)}...`}</span>
 																		<span className="hidden xm:block">
-																			{transaction._id}
+																			{transaction?._id}
 																		</span>
 																	</span>
 																</p>
@@ -382,7 +380,7 @@ const Withdraw: React.FC = () => {
 																	stroke="currentColor"
 																	className="cursor-pointer mb-[1px] size-3 md:size-4 text-gray-400 hoverScaleDownEffect hover:text-green-1"
 																	onClick={() =>
-																		copyToClipboard(transaction._id)
+																		copyToClipboard(transaction?._id)
 																	}
 																>
 																	<path
@@ -392,7 +390,7 @@ const Withdraw: React.FC = () => {
 																	/>
 																</svg>
 															</div>
-															<section className="flex items-center justify-start gap-2">
+															<section className="flex flex-wrap items-center justify-start gap-2">
 																{transaction?.category && (
 																	<section className="font-normal text-xs sm:text-sm whitespace-nowrap">
 																		{transaction?.callType ? (
@@ -450,7 +448,6 @@ const Withdraw: React.FC = () => {
 																	</section>
 																)}
 
-																{/* Separator */}
 																<span className="text-gray-400 text-xs sm:text-sm">
 																	•
 																</span>
@@ -458,10 +455,44 @@ const Withdraw: React.FC = () => {
 																<p className=" text-gray-400 font-normal text-xs sm:text-sm leading-4">
 																	{
 																		formatDateTime(
-																			new Date(transaction.createdAt)
-																		).dateTime
+																			new Date(transaction?.createdAt)
+																		)?.dateTime
 																	}
 																</p>
+
+																<span className="text-gray-400 text-xs sm:text-sm max-xm:hidden">
+																	•
+																</span>
+
+																{transaction.category !==
+																	"Call Transaction" && (
+																	<p
+																		className={`
+																	 ${
+																			transaction.category === "Refund" ||
+																			transaction.category === "Tip"
+																				? "bg-[#F0FDF4] text-[#16A34A]"
+																				: "bg-[#DBEAFE] text-[#1E40AF]"
+																		} text-[12px] px-2 py-1 rounded-full`}
+																	>
+																		{transaction.category}
+																	</p>
+																)}
+
+																{transaction.callCategory &&
+																	transaction.category ===
+																		"Call Transaction" && (
+																		<p
+																			className={`
+																	 ${
+																			transaction.callCategory === "Scheduled"
+																				? "bg-[#F0FDF4] text-[#16A34A]"
+																				: "bg-[#DBEAFE] text-[#1E40AF]"
+																		} text-[12px] px-2 py-1 rounded-full`}
+																		>
+																			{transaction.callCategory}
+																		</p>
+																	)}
 															</section>
 														</div>
 														<section className="flex flex-col justify-between items-center">
@@ -565,19 +596,6 @@ const Withdraw: React.FC = () => {
 					>
 						{/* Sticky Balance and Recharge Section */}
 						<section className="flex flex-col gap-5 items-center justify-center md:items-start">
-							{/* Balance Section */}
-							{/* {isStickyVisible && (
-								<div className="w-full flex gap-1 text-xl items-start font-semibold justify-start">
-									<p>
-										Welcome,
-										<br />
-									</p>
-									<p>
-										{creatorUser?.firstName} {creatorUser?.lastName}
-									</p>
-								</div>
-							)} */}
-
 							{/* Recharge Section */}
 							<div className="flex flex-col gap-5 w-full justify-center items-start">
 								{isStickyVisible && (
@@ -663,11 +681,11 @@ const Withdraw: React.FC = () => {
 												<input
 													type="date"
 													className="border px-6 py-2 rounded-lg focus:outline-none hover:cursor-pointer"
-													value={dateRange.endDate ?? ""}
+													value={dateRange?.endDate ?? ""}
 													onChange={(e) =>
-														handleDateChange("endDate", e.target.value)
+														handleDateChange("endDate", e?.target.value)
 													}
-													min={dateRange.startDate || undefined} // Prevent end date being before start date
+													min={dateRange.startDate || undefined}
 													max={new Date().toISOString().split("T")[0]}
 												/>
 											</div>
@@ -712,7 +730,7 @@ const Withdraw: React.FC = () => {
 							>{`${
 								isFetching
 									? "Fetching..."
-									: `₹ ${userTransactions?.pages[0].totalEarnings.toFixed(2)}`
+									: `₹ ${userTransactions?.pages[0]?.totalEarnings?.toFixed(2)}`
 							} `}</span>
 						</section>
 						<section className="flex flex-col gap-3 border-[1px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg p-6 w-full">
@@ -724,7 +742,7 @@ const Withdraw: React.FC = () => {
 							>{`${
 								isFetching
 									? "Fetching..."
-									: `₹ ${userTransactions?.pages[0].totalWithdrawals.toFixed(
+									: `₹ ${userTransactions?.pages[0]?.totalWithdrawals?.toFixed(
 											2
 									  )}`
 							}`}</span>
@@ -780,18 +798,18 @@ const Withdraw: React.FC = () => {
 															<td className="px-6 py-4 text-sm text-[#6B7280]">
 																{
 																	formatDateTime(
-																		new Date(transaction.createdAt)
+																		new Date(transaction?.createdAt)
 																	).custom
 																}
 															</td>
 															<td className="px-6 py-4 text-sm text-[#6B7280]">
 																<div className="flex items-center gap-2">
-																	<span className="block lg:hidden">{`${transaction._id.slice(
+																	<span className="block lg:hidden">{`${transaction?._id.slice(
 																		0,
 																		11
 																	)}...`}</span>
 																	<span className="hidden lg:block ">
-																		{transaction._id}
+																		{transaction?._id}
 																	</span>
 																	<Image
 																		src={"/creator/copy.svg"}
@@ -800,17 +818,12 @@ const Withdraw: React.FC = () => {
 																		alt="Copy"
 																		className="size-4 hover:cursor-pointer hoverScaleDownEffect"
 																		onClick={() =>
-																			copyToClipboard(transaction._id)
+																			copyToClipboard(transaction?._id)
 																		}
 																	/>
 																</div>
 															</td>
-															{/* <td className="px-6 py-4">
-																{transaction?.category || (
-																	transaction?.callType === "video" ? "Video Call" :
-																		transaction?.callType === "audio" ? "Audio Call" : "Text Chat"
-																)}
-															</td> */}
+
 															<td className={`px-6 py-4 text-xs`}>
 																<span
 																	className={`px-2 py-1 rounded-full ${

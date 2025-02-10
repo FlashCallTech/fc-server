@@ -197,7 +197,11 @@ const ClientServiceCard = ({ service }: { service: Service }) => {
 									Call Type
 								</p>
 								<p className="text-sm text-gray-700 capitalize">
-									{type === "all" ? "All Three Services" : type}
+									{Array.isArray(type)
+										? type.includes("all")
+										: type === "all"
+										? "All Three Services"
+										: type}
 								</p>
 							</div>
 						)}

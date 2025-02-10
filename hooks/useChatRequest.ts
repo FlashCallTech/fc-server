@@ -4,6 +4,7 @@ import { analytics, db } from "@/lib/firebase";
 import {
 	arrayUnion,
 	collection,
+	deleteField,
 	doc,
 	getDoc,
 	onSnapshot,
@@ -31,14 +32,13 @@ import { clientUser, creatorUser, Service } from "@/types";
 const useChatRequest = (onChatRequestUpdate?: any) => {
 	const [loading, setLoading] = useState(false);
 	const { currentUser } = useCurrentUsersContext();
-	const [SheetOpen, setSheetOpen] = useState(false); // State to manage sheet visibility
+	const [isSheetOpen, setSheetOpen] = useState(false); // State to manage sheet visibility
 	const chatRequestsRef = collection(db, "chatRequests");
 	const chatRef = collection(db, "chats");
 	const messagesRef = collection(db, "messages");
 	const router = useRouter();
 	const { walletBalance } = useWalletBalanceContext();
 	const { getDevicePlatform } = usePlatform();
-	
 
 	// Function to update expert's status
 	const updateExpertStatus = async (phone: string, status: string) => {
@@ -48,7 +48,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ phone, status }),
+				body: JSON.stringify({ phone, status, global: currentUser?.global ?? false }),
 			});
 
 			const data = await response.json();
@@ -61,7 +61,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	};
 
-	function maskPhoneNumber(phoneNumber: string) {
+	const maskPhoneNumber = (phoneNumber: string) => {
 		// Remove the '+91' prefix
 		if (phoneNumber) {
 			let cleanedNumber = phoneNumber.replace("+91", "");
@@ -88,8 +88,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		}
 	};
 
-	const handleChat = async (creator: creatorUser, clientUser: clientUser, discounts?: Service[]) => {
-		if (!clientUser) router.push("sign-in");
+	const handleChat = async (creator: creatorUser, clientUser: clientUser, setChatState: any, discounts?: Service) => {
 		if (!clientUser) router.push("sign-in");
 
 		const chatRate = await getUserData(creator._id, clientUser.global ?? false);
@@ -127,9 +126,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		const callId = crypto.randomUUID();
 		localStorage.setItem("CallId", callId);
 
-		setSheetOpen(true);
-
 		try {
+			setSheetOpen(true);
 			const userChatsDocRef = doc(db, "userchats", clientUser?._id);
 			const creatorChatsDocRef = doc(db, "userchats", creator?._id);
 
@@ -179,7 +177,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 			const messagesDocRef = doc(messagesRef, chatId);
 			const messagesDocSnapshot = await getDoc(messagesDocRef);
-			if(!messagesDocSnapshot.exists()) {
+			if (!messagesDocSnapshot.exists()) {
 				await setDoc(messagesDocSnapshot.ref, {
 					messages: []
 				})
@@ -203,7 +201,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				{
 					clientId: clientUser?._id,
 					creatorId: creator?._id,
-					discounts: [],
+					discounts: null,
 				},
 				{ merge: true }
 			);
@@ -214,25 +212,15 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				: new Date();
 			const formattedDate = createdAtDate.toISOString().split("T")[0];
 
-			await setDoc(newChatRequestRef, {
+			const chatRequestData: any = {
 				id: newChatRequestRef.id,
 				callId,
 				creatorId: creator?._id,
-				creatorName: creator.fullName
-					? creator.fullName
-					: maskPhoneNumber(creator.phone as string),
-				creatorPhone: creator.phone,
 				creatorImg: creator.photo,
 				clientId: clientUser?._id,
-				clientPhone: clientUser?.phone ?? "",
-				clientName: clientUser?.fullName
-					? clientUser.fullName
-					: maskPhoneNumber(clientUser.phone as string),
 				clientImg: clientUser?.photo,
 				client_first_seen: formattedDate,
-				creator_first_seen: creator.createdAt
-					? creator.createdAt.toString().split("T")[0]
-					: "",
+				creator_first_seen: creator.createdAt ? creator.createdAt.toString().split("T")[0] : "",
 				client_balance: clientUser.walletBalance,
 				status: "pending",
 				chatId: chatId,
@@ -240,11 +228,40 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				maxCallDuration,
 				global: currentUser?.global ?? false,
 				createdAt: Date.now(),
-				discounts
-			});
+				discounts: discounts ?? null,
+			};
+
+			console.log("discount...", discounts);
+
+			// Conditionally add fields if they exist
+			if (creator.fullName) {
+				chatRequestData.creatorName = creator.fullName;
+			} else if (creator.phone) {
+				chatRequestData.creatorName = maskPhoneNumber(creator.phone as string);
+			}
+
+			if (creator.phone) {
+				chatRequestData.creatorPhone = creator.phone;
+			}
+
+			if (clientUser?.phone) {
+				chatRequestData.clientPhone = clientUser.phone;
+			}
+
+			if (clientUser?.email) {
+				chatRequestData.clientEmail = clientUser.email;
+			}
+
+			if (clientUser?.fullName) {
+				chatRequestData.clientName = clientUser.fullName;
+			} else if (clientUser?.phone) {
+				chatRequestData.clientName = maskPhoneNumber(clientUser.phone as string);
+			}
+
+			await setDoc(newChatRequestRef, chatRequestData);
+
 
 			const docSnap = await getDoc(newChatRequestRef);
-			console.log("Inside HandleChat: ", docSnap.data());
 
 			if (docSnap.exists()) {
 				const chatRequestData = docSnap.data();
@@ -299,23 +316,86 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			const chatRequestDoc = doc(chatRequestsRef, newChatRequestRef.id);
 			const unsubscribe = onSnapshot(chatRequestDoc, (doc) => {
 				const data = doc.data();
-				if (data && data.status === "accepted") {
-					clearTimeout(timer);
-					unsubscribe();
-					localStorage.setItem(
-						"user2",
-						JSON.stringify({
-							clientId: data.clientId,
-							creatorId: data.creatorId,
-							User_First_Seen: formattedDate,
-							chatId: chatId,
-							requestId: doc.id,
-							fullName: creator.firstName + " " + creator?.lastName,
-							photo: creator.photo,
-						})
-					);
+				if (data) {
+					if (
+						data.status === "ended" ||
+						data.status === "rejected" ||
+						data.status === "cancelled"
+					) {
+						updateExpertStatus(
+							clientUser?.global
+								? (clientUser?.email as string)
+								: (clientUser?.phone as string),
+							"Online"
+						);
+						setSheetOpen(false);
+						setChatState(data.status);
+						if (data.status === "rejected") {
+							toast({
+								variant: "destructive",
+								title: "The user is busy, please try again later",
+								toastStatus: "negative",
+							});
+						}
+						if (data.status === "ended") {
+							toast({
+								variant: "destructive",
+								title: "User is not answering please try again later",
+								toastStatus: "negative",
+							});
+						}
+						if (data.status === "cancelled") {
+							toast({
+								variant: "destructive",
+								title: "You cancelled the request",
+								toastStatus: "negative",
+							});
+						}
+						localStorage.removeItem("user2");
+						localStorage.removeItem("chatRequestId");
+						localStorage.removeItem("chatId");
+						localStorage.removeItem("CallId");
+						unsubscribe();
+					} else if (
+						data.status === "accepted" &&
+						clientUser?._id === data.clientId
+					) {
+						setSheetOpen(false);
+						setChatState(data.status);
+						updateExpertStatus(creator.phone as string, "Busy");
+						unsubscribe();
+						trackEvent("BookCall_Chat_Connected", {
+							Client_ID: data.clientId,
+							User_First_Seen: data.client_first_seen,
+							Creator_ID: data.creatorId,
+							Time_Duration_Available: data.maxCallDuration,
+							Walletbalance_Available: clientUser?.walletBalance,
+						});
+						updateExpertStatus(data.creatorPhone as string, "Busy");
+						router.replace(`/chat/${data.callId}/${data.chatId}/${data.clientId}`);
+					} else if (data.status === "accepted") {
+						clearTimeout(timer);
+						unsubscribe();
+						localStorage.setItem(
+							"user2",
+							JSON.stringify({
+								clientId: data.clientId,
+								creatorId: data.creatorId,
+								User_First_Seen: formattedDate,
+								chatId: chatId,
+								requestId: doc.id,
+								fullName: creator.firstName + " " + creator?.lastName,
+								photo: creator.photo,
+							})
+						);
+					} else {
+						setChatState(data.status);
+					}
 				}
 			});
+
+			updateExpertStatus(currentUser?.global ? currentUser?.email as string : currentUser?.phone as string, "Busy");
+
 			trackEvent("BookCall_Chat_initiated", {
 				Client_ID: clientUser._id,
 				User_First_Seen: formattedDate,
@@ -324,6 +404,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				Walletbalace_Available: clientUser.walletBalance,
 			});
 		} catch (error) {
+			setSheetOpen(false);
 			Sentry.captureException(error);
 			console.error(error);
 			toast({
@@ -331,6 +412,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				title: "Failed to send chat request",
 				toastStatus: "negative",
 			});
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -347,23 +430,35 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		try {
 			const existingChatDoc = await getDoc(doc(db, "chats", chatId));
 			if (!existingChatDoc.data()?.status) {
-				await setDoc(doc(db, "chats", chatId), {
+				const chatData: any = {
 					callId: chatRequest.callId,
 					chatId: chatRequest.chatId,
 					clientId: chatRequest.clientId,
 					clientName: chatRequest.clientName,
-					clientPhone: chatRequest.clientPhone ?? "",
 					clientImg: chatRequest.clientImg,
 					creatorId: chatRequest.creatorId,
 					creatorName: chatRequest.creatorName,
 					creatorPhone: chatRequest.creatorPhone,
 					creatorImg: chatRequest.creatorImg,
 					status: "active",
-					messages: [],
 					timerSet: false,
 					global: chatRequest.global ?? false,
 					chatRate: chatRequest.chatRate,
-				});
+					discounts: chatRequest.discounts ?? null
+				};
+
+				// Only add `clientPhone` if it exists
+				if (chatRequest.clientPhone) {
+					chatData.clientPhone = chatRequest.clientPhone;
+				}
+
+				// Only add `clientEmail` if it exists
+				if (chatRequest.clientEmail) {
+					chatData.clientEmail = chatRequest.clientEmail;
+				}
+
+				await setDoc(doc(db, "chats", chatId), chatData);
+
 
 				const creatorChatUpdate = updateDoc(
 					doc(userChatsRef, chatRequest.creatorId),
@@ -392,12 +487,11 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				);
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
 			} else {
-				await updateDoc(doc(db, "chats", chatId), {
+				const chatData: any = {
 					callId: chatRequest.callId,
 					chatId: chatRequest.chatId,
 					clientId: chatRequest.clientId,
 					clientName: chatRequest.clientName,
-					clientPhone: chatRequest.clientPhone ?? "",
 					clientImg: chatRequest.clientImg,
 					creatorId: chatRequest.creatorId,
 					creatorName: chatRequest.creatorName,
@@ -405,17 +499,24 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					creatorImg: chatRequest.creatorImg,
 					status: "active",
 					timerSet: false,
-					chatRate: chatRequest.chatRate,
-					maxChatDuration,
 					global: chatRequest.global ?? false,
-					clientBalance: response.walletBalance ?? "",
-					discounts: chatRequest?.discounts ?? [],
-				});
-			}
+					chatRate: chatRequest.chatRate,
+					discounts: chatRequest.discounts ?? null,
+				};
 
-			await updateDoc(doc(chatRef, chatId), {
-				status: "active",
-			});
+				// Only add `clientPhone` if it exists
+				if (chatRequest.clientPhone) {
+					chatData.clientPhone = chatRequest.clientPhone;
+				}
+
+				// Only add `clientEmail` if it exists
+				if (chatRequest.clientEmail) {
+					chatData.clientEmail = chatRequest.clientEmail;
+				}
+
+				await updateDoc(doc(db, "chats", chatId), chatData);
+
+			}
 
 			await updateDoc(doc(chatRequestsRef, chatRequest.id), {
 				status: "accepted",
@@ -546,7 +647,10 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 		handleRejectChat,
 		handleChat,
 		chatRequestsRef,
-		SheetOpen,
+		isSheetOpen,
+		setSheetOpen,
+		loading,
+		setLoading,
 	};
 };
 

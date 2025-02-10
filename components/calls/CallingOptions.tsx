@@ -29,14 +29,12 @@ import {
 	sendNotification,
 	backendUrl,
 	sendCallNotification,
+	updatePastFirestoreSessionsPPM,
 } from "@/lib/utils";
 import { trackPixelEvent } from "@/lib/analytics/pixel";
 import NotifyConsentSheet from "../client/NotifyConsentSheet";
 import { Cursor, Typewriter } from "react-simple-typewriter";
-import {
-	SelectedServiceType,
-	useSelectedServiceContext,
-} from "@/lib/context/SelectedServiceContext";
+import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
 
 interface CallingOptions {
 	creator: creatorUser;
@@ -44,11 +42,11 @@ interface CallingOptions {
 
 const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const client = useStreamVideoClient();
-	const [isSheetOpen, setSheetOpen] = useState(false);
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [isConsentSheetOpen, setIsConsentSheetOpen] = useState(false);
-	const { handleChat, chatRequestsRef } = useChatRequest();
+	const { handleChat, chatRequestsRef, loading, setLoading, isSheetOpen, setSheetOpen } =
+		useChatRequest();
 	const [callInitiated, setcallInitiated] = useState(false);
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
@@ -89,13 +87,22 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const handleTabClose = () => {
 		const chatRequestId = localStorage.getItem("chatRequestId");
 		const data = chatRequestId;
-		const url = `${backendBaseUrl}endChat/rejectChat`;
+		const url = `${backendBaseUrl}/endChat/rejectChat`;
+		if (!navigator.sendBeacon(url, data)) {
+			fetch(url, {
+				method: "POST",
+				body: data,
+				keepalive: true,
+			});
+		}
 		navigator.sendBeacon(url, data);
 	};
 
 	useEffect(() => {
+		window.addEventListener("pagehide", handleTabClose);
 		window.addEventListener("unload", handleTabClose);
 		return () => {
+			window.removeEventListener("pagehide", handleTabClose);
 			window.removeEventListener("unload", handleTabClose);
 		};
 	}, []);
@@ -220,75 +227,6 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	}, [creator?._id, creator?.phone]);
 
 	useEffect(() => {
-		if (!chatReqSent) {
-			return;
-		}
-
-		const intervalId = setInterval(() => {
-			const chatRequestId = localStorage.getItem("chatRequestId");
-
-			if (chatRequestId && chatReqSent) {
-				clearInterval(intervalId);
-
-				const chatRequestDoc = doc(db, "chatRequests", chatRequestId);
-
-				const unsubscribe = onSnapshot(chatRequestDoc, (docSnapshot) => {
-					const data = docSnapshot.data();
-					if (data) {
-						if (data.status === "ended" || data.status === "rejected") {
-							setSheetOpen(false);
-							setChatReqSent(false);
-							setChatState(data.status);
-							if (data.status === "rejected") {
-								toast({
-									variant: "destructive",
-									title: "The user is busy, please try again later",
-									toastStatus: "negative",
-								});
-							} else {
-								toast({
-									variant: "destructive",
-									title: "User is not answering please try again later",
-									toastStatus: "negative",
-								});
-							}
-							localStorage.removeItem("user2");
-							localStorage.removeItem("chatRequestId");
-							localStorage.removeItem("chatId");
-							localStorage.removeItem("CallId");
-							unsubscribe();
-						} else if (
-							data.status === "accepted" &&
-							clientUser?._id === data.clientId
-						) {
-							setChatState(data.status);
-							unsubscribe();
-							trackEvent("BookCall_Chat_Connected", {
-								Client_ID: data.clientId,
-								User_First_Seen: data.client_first_seen,
-								Creator_ID: data.creatorId,
-								Time_Duration_Available: data.maxCallDuration,
-								Walletbalance_Available: clientUser?.walletBalance,
-							});
-							// updateExpertStatus(data.creatorPhone as string, "Busy");
-							setTimeout(() => {
-								router.replace(
-									`/chat/${data.chatId}?creatorId=${data.creatorId}&clientId=${data.clientId}`
-								);
-							});
-							setChatReqSent(false);
-						} else {
-							setChatState(data.status);
-						}
-					}
-				});
-			}
-		}, 1000);
-
-		return () => clearInterval(intervalId);
-	}, [router, chatReqSent]);
-
-	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
 
 		if (chatState === "pending") {
@@ -315,7 +253,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		};
 	}, [chatState]);
 
-	const createMeeting = async (callType: string) => {
+	const createMeeting = async (callType: string, selectedOffer?: Service) => {
 		if (!client || !clientUser) return;
 
 		try {
@@ -448,6 +386,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						body: JSON.stringify({
 							callId: id as string,
 							type: callType as string,
+							category: "PPM",
 							status: "Initiated",
 							creator: String(clientUser?._id),
 							members: members,
@@ -456,6 +395,21 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 					});
 
 					await updateFirestoreSessions(clientUser?._id as string, {
+						callId: call.id,
+						status: "initiated",
+						callType: "instant",
+						clientId: clientUser?._id as string,
+						expertId: creator._id,
+						isVideoCall: callType,
+						creatorPhone: creator.phone,
+						clientPhone: clientUser?.global
+							? clientUser?.email
+							: clientUser?.phone,
+						global: clientUser?.global ?? false,
+						discount: selectedOffer,
+					});
+
+					await updatePastFirestoreSessionsPPM(call.id as string, {
 						callId: call.id,
 						status: "initiated",
 						callType: "instant",
@@ -498,6 +452,8 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		}
 
 		try {
+			localStorage.removeItem("chatId");
+			localStorage.removeItem("chatRequestId");
 			setcallInitiated(true);
 
 			if (!clientUser) {
@@ -552,7 +508,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						if (selectedOffer) {
 							setSelectedService(selectedOffer);
 						}
-						createMeeting(callType);
+						createMeeting(callType, selectedOffer);
 					} else if (clientUser && storedCallId) {
 						toast({
 							variant: "destructive",
@@ -582,6 +538,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	};
 
 	const handleChatClick = async () => {
+		setLoading(true);
+		localStorage.removeItem("chatId");
+		localStorage.removeItem("chatRequestId");
+		localStorage.removeItem("endedBy");
 		if (userType === "creator") {
 			toast({
 				variant: "destructive",
@@ -589,17 +549,20 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				description: "You are a Creator",
 				toastStatus: "negative",
 			});
+			setLoading(false);
 
 			return;
 		}
 
 		if (!clientUser) {
 			setIsAuthSheetOpen(true);
+			setLoading(false);
 			return;
 		}
 
 		if (onlineStatus === "Offline") {
 			setIsConsentSheetOpen(true);
+			setLoading(false);
 		} else if (onlineStatus === "Busy") {
 			toast({
 				variant: "destructive",
@@ -607,6 +570,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				description: "Can't Initiate the Call",
 				toastStatus: "negative",
 			});
+			setLoading(false);
 		} else if (updatedCreator?.chatAllowed) {
 			trackEvent("BookCall_Chat_Clicked", {
 				Creator_ID: creator._id,
@@ -620,13 +584,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				rate: updatedCreator.chatRate,
 			});
 
-			let discounts = getFinalServices();
-			const filteredDiscounts = discounts?.filter(
-				(discount) => discount.type === "all" || discount.type === "chat"
-			);
+			let discount = getSpecificServiceOffer("chat");
 
 			setChatReqSent(true);
-			handleChat(creator, clientUser, filteredDiscounts as Service[]);
+			handleChat(creator, clientUser, setChatState, discount as Service);
 			let maxCallDuration =
 				(walletBalance /
 					(clientUser?.global
@@ -720,12 +681,19 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	}, [services]);
 
 	const calculateDiscountedRate = (
-		rate: string,
+		rate: number,
 		discountRule: DiscountRule
 	) => {
 		const rateNum = Number(rate);
 		if (discountRule.discountType === "percentage") {
-			return rateNum - (rateNum * discountRule.discountAmount) / 100;
+			return (rateNum - (rateNum * discountRule.discountAmount) / 100).toFixed(
+				2
+			);
+		} else if (
+			discountRule.discountType === "flat" &&
+			rateNum > discountRule.discountAmount
+		) {
+			return rateNum - discountRule.discountAmount;
 		}
 		return rate;
 	};
@@ -754,7 +722,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 											</s>
 											{region === "India" ? "Rs." : "$"}
 											{calculateDiscountedRate(
-												service.rate,
+												Number(service.rate),
 												service.discountRules[0]
 											)}
 										</>
@@ -839,11 +807,12 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				<Sheet
 					open={isSheetOpen}
 					onOpenChange={async () => {
+						if (loading) return;
 						setSheetOpen(false);
 						try {
 							const chatRequestId = localStorage.getItem("chatRequestId");
 							await updateDoc(doc(chatRequestsRef, chatRequestId as string), {
-								status: "ended",
+								status: "cancelled",
 							});
 						} catch (error) {
 							Sentry.captureException(error);
@@ -860,20 +829,29 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 					<SheetContent
 						side="bottom"
 						onInteractOutside={(event) => {
-							// Prevent sheet from closing when clicking outside
 							event.preventDefault();
 						}}
 						className="flex flex-col items-center justify-center border-none rounded-t-xl px-10 py-7 bg-white min-h-[200px] max-h-fit w-full sm:max-w-[444px] mx-auto"
 					>
-						<SheetTitle></SheetTitle>
-						<SheetDescription></SheetDescription>
-						<div className="relative flex flex-col items-center gap-7">
-							<div className="flex flex-col py-5 items-center justify-center gap-4 w-full text-center">
+						{loading ? (
+							<div className="flex flex-col items-center justify-center gap-4">
 								<span className="font-semibold text-xl">
-									Waiting for the creator to accept your chat request...
+									Preparing the request...
 								</span>
 							</div>
-						</div>
+						) : (
+							<>
+								<SheetTitle></SheetTitle>
+								<SheetDescription></SheetDescription>
+								<div className="relative flex flex-col items-center gap-7">
+									<div className="flex flex-col py-5 items-center justify-center gap-4 w-full text-center">
+										<span className="font-semibold text-xl">
+											Waiting for the creator to accept your chat request...
+										</span>
+									</div>
+								</div>
+							</>
+						)}
 					</SheetContent>
 				</Sheet>
 			</div>

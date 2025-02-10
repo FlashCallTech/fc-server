@@ -82,11 +82,16 @@ const CreatorNavbar = () => {
 		else if (pathname.includes("refer")) return "Refer and Earn";
 		else if (pathname.includes("meta-analytics")) return "Meta Pixel Analytics";
 		else if (pathname.includes("kyc")) return "KYC";
-		else if (pathname.includes("calendar")) return "User Availability";
+		else if (pathname.includes("calendar")) return "Calendar";
 		else if (pathname.includes("payment-settings")) return "Payment Method";
 		else if (pathname.includes("payment")) return "Transaction History";
 		else if (pathname.includes("previous")) return "Order History";
 		else if (pathname.includes("userFeedbacks")) return "User Feedbacks";
+		else if (pathname.includes("upcoming")) return "Upcoming Calls";
+		else if (pathname.includes("campaign") || pathname.includes("discount"))
+			return "Discount Campaign";
+		else if (pathname.includes("service-management"))
+			return "Service Management";
 		else if (pathname.includes("terms-and-conditions"))
 			return "Terms and Conditions";
 		else if (pathname.includes("support")) return "Support";
@@ -104,7 +109,6 @@ const CreatorNavbar = () => {
 		<Button
 			className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[200px] xl:h-[48px]"
 			style={{
-				boxShadow: `4px 4px 0px 0px #000000`,
 				border: `1px solid #000000`,
 			}}
 			onClick={handleAppRedirect}
@@ -140,9 +144,8 @@ const CreatorNavbar = () => {
 						width={1000}
 						height={1000}
 						alt="flashcall logo"
-						className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-[6px] hoverScaleDownEffect w-[128px] h-[40px] xl:w-[150px] xl:h-[48px]"
+						className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-full hoverScaleDownEffect w-[128px] h-[40px] xl:w-[150px] xl:h-[48px]"
 						style={{
-							boxShadow: `4px 4px 0px 0px #000000`,
 							border: `1px solid #000000`,
 						}}
 					/>
@@ -183,7 +186,7 @@ const CreatorNavbar = () => {
 						className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] lg:bg-[#def4ed] ${
 							typeof window !== "undefined" && window.innerWidth >= 1024
 								? ""
-								: "shadow-[4px_4px_0px_0px_#000000] border-[1px] border-[#000000]"
+								: "rounded-full border-[1px] border-[#000000]"
 						}`}
 					>
 						<svg
@@ -217,7 +220,6 @@ const CreatorNavbar = () => {
 					size="lg"
 					onClick={handleRouting}
 					style={{
-						boxShadow: `4px 4px 0px 0px #000000`,
 						color: `${followCreatorTheme}`,
 						border: `1px solid #000000`,
 						backgroundColor: `${invertCreatorTheme}`,

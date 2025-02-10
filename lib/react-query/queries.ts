@@ -48,25 +48,32 @@ export const useGetPreviousCalls = (
 export const useGetScheduledCalls = (
 	userId: string,
 	userType: string,
-	callType?: string
+	callType?: string,
+	listType?: "upcoming" | "previous"
 ) => {
 	const limit = 10;
-
+	const endpoint =
+		listType === "previous"
+			? `${backendBaseUrl}/calls/scheduled/getUserEndedCalls`
+			: `${backendBaseUrl}/calls/scheduled/getUserCalls`;
 	return useInfiniteQuery({
-		queryKey: [QUERY_KEYS.GET_USER_CALLS, userId, userType, callType],
+		queryKey: [
+			QUERY_KEYS.GET_USER_SCHEDULED_CALLS,
+			userId,
+			userType,
+			callType,
+			listType,
+		],
 		queryFn: async ({ pageParam = 1 }) => {
-			const response = await axios.get(
-				`${backendBaseUrl}/calls/scheduled/getUserCalls`,
-				{
-					params: {
-						userId,
-						userType,
-						callType,
-						page: pageParam,
-						limit,
-					},
-				}
-			);
+			const response = await axios.get(endpoint, {
+				params: {
+					userId,
+					userType,
+					callType,
+					page: pageParam,
+					limit,
+				},
+			});
 
 			if (response.status === 200) {
 				return response.data;
@@ -77,7 +84,7 @@ export const useGetScheduledCalls = (
 		getNextPageParam: (lastPage: any, allPages: any) => {
 			return lastPage.hasMore ? allPages.length + 1 : undefined;
 		},
-		enabled: !!userId,
+		enabled: !!userId && !!listType,
 		initialPageParam: 1,
 	});
 };
@@ -92,7 +99,7 @@ export const useGetUserFavorites = (
 	limit = 10
 ) => {
 	return useInfiniteQuery({
-		queryKey: [QUERY_KEYS.GET_USER_CALLS, userId, selectedProfession],
+		queryKey: [QUERY_KEYS.GET_USER_FAVORITES, userId, selectedProfession],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
 				`${backendBaseUrl}/favorites/${userId}`,
@@ -280,7 +287,11 @@ export const useGetUserServices = (
 	clientId?: string,
 	clientType?: string,
 	fetchBestOffers?: boolean,
-	filter?: "all" | "audio" | "video" | "chat" | ""
+	filter?: "all" | "audio" | "video" | "chat" | "",
+	startDate?: string,
+	endDate?: string,
+	discountType?: "percentage" | "flat",
+	isActive?: boolean
 ) => {
 	const limit = 10;
 
@@ -294,6 +305,10 @@ export const useGetUserServices = (
 			fetchAll,
 			requestFrom,
 			fetchBestOffers,
+			startDate,
+			endDate,
+			discountType,
+			isActive,
 		],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
@@ -309,6 +324,10 @@ export const useGetUserServices = (
 						fetchAll,
 						requestFrom,
 						fetchBestOffers,
+						startDate,
+						endDate,
+						discountType,
+						isActive,
 					},
 				}
 			);
@@ -321,8 +340,8 @@ export const useGetUserServices = (
 		},
 		getNextPageParam: (lastPage, allPages) => {
 			if (fetchAll) return null;
-			const totalPages = lastPage.pagination.pages;
-			const nextPage = allPages.length + 1;
+			const totalPages = lastPage?.pagination?.pages;
+			const nextPage = allPages?.length + 1;
 			return nextPage <= totalPages ? nextPage : null;
 		},
 		initialPageParam: 1,

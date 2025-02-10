@@ -39,12 +39,12 @@ const HomePage = () => {
 	});
 
 	const [limit, setLimit] = useState(() => {
-		return window.innerWidth >= 1536 ? 12 : 10;
+		return window.innerWidth >= 1280 ? 12 : 10;
 	});
 
 	useEffect(() => {
 		const handleResize = () => {
-			setLimit(window.innerWidth >= 1536 ? 12 : 10);
+			setLimit(window.innerWidth >= 1280 ? 12 : 10);
 		};
 
 		window.addEventListener("resize", handleResize);
@@ -132,7 +132,7 @@ const HomePage = () => {
 
 	if (isLoading || loadingCard || fetchingUser) {
 		return (
-			<div className="size-full h-[calc(100vh-4rem)] flex flex-col gap-2 items-center justify-center">
+			<div className="size-full h-[calc(100vh-6rem)] flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
 			</div>
 		);
@@ -141,7 +141,7 @@ const HomePage = () => {
 	if (userType === "creator") {
 		return (
 			<main className="size-full flex flex-col">
-				<Suspense fallback={<PostLoader count={6} />}>
+				<Suspense fallback={<SinglePostLoader />}>
 					<CreatorHome />
 				</Suspense>
 			</main>
@@ -150,7 +150,7 @@ const HomePage = () => {
 
 	return (
 		<main className={`flex flex-col pt-0 size-full`}>
-			<Suspense fallback={<PostLoader count={6} />}>
+			<Suspense fallback={<PostLoader count={limit === 12 ? 9 : 6} />}>
 				{isError ? (
 					<div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
 						Failed to fetch creators
@@ -183,7 +183,7 @@ const HomePage = () => {
 							</div>
 						) : (
 							<section
-								className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-fit gap-3.5 lg:gap-5 2xl:gap-7 items-start overflow-hidden`}
+								className={`grid xs:grid-cols-2 xl:grid-cols-3 h-fit gap-3.5 lg:gap-5 2xl:gap-7 items-start overflow-hidden`}
 								style={{
 									WebkitTransform: "translateZ(0)",
 									transform: "translate3d(0, 0, 0)",

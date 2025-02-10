@@ -86,7 +86,8 @@ const MyCallUI = () => {
 				await updateExpertStatus(expertPhone, "Online");
 			}
 
-			let discounts = getFinalServices();
+			let discounts =
+				updatedCall.state.custom.type !== "scheduled" && getFinalServices();
 
 			await handleInterruptedCall(
 				currentUser?._id as string,
@@ -319,10 +320,11 @@ const MyCallUI = () => {
 				},
 			});
 
+			router.replace(`/meeting/${outgoingCall.id}`);
+
 			setShowCallUI(false);
 			setConnecting(false);
 			setRedirecting(false);
-			router.replace(`/meeting/${outgoingCall.id}`);
 		};
 
 		const handleCallRejected = async () => {
@@ -489,7 +491,7 @@ const MyCallUI = () => {
 		return <MyCallConnectingUI call={connectingCall} />;
 	}
 
-	if (incomingCalls.length > 0 && showCallUI && !hide) {
+	if (incomingCalls.length > 0 && showCallUI) {
 		return <MyIncomingCallUI call={incomingCalls[0]} />;
 	}
 

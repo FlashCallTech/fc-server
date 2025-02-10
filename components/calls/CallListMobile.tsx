@@ -64,19 +64,23 @@ const CallListMobile = ({
 					</h2>
 				</div>
 			) : isError ? (
-				<div className="size-full flex items-center justify-center text-xl font-semibold text-center text-red-500">
-					Failed to fetch User Calls
-					<h2 className="text-xl">Please try again later.</h2>
+				<div className="flex flex-col w-full items-center justify-center h-full">
+					<h1 className="text-2xl font-semibold text-red-500">
+						Failed to fetch User Calls
+					</h1>
+					<h2 className="text-lg">Please try again later.</h2>
 				</div>
 			) : (
 				<>
 					<section
-						className={`w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 text-black px-4`}
+						className={`w-full h-fit grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 items-center gap-5 text-black px-4`}
 					>
 						{userCalls?.pages?.flatMap((page: any) =>
 							page?.calls?.map((userCall: RegisterCallParams) => {
 								const formattedDate = formatDateTime(
-									userCall.startedAt as Date
+									userCall.endedAt
+										? userCall.endedAt
+										: (userCall.startedAt as Date)
 								);
 
 								const creator = userCall.expertDetails;
@@ -99,11 +103,11 @@ const CallListMobile = ({
 								return (
 									<section
 										key={userCall.callId}
-										className={`flex h-full w-full items-start justify-between p-2.5 xm:p-4 xl:max-w-[568px] border rounded-xl border-gray-300`}
+										className={`flex h-full w-full items-start justify-between p-2.5 xm:p-4 2xl:max-w-[568px] border rounded-xl border-gray-300`}
 									>
 										<section className="flex flex-col items-start justify-start w-full gap-2">
 											{/* Expert's Details */}
-											<section className="size-full flex items-center justify-start gap-4 ">
+											<section className="size-full flex items-center justify-start gap-4">
 												{/* creator image */}
 												<Image
 													src={
@@ -120,14 +124,28 @@ const CallListMobile = ({
 													className="rounded-full max-w-12 min-w-12 h-12 object-cover hoverScaleDownEffect cursor-pointer"
 												/>
 												{/* creator details */}
-												<section className="size-full flex flex-col items-start justify-between gap-1">
-													<p
-														className="text-base tracking-wide whitespace-nowrap capitalize hoverScaleDownEffect cursor-pointer"
-														onClick={handleRedirect}
-													>
-														{fullName || "Creator"}
-													</p>
+												<section className="size-full flex flex-col items-start justify-between gap-2">
+													<div className="flex flex-wrap-reverse items-center justify-start gap-2">
+														<p
+															className="text-base tracking-wide whitespace-nowrap capitalize hoverScaleDownEffect cursor-pointer"
+															onClick={handleRedirect}
+														>
+															{fullName || "Creator"}
+														</p>
 
+														<span
+															className={`
+																	 ${
+																			userCall.category !== "Scheduled"
+																				? "bg-[#DBEAFE] text-[#1E40AF]"
+																				: "bg-[#F0FDF4] text-[#16A34A]"
+																		} text-[12px] px-2 py-1 rounded-full`}
+														>
+															{userCall.category === "Scheduled"
+																? "Scheduled"
+																: "Pay Per Minute"}
+														</span>
+													</div>
 													{/* call details */}
 													<section className="flex items-center justify-start gap-2 text-[12.5px]">
 														<span>
@@ -252,7 +270,13 @@ const CallListMobile = ({
 												<OptionsList
 													callId={userCall.callId}
 													currentCreator={currentUser}
-													creatorId={userCall?.members[0]?.user_id as string}
+													creatorId={
+														(userCall?.members?.find(
+															(member) => member?.custom?.type === "expert"
+														)?.user_id as string) ||
+														userCall?.members?.[0]?.user_id ||
+														""
+													}
 													clientId={currentUser?._id as string}
 													userCall={userCall}
 												/>

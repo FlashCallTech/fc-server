@@ -1,24 +1,28 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useCallTimerContext } from "@/lib/context/CallTimerContext";
 import { useToast } from "../ui/use-toast";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import RechargeModal from "./RechargeModal";
-import TipModal from "./TipModal";
 import Image from "next/image";
 import TimeExtensionModal from "./TimeExtensionModal";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import useCallTimer from "@/lib/context/CallTimerContext";
+import { Call } from "@stream-io/video-react-sdk";
 
 const CallTimer = ({
 	isVideoCall,
 	handleCallRejected,
+	call,
 	callId,
+	isMeetingOwner,
 }: {
 	handleCallRejected: () => Promise<void>;
 	isVideoCall: boolean;
 	callId: string;
+	call: Call;
+	isMeetingOwner: boolean;
 }) => {
 	const {
 		timeLeft,
@@ -27,25 +31,26 @@ const CallTimer = ({
 		callRatePerMinute,
 		setTimeLeft,
 		setMaxCallDuration,
-	} = useCallTimerContext();
+		pauseTimer,
+		resumeTimer,
+	} = useCallTimer({ isVideoCall, isMeetingOwner, call });
+
 	const [isToastShown, setIsToastShown] = useState(false);
 
 	const { toast } = useToast();
-	const { walletBalance, setWalletBalance, updateWalletBalance } =
-		useWalletBalanceContext();
+	const { walletBalance, setWalletBalance } = useWalletBalanceContext();
 
-	const timeLeftInSeconds = parseFloat(timeLeft);
-	const isLoading = isNaN(timeLeftInSeconds);
+	const isLoading = isNaN(timeLeft);
 
-	const minutes = Math.floor(timeLeftInSeconds / 60);
-	const seconds = Math.floor(timeLeftInSeconds % 60)
+	const minutes = Math.floor(timeLeft / 60);
+	const seconds = Math.floor(timeLeft % 60)
 		.toString()
 		.padStart(2, "0");
 
 	const canAfford60Minutes = walletBalance >= callRatePerMinute * 60;
 
 	useEffect(() => {
-		if (!isLoading && timeLeftInSeconds <= 0) {
+		if (!isLoading && timeLeft <= 0) {
 			!isToastShown &&
 				toast({
 					variant: "destructive",
@@ -57,7 +62,7 @@ const CallTimer = ({
 
 			handleCallRejected();
 		}
-	}, [timeLeftInSeconds, handleCallRejected, isLoading]);
+	}, [timeLeft, handleCallRejected, isLoading]);
 
 	const handleTimeExtension = async (additionalMinutes: number) => {
 		const cost = callRatePerMinute * additionalMinutes;
@@ -66,9 +71,7 @@ const CallTimer = ({
 
 		const additionalTimeInSeconds = additionalMinutes * 60;
 
-		const timeLeftInSeconds = parseFloat(timeLeft);
-
-		const newTimeLeft = timeLeftInSeconds + additionalTimeInSeconds;
+		const newTimeLeft = timeLeft + additionalTimeInSeconds;
 
 		const newMaxCallDuration = maxCallDuration + additionalTimeInSeconds;
 
@@ -119,6 +122,8 @@ const CallTimer = ({
 					<RechargeModal
 						walletBalance={walletBalance}
 						setWalletBalance={setWalletBalance}
+						pauseTimer={pauseTimer}
+						resumeTimer={resumeTimer}
 					/>
 				))}
 		</div>

@@ -65,7 +65,7 @@ const CallListMobileCreator = ({
 			<>
 				{isLoading || (currentUser && walletBalance < 0) ? (
 					<section
-						className={`lg:hidden w-full h-full flex items-center justify-center`}
+						className={`lg:hidden w-full h-[calc(100vh-6rem)] flex items-center justify-center`}
 					>
 						<SinglePostLoader />
 					</section>
@@ -79,8 +79,10 @@ const CallListMobileCreator = ({
 						</h2>
 					</div>
 				) : isError ? (
-					<div className="lg:hidden size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
-						Failed to fetch User Calls
+					<div className="lg:hidden flex flex-col w-full items-center justify-center h-full">
+						<h1 className="text-2xl font-semibold text-red-500">
+							Failed to fetch User Calls
+						</h1>
 						<h2 className="text-lg">Please try again later.</h2>
 					</div>
 				) : (
@@ -121,10 +123,25 @@ const CallListMobileCreator = ({
 														className="rounded-full max-w-12 min-w-12 h-12 object-cover hoverScaleDownEffect cursor-pointer"
 													/>
 													{/* creator details */}
-													<section className="size-full flex flex-col items-start justify-between gap-1">
-														<p className="text-base tracking-wide whitespace-nowrap capitalize hoverScaleDownEffect cursor-pointer">
-															{fullName || "Creator"}
-														</p>
+													<section className="size-full flex flex-col items-start justify-between gap-2">
+														<div className="flex flex-wrap-reverse items-center justify-start gap-2">
+															<p className="text-base tracking-wide whitespace-nowrap capitalize hoverScaleDownEffect cursor-pointer">
+																{fullName || "Creator"}
+															</p>
+
+															<span
+																className={`
+																	 ${
+																			userCall.category !== "Scheduled"
+																				? "bg-[#DBEAFE] text-[#1E40AF]"
+																				: "bg-[#F0FDF4] text-[#16A34A]"
+																		} text-[12px] px-2 py-1 rounded-full`}
+															>
+																{userCall.category === "Scheduled"
+																	? "Scheduled"
+																	: "Pay Per Minute"}
+															</span>
+														</div>
 
 														{/* call details */}
 														<section className="flex items-center justify-start gap-2 text-[12.5px]">
@@ -252,7 +269,13 @@ const CallListMobileCreator = ({
 													<OptionsList
 														callId={userCall.callId}
 														currentCreator={currentUser}
-														creatorId={userCall.members[0].user_id as string}
+														creatorId={
+															(userCall?.members?.find(
+																(member) => member?.custom?.type === "expert"
+															)?.user_id as string) ||
+															userCall?.members?.[0]?.user_id ||
+															""
+														}
 														clientId={currentUser?._id as string}
 														userCall={userCall}
 													/>
@@ -273,7 +296,7 @@ const CallListMobileCreator = ({
 			{/* New Design */}
 			<div className="hidden lg:block p-8 pt-0 bg-white">
 				{isLoading || (currentUser && walletBalance < 0) ? (
-					<section className="w-full h-full flex items-center justify-center">
+					<section className="w-full h-[calc(100vh-6rem)] flex items-center justify-center">
 						<SinglePostLoader />
 					</section>
 				) : isError ? (
@@ -303,6 +326,9 @@ const CallListMobileCreator = ({
 									</th>
 									<th scope="col" className="px-6 py-3">
 										Type
+									</th>
+									<th scope="col" className="px-6 py-3">
+										Category
 									</th>
 									<th scope="col" className="px-6 py-3">
 										Duration
@@ -461,6 +487,9 @@ const CallListMobileCreator = ({
 													</div>
 												</td>
 												<td className="px-6 py-4">
+													{userCall?.category ?? "PPM"}
+												</td>
+												<td className="px-6 py-4">
 													{formatDuration(
 														parseInt(userCall?.duration as string, 10)
 													) ?? "-"}
@@ -478,7 +507,13 @@ const CallListMobileCreator = ({
 													<OptionsList
 														callId={userCall.callId}
 														currentCreator={currentUser}
-														creatorId={userCall.members[0].user_id}
+														creatorId={
+															(userCall?.members?.find(
+																(member) => member?.custom?.type === "expert"
+															)?.user_id as string) ||
+															userCall?.members?.[0]?.user_id ||
+															""
+														}
 														clientId={currentUser?._id as string}
 														userCall={userCall}
 													/>

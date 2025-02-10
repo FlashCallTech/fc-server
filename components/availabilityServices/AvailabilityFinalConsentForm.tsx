@@ -10,7 +10,7 @@ import {
 	getImageSource,
 	updatePastFirestoreSessions,
 } from "@/lib/utils";
-import { AvailabilityService, creatorUser } from "@/types";
+import { AvailabilityService, creatorUser, Service } from "@/types";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
@@ -19,9 +19,14 @@ import * as Sentry from "@sentry/nextjs";
 import { useToast } from "../ui/use-toast";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import axios from "axios";
-import { success } from "@/constants/icons";
 import useScheduledPayment from "@/hooks/useScheduledPayment";
 import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
+import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Timestamp } from "firebase/firestore"; // Import Timestamp
+import { useParams, useRouter } from "next/navigation";
+import { Input } from "../ui/input";
+import { FaGoogle } from "react-icons/fa";
 
 interface params {
 	service: AvailabilityService;
@@ -46,8 +51,17 @@ const AvailabilityFinalConsentForm = ({
 	const [payUsingWallet, setPayUsingWallet] = useState(true);
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
-	const { clientUser } = useCurrentUsersContext();
-	const { getFinalServices } = useSelectedServiceContext();
+	const [payoutTransactionId, setPayoutTransactionId] = useState();
+	const { clientUser, refreshCurrentUser } = useCurrentUsersContext();
+	const [email, setEmail] = useState(clientUser?.email || "");
+	const [alreadyAuthenticated, setAlreadyAuthenticated] = useState(false);
+
+	const {
+		getFinalServices,
+		selectedService,
+		resetServices,
+		getSpecificServiceOffer,
+	} = useSelectedServiceContext();
 	const { walletBalance, updateWalletBalance } = useWalletBalanceContext();
 	const [totalAmount, setTotalAmount] = useState<{
 		total: string;
@@ -56,6 +70,7 @@ const AvailabilityFinalConsentForm = ({
 		total: service.basePrice.toFixed(2),
 		currency: service.currency,
 	});
+	const applicableDiscounts = getFinalServices();
 	const { pgHandler } = useScheduledPayment();
 
 	const [preparingTransaction, setPreparingTransaction] = useState(false);
@@ -63,7 +78,8 @@ const AvailabilityFinalConsentForm = ({
 	const client = useStreamVideoClient();
 	const imageSrc = getImageSource(creator);
 	const fullName = getDisplayName(creator);
-
+	const router = useRouter();
+	const params = useParams();
 	let formattedData = formatDisplay(
 		selectedDay,
 		selectedTimeSlot,
@@ -72,10 +88,20 @@ const AvailabilityFinalConsentForm = ({
 
 	let customDateValue = formattedData.day.split(", ")[1].split(" ") ?? "";
 
+	const chatRef = collection(db, "chats");
+	const scheduledChatsRef = collection(db, "scheduledChats");
+	const DEFAULT_IMAGE_URL: string =
+		"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7";
+
 	useEffect(() => {
 		service.discountRules &&
+			service.discountRules.conditions.length > 0 &&
 			!service.utilizedBy.some(
 				(clientId) => clientId.toString() === clientUser?._id.toString()
+			) &&
+			!(
+				service.discountRules.discountType === "flat" &&
+				service.discountRules.discountAmount > service.basePrice
 			) &&
 			setIsDiscountUtilized(true);
 
@@ -83,8 +109,20 @@ const AvailabilityFinalConsentForm = ({
 			const { total, currency } = await calculateTotal();
 			setTotalAmount({ total, currency });
 		};
+
 		updateTotal();
-	}, []);
+	}, [service._id]);
+
+	function maskPhoneNumber(phoneNumber: string) {
+		if (phoneNumber) {
+			let cleanedNumber = phoneNumber.replace("+91", "");
+
+			let maskedNumber =
+				cleanedNumber.substring(0, 2) + "*****" + cleanedNumber.substring(7);
+
+			return maskedNumber;
+		}
+	}
 
 	const handlePayPal = async (amountToPay: number): Promise<boolean> => {
 		return new Promise((resolve) => {
@@ -148,21 +186,38 @@ const AvailabilityFinalConsentForm = ({
 		let total = basePrice;
 
 		// Apply Discount
-		if (discountRules) {
+		if (discountRules && isDiscountUtilized) {
 			const { discountAmount, discountType } = discountRules;
 
 			if (discountType === "percentage") {
 				total -= (basePrice * discountAmount) / 100;
-			} else if (discountType === "flat") {
+			} else if (discountType === "flat" && total >= discountAmount) {
 				total -= discountAmount;
+			} else {
+				setIsDiscountUtilized(false);
 			}
 		}
 
-		// Add Platform Fee
+		// applicable global discounts
+		if (applicableDiscounts && applicableDiscounts.length > 0) {
+			applicableDiscounts.forEach((discount) => {
+				discount.discountRules.forEach(({ discountAmount, discountType }) => {
+					if (discountType === "percentage") {
+						total -= (basePrice * discountAmount) / 100;
+					} else if (discountType === "flat" && total >= discountAmount) {
+						total -= discountAmount;
+					}
+				});
+			});
+
+			setIsDiscountUtilized(true);
+		}
+
+		// Platform Fee
 		const platformFee = 0;
 		total += platformFee;
 
-		// Currency Conversion if required
+		// Currency Conversion
 		if (currency === "USD") {
 			const exchangeRate = await fetchExchangeRate();
 			total = total * exchangeRate;
@@ -189,9 +244,7 @@ const AvailabilityFinalConsentForm = ({
 					custom: {
 						name: fullName,
 						type: "expert",
-						image:
-							creator.photo ||
-							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
+						image: creator.photo || DEFAULT_IMAGE_URL,
 						phone: creator.phone,
 					},
 					role: "admin",
@@ -201,9 +254,7 @@ const AvailabilityFinalConsentForm = ({
 					custom: {
 						name: clientUser.username || "Flashcall Client",
 						type: "client",
-						image:
-							clientUser.photo ||
-							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
+						image: clientUser.photo || DEFAULT_IMAGE_URL,
 						phone: clientUser.phone,
 					},
 					role: "admin",
@@ -219,6 +270,11 @@ const AvailabilityFinalConsentForm = ({
 			}
 
 			const startsAt = parsedDate.toISOString();
+			const startsAtDate = new Date(parsedDate.toISOString());
+			const endsAt = new Date(
+				startsAtDate.getTime() + service.timeDuration * 60000
+			).toISOString();
+
 			const description = `${
 				service.type === "video"
 					? `Scheduled Video Call With Expert ${creator.username}`
@@ -247,19 +303,15 @@ const AvailabilityFinalConsentForm = ({
 				},
 			});
 
-			toast({
-				variant: "destructive",
-				title: `Meeting scheduled on ${customDateValue} from ${formattedData.timeRange}`,
-				toastStatus: "positive",
-			});
-
 			return {
 				callId: call.id,
 				startsAt: startsAt,
+				endsAt: endsAt,
 				duration: service.timeDuration,
 				meetingOwner: clientUser?._id,
 				description: description,
 				members: members,
+				chatId: null,
 			};
 		} catch (error) {
 			Sentry.captureException(error);
@@ -267,6 +319,139 @@ const AvailabilityFinalConsentForm = ({
 			toast({
 				variant: "destructive",
 				title: "Failed to create Meeting.",
+				toastStatus: "negative",
+			});
+		}
+	};
+
+	const createUpcomingChat = async () => {
+		if (!client || !clientUser)
+			throw new Error("Client or client user is missing.");
+
+		try {
+			const callId = crypto.randomUUID();
+
+			// Create chat members
+			const members = [
+				{
+					user_id: creator?._id,
+					custom: {
+						name: creator?.fullName || "Expert",
+						type: "expert",
+						image: creator?.photo || DEFAULT_IMAGE_URL,
+						phone: creator?.phone,
+					},
+					role: "admin",
+				},
+				{
+					user_id: clientUser?._id,
+					custom: {
+						name: clientUser?.username || "Flashcall Client",
+						type: "client",
+						image: clientUser?.photo || DEFAULT_IMAGE_URL,
+						phone: clientUser?.phone,
+					},
+					role: "admin",
+				},
+			];
+
+			// Parse start time
+			const dateTimeString = `${selectedDay} ${selectedTimeSlot}`;
+			const startsAt = new Date(dateTimeString).toISOString();
+			const startsAtDate = new Date(startsAt);
+			const endsAt = new Date(
+				startsAtDate.getTime() + service.timeDuration * 60000
+			).toISOString();
+
+			if (!startsAt || isNaN(new Date(startsAt).getTime())) {
+				throw new Error("Invalid date or time format.");
+			}
+
+			const description = `Scheduled Chat With Expert ${
+				creator?.username || "Unknown"
+			}`;
+
+			// Firestore document references
+			const userChatsDocRef = doc(db, "userchats", clientUser?._id);
+			const creatorChatsDocRef = doc(db, "userchats", creator?._id);
+
+			// Fetch Firestore documents
+			const [userChatsDocSnapshot, creatorChatsDocSnapshot] = await Promise.all(
+				[getDoc(userChatsDocRef), getDoc(creatorChatsDocRef)]
+			);
+
+			let chatId;
+
+			// Check if a chat already exists
+			if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
+				const userChatsData = userChatsDocSnapshot.data();
+				const creatorChatsData = creatorChatsDocSnapshot.data();
+
+				const existingChat =
+					userChatsData?.chats.find(
+						(chat: any) => chat.receiverId === creator?._id
+					) &&
+					creatorChatsData?.chats.find(
+						(chat: any) => chat.receiverId === clientUser?._id
+					);
+
+				chatId = existingChat?.chatId || doc(chatRef).id;
+			} else {
+				// Initialize Firestore documents if they don't exist
+				await Promise.all([
+					setDoc(userChatsDocRef, { isTyping: false }, { merge: true }),
+					setDoc(creatorChatsDocRef, { isTyping: false }, { merge: true }),
+				]);
+				chatId = doc(chatRef).id;
+			}
+
+			// Prepare discounts
+			const discounts = getSpecificServiceOffer("chat");
+
+			// Create the scheduled chat
+			await setDoc(doc(db, "scheduledChats", callId), {
+				callId,
+				chatId,
+				creatorId: creator?._id,
+				creatorName:
+					creator?.fullName || maskPhoneNumber(creator?.phone as string),
+				creatorPhone: creator?.phone,
+				creatorImg: creator?.photo,
+				clientId: clientUser?._id,
+				clientPhone: clientUser?.phone || "",
+				clientName:
+					clientUser?.fullName || maskPhoneNumber(clientUser?.phone as string),
+				clientImg: clientUser?.photo,
+				client_balance: clientUser?.walletBalance,
+				global: clientUser?.global || false,
+				totalAmount: service.basePrice,
+				paidAmount: Number(totalAmount.total),
+				paid: false,
+				maxDuration: service.timeDuration,
+				clientJoined: false,
+				creatorJoined: false,
+				startTime: Timestamp.fromDate(new Date(startsAt)), // Use Timestamp here
+				status: "upcoming",
+				discounts: (discounts as Service) ?? null,
+			});
+
+			return {
+				callId,
+				startsAt,
+				endsAt,
+				duration: service.timeDuration,
+				meetingOwner: clientUser?._id,
+				description,
+				members,
+				chatId,
+			};
+		} catch (error) {
+			Sentry.captureException(error);
+			console.error("Error creating scheduled chat: ", error);
+
+			toast({
+				variant: "destructive",
+				title: "Failed to create chat",
 				toastStatus: "negative",
 			});
 		}
@@ -320,6 +505,7 @@ const AvailabilityFinalConsentForm = ({
 						setIsPaymentHandlerSuccess
 					);
 
+					await new Promise((resolve) => setTimeout(resolve, 500));
 					paymentSuccess = isPaymentHandlerSuccess;
 				}
 
@@ -344,7 +530,13 @@ const AvailabilityFinalConsentForm = ({
 			}
 
 			// Step 1: Attempt to create a meeting
-			let callDetails = await createMeeting();
+			let callDetails;
+			if (service.type === "audio" || service.type === "video") {
+				callDetails = await createMeeting();
+			} else {
+				callDetails = await createUpcomingChat();
+			}
+
 			if (!callDetails) {
 				throw new Error("Failed to create meeting");
 			}
@@ -353,6 +545,8 @@ const AvailabilityFinalConsentForm = ({
 			const registerUpcomingCallAPI = "/calls/scheduled/createCall";
 			const registerUpcomingCallPayload = {
 				callId: callDetails.callId,
+				chatId: callDetails.chatId,
+				serviceTitle: service.title,
 				type: service.type,
 				status: "upcoming",
 				meetingOwner: callDetails.meetingOwner,
@@ -364,7 +558,7 @@ const AvailabilityFinalConsentForm = ({
 				duration: callDetails.duration,
 				amount: totalAmount.total,
 				currency: totalAmount.currency,
-				discounts: isDiscountUtilized ? service.discountRules._id : [],
+				discounts: applicableDiscounts,
 			};
 
 			let registerCallResponse = await axios.post(
@@ -376,44 +570,66 @@ const AvailabilityFinalConsentForm = ({
 				registerCallResponse.status === 200 ||
 				registerCallResponse.status === 201
 			) {
-				await axios.post(`${backendBaseUrl}/wallet/payout`, {
+				const response = await axios.post(`${backendBaseUrl}/wallet/payout`, {
 					userId: clientUser?._id as string,
+					user2Id: creator._id,
 					userType: "Client",
 					amount: totalAmount.total,
+					callCategory: "Scheduled",
 					callType: service.type,
 				});
+
+				if (service.type === "chat") {
+					await updateDoc(doc(db, "scheduledChats", callDetails.callId), {
+						payoutTransactionId: response.data.result._id,
+					});
+				}
 
 				await fetch(`${backendBaseUrl}/calls/registerCall`, {
 					method: "POST",
 					body: JSON.stringify({
 						callId: callDetails.callId as string,
+						serviceTitle: service.title,
 						type: service.type as string,
+						category: "Scheduled",
 						status: "Scheduled",
 						creator: String(clientUser?._id),
 						members: callDetails.members,
+						payoutTransactionId,
 					}),
 					headers: { "Content-Type": "application/json" },
 				});
 
-				await updatePastFirestoreSessions(callDetails.callId as string, {
-					callId: callDetails.callId,
-					status: "upcoming",
-					callType: "scheduled",
-					clientId: clientUser?._id as string,
-					expertId: creator._id,
-					isVideoCall: service.type,
-					creatorPhone: creator.phone,
-					clientPhone: clientUser?.global
-						? clientUser?.email
-						: clientUser?.phone,
-					global: clientUser?.global ?? false,
-					discount: getFinalServices(),
-				});
+				if (service.type !== "chat") {
+					await updatePastFirestoreSessions(callDetails.callId as string, {
+						callId: callDetails.callId,
+						status: "initiated",
+						startsAt: callDetails.startsAt,
+						endsAt: callDetails.endsAt,
+						callType: "scheduled",
+						clientId: clientUser?._id as string,
+						expertId: creator._id,
+						isVideoCall: service.type,
+						creatorPhone: creator.phone,
+						clientPhone: clientUser?.global
+							? clientUser?.email
+							: clientUser?.phone,
+						global: clientUser?.global ?? false,
+					});
+				}
 
 				isDiscountUtilized &&
 					(await axios.put(`${backendBaseUrl}/availability/${service._id}`, {
 						clientId: callDetails.meetingOwner || clientUser?._id,
 					}));
+
+				if (selectedService && (callDetails.meetingOwner || clientUser?._id)) {
+					await axios.put(`${backendBaseUrl}/services/${selectedService._id}`, {
+						clientId: callDetails.meetingOwner || clientUser?._id,
+					});
+
+					resetServices();
+				}
 
 				updateWalletBalance();
 
@@ -422,12 +638,14 @@ const AvailabilityFinalConsentForm = ({
 				localStorage.removeItem("hasVisitedFeedbackPage");
 
 				setTimeout(() => {
-					toggleSchedulingSheet(false);
 					toast({
 						variant: "destructive",
 						title: `Meeting scheduled on ${formattedData.day} from ${formattedData.timeRange}`,
 						toastStatus: "positive",
 					});
+
+					setPreparingTransaction(false);
+					router.push("/upcoming");
 				}, 2000);
 			} else {
 				throw new Error("Failed to register the call");
@@ -460,8 +678,6 @@ const AvailabilityFinalConsentForm = ({
 				title: "Failed to schedule the call",
 				toastStatus: "negative",
 			});
-		} finally {
-			setPreparingTransaction(false);
 		}
 	};
 
@@ -510,6 +726,55 @@ const AvailabilityFinalConsentForm = ({
 				);
 		}
 	};
+
+	// Function to trigger Google OAuth
+	const handleGoogleAuth = async () => {
+		try {
+			const response = await fetch(
+				`${backendBaseUrl}/calendar/google?phoneNumber=${encodeURIComponent(
+					clientUser?.phone || ""
+				)}`
+			);
+			const { authUrl } = await response.json();
+
+			const width = 500;
+			const height = 600;
+			const left = (window.innerWidth - width) / 2;
+			const top = (window.innerHeight - height) / 2;
+
+			const authWindow = window.open(
+				authUrl,
+				"GoogleAuth",
+				`width=${width},height=${height},top=${top},left=${left}`
+			);
+
+			// Listen for message from popup
+			const receiveMessage = async (event: MessageEvent) => {
+				if (event.origin !== backendBaseUrl) return;
+
+				const { token, email } = event.data;
+				if (token && email) {
+					localStorage.setItem("google_token", token);
+					localStorage.setItem("google_email", email);
+					setEmail(email);
+					authWindow?.close();
+				}
+			};
+
+			window.addEventListener("message", receiveMessage, { once: true });
+		} catch (error) {
+			console.error("Google Auth Error:", error);
+		}
+	};
+
+	// Auto-fill email if user is already authenticated
+	useEffect(() => {
+		const savedEmail =
+			clientUser?.email || localStorage.getItem("google_email");
+		if (savedEmail) {
+			setEmail(savedEmail);
+		}
+	}, []);
 
 	return (
 		<>
@@ -609,44 +874,110 @@ const AvailabilityFinalConsentForm = ({
 								</section>
 
 								{isDiscountUtilized && service.discountRules && (
-									<section className="w-full pb-2.5 flex items-center justify-between text-sm text-gray-800">
-										<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												viewBox="0 0 24 24"
-												fill="currentColor"
-												className="size-4"
-											>
-												<path
-													fillRule="evenodd"
-													d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
-													clipRule="evenodd"
-												/>
-											</svg>
-
-											<p className="text-xs whitespace-nowrap">
-												<span className="text-sm ml-1">
-													{service.discountRules.discountType === "percentage"
-														? `${service.discountRules.discountAmount}%`
-														: `${service.currency === "INR" ? "₹" : "$"} ${
-																service.discountRules.discountAmount
-														  }`}{" "}
-													OFF Applied
-												</span>
+									<section
+										className={`${
+											service.discountRules.discountType === "flat" &&
+											service.basePrice <
+												service.discountRules.discountAmount &&
+											"hidden"
+										} w-full pb-2.5 flex items-center justify-between text-sm text-gray-800`}
+									>
+										<>
+											<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													viewBox="0 0 24 24"
+													fill="currentColor"
+													className="size-4"
+												>
+													<path
+														fillRule="evenodd"
+														d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
+														clipRule="evenodd"
+													/>
+												</svg>
+												<p className="ml-1 text-xs">Additional</p>
+												<p className="text-xs whitespace-nowrap">
+													<span className="text-sm">
+														{service.discountRules.discountType === "percentage"
+															? `${service.discountRules.discountAmount}%`
+															: `${service.currency === "INR" ? "₹" : "$"} ${
+																	service.discountRules.discountAmount
+															  }`}{" "}
+														OFF Applied
+													</span>
+												</p>
+											</div>
+											<p className="text-green-1 font-bold">
+												- {service.currency === "INR" ? "₹" : "$"}{" "}
+												{service.discountRules.discountType === "percentage"
+													? (
+															(service.basePrice *
+																service.discountRules.discountAmount) /
+															100
+													  ).toFixed(2)
+													: service.discountRules.discountAmount.toFixed(2)}
 											</p>
-										</div>
-										<p className="text-green-1 font-bold">
-											- {service.currency === "INR" ? "₹" : "$"}{" "}
-											{service.discountRules.discountType === "percentage"
-												? (
-														(service.basePrice *
-															service.discountRules.discountAmount) /
-														100
-												  ).toFixed(2)
-												: service.discountRules.discountAmount.toFixed(2)}
-										</p>
+										</>
 									</section>
 								)}
+
+								{applicableDiscounts &&
+									applicableDiscounts.length > 0 &&
+									applicableDiscounts.map((discount) =>
+										discount.discountRules.map(
+											({ discountAmount, discountType }) => {
+												const isFlatDiscountInvalid =
+													discountType === "flat" &&
+													service.basePrice < discountAmount;
+
+												if (isFlatDiscountInvalid) {
+													return null;
+												}
+
+												return (
+													<section
+														key={`${discountType}-${discountAmount}`}
+														className="w-full pb-2.5 flex items-center justify-between text-sm text-gray-800"
+													>
+														<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																viewBox="0 0 24 24"
+																fill="currentColor"
+																className="size-4"
+															>
+																<path
+																	fillRule="evenodd"
+																	d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
+																	clipRule="evenodd"
+																/>
+															</svg>
+															<p className="text-xs whitespace-nowrap">
+																<span className="text-sm ml-1">
+																	{discountType === "percentage"
+																		? `${discountAmount}%`
+																		: `${
+																				service.currency === "INR" ? "₹" : "$"
+																		  } ${discountAmount}`}{" "}
+																	OFF Applied
+																</span>
+															</p>
+														</div>
+														<p className="text-green-1 font-bold">
+															- {service.currency === "INR" ? "₹" : "$"}{" "}
+															{discountType === "percentage"
+																? (
+																		(service.basePrice * discountAmount) /
+																		100
+																  ).toFixed(2)
+																: discountAmount.toFixed(2)}
+														</p>
+													</section>
+												);
+											}
+										)
+									)}
 
 								<div className="border-t border-[#E5E7EB] w-full" />
 
@@ -692,6 +1023,30 @@ const AvailabilityFinalConsentForm = ({
 									</div>
 								</div>
 							</div>
+						</div>
+
+						{/*user email*/}
+
+						<div className="mt-4 w-full">
+							<div className="mb-2">
+								<h4 className="text-xl font-bold text-gray-800 mb-2.5">
+									Email Address <span className="text-red-500">*</span>
+								</h4>
+								<p className="text-sm text-gray-500">
+									We need your email to add an event to your calendar.
+								</p>
+							</div>
+
+							{/* Google Sign-in Button */}
+							{(clientUser?.accessToken ||
+								!localStorage.getItem("google_token")) && (
+								<button
+									onClick={() => handleGoogleAuth()}
+									className="flex items-center gap-2 mt-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect"
+								>
+									<FaGoogle /> Sign in with Google
+								</button>
+							)}
 						</div>
 					</div>
 
@@ -745,9 +1100,15 @@ const AvailabilityFinalConsentForm = ({
 				</div>
 			) : (
 				<div className="flex flex-col items-center justify-center min-w-full h-full gap-4 py-5 px-4">
-					{success}
+					<Image
+						src="/images/success.png"
+						alt="success"
+						height={150}
+						width={150}
+						className="size-[150px]"
+					/>
 					<span className="font-semibold text-lg">
-						Meeting scheduled for {customDateValue}
+						Meeting scheduled for {formattedData.day}
 					</span>
 				</div>
 			)}
