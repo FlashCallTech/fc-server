@@ -52,9 +52,11 @@ const AvailabilityFinalConsentForm = ({
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
 	const [payoutTransactionId, setPayoutTransactionId] = useState();
-	const { clientUser, refreshCurrentUser } = useCurrentUsersContext();
+	const { clientUser } = useCurrentUsersContext();
 	const [email, setEmail] = useState(clientUser?.email || "");
-	const [alreadyAuthenticated, setAlreadyAuthenticated] = useState(false);
+	const [isAuthenticated, setIsAuthenticated] = useState(
+		localStorage.getItem("google_token") ? true : false
+	);
 
 	const {
 		getFinalServices,
@@ -123,6 +125,45 @@ const AvailabilityFinalConsentForm = ({
 			return maskedNumber;
 		}
 	}
+
+	const createEvent = async (callDetails: {
+		email: string;
+		title: string;
+		description: string;
+		startTime: string;
+		endTime: string;
+		attendees: string[];
+	}) => {
+		try {
+			const response = await axios.post(
+				`${backendBaseUrl}/calendar/add-event`,
+				{
+					email:
+						callDetails.email ||
+						localStorage.getItem("google_email") ||
+						clientUser?.email,
+					title: callDetails.title,
+					description: callDetails.description,
+					startTime: callDetails.startTime,
+					endTime: callDetails.endTime,
+					attendees: callDetails.attendees,
+				},
+				{
+					withCredentials: true,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				}
+			);
+
+			console.log("Event created:", response.data.event);
+		} catch (error: any) {
+			console.error(
+				"Error creating event:",
+				error.response?.data || error.message
+			);
+		}
+	};
 
 	const handlePayPal = async (amountToPay: number): Promise<boolean> => {
 		return new Promise((resolve) => {
@@ -246,6 +287,7 @@ const AvailabilityFinalConsentForm = ({
 						type: "expert",
 						image: creator.photo || DEFAULT_IMAGE_URL,
 						phone: creator.phone,
+						email: creator.email || "",
 					},
 					role: "admin",
 				},
@@ -256,6 +298,10 @@ const AvailabilityFinalConsentForm = ({
 						type: "client",
 						image: clientUser.photo || DEFAULT_IMAGE_URL,
 						phone: clientUser.phone,
+						email:
+							email ||
+							clientUser?.email ||
+							(localStorage.getItem("google_email") as string),
 					},
 					role: "admin",
 				},
@@ -340,6 +386,7 @@ const AvailabilityFinalConsentForm = ({
 						type: "expert",
 						image: creator?.photo || DEFAULT_IMAGE_URL,
 						phone: creator?.phone,
+						email: creator?.email,
 					},
 					role: "admin",
 				},
@@ -350,6 +397,10 @@ const AvailabilityFinalConsentForm = ({
 						type: "client",
 						image: clientUser?.photo || DEFAULT_IMAGE_URL,
 						phone: clientUser?.phone,
+						email:
+							email ||
+							clientUser?.email ||
+							(localStorage.getItem("google_email") as string),
 					},
 					role: "admin",
 				},
@@ -637,6 +688,26 @@ const AvailabilityFinalConsentForm = ({
 
 				localStorage.removeItem("hasVisitedFeedbackPage");
 
+				const attendees = callDetails?.members
+					?.map((member) => member.custom.email)
+					.filter((email): email is string => Boolean(email)) || [
+					email ??
+						clientUser?.email ??
+						(localStorage.getItem("google_email") as string),
+				];
+
+				createEvent({
+					email:
+						email ??
+						clientUser?.email ??
+						(localStorage.getItem("google_email") as string),
+					title: service.title,
+					description: callDetails.description,
+					startTime: callDetails.startsAt,
+					endTime: callDetails.endsAt,
+					attendees,
+				});
+
 				setTimeout(() => {
 					toast({
 						variant: "destructive",
@@ -733,7 +804,11 @@ const AvailabilityFinalConsentForm = ({
 			const response = await fetch(
 				`${backendBaseUrl}/calendar/google?phoneNumber=${encodeURIComponent(
 					clientUser?.phone || ""
-				)}`
+				)}`,
+				{
+					method: "GET",
+					credentials: "include",
+				}
 			);
 			const { authUrl } = await response.json();
 
@@ -748,20 +823,36 @@ const AvailabilityFinalConsentForm = ({
 				`width=${width},height=${height},top=${top},left=${left}`
 			);
 
-			// Listen for message from popup
-			const receiveMessage = async (event: MessageEvent) => {
-				if (event.origin !== backendBaseUrl) return;
+			if (!authWindow) {
+				console.error("Failed to open authentication window");
+				return;
+			}
 
-				const { token, email } = event.data;
-				if (token && email) {
-					localStorage.setItem("google_token", token);
-					localStorage.setItem("google_email", email);
-					setEmail(email);
-					authWindow?.close();
-				}
+			// Function to handle messages from popup
+			const receiveMessage = async (event: MessageEvent) => {
+				// Accept messages from any origin (or limit to your frontend domain)
+				if (!event.data || !event.data.token || !event.data.email) return;
+
+				localStorage.setItem("google_token", event.data.token);
+				localStorage.setItem("google_email", event.data.email);
+				setEmail(event.data.email);
+				setIsAuthenticated(true);
+
+				// Cleanup and close the window
+				window.removeEventListener("message", receiveMessage);
+				authWindow.close();
 			};
 
-			window.addEventListener("message", receiveMessage, { once: true });
+			// Add event listener for messages
+			window.addEventListener("message", receiveMessage);
+
+			// Polling interval to check if the window is closed
+			const checkPopupClosed = setInterval(() => {
+				if (!authWindow || authWindow.closed) {
+					clearInterval(checkPopupClosed);
+					window.removeEventListener("message", receiveMessage);
+				}
+			}, 500);
 		} catch (error) {
 			console.error("Google Auth Error:", error);
 		}
@@ -773,8 +864,16 @@ const AvailabilityFinalConsentForm = ({
 			clientUser?.email || localStorage.getItem("google_email");
 		if (savedEmail) {
 			setEmail(savedEmail);
+			setIsAuthenticated(true);
 		}
 	}, []);
+
+	const handleDisconnect = () => {
+		localStorage.removeItem("google_token");
+		localStorage.removeItem("google_email");
+		setEmail("");
+		setIsAuthenticated(false);
+	};
 
 	return (
 		<>
@@ -1026,25 +1125,43 @@ const AvailabilityFinalConsentForm = ({
 						</div>
 
 						{/*user email*/}
-
 						<div className="mt-4 w-full">
 							<div className="mb-2">
 								<h4 className="text-xl font-bold text-gray-800 mb-2.5">
-									Email Address <span className="text-red-500">*</span>
+									{isAuthenticated
+										? "Google Calendar Connected 🎉"
+										: "Sign in to Connect Google Calendar"}
 								</h4>
 								<p className="text-sm text-gray-500">
-									We need your email to add an event to your calendar.
+									{isAuthenticated
+										? "Your Google account is linked. Events will be automatically added to your calendar."
+										: "We need your email to schedule events directly on your Google Calendar."}
 								</p>
 							</div>
 
-							{/* Google Sign-in Button */}
-							{(clientUser?.accessToken ||
-								!localStorage.getItem("google_token")) && (
+							{isAuthenticated ? (
+								<div className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl">
+									<div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full">
+										<FaGoogle className="text-red-600 text-lg" />
+									</div>
+									<div className="flex flex-col">
+										<p className="text-base font-semibold text-gray-900">
+											{email || "Connected"}
+										</p>
+										<button
+											onClick={handleDisconnect}
+											className="mt-1 text-xs text-red-600 font-medium hover:text-red-700 hover:underline transition text-start"
+										>
+											Disconnect
+										</button>
+									</div>
+								</div>
+							) : (
 								<button
-									onClick={() => handleGoogleAuth()}
+									onClick={handleGoogleAuth}
 									className="flex items-center gap-2 mt-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect"
 								>
-									<FaGoogle /> Sign in with Google
+									<FaGoogle /> Connect with Google
 								</button>
 							)}
 						</div>
