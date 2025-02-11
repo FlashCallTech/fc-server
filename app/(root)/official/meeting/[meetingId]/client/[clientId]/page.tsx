@@ -32,7 +32,7 @@ const MeetingPage = () => {
 	const [copied, setCopied] = useState(false);
 	const [isInitializing, setIsInitializing] = useState(false);
 
-	const meetingLink = `https://flashfan.club/official/meeting/${call?.id}/client/${call?.state.createdBy?.id}`;
+	const meetingLink = `https://flashfan.club/official/meeting/${meetingId}/client/${clientId}`;
 
 	const handleCopy = () => {
 		navigator.clipboard.writeText(meetingLink).then(() => {
