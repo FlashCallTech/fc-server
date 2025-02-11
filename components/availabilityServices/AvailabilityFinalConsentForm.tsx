@@ -6,6 +6,7 @@ import {
 	backendBaseUrl,
 	fetchExchangeRate,
 	formatDisplay,
+	frontendBaseUrl,
 	getDisplayName,
 	getImageSource,
 	updatePastFirestoreSessions,
@@ -128,6 +129,7 @@ const AvailabilityFinalConsentForm = ({
 
 	const createEvent = async (callDetails: {
 		email: string;
+		location: string;
 		title: string;
 		description: string;
 		startTime: string;
@@ -701,6 +703,7 @@ const AvailabilityFinalConsentForm = ({
 						email ??
 						clientUser?.email ??
 						(localStorage.getItem("google_email") as string),
+					location: `${frontendBaseUrl}/meeting/${callDetails.callId}`,
 					title: service.title,
 					description: callDetails.description,
 					startTime: callDetails.startsAt,
@@ -1129,7 +1132,7 @@ const AvailabilityFinalConsentForm = ({
 							<div className="mb-2">
 								<h4 className="text-xl font-bold text-gray-800 mb-2.5">
 									{isAuthenticated
-										? "Google Calendar Connected 🎉"
+										? "Google Calendar Connected"
 										: "Sign in to Connect Google Calendar"}
 								</h4>
 								<p className="text-sm text-gray-500">
