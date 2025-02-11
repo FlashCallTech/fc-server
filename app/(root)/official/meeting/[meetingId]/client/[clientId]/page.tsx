@@ -28,9 +28,18 @@ const MeetingPage = () => {
 		refreshCurrentUser,
 	} = useCurrentUsersContext();
 
-	const { call, isCallLoading } = useGetCallById(meetingId);
-
+	const { call, isCallLoading, error } = useGetCallById(meetingId);
+	const [copied, setCopied] = useState(false);
 	const [isInitializing, setIsInitializing] = useState(false);
+
+	const meetingLink = `https://flashfan.club/official/meeting/${call?.id}/client/${call?.state.createdBy?.id}`;
+
+	const handleCopy = () => {
+		navigator.clipboard.writeText(meetingLink).then(() => {
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		});
+	};
 
 	const fetchAuthToken = async (client: any, source: string) => {
 		try {
@@ -141,13 +150,24 @@ const MeetingPage = () => {
 		);
 	}
 
-	if (!call) {
+	if (!call || error) {
 		return (
-			<div className="bg-dark-1 text-white flex flex-col items-center justify-center h-screen text-center px-4 gap-1.5 capitalize">
-				<p className="text-3xl font-bold">Meeting Not Available</p>
+			<div className="bg-dark-1 text-white flex flex-col items-center justify-center h-screen text-center px-4 gap-3">
+				<p className="text-3xl font-bold">
+					{error ? "Having Trouble Joining?" : "Meeting Not Available"}
+				</p>
 				<span className="text-xl">
-					The meeting you&apos;re looking for could not be found.
+					{error
+						? "Try opening the meeting link in an incognito window, switching to a different browser, or checking your network connection."
+						: "The meeting you're looking for could not be found."}
 				</span>
+
+				<div
+					onClick={handleCopy}
+					className="cursor-pointer bg-gray-800 text-white px-4 py-2 rounded-lg mt-3 hover:bg-gray-700 transition-all select-none"
+				>
+					{copied ? "Copied" : meetingLink}
+				</div>
 			</div>
 		);
 	}
