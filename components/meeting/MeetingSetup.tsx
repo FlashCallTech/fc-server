@@ -80,6 +80,7 @@ const MeetingSetup = () => {
 							Call_Type: call.type,
 							Call_Id: call.id,
 							Notification_Type: "call.ring",
+							timeStamp: new Date().toISOString(),
 						});
 
 						sendNotification(
@@ -92,6 +93,7 @@ const MeetingSetup = () => {
 								callType: call.type,
 								callId: call.id,
 								notificationType: "call.ring",
+								timeStamp: new Date().toISOString(),
 							}
 						);
 
