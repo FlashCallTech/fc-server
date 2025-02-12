@@ -53,6 +53,10 @@ export const accessibleRoutes = [
 		path: "/official/meeting",
 		regex: /^\/official\/meeting\/[a-f0-9\-]+\/client\/[a-f0-9\-]+/,
 	},
+	{
+		path: "/official/download",
+		regex: /^\/official\/download/,
+	},
 ];
 
 export const isAccessiblePage = (path: string) => {
