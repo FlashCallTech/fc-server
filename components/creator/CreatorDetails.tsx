@@ -516,12 +516,17 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						</section>
 						<button
 							onClick={handleHelp}
-							className="fixed bottom-10 left-4 flex items-center z-40 gap-2 text-white bg-blue-600 hover:bg-blue-700 p-4 rounded-full shadow-lg opacity-80 transition-all"
+							className="fixed bottom-10 left-4 flex items-center text-[10px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-white bg-black hover:bg-gray-900 pr-2 pl-1 py-1 rounded-full shadow-lg opacity-90 transition-all"
 						>
 							{/* Help Icon */}
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-								<path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-							</svg>
+							<Image 
+							src={`${creator.photo}`}
+							width={28}
+							height={28}
+							alt="photo"
+							className="size-5 md:size-7 object-cover rounded-full"
+							/>
+							<span>Contact Us</span>
 						</button>
 						{/* 2. Creator Info */}
 						<section className="size-full flex flex-col items-center justify-center overflow-hidden">
