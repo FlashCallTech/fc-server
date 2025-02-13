@@ -158,7 +158,7 @@ const HelpChat = () => {
         <div>
             {/* Mobile Layout */}
             <div
-                className={`flex flex-col h-[100dvh] justify-between w-full overflow-hidden bg-gray-100 md:hidden`}
+                className={`flex flex-col h-[100svh] md:h-[100lvh] justify-between w-full overflow-hidden bg-gray-100 md:hidden`}
             >
                 <div className='flex flex-col'>
                     <div className="handle cursor-move border p-2 rounded-t-lg flex justify-between items-center">
