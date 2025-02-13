@@ -280,7 +280,7 @@ const HelpChat = () => {
                         </div>
                     </div>
                 </div>
-            </div>`
+            </div>
             {/* Large Screen Layout */}
             <div
                 className={`hidden md:flex items-center justify-center h-screen w-full bg-black`}
