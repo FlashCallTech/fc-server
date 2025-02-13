@@ -149,7 +149,7 @@ const Transactions = () => {
 						key={filter}
 						onClick={() => setBtn(filter as "all" | "credit" | "debit")}
 						className={`capitalize text-sm font-medium px-[20px] py-[7px] rounded-3xl border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-black ${
-							filter === btn && "bg-black text-white"
+							filter === btn && "!bg-black text-white"
 						}`}
 					>
 						{filter}
@@ -339,7 +339,7 @@ const Transactions = () => {
 
 												{transaction.type === "credit" && (
 													<span
-														className="text-[13px] hover:cursor-pointer"
+														className="text-[13px] hover:cursor-pointer whitespace-nowrap"
 														onClick={() => openModal(transaction)}
 													>
 														View Invoice

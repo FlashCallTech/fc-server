@@ -175,9 +175,7 @@ const ScheduledMeetingList = ({
 								const fullName = getDisplayName(creator);
 								const clientFullName = getDisplayName(client);
 
-								const formattedDate = formatDateTime(userCall.startsAt) || {
-									timeOnly: "N/A",
-								};
+								const formattedDate = formatDateTime(userCall.startsAt);
 
 								let customDateValue =
 									formattedData?.day?.split(", ")[1]?.split(" ") ?? "";

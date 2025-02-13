@@ -33,9 +33,9 @@ html {
 }
 
 @media (hover: none) {
-	.hoverScaleDownEffect:hover {
-		background-color: transparent !important;
-		color: inherit !important;
+	.hoverScaleDownEffect {
+		pointer-events: auto;
+		transition: none;
 	}
 }
 
