@@ -407,13 +407,13 @@ const AuthenticateViaOTP = ({
 			{!showOTP && !verificationSuccess ? (
 				// SignUp form
 				<>
-					<div className="flex flex-col items-center justify-enter gap-2 text-center">
+					<div className="flex flex-col items-center justify-enter gap-2 text-center pt-4">
 						<Image
-							src="/icons/logo_new_light.png"
+							src="/icons/newLogo.png"
 							width={1000}
 							height={1000}
 							alt="flashcall logo"
-							className={`flex items-center justify-center w-40 h-16 -ml-2 `}
+							className={`flex items-center justify-center w-[120px] h-[25px] mb-2`}
 						/>
 
 						<h2 className="text-black text-lg font-semibold">

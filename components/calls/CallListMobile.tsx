@@ -143,7 +143,7 @@ const CallListMobile = ({
 														>
 															{userCall.category === "Scheduled"
 																? "Scheduled"
-																: "Pay Per Minute"}
+																: "PPM"}
 														</span>
 													</div>
 													{/* call details */}

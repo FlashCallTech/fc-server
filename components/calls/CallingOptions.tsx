@@ -45,8 +45,14 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	const storedCallId = localStorage.getItem("activeCallId");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [isConsentSheetOpen, setIsConsentSheetOpen] = useState(false);
-	const { handleChat, chatRequestsRef, loading, setLoading, isSheetOpen, setSheetOpen } =
-		useChatRequest();
+	const {
+		handleChat,
+		chatRequestsRef,
+		loading,
+		setLoading,
+		isSheetOpen,
+		setSheetOpen,
+	} = useChatRequest();
 	const [callInitiated, setcallInitiated] = useState(false);
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
@@ -787,7 +793,9 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 											{service.label}
 										</div>
 										<div className="w-full flex items-end justify-between">
-											<p className="text-sm">{service.description}</p>
+											<p className="text-sm text-start">
+												{service.description}
+											</p>
 										</div>
 									</div>
 								</div>

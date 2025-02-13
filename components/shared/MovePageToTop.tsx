@@ -31,8 +31,6 @@ const MovePageToTop = () => {
 	const shouldDisplayButton =
 		!pathname.includes("chat") && !pathname.includes("meeting") && !username;
 
-	console.log(shouldDisplayButton);
-
 	return (
 		<>
 			{isVisible && shouldDisplayButton && (

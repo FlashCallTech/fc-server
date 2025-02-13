@@ -185,9 +185,9 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 									disabled={isLoading}
 									onClick={() => setConsent(true)}
 									variant={"outline"}
-									className={`${
+									className={`rounded-full w-full max-w-[75%] mx-auto ${
 										consent ? "bg-green-1 text-white" : "hover:bg-gray-100"
-									} hoverScaleDownEffect`}
+									}`}
 								>
 									Yes, Notify Me!
 								</Button>
@@ -195,9 +195,9 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 									disabled={isLoading}
 									onClick={() => setConsent(false)}
 									variant={"outline"}
-									className={`${
+									className={`rounded-full w-full max-w-[75%] mx-auto ${
 										!consent ? "bg-green-1 text-white" : "hover:bg-gray-100"
-									} hoverScaleDownEffect`}
+									}`}
 								>
 									No, Thanks.
 								</Button>
@@ -209,7 +209,7 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 									consent === null
 										? "opacity-50 bg-gray-100 text-black"
 										: "border border-gray-300 bg-black/80 text-white"
-								} text-sm mt-4  hoverScaleDownEffect w-3/4 mx-auto `}
+								} text-sm mt-4 hoverScaleDownEffect rounded-full w-1/2 mx-auto `}
 								onClick={handleConsentSubmit}
 							>
 								{isLoading ? "Submitting..." : "Submit My Choice"}
@@ -219,7 +219,7 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 						<div className="flex flex-col items-center justify-center min-w-full h-full gap-7">
 							{success}
 
-							<span className="w-full font-semibold text-lg text-green-1 text-center">
+							<span className="w-full font-semibold text-lg text-black text-center">
 								You&apos;ll be notified by {creatorName}.
 							</span>
 						</div>
@@ -251,8 +251,8 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 								onClick={() => setConsent(true)}
 								variant={"outline"}
 								className={`${
-									consent ? "bg-green-1 text-white" : "hover:bg-gray-100"
-								} hoverScaleDownEffect`}
+									consent ? "bg-black text-white" : "hover:bg-gray-100"
+								}`}
 							>
 								Yes, Notify Me!
 							</Button>
@@ -261,8 +261,8 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 								onClick={() => setConsent(false)}
 								variant={"outline"}
 								className={`${
-									!consent ? "bg-green-1 text-white" : "hover:bg-gray-100"
-								} hoverScaleDownEffect`}
+									!consent ? "bg-black text-white" : "hover:bg-gray-100"
+								}`}
 							>
 								No, Don’t Notify Me
 							</Button>
@@ -274,7 +274,7 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 								consent === null
 									? "opacity-50 bg-gray-100 text-black"
 									: "border border-gray-300 bg-black/80 text-white"
-							} text-sm mt-4  hoverScaleDownEffect w-3/4 mx-auto `}
+							} text-sm mt-4  w-3/4 mx-auto `}
 							onClick={handleConsentSubmit}
 						>
 							{isLoading ? "Submitting..." : "Submit My Choice"}
@@ -284,7 +284,7 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 					<div className="flex flex-col items-center justify-center min-w-full h-full gap-7">
 						{success}
 
-						<span className="w-full font-semibold text-lg text-green-1 text-center">
+						<span className="w-full font-semibold text-lg text-black text-center">
 							You&apos;ll be notified by {creatorName}.
 						</span>
 					</div>

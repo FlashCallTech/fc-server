@@ -1266,8 +1266,22 @@ export function formatDisplay(
 	selectedTimeSlot: string,
 	timeSlotDuration: number
 ) {
-	// Parse the date and time
-	const date = new Date(`${selectedDay} ${selectedTimeSlot}`);
+	const [hour, minute, period] = (
+		selectedTimeSlot?.match(/(\d+):(\d+)\s([APM]+)/i) ?? []
+	).slice(1);
+
+	let hour24 = parseInt(hour);
+	if (period === "PM" && hour24 < 12) hour24 += 12;
+	if (period === "AM" && hour24 === 12) hour24 = 0;
+	const formattedTimeSlot = `${hour24.toString().padStart(2, "0")}:${minute}`;
+
+	const date = new Date(`${selectedDay}T${formattedTimeSlot}:00`);
+
+	// Check if the date is valid
+	if (isNaN(date.getTime())) {
+		console.error("Invalid date:", `${selectedDay}T${formattedTimeSlot}:00`);
+		return { day: "Invalid Date", timeRange: "", timezone: "" };
+	}
 
 	// Format date into 'Sat, 11 Jan'
 	const formattedDate = date.toLocaleDateString("en-US", {

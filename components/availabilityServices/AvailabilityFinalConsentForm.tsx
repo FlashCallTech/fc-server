@@ -55,7 +55,7 @@ const AvailabilityFinalConsentForm = ({
 	const { clientUser, refreshCurrentUser } = useCurrentUsersContext();
 	const [email, setEmail] = useState(clientUser?.email || "");
 	const [emailChanged, setEmailChanged] = useState(false);
-	const [emailError, setEmailError] = useState("");
+	const [emailError, setEmailError] = useState("Email is required.");
 
 	const {
 		getFinalServices,
@@ -802,6 +802,15 @@ const AvailabilityFinalConsentForm = ({
 		}
 	};
 
+	const clampText = (text: string) => {
+		if (!text) return;
+		let charLen = 40;
+		if (text?.length > charLen) {
+			return text.slice(0, charLen) + "... ";
+		}
+		return text;
+	};
+
 	const validateEmail = (email: string) => {
 		// Regular expression for simple email validation
 		const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -831,6 +840,7 @@ const AvailabilityFinalConsentForm = ({
 		const savedEmail = clientUser?.email;
 		if (savedEmail) {
 			setEmail(savedEmail);
+			setEmailError("");
 		}
 	}, []);
 
@@ -863,7 +873,7 @@ const AvailabilityFinalConsentForm = ({
 						<section className="flex items-center justify-start gap-2.5">
 							<Image
 								src={imageSrc}
-								alt={creator?.firstName || creator?.username}
+								alt={creator?.firstName || creator?.username || "user"}
 								width={300}
 								height={300}
 								quality={75}
@@ -878,8 +888,10 @@ const AvailabilityFinalConsentForm = ({
 					</section>
 
 					<hr className="col-span-full w-full border-t-2 border-[#E5E7EB] my-2" />
-					<div className="w-full flex flex-col px-4 items-start justify-start gap-2.5  mt-2">
-						<span className="font-bold text-2xl">{service.title}</span>
+					<div className="w-full flex flex-col px-4 items-start justify-start gap-2.5 mt-2 overflow-x-hidden">
+						<span className="font-bold text-2xl">
+							{clampText(service.title)}
+						</span>
 						<span className="flex items-center gap-2 text-sm capitalize">
 							{getServiceIcon(service.type)}
 							{service.type} {service.type === "chat" ? "Service" : "Call"} |{" "}

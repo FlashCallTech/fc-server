@@ -64,18 +64,19 @@ export const WalletBalanceProvider = ({
 				);
 				const data = response.data;
 
+				// Only update if the wallet balance is different
 				setWalletBalance((prev) =>
 					prev === data.walletBalance ? prev : data.walletBalance
 				);
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error fetching wallet balance:", error);
-				setWalletBalance(NaN);
+				setWalletBalance(0); // Fallback to zero if there's an error
 			} finally {
 				setIsInitialized(true);
 			}
 		} else {
-			setWalletBalance(0);
+			setWalletBalance(0); // No user, reset wallet balance
 			setIsInitialized(true);
 		}
 	};
@@ -84,12 +85,16 @@ export const WalletBalanceProvider = ({
 	useEffect(() => {
 		if (isFirstRender.current) {
 			isFirstRender.current = false;
-			setWalletBalance(currentUser?.walletBalance ?? 0);
-			setIsInitialized(true);
+			if (currentUser) {
+				setWalletBalance(currentUser.walletBalance ?? 0);
+				setIsInitialized(true);
+			}
 		} else {
-			updateAndSetWalletBalance();
+			if (currentUser) {
+				updateAndSetWalletBalance();
+			}
 		}
-	}, [fetchingUser]);
+	}, [currentUser, fetchingUser]);
 
 	// Listen for real-time updates using Firebase
 	useEffect(() => {
