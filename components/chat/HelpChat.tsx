@@ -157,7 +157,7 @@ const HelpChat = () => {
     return (
         <div>
             {/* Mobile Layout */}
-            <div
+            `<div
                 className={`flex flex-col h-[100dvh] justify-between w-full overflow-hidden bg-gray-100 md:hidden`}
             >
                 <div className='flex flex-col'>
@@ -256,7 +256,7 @@ const HelpChat = () => {
                         <div className="p-1">
                             <button
                                 onClick={handleSend}
-                                className="flex items-center text-sm gap-2 bg-blue-500 text-white px-4 py-2 rounded-full"
+                                className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-full"
                             >
                                 {/* SVG Icon */}
                                 <svg
@@ -280,7 +280,7 @@ const HelpChat = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>`
             {/* Large Screen Layout */}
             <div
                 className={`hidden md:flex items-center justify-center h-screen w-full bg-black`}
