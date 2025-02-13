@@ -66,9 +66,6 @@ const formSchema = z.object({
 	currency: z.enum(["INR", "USD"], {
 		required_error: "Currency is required.",
 	}),
-	email: z
-		.string({ required_error: "Email is required." })
-		.email("Invalid email format."),
 	extraDetails: z.string().optional(),
 });
 
@@ -83,7 +80,7 @@ const AvailabilityServicesForm = ({
 	sheetType: "Create" | "Update";
 	service: AvailabilityService | null;
 }) => {
-	const { currentUser, refreshCurrentUser } = useCurrentUsersContext();
+	const { currentUser } = useCurrentUsersContext();
 	const { toast } = useToast();
 	const form = useForm<z.infer<typeof formSchema>>({
 		mode: "onChange",
@@ -99,8 +96,6 @@ const AvailabilityServicesForm = ({
 						basePrice: service.basePrice || 10,
 						isActive: service.isActive,
 						currency: service.currency,
-
-						email: currentUser?.email || "",
 						extraDetails: service.extraDetails,
 				  }
 				: {
@@ -113,20 +108,16 @@ const AvailabilityServicesForm = ({
 						timeDuration: 15,
 						basePrice: 10,
 						currency: "INR",
-
-						email: currentUser?.email || "",
 						extraDetails: "",
 				  },
 	});
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
-			const { email, ...restValues } = values;
 			const payload = {
-				...restValues,
+				...values,
 				timeDuration: values.timeDuration ?? 15,
 				basePrice: values.basePrice ?? 10,
-
 				photo:
 					values.photo ||
 					"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
@@ -143,16 +134,6 @@ const AvailabilityServicesForm = ({
 					: undefined;
 
 			await method(url, payload, params);
-
-			email &&
-				(await axios.put(
-					`${backendBaseUrl}/creator/updateUser/${currentUser?._id}`,
-					{
-						email: email,
-					}
-				));
-
-			refreshCurrentUser();
 
 			refetch();
 
@@ -475,28 +456,6 @@ const AvailabilityServicesForm = ({
 									</SelectItem>
 								</SelectContent>
 							</Select>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-
-				{/* Creator Email */}
-				<FormField
-					control={form.control}
-					name="email"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel className="!text-[#374151] !text-sm">
-								Email <span className="text-red-500">*</span>
-							</FormLabel>
-							<FormControl>
-								<Input
-									type="email"
-									className="flex flex-1 px-4 py-3 focus-visible:ring-transparent"
-									placeholder="Enter your email"
-									{...field}
-								/>
-							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}

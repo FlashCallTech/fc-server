@@ -70,6 +70,12 @@ export const newSidebarLinksCreator = [
 		protected: true,
 	},
 	{
+		imgURL: "/creator/calendarEvent.svg",
+		route: "/calendar-events",
+		label: "User Consent",
+		protected: true,
+	},
+	{
 		imgURL: "/creator/discountCampaign.svg",
 		route: "/campaign/discount",
 		label: "Discount Campaigns",
@@ -117,18 +123,6 @@ export const newSidebarLinksCreator = [
 		label: "Meta Pixel Analytics",
 		protected: true,
 	},
-	// {
-	// 	imgURL: "/icons/termsConditions.svg",
-	// 	route: "/terms-and-conditions",
-	// 	label: "Terms & Conditions",
-	// 	protected: false,
-	// },
-	// {
-	// 	imgURL: "/icons/support.svg",
-	// 	route: "/support",
-	// 	label: "Support",
-	// 	protected: false,
-	// },
 ];
 
 export const sidebarLinksCreator = [
@@ -154,6 +148,12 @@ export const sidebarLinksCreator = [
 		imgURL: "/icons/calendar.svg",
 		route: "/calendar",
 		label: "Calendar",
+		protected: true,
+	},
+	{
+		imgURL: "/icons/calendarEvent.svg",
+		route: "/calendar-events",
+		label: "User Consent",
 		protected: true,
 	},
 	{

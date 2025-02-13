@@ -223,7 +223,7 @@ const CreatorSidebar = () => {
 					{/* Additional Links */}
 					<Link
 						href="/terms-and-conditions"
-						className="flex items-center gap-5 text-sm tracking-wide font-medium text-[#4B5563] px-4 py-2 rounded-lg"
+						className="flex items-center gap-5 text-sm tracking-wide font-medium text-[#4B5563] px-4 py-2 rounded-lg hover:bg-gray-100"
 					>
 						<Image
 							src={"/creator/terms&conditions.svg"}
@@ -236,7 +236,7 @@ const CreatorSidebar = () => {
 					</Link>
 					<Link
 						href="/support"
-						className="flex items-center gap-5 text-sm tracking-wide font-medium text-[#4B5563] px-4 py-2 rounded-lg"
+						className="flex items-center gap-5 text-sm tracking-wide font-medium text-[#4B5563] px-4 py-2 rounded-lg hover:bg-gray-100"
 					>
 						<Image
 							src={"/creator/support.svg"}

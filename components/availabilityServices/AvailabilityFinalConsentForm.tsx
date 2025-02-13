@@ -25,9 +25,8 @@ import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext"
 import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Timestamp } from "firebase/firestore"; // Import Timestamp
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Input } from "../ui/input";
-import { FaGoogle } from "react-icons/fa";
 
 interface params {
 	service: AvailabilityService;
@@ -53,11 +52,10 @@ const AvailabilityFinalConsentForm = ({
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
 	const [payoutTransactionId, setPayoutTransactionId] = useState();
-	const { clientUser } = useCurrentUsersContext();
+	const { clientUser, refreshCurrentUser } = useCurrentUsersContext();
 	const [email, setEmail] = useState(clientUser?.email || "");
-	const [isAuthenticated, setIsAuthenticated] = useState(
-		localStorage.getItem("google_token") ? true : false
-	);
+	const [emailChanged, setEmailChanged] = useState(false);
+	const [emailError, setEmailError] = useState("");
 
 	const {
 		getFinalServices,
@@ -82,7 +80,7 @@ const AvailabilityFinalConsentForm = ({
 	const imageSrc = getImageSource(creator);
 	const fullName = getDisplayName(creator);
 	const router = useRouter();
-	const params = useParams();
+
 	let formattedData = formatDisplay(
 		selectedDay,
 		selectedTimeSlot,
@@ -128,7 +126,7 @@ const AvailabilityFinalConsentForm = ({
 	}
 
 	const createEvent = async (callDetails: {
-		email: string;
+		email: string | undefined;
 		location: string;
 		title: string;
 		description: string;
@@ -137,15 +135,15 @@ const AvailabilityFinalConsentForm = ({
 		attendees: string[];
 	}) => {
 		try {
-			const response = await axios.post(
+			if (!callDetails.email) return;
+
+			await axios.post(
 				`${backendBaseUrl}/calendar/add-event`,
 				{
-					email:
-						callDetails.email ||
-						localStorage.getItem("google_email") ||
-						clientUser?.email,
+					email: callDetails.email,
 					title: callDetails.title,
 					description: callDetails.description,
+					location,
 					startTime: callDetails.startTime,
 					endTime: callDetails.endTime,
 					attendees: callDetails.attendees,
@@ -157,8 +155,6 @@ const AvailabilityFinalConsentForm = ({
 					},
 				}
 			);
-
-			console.log("Event created:", response.data.event);
 		} catch (error: any) {
 			console.error(
 				"Error creating event:",
@@ -513,6 +509,15 @@ const AvailabilityFinalConsentForm = ({
 	const handlePaySchedule = async () => {
 		setPreparingTransaction(true);
 		try {
+			if (emailChanged) {
+				await axios.put(
+					`${backendBaseUrl}/client/updateUser/${clientUser?._id}`,
+					{
+						email: email,
+					}
+				);
+			}
+
 			let amountToPay = parseFloat(totalAmount.total);
 			let walletPaymentAmount = 0;
 
@@ -692,17 +697,11 @@ const AvailabilityFinalConsentForm = ({
 
 				const attendees = callDetails?.members
 					?.map((member) => member.custom.email)
-					.filter((email): email is string => Boolean(email)) || [
-					email ??
-						clientUser?.email ??
-						(localStorage.getItem("google_email") as string),
-				];
+					.filter((email): email is string => Boolean(email))
+					.filter((value, index, self) => self.indexOf(value) === index);
 
 				createEvent({
-					email:
-						email ??
-						clientUser?.email ??
-						(localStorage.getItem("google_email") as string),
+					email: creator?.email,
 					location: `${frontendBaseUrl}/meeting/${callDetails.callId}`,
 					title: service.title,
 					description: callDetails.description,
@@ -712,13 +711,13 @@ const AvailabilityFinalConsentForm = ({
 				});
 
 				setTimeout(() => {
+					emailChanged && refreshCurrentUser();
 					toast({
 						variant: "destructive",
 						title: `Meeting scheduled on ${formattedData.day} from ${formattedData.timeRange}`,
 						toastStatus: "positive",
 					});
 
-					setPreparingTransaction(false);
 					router.push("/upcoming");
 				}, 2000);
 			} else {
@@ -752,6 +751,8 @@ const AvailabilityFinalConsentForm = ({
 				title: "Failed to schedule the call",
 				toastStatus: "negative",
 			});
+		} finally {
+			setPreparingTransaction(false);
 		}
 	};
 
@@ -801,82 +802,37 @@ const AvailabilityFinalConsentForm = ({
 		}
 	};
 
-	// Function to trigger Google OAuth
-	const handleGoogleAuth = async () => {
-		try {
-			const response = await fetch(
-				`${backendBaseUrl}/calendar/google?phoneNumber=${encodeURIComponent(
-					clientUser?.phone || ""
-				)}`,
-				{
-					method: "GET",
-					credentials: "include",
-				}
-			);
-			const { authUrl } = await response.json();
+	const validateEmail = (email: string) => {
+		// Regular expression for simple email validation
+		const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-			const width = 500;
-			const height = 600;
-			const left = (window.innerWidth - width) / 2;
-			const top = (window.innerHeight - height) / 2;
-
-			const authWindow = window.open(
-				authUrl,
-				"GoogleAuth",
-				`width=${width},height=${height},top=${top},left=${left}`
-			);
-
-			if (!authWindow) {
-				console.error("Failed to open authentication window");
-				return;
-			}
-
-			// Function to handle messages from popup
-			const receiveMessage = async (event: MessageEvent) => {
-				// Accept messages from any origin (or limit to your frontend domain)
-				if (!event.data || !event.data.token || !event.data.email) return;
-
-				localStorage.setItem("google_token", event.data.token);
-				localStorage.setItem("google_email", event.data.email);
-				setEmail(event.data.email);
-				setIsAuthenticated(true);
-
-				// Cleanup and close the window
-				window.removeEventListener("message", receiveMessage);
-				authWindow.close();
-			};
-
-			// Add event listener for messages
-			window.addEventListener("message", receiveMessage);
-
-			// Polling interval to check if the window is closed
-			const checkPopupClosed = setInterval(() => {
-				if (!authWindow || authWindow.closed) {
-					clearInterval(checkPopupClosed);
-					window.removeEventListener("message", receiveMessage);
-				}
-			}, 500);
-		} catch (error) {
-			console.error("Google Auth Error:", error);
+		if (!email) {
+			setEmailError("Email is required.");
+			return false;
 		}
+
+		if (!emailPattern.test(email)) {
+			setEmailError("Please enter a valid email address.");
+			return false;
+		}
+
+		setEmailError("");
+		setEmailChanged(true);
+		return true;
 	};
 
-	// Auto-fill email if user is already authenticated
+	const handleEmailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const newEmail = e.target.value;
+		setEmail(newEmail);
+		validateEmail(newEmail);
+	};
+
 	useEffect(() => {
-		const savedEmail =
-			clientUser?.email || localStorage.getItem("google_email");
+		const savedEmail = clientUser?.email;
 		if (savedEmail) {
 			setEmail(savedEmail);
-			setIsAuthenticated(true);
 		}
 	}, []);
-
-	const handleDisconnect = () => {
-		localStorage.removeItem("google_token");
-		localStorage.removeItem("google_email");
-		setEmail("");
-		setIsAuthenticated(false);
-	};
 
 	return (
 		<>
@@ -1131,41 +1087,24 @@ const AvailabilityFinalConsentForm = ({
 						<div className="mt-4 w-full">
 							<div className="mb-2">
 								<h4 className="text-xl font-bold text-gray-800 mb-2.5">
-									{isAuthenticated
-										? "Google Calendar Connected"
-										: "Sign in to Connect Google Calendar"}
+									Email Address <span className="text-red-500">*</span>
 								</h4>
 								<p className="text-sm text-gray-500">
-									{isAuthenticated
-										? "Your Google account is linked. Events will be automatically added to your calendar."
-										: "We need your email to schedule events directly on your Google Calendar."}
+									We need your email so that creator can invite you for the
+									scheduled session.
 								</p>
 							</div>
+							<Input
+								type="email"
+								placeholder="Enter your email"
+								value={email}
+								onChange={handleEmailChange}
+								className="w-full border border-gray-300 !min-h-[54px]"
+							/>
 
-							{isAuthenticated ? (
-								<div className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl">
-									<div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full">
-										<FaGoogle className="text-red-600 text-lg" />
-									</div>
-									<div className="flex flex-col">
-										<p className="text-base font-semibold text-gray-900">
-											{email || "Connected"}
-										</p>
-										<button
-											onClick={handleDisconnect}
-											className="mt-1 text-xs text-red-600 font-medium hover:text-red-700 hover:underline transition text-start"
-										>
-											Disconnect
-										</button>
-									</div>
-								</div>
-							) : (
-								<button
-									onClick={handleGoogleAuth}
-									className="flex items-center gap-2 mt-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect"
-								>
-									<FaGoogle /> Connect with Google
-								</button>
+							{/* Email Validation Feedback */}
+							{emailError && (
+								<p className="text-sm text-red-500 mt-2">{emailError}</p>
 							)}
 						</div>
 					</div>
@@ -1191,7 +1130,7 @@ const AvailabilityFinalConsentForm = ({
 								className="text-base bg-black hoverScaleDownEffect w-full mx-auto text-white rounded-full self-center"
 								type="submit"
 								onClick={handlePaySchedule}
-								disabled={preparingTransaction}
+								disabled={!!emailError || preparingTransaction}
 							>
 								{preparingTransaction ? (
 									<Image

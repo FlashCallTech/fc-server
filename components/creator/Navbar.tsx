@@ -82,7 +82,9 @@ const CreatorNavbar = () => {
 		else if (pathname.includes("refer")) return "Refer and Earn";
 		else if (pathname.includes("meta-analytics")) return "Meta Pixel Analytics";
 		else if (pathname.includes("kyc")) return "KYC";
-		else if (pathname.includes("calendar")) return "Calendar";
+		else if (pathname === "calendar") return "Calendar";
+		else if (pathname.includes("calendar-event"))
+			return "Calendar Event Consent";
 		else if (pathname.includes("payment-settings")) return "Payment Method";
 		else if (pathname.includes("payment")) return "Transaction History";
 		else if (pathname.includes("previous")) return "Order History";
