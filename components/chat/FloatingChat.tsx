@@ -100,7 +100,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ setIsAuthSheetOpen, chatId 
   }
 
   return (
-    <div className="w-[398px] h-[500px] flex flex-col rounded- shadow-lg bg-gray-100 overflow-hidden">
+    <div className="w-[398px] h-[500px] flex flex-col shadow-lg bg-gray-100 overflow-hidden">
       {!currentUser &&
         <div className='w-full text-center text-xs p-2 bg-yellow-100 text-gray-500 border-b-2 border-yellow-200'>
           <span>Your chat will be erased if you close the browser. <br />
