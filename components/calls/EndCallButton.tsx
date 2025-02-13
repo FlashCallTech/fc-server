@@ -69,8 +69,7 @@ const EndCallButton = ({ callType }: { callType: "scheduled" | "instant" }) => {
 	const handleLeavingDecisionDialog = async () => {
 		await call?.leave();
 		setShowLeavingDialog(false);
-		router.replace(creatorURL ? `/${creatorURL}` : "/home");
-		window.close();
+		router.replace(`${creatorURL ? creatorURL : "/home"}`);
 	};
 
 	const handleCloseDialog = () => {

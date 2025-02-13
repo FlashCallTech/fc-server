@@ -73,6 +73,7 @@ export type clientUser = {
 	restricted?: boolean;
 	blocked?: any[];
 	global?: boolean;
+	accessToken?: string;
 };
 
 // Creator Params
@@ -113,6 +114,7 @@ export type creatorUser = {
 	blocked?: any[];
 	global?: boolean;
 	commission?: number;
+	accessToken?: string;
 };
 
 export type CreateCreatorParams = {

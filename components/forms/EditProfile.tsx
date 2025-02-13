@@ -89,6 +89,7 @@ const EditProfile = ({
 	const [selectedColor, setSelectedColor] = useState(
 		userData.themeSelected ?? "#88D8C0"
 	);
+	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 	const [initialReferralValue, setInitialReferralValue] = useState<boolean>(
 		() => {
 			return Boolean(!userData.referredBy);
@@ -861,7 +862,7 @@ const EditProfile = ({
 										<span className="text-red-500">*</span>
 									)}
 								</FormLabel>
-								<Popover>
+								<Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
 									<PopoverTrigger asChild>
 										<FormControl>
 											<Button
@@ -936,6 +937,8 @@ const EditProfile = ({
 												field.onChange(
 													format(date as Date | string, "yyyy-MM-dd")
 												);
+
+												setIsPopoverOpen(false);
 											}}
 											month={new Date(selectedYear, selectedMonth)}
 											disabled={(date) =>

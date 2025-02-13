@@ -6,6 +6,7 @@ import {
 	backendBaseUrl,
 	fetchExchangeRate,
 	formatDisplay,
+	frontendBaseUrl,
 	getDisplayName,
 	getImageSource,
 	updatePastFirestoreSessions,
@@ -123,6 +124,44 @@ const AvailabilityFinalConsentForm = ({
 			return maskedNumber;
 		}
 	}
+
+	const createEvent = async (callDetails: {
+		email: string | undefined;
+		location: string;
+		title: string;
+		description: string;
+		startTime: string;
+		endTime: string;
+		attendees: string[];
+	}) => {
+		try {
+			if (!callDetails.email) return;
+
+			await axios.post(
+				`${backendBaseUrl}/calendar/add-event`,
+				{
+					email: callDetails.email,
+					title: callDetails.title,
+					description: callDetails.description,
+					location,
+					startTime: callDetails.startTime,
+					endTime: callDetails.endTime,
+					attendees: callDetails.attendees,
+				},
+				{
+					withCredentials: true,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				}
+			);
+		} catch (error: any) {
+			console.error(
+				"Error creating event:",
+				error.response?.data || error.message
+			);
+		}
+	};
 
 	const handlePayPal = async (amountToPay: number): Promise<boolean> => {
 		return new Promise((resolve) => {
@@ -246,6 +285,7 @@ const AvailabilityFinalConsentForm = ({
 						type: "expert",
 						image: creator.photo || DEFAULT_IMAGE_URL,
 						phone: creator.phone,
+						email: creator.email || "",
 					},
 					role: "admin",
 				},
@@ -256,6 +296,10 @@ const AvailabilityFinalConsentForm = ({
 						type: "client",
 						image: clientUser.photo || DEFAULT_IMAGE_URL,
 						phone: clientUser.phone,
+						email:
+							email ||
+							clientUser?.email ||
+							(localStorage.getItem("google_email") as string),
 					},
 					role: "admin",
 				},
@@ -340,6 +384,7 @@ const AvailabilityFinalConsentForm = ({
 						type: "expert",
 						image: creator?.photo || DEFAULT_IMAGE_URL,
 						phone: creator?.phone,
+						email: creator?.email,
 					},
 					role: "admin",
 				},
@@ -350,6 +395,10 @@ const AvailabilityFinalConsentForm = ({
 						type: "client",
 						image: clientUser?.photo || DEFAULT_IMAGE_URL,
 						phone: clientUser?.phone,
+						email:
+							email ||
+							clientUser?.email ||
+							(localStorage.getItem("google_email") as string),
 					},
 					role: "admin",
 				},
@@ -646,6 +695,21 @@ const AvailabilityFinalConsentForm = ({
 
 				localStorage.removeItem("hasVisitedFeedbackPage");
 
+				const attendees = callDetails?.members
+					?.map((member) => member.custom.email)
+					.filter((email): email is string => Boolean(email))
+					.filter((value, index, self) => self.indexOf(value) === index);
+
+				createEvent({
+					email: creator?.email,
+					location: `${frontendBaseUrl}/meeting/${callDetails.callId}`,
+					title: service.title,
+					description: callDetails.description,
+					startTime: callDetails.startsAt,
+					endTime: callDetails.endsAt,
+					attendees,
+				});
+
 				setTimeout(() => {
 					emailChanged && refreshCurrentUser();
 					toast({
@@ -654,7 +718,6 @@ const AvailabilityFinalConsentForm = ({
 						toastStatus: "positive",
 					});
 
-					setPreparingTransaction(false);
 					router.push("/upcoming");
 				}, 2000);
 			} else {
@@ -688,6 +751,8 @@ const AvailabilityFinalConsentForm = ({
 				title: "Failed to schedule the call",
 				toastStatus: "negative",
 			});
+		} finally {
+			setPreparingTransaction(false);
 		}
 	};
 
@@ -761,6 +826,13 @@ const AvailabilityFinalConsentForm = ({
 		setEmail(newEmail);
 		validateEmail(newEmail);
 	};
+
+	useEffect(() => {
+		const savedEmail = clientUser?.email;
+		if (savedEmail) {
+			setEmail(savedEmail);
+		}
+	}, []);
 
 	return (
 		<>
@@ -1012,14 +1084,14 @@ const AvailabilityFinalConsentForm = ({
 						</div>
 
 						{/*user email*/}
-
 						<div className="mt-4 w-full">
 							<div className="mb-2">
 								<h4 className="text-xl font-bold text-gray-800 mb-2.5">
 									Email Address <span className="text-red-500">*</span>
 								</h4>
 								<p className="text-sm text-gray-500">
-									We need your email to add an event to your calendar.
+									We need your email so that creator can invite you for the
+									scheduled session.
 								</p>
 							</div>
 							<Input

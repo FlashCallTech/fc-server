@@ -305,18 +305,19 @@ const Transactions = () => {
 															{transaction.category}
 														</p>
 													)}
-													{transaction.callCategory && (
-														<p
-															className={`
+													{transaction.callCategory &&
+														transaction.category === "Call Transaction" && (
+															<p
+																className={`
 																	 ${
 																			transaction.callCategory === "Scheduled"
 																				? "bg-[#F0FDF4] text-[#16A34A]"
 																				: "bg-[#DBEAFE] text-[#1E40AF]"
 																		} text-[12px] px-2 py-1 rounded-full`}
-														>
-															{transaction.callCategory}
-														</p>
-													)}
+															>
+																{transaction.callCategory}
+															</p>
+														)}
 												</section>
 											</div>
 											<section className="flex flex-col gap-2 justify-between items-center">
@@ -352,7 +353,7 @@ const Transactions = () => {
 						})
 					)
 				) : (
-					<div className="size-full  flex flex-col gap-2 items-center justify-center">
+					<div className="size-full mt-10 flex flex-col gap-2 items-center justify-center">
 						<ContentLoading />
 					</div>
 				)}
