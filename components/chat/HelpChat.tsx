@@ -157,7 +157,7 @@ const HelpChat = () => {
     return (
         <div>
             {/* Mobile Layout */}
-            `<div
+            <div
                 className={`flex flex-col h-[100dvh] justify-between w-full overflow-hidden bg-gray-100 md:hidden`}
             >
                 <div className='flex flex-col'>
