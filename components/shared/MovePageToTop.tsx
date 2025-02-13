@@ -1,11 +1,12 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const MovePageToTop = () => {
 	const [isVisible, setIsVisible] = useState(false);
 	const pathname = usePathname();
+	const { username } = useParams();
 
 	const toggleVisibility = () => {
 		if (window.scrollY > 300) {
@@ -28,7 +29,9 @@ const MovePageToTop = () => {
 	}, []);
 
 	const shouldDisplayButton =
-		!pathname.includes("chat") && !pathname.includes("meeting");
+		!pathname.includes("chat") && !pathname.includes("meeting") && !username;
+
+	console.log(shouldDisplayButton);
 
 	return (
 		<>

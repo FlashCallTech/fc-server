@@ -516,7 +516,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						</section>
 						<button
 							onClick={handleHelp}
-							className="fixed bottom-10 left-4 flex items-center text-[10px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-white bg-black hover:bg-gray-900 pr-2 pl-1 py-1 rounded-full shadow-lg opacity-90 transition-all"
+							className="fixed bottom-4 right-4 flex border items-center text-[10px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-black bg-gray-100 hover:bg-gray-200 pr-2 pl-1 py-1 rounded-full shadow-lg hoverScaleDownEffect transition-all"
 						>
 							{/* Help Icon */}
 							<Image 
