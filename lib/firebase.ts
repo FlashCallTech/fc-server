@@ -55,7 +55,6 @@ export const getFCMToken = async () => {
 					process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY ||
 					"BLFyNBff7-gu9oSHeZMvwRLzBbPX9McEseh9rIknZEkAWy6THjUlm59aj6GZevx8dP4g4sM7BVxQXBoyrqPsapA",
 			});
-
 			return fcmToken || null; // Return token if available, otherwise null
 		} catch (error) {
 			console.error("Error retrieving FCM token:", error);

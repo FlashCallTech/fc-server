@@ -91,6 +91,7 @@
 		"react-datepicker": "^7.5.0",
 		"react-day-picker": "^8.10.1",
 		"react-dom": "^18",
+		"react-draggable": "^4.4.6",
 		"react-dropzone": "^14.2.3",
 		"react-facebook-pixel": "^1.0.4",
 		"react-h5-audio-player": "^3.9.3",

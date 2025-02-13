@@ -41,6 +41,7 @@ const CreatorNavbar = () => {
 	const pathname = usePathname();
 	const isCreatorHome =
 		pathname.includes("home") && userType === "creator" && currentUser;
+	const isHelpChat = pathname.includes("expertHelpChats") && currentUser;
 	const isCreatorOrExpertPath =
 		creatorURL && creatorURL !== "" && pathname.includes(`${creatorURL}`);
 	const followCreatorTheme = isCreatorOrExpertPath ? "#ffffff" : "#000000";
@@ -96,6 +97,7 @@ const CreatorNavbar = () => {
 			return "Terms and Conditions";
 		else if (pathname.includes("support")) return "Support";
 		else if (pathname.includes("profile")) return "Edit Profile";
+		else if(pathname.includes("expertHelpChats")) return "Inquiry"
 	};
 
 	const handleAppRedirect = () => {
@@ -131,13 +133,13 @@ const CreatorNavbar = () => {
 		<nav
 			id="navbar"
 			className={`${
-				isCreatorHome ? "lg:hidden" : ""
+				isCreatorHome ? "lg:hidden" : `${isHelpChat ? "hidden md:flex" : ""}`
 			} bg-white flex justify-between items-center sticky w-full h-[76px] z-40 top-0 left-[264px] px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}
 		>
 			{currentUser ? (
 				<Link
 					href="/home"
-					className="lg:hidden flex items-center justify-center size-fit "
+					className="md:hidden flex items-center justify-center size-fit "
 				>
 					<Image
 						src="/icons/logo_new_light.png"
@@ -154,7 +156,7 @@ const CreatorNavbar = () => {
 				<AppLink />
 			)}
 
-			<div className="hidden lg:flex gap-4 items-center text-lg font-bold">
+			<div className="hidden md:flex gap-4 items-center text-lg font-bold">
 				<Link
 					href={`${creatorURL ? creatorURL : "/home"}`}
 					className="text-xl font-bold hoverScaleDownEffect"
@@ -180,11 +182,11 @@ const CreatorNavbar = () => {
 			{fetchingUser ? (
 				<NavLoader />
 			) : currentUser ? (
-				<div className="flex justify-end items-center gap-4 h-full lg:text-[#16BC88]">
+				<div className="flex justify-end items-center gap-4 h-full md:text-[#16BC88]">
 					<Link
 						href="/payment"
-						className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] lg:bg-[#def4ed] ${
-							typeof window !== "undefined" && window.innerWidth >= 1024
+						className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] md:bg-[#def4ed] ${
+							typeof window !== "undefined" && window.innerWidth >= 768
 								? ""
 								: "rounded-full border-[1px] border-[#000000]"
 						}`}

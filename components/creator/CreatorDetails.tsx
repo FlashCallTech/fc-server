@@ -1,12 +1,12 @@
 "use client";
 
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { getDisplayName, getImageSource, isValidHexColor } from "@/lib/utils";
+import { fetchFCMToken, getDisplayName, getImageSource, isValidHexColor } from "@/lib/utils";
 import { creatorUser, LinkType } from "@/types";
 import React, { memo, useEffect, useState } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
+import { arrayUnion, collection, doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import CallingOptions from "../calls/CallingOptions";
 import UserReviews from "../creator/UserReviews";
 import Favorites from "../shared/Favorites";
@@ -18,25 +18,51 @@ import ClientSideUserAvailability from "../availabilityServices/ClientSideUserAv
 import ClientSideDiscountSheet from "../discountServices/ClientSideDiscountSheet";
 import { useSelectedServiceContext } from "@/lib/context/SelectedServiceContext";
 import AuthenticationSheet from "../shared/AuthenticationSheet";
+import DraggableWindow from "../chat/DraggableWindow";
+import FloatingChat from "../chat/FloatingChat";
+import GetRandomImage from "@/utils/GetRandomImage";
+
+const useScreenSize = () => {
+	const [isMobile, setIsMobile] = useState(false);
+
+	const handleResize = () => {
+		setIsMobile(window.innerWidth < 1280);
+	};
+
+	useEffect(() => {
+		handleResize(); // Set initial value
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
+
+	return isMobile;
+};
 
 const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
-	const { clientUser, userType, setCurrentTheme, updateCreatorURL } =
+	const { clientUser, userType, setCurrentTheme, updateCreatorURL, region } =
 		useCurrentUsersContext();
 	const { selectedServices } = useSelectedServiceContext();
 	const [status, setStatus] = useState<string>("Online");
 	const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [chatId, setChatId] = useState<string | null>();
 	const [offerApplied, setOfferApplied] = useState(
 		selectedServices ? selectedServices.length > 0 : false
 	);
 	const [isEligible, setIsEligible] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const pathname = usePathname();
 	const creatorURL = pathname || localStorage.getItem("creatorURL");
+
+	const isMobile = useScreenSize();
 
 	const fullName = getDisplayName(creator);
 
 	const imageSrc = getImageSource(creator);
+
+	const router = useRouter();
 
 	const themeColor = isValidHexColor(creator?.themeSelected)
 		? creator?.themeSelected
@@ -124,6 +150,275 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 		return text;
 	};
 
+	const maskPhoneNumber = (phoneNumber: string) => {
+		// Remove the '+91' prefix
+		if (phoneNumber) {
+			let cleanedNumber = phoneNumber.replace("+91", "");
+
+			// Mask the next 5 digits, leaving the first 2 digits unmasked
+			let maskedNumber =
+				cleanedNumber.substring(0, 2) + "*****" + cleanedNumber.substring(7);
+
+			return maskedNumber;
+		}
+	}
+
+	const handleHelp = async () => {
+		if (!clientUser) {
+			if(isModalOpen) return;
+
+			let clientId: any;
+			clientId = localStorage.getItem("temporaryClientId");
+
+			if (!clientId) {
+				clientId = crypto.randomUUID();
+				localStorage.setItem("temporaryClientId", clientId);
+			}
+
+			try {
+				setLoading(true);
+				const chatRef = collection(db, "chats");
+				const creatorChatsDocRef = doc(db, "userHelpChats", creator?._id);
+				const userChatsDocRef = doc(db, "userHelpChats", clientId as string);
+
+				const [userChatsDocSnapshot, creatorChatsDocSnapshot] = await Promise.all([
+					getDoc(userChatsDocRef),
+					getDoc(creatorChatsDocRef),
+				]);
+
+				let chatId = null;
+
+				if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
+					const userChatsData = userChatsDocSnapshot.data();
+					const creatorChatsData = creatorChatsDocSnapshot.data();
+
+					const userChat = userChatsData.chats?.find(
+						(chat: any) => chat.receiverId === creator?._id
+					);
+					const creatorChat = creatorChatsData.chats?.find(
+						(chat: any) => chat.receiverId === clientId
+					);
+
+					if (userChat && creatorChat && userChat.chatId === creatorChat.chatId) {
+						chatId = userChat.chatId;
+					}
+				}
+
+				if (!userChatsDocSnapshot.exists()) {
+					await setDoc(
+						userChatsDocSnapshot.ref,
+						{
+							chats: [],
+						},
+					);
+				}
+
+				if (!creatorChatsDocSnapshot.exists()) {
+					await setDoc(
+						creatorChatsDocSnapshot.ref,
+						{
+							chats: [],
+						},
+					);
+				}
+
+				const chatData: any = {
+					creatorImg: creator.photo,
+					clientImg: GetRandomImage(),
+				};
+
+				if (!chatId) {
+					chatId = doc(chatRef).id;
+					chatData.messages = [],
+						chatData.creatorId = creator?._id,
+						chatData.clientId = clientId,
+						chatData.global = region === "India" ? false : true,
+						chatData.createdAt = Date.now(),
+						chatData.chatId = chatId
+					const creatorChatUpdate = updateDoc(creatorChatsDocRef,
+						{
+							chats: arrayUnion({
+								chatId: chatId,
+								clientName: "Guest",
+								clientImg: GetRandomImage(),
+								receiverId: clientId,
+								updatedAt: Date.now(),
+							}),
+						}
+					);
+
+					const clientChatUpdate = updateDoc(userChatsDocRef,
+						{
+							chats: arrayUnion({
+								chatId: chatId,
+								creatorName: creator.fullName || creator._id,
+								creatorImg: creator.photo,
+								receiverId: creator._id,
+								updatedAt: Date.now(),
+							}),
+						}
+					);
+					await Promise.all([creatorChatUpdate, clientChatUpdate]);
+				}
+
+				if (creator.fullName) {
+					chatData.creatorName = creator.fullName;
+				} else if (creator.phone) {
+					chatData.creatorName = maskPhoneNumber(creator.phone as string);
+				}
+				if (creator.phone) {
+					chatData.creatorPhone = creator.phone;
+				}
+
+				chatData.clientName = "Guest";
+
+				setChatId(chatId);
+
+				await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
+
+				setLoading(false);
+
+				!loading && isMobile && router.push(`/helpChat/${chatId}`);
+				!loading && !isMobile && setIsModalOpen(true);
+			} catch (error) {
+				setLoading(false);
+				console.error("Error handling help chat:", error);
+				// Optionally, add error notification or additional error handling here.
+			}
+
+			return;
+		}
+
+		try {
+			setLoading(true);
+			setIsModalOpen(false);
+			const chatRef = collection(db, "chats");
+			const creatorChatsDocRef = doc(db, "userHelpChats", creator?._id);
+			const userChatsDocRef = doc(db, "userHelpChats", clientUser?._id as string);
+
+			const [userChatsDocSnapshot, creatorChatsDocSnapshot] = await Promise.all([
+				getDoc(userChatsDocRef),
+				getDoc(creatorChatsDocRef),
+			]);
+
+			let chatId = null;
+
+			if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
+				const userChatsData = userChatsDocSnapshot.data();
+				const creatorChatsData = creatorChatsDocSnapshot.data();
+
+				const userChat = userChatsData.chats?.find(
+					(chat: any) => chat.receiverId === creator?._id
+				);
+				const creatorChat = creatorChatsData.chats?.find(
+					(chat: any) => chat.receiverId === clientUser?._id
+				);
+
+				if (userChat && creatorChat && userChat.chatId === creatorChat.chatId) {
+					chatId = userChat.chatId;
+				}
+			}
+
+			if (!userChatsDocSnapshot.exists()) {
+				await setDoc(
+					userChatsDocSnapshot.ref,
+					{
+						chats: [],
+					},
+				);
+			}
+
+			if (!creatorChatsDocSnapshot.exists()) {
+				await setDoc(
+					creatorChatsDocSnapshot.ref,
+					{
+						chats: [],
+					},
+				);
+			}
+
+			const chatData: any = {
+				creatorImg: creator.photo,
+				clientImg: clientUser?.photo,
+			};
+
+			if (!chatId) {
+				chatId = doc(chatRef).id;
+				chatData.messages = [],
+					chatData.creatorId = creator?._id,
+					chatData.clientId = clientUser?._id,
+					chatData.global = clientUser?.global ?? false,
+					chatData.createdAt = Date.now(),
+					chatData.chatId = chatId
+				const creatorChatUpdate = updateDoc(creatorChatsDocRef,
+					{
+						chats: arrayUnion({
+							chatId: chatId,
+							clientName: clientUser.fullName || clientUser._id,
+							clientImg: clientUser.photo,
+							receiverId: clientUser._id,
+							updatedAt: Date.now(),
+						}),
+					}
+				);
+
+				const clientChatUpdate = updateDoc(userChatsDocRef,
+					{
+						chats: arrayUnion({
+							chatId: chatId,
+							creatorName: creator.fullName || creator._id,
+							creatorImg: creator.photo,
+							receiverId: creator._id,
+							updatedAt: Date.now(),
+						}),
+					}
+				);
+				await Promise.all([creatorChatUpdate, clientChatUpdate]);
+			}
+
+			if (creator.fullName) {
+				chatData.creatorName = creator.fullName;
+			} else if (creator.phone) {
+				chatData.creatorName = maskPhoneNumber(creator.phone as string);
+			}
+			if (creator.phone) {
+				chatData.creatorPhone = creator.phone;
+			}
+
+			if (clientUser?.phone) {
+				chatData.clientPhone = clientUser.phone;
+			}
+
+			if (clientUser?.email) {
+				chatData.clientEmail = clientUser.email;
+			}
+
+			if (clientUser?.fullName) {
+				chatData.clientName = clientUser.fullName;
+			} else if (clientUser?.phone) {
+				chatData.clientName = maskPhoneNumber(clientUser.phone as string);
+			}
+
+			setChatId(chatId);
+
+			await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
+
+			setLoading(false);
+
+			!loading && isMobile && router.push(`/helpChat/${chatId}`);
+			!loading && !isMobile && setIsModalOpen(true);
+		} catch (error) {
+			setLoading(false);
+			console.error("Error handling help chat:", error);
+			// Optionally, add error notification or additional error handling here.
+		}
+	};
+
+	const closeModal = () => {
+		setChatId(null);
+		setIsModalOpen(false);
+	};
+
 	const renderCreatorBio = () => {
 		return (
 			<>
@@ -135,13 +430,11 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 							<h2 className="text-base font-bold">About Me</h2>
 							{/* Content */}
 							<p
-								className={`text-sm text-start block ${
-									isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
-								} ${
-									isExpanded
+								className={`text-sm text-start block ${isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
+									} ${isExpanded
 										? "overflow-y-scroll no-scrollbar"
 										: "overflow-hidden"
-								}`}
+									}`}
 							>
 								{getClampedText(creator?.bio)}
 								{!isExpanded && creator.bio.length > 100 && (
@@ -184,7 +477,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					style={{ backgroundColor: themeColor }}
 				>
 					{/* Creator Info */}
-					<section className="w-full h-fit flex flex-col items-center justify-center gap-2.5">
+					<section className="w-full relative h-fit flex flex-col items-center justify-center gap-2.5">
 						{/* 1. Creator Status and Image */}
 						<section className="relative flex item-center justify-center rounded-full min-h-[116px] min-w-[116px] border-[4px] drop-shadow-lg border-white">
 							<Image
@@ -206,15 +499,14 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 								>
 									<div
 										className={`
-									${
-										status === "Online"
-											? "bg-[#22C55E]"
-											: status === "Offline"
-											? "bg-red-600"
-											: status === "Busy"
-											? "bg-orange-600"
-											: "bg-red-600"
-									} 
+									${status === "Online"
+												? "bg-[#22C55E]"
+												: status === "Offline"
+													? "bg-red-600"
+													: status === "Busy"
+														? "bg-orange-600"
+														: "bg-red-600"
+											} 
 
 									rounded-full size-[15px]
 									`}
@@ -222,7 +514,15 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 								</div>
 							</section>
 						</section>
-
+						<button
+							onClick={handleHelp}
+							className="fixed bottom-10 left-4 flex items-center z-40 gap-2 text-white bg-blue-600 hover:bg-blue-700 p-4 rounded-full shadow-lg opacity-80 transition-all"
+						>
+							{/* Help Icon */}
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+								<path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+							</svg>
+						</button>
 						{/* 2. Creator Info */}
 						<section className="size-full flex flex-col items-center justify-center overflow-hidden">
 							<p className="font-semibold text-2xl max-w-[92%] text-ellipsis whitespace-nowrap overflow-hidden capitalize">
@@ -376,6 +676,14 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					isOpen={isAuthSheetOpen}
 					onOpenChange={setIsAuthSheetOpen}
 				/>
+			)}
+			{isModalOpen && chatId && (
+				<DraggableWindow onClose={closeModal} creator={creator}>
+					<FloatingChat
+						setIsAuthSheetOpen={setIsAuthSheetOpen}
+						chatId={chatId}
+					/>
+				</DraggableWindow>
 			)}
 		</div>
 	);

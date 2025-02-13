@@ -258,6 +258,7 @@ const AuthenticateViaOTP = ({
 				router.replace(firstLoginRef.current ? "/updateDetails" : "/home");
 				refreshCurrentUser();
 			}
+
 		} catch (error: any) {
 			console.error("Error verifying OTP:", error);
 			let newErrors = { ...error };

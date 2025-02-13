@@ -117,12 +117,12 @@ export const newSidebarLinksCreator = [
 		label: "Meta Pixel Analytics",
 		protected: true,
 	},
-	// {
-	// 	imgURL: "/icons/termsConditions.svg",
-	// 	route: "/terms-and-conditions",
-	// 	label: "Terms & Conditions",
-	// 	protected: false,
-	// },
+	{
+		imgURL: "/creator/inbox.svg",
+		route: "/expertHelpChats",
+		label: "Inquiry",
+		protected: true,
+	},
 	// {
 	// 	imgURL: "/icons/support.svg",
 	// 	route: "/support",
