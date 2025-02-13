@@ -336,8 +336,8 @@ input[type="number"] {
 	}
 
 	/* Styles for touch devices (like mobiles) */
-	@media (hover: none) {
-		/* Disable hover effects */
+	@media (pointer: coarse) {
+		/* Disable hover effects for touch devices */
 		.hoverScaleEffect:hover,
 		.hoverScaleDownEffect:hover {
 			@apply scale-100; /* Disable hover scaling for touch devices */
