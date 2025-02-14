@@ -99,7 +99,7 @@ const CreatorNavbar = () => {
 			return "Terms and Conditions";
 		else if (pathname.includes("support")) return "Support";
 		else if (pathname.includes("profile")) return "Edit Profile";
-		else if(pathname.includes("expertHelpChats")) return "Inquiry"
+		else if (pathname.includes("expertHelpChats")) return "Inquiry";
 	};
 
 	const handleAppRedirect = () => {
@@ -141,7 +141,7 @@ const CreatorNavbar = () => {
 			{currentUser ? (
 				<Link
 					href="/home"
-					className="md:hidden flex items-center justify-center size-fit "
+					className="lg:hidden flex items-center justify-center size-fit "
 				>
 					<Image
 						src="/icons/logo_new_light.png"
@@ -158,7 +158,7 @@ const CreatorNavbar = () => {
 				<AppLink />
 			)}
 
-			<div className="hidden md:flex gap-4 items-center text-lg font-bold">
+			<div className="hidden lg:flex gap-4 items-center text-lg font-bold">
 				<Link
 					href={`${creatorURL ? creatorURL : "/home"}`}
 					className="text-xl font-bold hoverScaleDownEffect"

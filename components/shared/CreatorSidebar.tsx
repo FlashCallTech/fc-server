@@ -199,7 +199,9 @@ const CreatorSidebar = () => {
 										}`}
 										priority
 									/>
-									<p className={`text-sm tracking-wide font-medium`}>
+									<p
+										className={`flex gap-2 items-center text-sm tracking-wide font-medium`}
+									>
 										{item.label}
 										{showBadge && (
 											<span className="ml-2 flex items-center justify-center bg-red-500 rounded-full text-white p-1 text-xs size-5">
