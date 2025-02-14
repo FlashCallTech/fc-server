@@ -62,8 +62,11 @@ const HelpChat = () => {
 
     useEffect(() => {
         const setVh = () => {
-            const vh = window.visualViewport ? window.visualViewport.height * 0.01 : window.innerHeight * 0.01;
+            const vh = window.visualViewport
+                ? window.visualViewport.height * 0.01
+                : window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
+            console.log("Set --vh to:", `${vh}px`);
         };
 
         setVh();
@@ -71,11 +74,23 @@ const HelpChat = () => {
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', setVh);
         }
+
+        // Also listen for focus/blur on inputs to force recalculation:
+        const inputs = document.querySelectorAll('input, textarea');
+        inputs.forEach((input) => {
+            input.addEventListener('focus', setVh);
+            input.addEventListener('blur', setVh);
+        });
+
         return () => {
             window.removeEventListener('resize', setVh);
             if (window.visualViewport) {
                 window.visualViewport.removeEventListener('resize', setVh);
             }
+            inputs.forEach((input) => {
+                input.removeEventListener('focus', setVh);
+                input.removeEventListener('blur', setVh);
+            });
         };
     }, []);
 
