@@ -60,6 +60,25 @@ const HelpChat = () => {
         }
     }, [chatId]);
 
+    useEffect(() => {
+        const setVh = () => {
+            const vh = window.visualViewport ? window.visualViewport.height * 0.01 : window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        };
+
+        setVh();
+        window.addEventListener('resize', setVh);
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', setVh);
+        }
+        return () => {
+            window.removeEventListener('resize', setVh);
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', setVh);
+            }
+        };
+    }, []);
+
     const scrollToBottom = useCallback(() => {
         if (messagesEndRef.current && !loading) {
             messagesEndRef.current.scrollIntoView();
@@ -158,7 +177,8 @@ const HelpChat = () => {
         <div className='size-full'>
             {/* Mobile Layout */}
             <div
-                className={`flex min-h-[100dvh] flex-col justify-between w-full overflow-hidden bg-gray-100 md:hidden`}
+                className={`flex flex-col justify-between w-full overflow-hidden bg-gray-100 md:hidden`}
+                style={{ height: 'calc(var(--vh, 1vh) * 100)' }}
             >
                 <div className='flex flex-col'>
                     <div className="handle border p-2 rounded-t-lg flex justify-between items-center">
