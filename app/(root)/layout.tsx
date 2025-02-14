@@ -117,7 +117,7 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 					<ChatRequestProvider>
 						<SelectedServiceProvider>
 							<StreamVideoProvider>
-								<div className={`relative ${pathname.includes("helpChat") ? "min-h-[100dvh]" : "min-h-screen"}  w-full`}>
+								<div className={`relative ${pathname.includes("helpChat") ? "" : "min-h-screen"}  w-full`}>
 									<Script
 										src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD`}
 									/>
