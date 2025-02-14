@@ -98,15 +98,16 @@ const CalendarEventConsent = () => {
 	const handleDisconnect = async () => {
 		localStorage.removeItem("google_token");
 		localStorage.removeItem("google_email");
-		let response = await axios.put(
-			`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
-			{
-				email: null,
-				accessToken: null,
-				refreshToken: null,
-				expiresAt: null,
-			}
-		);
+		creatorUser?._id &&
+			(await axios.put(
+				`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
+				{
+					email: null,
+					accessToken: null,
+					refreshToken: null,
+					expiresAt: null,
+				}
+			));
 		setIsAuthenticated(false);
 	};
 
