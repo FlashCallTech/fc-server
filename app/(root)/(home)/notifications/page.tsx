@@ -82,7 +82,7 @@ const Notifications = () => {
 		);
 	}
 	return (
-		<section className="flex size-full flex-col px-4">
+		<section className="flex size-full h-[calc(100vh-6rem)] flex-col px-4">
 			<section
 				className={`lg:hidden sticky flex w-full items-center justify-between top-0 lg:top-[76px] bg-white z-30 py-4 pb-0 transition-all duration-300`}
 			>
