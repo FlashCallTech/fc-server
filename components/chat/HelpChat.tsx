@@ -60,6 +60,26 @@ const HelpChat = () => {
         }
     }, [chatId]);
 
+    useEffect(() => {
+        const setVh = () => {
+            // Use visualViewport.height if available, otherwise fallback to window.innerHeight
+            const vh = window.visualViewport ? window.visualViewport.height * 0.01 : window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        };
+
+        setVh();
+        window.addEventListener('resize', setVh);
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', setVh);
+        }
+        return () => {
+            window.removeEventListener('resize', setVh);
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', setVh);
+            }
+        };
+    }, []);
+
     const scrollToBottom = useCallback(() => {
         if (messagesEndRef.current && !loading) {
             messagesEndRef.current.scrollIntoView();
@@ -158,7 +178,8 @@ const HelpChat = () => {
         <div>
             {/* Mobile Layout */}
             <div
-                className={`flex flex-col h-[100svh] md:h-[100lvh] justify-between w-full overflow-hidden bg-gray-100 md:hidden`}
+                className={`flex flex-col justify-between w-full overflow-hidden bg-gray-100 md:hidden`}
+                style={{ height: 'calc(var(--vh, 1vh) * 100)' }}
             >
                 <div className='flex flex-col'>
                     <div className="handle cursor-move border p-2 rounded-t-lg flex justify-between items-center">
@@ -250,7 +271,7 @@ const HelpChat = () => {
                             placeholder="Start typing your message"
                             value={text}
                             onChange={(e) => setText(e.target.value)}
-                            className="flex-1 p-2 text-sm focus:outline-none bg-transparent"
+                            className="flex-1 p-2 focus:outline-none bg-transparent"
                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                         />
                         <div className="p-1">
@@ -424,7 +445,7 @@ const HelpChat = () => {
                                         onContextMenu={(e) => e.preventDefault()}
                                         className="flex gap-2 text-white text-sm px-2 items-center justify-center"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="15.944661140441895" height="16.008665084838867" viewBox="0 0 15.944661140441895 16.008665084838867"><g transform="matrix(1,0,0,-1,0,32.017330169677734)"><path d="M15.5019,31.82826508483887Q16,31.484565084838867,15.9377,30.859565084838867L13.9455,17.85951508483887Q13.8521,17.39076508483887,13.4475,17.14076508483887Q13.0117,16.922017084838867,12.5759,17.10951508483887L8.84047,18.64076508483887L6.72374,16.328267084838867Q6.22568,15.859517084838867,5.60311,16.078267384838867Q5.01167,16.359517084838867,4.98054,17.01576508483887L4.98054,19.64076508483887Q4.98054,19.82826508483887,5.10506,19.95326508483887L10.3346,25.67201508483887Q10.5837,26.01576508483887,10.3035,26.359565084838867Q9.99222,26.64076508483887,9.61868,26.39076508483887L3.29961,20.73451508483887L0.560311,22.10951508483887Q0.0311284,22.39076508483887,0,22.98451508483887Q0,23.57826508483887,0.498054,23.89076508483887L14.4436,31.89076508483887Q15.0039,32.17206508483886,15.5019,31.82826508483887Z" fill="#FFFFFF" fill-opacity="1" /></g></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="15.944661140441895" height="16.008665084838867" viewBox="0 0 15.944661140441895 16.008665084838867"><g transform="matrix(1,0,0,-1,0,32.017330169677734)"><path d="M15.5019,31.82826508483887Q16,31.484565084838867,15.9377,30.859565084838867L13.9455,17.85951508483887Q13.8521,17.39076508483887,13.4475,17.14076508483887Q13.0117,16.922017084838867,12.5759,17.10951508483887L8.84047,18.64076508483887L6.72374,16.328267084838867Q6.22568,15.859517084838867,5.60311,16.078267384838867Q5.01167,16.359517084838867,4.98054,17.01576508483887L4.98054,19.64076508483887Q4.98054,19.82826508483887,5.10506,19.95326508483887L10.3346,25.67201508483887Q10.5837,26.01576508483887,10.3035,26.359565084838867Q9.99222,26.64076508483887,9.61868,26.39076508483887L3.29961,20.73451508483887L0.560311,22.10951508483887Q0.0311284,22.39076508483887,0,22.98451508483887Q0,23.57826508483887,0.498054,23.89076508483887L14.4436,31.89076508483887Q15.0039,32.17206508483886,15.5019,31.82826508483887Z" fill="#FFFFFF" fillOpacity="1" /></g></svg>
                                     </button>
                                 </div>
                             </div>
