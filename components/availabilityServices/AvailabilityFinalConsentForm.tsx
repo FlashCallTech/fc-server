@@ -55,7 +55,7 @@ const AvailabilityFinalConsentForm = ({
 	const { clientUser, refreshCurrentUser } = useCurrentUsersContext();
 	const [email, setEmail] = useState(clientUser?.email || "");
 	const [emailChanged, setEmailChanged] = useState(false);
-	const [emailError, setEmailError] = useState("Email is required.");
+	const [emailError, setEmailError] = useState("");
 
 	const {
 		getFinalServices,

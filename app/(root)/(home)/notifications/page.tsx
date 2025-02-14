@@ -84,9 +84,9 @@ const Notifications = () => {
 	return (
 		<section className="flex size-full flex-col px-4">
 			<section
-				className={`sticky flex w-full items-center justify-between top-0 lg:top-[76px] bg-white z-30 py-4 pb-0 transition-all duration-300`}
+				className={`lg:hidden sticky flex w-full items-center justify-between top-0 lg:top-[76px] bg-white z-30 py-4 pb-0 transition-all duration-300`}
 			>
-				{/* <section className="flex items-center gap-4">
+				<section className="flex items-center gap-4">
 					<Link
 						href={`${creatorURL ? creatorURL : "/home"}`}
 						className="text-xl font-bold hoverScaleDownEffect"
@@ -107,7 +107,7 @@ const Notifications = () => {
 						</svg>
 					</Link>
 					<h1 className="text-xl md:text-2xl font-bold">Notifications</h1>
-				</section> */}
+				</section>
 			</section>
 
 			{/* notification content */}
@@ -134,7 +134,7 @@ const Notifications = () => {
 				</div>
 			) : (
 				<section
-					className={`grid xs:grid-cols-2 2xl:grid-cols-3 h-fit gap-3.5 lg:gap-5 py-4 pt-7 2xl:gap-7 items-start overflow-hidden`}
+					className={`grid xs:grid-cols-2 lg:grid-cols-3 h-fit gap-3.5 lg:gap-5 py-4 2xl:gap-7 items-start overflow-hidden`}
 					style={{
 						WebkitTransform: "translateZ(0)",
 					}}

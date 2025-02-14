@@ -13,7 +13,15 @@ import {
 import { clientUser, creatorUser } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
-import { arrayUnion, deleteDoc, doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
+import {
+	arrayUnion,
+	deleteDoc,
+	doc,
+	getDoc,
+	onSnapshot,
+	setDoc,
+	updateDoc,
+} from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
@@ -254,6 +262,8 @@ export const CurrentUsersProvider = ({
 
 			localStorage.setItem("userType", "client");
 
+			setUserType("client");
+
 			setClientUser(null);
 			setCreatorUser(null);
 		}
@@ -270,17 +280,22 @@ export const CurrentUsersProvider = ({
 
 			return maskedNumber;
 		}
-	}
+	};
 
-	const moveChatFromTempToMain = async (temporaryClientId: string, data: clientUser) => {
-		if (!temporaryClientId || !data) return console.error("Missing temporaryClientId or data");
+	const moveChatFromTempToMain = async (
+		temporaryClientId: string,
+		data: clientUser
+	) => {
+		if (!temporaryClientId || !data)
+			return console.error("Missing temporaryClientId or data");
 
 		const tempDocRef = doc(db, "userHelpChats", temporaryClientId);
 		const mainDocRef = doc(db, "userHelpChats", data._id);
 
 		try {
 			const tempDocSnap = await getDoc(tempDocRef);
-			if (!tempDocSnap.exists()) return console.error("Temporary document does not exist");
+			if (!tempDocSnap.exists())
+				return console.error("Temporary document does not exist");
 
 			const tempData = tempDocSnap.data();
 			if (!tempData.chats || !Array.isArray(tempData.chats))
@@ -296,7 +311,8 @@ export const CurrentUsersProvider = ({
 					isSeen: chatTemp.isSeen,
 					updatedAt: chatTemp.updatedAt,
 				};
-				if (chatTemp.lastMessage) chatElement.lastMessage = chatTemp.lastMessage;
+				if (chatTemp.lastMessage)
+					chatElement.lastMessage = chatTemp.lastMessage;
 
 				// MAIN DOCUMENT PROCESSING
 				const mainDocSnap = await getDoc(mainDocRef);
@@ -304,13 +320,19 @@ export const CurrentUsersProvider = ({
 				if (mainDocSnap.exists()) {
 					const mainData = mainDocSnap.data();
 					if (mainData.chats && Array.isArray(mainData.chats)) {
-						matchedIndex = mainData.chats.findIndex((el: any) => el.receiverId === chatTemp.receiverId);
+						matchedIndex = mainData.chats.findIndex(
+							(el: any) => el.receiverId === chatTemp.receiverId
+						);
 						if (matchedIndex !== -1) {
 							// Update existing element in main document
 							mainData.chats[matchedIndex].lastMessage = chatTemp.lastMessage;
-							mainData.chats[matchedIndex].updatedAt = chatTemp.updatedAt || Date.now();
+							mainData.chats[matchedIndex].updatedAt =
+								chatTemp.updatedAt || Date.now();
 							await updateDoc(mainDocRef, { chats: mainData.chats });
-							console.log("Chat element updated in main document for receiver", chatTemp.receiverId);
+							console.log(
+								"Chat element updated in main document for receiver",
+								chatTemp.receiverId
+							);
 
 							// Merge messages in corresponding helpChat document
 							const targetChatId = mainData.chats[matchedIndex].chatId;
@@ -320,49 +342,82 @@ export const CurrentUsersProvider = ({
 							if (sourceHelpChatSnap.exists()) {
 								const sourceMessages = sourceHelpChatSnap.data().messages || [];
 								const modifiedMessages = sourceMessages.map((msg: any) =>
-									msg.senderId === temporaryClientId ? { ...msg, senderId: data._id } : msg
+									msg.senderId === temporaryClientId
+										? { ...msg, senderId: data._id }
+										: msg
 								);
 								const targetHelpChatSnap = await getDoc(targetHelpChatRef);
-								const targetMessages = targetHelpChatSnap.exists() ? targetHelpChatSnap.data().messages || [] : [];
-								const mergedMessages = [...targetMessages, ...modifiedMessages].sort((a, b) => a.createdAt - b.createdAt);
-								await updateDoc(targetHelpChatRef, { messages: mergedMessages });
+								const targetMessages = targetHelpChatSnap.exists()
+									? targetHelpChatSnap.data().messages || []
+									: [];
+								const mergedMessages = [
+									...targetMessages,
+									...modifiedMessages,
+								].sort((a, b) => a.createdAt - b.createdAt);
+								await updateDoc(targetHelpChatRef, {
+									messages: mergedMessages,
+								});
 								await deleteDoc(sourceHelpChatRef);
-								console.log("Merged messages into target helpChat document for chatId", targetChatId);
+								console.log(
+									"Merged messages into target helpChat document for chatId",
+									targetChatId
+								);
 							}
 						} else {
 							// No matching element found; push new chat element
 							await updateDoc(mainDocRef, { chats: arrayUnion(chatElement) });
-							console.log("Chat element pushed to main document for receiver", chatTemp.receiverId);
+							console.log(
+								"Chat element pushed to main document for receiver",
+								chatTemp.receiverId
+							);
 							// Also update source helpChat document messages
 							const sourceHelpChatRef = doc(db, "helpChat", chatTemp.chatId);
 							const sourceHelpChatSnap = await getDoc(sourceHelpChatRef);
 							if (sourceHelpChatSnap.exists()) {
 								const sourceMessages = sourceHelpChatSnap.data().messages || [];
 								const modifiedMessages = sourceMessages.map((msg: any) =>
-									msg.senderId === temporaryClientId ? { ...msg, senderId: data._id } : msg
+									msg.senderId === temporaryClientId
+										? { ...msg, senderId: data._id }
+										: msg
 								);
-								await updateDoc(sourceHelpChatRef, { messages: modifiedMessages });
-								console.log("Merged messages into source helpChat document for chatId", chatTemp.chatId);
+								await updateDoc(sourceHelpChatRef, {
+									messages: modifiedMessages,
+								});
+								console.log(
+									"Merged messages into source helpChat document for chatId",
+									chatTemp.chatId
+								);
 							}
 						}
 					} else {
 						// Main document exists but no chats array, so push new chat element
 						await updateDoc(mainDocRef, { chats: arrayUnion(chatElement) });
-						console.log("Chat element pushed to main document (no chats array found) for receiver", chatTemp.receiverId);
+						console.log(
+							"Chat element pushed to main document (no chats array found) for receiver",
+							chatTemp.receiverId
+						);
 					}
 				} else {
 					// Main document does not exist; create it with the current chat element in an array
 					await setDoc(mainDocRef, { chats: [chatElement] });
-					console.log("Main document created with temporary document data for receiver", chatTemp.receiverId);
+					console.log(
+						"Main document created with temporary document data for receiver",
+						chatTemp.receiverId
+					);
 					const sourceHelpChatRef = doc(db, "helpChat", chatTemp.chatId);
 					const sourceHelpChatSnap = await getDoc(sourceHelpChatRef);
 					if (sourceHelpChatSnap.exists()) {
 						const sourceMessages = sourceHelpChatSnap.data().messages || [];
 						const modifiedMessages = sourceMessages.map((msg: any) =>
-							msg.senderId === temporaryClientId ? { ...msg, senderId: data._id } : msg
+							msg.senderId === temporaryClientId
+								? { ...msg, senderId: data._id }
+								: msg
 						);
 						await updateDoc(sourceHelpChatRef, { messages: modifiedMessages });
-						console.log("Merged messages into source helpChat document for chatId", chatTemp.chatId);
+						console.log(
+							"Merged messages into source helpChat document for chatId",
+							chatTemp.chatId
+						);
 					}
 				}
 
@@ -373,32 +428,45 @@ export const CurrentUsersProvider = ({
 					const otherData = otherDocSnap.data();
 					if (otherData.chats && Array.isArray(otherData.chats)) {
 						// First check: if any element has receiverId equal to data._id
-						const indexReceiver = otherData.chats.findIndex((el: any) => el.receiverId === data._id);
+						const indexReceiver = otherData.chats.findIndex(
+							(el: any) => el.receiverId === data._id
+						);
 						if (indexReceiver !== -1) {
 							// Update the element's lastMessage and updatedAt
 							otherData.chats[indexReceiver].lastMessage = chatTemp.lastMessage;
 							otherData.chats[indexReceiver].updatedAt = chatTemp.updatedAt;
 
 							// Then find and remove any element with receiverId equal to temporaryClientId
-							const indexTemp = otherData.chats.findIndex((el: any) => el.receiverId === temporaryClientId);
+							const indexTemp = otherData.chats.findIndex(
+								(el: any) => el.receiverId === temporaryClientId
+							);
 							if (indexTemp !== -1) {
 								otherData.chats.splice(indexTemp, 1);
 							}
 
 							await updateDoc(otherDocRef, { chats: otherData.chats });
-							console.log("Updated element with receiverId equal to data._id and removed element with temporaryClientId for receiver", chatTemp.receiverId);
+							console.log(
+								"Updated element with receiverId equal to data._id and removed element with temporaryClientId for receiver",
+								chatTemp.receiverId
+							);
 							continue;
 						}
 
 						// Otherwise, check if an element with matching chatId exists.
-						const indexChatId = otherData.chats.findIndex((el: any) => el.chatId === chatTemp.chatId);
+						const indexChatId = otherData.chats.findIndex(
+							(el: any) => el.chatId === chatTemp.chatId
+						);
 						if (indexChatId !== -1) {
 							otherData.chats[indexChatId].receiverId = data._id;
 							otherData.chats[indexChatId].clientImg = data.photo;
-							otherData.chats[indexChatId].clientName = data.fullName || maskPhoneNumber(data.phone as string);
+							otherData.chats[indexChatId].clientName =
+								data.fullName || maskPhoneNumber(data.phone as string);
 							otherData.chats[indexChatId].updatedAt = Date.now();
 							await updateDoc(otherDocRef, { chats: otherData.chats });
-							console.log("Updated receiverId in other document for chatId", chatTemp.chatId);
+							console.log(
+								"Updated receiverId in other document for chatId",
+								chatTemp.chatId
+							);
 						}
 					}
 				}

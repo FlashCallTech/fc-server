@@ -48,7 +48,7 @@ const MetaAnalytics = () => {
 		<div>
 			<section className="size-full flex flex-col items-start justify-start gap-7 px-5 lg:hidden">
 				<section
-					className={`sticky flex w-full items-center justify-between top-0 lg:top-[76px] bg-white z-30 px-2 pl-0 p-4 pb-0 transition-all duration-300`}
+					className={`lg:hidden sticky flex w-full items-center justify-between top-0 lg:top-[76px] bg-white z-30 px-2 pl-0 p-4 pb-0 transition-all duration-300`}
 				>
 					<section className="flex items-center gap-4">
 						<Link
