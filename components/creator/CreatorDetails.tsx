@@ -4,7 +4,7 @@ import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { fetchFCMToken, getDisplayName, getImageSource, isValidHexColor } from "@/lib/utils";
 import { creatorUser, LinkType } from "@/types";
 import React, { memo, useEffect, useState } from "react";
-import { arrayUnion, collection, doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
+import { arrayUnion, collection, doc, getDoc, onSnapshot, setDoc, updateDoc, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { usePathname, useRouter } from "next/navigation";
 import CallingOptions from "../calls/CallingOptions";
@@ -165,7 +165,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 	const handleHelp = async () => {
 		if (!clientUser) {
-			if(isModalOpen) return;
+			if (isModalOpen) return;
 
 			let clientId: any;
 			clientId = localStorage.getItem("temporaryClientId");
@@ -187,10 +187,23 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				]);
 
 				let chatId = null;
+				let matchedIndex = -1;
 
 				if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
 					const userChatsData = userChatsDocSnapshot.data();
 					const creatorChatsData = creatorChatsDocSnapshot.data();
+
+					if (userChatsData.chats && creatorChatsData && Array.isArray(userChatsData.chats) && Array.isArray(creatorChatsData.chats)) {
+						matchedIndex = userChatsData.chats.findIndex(
+							(el: any) => el.receiverId === creator._id
+						);
+
+						if (matchedIndex !== -1) {
+							userChatsData.chats[matchedIndex].creatorImg = creator.photo;
+							userChatsData.chats[matchedIndex].creatorName = creator.fullName || maskPhoneNumber(creator.phone as string);
+							await updateDoc(userChatsDocRef, { chats: userChatsData.chats });
+						}
+					}
 
 					const userChat = userChatsData.chats?.find(
 						(chat: any) => chat.receiverId === creator?._id
@@ -302,10 +315,36 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 			]);
 
 			let chatId = null;
+			let matchedIndex = -1;
+			let matchedIndexCreator = -1;
 
 			if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
 				const userChatsData = userChatsDocSnapshot.data();
 				const creatorChatsData = creatorChatsDocSnapshot.data();
+
+				if (Array.isArray(userChatsData.chats) && Array.isArray(creatorChatsData.chats)) {
+					const batch = writeBatch(db);
+
+					// Update userChatsDoc if a matching element is found
+					matchedIndex = userChatsData.chats.findIndex((el: any) => el.receiverId === creator._id);
+					if (matchedIndex !== -1) {
+						userChatsData.chats[matchedIndex].creatorImg = creator.photo;
+						userChatsData.chats[matchedIndex].creatorName = creator.fullName || maskPhoneNumber(creator.phone as string);
+						batch.update(userChatsDocRef, { chats: userChatsData.chats });
+					}
+
+					// Update creatorChatsDoc if a matching element is found
+					matchedIndexCreator = creatorChatsData.chats.findIndex((el: any) => el.receiverId === clientUser._id);
+					if (matchedIndexCreator !== -1) {
+						creatorChatsData.chats[matchedIndexCreator].clientImg = clientUser.photo;
+						creatorChatsData.chats[matchedIndexCreator].clientName =
+							clientUser.fullName || maskPhoneNumber(clientUser.phone as string);
+						batch.update(creatorChatsDocRef, { chats: creatorChatsData.chats });
+					}
+
+					// Commit both updates in one batch
+					await batch.commit();
+				}
 
 				const userChat = userChatsData.chats?.find(
 					(chat: any) => chat.receiverId === creator?._id
@@ -519,12 +558,12 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 							className="fixed bottom-4 right-4 flex border items-center text-[10px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-black bg-gray-100 hover:bg-gray-200 pr-2 pl-1 py-1 rounded-full shadow-lg hoverScaleDownEffect transition-all"
 						>
 							{/* Help Icon */}
-							<Image 
-							src={`${creator.photo}`}
-							width={28}
-							height={28}
-							alt="photo"
-							className="size-5 md:size-7 object-cover rounded-full"
+							<Image
+								src={`${creator.photo}`}
+								width={28}
+								height={28}
+								alt="photo"
+								className="size-5 md:size-7 object-cover rounded-full"
 							/>
 							<span>Contact Us</span>
 						</button>
