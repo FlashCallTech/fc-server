@@ -2,6 +2,7 @@
 
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { backendBaseUrl } from "@/lib/utils";
+import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -94,10 +95,18 @@ const CalendarEventConsent = () => {
 		}
 	}, [userType, creatorUser]);
 
-	const handleDisconnect = () => {
+	const handleDisconnect = async () => {
 		localStorage.removeItem("google_token");
 		localStorage.removeItem("google_email");
-		setEmail("");
+		let response = await axios.put(
+			`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
+			{
+				email: null,
+				accessToken: null,
+				refreshToken: null,
+				expiresAt: null,
+			}
+		);
 		setIsAuthenticated(false);
 	};
 
