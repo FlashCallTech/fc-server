@@ -251,7 +251,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						{
 							chats: arrayUnion({
 								chatId: chatId,
-								creatorName: creator.fullName || creator._id,
+								creatorName: creator.fullName || maskPhoneNumber(creator.phone as string),
 								creatorImg: creator.photo,
 								receiverId: creator._id,
 								updatedAt: Date.now(),
@@ -354,8 +354,8 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					{
 						chats: arrayUnion({
 							chatId: chatId,
-							clientName: clientUser.fullName || clientUser._id,
-							clientImg: clientUser.photo,
+							clientName: clientUser.fullName || maskPhoneNumber(clientUser.phone as string),
+							clientImg: clientUser.photo || GetRandomImage(),
 							receiverId: clientUser._id,
 							updatedAt: Date.now(),
 						}),
@@ -366,7 +366,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					{
 						chats: arrayUnion({
 							chatId: chatId,
-							creatorName: creator.fullName || creator._id,
+							creatorName: creator.fullName || maskPhoneNumber(creator.phone as string),
 							creatorImg: creator.photo,
 							receiverId: creator._id,
 							updatedAt: Date.now(),
