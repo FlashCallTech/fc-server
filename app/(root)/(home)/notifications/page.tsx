@@ -76,13 +76,13 @@ const Notifications = () => {
 
 	if (!currentUser) {
 		return (
-			<div className="size-full flex flex-col gap-2 items-center justify-center">
+			<div className="size-full h-[calc(100vh-6rem)] flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
 			</div>
 		);
 	}
 	return (
-		<section className="flex size-full flex-col px-4">
+		<section className="flex size-full h-[calc(100vh-6rem)] flex-col px-4">
 			<section
 				className={`lg:hidden sticky flex w-full items-center justify-between top-0 lg:top-[76px] bg-white z-30 py-4 pb-0 transition-all duration-300`}
 			>
