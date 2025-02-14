@@ -76,7 +76,7 @@ const Notifications = () => {
 
 	if (!currentUser) {
 		return (
-			<div className="size-full flex flex-col gap-2 items-center justify-center">
+			<div className="size-full h-[calc(100vh-6rem)] flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
 			</div>
 		);

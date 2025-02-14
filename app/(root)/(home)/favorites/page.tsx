@@ -137,7 +137,9 @@ const Favorites = () => {
 			</section>
 
 			{isLoading || fetchingUser ? (
-				<section className={`w-full h-full flex items-center justify-center`}>
+				<section
+					className={`w-full h-[calc(100vh-6rem)] flex items-center justify-center`}
+				>
 					<SinglePostLoader />
 				</section>
 			) : favorites.length === 0 ? (
