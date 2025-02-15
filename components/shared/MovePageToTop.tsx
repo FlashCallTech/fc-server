@@ -29,7 +29,7 @@ const MovePageToTop = () => {
 	}, []);
 
 	const shouldDisplayButton =
-		!pathname.includes("chat") && !pathname.includes("meeting") && !username;
+		!pathname.includes("chat") && !pathname.includes("meeting") && !username && !pathname.includes("helpChat");
 
 	return (
 		<>
