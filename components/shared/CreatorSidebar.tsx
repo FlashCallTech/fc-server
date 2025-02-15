@@ -97,13 +97,13 @@ const CreatorSidebar = () => {
 			id="sidebar"
 			className={`sticky left-0 top-0 flex h-screen flex-col justify-between min-w-[264px] border shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] max-lg:hidden`}
 		>
-			<div className="p-2 ml-2">
+			<div className="p-4 ml-12">
 				<Image
-					src="/icons/logo_new_light.png"
+					src="/icons/newLogo.png"
 					width={1000}
 					height={1000}
 					alt="flashcall logo"
-					className={`w-[150px]`}
+					className={`w-20`}
 					priority
 				/>
 			</div>
@@ -157,11 +157,10 @@ const CreatorSidebar = () => {
 															: "/authenticate?usertype=creator"
 														: subItem.route
 												}
-												className={`block mb-1 text-sm tracking-wide font-medium px-4 py-2 rounded-lg ${
-													activeSubItem(subItem.label)
-														? "bg-[#0000001A] text-black"
-														: "bg-white text-[#4B5563] hover:bg-gray-100"
-												}`}
+												className={`block mb-1 text-sm tracking-wide font-medium px-4 py-2 rounded-lg ${activeSubItem(subItem.label)
+													? "bg-[#0000001A] text-black"
+													: "bg-white text-[#4B5563] hover:bg-gray-100"
+													}`}
 											>
 												{subItem.label}
 											</Link>
@@ -182,11 +181,10 @@ const CreatorSidebar = () => {
 												: "/authenticate?usertype=creator"
 											: item.route
 									}
-									className={`flex w-full px-4 py-2 items-center gap-5 rounded-lg justify-start ${
-										isActive
-											? "bg-[#0000001A] text-black"
-											: "bg-white text-[#4B5563] hover:bg-gray-100"
-									}`}
+									className={`flex w-full px-4 py-2 items-center gap-5 rounded-lg justify-start ${isActive
+										? "bg-[#0000001A] text-black"
+										: "bg-white text-[#4B5563] hover:bg-gray-100"
+										}`}
 									onClick={() => handleLogEvent(item)}
 								>
 									<Image
@@ -194,9 +192,8 @@ const CreatorSidebar = () => {
 										alt={item.label}
 										width={100}
 										height={100}
-										className={`size-4 object-fit ${
-											isActive ? "" : "gray-color"
-										}`}
+										className={`size-4 object-fit ${isActive ? "" : "gray-color"
+											}`}
 										priority
 									/>
 									<p

@@ -85,7 +85,7 @@ const CreatorNavbar = () => {
 		else if (pathname.includes("kyc")) return "KYC";
 		else if (pathname === "calendar") return "Calendar";
 		else if (pathname.includes("calendar-event"))
-			return "Calendar Event Consent";
+			return "Google Calendar Settings";
 		else if (pathname.includes("payment-settings")) return "Payment Method";
 		else if (pathname.includes("payment")) return "Transaction History";
 		else if (pathname.includes("previous")) return "Order History";
@@ -99,7 +99,7 @@ const CreatorNavbar = () => {
 			return "Terms and Conditions";
 		else if (pathname.includes("support")) return "Support";
 		else if (pathname.includes("profile")) return "Edit Profile";
-		else if (pathname.includes("expertHelpChats")) return "Inquiry";
+		else if (pathname.includes("inbox")) return "Inbox";
 	};
 
 	const handleAppRedirect = () => {
@@ -134,9 +134,8 @@ const CreatorNavbar = () => {
 	return (
 		<nav
 			id="navbar"
-			className={`${
-				isCreatorHome ? "lg:hidden" : `${isHelpChat ? "hidden md:flex" : ""}`
-			} bg-white flex justify-between items-center sticky w-full h-[76px] z-40 top-0 left-[264px] px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}
+			className={`${isCreatorHome ? "lg:hidden" : `${isHelpChat ? "hidden md:flex" : ""}`
+				} bg-white flex justify-between items-center sticky w-full h-[76px] z-40 top-0 left-[264px] px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}
 		>
 			{!fetchingUser && currentUser ? (
 				<Link
@@ -186,35 +185,26 @@ const CreatorNavbar = () => {
 			{fetchingUser ? (
 				<NavLoader />
 			) : currentUser ? (
-				<div className="flex justify-end items-center gap-4 h-full md:text-[#16BC88]">
+				<div className="flex justify-end items-center gap-4 h-full">
 					<Link
 						href="/payment"
-						className={`w-fit flex items-center justify-center gap-2 p-3 rounded-[6px] hoverScaleDownEffect h-[40px] xl:h-[48px] md:bg-[#def4ed] ${
-							typeof window !== "undefined" && window.innerWidth >= 768
-								? ""
-								: "rounded-full border-[1px] border-[#000000]"
-						}`}
+						className={`w-fit flex items-center justify-center gap-2 p-3 rounded-full hoverScaleDownEffect h-[40px] xl:h-[48px] ${pathname.includes("/payment") && "!bg-black !text-white"
+							}`}
+						style={{
+							border: `1px solid #000000`,
+						}}
 					>
-						<svg
-							width="100"
-							height="100"
-							viewBox="0 0 16 16"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-							className="w-4 h-4"
-						>
-							<path
-								d="M15 12V13.25C15 13.9395 14.439 14.5 13.75 14.5H3C1.897 14.5 1 13.603 1 12.5C1 12.5 1 4.0075 1 4C1 2.897 1.897 2 3 2H12.25C12.6645 2 13 2.336 13 2.75C13 3.164 12.6645 3.5 12.25 3.5H3C2.7245 3.5 2.5 3.724 2.5 4C2.5 4.276 2.7245 4.5 3 4.5H13.75C14.439 4.5 15 5.0605 15 5.75V7H12.5C11.1215 7 10 8.1215 10 9.5C10 10.8785 11.1215 12 12.5 12H15Z"
-								fill="currentColor"
-							/>
-							<path
-								d="M15 8V11H12.5C11.6715 11 11 10.3285 11 9.5C11 8.6715 11.6715 8 12.5 8H15Z"
-								fill="currentColor"
-							/>
-						</svg>
-
-						<span className="w-full mt-[2px] text-center align-middle tracking-wide text-xs font-semibold">
-							{`Rs. ${Math.round(walletBalance)}`}
+						<Image
+							src="/wallet.svg"
+							width={100}
+							height={100}
+							alt="wallet"
+							className={`w-4 h-4 ${pathname.includes("/payment") && "invert"}`}
+						/>
+						<span className="w-full mt-[2px] text-center align-middle text-xs font-semibold">
+							{`${currentUser.global ? "$" : "RS."} ${Math.round(
+								walletBalance
+							)}`}
 						</span>
 					</Link>
 

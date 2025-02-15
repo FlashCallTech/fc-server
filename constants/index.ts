@@ -72,7 +72,7 @@ export const newSidebarLinksCreator = [
 	{
 		imgURL: "/creator/calendarEvent.svg",
 		route: "/calendar-events",
-		label: "User Consent",
+		label: "Google Calendar Settings",
 		protected: true,
 	},
 	{
@@ -125,8 +125,8 @@ export const newSidebarLinksCreator = [
 	},
 	{
 		imgURL: "/creator/inbox.svg",
-		route: "/expertHelpChats",
-		label: "Inquiry",
+		route: "/inbox",
+		label: "Inbox",
 		protected: true,
 	},
 	// {
