@@ -7,19 +7,27 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { FaGoogle } from "react-icons/fa";
+import DeleteCalendarConsentAlert from "../alerts/DeleteCalendarConsentAlert";
+import { useToast } from "../ui/use-toast";
+import Image from "next/image";
 
 const CalendarEventConsent = () => {
 	const { creatorUser, userType } = useCurrentUsersContext();
 	const [email, setEmail] = useState(creatorUser?.email || "");
+	const [disconnect, setDisconnect] = useState(false);
 	const [isAuthenticated, setIsAuthenticated] = useState(
 		localStorage.getItem("google_token") ? true : false
 	);
+	const [loading, setLoading] = useState(false);
+	const [connecting, setConnecting] = useState(false);
 
 	const router = useRouter();
+	const { toast } = useToast();
 
 	// Function to trigger Google OAuth
 	const handleGoogleAuth = async () => {
 		try {
+			setConnecting(true);
 			const response = await fetch(
 				`${backendBaseUrl}/calendar/google?phoneNumber=${encodeURIComponent(
 					creatorUser?.phone || ""
@@ -44,12 +52,12 @@ const CalendarEventConsent = () => {
 
 			if (!authWindow) {
 				console.error("Failed to open authentication window");
+				setConnecting(false);
 				return;
 			}
 
 			// Function to handle messages from popup
 			const receiveMessage = async (event: MessageEvent) => {
-				// Accept messages from any origin (or limit to your frontend domain)
 				if (!event.data || !event.data.token || !event.data.email) return;
 
 				localStorage.setItem("google_token", event.data.token);
@@ -60,6 +68,7 @@ const CalendarEventConsent = () => {
 				// Cleanup and close the window
 				window.removeEventListener("message", receiveMessage);
 				authWindow.close();
+				setConnecting(false);
 			};
 
 			// Add event listener for messages
@@ -70,10 +79,12 @@ const CalendarEventConsent = () => {
 				if (!authWindow || authWindow.closed) {
 					clearInterval(checkPopupClosed);
 					window.removeEventListener("message", receiveMessage);
+					setConnecting(false);
 				}
 			}, 500);
 		} catch (error) {
 			console.error("Google Auth Error:", error);
+			setConnecting(false);
 		}
 	};
 
@@ -93,26 +104,53 @@ const CalendarEventConsent = () => {
 			);
 			setIsAuthenticated(true);
 		}
-	}, [userType, creatorUser]);
+	}, [userType, creatorUser, isAuthenticated, loading, connecting]);
 
 	const handleDisconnect = async () => {
-		localStorage.removeItem("google_token");
-		localStorage.removeItem("google_email");
-		creatorUser?._id &&
-			(await axios.put(
-				`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
-				{
-					email: null,
-					accessToken: null,
-					refreshToken: null,
-					expiresAt: null,
-				}
-			));
-		setIsAuthenticated(false);
+		try {
+			setLoading(true);
+			localStorage.removeItem("google_token");
+			localStorage.removeItem("google_email");
+			creatorUser?._id &&
+				(await axios.put(
+					`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
+					{
+						email: null,
+						accessToken: null,
+						refreshToken: null,
+						expiresAt: null,
+					}
+				));
+			setIsAuthenticated(false);
+			setDisconnect(false);
+			toast({
+				variant: "destructive",
+				title: "Email Disconnected",
+				toastStatus: "positive",
+			});
+		} catch (err) {
+			console.error("Error disconnecting Google Calendar:", err);
+			toast({
+				variant: "destructive",
+				title: "Couldn't Disconnect",
+				description: "Please try again later.",
+				toastStatus: "negative",
+			});
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	return (
 		<div className="flex flex-col size-full gap-7 px-4 lg:mt-4">
+			{disconnect && (
+				<DeleteCalendarConsentAlert
+					open={disconnect}
+					onOpen={setDisconnect}
+					handleDeleteConsent={handleDisconnect}
+					loading={loading}
+				/>
+			)}
 			<section
 				className={`lg:hidden sticky flex w-full items-center justify-between top-0 lg:top-[76px] bg-white z-30 py-4 pb-0 transition-all duration-300`}
 			>
@@ -166,7 +204,7 @@ const CalendarEventConsent = () => {
 								{email || "Connected"}
 							</p>
 							<button
-								onClick={handleDisconnect}
+								onClick={() => setDisconnect(true)}
 								className="w-fit mt-1 text-xs text-red-600 font-medium hover:text-red-700 hover:underline transition text-start"
 							>
 								Disconnect
@@ -176,9 +214,26 @@ const CalendarEventConsent = () => {
 				) : (
 					<button
 						onClick={handleGoogleAuth}
+						disabled={connecting}
 						className="flex w-fit items-center gap-2 mt-2 px-4 py-2 bg-black text-white rounded-full hoverScaleDownEffect"
 					>
-						<FaGoogle /> Connect with Google
+						{connecting ? (
+							<>
+								Connecting ...
+								<Image
+									src="/icons/loading-circle.svg"
+									alt="Loading..."
+									width={1000}
+									height={1000}
+									className="size-6"
+									priority
+								/>{" "}
+							</>
+						) : (
+							<>
+								<FaGoogle /> Connect with Google
+							</>
+						)}
 					</button>
 				)}
 			</section>

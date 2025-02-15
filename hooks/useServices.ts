@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { backendBaseUrl, updateFirestoreCallServices } from "@/lib/utils";
 import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase"; // Adjust the import path for your Firebase setup
+import { db } from "@/lib/firebase";
 import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 
 export const useServices = () => {
 	const { creatorUser } = useCurrentUsersContext();
+	const userId = creatorUser?._id;
+	const userPhone = creatorUser?.phone;
+
 	const [services, setServices] = useState(() => ({
 		myServices: false,
 		videoCall: false,
@@ -15,55 +18,53 @@ export const useServices = () => {
 		chat: false,
 		isRestricted: false,
 	}));
+
 	const [isSyncedWithFirebase, setIsSyncedWithFirebase] = useState(false);
+	const userToggledRef = useRef(false);
 
 	// Fetch user status and services from Firebase
-
 	useEffect(() => {
+		if (!userId || !userPhone) return;
+
+		const servicesRef = doc(db, "services", userId);
+		const statusRef = doc(db, "userStatus", userPhone);
+
+		let unsubscribe: any;
+
 		const fetchUserStatusAndServices = async () => {
-			if (!creatorUser?._id || !creatorUser?.phone) return;
-
 			try {
-				const servicesRef = doc(db, "services", creatorUser._id);
-				const statusRef = doc(db, "userStatus", creatorUser.phone);
-
 				// Fetch userStatus document
 				const statusDoc = await getDoc(statusRef);
 				const loginStatus = statusDoc.exists()
 					? statusDoc.data()?.loginStatus
 					: true;
 
-				const unsubscribe = onSnapshot(servicesRef, (snapshot) => {
-					if (snapshot.exists()) {
-						const firebaseServices = snapshot.data()?.services || {};
-						const isRestricted = creatorUser.restricted || false;
+				// Listen to real-time updates
+				unsubscribe = onSnapshot(servicesRef, (snapshot) => {
+					if (!snapshot.exists()) return;
 
-						const shouldDisable = loginStatus === false;
+					const firebaseServices = snapshot.data()?.services || {};
+					const isRestricted = creatorUser.restricted || false;
+					const shouldDisable = loginStatus === false;
 
+					// Avoid overwriting user's toggle actions
+					if (!userToggledRef.current) {
 						setServices({
-							myServices: shouldDisable
-								? false
-								: !isRestricted &&
-								  (firebaseServices.videoCall ||
-										firebaseServices.audioCall ||
-										firebaseServices.chat),
-							videoCall: shouldDisable
-								? false
-								: !isRestricted && firebaseServices.videoCall,
-							audioCall: shouldDisable
-								? false
-								: !isRestricted && firebaseServices.audioCall,
-							chat: shouldDisable
-								? false
-								: !isRestricted && firebaseServices.chat,
+							myServices:
+								shouldDisable || isRestricted
+									? false
+									: firebaseServices.videoCall ||
+									  firebaseServices.audioCall ||
+									  firebaseServices.chat,
+							videoCall: shouldDisable ? false : firebaseServices.videoCall,
+							audioCall: shouldDisable ? false : firebaseServices.audioCall,
+							chat: shouldDisable ? false : firebaseServices.chat,
 							isRestricted,
 						});
-
-						setIsSyncedWithFirebase(true);
 					}
-				});
 
-				return () => unsubscribe();
+					setIsSyncedWithFirebase(true);
+				});
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error fetching user status or services:", error);
@@ -71,12 +72,14 @@ export const useServices = () => {
 		};
 
 		fetchUserStatusAndServices();
-	}, [creatorUser]);
+
+		return () => unsubscribe && unsubscribe();
+	}, [userId, userPhone]);
 
 	// Update Firebase when local state changes
 	useEffect(() => {
-		if (isSyncedWithFirebase && creatorUser?._id) {
-			const servicesRef = doc(db, "services", creatorUser._id);
+		if (isSyncedWithFirebase && userId) {
+			const servicesRef = doc(db, "services", userId);
 
 			setDoc(
 				servicesRef,
@@ -93,20 +96,17 @@ export const useServices = () => {
 				console.error("Error syncing services with Firebase:", error);
 			});
 		}
-	}, [services, creatorUser?._id, isSyncedWithFirebase]);
+	}, [services, userId, isSyncedWithFirebase]);
 
 	// Update backend whenever services change
 	useEffect(() => {
 		const updateBackendServices = async () => {
 			try {
-				await axios.put(
-					`${backendBaseUrl}/creator/updateUser/${creatorUser?._id}`,
-					{
-						videoAllowed: services.videoCall,
-						audioAllowed: services.audioCall,
-						chatAllowed: services.chat,
-					}
-				);
+				await axios.put(`${backendBaseUrl}/creator/updateUser/${userId}`, {
+					videoAllowed: services.videoCall,
+					audioAllowed: services.audioCall,
+					chatAllowed: services.chat,
+				});
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error updating services on backend:", error);
@@ -120,7 +120,7 @@ export const useServices = () => {
 		services.videoCall,
 		services.audioCall,
 		services.chat,
-		creatorUser,
+		userId,
 		isSyncedWithFirebase,
 	]);
 
@@ -129,6 +129,8 @@ export const useServices = () => {
 		service: "myServices" | "videoCall" | "audioCall" | "chat"
 	) => {
 		if (services.isRestricted) return;
+
+		userToggledRef.current = true; // Prevent Firebase from resetting immediately
 
 		setServices((prev) => {
 			let updatedServices = { ...prev };
@@ -151,6 +153,12 @@ export const useServices = () => {
 			}
 
 			updateFirestoreCallServices(creatorUser, updatedServices);
+
+			// Delay Firebase reset to prevent overwriting
+			setTimeout(() => {
+				userToggledRef.current = false;
+			}, 500);
+
 			return updatedServices;
 		});
 	};
