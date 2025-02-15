@@ -179,11 +179,10 @@ const HelpChat = () => {
         <div className='size-full'>
             {/* Mobile Layout */}
             <div
-                className={`flex flex-col justify-between w-full overflow-hidden bg-gray-100 md:hidden`}
-                style={{ height: 'calc(var(--vh, 1vh) * 100)', overflowY: 'hidden' }}
+                className={`h-[100dvh] w-screen bg-gray-100 md:hidden flex flex-col overflow-hidden`}
             >
-                <div className='flex flex-col'>
-                    <div className="handle border p-2 rounded-t-lg flex justify-between items-center">
+                <div className='fixed top-0 left-0 right-0 bg-white z-10 md:hidden'>
+                    <div className="border p-2 rounded-t-lg flex justify-between items-center">
                         <div className='flex items-center gap-2'>
                             <Image
                                 src={`${chat.creatorImg}`}
@@ -216,7 +215,7 @@ const HelpChat = () => {
                     }
                 </div>
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto scrollbar-hide p-2 gap-2 flex flex-col-reverse">
+                <div className={`overflow-y-auto scrollbar-hide p-2 gap-2 flex flex-col-reverse pb-[64px] ${currentUser ? "pt-[56px]" : "pt-[96px]"}`}>
                     {chat?.messages &&
                         [...chat.messages].reverse().map((msg: any, index, arr) => {
                             const currentMsgDate = new Date(msg.createdAt);
@@ -265,7 +264,7 @@ const HelpChat = () => {
                 </div>
 
                 {/* Input */}
-                <div className="p-2 bg-white">
+                <div className="fixed bottom-0 left-0 right-0 p-2 bg-white z-20 md:hidden">
                     <div className="flex justify-between rounded-lg border border-gray-300">
                         <input
                             type="text"
