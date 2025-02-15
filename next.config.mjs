@@ -34,13 +34,25 @@ const nextConfig = {
     async headers() {
         return [
             {
-                source: '/(.*).(js|css|svg|png|jpg|jpeg|woff|woff2|ttf)',
+                source: "/(.*)\\.(js|css|svg|png|jpg|jpeg|woff|woff2|ttf)",
                 headers: [
                     {
-                        key: 'Cache-Control',
-                        value: 'public, max-age=86400, must-revalidate',
+                        key: "Cache-Control",
+                        value: "public, max-age=86400, must-revalidate",
                     },
-
+                ],
+            },
+            {
+                source: "/(.*)",
+                headers: [
+                    {
+                        key: "Cross-Origin-Opener-Policy",
+                        value: "same-origin-allow-popups",
+                    },
+                    {
+                        key: "Cross-Origin-Embedder-Policy",
+                        value: "credentialless",
+                    },
                 ],
             },
         ];
