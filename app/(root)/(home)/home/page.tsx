@@ -157,7 +157,13 @@ const HomePage = () => {
 						<span className="text-lg">Please try again later</span>
 					</div>
 				) : (
-					<section className="grid grid-rows-[auto,1fr] grid-cols-1 size-full px-4 lg:px-0">
+					<section
+						className={`grid grid-rows-[auto,1fr] grid-cols-1 size-full px-4 lg:px-0 ${
+							creators &&
+							creators.pages.flatMap((page: any) => page.users).length <= 4 &&
+							"py-4"
+						}`}
+					>
 						<section className="sticky top-0 lg:top-[76px] bg-white z-30">
 							<HomepageFilter
 								selectedProfession={selectedProfession}

@@ -137,7 +137,7 @@ const CreatorNavbar = () => {
 			className={`${isCreatorHome ? "lg:hidden" : `${isHelpChat ? "hidden md:flex" : ""}`
 				} bg-white flex justify-between items-center sticky w-full h-[76px] z-40 top-0 left-[264px] px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}
 		>
-			{currentUser ? (
+			{!fetchingUser && currentUser ? (
 				<Link
 					href="/home"
 					className="lg:hidden flex items-center justify-center size-fit "
@@ -157,28 +157,30 @@ const CreatorNavbar = () => {
 				<AppLink />
 			)}
 
-			<div className="hidden lg:flex gap-4 items-center text-lg font-bold">
-				<Link
-					href={`${creatorURL ? creatorURL : "/home"}`}
-					className="text-xl font-bold hoverScaleDownEffect"
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						strokeWidth={1.5}
-						stroke="currentColor"
-						className="size-6"
+			{!fetchingUser && (
+				<div className="hidden lg:flex gap-4 items-center text-lg font-bold">
+					<Link
+						href={`${creatorURL ? creatorURL : "/home"}`}
+						className="text-xl font-bold hoverScaleDownEffect"
 					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="M15.75 19.5 8.25 12l7.5-7.5"
-						/>
-					</svg>
-				</Link>
-				{pageName()}
-			</div>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							strokeWidth={1.5}
+							stroke="currentColor"
+							className="size-6"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M15.75 19.5 8.25 12l7.5-7.5"
+							/>
+						</svg>
+					</Link>
+					{pageName()}
+				</div>
+			)}
 
 			{fetchingUser ? (
 				<NavLoader />
