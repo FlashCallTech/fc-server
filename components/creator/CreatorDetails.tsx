@@ -336,7 +336,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					// Update creatorChatsDoc if a matching element is found
 					matchedIndexCreator = creatorChatsData.chats.findIndex((el: any) => el.receiverId === clientUser._id);
 					if (matchedIndexCreator !== -1) {
-						creatorChatsData.chats[matchedIndexCreator].clientImg = clientUser.photo;
+						creatorChatsData.chats[matchedIndexCreator].clientImg = clientUser.photo || GetRandomImage();
 						creatorChatsData.chats[matchedIndexCreator].clientName =
 							clientUser.fullName || maskPhoneNumber(clientUser.phone as string);
 						batch.update(creatorChatsDocRef, { chats: creatorChatsData.chats });
