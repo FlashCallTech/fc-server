@@ -132,11 +132,9 @@ const MeetingRoomWrapper = ({
 	router: any;
 	call: Call;
 }) => {
-	const { useCallEndedAt, useCallStartsAt, useParticipants } =
-		useCallStateHooks();
+	const { useCallEndedAt, useCallStartsAt } = useCallStateHooks();
 	const callStartsAt = useCallStartsAt();
 	const callEndedAt = useCallEndedAt();
-	const participants = useParticipants();
 	const [hasJoinedCall, setHasJoinedCall] = useState(false);
 	const [isAlreadyJoined, setIsAlreadyJoined] = useState(false);
 	const { currentUser } = useCurrentUsersContext();
@@ -154,10 +152,8 @@ const MeetingRoomWrapper = ({
 		const activeTabKey = `activeTab_${call.id}`;
 		const currentTime = Date.now();
 
-		// Check if an active tab already exists
 		const existingActiveTab = localStorage.getItem(activeTabKey);
 
-		// If there's an active tab and it's NOT this one, restrict this tab
 		if (existingActiveTab && existingActiveTab !== currentUrl) {
 			toast({
 				variant: "destructive",
@@ -166,24 +162,19 @@ const MeetingRoomWrapper = ({
 			});
 			setIsAlreadyJoined(true);
 
-			// Notify other tabs (especially the main tab) that a duplicate attempt was made
 			channel.postMessage({ type: "BLOCK_DUPLICATE_TAB", url: currentUrl });
 
-			// Force close this tab after a delay
 			setTimeout(() => window.close(), 2000);
 			return;
 		}
 
-		// Mark this tab as the main active one
 		localStorage.setItem(activeTabKey, currentUrl);
 		sessionStorage.setItem(sessionKey, "active");
 		localStorage.setItem(localSessionKey, "joined");
 		localStorage.setItem(lastJoinKey, String(currentTime));
 
-		// Notify other tabs that this is the active one
 		channel.postMessage({ type: "MAIN_TAB_ACTIVE", url: currentUrl });
 
-		// Handle messages from other tabs
 		const handleMessage = (event: MessageEvent) => {
 			// If another tab tries to join, restrict it
 			if (
@@ -202,7 +193,6 @@ const MeetingRoomWrapper = ({
 
 		// Handle tab closure
 		const handleBeforeUnload = () => {
-			// Remove the active tab entry if this tab is closed
 			if (localStorage.getItem(activeTabKey) === currentUrl) {
 				localStorage.removeItem(activeTabKey);
 			}
@@ -210,7 +200,6 @@ const MeetingRoomWrapper = ({
 
 		window.addEventListener("beforeunload", handleBeforeUnload);
 
-		// Cleanup function
 		return () => {
 			channel.removeEventListener("message", handleMessage);
 			channel.close();
