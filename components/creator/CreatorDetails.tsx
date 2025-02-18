@@ -441,7 +441,6 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 			await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
 
-
 			!loading && isMobile && router.push(`/helpChat/${chatId}`);
 			!loading && !isMobile && setIsModalOpen(true);
 		} catch (error) {
@@ -555,7 +554,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						<button
 							onClick={handleHelp}
 							disabled={loading}
-							className={`fixed bottom-4 ${isMobile ? "right-4" : "left-4"} border items-center text-[11px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-black bg-gray-100 hover:bg-gray-200 p-1 rounded-full shadow-lg hoverScaleDownEffect transition-all flex`}
+							className={`fixed bottom-4 ${isMobile ? "right-4" : "left-14"} border items-center text-[11px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-black bg-gray-100 hover:bg-gray-200 p-1 rounded-full shadow-lg hoverScaleDownEffect transition-all flex`}
 						>
 							{loading ? (
 								<Image
