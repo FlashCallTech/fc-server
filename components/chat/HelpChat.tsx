@@ -179,10 +179,10 @@ const HelpChat = () => {
         <div className='size-full'>
             {/* Mobile Layout */}
             <div
-                className={`h-[100dvh] w-screen bg-gray-100 md:hidden flex flex-col overflow-hidden`}
+                className={`h-[100dvh] w-full bg-gray-100 md:hidden grid grid-rows-[auto_1fr_auto] overflow-hidden`}
             >
-                <div className='fixed top-0 left-0 right-0 bg-white z-10 md:hidden'>
-                    <div className="border p-2 rounded-t-lg flex justify-between items-center">
+                <header className="bg-white z-10 border-b">
+                    <div className="p-2 rounded-t-lg flex justify-between items-center">
                         <div className='flex items-center gap-2'>
                             <Image
                                 src={`${chat.creatorImg}`}
@@ -213,9 +213,9 @@ const HelpChat = () => {
                             </span>
                         </div>
                     }
-                </div>
+                </header>
                 {/* Messages */}
-                <div className={`overflow-y-auto scrollbar-hide p-2 gap-2 flex flex-col-reverse pb-[64px] ${currentUser ? "pt-[56px]" : "pt-[96px]"}`}>
+                <main className={`overflow-y-auto scrollbar-hide p-2 gap-2 flex flex-col-reverse`}>
                     {chat?.messages &&
                         [...chat.messages].reverse().map((msg: any, index, arr) => {
                             const currentMsgDate = new Date(msg.createdAt);
@@ -261,10 +261,10 @@ const HelpChat = () => {
                                 </React.Fragment>
                             );
                         })}
-                </div>
+                </main>
 
                 {/* Input */}
-                <div className="fixed bottom-0 left-0 right-0 p-2 bg-white z-20 md:hidden">
+                <footer className="bg-white z-20 p-2">
                     <div className="flex justify-between rounded-lg border border-gray-300">
                         <input
                             type="text"
@@ -300,7 +300,7 @@ const HelpChat = () => {
                             </button>
                         </div>
                     </div>
-                </div>
+                </footer>
             </div>
             {/* Large Screen Layout */}
             <div
