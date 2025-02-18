@@ -555,15 +555,14 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						</section>
 						<button
 							onClick={handleHelp}
-							className="fixed bottom-4 right-4 flex border items-center text-[10px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-black bg-gray-100 hover:bg-gray-200 pr-2 pl-1 py-1 rounded-full shadow-lg hoverScaleDownEffect transition-all"
-						>
-							{/* Help Icon */}
+							className={`fixed bottom-4 ${isMobile ? "right-4" : "left-4"} border items-center text-[11px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-black bg-gray-100 hover:bg-gray-200 p-1 rounded-full shadow-lg hoverScaleDownEffect transition-all flex`}
+							>
 							<Image
-								src={`${creator.photo}`}
+								src={creator.photo}
 								width={28}
 								height={28}
-								alt="photo"
-								className="size-5 md:size-7 object-cover rounded-full"
+								alt="Creator's photo"
+								className="size-6 md:size-7 object-cover rounded-full"
 							/>
 							<span>Contact Us</span>
 						</button>
@@ -715,21 +714,25 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				</section>
 			</section>
 
-			{isAuthSheetOpen && (
-				<AuthenticationSheet
-					isOpen={isAuthSheetOpen}
-					onOpenChange={setIsAuthSheetOpen}
-				/>
-			)}
-			{isModalOpen && chatId && (
-				<DraggableWindow onClose={closeModal} creator={creator}>
-					<FloatingChat
-						setIsAuthSheetOpen={setIsAuthSheetOpen}
-						chatId={chatId}
+			{
+				isAuthSheetOpen && (
+					<AuthenticationSheet
+						isOpen={isAuthSheetOpen}
+						onOpenChange={setIsAuthSheetOpen}
 					/>
-				</DraggableWindow>
-			)}
-		</div>
+				)
+			}
+			{
+				isModalOpen && chatId && (
+					<DraggableWindow onClose={closeModal} creator={creator}>
+						<FloatingChat
+							setIsAuthSheetOpen={setIsAuthSheetOpen}
+							chatId={chatId}
+						/>
+					</DraggableWindow>
+				)
+			}
+		</div >
 	);
 });
 

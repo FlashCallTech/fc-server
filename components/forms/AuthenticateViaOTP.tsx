@@ -295,7 +295,7 @@ const AuthenticateViaOTP = ({
 
 	const handleGoogleSignIn = async () => {
 		try {
-			console.log("Inside the google sign in function");
+			console.log("Trying to sign in...");
 			let result: any;
 			let email: string = "";
 
@@ -303,7 +303,17 @@ const AuthenticateViaOTP = ({
 			try {
 				result = await signInWithPopup(auth, provider);
 				email = result.user.email as string;
-			} catch (error) {
+			} catch (error: any) {
+				if (error.code === "auth/popup-closed-by-user") {
+					console.warn("User closed the popup before signing in.");
+					toast({
+						variant: "destructive",
+						title: "Sign-In Cancelled",
+						description: "You closed the popup before signing in. Please try again.",
+						toastStatus: "negative",
+					});
+					return; // Prevent throwing a new error
+				}
 				console.log(error);
 				throw new Error("Google Sign-In failed");
 			} finally {
@@ -324,7 +334,12 @@ const AuthenticateViaOTP = ({
 		} catch (error) {
 			console.error("Error during sign-in:", error);
 			await signOut(auth); // Sign out if an error occurs
-			throw new Error(error as string);
+			toast({
+				variant: "destructive",
+				title: "Error Signing In",
+				description: "Try again later",
+				toastStatus: "negative",
+			});
 		}
 	};
 
@@ -334,7 +349,6 @@ const AuthenticateViaOTP = ({
 		result: any,
 		payload: any
 	) => {
-		console.log("Inside user existence function");
 		let userExists = true;
 
 		try {
@@ -345,8 +359,10 @@ const AuthenticateViaOTP = ({
 					headers: { "Content-Type": "application/json" },
 				}
 			);
+			console.log("Existing User...");
+			console.log("currentUser...", response.data);
 			localStorage.setItem("currentUserID", response.data._id);
-			userExists = response.status !== 404;
+			await refreshCurrentUser();
 		} catch (error: any) {
 			if (error.response?.status === 404) {
 				userExists = false;
@@ -363,7 +379,7 @@ const AuthenticateViaOTP = ({
 
 	// Helper function to create a new user
 	const createNewUser = async (result: any, email: string, payload: any) => {
-		console.log("Inside createNewUser function");
+		console.log("Creating a new user...");
 		const newUser: CreateForeignUserParams = {
 			username: result.user.uid,
 			photo: GetRandomImage() || "",
@@ -387,12 +403,13 @@ const AuthenticateViaOTP = ({
 			);
 
 			if (createUserResponse.status === 201) {
+				console.log()
 				localStorage.setItem(
 					"currentUserID",
-					createUserResponse.data.client_id
+					createUserResponse.data._id
 				);
 				console.log("New user created successfully.");
-				refreshCurrentUser();
+				await refreshCurrentUser();
 			} else {
 				throw new Error("Failed to create user.");
 			}
