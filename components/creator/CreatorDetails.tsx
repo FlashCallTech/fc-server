@@ -164,6 +164,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 	}
 
 	const handleHelp = async () => {
+		setLoading(true);
 		if (!clientUser) {
 			if (isModalOpen) return;
 
@@ -176,7 +177,6 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 			}
 
 			try {
-				setLoading(true);
 				const chatRef = collection(db, "chats");
 				const creatorChatsDocRef = doc(db, "userHelpChats", creator?._id);
 				const userChatsDocRef = doc(db, "userHelpChats", clientId as string);
@@ -289,21 +289,20 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 				await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
 
-				setLoading(false);
-
 				!loading && isMobile && router.push(`/helpChat/${chatId}`);
 				!loading && !isMobile && setIsModalOpen(true);
 			} catch (error) {
-				setLoading(false);
+				
 				console.error("Error handling help chat:", error);
 				// Optionally, add error notification or additional error handling here.
+			} finally {
+				setLoading(false);
 			}
 
 			return;
 		}
 
 		try {
-			setLoading(true);
 			setIsModalOpen(false);
 			const chatRef = collection(db, "chats");
 			const creatorChatsDocRef = doc(db, "userHelpChats", creator?._id);
@@ -442,14 +441,14 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 			await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
 
-			setLoading(false);
 
 			!loading && isMobile && router.push(`/helpChat/${chatId}`);
 			!loading && !isMobile && setIsModalOpen(true);
 		} catch (error) {
-			setLoading(false);
 			console.error("Error handling help chat:", error);
 			// Optionally, add error notification or additional error handling here.
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -555,15 +554,26 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						</section>
 						<button
 							onClick={handleHelp}
+							disabled={loading}
 							className={`fixed bottom-4 ${isMobile ? "right-4" : "left-4"} border items-center text-[11px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-black bg-gray-100 hover:bg-gray-200 p-1 rounded-full shadow-lg hoverScaleDownEffect transition-all flex`}
-							>
-							<Image
-								src={creator.photo}
-								width={28}
-								height={28}
-								alt="Creator's photo"
-								className="size-6 md:size-7 object-cover rounded-full"
-							/>
+						>
+							{loading ? (
+								<Image
+									src="/icons/loading-circle.svg"
+									alt="Loading..."
+									width={24}
+									height={24}
+									priority
+								/>
+							) : (
+								<Image
+									src={creator.photo}
+									width={28}
+									height={28}
+									alt="Creator's photo"
+									className="size-6 md:size-7 object-cover rounded-full"
+								/>
+							)}
 							<span>Contact Us</span>
 						</button>
 						{/* 2. Creator Info */}
