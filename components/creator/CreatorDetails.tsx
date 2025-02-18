@@ -292,7 +292,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				!loading && isMobile && router.push(`/helpChat/${chatId}`);
 				!loading && !isMobile && setIsModalOpen(true);
 			} catch (error) {
-				
+
 				console.error("Error handling help chat:", error);
 				// Optionally, add error notification or additional error handling here.
 			} finally {
@@ -378,13 +378,13 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 			const chatData: any = {
 				creatorImg: creator.photo,
 				clientImg: clientUser?.photo,
+				clientId: clientUser?._id,
 			};
 
 			if (!chatId) {
 				chatId = doc(chatRef).id;
 				chatData.messages = [],
 					chatData.creatorId = creator?._id,
-					chatData.clientId = clientUser?._id,
 					chatData.global = clientUser?.global ?? false,
 					chatData.createdAt = Date.now(),
 					chatData.chatId = chatId
