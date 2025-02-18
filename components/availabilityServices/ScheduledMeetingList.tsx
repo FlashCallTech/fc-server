@@ -234,12 +234,13 @@ const ScheduledMeetingList = ({
 									>
 										{userCall.status == "canceled" && (
 											<p
-												className={`absolute top-0 right-0 bg-[#DBEAFE] text-[#1E40AF]
-																		text-[12px] px-2 py-1 rounded-full`}
+												className={`absolute top-2 right-2 sm:top-4 sm:right-4 bg-[#DBEAFE] text-[#1E40AF]
+																		text-[12px] px-2 py-1 rounded-full capitalize`}
 											>
 												{userCall.status}
 											</p>
 										)}
+
 										<div className="flex items-center justify-center gap-2.5">
 											<section className="w-fit flex flex-col items-center justify-center border border-gray-300 rounded-lg">
 												<p className="bg-gray-100 w-full px-2.5 font-bold text-sm">
