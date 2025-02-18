@@ -70,8 +70,6 @@ export const useCurrentUsersContext = () => {
 	return context;
 };
 
-const isBrowser = () => typeof window !== "undefined";
-
 export const CurrentUsersProvider = ({
 	children,
 	region,
@@ -96,7 +94,7 @@ export const CurrentUsersProvider = ({
 	const { toast } = useToast();
 	const router = useRouter();
 
-	const currentUser = useMemo(
+	let currentUser = useMemo(
 		() => creatorUser || clientUser,
 		[creatorUser, clientUser]
 	);
@@ -151,17 +149,6 @@ export const CurrentUsersProvider = ({
 			window.removeEventListener("storage", handleStorageChange);
 		};
 	}, []);
-
-	useEffect(() => {
-		if (isBrowser()) {
-			const storedUserType = localStorage.getItem("userType");
-			if (storedUserType) {
-				setUserType(storedUserType);
-			} else {
-				setUserType(currentUser?.profession ? "creator" : "client");
-			}
-		}
-	}, [currentUser?._id]);
 
 	const listenerRef = useRef<(() => void) | null>(null);
 
@@ -266,6 +253,7 @@ export const CurrentUsersProvider = ({
 
 			setClientUser(null);
 			setCreatorUser(null);
+			currentUser = null;
 		}
 	};
 
@@ -649,13 +637,11 @@ export const CurrentUsersProvider = ({
 	useEffect(() => {
 		if (!region) return;
 
-		// Return early if region is not set or not "India"
 		if (region === "India") {
 			fetchCurrentUser();
 			return;
 		}
 
-		// Initialize listener only if region is "Global"
 		const unsubscribe = onAuthStateChanged(auth, (user) => {
 			if (user && user.email) {
 				fetchGlobalCurrentUser(user.email);
@@ -710,16 +696,15 @@ export const CurrentUsersProvider = ({
 					try {
 						if (doc.exists()) {
 							const data = doc.data();
-							if (isBrowser()) {
-								if (data?.token && data.token !== authToken) {
-									handleSignout();
-									toast({
-										variant: "destructive",
-										title: "Another Session Detected",
-										description: "Logging Out...",
-										toastStatus: "positive",
-									});
-								}
+
+							if (data?.token && data.token !== authToken) {
+								handleSignout();
+								toast({
+									variant: "destructive",
+									title: "Another Session Detected",
+									description: "Logging Out...",
+									toastStatus: "positive",
+								});
 							}
 						}
 					} catch (error) {
