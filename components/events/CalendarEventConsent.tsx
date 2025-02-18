@@ -95,8 +95,7 @@ const CalendarEventConsent = () => {
 			return;
 		}
 
-		const savedToken =
-			creatorUser?.accessToken || localStorage.getItem("google_token");
+		const savedToken = localStorage.getItem("google_token");
 
 		if (savedToken) {
 			setEmail(
