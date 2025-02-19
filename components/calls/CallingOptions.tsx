@@ -53,7 +53,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		isSheetOpen,
 		setSheetOpen,
 	} = useChatRequest();
-	const [callInitiated, setcallInitiated] = useState(false);
+	const [callInitiated, setCallInitiated] = useState(false);
 	const [chatState, setChatState] = useState();
 	const [chatReqSent, setChatReqSent] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
@@ -455,7 +455,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		try {
 			localStorage.removeItem("chatId");
 			localStorage.removeItem("chatRequestId");
-			setcallInitiated(true);
+			setCallInitiated(true);
 
 			if (!clientUser) {
 				setIsAuthSheetOpen(true);
@@ -534,7 +534,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 			Sentry.captureException(error);
 			console.error("Error in handleClickOption:", error);
 		} finally {
-			setcallInitiated(false);
+			setCallInitiated(false);
 		}
 	};
 
@@ -746,10 +746,13 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 
 					return (
 						<button
-							disabled={!service.enabled}
+							disabled={!service.enabled || callInitiated || isProcessing}
 							key={service.type}
 							className={`callOptionContainer ${
-								(!service.enabled || onlineStatus === "Busy" || isClientBusy) &&
+								(!service.enabled ||
+									onlineStatus === "Busy" ||
+									isClientBusy ||
+									callInitiated) &&
 								"!cursor-not-allowed"
 							}`}
 							onClick={service.onClick}

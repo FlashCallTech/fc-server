@@ -69,11 +69,11 @@ const NavbarWeb = ({
 				{currentUser ? (
 					<>
 						{/* Home Button */}
-						<Link href="/home">
+						{/* <Link href="/home">
 							<Button className="min-w-[130px] bg-black text-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7">
 								Home
 							</Button>
-						</Link>
+						</Link> */}
 						{/* Sign Out Button */}
 						<Button
 							className="min-w-[130px] bg-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7"
