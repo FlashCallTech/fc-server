@@ -26,7 +26,7 @@ const SupportPage = () => {
 					</a>
 					<span className="text-xs text-gray-500">Or</span>
 					<a
-						href="https://api.whatsapp.com/send?phone=919019082682"
+						href="https://api.whatsapp.com/send?phone=919035973967"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="flex items-center justify-center hoverScaleDownEffect"

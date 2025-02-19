@@ -1143,6 +1143,47 @@ export const sendChatNotification = async (
 	}
 };
 
+export const sendChatInquiryNotification = async (
+	chatId: string,
+	creatorPhone: string,
+	clientName: string,
+	clientImg: string,
+	senderId: string,
+	text: string,
+	createdAt: number,
+	notificationType: string,
+	fetchFCMToken: (phone: string, type: string) => Promise<FCMToken | null>,
+	sendNotification: (
+		token: string,
+		title: string,
+		message: string,
+		payload: object
+	) => void,
+) => {
+	const fcmToken = await fetchFCMToken(creatorPhone, "voip");
+
+	if (fcmToken) {
+		try {
+			sendNotification(
+				fcmToken.token,
+				`Incoming Inquiry Message`,
+				`Message from ${clientName}`,
+				{
+					chatId,
+					clientName,
+					clientImg,
+					senderId,
+					text,
+					createdAt,
+					notificationType
+				}
+			);
+		} catch (error) {
+			console.warn(error);
+		}
+	}
+};
+
 export const getDevicePlatform = () => {
 	const userAgent = navigator.userAgent || navigator.vendor;
 

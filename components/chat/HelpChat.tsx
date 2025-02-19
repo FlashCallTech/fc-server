@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import AuthenticationSheet from '../shared/AuthenticationSheet';
+import { fetchFCMToken, sendChatInquiryNotification, sendNotification } from '@/lib/utils';
 
 interface Messages {
     senderId: string;
@@ -140,11 +141,25 @@ const HelpChat = () => {
                     text,
                 }),
             });
-        } catch (error) {
-            console.error("Error in handleSend:", error);
-        } finally {
             setText("");
             scrollToBottom();
+            const fcmToken = await fetchFCMToken(chat.creatorPhone as string);
+            if (fcmToken) {
+                await sendChatInquiryNotification(
+                    chatId as string,
+                    chat.creatorPhone as string,
+                    chat.clientName,
+                    chat.clientImg,
+                    chat.clientId,
+                    text,
+                    Date.now(),
+                    "inbox.chat",
+                    fetchFCMToken,
+                    sendNotification,
+                );
+            }
+        } catch (error) {
+            console.error("Error in handleSend:", error);
         }
     };
 

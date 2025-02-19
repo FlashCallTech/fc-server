@@ -163,18 +163,27 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 		}
 	}
 
+	const getClientId = (): string => {
+		let clientId = localStorage.getItem("temporaryClientId");
+		if (!clientId) {
+			clientId = crypto.randomUUID();
+			localStorage.setItem("temporaryClientId", clientId);
+		}
+		return clientId;
+	};
+
+	const getUniqueGuestName = () => {
+		return `Guest${Date.now().toString().slice(-6)}`; // Last 6 digits of timestamp
+	};
+
+
 	const handleHelp = async () => {
 		setLoading(true);
+		if (isModalOpen) return;
+
 		if (!clientUser) {
-			if (isModalOpen) return;
-
-			let clientId: any;
-			clientId = localStorage.getItem("temporaryClientId");
-
-			if (!clientId) {
-				clientId = crypto.randomUUID();
-				localStorage.setItem("temporaryClientId", clientId);
-			}
+			!isMobile && setIsModalOpen(true);
+			const clientId = getClientId();
 
 			try {
 				const chatRef = collection(db, "chats");
@@ -237,7 +246,6 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 				const chatData: any = {
 					creatorImg: creator.photo,
-					clientImg: GetRandomImage(),
 				};
 
 				if (!chatId) {
@@ -245,20 +253,21 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					chatData.messages = [],
 						chatData.creatorId = creator?._id,
 						chatData.clientId = clientId,
+						chatData.clientImg = GetRandomImage(),
 						chatData.global = region === "India" ? false : true,
 						chatData.createdAt = Date.now(),
 						chatData.chatId = chatId
-					const creatorChatUpdate = updateDoc(creatorChatsDocRef,
-						{
-							chats: arrayUnion({
-								chatId: chatId,
-								clientName: "Guest",
-								clientImg: GetRandomImage(),
-								receiverId: clientId,
-								updatedAt: Date.now(),
-							}),
-						}
-					);
+						chatData.clientName = getUniqueGuestName();
+
+					const creatorChatUpdate = updateDoc(creatorChatsDocRef, {
+						chats: arrayUnion({
+							chatId: chatId,
+							clientName: chatData.clientName,
+							clientImg: GetRandomImage(),
+							receiverId: clientId,
+							updatedAt: Date.now(),
+						}),
+					});
 
 					const clientChatUpdate = updateDoc(userChatsDocRef,
 						{
@@ -283,17 +292,14 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					chatData.creatorPhone = creator.phone;
 				}
 
-				chatData.clientName = "Guest";
-
 				setChatId(chatId);
 
 				await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
 
 				!loading && isMobile && router.push(`/helpChat/${chatId}`);
-				!loading && !isMobile && setIsModalOpen(true);
 			} catch (error) {
-				
 				console.error("Error handling help chat:", error);
+				setIsModalOpen(false);
 				// Optionally, add error notification or additional error handling here.
 			} finally {
 				setLoading(false);
@@ -303,7 +309,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 		}
 
 		try {
-			setIsModalOpen(false);
+			!isMobile && setIsModalOpen(true);
 			const chatRef = collection(db, "chats");
 			const creatorChatsDocRef = doc(db, "userHelpChats", creator?._id);
 			const userChatsDocRef = doc(db, "userHelpChats", clientUser?._id as string);
@@ -378,13 +384,13 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 			const chatData: any = {
 				creatorImg: creator.photo,
 				clientImg: clientUser?.photo,
+				clientId: clientUser?._id,
 			};
 
 			if (!chatId) {
 				chatId = doc(chatRef).id;
 				chatData.messages = [],
 					chatData.creatorId = creator?._id,
-					chatData.clientId = clientUser?._id,
 					chatData.global = clientUser?.global ?? false,
 					chatData.createdAt = Date.now(),
 					chatData.chatId = chatId
@@ -441,9 +447,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 			await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
 
-
 			!loading && isMobile && router.push(`/helpChat/${chatId}`);
-			!loading && !isMobile && setIsModalOpen(true);
 		} catch (error) {
 			console.error("Error handling help chat:", error);
 			// Optionally, add error notification or additional error handling here.
@@ -555,7 +559,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						<button
 							onClick={handleHelp}
 							disabled={loading}
-							className={`fixed bottom-4 ${isMobile ? "right-4" : "left-4"} border items-center text-[11px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-black bg-gray-100 hover:bg-gray-200 p-1 rounded-full shadow-lg hoverScaleDownEffect transition-all flex`}
+							className={`fixed bottom-4 ${isMobile ? "right-4" : "left-14"} pr-2 border items-center text-[11px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-black bg-gray-100 hover:bg-gray-200 p-1 rounded-full shadow-lg hoverScaleDownEffect transition-all flex`}
 						>
 							{loading ? (
 								<Image
@@ -733,10 +737,11 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				)
 			}
 			{
-				isModalOpen && chatId && (
+				isModalOpen && (
 					<DraggableWindow onClose={closeModal} creator={creator}>
 						<FloatingChat
 							setIsAuthSheetOpen={setIsAuthSheetOpen}
+							initiating={loading}
 							chatId={chatId}
 						/>
 					</DraggableWindow>
