@@ -246,7 +246,6 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 				const chatData: any = {
 					creatorImg: creator.photo,
-					clientImg: GetRandomImage(),
 				};
 
 				if (!chatId) {
@@ -254,14 +253,16 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					chatData.messages = [],
 						chatData.creatorId = creator?._id,
 						chatData.clientId = clientId,
+						chatData.clientImg = GetRandomImage(),
 						chatData.global = region === "India" ? false : true,
 						chatData.createdAt = Date.now(),
 						chatData.chatId = chatId
+						chatData.clientName = getUniqueGuestName();
 
 					const creatorChatUpdate = updateDoc(creatorChatsDocRef, {
 						chats: arrayUnion({
 							chatId: chatId,
-							clientName: getUniqueGuestName(),
+							clientName: chatData.clientName,
 							clientImg: GetRandomImage(),
 							receiverId: clientId,
 							updatedAt: Date.now(),
@@ -290,8 +291,6 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				if (creator.phone) {
 					chatData.creatorPhone = creator.phone;
 				}
-
-				chatData.clientName = "Guest";
 
 				setChatId(chatId);
 
