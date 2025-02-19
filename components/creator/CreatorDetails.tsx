@@ -166,17 +166,18 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 	const getClientId = (): string => {
 		let clientId = localStorage.getItem("temporaryClientId");
 		if (!clientId) {
-		  clientId = crypto.randomUUID();
-		  localStorage.setItem("temporaryClientId", clientId);
+			clientId = crypto.randomUUID();
+			localStorage.setItem("temporaryClientId", clientId);
 		}
 		return clientId;
-	  };
+	};
 
 	const handleHelp = async () => {
 		setLoading(true);
-		if (!clientUser) {
-			if (isModalOpen) return;
+		if (isModalOpen) return;
 
+		if (!clientUser) {
+			!isMobile && setIsModalOpen(true);
 			const clientId = getClientId();
 
 			try {
@@ -293,10 +294,9 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
 
 				!loading && isMobile && router.push(`/helpChat/${chatId}`);
-				!loading && !isMobile && setIsModalOpen(true);
 			} catch (error) {
-
 				console.error("Error handling help chat:", error);
+				setIsModalOpen(false);
 				// Optionally, add error notification or additional error handling here.
 			} finally {
 				setLoading(false);
@@ -306,7 +306,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 		}
 
 		try {
-			setIsModalOpen(false);
+			!isMobile && setIsModalOpen(true);
 			const chatRef = collection(db, "chats");
 			const creatorChatsDocRef = doc(db, "userHelpChats", creator?._id);
 			const userChatsDocRef = doc(db, "userHelpChats", clientUser?._id as string);
@@ -445,7 +445,6 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 			await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
 
 			!loading && isMobile && router.push(`/helpChat/${chatId}`);
-			!loading && !isMobile && setIsModalOpen(true);
 		} catch (error) {
 			console.error("Error handling help chat:", error);
 			// Optionally, add error notification or additional error handling here.
@@ -735,10 +734,11 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				)
 			}
 			{
-				isModalOpen && chatId && (
+				isModalOpen && (
 					<DraggableWindow onClose={closeModal} creator={creator}>
 						<FloatingChat
 							setIsAuthSheetOpen={setIsAuthSheetOpen}
+							initiating={loading}
 							chatId={chatId}
 						/>
 					</DraggableWindow>
