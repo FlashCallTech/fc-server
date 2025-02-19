@@ -172,6 +172,11 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 		return clientId;
 	};
 
+	const getUniqueGuestName = () => {
+		return `Guest${Date.now().toString().slice(-6)}`; // Last 6 digits of timestamp
+	};
+
+
 	const handleHelp = async () => {
 		setLoading(true);
 		if (isModalOpen) return;
@@ -252,17 +257,16 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						chatData.global = region === "India" ? false : true,
 						chatData.createdAt = Date.now(),
 						chatData.chatId = chatId
-					const creatorChatUpdate = updateDoc(creatorChatsDocRef,
-						{
-							chats: arrayUnion({
-								chatId: chatId,
-								clientName: "Guest",
-								clientImg: GetRandomImage(),
-								receiverId: clientId,
-								updatedAt: Date.now(),
-							}),
-						}
-					);
+
+					const creatorChatUpdate = updateDoc(creatorChatsDocRef, {
+						chats: arrayUnion({
+							chatId: chatId,
+							clientName: getUniqueGuestName(),
+							clientImg: GetRandomImage(),
+							receiverId: clientId,
+							updatedAt: Date.now(),
+						}),
+					});
 
 					const clientChatUpdate = updateDoc(userChatsDocRef,
 						{
