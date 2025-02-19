@@ -4,6 +4,7 @@ import { arrayUnion, doc, getDoc, onSnapshot, updateDoc } from 'firebase/firesto
 import { db } from '@/lib/firebase';
 import { useCurrentUsersContext } from '@/lib/context/CurrentUsersContext';
 import { useToast } from '@/components/ui/use-toast';
+import { fetchFCMToken, sendChatInquiryNotification, sendNotification } from '@/lib/utils';
 
 interface FloatingChatProps {
   setIsAuthSheetOpen: any;
@@ -89,9 +90,25 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ setIsAuthSheetOpen, chatId,
           text,
         }),
       });
+      setText('');
+      scrollToBottom();
+      const fcmToken = await fetchFCMToken(chat.creatorPhone as string);
+      if (fcmToken) {
+        await sendChatInquiryNotification(
+          chatId,
+          chat.creatorPhone as string,
+          chat.clientName,
+          chat.clientImg,
+          chat.clientId,
+          text,
+          Date.now(),
+          "inbox.chat",
+          fetchFCMToken,
+          sendNotification,
+        );
+      }
     } catch (error) {
       console.error('Error sending message:', error);
-    } finally {
       setText('');
       scrollToBottom();
     }
