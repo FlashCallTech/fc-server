@@ -153,7 +153,7 @@ const Messages: React.FC<Props> = ({ chat, messages, currentUserMessageSent, set
 
 	// Scroll to the bottom when images finish loading
 	useEffect(() => {
-		if (imagesLoaded === messages.filter((msg) => msg.img).length) {
+		if (messages && imagesLoaded === messages.filter((msg) => msg.img).length) {
 			scrollToBottom();
 		}
 	}, [imagesLoaded]);
