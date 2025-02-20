@@ -165,7 +165,7 @@ export const sidebarLinksCreator = [
 	{
 		imgURL: "/icons/calendarEvent.svg",
 		route: "/calendar-events",
-		label: "User Consent",
+		label: "Google Calendar Settings",
 		protected: true,
 	},
 	{
