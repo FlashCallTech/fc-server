@@ -266,7 +266,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 					variant: "destructive",
 					title: "Call Connection Failed",
 					description:
-						"There was an issue initializing the call. Please try reloading and retrying.",
+						"There was an issue initializing the call. Please try reloading once",
 					toastStatus: "negative",
 				});
 			return;
