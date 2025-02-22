@@ -260,7 +260,17 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	}, [chatState]);
 
 	const createMeeting = async (callType: string, selectedOffer?: Service) => {
-		if (!client || !clientUser) return;
+		if (!client || !clientUser) {
+			!client &&
+				toast({
+					variant: "destructive",
+					title: "Call Connection Failed",
+					description:
+						"There was an issue initializing the call. Please try reloading and retrying.",
+					toastStatus: "negative",
+				});
+			return;
+		}
 
 		try {
 			const id = crypto.randomUUID();
