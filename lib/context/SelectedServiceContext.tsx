@@ -16,7 +16,10 @@ interface SelectedServiceContextType {
 	setNewUserService: React.Dispatch<React.SetStateAction<SelectedServiceType>>;
 	resetServices: () => void;
 	getFinalServices: () => FinalServicesType;
-	getSpecificServiceOffer: (type: string) => SelectedServiceType;
+	getSpecificServiceOffer: (
+		type: string,
+		creatorRate?: number
+	) => SelectedServiceType;
 	getSpecificServiceOfferViaServiceId: (type: string) => SelectedServiceType;
 }
 
@@ -54,7 +57,10 @@ export const SelectedServiceProvider: React.FC<{
 		return servicesArray.length > 0 ? servicesArray : null;
 	};
 
-	const getSpecificServiceOffer = (type: string): SelectedServiceType => {
+	const getSpecificServiceOffer = (
+		type: string,
+		creatorRate?: number
+	): SelectedServiceType => {
 		const services = selectedServices || [];
 		const lowerType = type.toLowerCase();
 
@@ -64,11 +70,33 @@ export const SelectedServiceProvider: React.FC<{
 				(Array.isArray(service.type) && service.type.includes(lowerType))
 		);
 
+		if (
+			exactMatch &&
+			creatorRate &&
+			!(
+				Number(creatorRate) >
+				(exactMatch.discountRules?.[0]?.discountAmount || 0)
+			)
+		) {
+			exactMatch = undefined;
+		}
+
 		if (!exactMatch) {
-			exactMatch = services.find(
+			const allTypeMatch = services.find(
 				(service) => Array.isArray(service.type) && service.type.includes("all")
 			);
+
+			if (
+				allTypeMatch &&
+				creatorRate &&
+				Number(creatorRate) >
+					(allTypeMatch.discountRules?.[0]?.discountAmount || 0)
+			) {
+				exactMatch = allTypeMatch;
+			}
 		}
+
+		type === "chat" && console.log("chat ", creatorRate, exactMatch);
 
 		return exactMatch || null;
 	};

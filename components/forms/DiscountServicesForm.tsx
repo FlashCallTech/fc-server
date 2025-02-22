@@ -370,10 +370,8 @@ const DiscountServicesForm = ({
 											);
 
 											if (hasAllSelected) {
-												// If "all" is selected, deselect all others
 												field.onChange(["all"]);
 											} else {
-												// Remove "all" if another option is selected
 												field.onChange(
 													selectedOptions.map((option) => option.value)
 												);
