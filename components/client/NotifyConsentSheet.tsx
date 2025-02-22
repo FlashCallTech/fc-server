@@ -97,6 +97,17 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 			return;
 		}
 
+		if (consent === false) {
+			toast({
+				variant: "destructive",
+				title: "You won't be notified",
+				description: `Your consent has been submitted successfully.`,
+				toastStatus: "negative",
+			});
+			onOpenChange(false);
+			return;
+		}
+
 		setIsLoading(true);
 
 		try {
@@ -185,8 +196,8 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 									disabled={isLoading}
 									onClick={() => setConsent(true)}
 									variant={"outline"}
-									className={`rounded-full w-full max-w-[75%] mx-auto ${
-										consent ? "bg-green-1 text-white" : "hover:bg-gray-100"
+									className={`${
+										consent ? "bg-black text-white" : "hover:bg-gray-100"
 									}`}
 								>
 									Yes, Notify Me!
@@ -195,11 +206,11 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 									disabled={isLoading}
 									onClick={() => setConsent(false)}
 									variant={"outline"}
-									className={`rounded-full w-full max-w-[75%] mx-auto ${
-										!consent ? "bg-green-1 text-white" : "hover:bg-gray-100"
+									className={`${
+										!consent ? "bg-black text-white" : "hover:bg-gray-100"
 									}`}
 								>
-									No, Thanks.
+									No, Don’t Notify Me
 								</Button>
 							</div>
 							<Button
@@ -208,8 +219,8 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 								className={`${
 									consent === null
 										? "opacity-50 bg-gray-100 text-black"
-										: "border border-gray-300 bg-black/80 text-white"
-								} text-sm mt-4 hoverScaleDownEffect rounded-full w-1/2 mx-auto `}
+										: "border border-gray-300 bg-black text-white"
+								} text-sm mt-4 w-3/4 mx-auto hoverScaleDownEffect`}
 								onClick={handleConsentSubmit}
 							>
 								{isLoading ? "Submitting..." : "Submit My Choice"}
@@ -273,8 +284,8 @@ const NotifyConsentSheet: React.FC<NotifyConsentSheetProps> = ({
 							className={`${
 								consent === null
 									? "opacity-50 bg-gray-100 text-black"
-									: "border border-gray-300 bg-black/80 text-white"
-							} text-sm mt-4  w-3/4 mx-auto `}
+									: "border border-gray-300 bg-black text-white"
+							} text-sm mt-4  w-3/4 mx-auto hoverScaleDownEffect`}
 							onClick={handleConsentSubmit}
 						>
 							{isLoading ? "Submitting..." : "Submit My Choice"}
