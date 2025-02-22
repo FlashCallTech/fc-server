@@ -531,8 +531,6 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 		);
 	};
 
-	console.log(userType, isEligible, offerApplied);
-
 	return (
 		// Wrapper Section
 		<div className="xl:relative size-full md:mx-auto md:pt-8 flex flex-col xl:flex-row xl:gap-14 items-start justify-center max-xl:overflow-y-scroll no-scrollbar">
