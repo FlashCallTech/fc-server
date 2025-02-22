@@ -337,10 +337,18 @@ export const externalLinks = [
 export const socials = {
 	title: "Social",
 	links: [
-		"/web/icons/facebook.svg",
-		"/web/icons/instagram.svg",
-		"/web/icons/twitter.svg",
-		"/web/icons/youtube.svg",
+		{
+			url: "https://www.facebook.com/profile.php?id=61567936603121",
+			icon: "/web/icons/facebook.svg",
+		},
+		{
+			url: "https://www.instagram.com/flashcall.me/",
+			icon: "/web/icons/instagram.svg",
+		},
+		{
+			url: "https://x.com/FlashCall_me",
+			icon: "/web/icons/twitter.svg",
+		},
 	],
 };
 

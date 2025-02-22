@@ -26,14 +26,14 @@ const Footer = () => {
 					</p>
 					{/* socials */}
 					<ul className="text-[14px] font-[400] flex gap-4">
-						{socials.links.map((link, index) => (
+						{socials.links.map((social, index) => (
 							<li
 								key={index}
 								className="hoverScaleEffect w-fit bg-secondary p-2 rounded-full"
 							>
-								<Link href="https://forms.gle/bo42SCVG6T4YjJzg8">
+								<Link href={social.url}>
 									<Image
-										src={link}
+										src={social.icon}
 										alt="social logo"
 										width={24}
 										height={24}
@@ -75,13 +75,19 @@ const Footer = () => {
 								className="size-full max-w-[165px] max-h-[60px] object-contain self-start"
 							/>
 						</Link>
-						<Image
-							src="/icons/store.png"
-							alt="social logo"
-							width={500}
-							height={500}
-							className="size-full max-w-[165px] max-h-[60px] object-contain self-start"
-						/>
+						<Link
+							href="https://apps.apple.com/in/app/flashcall-me/id6739250390"
+							target="_black"
+							className="hoverScaleDownEffect"
+						>
+							<Image
+								src="/icons/store.png"
+								alt="social logo"
+								width={500}
+								height={500}
+								className="size-full max-w-[165px] max-h-[60px] object-contain self-start"
+							/>
+						</Link>
 					</div>
 				</div>
 			</div>
