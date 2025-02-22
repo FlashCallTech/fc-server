@@ -1,10 +1,19 @@
 "use client";
 
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { fetchFCMToken, getDisplayName, getImageSource, isValidHexColor } from "@/lib/utils";
+import { getDisplayName, getImageSource, isValidHexColor } from "@/lib/utils";
 import { creatorUser, LinkType } from "@/types";
 import React, { memo, useEffect, useState } from "react";
-import { arrayUnion, collection, doc, getDoc, onSnapshot, setDoc, updateDoc, writeBatch } from "firebase/firestore";
+import {
+	arrayUnion,
+	collection,
+	doc,
+	getDoc,
+	onSnapshot,
+	setDoc,
+	updateDoc,
+	writeBatch,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { usePathname, useRouter } from "next/navigation";
 import CallingOptions from "../calls/CallingOptions";
@@ -79,6 +88,8 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 			creatorName: fullName,
 			creatorUsername: creator.username,
 		});
+
+		setOfferApplied(selectedServices ? selectedServices.length > 0 : false);
 
 		setCurrentTheme(themeColor);
 		updateCreatorURL(creatorURL);
@@ -161,7 +172,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 			return maskedNumber;
 		}
-	}
+	};
 
 	const getClientId = (): string => {
 		let clientId = localStorage.getItem("temporaryClientId");
@@ -176,7 +187,6 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 		return `Guest${Date.now().toString().slice(-6)}`; // Last 6 digits of timestamp
 	};
 
-
 	const handleHelp = async () => {
 		setLoading(true);
 		if (isModalOpen) return;
@@ -190,10 +200,11 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				const creatorChatsDocRef = doc(db, "userHelpChats", creator?._id);
 				const userChatsDocRef = doc(db, "userHelpChats", clientId as string);
 
-				const [userChatsDocSnapshot, creatorChatsDocSnapshot] = await Promise.all([
-					getDoc(userChatsDocRef),
-					getDoc(creatorChatsDocRef),
-				]);
+				const [userChatsDocSnapshot, creatorChatsDocSnapshot] =
+					await Promise.all([
+						getDoc(userChatsDocRef),
+						getDoc(creatorChatsDocRef),
+					]);
 
 				let chatId = null;
 				let matchedIndex = -1;
@@ -202,14 +213,20 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					const userChatsData = userChatsDocSnapshot.data();
 					const creatorChatsData = creatorChatsDocSnapshot.data();
 
-					if (userChatsData.chats && creatorChatsData && Array.isArray(userChatsData.chats) && Array.isArray(creatorChatsData.chats)) {
+					if (
+						userChatsData.chats &&
+						creatorChatsData &&
+						Array.isArray(userChatsData.chats) &&
+						Array.isArray(creatorChatsData.chats)
+					) {
 						matchedIndex = userChatsData.chats.findIndex(
 							(el: any) => el.receiverId === creator._id
 						);
 
 						if (matchedIndex !== -1) {
 							userChatsData.chats[matchedIndex].creatorImg = creator.photo;
-							userChatsData.chats[matchedIndex].creatorName = creator.fullName || maskPhoneNumber(creator.phone as string);
+							userChatsData.chats[matchedIndex].creatorName =
+								creator.fullName || maskPhoneNumber(creator.phone as string);
 							await updateDoc(userChatsDocRef, { chats: userChatsData.chats });
 						}
 					}
@@ -221,27 +238,25 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						(chat: any) => chat.receiverId === clientId
 					);
 
-					if (userChat && creatorChat && userChat.chatId === creatorChat.chatId) {
+					if (
+						userChat &&
+						creatorChat &&
+						userChat.chatId === creatorChat.chatId
+					) {
 						chatId = userChat.chatId;
 					}
 				}
 
 				if (!userChatsDocSnapshot.exists()) {
-					await setDoc(
-						userChatsDocSnapshot.ref,
-						{
-							chats: [],
-						},
-					);
+					await setDoc(userChatsDocSnapshot.ref, {
+						chats: [],
+					});
 				}
 
 				if (!creatorChatsDocSnapshot.exists()) {
-					await setDoc(
-						creatorChatsDocSnapshot.ref,
-						{
-							chats: [],
-						},
-					);
+					await setDoc(creatorChatsDocSnapshot.ref, {
+						chats: [],
+					});
 				}
 
 				const chatData: any = {
@@ -250,14 +265,14 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 				if (!chatId) {
 					chatId = doc(chatRef).id;
-					chatData.messages = [],
-						chatData.creatorId = creator?._id,
-						chatData.clientId = clientId,
-						chatData.clientImg = GetRandomImage(),
-						chatData.global = region === "India" ? false : true,
-						chatData.createdAt = Date.now(),
-						chatData.chatId = chatId
-						chatData.clientName = getUniqueGuestName();
+					(chatData.messages = []),
+						(chatData.creatorId = creator?._id),
+						(chatData.clientId = clientId),
+						(chatData.clientImg = GetRandomImage()),
+						(chatData.global = region === "India" ? false : true),
+						(chatData.createdAt = Date.now()),
+						(chatData.chatId = chatId);
+					chatData.clientName = getUniqueGuestName();
 
 					const creatorChatUpdate = updateDoc(creatorChatsDocRef, {
 						chats: arrayUnion({
@@ -269,17 +284,16 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						}),
 					});
 
-					const clientChatUpdate = updateDoc(userChatsDocRef,
-						{
-							chats: arrayUnion({
-								chatId: chatId,
-								creatorName: creator.fullName || maskPhoneNumber(creator.phone as string),
-								creatorImg: creator.photo,
-								receiverId: creator._id,
-								updatedAt: Date.now(),
-							}),
-						}
-					);
+					const clientChatUpdate = updateDoc(userChatsDocRef, {
+						chats: arrayUnion({
+							chatId: chatId,
+							creatorName:
+								creator.fullName || maskPhoneNumber(creator.phone as string),
+							creatorImg: creator.photo,
+							receiverId: creator._id,
+							updatedAt: Date.now(),
+						}),
+					});
 					await Promise.all([creatorChatUpdate, clientChatUpdate]);
 				}
 
@@ -312,12 +326,15 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 			!isMobile && setIsModalOpen(true);
 			const chatRef = collection(db, "chats");
 			const creatorChatsDocRef = doc(db, "userHelpChats", creator?._id);
-			const userChatsDocRef = doc(db, "userHelpChats", clientUser?._id as string);
+			const userChatsDocRef = doc(
+				db,
+				"userHelpChats",
+				clientUser?._id as string
+			);
 
-			const [userChatsDocSnapshot, creatorChatsDocSnapshot] = await Promise.all([
-				getDoc(userChatsDocRef),
-				getDoc(creatorChatsDocRef),
-			]);
+			const [userChatsDocSnapshot, creatorChatsDocSnapshot] = await Promise.all(
+				[getDoc(userChatsDocRef), getDoc(creatorChatsDocRef)]
+			);
 
 			let chatId = null;
 			let matchedIndex = -1;
@@ -327,23 +344,33 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				const userChatsData = userChatsDocSnapshot.data();
 				const creatorChatsData = creatorChatsDocSnapshot.data();
 
-				if (Array.isArray(userChatsData.chats) && Array.isArray(creatorChatsData.chats)) {
+				if (
+					Array.isArray(userChatsData.chats) &&
+					Array.isArray(creatorChatsData.chats)
+				) {
 					const batch = writeBatch(db);
 
 					// Update userChatsDoc if a matching element is found
-					matchedIndex = userChatsData.chats.findIndex((el: any) => el.receiverId === creator._id);
+					matchedIndex = userChatsData.chats.findIndex(
+						(el: any) => el.receiverId === creator._id
+					);
 					if (matchedIndex !== -1) {
 						userChatsData.chats[matchedIndex].creatorImg = creator.photo;
-						userChatsData.chats[matchedIndex].creatorName = creator.fullName || maskPhoneNumber(creator.phone as string);
+						userChatsData.chats[matchedIndex].creatorName =
+							creator.fullName || maskPhoneNumber(creator.phone as string);
 						batch.update(userChatsDocRef, { chats: userChatsData.chats });
 					}
 
 					// Update creatorChatsDoc if a matching element is found
-					matchedIndexCreator = creatorChatsData.chats.findIndex((el: any) => el.receiverId === clientUser._id);
+					matchedIndexCreator = creatorChatsData.chats.findIndex(
+						(el: any) => el.receiverId === clientUser._id
+					);
 					if (matchedIndexCreator !== -1) {
-						creatorChatsData.chats[matchedIndexCreator].clientImg = clientUser.photo || GetRandomImage();
+						creatorChatsData.chats[matchedIndexCreator].clientImg =
+							clientUser.photo || GetRandomImage();
 						creatorChatsData.chats[matchedIndexCreator].clientName =
-							clientUser.fullName || maskPhoneNumber(clientUser.phone as string);
+							clientUser.fullName ||
+							maskPhoneNumber(clientUser.phone as string);
 						batch.update(creatorChatsDocRef, { chats: creatorChatsData.chats });
 					}
 
@@ -364,21 +391,15 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 			}
 
 			if (!userChatsDocSnapshot.exists()) {
-				await setDoc(
-					userChatsDocSnapshot.ref,
-					{
-						chats: [],
-					},
-				);
+				await setDoc(userChatsDocSnapshot.ref, {
+					chats: [],
+				});
 			}
 
 			if (!creatorChatsDocSnapshot.exists()) {
-				await setDoc(
-					creatorChatsDocSnapshot.ref,
-					{
-						chats: [],
-					},
-				);
+				await setDoc(creatorChatsDocSnapshot.ref, {
+					chats: [],
+				});
 			}
 
 			const chatData: any = {
@@ -389,34 +410,33 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 			if (!chatId) {
 				chatId = doc(chatRef).id;
-				chatData.messages = [],
-					chatData.creatorId = creator?._id,
-					chatData.global = clientUser?.global ?? false,
-					chatData.createdAt = Date.now(),
-					chatData.chatId = chatId
-				const creatorChatUpdate = updateDoc(creatorChatsDocRef,
-					{
-						chats: arrayUnion({
-							chatId: chatId,
-							clientName: clientUser.fullName || maskPhoneNumber(clientUser.phone as string),
-							clientImg: clientUser.photo || GetRandomImage(),
-							receiverId: clientUser._id,
-							updatedAt: Date.now(),
-						}),
-					}
-				);
+				(chatData.messages = []),
+					(chatData.creatorId = creator?._id),
+					(chatData.global = clientUser?.global ?? false),
+					(chatData.createdAt = Date.now()),
+					(chatData.chatId = chatId);
+				const creatorChatUpdate = updateDoc(creatorChatsDocRef, {
+					chats: arrayUnion({
+						chatId: chatId,
+						clientName:
+							clientUser.fullName ||
+							maskPhoneNumber(clientUser.phone as string),
+						clientImg: clientUser.photo || GetRandomImage(),
+						receiverId: clientUser._id,
+						updatedAt: Date.now(),
+					}),
+				});
 
-				const clientChatUpdate = updateDoc(userChatsDocRef,
-					{
-						chats: arrayUnion({
-							chatId: chatId,
-							creatorName: creator.fullName || maskPhoneNumber(creator.phone as string),
-							creatorImg: creator.photo,
-							receiverId: creator._id,
-							updatedAt: Date.now(),
-						}),
-					}
-				);
+				const clientChatUpdate = updateDoc(userChatsDocRef, {
+					chats: arrayUnion({
+						chatId: chatId,
+						creatorName:
+							creator.fullName || maskPhoneNumber(creator.phone as string),
+						creatorImg: creator.photo,
+						receiverId: creator._id,
+						updatedAt: Date.now(),
+					}),
+				});
 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
 			}
 
@@ -472,11 +492,13 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 							<h2 className="text-base font-bold">About Me</h2>
 							{/* Content */}
 							<p
-								className={`text-sm text-start block ${isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
-									} ${isExpanded
+								className={`text-sm text-start block ${
+									isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
+								} ${
+									isExpanded
 										? "overflow-y-scroll no-scrollbar"
 										: "overflow-hidden"
-									}`}
+								}`}
 							>
 								{getClampedText(creator?.bio)}
 								{!isExpanded && creator.bio.length > 100 && (
@@ -508,6 +530,8 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 			</>
 		);
 	};
+
+	console.log(userType, isEligible, offerApplied);
 
 	return (
 		// Wrapper Section
@@ -541,14 +565,15 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 								>
 									<div
 										className={`
-									${status === "Online"
-												? "bg-[#22C55E]"
-												: status === "Offline"
-													? "bg-red-600"
-													: status === "Busy"
-														? "bg-orange-600"
-														: "bg-red-600"
-											} 
+									${
+										status === "Online"
+											? "bg-[#22C55E]"
+											: status === "Offline"
+											? "bg-red-600"
+											: status === "Busy"
+											? "bg-orange-600"
+											: "bg-red-600"
+									} 
 
 									rounded-full size-[15px]
 									`}
@@ -559,7 +584,9 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						<button
 							onClick={handleHelp}
 							disabled={loading}
-							className={`fixed bottom-4 ${isMobile ? "right-4" : "left-14"} pr-2 border items-center text-[11px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-black bg-gray-100 hover:bg-gray-200 p-1 rounded-full shadow-lg hoverScaleDownEffect transition-all flex`}
+							className={`fixed bottom-4 ${
+								isMobile ? "right-4" : "left-14"
+							} pr-2 border items-center text-[11px] md:text-sm font-bold z-40 gap-1 md:gap-2 text-black bg-gray-100 hover:bg-gray-200 p-1 rounded-full shadow-lg hoverScaleDownEffect transition-all flex`}
 						>
 							{loading ? (
 								<Image
@@ -596,7 +623,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					{/* Action Buttons */}
 					<section className={`flex items-center w-full gap-4 mt-2`}>
 						{/* Favorite Button */}
-						{userType === "client" && (
+						{userType !== "creator" && (
 							<Favorites creator={creator} userId={clientUser?._id as string} />
 						)}
 						{/* Share Button */}
@@ -728,26 +755,22 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 				</section>
 			</section>
 
-			{
-				isAuthSheetOpen && (
-					<AuthenticationSheet
-						isOpen={isAuthSheetOpen}
-						onOpenChange={setIsAuthSheetOpen}
+			{isAuthSheetOpen && (
+				<AuthenticationSheet
+					isOpen={isAuthSheetOpen}
+					onOpenChange={setIsAuthSheetOpen}
+				/>
+			)}
+			{isModalOpen && (
+				<DraggableWindow onClose={closeModal} creator={creator}>
+					<FloatingChat
+						setIsAuthSheetOpen={setIsAuthSheetOpen}
+						initiating={loading}
+						chatId={chatId}
 					/>
-				)
-			}
-			{
-				isModalOpen && (
-					<DraggableWindow onClose={closeModal} creator={creator}>
-						<FloatingChat
-							setIsAuthSheetOpen={setIsAuthSheetOpen}
-							initiating={loading}
-							chatId={chatId}
-						/>
-					</DraggableWindow>
-				)
-			}
-		</div >
+				</DraggableWindow>
+			)}
+		</div>
 	);
 });
 
