@@ -96,8 +96,6 @@ export const SelectedServiceProvider: React.FC<{
 			}
 		}
 
-		type === "chat" && console.log("chat ", creatorRate, exactMatch);
-
 		return exactMatch || null;
 	};
 

@@ -422,6 +422,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 							? clientUser?.email
 							: clientUser?.phone,
 						global: clientUser?.global ?? false,
+						discount: selectedOffer,
 					});
 				})
 				.catch((err) => console.log("Unable to create Meeting", err));
