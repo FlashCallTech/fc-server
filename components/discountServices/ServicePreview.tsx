@@ -205,8 +205,13 @@ const ServicePreview = ({ service }: { service: DiscountService }) => {
 							</p>
 							<div className="flex items-center gap-2">
 								<p className="text-sm text-[#4B5563]">Selected Service</p>
-								{Array.isArray(service.type) || service.type === "all" ? (
-									["video", "audio", "chat"].map((type) => (
+								{(service.type.includes("all")
+									? ["video", "audio", "chat"]
+									: Array.isArray(service.type)
+									? service.type
+									: [service.type]
+								).map((type) =>
+									["video", "audio", "chat"].includes(type) ? (
 										<span
 											key={type}
 											className={`p-2 text-sm border transition-all rounded-full ${
@@ -217,17 +222,14 @@ const ServicePreview = ({ service }: { service: DiscountService }) => {
 										>
 											{serviceIcon(type as "video" | "audio" | "chat")}
 										</span>
-									))
-								) : (
-									<span
-										className={`p-2 text-sm border transition-all rounded-full ${
-											service.isActive
-												? "bg-[#F0FDF4] text-[#16A34A]"
-												: "bg-[#FFEDD5] text-[#9A3412]"
-										}`}
-									>
-										{serviceIcon(service.type as "video" | "audio" | "chat")}
-									</span>
+									) : (
+										<img
+											key={type}
+											src={service.photo}
+											alt="Service Icon"
+											className="size-7 rounded-full"
+										/>
+									)
 								)}
 							</div>
 						</div>

@@ -169,7 +169,7 @@ const MobileNav = () => {
 													<Link
 														href={item.route}
 														className={cn(
-															"flex gap-4 items-center p-4 rounded-lg w-full md:max-w-60 hover:bg-green-1",
+															"flex gap-4 items-center p-4 rounded-lg w-full hover:bg-green-1",
 															{
 																"bg-green-1": isActive,
 															}
@@ -184,7 +184,7 @@ const MobileNav = () => {
 															className="invert-0 brightness-200 w-6 h-6 object-cover"
 															priority
 														/>
-														<p className="font-semibold flex items-center">
+														<p className="font-semibold flex items-center whitespace-nowrap w-full">
 															{item.label}
 															{showBadge && (
 																<span className="ml-2 flex items-center justify-center bg-red-500 rounded-full text-white p-1 text-xs size-5">

@@ -64,7 +64,7 @@ const ClientSideDiscountheet = ({
 		const flattenedServices =
 			servicesData?.pages.flatMap((page: any) => page.data) || [];
 		setUserServices(flattenedServices);
-		setIsEligible(flattenedServices.length > 0);
+		setIsEligible(!currentUser ? true : flattenedServices.length > 0);
 	}, [servicesData]);
 
 	useEffect(() => {

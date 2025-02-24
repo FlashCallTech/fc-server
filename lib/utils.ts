@@ -1055,7 +1055,7 @@ export const sendCallNotification = async (
 					callCategory: callCategory || "PPM",
 				}
 			);
-			if (fcmToken.voip_token && notificationType !== "call.missed") {
+			if (fcmToken.voip_token) {
 				await axios.post(`${backendUrl}/send-notification`, {
 					deviceToken: fcmToken.voip_token,
 					message: `Incoming ${callType} Call Request from ${clientUsername}`,
@@ -1158,7 +1158,7 @@ export const sendChatInquiryNotification = async (
 		title: string,
 		message: string,
 		payload: object
-	) => void,
+	) => void
 ) => {
 	const fcmToken = await fetchFCMToken(creatorPhone, "voip");
 
@@ -1175,7 +1175,7 @@ export const sendChatInquiryNotification = async (
 					senderId,
 					text,
 					createdAt,
-					notificationType
+					notificationType,
 				}
 			);
 		} catch (error) {

@@ -153,10 +153,6 @@ const MyCallUI = () => {
 		if (incomingCalls.length === 0) return;
 		const [incomingCall] = incomingCalls;
 
-		const expert = incomingCall.state?.members?.find(
-			(member) => member.custom.type === "expert"
-		);
-
 		const handleCallEnded = async () => {
 			setShowCallUI(false);
 		};
@@ -338,7 +334,7 @@ const MyCallUI = () => {
 				callType,
 				currentUser?.username as string,
 				currentUser?._id as string,
-				call!,
+				outgoingCall!,
 				"call.missed",
 				fetchFCMToken,
 				sendNotification,
@@ -405,7 +401,7 @@ const MyCallUI = () => {
 				callType,
 				currentUser?.username as string,
 				currentUser?._id as string,
-				call!,
+				outgoingCall!,
 				"call.missed",
 				fetchFCMToken,
 				sendNotification,
@@ -447,7 +443,7 @@ const MyCallUI = () => {
 				callType,
 				currentUser?.username as string,
 				currentUser?._id as string,
-				call!,
+				outgoingCall!,
 				"call.missed",
 				fetchFCMToken,
 				sendNotification,

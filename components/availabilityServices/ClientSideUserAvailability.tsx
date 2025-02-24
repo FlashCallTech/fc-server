@@ -113,12 +113,13 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 
 	const handleCallClick = (
 		service: AvailabilityService,
-		discountApplicable: SelectedServiceType
+		discountApplicable: SelectedServiceType,
+		isApplicable?: boolean
 	) => {
 		if (!currentUser) {
 			setIsAuthSheetOpen(true);
 		} else {
-			if (discountApplicable) {
+			if (discountApplicable && isApplicable) {
 				discountApplicable.discountRules.forEach(
 					({ discountAmount, discountType }) => {
 						if (discountType === "percentage") {
@@ -176,12 +177,17 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 						getSpecificServiceOfferViaServiceId(service._id) ||
 						getSpecificServiceOffer(service.type);
 					const isExpanded = expandedStates[index] || false;
+					let isApplicable =
+						(discountApplicable &&
+							Number(service?.basePrice) >
+								discountApplicable?.discountRules[0]?.discountAmount) ||
+						undefined;
 					return (
 						<div
 							key={service._id}
 							className={`flex flex-col p-4 border border-gray-300 rounded-[24px] min-h-[52px] gap-3 justify-between items-start w-full`}
 						>
-							{discountApplicable && (
+							{discountApplicable && isApplicable && (
 								<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
@@ -252,7 +258,9 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 
 								<button
 									className="w-full flex items-center justify-center p-2 pl-3 hoverScaleDownEffect cursor-pointer border-2 border-gray-300 rounded-full"
-									onClick={() => handleCallClick(service, discountApplicable)}
+									onClick={() =>
+										handleCallClick(service, discountApplicable, isApplicable)
+									}
 								>
 									<section className="pl-2 w-full flex items-center justify-between">
 										<div className="flex items-center justify-center gap-4">

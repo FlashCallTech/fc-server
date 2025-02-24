@@ -260,7 +260,17 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	}, [chatState]);
 
 	const createMeeting = async (callType: string, selectedOffer?: Service) => {
-		if (!client || !clientUser) return;
+		if (!client || !clientUser) {
+			!client &&
+				toast({
+					variant: "destructive",
+					title: "Call Connection Failed",
+					description:
+						"There was an issue initializing the call. Please try reloading once",
+					toastStatus: "negative",
+				});
+			return;
+		}
 
 		try {
 			const id = crypto.randomUUID();
@@ -422,6 +432,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 							? clientUser?.email
 							: clientUser?.phone,
 						global: clientUser?.global ?? false,
+						discount: selectedOffer,
 					});
 				})
 				.catch((err) => console.log("Unable to create Meeting", err));
@@ -439,7 +450,8 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 
 	const handleClickOption = async (
 		callType: string,
-		selectedOffer?: Service
+		selectedOffer?: Service,
+		isApplicable?: boolean
 	) => {
 		if (userType === "creator") {
 			toast({
@@ -506,7 +518,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 						});
 					}
 					if (clientUser && !storedCallId) {
-						if (selectedOffer) {
+						if (selectedOffer && isApplicable) {
 							setSelectedService(selectedOffer);
 						}
 						createMeeting(callType, selectedOffer);
@@ -538,7 +550,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		}
 	};
 
-	const handleChatClick = async () => {
+	const handleChatClick = async (isApplicable?: boolean) => {
 		setLoading(true);
 		localStorage.removeItem("chatId");
 		localStorage.removeItem("chatRequestId");
@@ -585,7 +597,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				rate: updatedCreator.chatRate,
 			});
 
-			let discount = getSpecificServiceOffer("chat");
+			let discount = isApplicable ? getSpecificServiceOffer("chat") : null;
 
 			setChatReqSent(true);
 			handleChat(creator, clientUser, setChatState, discount as Service);
@@ -604,71 +616,70 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		}
 	};
 
-	const services = [
+	const serviceTypes = [
 		{
 			type: "video",
 			label: "Video Call",
 			icon: video,
-			rate: updatedCreator.videoRate,
-			discountApplicable: getSpecificServiceOffer("video"),
-			discountRules: getSpecificServiceOffer("video")?.discountRules,
 			description: "Real-time video consultation",
-			enabled:
-				onlineStatus === "Offline"
-					? true
-					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
-					  !isClientBusy &&
-					  onlineStatus !== "Busy" &&
-					  updatedCreator.videoAllowed &&
-					  Number(updatedCreator.videoRate) > 0,
-			onClick: () =>
-				handleClickOption(
-					"video",
-					getSpecificServiceOffer("video") || undefined
-				),
 		},
 		{
 			type: "audio",
 			label: "Audio Call",
 			icon: audio,
-			rate: updatedCreator.audioRate,
-			discountApplicable: getSpecificServiceOffer("audio"),
-			discountRules: getSpecificServiceOffer("audio")?.discountRules,
 			description: "Voice consultation",
-			enabled:
-				onlineStatus === "Offline"
-					? true
-					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
-					  !isClientBusy &&
-					  onlineStatus !== "Busy" &&
-					  updatedCreator.audioAllowed &&
-					  Number(updatedCreator.audioRate) > 0,
-			onClick: () =>
-				handleClickOption(
-					"audio",
-					getSpecificServiceOffer("audio") || undefined
-				),
 		},
-
 		{
 			type: "chat",
 			label: "Chat Now",
 			icon: chat,
-			rate: updatedCreator.chatRate,
-			discountApplicable: getSpecificServiceOffer("chat"),
-			discountRules: getSpecificServiceOffer("chat")?.discountRules,
 			description: "Text-based consultation",
-			enabled:
-				onlineStatus === "Offline"
-					? true
-					: !updatedCreator?.blocked?.includes(clientUser?._id) &&
-					  !isClientBusy &&
-					  onlineStatus !== "Busy" &&
-					  updatedCreator.chatAllowed &&
-					  Number(updatedCreator.chatRate) > 0,
-			onClick: () => handleChatClick(),
 		},
 	];
+
+	const createService = (
+		type: string,
+		label: string,
+		icon: React.ReactNode,
+		description: string
+	) => {
+		const rate =
+			Number(updatedCreator[`${type}Rate` as keyof creatorUser]) || 0;
+		const discount = getSpecificServiceOffer(type, rate);
+		const isEnabled =
+			onlineStatus === "Offline"
+				? true
+				: !updatedCreator?.blocked?.includes(clientUser?._id) &&
+				  !isClientBusy &&
+				  onlineStatus !== "Busy" &&
+				  updatedCreator[`${type}Allowed` as keyof creatorUser] &&
+				  rate > 0;
+
+		return {
+			type,
+			label,
+			icon,
+			rate,
+			discountApplicable: discount,
+			discountRules: discount?.discountRules,
+			description,
+			enabled: isEnabled,
+			onClick: () =>
+				type === "chat"
+					? handleChatClick(
+							rate > (discount?.discountRules?.[0]?.discountAmount || 0)
+					  )
+					: handleClickOption(
+							type,
+							discount || undefined,
+							rate > (discount?.discountRules?.[0]?.discountAmount || 0)
+					  ),
+		};
+	};
+
+	const services = serviceTypes.map(({ type, label, icon, description }) =>
+		createService(type as "video" | "audio" | "chat", label, icon, description)
+	);
 
 	// Sort services based on priority and enabled status
 	const sortedServices = useMemo(() => {
@@ -703,6 +714,10 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 		<>
 			<div className="flex flex-col w-full items-center justify-center gap-4">
 				{sortedServices.map((service) => {
+					let isApplicable =
+						service &&
+						service?.discountRules &&
+						Number(service?.rate) > service?.discountRules[0]?.discountAmount;
 					const priceButton = (
 						<p
 							className={`font-medium tracking-widest rounded-full px-3 py-1 w-fit min-w-[115px] min-h-[36px] bg-black text-white flex flex-col-reverse items-center justify-center ${
@@ -714,8 +729,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 								{service.discountApplicable && service.discountRules ? (
 									service.discountRules[0].discountType === "percentage" ||
 									(service.discountRules[0].discountType === "flat" &&
-										Number(service.rate) >
-											service.discountRules[0].discountAmount) ? (
+										isApplicable) ? (
 										<>
 											<s className="text-gray-300 text-xs">
 												{region === "India" ? "Rs." : "$"}
@@ -757,35 +771,37 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 							}`}
 							onClick={service.onClick}
 						>
-							{service.discountApplicable && service.discountRules && (
-								<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										viewBox="0 0 24 24"
-										fill="currentColor"
-										className="size-4"
-									>
-										<path
-											fillRule="evenodd"
-											d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
-											clipRule="evenodd"
-										/>
-									</svg>
+							{service.discountApplicable &&
+								service.discountRules &&
+								isApplicable && (
+									<div className="flex items-center gap-1 bg-[#F0FDF4] text-[#16A34A] px-2.5 py-1 rounded-full">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											viewBox="0 0 24 24"
+											fill="currentColor"
+											className="size-4"
+										>
+											<path
+												fillRule="evenodd"
+												d="M5.25 2.25a3 3 0 0 0-3 3v4.318a3 3 0 0 0 .879 2.121l9.58 9.581c.92.92 2.39 1.186 3.548.428a18.849 18.849 0 0 0 5.441-5.44c.758-1.16.492-2.629-.428-3.548l-9.58-9.581a3 3 0 0 0-2.122-.879H5.25ZM6.375 7.5a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
+												clipRule="evenodd"
+											/>
+										</svg>
 
-									<p className=" text-xs whitespace-nowrap font-medium">
-										<span className="text-sm ml-1">
-											{service.discountRules[0].discountType === "percentage"
-												? `${service.discountRules[0].discountAmount}%`
-												: `${
-														service.discountApplicable.currency === "INR"
-															? "₹"
-															: "$"
-												  } ${service.discountRules[0].discountAmount}`}{" "}
-											OFF Applied
-										</span>
-									</p>
-								</div>
-							)}
+										<p className=" text-xs whitespace-nowrap font-medium">
+											<span className="text-sm ml-1">
+												{service.discountRules[0].discountType === "percentage"
+													? `${service.discountRules[0].discountAmount}%`
+													: `${
+															service.discountApplicable.currency === "INR"
+																? "₹"
+																: "$"
+													  } ${service.discountRules[0].discountAmount}`}{" "}
+												OFF Applied
+											</span>
+										</p>
+									</div>
+								)}
 							<div className="w-full flex items-center justify-between">
 								<div className="w-full flex items-center">
 									<div className="w-full flex flex-col items-start justify-center gap-2">
