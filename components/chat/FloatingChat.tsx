@@ -30,12 +30,13 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ setIsAuthSheetOpen, chatId,
       unsubscribe = onSnapshot(chatDocRef, (docSnapshot) => {
         if (docSnapshot.exists()) {
           setChat(docSnapshot.data());
-        } else {
-          toast({
-            variant: 'destructive',
-            title: 'No such chat exists',
-          });
-        }
+        } 
+        // else {
+        //   toast({
+        //     variant: 'destructive',
+        //     title: 'No such chat exists',
+        //   });
+        // }
         setLoading(false);
       });
     }
