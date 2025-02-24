@@ -98,6 +98,7 @@ const Favorites = memo(
 		};
 
 		const handleUnfollowClick = useCallback(() => {
+			console.log(markedFavorite);
 			if (markedFavorite) {
 				setShowUnfollowDialog(true);
 			} else {
@@ -142,24 +143,6 @@ const Favorites = memo(
 						className={`${isFavoritesPath ? "size-4" : "size-6"} invert`}
 						priority
 					/>
-				</div>
-			);
-		}
-
-		if (!userId || !creator?._id) {
-			return (
-				<div
-					className={`flex items-center justify-center w-full hoverScaleDownEffect cursor-pointer ${
-						isFavoritesPath
-							? "p-2 rounded-full "
-							: "h-[36px] w-full rounded-[24px] border border-black"
-					} ${
-						markedFavorite
-							? isFavoritesPath && "bg-transparent"
-							: "bg-transparent"
-					} flex gap-2 items-center`}
-				>
-					<span className="text-center w-full font-medium text-sm">Follow</span>
 				</div>
 			);
 		}

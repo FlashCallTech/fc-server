@@ -267,7 +267,18 @@ const AvailabilityFinalConsentForm = ({
 	};
 
 	const createMeeting = async () => {
-		if (!client || !clientUser) throw new Error("Invalid data provided.");
+		if (!client || !clientUser) {
+			!client &&
+				toast({
+					variant: "destructive",
+					title: "Call Connection Failed",
+					description:
+						"There was an issue initializing the call. Please try reloading once",
+					toastStatus: "negative",
+				});
+			return;
+		}
+
 		try {
 			const id = crypto.randomUUID();
 			const call =

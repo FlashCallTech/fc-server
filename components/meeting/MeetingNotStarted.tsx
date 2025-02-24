@@ -6,6 +6,9 @@ import Image from "next/image";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { getCountdownTime } from "@/lib/utils";
+import { AudioToggleButtonScheduled } from "../calls/AudioToggleButtonScheduled";
+import { VideoToggleButtonScheduled } from "../calls/VideoToggleButtonScheduled";
+import { useRouter } from "next/navigation";
 
 const MeetingNotStarted = ({
 	call,
@@ -18,9 +21,11 @@ const MeetingNotStarted = ({
 }) => {
 	const [remainingTime, setRemainingTime] = useState<string | null>(null);
 	const [joiningCall, setJoiningCall] = useState(false);
-	const { currentUser } = useCurrentUsersContext();
+	const router = useRouter();
 	const videoCall = call.type === "default";
 	const meetingDescription = call.state.custom.description;
+
+	const creatorURL = localStorage.getItem("creatorURL");
 
 	useEffect(() => {
 		if (!startsAt) return;
@@ -35,6 +40,10 @@ const MeetingNotStarted = ({
 
 		return () => clearInterval(intervalId);
 	}, [startsAt]);
+
+	const expert = call?.state?.members?.find(
+		(member) => member.custom.type === "expert"
+	);
 
 	const formatCountdown = (timeLeft: string) => {
 		const [hours, minutes, seconds] = timeLeft.split(":").map(Number);
@@ -65,104 +74,92 @@ const MeetingNotStarted = ({
 		onJoinCall();
 	};
 
-	return (
-		<section className="h-screen w-full bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-			<div
-				className={`size-full md:max-w-[85%] mx-auto ${
-					videoCall
-						? "flex flex-col md:grid md:grid-cols-[2fr_1fr]"
-						: "flex flex-col"
-				} items-center ${
-					videoCall ? "justify-start md:justify-center" : "justify-center"
-				} gap-6 text-white p-6 pt-10 overflow-y-scroll no-scrollbar`}
-			>
-				<div className="size-full flex flex-col items-center justify-center">
-					{/* Heading Section */}
-					<div className="text-center mb-6">
-						<h1 className="text-3xl font-bold text-green-1">
-							Upcoming Meeting
-						</h1>
-						<p className="text-sm text-gray-400">
-							Stay prepared! Your meeting with an expert is about to start.
-						</p>
-					</div>
+	const leaveCall = async () => {
+		router.push(`${creatorURL ? creatorURL : "/home"}`);
+	};
 
-					{/* Video Call Preview Section */}
-					{videoCall ? (
-						<div className="relative flex items-center justify-center px-4 w-full h-fit bg-gray-900 rounded-xl shadow-md">
-							<VideoPreview />
-							<section className="absolute bottom-4 flex items-center gap-4">
-								<AudioToggleButton />
-								<VideoToggleButton />
-							</section>
-						</div>
-					) : (
-						<div className="flex items-center justify-center gap-4 bg-gray-900 p-4 rounded-lg shadow-md">
-							<Image
-								src={currentUser?.photo as string}
-								alt=""
-								width={1000}
-								height={1000}
-								className="rounded-full w-14 h-14 object-cover"
-							/>
-							<div className="flex flex-col items-start justify-center">
-								<span className="text-lg text-green-1">
-									{currentUser?.username}
-								</span>
-								<span className="text-sm text-gray-400">
-									Session&apos;s Participant
-								</span>
-							</div>
-							<AudioToggleButton />
-						</div>
-					)}
+	return (
+		<section className="h-screen w-full flex flex-col items-center justify-center gap-5 py-4 px-6">
+			{/* Heading Section */}
+			<div className="flex flex-col gap-1.5 items-center justify-center text-center">
+				<h1 className="text-lg xm:text-xl md:text-3xl font-bold text-green-1">
+					Upcoming Meeting with {expert?.user.name}
+				</h1>
+				<p className="text-sm xm:text-base text-gray-400">
+					Stay prepared! Your meeting with an expert is about to start.
+				</p>
+			</div>
+
+			<div
+				className={`w-full md:max-w-[85%] mx-auto ${
+					videoCall
+						? "h-fit flex flex-col md:grid md:grid-cols-[2fr_1fr]"
+						: "flex flex-col h-full"
+				} items-center justify-start md:justify-center gap-6 text-white overflow-y-scroll no-scrollbar`}
+			>
+				{/* Countdown Timer */}
+				<div className="w-full md:hidden p-4 border border-gray-200 rounded-lg shadow max-md:text-center">
+					<h3 className="text-lg font-semibold text-gray-800">Time Left</h3>
+					<p className="text-xl font-bold text-gray-900">{remainingTime}</p>
 				</div>
 
-				<div className="size-full flex flex-col items-center justify-center gap-5">
-					{/* Meeting Info Section */}
-					<div className="text-center">
-						<h2 className="text-xl font-semibold text-green-500">
-							{call.type === "default" ? "Video" : "Audio"} Call with Expert{" "}
-							{call.state.custom.name}
-						</h2>
-						<p className="text-sm text-gray-400">
-							Meeting Description: {meetingDescription}
-						</p>
-					</div>
-
-					{/* Tips Section */}
-					<div className="p-4 bg-gray-800 rounded-lg shadow-md">
-						<h4 className="text-lg font-semibold text-green-1">Meeting Tips</h4>
-						<ul className="list-disc list-inside text-sm text-gray-400">
-							<li>Ensure your microphone and camera are enabled.</li>
-							<li>Find a quiet place with good lighting.</li>
-							<li>Join a few minutes early to test your setup.</li>
-						</ul>
-					</div>
-
-					<ParticipantsPreview />
-
-					{/* Countdown Section */}
-					<div
-						className={`flex flex-col items-center ${
-							videoCall ? "justify-start md:justify-center" : "justify-center"
-						}`}
-					>
-						{remainingTime && remainingTime !== "00:00:00" ? (
-							<>
-								<h3 className="text-xl font-bold text-green-1">Time Left</h3>
-								{formatCountdown(remainingTime)}
-							</>
-						) : (
-							<div className="text-white flex flex-col items-center justify-center w-full gap-3 max-w-[15rem] my-2">
-								<p className="text-lg font-bold text-green-1">
-									Meeting is ready to start!
-								</p>
-								<button
-									className="w-full flex items-center justify-center bg-green-1 px-4 py-2 rounded-full hoverScaleDownEffect"
-									onClick={handleJoinCall}
+				<div
+					className={`size-full flex flex-col items-center ${
+						videoCall ? "justify-center" : "justify-between"
+					}  gap-4`}
+				>
+					{/* Video Call Preview Section */}
+					{videoCall ? (
+						<div className="relative flex items-center justify-center w-full h-fit rounded-xl shadow-md">
+							<VideoPreview className="bg-[#cccccc] text-black" />
+						</div>
+					) : (
+						<div className="w-full flex flex-wrap justify-center gap-6 md:pt-10">
+							{call.state.members.map((member) => (
+								<div
+									className="shadow-md bg-white p-4 rounded-xl flex flex-col items-center w-40 border border-gray-200"
+									key={member.user_id}
 								>
-									{joiningCall ? (
+									<Image
+										src={member.custom.image || member.user.image}
+										alt={member.user.name as string}
+										width={1000}
+										height={1000}
+										className="rounded-full w-16 h-16 object-cover border-2 border-gray-300"
+									/>
+									<div className="text-center mt-2">
+										<span className="text-md font-medium text-green-600">
+											{member.user.name}
+										</span>
+										<span className="text-xs text-gray-500 block">
+											Session&apos;s {member.custom.type}
+										</span>
+									</div>
+								</div>
+							))}
+						</div>
+					)}
+
+					<section className="w-full flex flex-wrap items-center justify-between gap-4">
+						<div className="flex items-center gap-2">
+							<AudioToggleButtonScheduled />
+							{videoCall && <VideoToggleButtonScheduled />}
+						</div>
+
+						{remainingTime && remainingTime !== "00:00:00" ? (
+							<button
+								className="max-xm:w-full xm:w-fit min-w-[7rem] flex items-center justify-center bg-red-500 px-4 py-2.5 rounded-full hoverScaleDownEffect"
+								onClick={leaveCall}
+							>
+								Leave
+							</button>
+						) : (
+							<button
+								className="w-fit min-w-[7rem] flex items-center justify-center bg-green-1 px-4 py-2.5 rounded-full hoverScaleDownEffect"
+								onClick={handleJoinCall}
+							>
+								{joiningCall ? (
+									<div className="flex items-center gap-2">
 										<Image
 											src="/icons/loading-circle.svg"
 											alt="Loading..."
@@ -171,13 +168,111 @@ const MeetingNotStarted = ({
 											className="size-6"
 											priority
 										/>
-									) : (
-										"Join Now"
-									)}
-								</button>
-							</div>
+										Joining ...
+									</div>
+								) : (
+									"Join Now"
+								)}
+							</button>
 						)}
+					</section>
+				</div>
+
+				<div className="size-full flex flex-col items-center justify-start gap-5">
+					<div className="w-full flex flex-col gap-4">
+						{/* Meeting Info */}
+						<div className="flex flex-col items-start justify-start gap-1.5 p-4 border border-gray-200 rounded-lg shadow">
+							<h2 className="text-lg font-semibold text-gray-800">
+								Video Call with Expert
+							</h2>
+							<p className="text-sm text-gray-600">{meetingDescription}</p>
+
+							<ParticipantsPreview />
+						</div>
+
+						{/* Meeting Tips */}
+						<div className="p-4 border border-gray-200 rounded-lg shadow">
+							<h4 className="text-lg font-semibold text-gray-800">
+								Meeting Tips
+							</h4>
+							<ul className="flex flex-col gap-2 text-sm text-gray-600 mt-2">
+								<li className="flex items-center gap-2">
+									<Image
+										src="/green.svg"
+										alt="1."
+										width={100}
+										height={100}
+										className="size-5"
+									/>{" "}
+									Ensure your microphone and camera are enabled
+								</li>
+								<li className="flex items-center gap-2">
+									<Image
+										src="/green.svg"
+										alt="1."
+										width={100}
+										height={100}
+										className="size-5"
+									/>{" "}
+									Find a quiet place with good lighting
+								</li>
+								<li className="flex items-center gap-2">
+									<Image
+										src="/green.svg"
+										alt="1."
+										width={100}
+										height={100}
+										className="size-5"
+									/>{" "}
+									Join a few minutes early to test your setup
+								</li>
+							</ul>
+						</div>
+
+						{/* Countdown Timer */}
+						<div className="max-md:hidden p-4 border border-gray-200 rounded-lg shadow max-md:text-center">
+							<h3 className="text-lg font-semibold text-gray-800">Time Left</h3>
+							<p className="text-xl font-bold text-gray-900">{remainingTime}</p>
+						</div>
 					</div>
+
+					{/* Other Details Section */}
+					{/* <section className="md:hidden w-full flex flex-wrap items-center justify-between gap-4">
+						<div className="flex items-center gap-2">
+							<AudioToggleButtonScheduled />
+							{videoCall && <VideoToggleButtonScheduled />}
+						</div>
+
+						{remainingTime && remainingTime !== "00:00:00" ? (
+							<button
+								className="max-xm:w-full xm:w-fit min-w-[7rem] flex items-center justify-center bg-red-500 px-4 py-2.5 rounded-full hoverScaleDownEffect"
+								onClick={leaveCall}
+							>
+								Leave
+							</button>
+						) : (
+							<button
+								className="w-fit min-w-[7rem] flex items-center justify-center bg-green-1 px-4 py-2.5 rounded-full hoverScaleDownEffect"
+								onClick={handleJoinCall}
+							>
+								{joiningCall ? (
+									<div className="flex items-center gap-2">
+										<Image
+											src="/icons/loading-circle.svg"
+											alt="Loading..."
+											width={1000}
+											height={1000}
+											className="size-6"
+											priority
+										/>
+										Joining ...
+									</div>
+								) : (
+									"Join Now"
+								)}
+							</button>
+						)}
+					</section> */}
 				</div>
 			</div>
 		</section>

@@ -309,7 +309,8 @@ const AuthenticateViaOTP = ({
 					toast({
 						variant: "destructive",
 						title: "Sign-In Cancelled",
-						description: "You closed the popup before signing in. Please try again.",
+						description:
+							"You closed the popup before signing in. Please try again.",
 						toastStatus: "negative",
 					});
 					return; // Prevent throwing a new error
@@ -403,11 +404,8 @@ const AuthenticateViaOTP = ({
 			);
 
 			if (createUserResponse.status === 201) {
-				console.log()
-				localStorage.setItem(
-					"currentUserID",
-					createUserResponse.data._id
-				);
+				console.log();
+				localStorage.setItem("currentUserID", createUserResponse.data._id);
 				console.log("New user created successfully.");
 				await refreshCurrentUser();
 			} else {
