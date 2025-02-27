@@ -14,6 +14,7 @@ import {
 	SelectedServiceType,
 	useSelectedServiceContext,
 } from "@/lib/context/SelectedServiceContext";
+import { getCurrencySymbol } from "@/lib/utils";
 
 const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 	const [userServices, setUserServices] = useState<AvailabilityService[]>([]);
@@ -119,14 +120,17 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		if (!currentUser) {
 			setIsAuthSheetOpen(true);
 		} else {
+			const basePrice = currentUser?.global
+				? service.globalPrice
+				: service.basePrice;
 			if (discountApplicable && isApplicable) {
 				discountApplicable.discountRules.forEach(
 					({ discountAmount, discountType }) => {
 						if (discountType === "percentage") {
 							setSelectedService(discountApplicable);
 						} else if (
-							discountType === "flat" &&
-							service.basePrice > discountAmount
+							(discountType === "flat" && basePrice) ||
+							0 > discountAmount
 						) {
 							setSelectedService(discountApplicable);
 						}
@@ -177,9 +181,12 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 						getSpecificServiceOfferViaServiceId(service._id) ||
 						getSpecificServiceOffer(service.type);
 					const isExpanded = expandedStates[index] || false;
+					let basePrice = currentUser?.global
+						? service.globalPrice
+						: service.basePrice || 0;
 					let isApplicable =
 						(discountApplicable &&
-							Number(service?.basePrice) >
+							Number(basePrice) >
 								discountApplicable?.discountRules[0]?.discountAmount) ||
 						undefined;
 					return (
@@ -289,39 +296,36 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 												</span>
 											</section>
 										</div>
-										<p
-											className={`font-medium tracking-widest rounded-full px-3 py-1 w-fit min-w-[115px] min-h-[36px] bg-black text-white flex flex-col-reverse items-center justify-center`}
-										>
-											{discountApplicable &&
-											discountApplicable.discountRules ? (
+										<p className="font-medium tracking-widest rounded-full px-3 py-1 w-fit min-w-[115px] min-h-[36px] bg-black text-white flex flex-col-reverse items-center justify-center">
+											{discountApplicable?.discountRules?.[0] ? (
 												discountApplicable.discountRules[0].discountType ===
 													"percentage" ||
 												(discountApplicable.discountRules[0].discountType ===
 													"flat" &&
-													service.basePrice >
-														discountApplicable.discountRules[0]
-															.discountAmount) ? (
+													(basePrice ?? 0) >
+														(discountApplicable.discountRules[0]
+															?.discountAmount ?? 0)) ? (
 													<>
 														<s className="text-gray-300 text-xs">
-															{service.currency === "INR" ? "Rs." : "$"}
-															{service.basePrice}
+															{getCurrencySymbol(service?.currency)}{" "}
+															{basePrice ?? 0}
 														</s>
-														{service.currency === "INR" ? "Rs." : "$"}
+														{getCurrencySymbol(service?.currency)}
 														{calculateDiscountedRate(
-															service.basePrice,
+															basePrice ?? 0,
 															discountApplicable.discountRules[0]
 														)}
 													</>
 												) : (
 													<div className="flex items-center">
-														{service.currency === "INR" ? "Rs." : "$"}
-														<span>{service.basePrice}</span>
+														{getCurrencySymbol(service?.currency)}
+														<span>{basePrice ?? 0}</span>
 													</div>
 												)
 											) : (
 												<div className="flex items-center">
-													{service.currency === "INR" ? "Rs." : "$"}
-													<span>{service.basePrice}</span>
+													{getCurrencySymbol(service?.currency)}
+													<span>{basePrice ?? 0}</span>
 												</div>
 											)}
 										</p>

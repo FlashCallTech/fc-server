@@ -1377,3 +1377,10 @@ export const getCountdownTime = (startTime: string | Date): string => {
 		.toString()
 		.padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 };
+
+export const getCurrencySymbol = (currencyArray?: string[]) => {
+	if (!currencyArray || currencyArray.length === 0) return "₹"; // Default to USD
+	if (currencyArray.includes("INR")) return "₹"; // Rupees symbol
+	if (currencyArray.includes("USD")) return "$"; // Dollar symbol
+	return "₹";
+};

@@ -501,9 +501,10 @@ export interface AvailabilityService {
 	photo: string;
 	type: "audio" | "video" | "chat";
 	timeDuration: number;
-	basePrice: number;
+	basePrice?: number;
+	globalPrice?: number;
 	isActive: boolean;
-	currency: "INR" | "USD";
+	currency: ("INR" | "USD")[];
 	discountRules: {
 		_id: string;
 		conditions: ["30 Minutes Call" | "60 Minutes Call"];
@@ -513,7 +514,7 @@ export interface AvailabilityService {
 	extraDetails?: string;
 	createdAt: string;
 	updatedAt: string;
-	utilizedBy: Types.ObjectId[];
+	utilizedBy: Types.ObjectId;
 }
 
 export interface Chat {

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import AvailabilityServiceSheet from "./AvailabilityServicesSheet";
 import axios from "axios";
-import { backendBaseUrl, formatDateTime } from "@/lib/utils";
+import { backendBaseUrl, formatDateTime, getCurrencySymbol } from "@/lib/utils";
 import DeleteCreatorServiceAlert from "../alerts/DeleteCreatorServiceAlert";
 import { useToast } from "../ui/use-toast";
 import { Switch } from "../ui/switch";
@@ -364,15 +364,26 @@ const AvailabilityServiceCards = ({
 												{/* Right Section - Created At and Actions */}
 												<div className="w-full flex justify-between items-center mt-2.5">
 													<div className="flex flex-col items-start justify-center">
-														<p className="text-sm text-[#6B7280]">
-															Base Price{" "}
-															<span className="text-green-1">
-																{service.currency === "INR" ? "₹" : "$"}
-																{parseFloat(String(service.basePrice)).toFixed(
-																	2
-																)}
-															</span>
+														<p className="text-sm text-[#6B7280] flex items-center gap-3">
+															{service.currency.includes("INR") && (
+																<span className="flex items-center gap-1">
+																	{getCurrencySymbol(["INR"])}
+																	<span className="text-green-1">
+																		{service.basePrice?.toFixed(2) ?? "0.00"}
+																	</span>
+																</span>
+															)}
+
+															{service.currency.includes("USD") && (
+																<span className="flex items-center gap-1">
+																	{getCurrencySymbol(["USD"])}
+																	<span className="text-green-1">
+																		{service.globalPrice?.toFixed(2) ?? "0.00"}
+																	</span>
+																</span>
+															)}
 														</p>
+
 														{/* Created At */}
 														<p className="text-[12px] self-end text-[#6B7280]">
 															Created on{" "}

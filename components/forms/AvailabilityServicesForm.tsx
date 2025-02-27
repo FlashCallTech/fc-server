@@ -23,6 +23,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 
+import { default as SelectInput } from "react-select";
+
 import Image from "next/image";
 import FileUploaderServices from "../uploaders/FileUploaderServices";
 import { useEffect, useRef, useState } from "react";
@@ -47,25 +49,26 @@ const formSchema = z.object({
 		.number()
 		.int()
 		.positive("Duration must be a positive number.")
-		.min(15, "Duration must be at least 15 minutes.")
+		.min(15, "Duration must be at least 15 minutes."),
+	basePrice: z
+		.number()
+		.int()
+		.positive("INR price must be greater than 0.")
+		.min(10, "INR price must be greater than 10.")
 		.optional(),
-	basePrice: z.preprocess(
-		(value) => (value === null || value === undefined ? NaN : value),
-		z
-			.number({
-				required_error: "Base price is required.",
-				invalid_type_error: "Base price must be a valid number.",
-			})
-			.int()
-			.positive("Price must be greater than 0.")
-			.min(10, "Price must be greater than 10.")
-	),
+	globalPrice: z
+		.number()
+		.int()
+		.positive("USD price must be greater than 0.")
+		.min(10, "USD price must be greater than 10.")
+		.optional(),
 	isActive: z.boolean({
 		required_error: "isActive is required.",
 	}),
-	currency: z.enum(["INR", "USD"], {
-		required_error: "Currency is required.",
-	}),
+	currency: z
+		.array(z.enum(["INR", "USD"]))
+		.nonempty("At least one currency is required."),
+	discountRules: z.any().optional(),
 	extraDetails: z.string().optional(),
 });
 
@@ -92,10 +95,12 @@ const AvailabilityServicesForm = ({
 						description: service.description,
 						photo: service.photo,
 						type: service.type,
-						timeDuration: service.timeDuration || 15,
+						timeDuration: service.timeDuration,
 						basePrice: service.basePrice || 10,
+						globalPrice: service.globalPrice || 10,
 						isActive: service.isActive,
-						currency: service.currency,
+						currency: service.currency || ["INR"],
+						discountRules: service.discountRules || null,
 						extraDetails: service.extraDetails,
 				  }
 				: {
@@ -104,24 +109,34 @@ const AvailabilityServicesForm = ({
 						photo:
 							"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
 						type: "video",
-						isActive: true,
 						timeDuration: 15,
 						basePrice: 10,
-						currency: "INR",
+						globalPrice: 10,
+						isActive: true,
+						currency: ["INR"],
+						discountRules: null,
 						extraDetails: "",
 				  },
 	});
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
-			const payload = {
+			const payload: Record<string, any> = {
 				...values,
 				timeDuration: values.timeDuration ?? 15,
-				basePrice: values.basePrice ?? 10,
 				photo:
 					values.photo ||
 					"https://firebasestorage.googleapis.com/v0/b/flashcall-1d5e2.appspot.com/o/assets%2Flogo_icon_dark.png?alt=media&token=8ee353a0-595c-4e62-9278-042c4869f3b7",
 			};
+
+			if (!values.currency || !values.currency.includes("INR")) {
+				delete payload.basePrice;
+			}
+			if (!values.currency || !values.currency.includes("USD")) {
+				delete payload.globalPrice;
+			}
+
+			console.log("Payload before sending:", payload);
 
 			const url =
 				sheetType === "Create"
@@ -160,7 +175,6 @@ const AvailabilityServicesForm = ({
 				toastStatus: "negative",
 			});
 			console.warn(error);
-			// form.reset();
 		}
 	}
 
@@ -175,8 +189,6 @@ const AvailabilityServicesForm = ({
 		const subscription = form.watch((values) => {
 			const currentValues = values;
 			const changes = !isEqual(currentValues, initialValues.current);
-
-			console.log(currentValues, changes, isValid);
 			if (hasChangesRef.current !== changes) {
 				hasChangesRef.current = changes;
 				setHasChanges(changes);
@@ -351,12 +363,9 @@ const AvailabilityServicesForm = ({
 				{/* Service Call Base Price */}
 				<FormField
 					control={form.control}
-					name="basePrice"
-					render={({ field }) => {
-						const discountCurrency = form.watch("currency");
-
-						const placeholder =
-							discountCurrency === "INR" ? "e.g. ₹100" : "e.g. $100";
+					name="currency"
+					render={() => {
+						const selectedCurrencies = form.watch("currency");
 
 						return (
 							<FormItem>
@@ -364,28 +373,73 @@ const AvailabilityServicesForm = ({
 									Price
 								</FormLabel>
 								<FormControl>
-									<section className="flex items-center w-full space-x-2 border border-gray-300 rounded-lg pl-3">
-										{discountCurrency === "INR" ? (
-											<span className="text-gray-500">₹</span>
-										) : (
-											<span className="text-gray-500">$</span>
+									<div className="space-y-3">
+										{/* Show INR Price Input if "INR" is selected */}
+										{selectedCurrencies.includes("INR") && (
+											<FormField
+												control={form.control}
+												name="basePrice"
+												render={({ field }) => (
+													<section className="flex items-center w-full space-x-2 border border-gray-300 rounded-lg pl-3">
+														<span className="text-gray-500">₹</span>
+														<Input
+															type="number"
+															min={0}
+															placeholder="e.g. ₹100"
+															className="w-full py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0"
+															{...field}
+															value={field.value ?? ""}
+															onChange={(e) => {
+																const rawValue = e.target.value;
+																const sanitizedValue = rawValue.replace(
+																	/^0+(?!$)/,
+																	""
+																);
+																field.onChange(
+																	sanitizedValue !== ""
+																		? Number(sanitizedValue)
+																		: null
+																);
+															}}
+														/>
+													</section>
+												)}
+											/>
 										)}
-										<Input
-											type="number"
-											min={0}
-											placeholder={placeholder}
-											className={`w-full  py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0`}
-											{...field}
-											value={field.value ?? ""}
-											onChange={(e) => {
-												const rawValue = e.target.value;
-												const sanitizedValue = rawValue.replace(/^0+(?!$)/, "");
-												field.onChange(
-													sanitizedValue !== "" ? Number(sanitizedValue) : null
-												);
-											}}
-										/>
-									</section>
+
+										{/* Show USD Price Input if "USD" is selected */}
+										{selectedCurrencies.includes("USD") && (
+											<FormField
+												control={form.control}
+												name="globalPrice"
+												render={({ field }) => (
+													<section className="flex items-center w-full space-x-2 border border-gray-300 rounded-lg pl-3">
+														<span className="text-gray-500">$</span>
+														<Input
+															type="number"
+															min={0}
+															placeholder="e.g. $100"
+															className="w-full py-1 text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0"
+															{...field}
+															value={field.value ?? ""}
+															onChange={(e) => {
+																const rawValue = e.target.value;
+																const sanitizedValue = rawValue.replace(
+																	/^0+(?!$)/,
+																	""
+																);
+																field.onChange(
+																	sanitizedValue !== ""
+																		? Number(sanitizedValue)
+																		: null
+																);
+															}}
+														/>
+													</section>
+												)}
+											/>
+										)}
+									</div>
 								</FormControl>
 								<FormMessage className="mt-1 text-sm text-red-500" />
 							</FormItem>
@@ -437,25 +491,53 @@ const AvailabilityServicesForm = ({
 							<FormLabel className="!text-[#374151] !text-sm">
 								User Region
 							</FormLabel>
-							<Select onValueChange={field.onChange} defaultValue={field.value}>
-								<SelectTrigger>
-									<SelectValue placeholder="Select Region" />
-								</SelectTrigger>
-								<SelectContent className="!bg-white">
-									<SelectItem
-										className="cursor-pointer hover:bg-gray-50"
-										value="INR"
-									>
-										India
-									</SelectItem>
-									<SelectItem
-										className="cursor-pointer hover:bg-gray-50"
-										value="USD"
-									>
-										Global
-									</SelectItem>
-								</SelectContent>
-							</Select>
+							<SelectInput
+								isMulti
+								options={[
+									{ value: "INR", label: "India" },
+									{ value: "USD", label: "Global" },
+								]}
+								onChange={(selectedOptions) => {
+									field.onChange(selectedOptions.map((option) => option.value));
+								}}
+								value={
+									field.value
+										? [
+												{ value: "INR", label: "India" },
+												{ value: "USD", label: "Global" },
+										  ].filter((option) =>
+												field.value.includes(option.value as "INR" | "USD")
+										  )
+										: []
+								}
+								styles={{
+									control: (base) => ({
+										...base,
+										borderColor: "#E5E7EB",
+										padding: "0.25rem 0.5rem",
+										boxShadow: "none",
+									}),
+									multiValue: (base) => ({
+										...base,
+										backgroundColor: "#0000001A",
+										borderRadius: "9999px",
+										padding: "0.25rem 0.5rem",
+									}),
+									multiValueLabel: (base) => ({
+										...base,
+										color: "#1F2937",
+									}),
+									multiValueRemove: (base) => ({
+										...base,
+										color: "#1F2937",
+										cursor: "pointer",
+										":hover": {
+											backgroundColor: "#D1D5DB",
+											color: "#111827",
+										},
+									}),
+								}}
+							/>
 							<FormMessage />
 						</FormItem>
 					)}
@@ -483,7 +565,22 @@ const AvailabilityServicesForm = ({
 				/>
 
 				{/* Preview */}
-				{isValid && <ServicePreview service={form.getValues()} />}
+				<div className="flex flex-col items-start justify-center w-full gap-2">
+					<div className="flex flex-col mb-2">
+						<h2 className="text-2xl font-bold">Service Preview</h2>
+						<p className="text-gray-500">
+							This is how your service will appear
+						</p>
+					</div>
+
+					{isValid && (
+						<ServicePreview service={form.getValues()} userRegion={"India"} />
+					)}
+
+					{isValid && form.watch("currency").includes("USD") && (
+						<ServicePreview service={form.getValues()} userRegion={"Global"} />
+					)}
+				</div>
 
 				{/* Action Buttons */}
 				<div className="sticky -bottom-5 py-2.5 w-full flex items-center justify-end gap-2.5 bg-white">

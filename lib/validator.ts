@@ -52,39 +52,26 @@ export const availabilityServiceFormSchema = z.object({
 		.number()
 		.int()
 		.positive("Duration must be a positive number.")
-		.min(15, "Duration must be at least 15 minutes.")
+		.min(15, "Duration must be at least 15 minutes."),
+	basePrice: z
+		.number()
+		.int()
+		.positive("INR price must be greater than 0.")
+		.min(10, "INR price must be greater than 10.")
 		.optional(),
-	basePrice: z.preprocess(
-		(value) => (value === null || value === undefined ? NaN : value),
-		z
-			.number({
-				required_error: "Base price is required.",
-				invalid_type_error: "Base price must be a valid number.",
-			})
-			.int()
-			.positive("Price must be greater than 0.")
-			.min(10, "Price must be greater than 10.")
-	),
+	globalPrice: z
+		.number()
+		.int()
+		.positive("USD price must be greater than 0.")
+		.min(10, "USD price must be greater than 10.")
+		.optional(),
 	isActive: z.boolean({
 		required_error: "isActive is required.",
 	}),
-	currency: z.enum(["INR", "USD"], {
-		required_error: "Currency is required.",
-	}),
-	discountRules: z
-		.object({
-			conditions: z
-				.array(z.string())
-				.nonempty("At least one condition is required."),
-			discountType: z.enum(["percentage", "flat"]),
-			discountAmount: z.union([
-				z.number({
-					required_error: "Discount amount is required.",
-				}),
-				z.literal(null),
-			]),
-		})
-		.optional(),
+	currency: z
+		.array(z.enum(["INR", "USD"]))
+		.nonempty("At least one currency is required."),
+	discountRules: z.any().optional(),
 	extraDetails: z.string().optional(),
 });
 
