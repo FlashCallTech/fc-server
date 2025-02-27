@@ -7,8 +7,9 @@ export const ParticipantsPreview = () => {
 
 	if (!session || !session.participants || session.participants.length === 0)
 		return (
-			<div className="text-sm flex flex-col items-center justify-center gap-2.5 pb-2 text-white">
-				<span className="">No one else here</span>
+			<div className="flex items-center gap-2 text-[#6B7280] text-sm mt-2">
+				<span className="bg-red-500 rounded-full size-2" />
+				No one else here
 			</div>
 		);
 

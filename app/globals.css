@@ -264,7 +264,7 @@ html {
 
 @media (min-width: 768px) {
 	.str-video__video-preview-container {
-		height: 60vh !important;
+		height: 56vh !important;
 	}
 }
 
