@@ -13,4 +13,7 @@ export enum QUERY_KEYS {
 	GET_CREATOR_NOTIFICATION = "get_creator_notification",
 	GET_USER_AVAILABILITY = "get_user_availability",
 	GET_USER_REFERRALS = "get_user_referrals",
+	GET_UNIQUE_CLIENTS = "get_unique_clients",
+	GET_CALLS_BY_CLIENTID_AND_CREATORID = "get_calls_by_clientId_and_creatorId",
+	GET_NOTES = "get_notes",
 }

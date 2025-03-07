@@ -17,6 +17,8 @@ interface callDetails {
 	activePg: string;
 	pgChargesRate: number;
 	pgChargesAmt: number;
+	paymentProcessingFeeRate: number;
+	paymentProcessingFee: number;
 }
 
 const TransactionInvoice = ({
@@ -210,6 +212,14 @@ const TransactionInvoice = ({
 										{`INR ${gstCommissionAmt}`}
 									</td>
 								</tr>
+								{callTransaction?.paymentProcessingFeeRate &&
+									<tr>
+										<td className="p-2 border border-gray-300">{`Payment Processing Fee (${callTransaction?.paymentProcessingFeeRate}%)`}</td>
+										<td className="p-2 border border-gray-300">
+											{`INR ${callTransaction?.paymentProcessingFee}`}
+										</td>
+									</tr>
+								}
 								<tr>
 									<td className="p-2 border border-gray-300">
 										Total Receivable Amount
@@ -225,7 +235,7 @@ const TransactionInvoice = ({
 							<div>Payment Method: Wallet Recharge</div>
 							<div>Transaction ID: {callTransaction?.payinTransactionId}</div>
 						</div>
-						
+
 						<div className="text-xs text-center text-gray-600 pt-2 pb-2">
 							Thank you for using our platform!
 							<br />

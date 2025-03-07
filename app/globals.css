@@ -54,7 +54,7 @@ html {
 	display: none !important;
 }
 
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
 	height: 0.25rem;
 	width: 0.5rem;
 }
@@ -62,8 +62,8 @@ html {
 ::-webkit-scrollbar-thumb {
 	background-color: #50a65c;
 	border-radius: 15px;
-}
-
+} */
+/* 
 ::-webkit-scrollbar-thumb:hover {
 	background-color: #03a8f477;
 }
@@ -71,7 +71,7 @@ html {
 ::-webkit-scrollbar-track {
 	background-color: transparent;
 	border-radius: 9999px;
-}
+} */
 
 /* tip modal custom styles */
 .sheetContent {

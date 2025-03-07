@@ -485,25 +485,6 @@ const ExpertHelpChats = () => {
                     <div
                         className="md:w-[98%] lg:w-[98%] h-[98%] md:flex flex-col rounded-md bg-cover bg-center"
                     >
-                        {/* <div className="flex items-center gap-2 w-full rounded-t-md p-2 bg-gray-500">
-                            <Image
-                                src={
-                                    userType === "client"
-                                        ? chat?.creatorPhoto ??
-                                        'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'
-                                        : chat?.clienPhoto ??
-                                        'https://firebasestorage.googleapis.com/v0/b/flashcallchat.appspot.com/o/assets%2FM_preview.png?alt=media&token=750fc704-c540-4843-9cbd-bfc4609780e0'
-                                }
-                                alt="profile"
-                                width={1000}
-                                height={1000}
-                                className="size-10 min-w-10 rounded-full object-cover"
-                            />
-                            <div className="text-white font-bold text-xs md:text-lg">
-                                {userType === "client" ? chat?.creatorName : chat?.clientName}
-                            </div>
-                        </div> */}
-
                         <div className="mt-auto">
                             {/* Chat Messages */}
                             {chat?.messages?.length ? (

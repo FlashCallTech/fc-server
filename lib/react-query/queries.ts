@@ -565,3 +565,135 @@ export const useGetUserReferrals = (userId: string) => {
 		initialPageParam: 1,
 	});
 };
+
+export const useGetUniqueClients = (
+	userId: string,
+	timeFilter: string,
+	statusFilter: string
+) => {
+	const limit = 10; // Items per page
+
+	// Transform the status filter parameter
+	let transformedStatusFilter: string | undefined = undefined;
+	if (statusFilter !== "All Status") {
+		if (statusFilter === "Completed") {
+			transformedStatusFilter = "Ended";
+		} else if (statusFilter === "Cancelled") {
+			// Send both variants separated by a comma so the backend can split and use $in
+			transformedStatusFilter = "Cancelled";
+		} else {
+			transformedStatusFilter = statusFilter;
+		}
+	}
+
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_UNIQUE_CLIENTS, userId, statusFilter, timeFilter],
+		queryFn: async ({ pageParam = 1 }) => {
+			// Build query parameters. Only add statusFilter if it's defined.
+			const params: any = {
+				limit,
+				page: pageParam,
+				userId,
+				timeFilter,
+			};
+			if (transformedStatusFilter) {
+				params.statusFilter = transformedStatusFilter;
+			}
+			const response = await axios.get(`${backendBaseUrl}/calls/uniqueClients`, {
+				params,
+			});
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching unique clients");
+			}
+		},
+		getNextPageParam: (lastPage: any, allPages: any) =>
+			lastPage.hasMore ? allPages.length + 1 : undefined,
+		enabled: !!userId,
+		initialPageParam: 1,
+	});
+};
+
+type Session = {
+	id: string;
+	category: "PPM" | "Scheduled";
+	type: "audio" | "video" | "chat";
+	startedAt: Date;
+	time: string;
+	duration: number;
+	status: "Upcoming" | "Ended" | "Cancelled" | "Canceled" | "cancelled";
+};
+
+interface GetCallsResponse {
+	calls: Session[];
+	total: number;
+	hasMore: boolean;
+}
+
+export const useGetCallsByClientIdAndCreatorId = (
+	clientId: string,
+	creatorId: string,
+	currentPage: number,
+	sort: string,
+	filter: string,
+) => {
+	const limit = 5;
+
+	return useQuery<GetCallsResponse, Error>({
+		queryKey: ["GET_CALLS_BY_CLIENTID_AND_CREATORID", clientId, creatorId, currentPage, sort, filter],
+		queryFn: async () => {
+			const params = {
+				limit,
+				page: currentPage,
+				clientId,
+				creatorId,
+				sort,
+				filter,
+			};
+			const response = await axios.get(
+				`${backendBaseUrl}/calls/getCallsByClientIdAndCreatorId`,
+				{ params }
+			);
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching calls");
+			}
+		},
+		enabled: !!creatorId, // only run if creatorId is provided
+		keepPreviousData: true, // keep previous data while fetching the new page
+	} as any);
+};
+
+export const useGetNotes = (
+	clientId: string,
+	creatorId: string,
+) => {
+	const limit = 10; // Define the limit per page
+
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_NOTES, clientId, creatorId],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(`${backendBaseUrl}/notes/get`, {
+				params: {
+					limit,
+					page: pageParam,
+					clientId,
+					creatorId,
+				},
+			});
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching notes");
+			}
+		},
+		getNextPageParam: (lastPage: any, allPages: any) => {
+			return lastPage.hasMore ? allPages.length + 1 : undefined;
+		},
+		enabled: !!creatorId,
+		initialPageParam: 1,
+	});
+};

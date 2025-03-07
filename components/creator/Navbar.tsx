@@ -100,6 +100,7 @@ const CreatorNavbar = () => {
 		else if (pathname.includes("support")) return "Support";
 		else if (pathname.includes("profile")) return "Edit Profile";
 		else if (pathname.includes("inbox")) return "Inbox";
+		else if (pathname.includes("users")) return "My Users";
 	};
 
 	const handleAppRedirect = () => {
