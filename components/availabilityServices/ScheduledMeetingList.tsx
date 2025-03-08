@@ -232,7 +232,7 @@ const ScheduledMeetingList = ({
 										key={userCall._id}
 										className={`relative flex flex-col p-4  border-2 border-gray-300 rounded-lg min-h-[52px] gap-4 justify-between items-start w-full`}
 									>
-										{userCall.status == "canceled" && (
+										{userCall.status == "cancelled" && (
 											<p
 												className={`absolute top-2 right-2 sm:top-4 sm:right-4 bg-[#DBEAFE] text-[#1E40AF]
 																		text-[12px] px-2 py-1 rounded-full capitalize`}

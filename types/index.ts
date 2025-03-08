@@ -543,3 +543,43 @@ export interface Chat {
 	status: string;
 	timerSet: boolean;
 }
+
+// Group Management
+
+export interface BehaviorRule {
+	metric: string;
+	operator: string;
+	value: number;
+	timeframe: string;
+}
+
+export interface Group {
+	_id?: string;
+	owner?: string;
+	name: string;
+	description: string;
+	members?: string[];
+	membersCount?: number;
+	behaviorRules?: BehaviorRule[];
+	autoUpdate: boolean;
+	notifications: boolean;
+}
+
+export interface GroupMembers {
+	_id?: string;
+	fullName: string;
+	phone: string;
+	photo?: string;
+	role: "client";
+	createdAt?: Date;
+	updatedAt?: Date;
+}
+
+export interface MessageTemplate {
+	_id?: string;
+	title: string;
+	heading: string;
+	body: string;
+	createdAt?: Date;
+	updatedAt?: Date;
+}

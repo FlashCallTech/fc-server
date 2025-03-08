@@ -91,8 +91,10 @@ const CreatorNavbar = () => {
 		else if (pathname.includes("previous")) return "Order History";
 		else if (pathname.includes("userFeedbacks")) return "User Feedbacks";
 		else if (pathname.includes("upcoming")) return "Upcoming Calls";
-		else if (pathname.includes("campaign") || pathname.includes("discount"))
+		else if (pathname.includes("campaign") && pathname.includes("discount"))
 			return "Discount Campaign";
+		else if (pathname.includes("campaign") && pathname.includes("whatsapp"))
+			return "WhatsApp Campaign Creator";
 		else if (pathname.includes("service-management"))
 			return "Service Management";
 		else if (pathname.includes("terms-and-conditions"))
@@ -100,6 +102,7 @@ const CreatorNavbar = () => {
 		else if (pathname.includes("support")) return "Support";
 		else if (pathname.includes("profile")) return "Edit Profile";
 		else if (pathname.includes("inbox")) return "Inbox";
+		else if (pathname.includes("groupManagement")) return "Group Management";
 	};
 
 	const handleAppRedirect = () => {
@@ -134,8 +137,9 @@ const CreatorNavbar = () => {
 	return (
 		<nav
 			id="navbar"
-			className={`${isCreatorHome ? "lg:hidden" : `${isHelpChat ? "hidden md:flex" : ""}`
-				} bg-white flex justify-between items-center sticky w-full h-[76px] z-40 top-0 left-[264px] px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}
+			className={`${
+				isCreatorHome ? "lg:hidden" : `${isHelpChat ? "hidden md:flex" : ""}`
+			} bg-white flex justify-between items-center sticky w-full h-[76px] z-40 top-0 left-[264px] px-4 py-4 transition-transform duration-300 shadow-sm blurEffect`}
 		>
 			{!fetchingUser && currentUser ? (
 				<Link
@@ -188,8 +192,9 @@ const CreatorNavbar = () => {
 				<div className="flex justify-end items-center gap-4 h-full">
 					<Link
 						href="/payment"
-						className={`w-fit flex items-center justify-center gap-2 p-3 rounded-full hoverScaleDownEffect h-[40px] xl:h-[48px] ${pathname.includes("/payment") && "!bg-black !text-white"
-							}`}
+						className={`w-fit flex items-center justify-center gap-2 p-3 rounded-full hoverScaleDownEffect h-[40px] xl:h-[48px] ${
+							pathname.includes("/payment") && "!bg-black !text-white"
+						}`}
 						style={{
 							border: `1px solid #000000`,
 						}}

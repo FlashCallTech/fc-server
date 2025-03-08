@@ -564,7 +564,7 @@ const CreatorHome = () => {
 												<rect x="0" y="0" width="14" height="14" rx="0" />
 											</clipPath>
 										</defs>
-										<g clip-path="url(#master_svg0_1_018)">
+										<g clipPath="url(#master_svg0_1_018)">
 											<g transform="matrix(1,0,0,-1,0,28.6015625)">
 												<g>
 													<path
@@ -680,7 +680,7 @@ const CreatorHome = () => {
 													<rect x="0" y="0" width="16" height="16" rx="0" />
 												</clipPath>
 											</defs>
-											<g clip-path="url(#master_svg0_3_7786)">
+											<g clipPath="url(#master_svg0_3_7786)">
 												<g transform="matrix(1,0,0,-1,0,30.6875)">
 													<g>
 														<path
@@ -718,7 +718,7 @@ const CreatorHome = () => {
 													<rect x="0" y="0" width="16" height="16" rx="0" />
 												</clipPath>
 											</defs>
-											<g clip-path="url(#master_svg0_3_7791)">
+											<g clipPath="url(#master_svg0_3_7791)">
 												<g transform="matrix(1,0,0,-1,0,30.6875)">
 													<g>
 														<path
@@ -754,7 +754,7 @@ const CreatorHome = () => {
 													<rect x="0" y="0" width="16" height="16" rx="0" />
 												</clipPath>
 											</defs>
-											<g clip-path="url(#master_svg0_3_7796)">
+											<g clipPath="url(#master_svg0_3_7796)">
 												<g transform="matrix(1,0,0,-1,0,32.6875)">
 													<g>
 														<path

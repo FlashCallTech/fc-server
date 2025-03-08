@@ -32,7 +32,7 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		getSpecificServiceOfferViaServiceId,
 		setSelectedService,
 	} = useSelectedServiceContext();
-	const { currentUser, fetchingUser, setAuthenticationSheetOpen } =
+	const { currentUser, fetchingUser, setAuthenticationSheetOpen, region } =
 		useCurrentUsersContext();
 
 	const {
@@ -93,7 +93,14 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 		const flattenedServices =
 			creatorAvailabilityServices?.pages.flatMap((page: any) => page.data) ||
 			[];
-		setUserServices(flattenedServices);
+
+		const filteredServices = flattenedServices.filter((service) =>
+			region === "India"
+				? service.basePrice !== undefined
+				: service.globalPrice !== undefined
+		);
+
+		setUserServices(filteredServices);
 	}, [creatorAvailabilityServices]);
 
 	if (isLoading || fetchingUser) {
@@ -181,9 +188,10 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 						getSpecificServiceOfferViaServiceId(service._id) ||
 						getSpecificServiceOffer(service.type);
 					const isExpanded = expandedStates[index] || false;
-					let basePrice = currentUser?.global
-						? service.globalPrice
-						: service.basePrice || 0;
+					let basePrice =
+						currentUser?.global || region === "Global"
+							? service.globalPrice
+							: service.basePrice || 0;
 					let isApplicable =
 						(discountApplicable &&
 							Number(basePrice) >
@@ -307,10 +315,10 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 															?.discountAmount ?? 0)) ? (
 													<>
 														<s className="text-gray-300 text-xs">
-															{getCurrencySymbol(service?.currency)}{" "}
+															{getCurrencySymbol(service?.currency, region)}{" "}
 															{basePrice ?? 0}
 														</s>
-														{getCurrencySymbol(service?.currency)}
+														{getCurrencySymbol(service?.currency, region)}
 														{calculateDiscountedRate(
 															basePrice ?? 0,
 															discountApplicable.discountRules[0]
@@ -318,13 +326,13 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 													</>
 												) : (
 													<div className="flex items-center">
-														{getCurrencySymbol(service?.currency)}
+														{getCurrencySymbol(service?.currency, region)}
 														<span>{basePrice ?? 0}</span>
 													</div>
 												)
 											) : (
 												<div className="flex items-center">
-													{getCurrencySymbol(service?.currency)}
+													{getCurrencySymbol(service?.currency, region)}
 													<span>{basePrice ?? 0}</span>
 												</div>
 											)}

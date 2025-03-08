@@ -18,18 +18,18 @@ import {
 import { Button } from "../ui/button";
 import { useToast } from "../ui/use-toast";
 
-const DeleteCreatorServiceAlert = ({
+const DeleteCreatorGroupAlert = ({
 	showDeleteServiceAlert,
 	setShowDeleteServiceAlert,
 	handleConfirmRemove,
 	loading,
-	serviceId,
+	groupId,
 }: {
 	showDeleteServiceAlert: boolean;
 	setShowDeleteServiceAlert: React.Dispatch<React.SetStateAction<boolean>>;
-	handleConfirmRemove: (serviceId: string) => Promise<void>;
+	handleConfirmRemove: (groupId: string) => Promise<void>;
 	loading: boolean;
-	serviceId: string | undefined;
+	groupId: string | undefined;
 }) => {
 	const [isMobileView, setIsMobileView] = useState(false);
 	const { toast } = useToast();
@@ -47,13 +47,13 @@ const DeleteCreatorServiceAlert = ({
 	}, []);
 
 	const handleRemove = async () => {
-		if (serviceId) {
-			await handleConfirmRemove(serviceId);
+		if (groupId) {
+			await handleConfirmRemove(groupId);
 		} else {
 			toast({
 				variant: "destructive",
-				title: "Unable to Remove Service",
-				description: "Service was not removed...",
+				title: "Unable to Remove Group",
+				description: "Group was not removed...",
 				toastStatus: "negative",
 			});
 		}
@@ -67,10 +67,10 @@ const DeleteCreatorServiceAlert = ({
 			<SheetContent side="bottom" className=" bg-white rounded-t-xl ">
 				<SheetHeader>
 					<SheetTitle className="text-red-500 !text-start">
-						Remove Service
+						Remove Group
 					</SheetTitle>
 					<SheetDescription className="!text-start">
-						Are you sure you want to remove service_{serviceId} ?
+						Are you sure you want to remove group_{groupId} ?
 					</SheetDescription>
 				</SheetHeader>
 				<div className="w-full flex items-center justify-start gap-2 mt-7">
@@ -98,10 +98,10 @@ const DeleteCreatorServiceAlert = ({
 			<DialogContent className="bg-white max-w-[92%] md:max-w-sm rounded-[8px]">
 				<DialogHeader>
 					<DialogTitle className="text-red-500 !text-start">
-						Remove Service
+						Remove Group
 					</DialogTitle>
 					<DialogDescription className=" text-sm !text-start">
-						Are you sure you want to remove service_{serviceId} ?
+						Are you sure you want to remove group_{groupId} ?
 					</DialogDescription>
 				</DialogHeader>
 
@@ -125,4 +125,4 @@ const DeleteCreatorServiceAlert = ({
 	);
 };
 
-export default DeleteCreatorServiceAlert;
+export default DeleteCreatorGroupAlert;

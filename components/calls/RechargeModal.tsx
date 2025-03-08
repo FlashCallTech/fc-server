@@ -141,14 +141,14 @@ const RechargeModal = ({
 							}
 						},
 						onCancel(data: any) {
-							console.warn("Payment was canceled by the user", data);
+							console.warn("Payment was cancelled by the user", data);
 							trackEvent("Recharge_Page_Payment_Canceled", {
 								Client_ID: currentUser?._id,
 								// Creator_ID: creator?._id,
 								Recharge_value: rechargeAmount,
 								Walletbalace_Available: currentUser?.walletBalance,
 							});
-							alert("Payment was canceled. You can try again if you wish.");
+							alert("Payment was cancelled. You can try again if you wish.");
 							setIsSheetOpen(false); // Close the sheet
 							setShowPayPal(false);
 							setOnGoingPayment(false);

@@ -205,7 +205,7 @@ const ReferralLink: React.FC = () => {
 										<rect x="0" y="0" width="75" height="60" rx="0" />
 									</clipPath>
 								</defs>
-								<g clip-path="url(#master_svg0_3_37504)">
+								<g clipPath="url(#master_svg0_3_37504)">
 									<g transform="matrix(1,0,0,-1,0,122.578125)">
 										<g>
 											<path

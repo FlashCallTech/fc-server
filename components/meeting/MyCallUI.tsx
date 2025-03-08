@@ -163,7 +163,7 @@ const MyCallUI = () => {
 		}) => {
 			const defaultMessage = {
 				title: `Call Declined`,
-				description: "The call got Canceled",
+				description: "The call got Cancelled",
 			};
 
 			const message = customMessage || defaultMessage;
@@ -361,10 +361,10 @@ const MyCallUI = () => {
 
 			logEvent(analytics, "call_rejected", { callId: outgoingCall.id });
 
-			if (currentStatus !== "Not Answered" || currentStatus === "Canceled") {
+			if (currentStatus !== "Not Answered" || currentStatus === "Cancelled") {
 				const defaultMessage = {
 					title: endedByMe
-						? "Call Canceled"
+						? "Call Cancelled"
 						: `${expert?.custom?.name || "User"} is Busy`,
 					description: endedByMe
 						? "You ended the Call"
@@ -383,7 +383,7 @@ const MyCallUI = () => {
 				await axios.post(`${backendBaseUrl}/calls/updateCall`, {
 					callId: outgoingCall?.id,
 					call: {
-						status: endedByMe ? "Canceled" : "Rejected",
+						status: endedByMe ? "Cancelled" : "Rejected",
 					},
 				});
 

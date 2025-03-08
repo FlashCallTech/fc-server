@@ -16,7 +16,7 @@ export const useGetPreviousCalls = (
 	userType: string,
 	callType?: string
 ) => {
-	const limit = 10; // Define the limit per page
+	const limit = 10;
 
 	return useInfiniteQuery({
 		queryKey: [QUERY_KEYS.GET_USER_CALLS, userId, userType, callType],
@@ -213,6 +213,126 @@ export const useGetCreators = (limit: number, profession: string) => {
 			const nextPage = allPages.length + 1;
 			return nextPage <= totalPages ? nextPage : null;
 		},
+		initialPageParam: 1,
+	});
+};
+
+export const useGetCreatorGroups = (ownerId?: string) => {
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_CREATOR_GROUPS, ownerId],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(`${backendBaseUrl}/creator/group`, {
+				params: {
+					page: pageParam,
+					limit: 10,
+					...(ownerId ? { ownerId } : {}),
+				},
+			});
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching creator groups");
+			}
+		},
+		getNextPageParam: (lastPage, allPages) => {
+			return lastPage.hasMore ? allPages.length + 1 : undefined;
+		},
+		enabled: true,
+		initialPageParam: 1,
+	});
+};
+
+export const useGetCreatorClients = (creatorId?: string) => {
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_CREATOR_CLIENTS, creatorId],
+		queryFn: async ({ pageParam = 1 }) => {
+			if (!creatorId) {
+				throw new Error("creatorId is required to fetch members");
+			}
+
+			const response = await axios.get(
+				`${backendBaseUrl}/creator/group/members/all`,
+				{
+					params: {
+						page: pageParam,
+						limit: 10,
+						creatorId,
+					},
+				}
+			);
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching creator group members");
+			}
+		},
+		getNextPageParam: (lastPage, allPages) => {
+			return lastPage.hasMore ? allPages.length + 1 : undefined;
+		},
+		enabled: !!creatorId,
+		initialPageParam: 1,
+	});
+};
+
+export const useGetCreatorTemplates = (
+	creatorId?: string,
+	selectedTab?: string
+) => {
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_CREATOR_TEMPLATES, creatorId, selectedTab],
+		queryFn: async ({ pageParam = 1 }) => {
+			const response = await axios.get(`${backendBaseUrl}/campaigns/template`, {
+				params: {
+					page: pageParam,
+					limit: 10,
+					...(creatorId ? { creatorId } : {}),
+					...(selectedTab ? { type: selectedTab } : {}),
+				},
+			});
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching message templates");
+			}
+		},
+		getNextPageParam: (lastPage, allPages) => {
+			return lastPage.hasMore ? allPages.length + 1 : undefined;
+		},
+		enabled: !!creatorId,
+		initialPageParam: 1,
+	});
+};
+
+export const useGetGroupMembers = (groupId?: string) => {
+	return useInfiniteQuery({
+		queryKey: ["GET_GROUP_MEMBERS", groupId],
+		queryFn: async ({ pageParam = 1 }) => {
+			if (!groupId) return { members: [], totalMembers: 0, hasMore: false };
+
+			const response = await axios.get(
+				`${backendBaseUrl}/creator/group/members`,
+				{
+					params: {
+						groupId,
+						page: pageParam,
+						limit: 10,
+					},
+				}
+			);
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching group members");
+			}
+		},
+		getNextPageParam: (lastPage, allPages) => {
+			return lastPage.hasMore ? allPages.length + 1 : undefined;
+		},
+		enabled: !!groupId,
 		initialPageParam: 1,
 	});
 };

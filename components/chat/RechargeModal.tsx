@@ -51,11 +51,11 @@ const RechargeModal = ({
 
 			const response = await axios.get(`${backendBaseUrl}/order/getPg`);
 			const data = response.data;
-			if (data.activePg) setPg(data.activePg)
-		}
+			if (data.activePg) setPg(data.activePg);
+		};
 
 		getPg();
-	}, [])
+	}, []);
 
 	useEffect(() => {
 		if (showPayPal) {
@@ -64,99 +64,106 @@ const RechargeModal = ({
 			// Ensure PayPal SDK is loaded
 			if (paypal) {
 				// Cleanup any existing buttons
-				const paypalContainer = document.getElementById("paypal-button-container");
+				const paypalContainer = document.getElementById(
+					"paypal-button-container"
+				);
 				console.log(paypalContainer);
 				if (paypalContainer) paypalContainer.innerHTML = "";
 
 				// Render new PayPal buttons
-				paypal.Buttons({
-					style: {
-						layout: 'vertical', // Stack buttons vertically
-						color: 'gold',      // Button color
-						shape: 'rect',      // Button shape
-						label: 'paypal',    // Label type
-						height: 50,
-						disableMaxWidth: true
-					},
-					async createOrder(data: any, actions: any) {
-						const details = await actions.order.create({
-							purchase_units: [{
-								amount: {
-									currency_code: "USD",
-									value: rechargeAmount
+				paypal
+					.Buttons({
+						style: {
+							layout: "vertical", // Stack buttons vertically
+							color: "gold", // Button color
+							shape: "rect", // Button shape
+							label: "paypal", // Label type
+							height: 50,
+							disableMaxWidth: true,
+						},
+						async createOrder(data: any, actions: any) {
+							const details = await actions.order.create({
+								purchase_units: [
+									{
+										amount: {
+											currency_code: "USD",
+											value: rechargeAmount,
+										},
+									},
+								],
+								application_context: {
+									shipping_preference: "NO_SHIPPING",
+								},
+							});
+
+							return details;
+						},
+						async onApprove(data: any, actions: any) {
+							try {
+								const details = await actions.order.capture();
+								if (details.status === "COMPLETED") {
+									console.log("Payment completed:", details);
+									await fetch(`${backendBaseUrl}/wallet/addMoney`, {
+										method: "POST",
+										body: JSON.stringify({
+											userId: currentUser?._id,
+											PG: "Paypal",
+											userType: "Client",
+											amount: Number(details.purchase_units[0].amount.value),
+											category: "Recharge",
+											global: true,
+										}),
+										headers: { "Content-Type": "application/json" },
+									});
+									trackEvent("Recharge_Page_Payment_Completed", {
+										Client_ID: currentUser?._id,
+										// Creator_ID: creator?._id,
+										Recharge_value: rechargeAmount,
+										Walletbalace_Available: currentUser?.walletBalance,
+										Order_ID: details.id,
+									});
 								}
-							}],
-							application_context: {
-								shipping_preference: "NO_SHIPPING",
+							} catch (error) {
+								console.error("Error capturing payment:", error);
+							} finally {
+								setIsSheetOpen(false); // Close the sheet
+								setShowPayPal(false);
+								setOnGoingPayment(false);
 							}
-						});
-
-						return details;
-					},
-					async onApprove(data: any, actions: any) {
-						try {
-							const details = await actions.order.capture();
-							if (details.status === "COMPLETED") {
-								console.log("Payment completed:", details);
-								await fetch(`${backendBaseUrl}/wallet/addMoney`, {
-									method: "POST",
-									body: JSON.stringify({
-										userId: currentUser?._id,
-										PG: "Paypal",
-										userType: "Client",
-										amount: Number(details.purchase_units[0].amount.value),
-										category: "Recharge",
-										global: true,
-									}),
-									headers: { "Content-Type": "application/json" },
-								});
-								trackEvent("Recharge_Page_Payment_Completed", {
-									Client_ID: currentUser?._id,
-									// Creator_ID: creator?._id,
-									Recharge_value: rechargeAmount,
-									Walletbalace_Available: currentUser?.walletBalance,
-									Order_ID: details.id,
-								});
-
-							}
-						} catch (error) {
-							console.error("Error capturing payment:", error);
-						} finally {
+						},
+						onCancel(data: any) {
+							console.warn("Payment was cancelled by the user", data);
+							trackEvent("Recharge_Page_Payment_Canceled", {
+								Client_ID: currentUser?._id,
+								// Creator_ID: creator?._id,
+								Recharge_value: rechargeAmount,
+								Walletbalace_Available: currentUser?.walletBalance,
+							});
+							alert("Payment was cancelled. You can try again if you wish.");
 							setIsSheetOpen(false); // Close the sheet
 							setShowPayPal(false);
 							setOnGoingPayment(false);
-						}
-					},
-					onCancel(data: any) {
-						console.warn("Payment was canceled by the user", data);
-						trackEvent("Recharge_Page_Payment_Canceled", {
-							Client_ID: currentUser?._id,
-							// Creator_ID: creator?._id,
-							Recharge_value: rechargeAmount,
-							Walletbalace_Available: currentUser?.walletBalance,
-						});
-						alert("Payment was canceled. You can try again if you wish.");
-						setIsSheetOpen(false); // Close the sheet
-						setShowPayPal(false);
-						setOnGoingPayment(false);
-					},
-					onError(err: any) {
-						console.error("PayPal error:", err);
-						trackEvent("Recharge_Page_Payment_Error", {
-							Client_ID: currentUser?._id,
-							Error_Message: err.message,
-						});
-						alert("An error occurred with PayPal. Please try again.");
-						setIsSheetOpen(false); // Close the sheet
-						setShowPayPal(false);
-						setOnGoingPayment(false);
-					},
-				}).render("#paypal-button-container");
+						},
+						onError(err: any) {
+							console.error("PayPal error:", err);
+							trackEvent("Recharge_Page_Payment_Error", {
+								Client_ID: currentUser?._id,
+								Error_Message: err.message,
+							});
+							alert("An error occurred with PayPal. Please try again.");
+							setIsSheetOpen(false); // Close the sheet
+							setShowPayPal(false);
+							setOnGoingPayment(false);
+						},
+					})
+					.render("#paypal-button-container");
 			} else {
 				console.error("PayPal SDK not loaded");
 			}
 		} else {
-			const paypalContainer = document.getElementById("paypal-button-container");
+			const paypalContainer = document.getElementById(
+				"paypal-button-container"
+			);
 			if (paypalContainer) paypalContainer.innerHTML = "";
 		}
 	}, [showPayPal]);
@@ -165,7 +172,7 @@ const RechargeModal = ({
 		try {
 			setOnGoingPayment(true);
 			if (currentUser?.global) {
-				setShowPayPal(true)
+				setShowPayPal(true);
 			} else {
 				pgHandler(
 					pg,
@@ -175,8 +182,8 @@ const RechargeModal = ({
 					currentUser?.createdAt?.toString().split("T")[0],
 					currentUser?.walletBalance,
 					creatorId,
-					true,
-				)
+					true
+				);
 			}
 		} catch (error) {
 			console.log(error);
@@ -184,7 +191,7 @@ const RechargeModal = ({
 			setIsSheetOpen(false);
 			setOnGoingPayment(false);
 		}
-	}
+	};
 
 	const handlePredefinedAmountClick = (amount: string) => {
 		setRechargeAmount(amount);
@@ -192,13 +199,16 @@ const RechargeModal = ({
 
 	return (
 		<section>
-			<Sheet open={isSheetOpen} onOpenChange={(isOpen) => {
-				setIsSheetOpen(isOpen);
-				if (!isOpen) {
-					setRechargeAmount("");
-					setShowPayPal(false); // Reset showPayPal when the sheet is closed
-				}
-			}}>
+			<Sheet
+				open={isSheetOpen}
+				onOpenChange={(isOpen) => {
+					setIsSheetOpen(isOpen);
+					if (!isOpen) {
+						setRechargeAmount("");
+						setShowPayPal(false); // Reset showPayPal when the sheet is closed
+					}
+				}}
+			>
 				<SheetTrigger asChild>
 					<Button
 						className="bg-[rgba(35,35,5,1)] text-white w-full hoverScaleEffect"
@@ -216,8 +226,9 @@ const RechargeModal = ({
 						<SheetDescription>Recharge to continue this chat</SheetDescription>
 					</SheetHeader>
 					<div className="grid gap-4 py-4 w-full">
-						<Label htmlFor="rechargeAmount">{`Enter amount in ${currentUser?.global ? "Dollars" : "INR"
-							}`}</Label>
+						<Label htmlFor="rechargeAmount">{`Enter amount in ${
+							currentUser?.global ? "Dollars" : "INR"
+						}`}</Label>
 						<Input
 							id="rechargeAmount"
 							type="number"
@@ -244,18 +255,22 @@ const RechargeModal = ({
 						<div className={`w-full ${showPayPal ? "block" : "hidden"}`}>
 							<div
 								id="paypal-button-container"
-								className={`w-full max-h-[60vh] overflow-y-auto scrollbar-hide ${showPayPal ? "block" : "hidden"}`}
+								className={`w-full max-h-[60vh] overflow-y-auto scrollbar-hide ${
+									showPayPal ? "block" : "hidden"
+								}`}
 							></div>
 						</div>
 					)}
 					<SheetFooter className="mt-4">
 						{currentUser?.global ? (
-							!showPayPal && <Button
-								onClick={() => setShowPayPal(true)}
-								className="bg-green-1 text-white"
-							>
-								Recharge
-							</Button>
+							!showPayPal && (
+								<Button
+									onClick={() => setShowPayPal(true)}
+									className="bg-green-1 text-white"
+								>
+									Recharge
+								</Button>
+							)
 						) : (
 							<SheetClose asChild>
 								<Button

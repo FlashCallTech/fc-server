@@ -114,14 +114,14 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 							}
 						},
 						onCancel(data: any) {
-							console.warn("Payment was canceled by the user", data);
+							console.warn("Payment was cancelled by the user", data);
 							trackEvent("Recharge_Page_Payment_Canceled", {
 								Client_ID: clientUser?._id,
 								Creator_ID: creator?._id,
 								Recharge_value: rechargeAmount,
 								Walletbalace_Available: clientUser?.walletBalance,
 							});
-							alert("Payment was canceled. You can try again if you wish.");
+							alert("Payment was cancelled. You can try again if you wish.");
 							setShowPayPal(false);
 						},
 						onError(err: any) {
@@ -218,7 +218,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 		const amountDue = costForFiveMinutes
 			? Math.max(0, costForFiveMinutes - walletBalance)
 			: undefined;
-		
+
 		console.log(ratePerMinute, costForFiveMinutes, walletBalance);
 		return amountDue;
 	};

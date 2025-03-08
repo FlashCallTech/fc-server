@@ -35,8 +35,8 @@ interface params {
 	selectedDay: string;
 	selectedTimeSlot: string;
 	setShowConsentForm: any;
-	themeColor: string;
-	toggleSchedulingSheet: (isOpen: boolean) => void;
+	themeColor?: string;
+	toggleSchedulingSheet?: (isOpen: boolean) => void;
 }
 
 const AvailabilityFinalConsentForm = ({
@@ -53,7 +53,7 @@ const AvailabilityFinalConsentForm = ({
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
 	const [payoutTransactionId, setPayoutTransactionId] = useState();
-	const { clientUser, refreshCurrentUser } = useCurrentUsersContext();
+	const { clientUser, refreshCurrentUser, region } = useCurrentUsersContext();
 	const [email, setEmail] = useState(clientUser?.email || "");
 	const [emailChanged, setEmailChanged] = useState(false);
 	const [emailError, setEmailError] = useState("");
@@ -201,7 +201,7 @@ const AvailabilityFinalConsentForm = ({
 							}
 						},
 						onCancel(data: any) {
-							console.warn("PayPal payment canceled:", data);
+							console.warn("PayPal payment cancelled:", data);
 							resolve(false);
 						},
 						onError(err: any) {
@@ -948,9 +948,9 @@ const AvailabilityFinalConsentForm = ({
 								<section className="w-full pb-2.5 flex justify-between text-sm text-gray-800">
 									<p>1 x {service.title}</p>
 									<p className="font-bold">
-										{clientUser?.global
-											? getCurrencySymbol(["USD"])
-											: getCurrencySymbol(["INR"])}
+										{region === "Global" || clientUser?.global
+											? getCurrencySymbol(["USD"], region)
+											: getCurrencySymbol(["INR"], region)}
 										{clientUser?.global
 											? service.globalPrice
 												? service.globalPrice.toFixed(2)

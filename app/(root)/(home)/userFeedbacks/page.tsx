@@ -36,8 +36,6 @@ const UserFeedbacks = () => {
 		}
 	}, [userType, creatorURL, router]);
 
-	console.log(feedbackData);
-
 	useEffect(() => {
 		if (inView && hasNextPage && !isFetching) {
 			fetchNextPage();
