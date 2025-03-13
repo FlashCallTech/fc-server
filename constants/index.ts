@@ -82,9 +82,21 @@ export const newSidebarLinksCreator = [
 		protected: true,
 	},
 	{
+		imgURL: "/creator/whatsapp.svg",
+		route: "/campaign/whatsapp",
+		label: "WhatsApp Campaigns",
+		protected: true,
+	},
+	{
 		imgURL: "/creator/serviceManagement.svg",
 		route: "/service-management",
 		label: "Service Management",
+		protected: true,
+	},
+	{
+		imgURL: "/creator/group.svg",
+		route: "/groupManagement",
+		label: "Group Management",
 		protected: true,
 	},
 	{
@@ -175,9 +187,22 @@ export const sidebarLinksCreator = [
 		protected: true,
 	},
 	{
+		imgURL: "/icons/whatsapp.svg",
+		route: "/campaign/whatsapp",
+		label: "WhatsApp Campaigns",
+		protected: true,
+	},
+	{
 		imgURL: "/icons/serviceManagement.svg",
 		route: "/service-management",
 		label: "Service Management",
+		protected: true,
+	},
+
+	{
+		imgURL: "/icons/group.svg",
+		route: "/groupManagement",
+		label: "Group Management",
 		protected: true,
 	},
 	{

@@ -577,9 +577,29 @@ export interface GroupMembers {
 
 export interface MessageTemplate {
 	_id?: string;
+	owner?: string;
+	templateId?: string;
+	namespace?: string | null;
 	title: string;
-	heading: string;
+	description: string;
 	body: string;
+	headerType?: "image" | "text" | "none";
+	bodyFields?: { key: string; defaultValue: string }[];
+	hasButtons?: boolean;
+	createdAt?: Date;
+	updatedAt?: Date;
+}
+
+export interface CreatorCampaign {
+	_id?: string;
+	owner: creatorUser;
+	name: string;
+	type: string;
+	status?: string;
+	description?: string;
+	clients?: any;
+	messageTemplate?: MessageTemplate;
+	successRate: number;
 	createdAt?: Date;
 	updatedAt?: Date;
 }

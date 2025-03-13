@@ -39,7 +39,7 @@ const CreatorCard = () => {
 		let isMounted = true;
 
 		if (currentUser && userType === "creator") {
-			router.replace("/");
+			router.replace("/home");
 			return;
 		}
 
@@ -51,7 +51,6 @@ const CreatorCard = () => {
 			fetchCreatorDataAndInitializePixel(creatorUser._id);
 			initializedPixelId.current = creatorUser._id;
 		}
-
 
 		const fetchAndTrackCall = async () => {
 			if (!creatorUser || fetchingUser || !currentUser) return;

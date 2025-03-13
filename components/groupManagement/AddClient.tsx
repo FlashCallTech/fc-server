@@ -97,17 +97,21 @@ const AddClient = ({
 			refetchGroups();
 			onClose();
 		} catch (error: any) {
-			const isConflictError = error.response?.status === 409;
+			const errorMessage =
+				error.response?.data?.error || "Failed to add client";
+
 			const isAlreadyInGroupError =
-				error.response?.data?.error === "Client is already in another group";
+				errorMessage === "Client is already in another group";
+			const isAlreadyInUseByCreatorError =
+				errorMessage === "Provided number is already in use by a creator";
 
 			toast({
 				variant: "destructive",
-				title: "Error",
+				title: "Something went wrong",
 				description: isAlreadyInGroupError
 					? "This client is already in another group. Remove them first to add to a new group."
-					: isConflictError
-					? "A client with this phone number already exists."
+					: isAlreadyInUseByCreatorError
+					? "Provided number is already in use by a creator."
 					: "Failed to add client",
 				toastStatus: "negative",
 			});

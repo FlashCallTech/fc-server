@@ -276,6 +276,36 @@ export const useGetCreatorClients = (creatorId?: string) => {
 	});
 };
 
+export const useGetCreatorCampaigns = (creatorId?: string) => {
+	return useInfiniteQuery({
+		queryKey: [QUERY_KEYS.GET_CREATOR_CAMPAIGNS, creatorId],
+		queryFn: async ({ pageParam = 1 }) => {
+			if (!creatorId) {
+				throw new Error("creatorId is required to fetch members");
+			}
+
+			const response = await axios.get(`${backendBaseUrl}/campaigns/whatsapp`, {
+				params: {
+					page: pageParam,
+					limit: 10,
+					creatorId,
+				},
+			});
+
+			if (response.status === 200) {
+				return response.data;
+			} else {
+				throw new Error("Error fetching creator's campaigns");
+			}
+		},
+		getNextPageParam: (lastPage, allPages) => {
+			return lastPage.hasMore ? allPages.length + 1 : undefined;
+		},
+		enabled: !!creatorId,
+		initialPageParam: 1,
+	});
+};
+
 export const useGetCreatorTemplates = (
 	creatorId?: string,
 	selectedTab?: string

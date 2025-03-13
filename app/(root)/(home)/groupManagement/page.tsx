@@ -300,8 +300,10 @@ const GroupsPage = () => {
 																setShowGroupMembersModal(true);
 															}}
 														>
-															{group.membersCount}{" "}
-															{group.membersCount || 0 >= 1
+															{group?.members?.length ?? group?.membersCount}{" "}
+															{(group?.members?.length ??
+																group?.membersCount) ||
+															0 >= 1
 																? "members"
 																: "member"}
 														</button>
@@ -378,6 +380,7 @@ const GroupsPage = () => {
 							groupId={selectedGroup?._id}
 							groupName={selectedGroup?.name}
 							refetchGroups={refetch}
+							creatorId={currentUser?._id}
 						/>
 					)}
 

@@ -18,12 +18,14 @@ const ClientView = ({
 	groupId,
 	groupName,
 	refetchGroups,
+	creatorId,
 }: {
 	isOpen: boolean;
 	onOpenChange: (isOpen: boolean) => void;
 	groupId: string | undefined;
 	groupName: string;
 	refetchGroups: any;
+	creatorId: string | undefined;
 }) => {
 	const [creatorGroupMembers, setCreatorGroupMembers] = useState<
 		GroupMembers[]
@@ -116,25 +118,30 @@ const ClientView = ({
 			if (!selectedClient) {
 				toast({
 					variant: "destructive",
-					title: "Unable to delete client",
+					title: "Unable to remove client",
 					description: "No client was selected.",
 					toastStatus: "negative",
 				});
 				return;
 			}
 			setDeletingMember(true);
-			await axios.delete(`${backendBaseUrl}/creator/clients/${clientId}`);
+			await axios.post(
+				`${backendBaseUrl}/creator/clients/removeClient/${clientId}`,
+				{
+					data: { creatorId: creatorId },
+				}
+			);
 			setShowDeleteClientAlert(false);
 			toast({
 				variant: "destructive",
-				title: "Client deleted successfully",
+				title: "Group updated successfully",
 				description: "Client was removed.",
 				toastStatus: "positive",
 			});
 		} catch (error) {
 			toast({
 				variant: "destructive",
-				title: "Unable to delete client",
+				title: "Unable to update group",
 				description: "Client was not removed.",
 				toastStatus: "negative",
 			});
@@ -385,7 +392,7 @@ const ClientView = ({
 
 										{/* Action Buttons */}
 										<div className="flex items-center justify-center gap-2.5 my-auto">
-											<button
+											{/* <button
 												className="p-2 bg-blue-50 text-blue-500 rounded-full hover:bg-blue-100 transition"
 												onClick={() => {
 													setEditClient((prev) => !prev);
@@ -428,7 +435,7 @@ const ClientView = ({
 														/>
 													</svg>
 												)}
-											</button>
+											</button> */}
 											<button
 												className="p-2 bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition"
 												onClick={() => {

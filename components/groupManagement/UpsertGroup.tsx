@@ -1,5 +1,5 @@
 import { Group } from "@/types";
-import React from "react";
+import React, { useState } from "react";
 import GroupForm from "../forms/GroupForm";
 import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
@@ -21,8 +21,11 @@ const UpsertGroup = ({
 	refetchGroups: any;
 }) => {
 	const { toast } = useToast();
+	const [loading, setLoading] = useState(false);
 	const handleSubmit = async (data: Group) => {
 		try {
+			console.log(data);
+			setLoading(true);
 			if (actionType === "Create") {
 				await axios.post(`${backendBaseUrl}/creator/group/`, data);
 				toast({
@@ -51,8 +54,11 @@ const UpsertGroup = ({
 				toastStatus: "negative",
 			});
 		} finally {
-			onOpenChange(false);
-			refetchGroups();
+			setTimeout(() => {
+				setLoading(false);
+				onOpenChange(false);
+			}, 1000);
+			await refetchGroups();
 		}
 	};
 
@@ -67,7 +73,7 @@ const UpsertGroup = ({
 		>
 			<div className="flex flex-col items-start justify-start border-none md:rounded-xl bg-white mx-auto w-full h-dvh md:max-h-[90vh] md:max-w-[80%] p-4 py-0 md:px-6 overflow-scroll no-scrollbar">
 				{/* Header */}
-				<div className="bg-white z-40 pt-4 pb-2 sticky top-0 left-0 flex items-center gap-4">
+				<div className="w-full bg-white z-40 pt-4 pb-2 sticky top-0 left-0 flex items-center gap-4">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
@@ -94,6 +100,7 @@ const UpsertGroup = ({
 						onSubmit={handleSubmit}
 						onOpenChange={onOpenChange}
 						creatorId={creatorId}
+						loading={loading}
 					/>
 				</div>
 			</div>

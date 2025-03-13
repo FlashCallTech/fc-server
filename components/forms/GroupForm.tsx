@@ -38,16 +38,21 @@ const GroupForm = ({
 	onSubmit,
 	onOpenChange,
 	creatorId,
+	loading,
 }: {
 	initialData?: Group;
 	onSubmit: (data: Group) => void;
 	onOpenChange: (isOpen: boolean) => void;
 	creatorId: string | undefined;
+	loading?: boolean;
 }) => {
 	const {
 		register,
 		handleSubmit,
 		control,
+		watch,
+		setValue,
+		reset,
 		formState: { errors, isValid, isSubmitting },
 	} = useForm<GroupFormValues>({
 		resolver: zodResolver(groupSchema),
@@ -73,12 +78,37 @@ const GroupForm = ({
 	});
 
 	const handleFormSubmit = (data: GroupFormValues) => {
+		const sanitizedBehaviorRules = data?.behaviorRules?.map((rule) => {
+			if (rule.metric === "Login activity") {
+				return {
+					...rule,
+					operator: "Greater than",
+					value: 1,
+				};
+			}
+			return rule;
+		});
+
+		// Filter out incomplete rules
+		const filteredBehaviorRules = sanitizedBehaviorRules?.filter(
+			(rule) =>
+				rule.metric?.trim() &&
+				rule.operator?.trim() &&
+				rule.value !== undefined &&
+				rule.value !== null
+		);
+
+		console.log("Filtered Rules:", filteredBehaviorRules);
+
 		const formattedData: Group = {
+			...data,
 			owner: initialData?.owner || creatorId,
 			members: initialData?.members || [],
 			membersCount: initialData?.membersCount || 0,
-			...data,
+			behaviorRules: filteredBehaviorRules,
 		};
+
+		reset();
 		onSubmit(formattedData);
 	};
 
@@ -192,6 +222,10 @@ const GroupForm = ({
 									<Select
 										onValueChange={field.onChange}
 										defaultValue={field.value}
+										disabled={
+											watch(`behaviorRules.${index}.metric`) ===
+											"Login activity"
+										}
 									>
 										<SelectTrigger>
 											<SelectValue placeholder="Select Operator" />
@@ -225,8 +259,20 @@ const GroupForm = ({
 								type="number"
 								{...register(`behaviorRules.${index}.value` as const, {
 									valueAsNumber: true,
+									setValueAs: (v) =>
+										watch(`behaviorRules.${index}.metric`) === "Login activity"
+											? 1
+											: v,
 								})}
-								placeholder="Value"
+								disabled={
+									watch(`behaviorRules.${index}.metric`) === "Login activity"
+								}
+								placeholder={
+									watch(`behaviorRules.${index}.metric`) ===
+									"Purchase frequency"
+										? "Enter number of purchases"
+										: "Enter Value"
+								}
 								min={0}
 							/>
 							{/* Timeframe */}
@@ -328,11 +374,11 @@ const GroupForm = ({
 					Cancel
 				</Button>
 				<Button
-					disabled={!isValid || isSubmitting}
+					disabled={!isValid || isSubmitting || loading}
 					type="submit"
 					className="bg-black text-white rounded-full hoverScaleDownEffect"
 				>
-					{isSubmitting ? "Saving" : "Save Group"}
+					{isSubmitting || loading ? "Saving..." : "Save Group"}
 				</Button>
 			</div>
 		</form>

@@ -17,4 +17,5 @@ export enum QUERY_KEYS {
 	GET_GROUP_MEMBERS = "get_group_members",
 	GET_CREATOR_CLIENTS = "get_creator_clients",
 	GET_CREATOR_TEMPLATES = "get_creator_templates",
+	GET_CREATOR_CAMPAIGNS = "get_creator_campaigns",
 }

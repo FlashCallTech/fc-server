@@ -10,15 +10,24 @@ interface MessageTemplateProps {
 	selectedTab: string;
 	setSelectedTab: React.Dispatch<React.SetStateAction<string>>;
 	customTemplateData: {
+		templateId: string;
 		title: string;
 		description: string;
 		body: string;
+		headerType: "image" | "text" | "none";
+		bodyFields: { key: string; defaultValue: string }[];
+		hasButtons: boolean;
 	};
 	setCustomTemplateData: React.Dispatch<
 		React.SetStateAction<{
+			templateId: string;
 			title: string;
 			description: string;
 			body: string;
+
+			headerType: "image" | "text" | "none";
+			bodyFields: { key: string; defaultValue: string }[];
+			hasButtons: boolean;
 		}>
 	>;
 	selectedTemplate: MessageTemplate | null;

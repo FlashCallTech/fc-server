@@ -15,7 +15,7 @@ import { backendBaseUrl } from "@/lib/utils";
 import { Group } from "@/types";
 
 const sampleCSVData =
-	"Name,Phone Number\nJohn Doe,+1234567890\nJane Smith,+9876543210";
+	"Name,Phone Number\nJohn Doe,+918765410032\nJane Smith,+918765432100";
 
 const ImportContacts = ({
 	isOpen,

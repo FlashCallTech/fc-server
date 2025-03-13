@@ -135,11 +135,15 @@ const AuthenticateViaOTP = ({
 			// Retrieve the FCM token
 			const fcmToken: any = await getFCMToken();
 
-			const response = await axios.post(`${backendBaseUrl}/otp/verify-otp`, {
-				phone: phoneNumber,
-				otp: values.pin,
-				fcmToken,
-			});
+			const response = await axios.post(
+				`${backendBaseUrl}/otp/verify-otp`,
+				{
+					phone: phoneNumber,
+					otp: values.pin,
+					fcmToken,
+				},
+				{ withCredentials: true }
+			);
 
 			// Extract the session token and user from the response
 			const { sessionToken, message } = response.data;
