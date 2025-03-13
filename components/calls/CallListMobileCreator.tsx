@@ -88,7 +88,7 @@ const CallListMobileCreator = ({
 				) : (
 					<>
 						<section
-							className={`lg:hidden  w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 text-black px-4`}
+							className={`lg:hidden w-full h-fit grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-3 items-center gap-5 text-black px-4`}
 						>
 							{userCalls?.pages?.flatMap((page: any) =>
 								page?.calls?.map((userCall: RegisterCallParams) => {

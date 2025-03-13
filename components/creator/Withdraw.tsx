@@ -182,11 +182,6 @@ const Withdraw: React.FC = () => {
 		}
 	}, [inView, hasNextPage, isFetching]);
 
-	console.log(
-		userTransactions?.pages[0].totalEarnings,
-		userTransactions?.pages[0].totalWithdrawals
-	);
-
 	const groupTransactionsByDate = (transactionsList: Transaction[]) => {
 		return transactionsList.reduce((acc, transaction) => {
 			const date = new Date(transaction.createdAt).toISOString().split("T")[0];
@@ -229,6 +224,8 @@ const Withdraw: React.FC = () => {
 				console.error("Failed to copy ID: ", err);
 			});
 	};
+
+	console.log(isStickyVisible);
 
 	return (
 		<>

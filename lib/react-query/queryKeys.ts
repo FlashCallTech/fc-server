@@ -18,4 +18,7 @@ export enum QUERY_KEYS {
 	GET_CREATOR_CLIENTS = "get_creator_clients",
 	GET_CREATOR_TEMPLATES = "get_creator_templates",
 	GET_CREATOR_CAMPAIGNS = "get_creator_campaigns",
+	GET_UNIQUE_CLIENTS = "get_unique_clients",
+	GET_CALLS_BY_CLIENTID_AND_CREATORID = "get_calls_by_clientId_and_creatorId",
+	GET_NOTES = "get_notes",
 }
