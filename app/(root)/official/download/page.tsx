@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 
 export default function DownloadPage() {
 	useEffect(() => {
-		const apkUrl = "/downloads/official.apk";
+		// const apkUrl = "/downloads/official.apk";
+		const apkUrl =
+			"https://dxvnlnyzij172.cloudfront.net/downloads/official.apk";
 		const link = document.createElement("a");
 		link.href = apkUrl;
 		link.download = "official.apk";
@@ -23,7 +25,11 @@ export default function DownloadPage() {
 				Your download should start automatically. If not, click the button
 				below.
 			</p>
-			<a href="/downloads/official.apk" download="official.apk">
+			{/* <a href="/downloads/official.apk" download="official.apk"> */}
+			<a
+				href="https://dxvnlnyzij172.cloudfront.net/downloads/official.apk"
+				download="official.apk"
+			>
 				<Button className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700">
 					Download APK
 				</Button>
