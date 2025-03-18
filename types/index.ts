@@ -567,6 +567,7 @@ export interface Group {
 
 export interface GroupMembers {
 	_id?: string;
+	username?: string;
 	fullName: string;
 	phone: string;
 	photo?: string;

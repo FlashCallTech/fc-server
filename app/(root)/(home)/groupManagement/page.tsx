@@ -212,7 +212,7 @@ const GroupsPage = () => {
 						{/* Groups Section */}
 
 						{creatorGroups.length === 0 && !isLoading ? (
-							<div className="size-full flex flex-col gap-2 items-center justify-center text-center !mt-0">
+							<div className="size-full md:h-[calc(100vh-8rem)] flex flex-col gap-2 items-center justify-center text-center !mt-0">
 								<div className="bg-black/10 size-20 rounded-full flex items-center justify-center">
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
