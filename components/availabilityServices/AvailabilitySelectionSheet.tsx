@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { AvailabilityService, creatorUser } from "@/types";
 
 import { useGetUserAvailability } from "@/lib/react-query/queries";
-import ContentLoading from "../shared/ContentLoading";
 import { backendBaseUrl, getTimeSlots, isValidHexColor } from "@/lib/utils";
 import AvailabilityFinalConsentForm from "./AvailabilityFinalConsentForm";
 import axios from "axios";
@@ -359,8 +358,8 @@ const AvailabilitySelectionSheet = ({
 
 		if (isLoading) {
 			return (
-				<div className="w-full py-5 flex items-center justify-center">
-					<ContentLoading />
+				<div className="size-full py-5 flex items-center justify-center">
+					<SinglePostLoader />
 				</div>
 			);
 		}

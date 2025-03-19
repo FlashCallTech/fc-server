@@ -646,7 +646,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 			</section>
 
 			{/* About, Services and Reviews */}
-			<section className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between p-4 xl:pt-0 xl:px-0 gap-2.5 bg-white overflow-y-scroll">
+			<section className="size-full h-fit rounded-t-[12px] rounded-b-[12px] flex flex-col items-start justify-between p-4 xl:pt-0 xl:px-0 gap-2.5 bg-white overflow-y-scroll no-scrollbar">
 				{/* Creator Bio */}
 				<section className="xl:hidden size-full">{renderCreatorBio()}</section>
 				{/* Discounts */}
