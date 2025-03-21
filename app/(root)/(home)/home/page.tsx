@@ -189,7 +189,7 @@ const HomePage = () => {
               </div>
             ) : (
               <section
-                className={`grid grid-cols-1 xm:grid-cols-2 xl:grid-cols-3 h-full gap-3.5 lg:gap-5 2xl:gap-7 items-start p-1 overflow-hidden`}
+                className={`grid grid-cols-1 xm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 h-full gap-3.5 lg:gap-5 2xl:gap-7 items-start p-1 overflow-hidden`}
                 style={{
                   WebkitTransform: "translateZ(0)",
                   transform: "translate3d(0, 0, 0)",

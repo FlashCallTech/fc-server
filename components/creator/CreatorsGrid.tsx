@@ -33,8 +33,6 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 
         setConsultations((consultations.data?.totalCalls as number) ?? 0);
         setRating((ratings.data?.averageRating as number) ?? 0);
-
-        console.log(ratings.data);
       } catch (error) {
         console.error(error);
       }
