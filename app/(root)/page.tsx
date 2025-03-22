@@ -12,10 +12,26 @@ import Testimonials from "@/components/sections/Testimonials";
 import Footer from "@/components/shared/Footer";
 import NavbarWeb from "@/components/shared/NavbarWeb";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import Image from "next/image";
 import React from "react";
 
 const HomePage = () => {
   const { currentUser, handleSignout, fetchingUser } = useCurrentUsersContext();
+
+  if (fetchingUser) {
+    return (
+      <section className="absolute bg-white top-0 left-0 flex justify-center items-center h-screen w-full z-40">
+        <Image
+          src="/icons/newLogo.png"
+          alt="Loading..."
+          width={500}
+          height={500}
+          className="w-36 animate-pulse"
+          priority
+        />
+      </section>
+    );
+  }
 
   return (
     <main className="grid grid-cols-1 items-center">
