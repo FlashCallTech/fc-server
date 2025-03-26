@@ -100,6 +100,12 @@ export const newSidebarLinksCreator = [
 		protected: true,
 	},
 	{
+		imgURL: "/creator/users.svg",
+		route: "/users",
+		label: "My Users",
+		protected: true,
+	},
+	{
 		imgURL: "/creator/feedback.svg",
 		route: "/userFeedbacks",
 		label: "User Feedback's",
