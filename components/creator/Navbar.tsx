@@ -103,6 +103,7 @@ const CreatorNavbar = () => {
 		else if (pathname.includes("profile")) return "Edit Profile";
 		else if (pathname.includes("inbox")) return "Inbox";
 		else if (pathname.includes("groupManagement")) return "Group Management";
+		else if (pathname.includes("users")) return "My Users";
 	};
 
 	const handleAppRedirect = () => {

@@ -15,7 +15,7 @@ import { useGetUniqueClients } from "@/lib/react-query/queries";
 import { useInView } from "react-intersection-observer";
 import GetRandomImage from "@/utils/GetRandomImage";
 import { format } from "date-fns";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 // Define types based on your API's response structure.
 interface ClientDetails {
@@ -128,6 +128,10 @@ const UsersTable: React.FC = () => {
         router.push(`/users/${clientId}`)
     }
 
+    const handleCampaignClick = () => {
+        router.push('/campaign/whatsapp');
+    }
+
     return (
         <div className="p-8">
             {/* Header */}
@@ -139,7 +143,7 @@ const UsersTable: React.FC = () => {
                         Total Users: {clientsData?.pages[0]?.total ?? 0}
                     </p>
                 </div>
-                <Button className="bg-[#16A34A] flex items-center gap-2 rounded-full text-white">
+                <Button onClick={handleCampaignClick} className="bg-[#16A34A] flex items-center gap-2 rounded-full text-white">
                     {/* SVG icon for campaign */}
                     <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="14" height="16" viewBox="0 0 14 16"><defs><clipPath id="master_svg0_142_5900"><rect x="0" y="0" width="14" height="16" rx="0" /></clipPath></defs><g clip-path="url(#master_svg0_142_5900)"><g transform="matrix(1,0,0,-1,0,30.75)"><g><path d="M11.9062,27.3438Q9.84375,29.3438,7,29.375Q5.0625,29.3438,3.5,28.4375Q1.9375,27.5,1,25.9375Q0.09375,24.375,0.0625,22.4375Q0.0625,20.5625,0.96875,18.96875L0,15.375L3.6875,16.34375Q5.21875,15.5,7,15.5Q8.9375,15.53125,10.5,16.4375Q12.0938,17.375,13.0312,18.9375Q13.9688,20.5,14,22.4375Q14,23.84375,13.4375,25.09375Q12.9062,26.3438,11.9062,27.3438ZM7,16.65625Q5.40625,16.6875,4.0625,17.46875L3.84375,17.59375L1.65625,17.03125L2.25,19.15625L2.125,19.375Q1.25,20.78125,1.21875,22.4375Q1.28125,24.875,2.9375,26.5Q4.5625,28.1562,7,28.1875Q9.375,28.1875,11.0625,26.5Q12.7812,24.8125,12.8438,22.4375Q12.75,20,11.0938,18.34375Q9.4375,16.71875,7,16.65625ZM10.1562,20.96875Q10,21.0625,9.5625,21.28125Q9.125,21.46875,8.96875,21.53125Q8.75,21.6875,8.59375,21.46875Q8.46875,21.3125,8.3125,21.09375Q8.125,20.875,8.03125,20.78125Q7.90625,20.59375,7.65625,20.75Q6.90625,21.09375,6.34375,21.53125Q5.78125,21.96875,5.3125,22.8125Q5.1875,23,5.40625,23.1875Q5.5625,23.3125,5.8125,23.75Q5.875,23.90625,5.78125,24.0625Q5.75,24.09375,5.65625,24.375Q5.5625,24.625,5.4375,24.9375Q5.3125,25.1875,5.25,25.34375Q5.0625,25.7188,4.90625,25.625Q4.875,25.625,4.875,25.625Q4.71875,25.625,4.53125,25.625Q4.34375,25.6562,4.0625,25.4375Q4.0625,25.4062,4.03125,25.375Q3.875,25.25,3.6875,24.90625Q3.5,24.5625,3.46875,23.96875Q3.5,23.34375,3.78125,22.8125Q4.0625,22.3125,4.15625,22.1875L4.1875,22.1875Q4.1875,22.15625,4.21875,22.125Q4.375,21.84375,5.15625,21Q5.90625,20.15625,7.125,19.5625Q7.9375,19.21875,8.375,19.125Q8.84375,19.0625,9.21875,19.125Q9.5,19.1875,9.875,19.40625Q10.25,19.625,10.375,19.9375Q10.5938,20.625,10.5,20.78125Q10.4375,20.875,10.25,20.9375Q10.1875,20.96875,10.1562,20.96875Z" fill="#FFFFFF" fill-opacity="1" /></g></g></g></svg>
                     <span>WhatsApp Campaign</span>
