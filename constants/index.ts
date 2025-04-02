@@ -1,271 +1,419 @@
-export const sidebarLinks = [
-  // {
-  // 	imgURL: "/icons/Home.svg",
-  // 	route: "/home",
-  // 	label: "Home",
-  // 	protected: false,
-  // },
-  {
-    imgURL: "/icons/orderHistory.svg",
-    route: "/previous",
-    label: "Order History",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/upcoming.svg",
-    route: "/upcoming",
-    label: "Scheduled Calls",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/refer-and-earn.svg",
-    route: "/transactions",
-    label: "Transaction History",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/heart.svg",
-    route: "/favorites",
-    label: "Favorites",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/support.svg",
-    route: "/support",
-    label: "Support",
-    protected: false,
-  },
-];
+export const sidebarLinks = {
+  links: [
+    {
+      imgURL: "/icons/orderHistory.svg",
+      route: "/previous",
+      label: "Order History",
+      protected: true,
+    },
+    {
+      imgURL: "/icons/upcoming.svg",
+      route: "/upcoming",
+      label: "Scheduled Calls",
+      protected: true,
+    },
+    {
+      imgURL: "/icons/refer-and-earn.svg",
+      route: "/transactions",
+      label: "Transaction History",
+      protected: true,
+    },
+    {
+      imgURL: "/icons/heart.svg",
+      route: "/favorites",
+      label: "Favorites",
+      protected: true,
+    },
+    {
+      imgURL: "/icons/support.svg",
+      route: "/support",
+      label: "Support",
+      protected: false,
+    },
+  ],
+  sections: [],
+};
 
-export const newSidebarLinksCreator = [
-  // {
-  // 	imgURL: "/creator/home.svg",
-  // 	route: "/home",
-  // 	label: "Home",
-  // 	protected: false,
-  // },
-  {
-    imgURL: "/creator/orderHistory.svg",
-    route: "/previous",
-    label: "Order History",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/transactionHistory.svg",
-    route: "/payment",
-    label: "Transaction History",
-    protected: true,
-  },
-  ,
-  {
-    imgURL: "/creator/upcoming.svg",
-    route: "/upcoming",
-    label: "Scheduled Calls",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/calendar.svg",
-    route: "/calendar",
-    label: "Calendar",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/calendarEvent.svg",
-    route: "/calendar-events",
-    label: "Google Calendar Settings",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/discountCampaign.svg",
-    route: "/campaign/discount",
-    label: "Discount Campaigns",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/whatsapp.svg",
-    route: "/campaign/whatsapp",
-    label: "WhatsApp Campaigns",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/serviceManagement.svg",
-    route: "/service-management",
-    label: "Service Management",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/group.svg",
-    route: "/groupManagement",
-    label: "Group Management",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/users.svg",
-    route: "/users",
-    label: "My Users",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/feedback.svg",
-    route: "/userFeedbacks",
-    label: "User Feedback's",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/blocked.svg",
-    route: "/blocked-accounts",
-    label: "Blocked Users",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/notification.svg",
-    route: "/notifications",
-    label: "Notifications",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/refer.svg",
-    route: "/refer",
-    label: "Refer and Earn",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/paymentSetting.svg",
-    route: "/payment-settings",
-    label: "Payment Settings",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/meta.svg",
-    route: "/meta-analytics",
-    label: "Meta Pixel Analytics",
-    protected: true,
-  },
-  {
-    imgURL: "/creator/inbox.svg",
-    route: "/inbox",
-    label: "Inbox",
-    protected: true,
-  },
-  // {
-  // 	imgURL: "/icons/support.svg",
-  // 	route: "/support",
-  // 	label: "Support",
-  // 	protected: false,
-  // },
-];
+export const newSidebarLinksCreator = {
+  links: [
+    {
+      imgURL: "/creator/home.svg",
+      route: "/home",
+      label: "Home",
+      protected: false,
+    },
+    {
+      imgURL: "/creator/orderHistory.svg",
+      route: "/previous",
+      label: "Order History",
+      protected: true,
+    },
+    {
+      imgURL: "/creator/transactionHistory.svg",
+      route: "/payment",
+      label: "Transaction History",
+      protected: true,
+    },
+    {
+      imgURL: "/creator/upcoming.svg",
+      route: "/upcoming",
+      label: "Scheduled Calls",
+      protected: true,
+    },
+  ],
+  sections: [
+    {
+      section: "Profile & Services",
+      links: [
+        {
+          imgURL: "/creator/serviceManagement.svg",
+          route: "/service-management",
+          label: "My Services",
+          protected: true,
+        },
+        {
+          imgURL: "/creator/users.svg",
+          route: "/users",
+          label: "My Users",
+          protected: true,
+        },
+        {
+          imgURL: "/creator/feedback.svg",
+          route: "/userFeedbacks",
+          label: "User Feedback's",
+          protected: true,
+        },
+        {
+          imgURL: "/creator/blocked.svg",
+          route: "/blocked-accounts",
+          label: "Blocked Users",
+          protected: true,
+        },
+      ],
+    },
+    {
+      section: "Calendar & Scheduling",
+      links: [
+        {
+          imgURL: "/creator/calendar.svg",
+          route: "/calendar",
+          label: "Calendar Settings",
+          protected: true,
+        },
+        {
+          imgURL: "/creator/calendarEvent.svg",
+          route: "/calendar-events",
+          label: "Google Calendar Settings",
+          protected: true,
+        },
+      ],
+    },
+    {
+      section: "Payments & KYC",
+      links: [
+        {
+          imgURL: "/creator/paymentSetting.svg",
+          route: "/payment-settings",
+          label: "Payment Methods",
+          protected: true,
+        },
+        {
+          imgURL: "/creator/paymentSetting.svg",
+          route: "/kyc",
+          label: "KYC",
+          protected: true,
+        },
+      ],
+    },
+    {
+      section: "Marketing & Growth",
+      links: [
+        {
+          imgURL: "/creator/discountCampaign.svg",
+          route: "/campaign/discount",
+          label: "Discount Campaigns",
+          protected: true,
+        },
+        {
+          imgURL: "/creator/whatsapp.svg",
+          route: "/campaign/whatsapp",
+          label: "WhatsApp Campaigns",
+          protected: true,
+        },
+        {
+          imgURL: "/creator/group.svg",
+          route: "/groupManagement",
+          label: "Group Management",
+          protected: true,
+        },
+        {
+          imgURL: "/creator/meta.svg",
+          route: "/meta-analytics",
+          label: "Meta Pixel Analytics",
+          protected: true,
+        },
+        {
+          imgURL: "/creator/refer.svg",
+          route: "/refer",
+          label: "Refer and Earn",
+          protected: true,
+        },
+      ],
+    },
+  ],
+};
 
-export const sidebarLinksCreator = [
-  // {
-  // 	imgURL: "/icons/Home.svg",
-  // 	route: "/home",
-  // 	label: "Home",
-  // 	protected: false,
-  // },
-  {
-    imgURL: "/icons/orderHistory.svg",
-    route: "/previous",
-    label: "Order History",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/upcoming.svg",
-    route: "/upcoming",
-    label: "Scheduled Calls",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/calendar.svg",
-    route: "/calendar",
-    label: "Calendar",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/calendarEvent.svg",
-    route: "/calendar-events",
-    label: "Google Calendar Settings",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/discount.svg",
-    route: "/campaign/discount",
-    label: "Discount Campaigns",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/whatsapp.svg",
-    route: "/campaign/whatsapp",
-    label: "WhatsApp Campaigns",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/serviceManagement.svg",
-    route: "/service-management",
-    label: "Service Management",
-    protected: true,
-  },
+// export const sidebarLinksCreator = [
+//   {
+//     imgURL: "/icons/Home.svg",
+//     route: "/home",
+//     label: "Home",
+//     protected: false,
+//   },
+//   {
+//     imgURL: "/icons/orderHistory.svg",
+//     route: "/previous",
+//     label: "Order History",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/upcoming.svg",
+//     route: "/upcoming",
+//     label: "Scheduled Calls",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/calendar.svg",
+//     route: "/calendar",
+//     label: "Calendar",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/calendarEvent.svg",
+//     route: "/calendar-events",
+//     label: "Google Calendar Settings",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/discount.svg",
+//     route: "/campaign/discount",
+//     label: "Discount Campaigns",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/whatsapp.svg",
+//     route: "/campaign/whatsapp",
+//     label: "WhatsApp Campaigns",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/serviceManagement.svg",
+//     route: "/service-management",
+//     label: "Service Management",
+//     protected: true,
+//   },
 
-  {
-    imgURL: "/icons/group.svg",
-    route: "/groupManagement",
-    label: "Group Management",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/favorites.svg",
-    route: "/userFeedbacks",
-    label: "User Feedback's",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/blocked.svg",
-    route: "/blocked-accounts",
-    label: "Blocked Users",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/notifications.svg",
-    route: "/notifications",
-    label: "Notifications",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/kyc.svg",
-    route: "/kyc",
-    label: "KYC",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/refer-and-earn.svg",
-    route: "/refer",
-    label: "Refer and Earn",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/paymentSettings.svg",
-    route: "/payment-settings",
-    label: "Payment Settings",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/metaPixel.svg",
-    route: "/meta-analytics",
-    label: "Meta Pixel Analytics",
-    protected: true,
-  },
-  {
-    imgURL: "/icons/termsConditions.svg",
-    route: "/terms-and-conditions",
-    label: "Terms & Conditions",
-    protected: false,
-  },
-  {
-    imgURL: "/icons/support.svg",
-    route: "/support",
-    label: "Support",
-    protected: false,
-  },
-];
+//   {
+//     imgURL: "/icons/group.svg",
+//     route: "/groupManagement",
+//     label: "Group Management",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/favorites.svg",
+//     route: "/userFeedbacks",
+//     label: "User Feedback's",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/blocked.svg",
+//     route: "/blocked-accounts",
+//     label: "Blocked Users",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/notifications.svg",
+//     route: "/notifications",
+//     label: "Notifications",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/kyc.svg",
+//     route: "/kyc",
+//     label: "KYC",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/refer-and-earn.svg",
+//     route: "/refer",
+//     label: "Refer and Earn",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/paymentSettings.svg",
+//     route: "/payment-settings",
+//     label: "Payment Settings",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/metaPixel.svg",
+//     route: "/meta-analytics",
+//     label: "Meta Pixel Analytics",
+//     protected: true,
+//   },
+//   {
+//     imgURL: "/icons/termsConditions.svg",
+//     route: "/terms-and-conditions",
+//     label: "Terms & Conditions",
+//     protected: false,
+//   },
+//   {
+//     imgURL: "/icons/support.svg",
+//     route: "/support",
+//     label: "Support",
+//     protected: false,
+//   },
+// ];
+
+export const sidebarLinksCreator = {
+  links: [
+    {
+      imgURL: "/icons/Home.svg",
+      route: "/home",
+      label: "Home",
+      protected: false,
+    },
+    {
+      imgURL: "/icons/orderHistory.svg",
+      route: "/previous",
+      label: "Order History",
+      protected: true,
+    },
+    {
+      imgURL: "/icons/upcoming.svg",
+      route: "/upcoming",
+      label: "Scheduled Calls",
+      protected: true,
+    },
+    {
+      imgURL: "/icons/notifications.svg",
+      route: "/notifications",
+      label: "Notifications",
+      protected: true,
+    },
+  ],
+  sections: [
+    {
+      section: "Profile & Services",
+      links: [
+        {
+          imgURL: "/icons/serviceManagement.svg",
+          route: "/service-management",
+          label: "Service Management",
+          protected: true,
+        },
+        {
+          imgURL: "/icons/favorites.svg",
+          route: "/userFeedbacks",
+          label: "User Feedback's",
+          protected: true,
+        },
+        {
+          imgURL: "/icons/blocked.svg",
+          route: "/blocked-accounts",
+          label: "Blocked Users",
+          protected: true,
+        },
+      ],
+    },
+    {
+      section: "Calendar & Scheduling",
+      links: [
+        {
+          imgURL: "/icons/calendar.svg",
+          route: "/calendar",
+          label: "Calendar",
+          protected: true,
+        },
+        {
+          imgURL: "/icons/calendarEvent.svg",
+          route: "/calendar-events",
+          label: "Google Calendar Settings",
+          protected: true,
+        },
+      ],
+    },
+    {
+      section: "Payments & KYC",
+      links: [
+        {
+          imgURL: "/icons/paymentSettings.svg",
+          route: "/payment-settings",
+          label: "Payment Settings",
+          protected: true,
+        },
+        {
+          imgURL: "/icons/kyc.svg",
+          route: "/kyc",
+          label: "KYC",
+          protected: true,
+        },
+      ],
+    },
+    {
+      section: "Marketing & Growth",
+      links: [
+        {
+          imgURL: "/icons/discount.svg",
+          route: "/campaign/discount",
+          label: "Discount Campaigns",
+          protected: true,
+        },
+        {
+          imgURL: "/icons/whatsapp.svg",
+          route: "/campaign/whatsapp",
+          label: "WhatsApp Campaigns",
+          protected: true,
+        },
+        {
+          imgURL: "/icons/group.svg",
+          route: "/groupManagement",
+          label: "Group Management",
+          protected: true,
+        },
+        {
+          imgURL: "/icons/metaPixel.svg",
+          route: "/meta-analytics",
+          label: "Meta Pixel Analytics",
+          protected: true,
+        },
+        {
+          imgURL: "/icons/refer-and-earn.svg",
+          route: "/refer",
+          label: "Refer and Earn",
+          protected: true,
+        },
+      ],
+    },
+    {
+      section: "Support & Legal",
+      links: [
+        {
+          imgURL: "/icons/termsConditions.svg",
+          route: "/terms-and-conditions",
+          label: "Terms & Conditions",
+          protected: false,
+        },
+        {
+          imgURL: "/icons/support.svg",
+          route: "/support",
+          label: "Support",
+          protected: false,
+        },
+      ],
+    },
+  ],
+};
 
 export const authSliderContent = [
   {

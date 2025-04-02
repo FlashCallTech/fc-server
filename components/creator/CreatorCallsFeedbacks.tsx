@@ -502,7 +502,7 @@ const CreatorCallsFeedbacks = ({
             </Droppable>
           </DragDropContext>
         ) : (
-          <div className="flex flex-col justify-center p-8 items-center border-[1px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg w-full">
+          <div className="h-[calc(100vh-6rem)] flex flex-col justify-center p-8 items-center border-[1px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg w-full">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               xmlnsXlink="http://www.w3.org/1999/xlink"
