@@ -71,11 +71,11 @@ const NavbarWeb = ({
         {currentUser ? (
           <>
             {/* Home Button */}
-            {/* <Link href="/home">
-							<Button className="min-w-[130px] bg-black text-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7">
-								Home
-							</Button>
-						</Link> */}
+            <Link href="/home">
+              <Button className="min-w-[130px] bg-black text-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7">
+                Home
+              </Button>
+            </Link>
             {/* Sign Out Button */}
             <Button
               className="min-w-[130px] bg-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7"
@@ -108,7 +108,7 @@ const NavbarWeb = ({
     <nav className="sticky top-0 blurEffect bg-gradient-to-r from-[#ecf5de] via-white to-[#dff7fb] w-full px-6 py-4 md:px-14 lg:px-24 z-40">
       <section className="flex bg-white items-center justify-between p-4 rounded-full border border-gray-300">
         {/* logo */}
-        <Link href="#" className="hidden md:block">
+        <Link href="/home" className="hidden md:block">
           <Image
             src="/icons/newLogo.png"
             alt="logo"
@@ -119,7 +119,7 @@ const NavbarWeb = ({
           />
         </Link>
 
-        <Link href="#" className="md:hidden">
+        <Link href="/home" className="md:hidden">
           <Image
             src="/icons/newLogo.png"
             alt="logo"

@@ -9,76 +9,76 @@ import * as Sentry from "@sentry/nextjs";
 import { backendBaseUrl } from "@/lib/utils";
 
 const TriggerCallFeedback = ({ callId }: { callId: string }) => {
-	const router = useRouter();
-	const { toast } = useToast();
-	const [loadingFeedback, setLoadingFeedback] = useState(true);
-	const [showFeedback, setShowFeedback] = useState(false);
-	const creatorURL = localStorage.getItem("creatorURL");
+  const router = useRouter();
+  const { toast } = useToast();
+  const [loadingFeedback, setLoadingFeedback] = useState(true);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const creatorURL = localStorage.getItem("creatorURL");
 
-	useEffect(() => {
-		const fetchFeedbacks = async () => {
-			try {
-				const response = await fetch(
-					`${backendBaseUrl}/feedback/call/getFeedbacks?callId=${callId}`
-				);
-				const feedbacks = await response.json();
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      try {
+        const response = await fetch(
+          `${backendBaseUrl}/feedback/call/getFeedbacks?callId=${callId}`
+        );
+        const feedbacks = await response.json();
 
-				if (feedbacks.length > 0) {
-					toast({
-						variant: "destructive",
-						title: "Feedback Already Exists",
-						description: "Returning back ...",
-						toastStatus: "positive",
-					});
-					router.push(`${creatorURL ? creatorURL : "/home"}`);
-				} else {
-					setShowFeedback(true);
-				}
-			} catch (error) {
-				Sentry.captureException(error);
-				console.error("Error fetching feedbacks:", error);
-				toast({
-					variant: "destructive",
-					title: "Error",
-					description: "An error occurred while fetching feedbacks",
-					toastStatus: "negative",
-				});
-			} finally {
-				setLoadingFeedback(false);
-			}
-		};
+        if (feedbacks.length > 0) {
+          toast({
+            variant: "destructive",
+            title: "Feedback Already Exists",
+            description: "Returning back ...",
+            toastStatus: "positive",
+          });
+          router.push(`${creatorURL ? creatorURL : "/"}`);
+        } else {
+          setShowFeedback(true);
+        }
+      } catch (error) {
+        Sentry.captureException(error);
+        console.error("Error fetching feedbacks:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occurred while fetching feedbacks",
+          toastStatus: "negative",
+        });
+      } finally {
+        setLoadingFeedback(false);
+      }
+    };
 
-		fetchFeedbacks();
-	}, [callId, router, toast]);
+    fetchFeedbacks();
+  }, [callId, router, toast]);
 
-	const handleFeedbackClose = async () => {
-		setShowFeedback(false);
-		toast({
-			variant: "destructive",
-			title: "Thanks For The Feedback",
-			description: "Hope to See You Again ...",
-			toastStatus: "positive",
-		});
-		router.push(`${creatorURL ? creatorURL : "/home"}`);
-	};
+  const handleFeedbackClose = async () => {
+    setShowFeedback(false);
+    toast({
+      variant: "destructive",
+      title: "Thanks For The Feedback",
+      description: "Hope to See You Again ...",
+      toastStatus: "positive",
+    });
+    router.push(`${creatorURL ? creatorURL : "/"}`);
+  };
 
-	if (loadingFeedback) {
-		return (
-			<section className="w-full h-full flex items-center justify-center">
-				<SinglePostLoader />
-			</section>
-		);
-	}
+  if (loadingFeedback) {
+    return (
+      <section className="w-full h-full flex items-center justify-center">
+        <SinglePostLoader />
+      </section>
+    );
+  }
 
-	return (
-		<section className="w-full h-full flex items-center justify-center">
-			<CallFeedback
-				callId={callId as string}
-				isOpen={showFeedback}
-				onOpenChange={handleFeedbackClose}
-			/>
-		</section>
-	);
+  return (
+    <section className="w-full h-full flex items-center justify-center">
+      <CallFeedback
+        callId={callId as string}
+        isOpen={showFeedback}
+        onOpenChange={handleFeedbackClose}
+      />
+    </section>
+  );
 };
 
 export default TriggerCallFeedback;

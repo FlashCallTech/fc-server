@@ -88,7 +88,7 @@ const Notifications = () => {
       >
         <section className="flex items-center gap-4">
           <Link
-            href={`${creatorURL ? creatorURL : "/home"}`}
+            href={`${creatorURL ? creatorURL : "/"}`}
             className="text-xl font-bold hoverScaleDownEffect"
           >
             <svg

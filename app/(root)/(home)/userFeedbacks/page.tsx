@@ -32,7 +32,7 @@ const UserFeedbacks = () => {
       if (creatorURL) {
         router.push(`/${creatorURL}`);
       } else {
-        router.push("/home");
+        router.push("/");
       }
     }
   }, [creatorURL, router, userType]);
@@ -59,7 +59,7 @@ const UserFeedbacks = () => {
         >
           <section className="flex items-center gap-4">
             <Link
-              href={`${creatorURL ? creatorURL : "/home"}`}
+              href={`${creatorURL ? creatorURL : "/"}`}
               className="text-xl font-bold"
             >
               <svg

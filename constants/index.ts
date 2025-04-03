@@ -38,7 +38,7 @@ export const newSidebarLinksCreator = {
   links: [
     {
       imgURL: "/creator/home.svg",
-      route: "/home",
+      route: "/",
       label: "Home",
       protected: false,
     },
@@ -163,123 +163,11 @@ export const newSidebarLinksCreator = {
   ],
 };
 
-// export const sidebarLinksCreator = [
-//   {
-//     imgURL: "/icons/Home.svg",
-//     route: "/home",
-//     label: "Home",
-//     protected: false,
-//   },
-//   {
-//     imgURL: "/icons/orderHistory.svg",
-//     route: "/previous",
-//     label: "Order History",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/upcoming.svg",
-//     route: "/upcoming",
-//     label: "Scheduled Calls",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/calendar.svg",
-//     route: "/calendar",
-//     label: "Calendar",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/calendarEvent.svg",
-//     route: "/calendar-events",
-//     label: "Google Calendar Settings",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/discount.svg",
-//     route: "/campaign/discount",
-//     label: "Discount Campaigns",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/whatsapp.svg",
-//     route: "/campaign/whatsapp",
-//     label: "WhatsApp Campaigns",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/serviceManagement.svg",
-//     route: "/service-management",
-//     label: "Service Management",
-//     protected: true,
-//   },
-
-//   {
-//     imgURL: "/icons/group.svg",
-//     route: "/groupManagement",
-//     label: "Group Management",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/favorites.svg",
-//     route: "/userFeedbacks",
-//     label: "User Feedback's",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/blocked.svg",
-//     route: "/blocked-accounts",
-//     label: "Blocked Users",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/notifications.svg",
-//     route: "/notifications",
-//     label: "Notifications",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/kyc.svg",
-//     route: "/kyc",
-//     label: "KYC",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/refer-and-earn.svg",
-//     route: "/refer",
-//     label: "Refer and Earn",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/paymentSettings.svg",
-//     route: "/payment-settings",
-//     label: "Payment Settings",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/metaPixel.svg",
-//     route: "/meta-analytics",
-//     label: "Meta Pixel Analytics",
-//     protected: true,
-//   },
-//   {
-//     imgURL: "/icons/termsConditions.svg",
-//     route: "/terms-and-conditions",
-//     label: "Terms & Conditions",
-//     protected: false,
-//   },
-//   {
-//     imgURL: "/icons/support.svg",
-//     route: "/support",
-//     label: "Support",
-//     protected: false,
-//   },
-// ];
-
 export const sidebarLinksCreator = {
   links: [
     {
       imgURL: "/icons/Home.svg",
-      route: "/home",
+      route: "/",
       label: "Home",
       protected: false,
     },

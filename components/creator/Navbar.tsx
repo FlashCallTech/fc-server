@@ -174,7 +174,7 @@ const CreatorNavbar = () => {
       {!fetchingUser && !isCreatorHome && (
         <div className="hidden lg:flex gap-4 items-center text-lg font-bold">
           <Link
-            href={`${creatorURL ? creatorURL : "/home"}`}
+            href={`${creatorURL ? creatorURL : "/"}`}
             className="text-xl font-bold hoverScaleDownEffect"
           >
             <svg
