@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,7 @@ import Image from "next/image";
 import axios from "axios";
 import { backendBaseUrl } from "@/lib/utils";
 import GetRandomImage from "@/utils/GetRandomImage";
+import { useToast } from "../ui/use-toast";
 
 const useScreenSize = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -39,48 +40,87 @@ const CustomFeedback = ({
   isOpen,
   onOpenChange,
   creatorId,
+  refetch,
 }: {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   creatorId: string;
+  refetch?: any;
 }) => {
   const isSmallScreen = useScreenSize();
   const [rating, setRating] = useState<number>(5);
   const [name, setName] = useState("Flashcall User");
   const [testimonial, setTestimonial] = useState("");
-  let image = GetRandomImage();
+  const [addingTestimonial, setAddingTestimonial] = useState(false);
+  const { toast } = useToast();
+  let image = useRef<string | null>(null);
+
+  useEffect(() => {
+    image.current = GetRandomImage(true);
+  }, []);
 
   const handleRating = (index: number) => {
     setRating(index);
   };
 
-  const handleFeedbackSubmt = async () => {
-    await axios.post(`${backendBaseUrl}/feedback/call/create`, {
-      creatorId: creatorId,
-      callId: crypto.randomUUID(),
-      clientId: "6756c9f7792c48a3f5d8b2c3",
-      showFeedback: true,
-      rating: rating,
-      feedbackText: testimonial,
-      isCustomAdded: true,
-      customUserName: name || "Flashcall User",
-      customUserImage: image,
-    });
+  const handleFeedbackSubmit = async () => {
+    if (!image.current) {
+      toast({
+        variant: "destructive",
+        title: "Unable to submit testimonial",
+        description: "Image not loaded properly.",
+        toastStatus: "negative",
+      });
+      return;
+    }
 
-    onOpenChange(false);
+    try {
+      setAddingTestimonial(true);
+
+      const requestData = {
+        creatorId: creatorId,
+        callId: crypto.randomUUID(),
+        clientId: "6756c9f7792c48a3f5d8b2c3",
+        showFeedback: false,
+        rating: rating,
+        feedbackText: testimonial,
+        isCustomAdded: true,
+        customUserName: name || "Flashcall User",
+        customUserImage: image.current,
+      };
+
+      await axios.post(`${backendBaseUrl}/feedback/call/create`, requestData);
+
+      setTimeout(() => {
+        onOpenChange(false);
+        refetch();
+      }, 1000);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Unable to add Testimonial",
+        description: "Something went wrong.",
+        toastStatus: "negative",
+      });
+      console.error("Error submitting testimonial:", error);
+    } finally {
+      setTimeout(() => {
+        setAddingTestimonial(false);
+      }, 1000);
+    }
   };
 
   const content = (
-    <div className={`size-full max-w-lg`}>
+    <div className={`size-full md:max-w-lg`}>
       <div className="size-full flex flex-col items-start justify-start gap-5">
-        <div className="size-full flex flex-col items-start justify-start gap-5 py-5">
+        <div className="size-full flex flex-col items-start justify-start gap-5 py-5 mb-20">
           {/* Name Input */}
           <div className="w-full">
             <label className="text-sm font-medium">Full Name</label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Add Name"
+              placeholder="Add Username"
               className="mt-1"
             />
           </div>
@@ -130,7 +170,7 @@ const CustomFeedback = ({
                 <Image
                   width={1000}
                   height={1000}
-                  src={image}
+                  src={image.current as string}
                   alt="Profile"
                   className="size-12 object-cover rounded-full"
                 />
@@ -154,7 +194,7 @@ const CustomFeedback = ({
                   </div>
 
                   {/* Testimonial Preview */}
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-gray-600 line-clamp-3 text-ellipsis mt-2.5">
                     {testimonial ||
                       "Your testimonial will appear here as you type..."}
                   </p>
@@ -166,9 +206,7 @@ const CustomFeedback = ({
 
         {/* Buttons */}
         <div
-          className={`w-full flex gap-4 items-center justify-end ${
-            isSmallScreen ? "py-5" : "pt-5"
-          } sticky bottom-0`}
+          className={`bg-white w-full flex gap-4 items-center justify-end py-2.5 sticky bottom-0`}
         >
           <Button
             className="rounded-full"
@@ -180,9 +218,9 @@ const CustomFeedback = ({
           <Button
             disabled={rating < 1}
             className="bg-black text-white rounded-full hoverScaleDownEffect"
-            onClick={handleFeedbackSubmt}
+            onClick={handleFeedbackSubmit}
           >
-            Add Testimonial
+            {addingTestimonial ? "Adding ..." : "Add Testimonial"}
           </Button>
         </div>
       </div>
@@ -191,7 +229,10 @@ const CustomFeedback = ({
 
   return isSmallScreen ? (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-full bg-white">
+      <SheetContent
+        side="bottom"
+        className="h-full bg-white overflow-y-scroll no-scrollbar !pb-0"
+      >
         <SheetHeader>
           <SheetTitle className="text-2xl font-semibold text-start">
             Add Testimonial
@@ -202,7 +243,7 @@ const CustomFeedback = ({
     </Sheet>
   ) : (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-lg bg-white rounded-lg shadow-lg">
+      <DialogContent className="w-full max-w-lg bg-white rounded-lg shadow-lg !pb-0">
         {/* Fixed Header */}
         <DialogHeader className="sticky top-0 z-10">
           <DialogTitle className="text-2xl font-semibold text-start">

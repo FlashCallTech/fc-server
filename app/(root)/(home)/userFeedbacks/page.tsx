@@ -24,6 +24,7 @@ const UserFeedbacks = () => {
     isError,
     fetchNextPage,
     hasNextPage,
+    refetch,
   } = useGetFeedbacks(creatorUser?._id as string);
 
   useEffect(() => {
@@ -89,7 +90,10 @@ const UserFeedbacks = () => {
             No Feedback found.
           </p>
         ) : (
-          <CreatorCallsFeedbacks feedbackData={feedbackData} />
+          <CreatorCallsFeedbacks
+            feedbackData={feedbackData}
+            refetch={refetch}
+          />
         )}
 
         {hasNextPage && isFetching && (
@@ -123,7 +127,10 @@ const UserFeedbacks = () => {
             No Feedback found.
           </p>
         ) : (
-          <CreatorCallsFeedbacks feedbackData={feedbackData} />
+          <CreatorCallsFeedbacks
+            feedbackData={feedbackData}
+            refetch={refetch}
+          />
         )}
 
         {hasNextPage && isFetching && (

@@ -130,7 +130,7 @@ const MobileNav = () => {
                         <Link
                           href={item.route}
                           className={cn(
-                            "flex gap-4 items-center p-4 rounded-lg w-full hover:bg-green-1",
+                            "flex gap-4 items-center py-4 rounded-lg w-full hover:bg-green-1",
                             {
                               "bg-green-1": pathname === item.route,
                             }

@@ -18,20 +18,18 @@ import {
 import { Button } from "../ui/button";
 import { useToast } from "../ui/use-toast";
 
-const DeleteCreatorGroupAlert = ({
-  showDeleteServiceAlert,
-  setShowDeleteServiceAlert,
+const DeleteFeedbackAlert = ({
+  showDeleteFeedbackAlert,
+  setShowDeleteFeedbackAlert,
   handleConfirmRemove,
   loading,
-  groupId,
-  groupName,
+  feedbackId,
 }: {
-  showDeleteServiceAlert: boolean;
-  setShowDeleteServiceAlert: React.Dispatch<React.SetStateAction<boolean>>;
-  handleConfirmRemove: (groupId: string) => Promise<void>;
+  showDeleteFeedbackAlert: boolean;
+  setShowDeleteFeedbackAlert: React.Dispatch<React.SetStateAction<boolean>>;
+  handleConfirmRemove: (feedbackId: string) => Promise<void>;
   loading: boolean;
-  groupId: string | undefined;
-  groupName?: string;
+  feedbackId: string | undefined;
 }) => {
   const [isMobileView, setIsMobileView] = useState(false);
   const { toast } = useToast();
@@ -49,13 +47,13 @@ const DeleteCreatorGroupAlert = ({
   }, []);
 
   const handleRemove = async () => {
-    if (groupId) {
-      await handleConfirmRemove(groupId);
+    if (feedbackId) {
+      await handleConfirmRemove(feedbackId);
     } else {
       toast({
         variant: "destructive",
-        title: "Unable to Remove Group",
-        description: "Group was not removed...",
+        title: "Unable to Remove Feedback",
+        description: "Feedback was not removed...",
         toastStatus: "negative",
       });
     }
@@ -63,22 +61,22 @@ const DeleteCreatorGroupAlert = ({
 
   return isMobileView ? (
     <Sheet
-      open={showDeleteServiceAlert}
-      onOpenChange={setShowDeleteServiceAlert}
+      open={showDeleteFeedbackAlert}
+      onOpenChange={setShowDeleteFeedbackAlert}
     >
       <SheetContent side="bottom" className=" bg-white rounded-t-xl ">
         <SheetHeader>
           <SheetTitle className="text-red-500 !text-start">
-            Remove Group
+            Remove Feedback
           </SheetTitle>
           <SheetDescription className="!text-start">
-            Are you sure you want to remove group_{groupName || groupId} ?
+            Are you sure you want to remove feedback_{feedbackId} ?
           </SheetDescription>
         </SheetHeader>
         <div className="w-full flex items-center justify-start gap-2 mt-7">
           <Button
             className="hoverScaleDownEffect text-black mt-0 border border-gray-300 hover:bg-gray-50"
-            onClick={() => setShowDeleteServiceAlert(false)}
+            onClick={() => setShowDeleteFeedbackAlert(false)}
           >
             Cancel
           </Button>
@@ -94,23 +92,23 @@ const DeleteCreatorGroupAlert = ({
     </Sheet>
   ) : (
     <Dialog
-      open={showDeleteServiceAlert}
-      onOpenChange={setShowDeleteServiceAlert}
+      open={showDeleteFeedbackAlert}
+      onOpenChange={setShowDeleteFeedbackAlert}
     >
       <DialogContent className="bg-white max-w-[92%] md:max-w-sm rounded-[8px]">
         <DialogHeader>
           <DialogTitle className="text-red-500 !text-start">
-            Remove Group
+            Remove Feedback
           </DialogTitle>
           <DialogDescription className=" text-sm !text-start">
-            Are you sure you want to remove group_{groupName || groupId} ?
+            Are you sure you want to remove feedback_{feedbackId} ?
           </DialogDescription>
         </DialogHeader>
 
         <div className="w-full flex items-center justify-start gap-2">
           <Button
             className="hoverScaleDownEffect text-black mt-0 border border-gray-300 hover:bg-gray-50"
-            onClick={() => setShowDeleteServiceAlert(false)}
+            onClick={() => setShowDeleteFeedbackAlert(false)}
           >
             Cancel
           </Button>
@@ -127,4 +125,4 @@ const DeleteCreatorGroupAlert = ({
   );
 };
 
-export default DeleteCreatorGroupAlert;
+export default DeleteFeedbackAlert;

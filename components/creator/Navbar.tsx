@@ -153,10 +153,18 @@ const CreatorNavbar = () => {
             width={1000}
             height={1000}
             alt="flashcall logo"
-            className="flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-full hoverScaleDownEffect w-[128px] h-[40px] xl:w-[150px] xl:h-[48px]"
+            className="hidden xm:flex items-center justify-center gap-2 px-4 lg:ml-2 rounded-full hoverScaleDownEffect w-[128px] h-[40px] xl:w-[150px] xl:h-[48px]"
             style={{
               border: `1px solid #000000`,
             }}
+          />
+
+          <Image
+            src="/icons/logo_icon.png"
+            width={1000}
+            height={1000}
+            alt="flashcall logo"
+            className="flex xm:hidden items-center justify-center gap-2 px-4 lg:ml-2 rounded-full hoverScaleDownEffect h-auto w-14"
           />
         </Link>
       ) : (
@@ -192,7 +200,10 @@ const CreatorNavbar = () => {
         {!fetchingUser && (
           <div className="relative flex items-center gap-4">
             {
-              <Link href="/notifications" className="flex items-center gap-1">
+              <Link
+                href="/notifications"
+                className="flex items-center gap-1 hoverScaleDownEffect"
+              >
                 <Image
                   src="/icons/notifications.svg"
                   alt="Notifications"
@@ -211,7 +222,10 @@ const CreatorNavbar = () => {
               </Link>
             }
 
-            <Link href="/inbox" className="relative flex items-center gap-4">
+            <Link
+              href="/inbox"
+              className="relative flex items-center hoverScaleDownEffect"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
