@@ -60,7 +60,7 @@ const CreatorSidebar = () => {
       className="sticky left-0 top-0 flex h-screen flex-col justify-between min-w-[264px] border shadow-sm bg-gradient-to-t from-transparent to-transparent max-lg:hidden"
     >
       {/* Logo */}
-      <div className="p-4 mx-auto">
+      <Link href="/home" className="p-4 mx-auto">
         <Image
           src="/icons/newLogo.png"
           width={1000}
@@ -69,7 +69,7 @@ const CreatorSidebar = () => {
           className="w-20"
           priority
         />
-      </div>
+      </Link>
 
       {/* Sidebar Sections */}
       <div className="flex flex-1 flex-col gap-2.5 px-2 py-4 overflow-y-scroll no-scrollbar">
