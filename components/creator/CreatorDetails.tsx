@@ -404,7 +404,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 			const chatData: any = {
 				creatorImg: creator.photo,
-				clientImg: clientUser?.photo,
+				clientImg: clientUser?.photo || GetRandomImage(),
 				clientId: clientUser?._id,
 			};
 
