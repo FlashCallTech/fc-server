@@ -225,7 +225,7 @@ const ReferralLink: React.FC = () => {
               </span>
             </div>
           ) : isError ? (
-            <div className="flex flex-col w-full items-center justify-center h-full">
+            <div className="flex h-[calc(100vh-6rem)] flex-col w-full items-center justify-center">
               <h1 className="text-2xl font-semibold text-red-500">
                 Failed to fetch User Calls
               </h1>

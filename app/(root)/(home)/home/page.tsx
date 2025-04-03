@@ -152,7 +152,7 @@ const HomePage = () => {
     <main className={`flex flex-col pt-0 size-full`}>
       <Suspense fallback={<PostLoader count={limit === 12 ? 9 : 6} />}>
         {isError ? (
-          <div className="size-full flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
+          <div className="size-full h-[calc(100vh-6rem)] flex flex-col items-center justify-center text-2xl font-semibold text-center text-red-500">
             Failed to fetch creators
             <span className="text-lg">Please try again later</span>
           </div>
