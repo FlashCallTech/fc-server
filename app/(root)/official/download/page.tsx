@@ -90,6 +90,7 @@ export default function DownloadPage() {
             href="mailto:support@official.me"
             className="text-[#6366F1] font-semibold"
           >
+            {/* support email */}
             Reach Us: support@official.me
           </a>
         </p>
