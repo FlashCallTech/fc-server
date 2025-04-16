@@ -148,7 +148,7 @@ export const handleTransaction = async ({
       description: "An error occurred while processing the Transactions",
       toastStatus: "negative",
     });
-    router.push(`${creatorURL ? creatorURL : "/"}`);
+    router.push(`${creatorURL ? creatorURL : "/home"}`);
   } finally {
     // Update wallet balance after transaction
     router.push(`/feedback/${callId}`);

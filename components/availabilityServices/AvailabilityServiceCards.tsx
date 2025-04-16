@@ -12,6 +12,7 @@ import { Switch } from "../ui/switch";
 import PayPerMinuteCallsCards from "./PayPerMinuteCallsCards";
 import Link from "next/link";
 import { serviceIcon } from "@/constants/icons";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const useScreenSize = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -61,6 +62,8 @@ const AvailabilityServiceCards = ({
   const [expandedStates, setExpandedStates] = useState<Record<number, boolean>>(
     {}
   );
+
+  const { userType } = useCurrentUsersContext();
 
   const isMobile = useScreenSize();
 
@@ -167,7 +170,9 @@ const AvailabilityServiceCards = ({
         <div className="w-full flex items-center justify-between flex-wrap gap-2.5">
           <section className="w-fit flex items-center gap-4">
             <Link
-              href={`${creatorURL ? creatorURL : "/"}`}
+              href={`${
+                creatorURL ? creatorURL : userType === "creator" ? "/home" : "/"
+              }`}
               className="lg:hidden text-xl font-bold hoverScaleDownEffect"
             >
               <svg

@@ -44,7 +44,7 @@ const MeetingSetup = ({
 
   const handleCallEnded = () => {
     stopMediaStreams();
-    router.replace(`${creatorURL ? creatorURL : "/"}`);
+    router.replace(`${creatorURL ? creatorURL : "/home"}`);
   };
 
   const handleJoinNow = async () => {

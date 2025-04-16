@@ -30,7 +30,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
             description: "Returning back ...",
             toastStatus: "positive",
           });
-          router.push(`${creatorURL ? creatorURL : "/"}`);
+          router.push(`${creatorURL ? creatorURL : "/home"}`);
         } else {
           setShowFeedback(true);
         }
@@ -59,7 +59,7 @@ const TriggerCallFeedback = ({ callId }: { callId: string }) => {
       description: "Hope to See You Again ...",
       toastStatus: "positive",
     });
-    router.push(`${creatorURL ? creatorURL : "/"}`);
+    router.push(`${creatorURL ? creatorURL : "/home"}`);
   };
 
   if (loadingFeedback) {

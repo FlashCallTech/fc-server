@@ -37,7 +37,7 @@ const GroupsPage = () => {
   const [selectedGroup, setSelectedGroup] = useState<Group | undefined>(
     undefined
   );
-  const { currentUser, fetchingUser } = useCurrentUsersContext();
+  const { currentUser, fetchingUser, userType } = useCurrentUsersContext();
 
   const {
     data,
@@ -146,7 +146,13 @@ const GroupsPage = () => {
           >
             <section className="flex items-center gap-4">
               <Link
-                href={`${creatorURL ? creatorURL : "/"}`}
+                href={`${
+                  creatorURL
+                    ? creatorURL
+                    : userType === "creator"
+                    ? "/home"
+                    : "/"
+                }`}
                 className="text-xl font-bold hoverScaleDownEffect"
               >
                 <svg

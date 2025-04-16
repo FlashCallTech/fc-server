@@ -113,7 +113,7 @@ const ClientList = () => {
           onClick={handleSearch}
           className={`absolute ${
             searchQuery ? "right-16" : "right-4 cursor-not-allowed"
-          }  p-2 bg-green-1 lg:bg-black text-white rounded-full hoverScaleDownEffect`}
+          }  p-2 bg-black text-white rounded-full hoverScaleDownEffect`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -171,12 +171,12 @@ const ClientList = () => {
         </div>
       ) : isLoadingClients ? (
         <section
-          className={`w-full h-[calc(100vh-6rem)]flex items-center justify-center`}
+          className={`w-full h-[calc(100vh-14rem)] flex items-center justify-center`}
         >
           <SinglePostLoader />
         </section>
       ) : clients.length === 0 ? (
-        <div className="size-full h-[calc(100vh-6rem)] flex items-center justify-center text-xl font-semibold text-center text-gray-500">
+        <div className="size-full h-[calc(100vh-14rem)] flex items-center justify-center text-xl font-semibold text-center text-gray-500">
           No Clients Found
         </div>
       ) : isErrorClients ? (

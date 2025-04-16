@@ -37,7 +37,7 @@ const Transactions = () => {
   });
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
 
-  const { currentUser } = useCurrentUsersContext();
+  const { currentUser, userType } = useCurrentUsersContext();
   const { toast } = useToast();
   const { ref, inView } = useInView({
     threshold: 0.1,
@@ -122,7 +122,9 @@ const Transactions = () => {
         />
         <section className="flex items-center gap-4">
           <Link
-            href={`${creatorURL ? creatorURL : "/"}`}
+            href={`${
+              creatorURL ? creatorURL : userType === "creator" ? "/home" : "/"
+            }`}
             className="text-xl font-bold hoverScaleDownEffect"
           >
             <svg

@@ -35,7 +35,9 @@ const UpcomingPage = () => {
           className={`flex items-center justify-start gap-4 text-xl font-bold`}
         >
           <Link
-            href={`${creatorURL ? creatorURL : "/"}`}
+            href={`${
+              creatorURL ? creatorURL : userType === "creator" ? "/home" : "/"
+            }`}
             className={`${userType === "creator" && "lg:hidden"} `}
           >
             <svg

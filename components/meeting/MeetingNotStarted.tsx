@@ -75,7 +75,7 @@ const MeetingNotStarted = ({
   };
 
   const leaveCall = async () => {
-    router.push(`${creatorURL ? creatorURL : "/"}`);
+    router.push(`${creatorURL ? creatorURL : "/home"}`);
   };
 
   return (

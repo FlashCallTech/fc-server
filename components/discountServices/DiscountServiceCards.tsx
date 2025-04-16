@@ -31,6 +31,7 @@ import {
 
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 
 const useScreenSize = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -74,6 +75,8 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
 
   const [toDate, setToDate] = useState<Date | undefined>(undefined);
   const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
+
+  const { userType } = useCurrentUsersContext();
 
   const memoizedParams = useMemo(() => {
     return {
@@ -221,7 +224,9 @@ const DiscountServiceCards = ({ creator }: { creator: creatorUser }) => {
         <div className="w-full flex items-center justify-between flex-wrap gap-2.5">
           <section className="w-fit flex items-center gap-4">
             <Link
-              href={`${creatorURL ? creatorURL : "/"}`}
+              href={`${
+                creatorURL ? creatorURL : userType === "creator" ? "/home" : "/"
+              }`}
               className="lg:hidden text-xl font-bold hoverScaleDownEffect"
             >
               <svg

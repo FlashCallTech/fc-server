@@ -38,7 +38,7 @@ export const newSidebarLinksCreator = {
   links: [
     {
       imgURL: "/creator/home.svg",
-      route: "/",
+      route: "/home",
       label: "Home",
       protected: false,
     },
@@ -167,7 +167,7 @@ export const sidebarLinksCreator = {
   links: [
     {
       imgURL: "/icons/Home.svg",
-      route: "/",
+      route: "/home",
       label: "Home",
       protected: false,
     },

@@ -60,7 +60,9 @@ const PreviousPage = () => {
         >
           <section className="flex items-center gap-4">
             <Link
-              href={`${creatorURL ? creatorURL : "/"}`}
+              href={`${
+                creatorURL ? creatorURL : userType === "creator" ? "/home" : "/"
+              }`}
               className="text-xl font-bold"
             >
               <svg

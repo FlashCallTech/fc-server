@@ -18,9 +18,8 @@ const Recharge: React.FC = () => {
   const [creator, setCreator] = useState<creatorUser>();
   const [method, setMethod] = useState("");
   const [pg, setPg] = useState<string>("");
-  const { updateWalletBalance } = useWalletBalanceContext();
-  const { currentUser, clientUser } = useCurrentUsersContext();
-  const { pgHandler, loading } = useRecharge();
+  const { userType, clientUser } = useCurrentUsersContext();
+  const { loading } = useRecharge();
   const searchParams = useSearchParams();
   const amount = searchParams.get("amount");
 
@@ -95,7 +94,13 @@ const Recharge: React.FC = () => {
           <section className="w-full py-5 sticky">
             <section className="flex items-center gap-2 mb-2">
               <Link
-                href={`${creatorURL ? creatorURL : "/"}`}
+                href={`${
+                  creatorURL
+                    ? creatorURL
+                    : userType === "creator"
+                    ? "/home"
+                    : "/"
+                }`}
                 className="text-xl font-bold hoverScaleDownEffect"
               >
                 <svg

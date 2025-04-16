@@ -28,7 +28,7 @@ const CallFeedbackPage = () => {
     setShowFeedback(false);
     localStorage.setItem("hasVisitedFeedbackPage", "true");
 
-    router.replace(`${creatorURL ? creatorURL : "/"}`);
+    router.replace(`${creatorURL ? creatorURL : "/home"}`);
   };
 
   return (

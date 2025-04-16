@@ -34,8 +34,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
   const [showPayPal, setShowPayPal] = useState(false);
   const [pg, setPg] = useState<string>("");
   const { walletBalance } = useWalletBalanceContext();
-  const { currentUser } = useCurrentUsersContext();
-  const { clientUser } = useCurrentUsersContext();
+  const { currentUser, userType, clientUser } = useCurrentUsersContext();
   const { pgHandler, loading } = useRecharge();
   const router = useRouter();
 
@@ -313,7 +312,9 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
       <div className="sticky top-0 lg:top-[76px] bg-white z-30 flex flex-col  text-gray-800 w-full h-full p-4 gap-5">
         <section className="flex items-center gap-4 -ml-1">
           <Link
-            href={`${creatorURL ? creatorURL : "/"}`}
+            href={`${
+              creatorURL ? creatorURL : userType === "creator" ? "/home" : "/"
+            }`}
             className="text-xl font-bold"
           >
             <svg

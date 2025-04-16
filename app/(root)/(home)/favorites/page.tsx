@@ -18,7 +18,8 @@ const Favorites = () => {
   const [creator, setCreator] = useState<creatorUser>();
   const [favorites, setFavorites] = useState<any[]>([]);
   const [selectedProfession, setSelectedProfession] = useState("All");
-  const { currentUser, clientUser, fetchingUser } = useCurrentUsersContext();
+  const { currentUser, clientUser, fetchingUser, userType } =
+    useCurrentUsersContext();
   const { ref, inView } = useInView({
     threshold: 0.1,
     triggerOnce: false,
@@ -114,7 +115,9 @@ const Favorites = () => {
       >
         <section className="flex items-center gap-4">
           <Link
-            href={`${creatorURL ? creatorURL : "/"}`}
+            href={`${
+              creatorURL ? creatorURL : userType === "creator" ? "/home" : "/"
+            }`}
             className="text-xl font-bold hoverScaleDownEffect"
           >
             <svg

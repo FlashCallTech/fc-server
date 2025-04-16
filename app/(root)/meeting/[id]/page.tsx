@@ -58,7 +58,7 @@ const MeetingPage = () => {
         toastStatus: "negative",
       });
 
-      router.replace(`${creatorURL ? creatorURL : "/"}`);
+      router.replace(`${creatorURL ? creatorURL : "/home"}`);
     }
   }, [currentUser, fetchingUser]);
 
@@ -71,7 +71,7 @@ const MeetingPage = () => {
         toastStatus: "negative",
       });
       setTimeout(() => {
-        router.replace(`${creatorURL ? creatorURL : "/"}`);
+        router.replace(`${creatorURL ? creatorURL : "/home"}`);
       }, 1000);
     }
   }, [isCallLoading, call, router, toast]);
@@ -90,7 +90,7 @@ const MeetingPage = () => {
           toastStatus: "negative",
         });
         setTimeout(() => {
-          router.replace(`${creatorURL ? creatorURL : "/"}`);
+          router.replace(`${creatorURL ? creatorURL : "/home"}`);
         }, 1000);
       }
     }
@@ -286,14 +286,14 @@ const CallEnded = ({
         );
 
         if (hasVisitedFeedbackPage) {
-          router.replace(`${creatorURL ? creatorURL : "/"}`);
+          router.replace(`${creatorURL ? creatorURL : "/home"}`);
         } else {
           router.replace(`/feedback/${call.id}`);
         }
       } catch (error) {
         console.error("Error handling call end", error);
         const creatorURL = localStorage.getItem("creatorURL");
-        router.replace(`${creatorURL ? creatorURL : "/"}`);
+        router.replace(`${creatorURL ? creatorURL : "/home"}`);
       } finally {
         setLoading(false);
       }

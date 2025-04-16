@@ -68,20 +68,20 @@ const CreatorCampaignPage = () => {
   const handleConfirmDelete = async (campaignId: string) => {
     try {
       setDeletingCampaign(true);
-      await axios.delete(`${backendBaseUrl}/campaign/whatsapp/${campaignId}`);
+      await axios.delete(`${backendBaseUrl}/campaigns/whatsapp/${campaignId}`);
       setToggleCampaignDeleteAlert(false);
       setSelectedCampaign(null);
       toast({
         variant: "destructive",
-        title: "Service deleted successfully",
-        description: "Service was removed.",
+        title: "Campaign deleted successfully",
+        description: "Campaign was removed.",
         toastStatus: "positive",
       });
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Unable to delete group",
-        description: "Group was not removed.",
+        title: "Unable to delete campaign",
+        description: "Campaign was not removed.",
         toastStatus: "negative",
       });
       console.warn(error);
@@ -174,7 +174,13 @@ const CreatorCampaignPage = () => {
                 <div className="w-full flex justify-between flex-wrap items-center">
                   <div className="flex items-center gap-4">
                     <Link
-                      href={`${creatorURL ? creatorURL : "/"}`}
+                      href={`${
+                        creatorURL
+                          ? creatorURL
+                          : userType === "creator"
+                          ? "/home"
+                          : "/"
+                      }`}
                       className="text-xl font-bold hoverScaleDownEffect"
                     >
                       <svg
