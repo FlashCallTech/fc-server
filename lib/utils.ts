@@ -1038,12 +1038,18 @@ export const sendCallNotification = async (
 ) => {
 	const fcmToken = await fetchFCMToken(creatorPhone, "voip");
 
+	console.log(notificationType, fcmToken, callCategory);
+
 	if (fcmToken) {
 		try {
 			sendNotification(
 				fcmToken.token,
-				`Incoming ${callType} Call`,
-				`Call Request from ${clientUsername}`,
+				notificationType !== "call.missed"
+					? `Incoming ${callType} Call`
+					: `Missed ${callType} Call`,
+				notificationType !== "call.missed"
+					? `Call Request from ${clientUsername}`
+					: `Call from ${clientUsername}`,
 				{
 					created_by_display_name: maskNumbers(
 						clientUsername || "Flashcall User"
@@ -1058,7 +1064,11 @@ export const sendCallNotification = async (
 			if (fcmToken.voip_token) {
 				await axios.post(`${backendUrl}/send-notification`, {
 					deviceToken: fcmToken.voip_token,
-					message: `Incoming ${callType} Call Request from ${clientUsername}`,
+					message: `${
+						notificationType !== "call.missed"
+							? `Incoming ${callType} Call Request from ${clientUsername}`
+							: `Missed ${callType} Call from ${clientUsername}`
+					}`,
 					payload: {
 						created_by_display_name: maskNumbers(
 							clientUsername || "Flashcall User"
