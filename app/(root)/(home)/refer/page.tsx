@@ -9,9 +9,11 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import axios from "axios";
+import Loader from "@/components/shared/Loader";
 
 const ReferralLink: React.FC = () => {
 	const [referralSettings, setReferralSettings] = useState<any>(null);
+	const [loading, setLoading] = useState(true);
 	const { creatorUser } = useCurrentUsersContext();
 	const { ref, inView } = useInView({
 		threshold: 0.1,
@@ -35,10 +37,11 @@ const ReferralLink: React.FC = () => {
 		const fetchCharges = async () => {
 			try {
 				const response = await axios.get(`${backendBaseUrl}/referral/getReferralSettings`);
-				console.log(response.data);
 				setReferralSettings(response.data);
 			} catch (error) {
 				console.error("Error fetching referral settings:", error);
+			} finally {
+				setLoading(false);
 			}
 		};
 
@@ -65,6 +68,10 @@ const ReferralLink: React.FC = () => {
 					console.error("Failed to copy ID: ", err);
 				});
 		};
+
+		if(loading) {
+			return <Loader />;
+		}
 
 		return (
 			<div className="size-full flex bg-white">
