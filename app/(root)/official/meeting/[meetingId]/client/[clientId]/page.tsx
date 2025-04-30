@@ -225,6 +225,7 @@ const CallEnded = ({ call }: any) => {
 			try {
 				setLoading(true);
 				const endedBy = localStorage.getItem("endedBy");
+				await call?.endCall();
 
 				call.type === "default"
 					? trackEvent("BookCall_Video_Ended", {
@@ -241,7 +242,6 @@ const CallEnded = ({ call }: any) => {
 							Creator_ID: call.state.members[0].user_id,
 							EndedBy: endedBy ?? "creator",
 					  });
-				await call?.endCall();
 				await axios.post(
 					`${backendBaseUrl}/official/call/end/${call?.id}`,
 					{
