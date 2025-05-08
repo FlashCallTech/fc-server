@@ -14,8 +14,8 @@ const CopyToClipboard = ({
 }: {
 	link: string;
 	username: string;
-	profession: string;
-	gender: string;
+	profession?: string;
+	gender?: string;
 	firstName: string;
 	lastName: string;
 }) => {
@@ -39,14 +39,7 @@ const CopyToClipboard = ({
 	const fullName = getDisplayName({ firstName, lastName, username });
 
 	const shareLink = async () => {
-		const pronounPart = gender
-			? `I had a wonderful session with ${gender === "other" ? "them" : gender === "male" ? "him" : "her"
-			}.`
-			: `I had a wonderful session with ${fullName}.`;
-		const message = `Hi 👋,\n\n${fullName} is an amazing ${profession}. ${pronounPart}\n\nYou should consult with ${gender
-			? `${gender === "other" ? "them" : gender === "male" ? "him" : "her"}`
-			: "them"
-			} too.\n\nClick here to talk to ${fullName}.👇\n`;
+		const message = `Connect Instantly with ${fullName} for Consultations\n\nLooking for guidance in ${profession}? Connect instantly with me via audio, video, or text—no app downloads required. Affordable rates and seamless scheduling make it easier than ever to get the support you need.\n\nClick below to book your session and feel free to share this with friends who might benefit!\n👉 ${link}`;
 
 		if (navigator.share) {
 			try {
@@ -115,46 +108,41 @@ const CopyToClipboard = ({
 			</div>
 			{/* New Design */}
 			<div className="hidden md:flex justify-between items-center w-full gap-2">
-				<div
-					className="relative flex bg-white border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] w-full rounded-xl p-4 justify-between items-center gap-2 group cursor-pointer"
-					onClick={() => copyToClipboard(link)}
-				>
-					<Image
-						src={"/link.svg"}
-						width={24}
-						height={24}
-						alt="link"
-						className="w-5 h-5"
-					/>
-					<div className="grid items-start justify-start px-3 py-2 text-[#4B5563] overflow-x-hidden w-full group-hover:text-black">
-						<p className="text-ellipsis whitespace-nowrap min-w-0 overflow-hidden text-base font-normal leading-6 tracking-normal">
-							{link}
-						</p>
-					</div>
+				<div className="relative flex bg-white border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] w-full rounded-xl p-4 justify-between items-center gap-2 group cursor-pointer">
+					<div
+						className="w-full flex items-center"
+						onClick={() => copyToClipboard(link)}
+					>
+						<Image
+							src={"/link.svg"}
+							width={24}
+							height={24}
+							alt="link"
+							className="w-5 h-5"
+						/>
+						<div className="grid items-start justify-start px-3 py-2 text-[#4B5563] overflow-x-hidden w-full group-hover:text-black">
+							<p className="text-ellipsis whitespace-nowrap min-w-0 overflow-hidden text-base font-normal leading-6 tracking-normal">
+								{link}
+							</p>
+						</div>
 
-					<Image
-						src={"/copy.svg"}
-						width={24}
-						height={24}
-						alt="copy"
-						className="size-9 p-2 object-fit rounded hoverScaleDownEffect"
-					/>
+						<Image
+							src={"/copy.svg"}
+							width={24}
+							height={24}
+							alt="copy"
+							className="size-9 p-2 object-fit rounded hoverScaleDownEffect"
+						/>
+					</div>
 					<Image
 						src={"/creator/refer.svg"}
 						width={24}
 						height={24}
 						alt="copy"
 						className="size-9 p-2 object-fit rounded hoverScaleDownEffect filter grayscale brightness-[0.3] sepia hue-rotate-[220deg]"
+						onClick={shareLink}
 					/>
 				</div>
-				{/* <Image
-				src="/share.svg"
-				width={24}
-				height={24}
-				alt="share"
-				className="w-10 h-10 p-2 bg-gray-800 rounded-full hoverScaleDownEffect cursor-pointer"
-				onClick={shareLink}
-				/> */}
 			</div>
 		</div>
 	);

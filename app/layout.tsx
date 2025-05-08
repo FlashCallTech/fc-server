@@ -14,19 +14,21 @@ import Script from "next/script";
 
 export const metadata: Metadata = {
 	title: "Flashcall.me",
-	description: "Book your first consultation",
+	description:
+		"Connect with experts instantly. Book your consultation with FlashCall today.",
 	icons: {
-		icon: "/icons/logo_icon_dark.png",
+		icon: "/icons/metaTagImage.png",
 	},
 
 	openGraph: {
 		type: "website",
 		url: "https://flashcall.me",
 		title: "FlashCall",
-		description: "Book your first consultation",
+		description:
+			"Connect with experts instantly. Book your consultation with FlashCall today.",
 		images: [
 			{
-				url: "/icons/logo_icon_dark.png",
+				url: "/icons/metaTagImage.png",
 				width: 800,
 				height: 600,
 				alt: "FlashCall Logo",
