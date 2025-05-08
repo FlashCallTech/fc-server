@@ -19,7 +19,6 @@ export const metadata: Metadata = {
 	icons: {
 		icon: "/icons/metaTagImage.png",
 	},
-
 	openGraph: {
 		type: "website",
 		url: "https://flashcall.me",
@@ -37,11 +36,14 @@ export const metadata: Metadata = {
 		siteName: "Flashcall.me",
 		locale: "en_US",
 	},
-
 	metadataBase:
 		process.env.NODE_ENV === "production"
 			? new URL("https://flashcall.me")
 			: new URL("http://localhost:3000"),
+
+	alternates: {
+		canonical: "https://flashcall.me/",
+	},
 };
 
 export default function RootLayout({
@@ -51,6 +53,11 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
+			<head>
+				{/* Optional: You can add favicon link here as well if needed */}
+				{/* <link rel="icon" href="/favicon.ico" /> */}
+				<link rel="canonical" href="https://flashcall.me/" />
+			</head>
 			<TooltipProvider>
 				<body className="overflow-y-scroll no-scrollbar">
 					<Script
