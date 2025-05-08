@@ -48,6 +48,7 @@ const UpdateProfilePage = () => {
 			setLoading(false);
 		} else {
 			setLoading(true);
+			router.push("/");
 		}
 	}, [fetchingUser, currentUser?._id, userType]);
 

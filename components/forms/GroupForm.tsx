@@ -67,7 +67,7 @@ const GroupForm = ({
 					timeframe: "Last 7 days",
 				},
 			],
-			autoUpdate: false,
+			autoUpdate: true,
 			notifications: false,
 		},
 	});

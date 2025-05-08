@@ -500,7 +500,7 @@ const EditProfile = ({
 							<FormControl>
 								<div
 									className={`relative flex items-center  ${
-										userType === "creator" ? " w-fit gap-2.5" : "w-full"
+										userType === "creator" && "gap-2.5"
 									}`}
 								>
 									{/* empty placeholder for creator's username */}
@@ -513,7 +513,7 @@ const EditProfile = ({
 										type="text"
 										placeholder="Enter your username"
 										{...field}
-										className="input-field"
+										className="input-field max-w-[24rem]"
 										onChange={(e) => {
 											field.onChange(e);
 											debouncedCheckUsernameAvailability(e.target.value);

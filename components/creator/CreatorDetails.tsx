@@ -39,7 +39,7 @@ const useScreenSize = () => {
 	};
 
 	useEffect(() => {
-		handleResize(); // Set initial value
+		handleResize();
 		window.addEventListener("resize", handleResize);
 		return () => window.removeEventListener("resize", handleResize);
 	}, []);

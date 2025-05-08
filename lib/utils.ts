@@ -752,6 +752,7 @@ export const fetchFCMToken = async (phone: string, tokenType?: string) => {
 		return null;
 	}
 };
+
 // Function to send notification
 export const sendNotification = async (
 	token: string,

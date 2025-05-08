@@ -62,7 +62,7 @@ export async function generateMetadata({
 				type: "website",
 				url: `https://flashcall.me/@${formattedUsername}`,
 				title: `Creator | ${fullName}` || "FlashCall",
-				description: `Book your first consultation with ${fullName}`,
+				description: `Book your consultation with ${fullName}`,
 				images: [
 					{
 						url: `${imageURL}`,
