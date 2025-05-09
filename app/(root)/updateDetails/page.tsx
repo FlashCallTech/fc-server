@@ -21,7 +21,7 @@ const UpdateProfilePage = () => {
 		lastName: currentUser?.lastName || "",
 		username:
 			(currentUser?.username === currentUser?.phone
-				? currentUser?._id
+				? ""
 				: currentUser?.username) ?? "",
 		profession: currentUser?.profession || "",
 		themeSelected: currentUser?.themeSelected || "#88D8C0",

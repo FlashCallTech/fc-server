@@ -82,7 +82,6 @@ export const CurrentUsersProvider = ({
 	const [currentTheme, setCurrentTheme] = useState("");
 	const [authenticationSheetOpen, setAuthenticationSheetOpen] = useState(false);
 	const [fetchingUser, setFetchingUser] = useState(false);
-	const [userType, setUserType] = useState<string | null>(null);
 	const [authToken, setAuthToken] = useState<string | null>(null);
 	const [creatorURL, setCreatorURL] = useState("");
 	const [ongoingCallStatus, setOngoingCallStatus] = useState("");
@@ -90,7 +89,12 @@ export const CurrentUsersProvider = ({
 	const [pendingNotifications, setPendingNotifications] = useState(0);
 	const [previousPendingNotifications, setPreviousPendingNotifications] =
 		useState<number | null>(null);
-
+	const [userType, setUserType] = useState<string | null>(() => {
+		if (typeof window !== "undefined") {
+			return localStorage.getItem("userType");
+		}
+		return null;
+	});
 	const { toast } = useToast();
 	const router = useRouter();
 

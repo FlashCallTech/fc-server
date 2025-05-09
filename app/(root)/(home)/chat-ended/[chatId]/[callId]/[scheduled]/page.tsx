@@ -38,7 +38,9 @@ const ChatFeedbackPage = () => {
 			description: "Hope to See You Again ...",
 			toastStatus: "positive",
 		});
-		router.replace(`${creatorURL ? creatorURL : "/"}`);
+		router.replace(
+			`${creatorURL ? creatorURL : userType === "creator" ? "/home" : "/"}`
+		);
 	};
 
 	if (loadingFeedback) {

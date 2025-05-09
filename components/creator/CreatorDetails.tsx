@@ -550,7 +550,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 								width={300}
 								height={300}
 								quality={75}
-								className="w-full h-full absolute left-0 top-0 object-cover rounded-full"
+								className="w-full h-full absolute left-0 top-0 object-cover rounded-full bg-gray-300"
 								placeholder="blur"
 								blurDataURL="/icons/blurryPlaceholder.png"
 								priority
