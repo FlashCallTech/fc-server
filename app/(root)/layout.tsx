@@ -121,8 +121,24 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 									<Script
 										src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD`}
 									/>
-									<Script src="https://checkout.razorpay.com/v1/checkout.js" />
-									<Script src="https://sdk.cashfree.com/js/v3/cashfree.js" />
+									<Script
+										src="https://checkout.razorpay.com/v1/checkout.js"
+										onLoad={() => {
+											console.log("Razorpay script loaded");
+										}}
+										onError={(e) => {
+											console.error("Failed to load Razorpay script", e);
+										}}
+									/>
+									<Script
+										src="https://sdk.cashfree.com/js/v3/cashfree.js"
+										onLoad={() => {
+											console.log("Cashfree script loaded");
+										}}
+										onError={(e) => {
+											console.error("Failed to load Cashfree script", e);
+										}}
+									/>
 									{renderContent()}
 								</div>
 							</StreamVideoProvider>

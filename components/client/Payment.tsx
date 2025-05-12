@@ -218,7 +218,6 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
       ? Math.max(0, costForFiveMinutes - walletBalance)
       : undefined;
 
-    console.log(ratePerMinute, costForFiveMinutes, walletBalance);
     return amountDue;
   };
   const generateAmounts = () => {
