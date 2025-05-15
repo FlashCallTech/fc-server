@@ -236,6 +236,10 @@ export const CurrentUsersProvider = ({
 		} else {
 			localStorage.removeItem("currentUserID");
 			localStorage.removeItem("authToken");
+
+			localStorage.setItem("userType", "client");
+			setUserType("client");
+
 			const creatorStatusDocRef = doc(
 				db,
 				"userStatus",
@@ -250,10 +254,6 @@ export const CurrentUsersProvider = ({
 			}
 			// Clear user data and local storage
 			await axios.post(`${backendBaseUrl}/user/endSession`);
-
-			localStorage.setItem("userType", "client");
-
-			setUserType("client");
 
 			setClientUser(null);
 			setCreatorUser(null);
