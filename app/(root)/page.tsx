@@ -16,53 +16,55 @@ import Image from "next/image";
 import React from "react";
 
 const HomePage = () => {
-  const { currentUser, handleSignout, fetchingUser } = useCurrentUsersContext();
+	const { currentUser, handleSignout, fetchingUser, userType } =
+		useCurrentUsersContext();
 
-  if (fetchingUser) {
-    return (
-      <section className="absolute bg-white top-0 left-0 flex justify-center items-center h-screen w-full z-40">
-        <Image
-          src="/icons/newLogo.png"
-          alt="Loading..."
-          width={500}
-          height={500}
-          className="w-36 animate-pulse"
-          priority
-        />
-      </section>
-    );
-  }
+	if (fetchingUser) {
+		return (
+			<section className="absolute bg-white top-0 left-0 flex justify-center items-center h-screen w-full z-40">
+				<Image
+					src="/icons/newLogo.png"
+					alt="Loading..."
+					width={500}
+					height={500}
+					className="w-36 animate-pulse"
+					priority
+				/>
+			</section>
+		);
+	}
 
-  return (
-    <main className="grid grid-cols-1 items-center">
-      {/* Navbar Landing Page */}
-      {
-        <NavbarWeb
-          currentUser={currentUser}
-          handleSignout={handleSignout}
-          fetchingUser={fetchingUser}
-        />
-      }
-      {/* Hero Section */}
-      <Hero />
-      {/* About section */}
-      <About />
-      {/* Switch toggle section */}
-      <SwitchToggle />
-      {/* Checkout Banner section */}
-      <CheckoutBanner />
-      {/* Share Link Section */}
-      <ShareLink />
-      {/* Testimonials */}
-      <Testimonials />
-      {/* Own App Section */}
-      <OwnApp />
-      {/* Accordion Section */}
-      <Info />
-      {/* Footer */}
-      <Footer />
-    </main>
-  );
+	return (
+		<main className="grid grid-cols-1 items-center">
+			{/* Navbar Landing Page */}
+			{
+				<NavbarWeb
+					currentUser={currentUser}
+					handleSignout={handleSignout}
+					fetchingUser={fetchingUser}
+					userType={userType}
+				/>
+			}
+			{/* Hero Section */}
+			<Hero />
+			{/* About section */}
+			<About />
+			{/* Switch toggle section */}
+			<SwitchToggle />
+			{/* Checkout Banner section */}
+			<CheckoutBanner />
+			{/* Share Link Section */}
+			<ShareLink />
+			{/* Testimonials */}
+			<Testimonials />
+			{/* Own App Section */}
+			<OwnApp />
+			{/* Accordion Section */}
+			<Info />
+			{/* Footer */}
+			<Footer />
+		</main>
+	);
 };
 
 export default HomePage;
