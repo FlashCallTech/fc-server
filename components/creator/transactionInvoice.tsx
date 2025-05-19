@@ -127,8 +127,6 @@ const TransactionInvoice = ({
 		};
 	}, [isOpen, onClose]);
 
-	console.log(callTransaction);
-
 	if (!isOpen || !call) return null;
 
 	return (
@@ -212,7 +210,7 @@ const TransactionInvoice = ({
 										{`INR ${gstCommissionAmt}`}
 									</td>
 								</tr>
-								{callTransaction?.paymentProcessingFeeRate &&
+								{callTransaction?.paymentProcessingFeeRate !== null &&
 									<tr>
 										<td className="p-2 border border-gray-300">{`Payment Processing Fee (${callTransaction?.paymentProcessingFeeRate}%)`}</td>
 										<td className="p-2 border border-gray-300">
