@@ -256,7 +256,10 @@ const AuthenticateViaOTP = ({
 
 			if (resolvedUserType === "client") {
 				localStorage.setItem("userType", resolvedUserType);
-				router.replace(creatorURL ? creatorURL : "/");
+				router.replace(
+					creatorURL || (!pathname.includes("/discover") ? "/" : pathname)
+				);
+
 				refreshCurrentUser();
 			} else if (resolvedUserType === "creator") {
 				localStorage.setItem("userType", resolvedUserType);
