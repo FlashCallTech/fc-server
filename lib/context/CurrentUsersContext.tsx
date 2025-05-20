@@ -363,7 +363,7 @@ export const CurrentUsersProvider = ({
 		if (!region) return;
 
 		// Return early if region is not set or not "India"
-		if (region === "India") {
+		if (region === "India" && !pathname.includes("/official/download")) {
 			fetchCurrentUser();
 			return;
 		}
