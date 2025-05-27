@@ -175,9 +175,10 @@ const DeleteAlert = () => {
 								Are you sure you want to delete this user?
 							</SheetDescription>
 						</SheetHeader>
+
 						<Textarea
 							className="max-h-20 no-scrollbar mt-5"
-							placeholder="Reason for deletion (Optional)"
+							placeholder="Reason for deletion (Required)"
 							value={deleteReason}
 							onChange={(e: any) => setDeleteReason(e.target.value)}
 						/>
@@ -186,13 +187,13 @@ const DeleteAlert = () => {
 								variant="outline"
 								onClick={() => setShowDeleteDialog(false)}
 								disabled={loading}
-								className="hoverScaleDownEffect text-[#A7A8A1] hover:border border-gray-300 hover:bg-gray-50"
+								className="hoverScaleDownEffect hover:border border-gray-300 hover:bg-gray-50"
 							>
 								Cancel
 							</Button>
 							<Button
 								onClick={handleDeleteUser}
-								disabled={loading}
+								disabled={loading || !deleteReason}
 								className="border border-gray-300 bg-black text-white hoverScaleDownEffect"
 							>
 								{loading ? "Deleting..." : "Confirm Delete"}
@@ -215,7 +216,7 @@ const DeleteAlert = () => {
 						</DialogHeader>
 						<Textarea
 							className="max-h-20 no-scrollbar"
-							placeholder="Reason for deletion (Optional)"
+							placeholder="Reason for deletion (Required)"
 							value={deleteReason}
 							onChange={(e: any) => setDeleteReason(e.target.value)}
 						/>
@@ -224,13 +225,13 @@ const DeleteAlert = () => {
 								variant="outline"
 								onClick={() => setShowDeleteDialog(false)}
 								disabled={loading}
-								className="hoverScaleDownEffect rounded-full text-gray-700 border border-gray-300"
+								className="hoverScaleDownEffect rounded-full border border-gray-300"
 							>
 								Cancel
 							</Button>
 							<Button
 								onClick={handleDeleteUser}
-								disabled={loading}
+								disabled={loading || !deleteReason}
 								className="bg-black rounded-full text-white hoverScaleDownEffect"
 							>
 								{loading ? "Deleting..." : "Confirm Delete"}

@@ -108,7 +108,7 @@ const MeetingNotStarted = ({
 					{/* Video Call Preview Section */}
 					{videoCall ? (
 						<div className="relative flex items-center justify-center w-full h-fit rounded-xl shadow-md">
-							<VideoPreview className="bg-[#cccccc] text-black" />
+							<VideoPreview className="bg-gray-200 text-black" />
 						</div>
 					) : (
 						<div className="w-full flex flex-wrap justify-center gap-6 md:pt-10">

@@ -705,42 +705,43 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 
 				{/* Creator Links */}
 
-				<h2 className="text-base font-bold mt-2">External Links</h2>
-
 				{creator?.links && creator?.links?.length > 0 && (
-					<section className="grid grid-cols-1 gap-4 w-full items-center">
-						{creator?.links
-							?.filter((link: LinkType) => link.isActive)
-							?.map((link: LinkType, index: number) => (
-								<Link
-									href={link.url}
-									target="_black"
-									className="grid grid-cols-3 px-4 border border-gray-300 rounded-[24px] h-[52px] justify-between font-semibold items-center text-center w-full hoverScaleDownEffect cursor-pointer capitalize"
-									key={index + link.title}
-									title={link.title}
-								>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										strokeWidth={1.5}
-										stroke="currentColor"
-										className="size-5"
+					<>
+						<h2 className="text-base font-bold mt-2">External Links</h2>
+						<section className="grid grid-cols-1 gap-4 w-full items-center">
+							{creator?.links
+								?.filter((link: LinkType) => link.isActive)
+								?.map((link: LinkType, index: number) => (
+									<Link
+										href={link.url}
+										target="_black"
+										className="grid grid-cols-3 px-4 border border-gray-300 rounded-[24px] h-[52px] justify-between font-semibold items-center text-center w-full hoverScaleDownEffect cursor-pointer capitalize"
+										key={index + link.title}
+										title={link.title}
 									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
-										/>
-									</svg>
-									<p className="text-ellipsis whitespace-nowrap overflow-hidden">
-										{link.title}
-									</p>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+											strokeWidth={1.5}
+											stroke="currentColor"
+											className="size-5"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+											/>
+										</svg>
+										<p className="text-ellipsis whitespace-nowrap overflow-hidden">
+											{link.title}
+										</p>
 
-									<p />
-								</Link>
-							))}
-					</section>
+										<p />
+									</Link>
+								))}
+						</section>
+					</>
 				)}
 				{/* User Reviews */}
 				<section className="grid grid-cols-1 w-full items-start justify-start gap-2 pt-4">
