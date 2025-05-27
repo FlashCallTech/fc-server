@@ -1,10 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import Script from "next/script";
 import { useSearchParams } from "next/navigation";
 import { creatorUser } from "@/types";
-import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 import Link from "next/link";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { Cursor, Typewriter } from "react-simple-typewriter";

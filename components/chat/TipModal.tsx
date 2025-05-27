@@ -248,6 +248,9 @@ const TipModal: React.FC<Props> = ({
 				setLoading(false);
 				updateWalletBalance();
 				handleSendTip(tipAmount);
+				setTimeout(() => {
+					setIsSheetOpen(false);
+				}, 2000);
 			}
 		}
 	};

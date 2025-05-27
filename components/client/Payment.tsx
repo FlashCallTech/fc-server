@@ -24,6 +24,7 @@ import Script from "next/script";
 import { backendBaseUrl } from "@/lib/utils";
 import axios from "axios";
 import useRecharge from "@/hooks/useRecharge";
+import Image from "next/image";
 
 interface PaymentProps {
   callType?: string;
@@ -183,8 +184,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
             ? parseFloat(creator.globalVideoRate)
             : undefined
           : creator?.videoRate
-          ? parseFloat(creator.videoRate)
-          : undefined;
+            ? parseFloat(creator.videoRate)
+            : undefined;
         break;
       case "audio":
         rate = currentUser?.global
@@ -192,8 +193,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
             ? parseFloat(creator.globalAudioRate)
             : undefined
           : creator?.audioRate
-          ? parseFloat(creator.audioRate)
-          : undefined;
+            ? parseFloat(creator.audioRate)
+            : undefined;
         break;
       case "chat":
         rate = currentUser?.global
@@ -201,8 +202,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
             ? parseFloat(creator.globalChatRate)
             : undefined
           : creator?.chatRate
-          ? parseFloat(creator.chatRate)
-          : undefined;
+            ? parseFloat(creator.chatRate)
+            : undefined;
         break;
       default:
         rate = 0;
@@ -224,11 +225,11 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
     const rate = getRateForCallType();
     return rate
       ? [5, 10, 15, 30, 40, 60].map((multiplier) =>
-          (rate * multiplier).toFixed(2)
-        )
+        (rate * multiplier).toFixed(2)
+      )
       : currentUser?.global
-      ? ["5", "10", "20", "50", "100", "200", "500", "1000", "2000"]
-      : ["50", "100", "200", "500", "1000", "2000", "5000", "10000", "20000"];
+        ? ["5", "10", "20", "50", "100", "200", "500", "1000", "2000"]
+        : ["50", "100", "200", "500", "1000", "2000", "5000", "10000", "20000"];
   };
 
   const tileClicked = (index: any) => {
@@ -311,9 +312,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
       <div className="sticky top-0 lg:top-[76px] bg-white z-30 flex flex-col  text-gray-800 w-full h-full p-4 gap-5">
         <section className="flex items-center gap-4 -ml-1">
           <Link
-            href={`${
-              creatorURL ? creatorURL : userType === "creator" ? "/home" : "/"
-            }`}
+            href={`${creatorURL ? creatorURL : userType === "creator" ? "/home" : "/"
+              }`}
             className="text-xl font-bold"
           >
             <svg
@@ -367,9 +367,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
             </h2>
             <Form {...form}>
               <form className="w-full flex items-center justify-center text-center text-3xl leading-7 font-bold text-green-1">
-                <span className="text-3xl">{`${
-                  currentUser?.global ? "$" : "₹"
-                }`}</span>
+                <span className="text-3xl">{`${currentUser?.global ? "$" : "₹"
+                  }`}</span>
 
                 <FormField
                   control={form.control}
@@ -384,6 +383,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
                           {...field}
                           className="max-w-28 placeholder:text-gray-300 text-3xl border-none outline-none ring-transparent hover:bg-transparent "
                           pattern="\d*"
+                          disabled={loading}
                           title="Amount must be a numeric value"
                         />
                       </FormControl>
@@ -397,9 +397,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
                 {/* Display the amount due message if there's an amount due */}
                 {amountToBeDisplayed() !== undefined && (
                   <p className="text-red-500">
-                    {`${
-                      currentUser?.global ? "$" : "₹"
-                    } ${amountToBeDisplayed()?.toFixed(2)}`}{" "}
+                    {`${currentUser?.global ? "$" : "₹"
+                      } ${amountToBeDisplayed()?.toFixed(2)}`}{" "}
                     more required for 5 minutes of {callType}
                   </p>
                 )}
@@ -408,11 +407,10 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
                 {generateAmounts().map((amount, index) => (
                   <button
                     key={amount}
-                    className={`capitalize text-sm font-medium p-2.5 rounded-md border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${
-                      amount === form.getValues("rechargeAmount") &&
+                    className={`capitalize text-sm font-medium p-2.5 rounded-md border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${amount === form.getValues("rechargeAmount") &&
                       "bg-green-1 text-white"
-                    }`}
-                    disabled={showPayPal}
+                      }`}
+                    disabled={showPayPal || loading}
                     onClick={() => {
                       form.setValue("rechargeAmount", amount);
                       tileClicked(index);
@@ -428,25 +426,33 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
                   !currentUser ||
                   !rechargeAmount ||
                   rechargeAmount === "0" ||
-                  showPayPal
+                  showPayPal ||
+                  loading
                 }
                 onClick={(event: any) =>
                   form.handleSubmit((values) => onSubmit(event, values))(event)
                 }
-                className={`${
-                  (!rechargeAmount || rechargeAmount === "0") &&
+                className={`${(!rechargeAmount || rechargeAmount === "0") &&
                   "!cursor-not-allowed opacity-80"
-                } w-full max-w-md mt-2 bg-green-1 text-white mx-auto hoverScaleDownEffect`}
+                  } w-full max-w-md mt-2 bg-green-1 text-white mx-auto hoverScaleDownEffect`}
               >
-                Recharge
+                {loading ? (
+                  <Image
+                    src="/icons/loading-circle.svg"
+                    alt="Loading..."
+                    width={24}
+                    height={24}
+                    priority
+                  />
+                ) : ("Recharge")
+                }
               </Button>
             </Form>
           </section>
         )}
         <div
-          className={`flex items-center justify-center shadow border border-gray-100 p-5 rounded-lg w-full ${
-            showPayPal ? "block" : "hidden"
-          }`}
+          className={`flex items-center justify-center shadow border border-gray-100 p-5 rounded-lg w-full ${showPayPal ? "block" : "hidden"
+            }`}
         >
           <div
             id="paypal-button-container"

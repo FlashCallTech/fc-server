@@ -166,6 +166,9 @@ const ChatFeedback = ({
 		} finally {
 			setRating(2);
 			setFeedbackMessage("");
+			setTimeout(() => {
+				onOpenChange(false);
+			}, 2000) // Close the feedback sheet after submission
 		}
 	};
 

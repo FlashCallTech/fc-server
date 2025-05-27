@@ -148,23 +148,26 @@ const useRecharge = () => {
 		User_First_Seen?: string,
 		Walletbalace_Available?: number,
 		creatorId?: string,
-		isCallRecharge?: boolean,
+		isCallRecharge?: boolean
 	): Promise<void> => {
-		const totalPayableInPaise = totalPayable! * 100;
-		const rechargeAmount = parseInt(totalPayableInPaise.toFixed(2));
+		setLoading(true);
+		
+		const rechargeAmount = Math.round(totalPayable * 100);
 		const currency = "INR";
+		const jsonHeaders = { "Content-Type": "application/json" };
 
 		try {
-			const orderResponse = await fetch(
-				`${backendBaseUrl}/order/create-order`,
-				{
-					method: "POST",
-					body: JSON.stringify({ amount: rechargeAmount, currency }),
-					headers: { "Content-Type": "application/json" },
-				}
-			);
+
+			// Step 1: Create Razorpay order
+			const orderResponse = await fetch(`${backendBaseUrl}/order/create-order`, {
+				method: "POST",
+				body: JSON.stringify({ amount: rechargeAmount, currency }),
+				headers: jsonHeaders,
+			});
+
 			const order = await orderResponse.json();
 
+			// Step 2: Define Razorpay options
 			const options: RazorpayOptions = {
 				key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
 				rechargeAmount,
@@ -173,41 +176,37 @@ const useRecharge = () => {
 				description: "Wallet Recharge",
 				image: `https://backend.flashcall.me/icons/logo_icon.png`,
 				order_id: order.id,
-				handler: async (response: PaymentResponse): Promise<void> => {
-					setLoading(true);
-
+				handler: async (response: PaymentResponse) => {
 					try {
-						const paymentResponse = await fetch(
-							`${backendBaseUrl}/order/create-payment`,
-							{
-								method: "POST",
-								body: JSON.stringify({ order_id: response.razorpay_order_id }),
-								headers: { "Content-Type": "application/json" },
-							}
-						);
-
+						// Step 3: Create and validate payment
+						const paymentResponse = await fetch(`${backendBaseUrl}/order/create-payment`, {
+							method: "POST",
+							body: JSON.stringify({ order_id: response.razorpay_order_id }),
+							headers: jsonHeaders,
+						});
 						const paymentResult = await paymentResponse.json();
 
 						await fetch(`${backendBaseUrl}/order/validate`, {
 							method: "POST",
 							body: JSON.stringify(response),
-							headers: { "Content-Type": "application/json" },
+							headers: jsonHeaders,
 						});
 
-						const userId = clientId!;
+						// Step 4: Credit wallet
 						await fetch(`${backendBaseUrl}/wallet/addMoney`, {
 							method: "POST",
 							body: JSON.stringify({
-								userId,
+								userId: clientId,
 								PG: "Razorpay",
 								userType: "Client",
 								amount: totalPayable,
 								category: "Recharge",
 								method: paymentResult.paymentMethod,
 							}),
-							headers: { "Content-Type": "application/json" },
+							headers: jsonHeaders,
 						});
 
+						// Step 5: Track success
 						trackEvent("Recharge_Successfull", {
 							Client_ID: clientId,
 							User_First_Seen,
@@ -221,7 +220,6 @@ const useRecharge = () => {
 					} catch (error) {
 						Sentry.captureException(error);
 						console.error("Validation request failed:", error);
-						setLoading(false);
 					}
 				},
 				prefill: {
@@ -230,19 +228,20 @@ const useRecharge = () => {
 				theme: { color: "#50A65C" },
 			};
 
+			// Step 6: Open Razorpay modal
 			const rzp = new window.Razorpay(options);
 			rzp.on("payment.failed", (response: PaymentFailedResponse): void => {
 				alert(response.error.code);
-				setLoading(false);
 			});
 			rzp.open();
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Payment request failed:", error);
+
+			// Increment failure counter and track event
 			const pgRef = doc(db, "pg", "paymentGateways");
-			await updateDoc(pgRef, {
-				razorpayFailureCount: increment(1),
-			});
+			await updateDoc(pgRef, { razorpayFailureCount: increment(1) });
+
 			trackEvent("Recharge_Failed", {
 				Client_ID: clientId,
 				User_First_Seen,
@@ -251,7 +250,8 @@ const useRecharge = () => {
 				Walletbalace_Available,
 				PG: "Razorpay",
 			});
-			setLoading(false);
+
+			// Show user-friendly feedback
 			router.push("/payment");
 			toast({
 				variant: "destructive",
@@ -261,8 +261,10 @@ const useRecharge = () => {
 			});
 		} finally {
 			updateWalletBalance();
+			setLoading(false);
 		}
 	};
+
 
 	return { pgHandler, loading };
 };

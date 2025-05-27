@@ -12,8 +12,7 @@ import { useInView } from "react-intersection-observer";
 import { useGetUserTransactionsByType } from "@/lib/react-query/queries";
 import Image from "next/image";
 import { useToast } from "../ui/use-toast";
-import { backendBaseUrl, formatDateTime } from "@/lib/utils";
-import axios from "axios";
+import { formatDateTime } from "@/lib/utils";
 
 interface Transaction {
 	_id: string;
@@ -23,6 +22,7 @@ interface Transaction {
 	category: string;
 	callCategory: string;
 	callType?: string;
+	failed?: boolean;
 }
 
 interface dateRange {
@@ -195,8 +195,8 @@ const Withdraw: React.FC = () => {
 
 	const groupedTransactions = userTransactions
 		? groupTransactionsByDate(
-				userTransactions.pages.flatMap((page) => page.transactions)
-		  )
+			userTransactions.pages.flatMap((page) => page.transactions)
+		)
 		: {};
 
 	if (loadingTransfer) {
@@ -305,11 +305,10 @@ const Withdraw: React.FC = () => {
 											onClick={() => {
 												setBtn(filter as "all" | "credit" | "debit");
 											}}
-											className={`capitalize px-5 py-1 border border-black rounded-full ${
-												filter === btn
-													? "bg-gray-800 text-white"
-													: "bg-white text-black dark:bg-gray-700 dark:text-white hoverScaleDownEffect"
-											}`}
+											className={`capitalize px-5 py-1 border border-black rounded-full ${filter === btn
+												? "bg-gray-800 text-white"
+												: "bg-white text-black dark:bg-gray-700 dark:text-white hoverScaleDownEffect"
+												}`}
 										>
 											{filter}
 										</button>
@@ -463,42 +462,48 @@ const Withdraw: React.FC = () => {
 
 																{transaction.category !==
 																	"Call Transaction" && (
-																	<p
-																		className={`
-																	 ${
-																			transaction.category === "Refund" ||
-																			transaction.category === "Tip"
-																				? "bg-[#F0FDF4] text-[#16A34A]"
-																				: "bg-[#DBEAFE] text-[#1E40AF]"
-																		} text-[12px] px-2 py-1 rounded-full`}
-																	>
-																		{transaction.category}
-																	</p>
-																)}
+																		<p
+																			className={`
+																	 ${transaction.category === "Refund" ||
+																					transaction.category === "Tip"
+																					? "bg-[#F0FDF4] text-[#16A34A]"
+																					: "bg-[#DBEAFE] text-[#1E40AF]"
+																				} text-[12px] px-2 py-1 rounded-full`}
+																		>
+																			{transaction.category}
+																		</p>
+																	)}
 
 																{transaction.callCategory &&
 																	transaction.category ===
-																		"Call Transaction" && (
+																	"Call Transaction" && (
 																		<p
 																			className={`
-																	 ${
-																			transaction.callCategory === "Scheduled"
-																				? "bg-[#F0FDF4] text-[#16A34A]"
-																				: "bg-[#DBEAFE] text-[#1E40AF]"
-																		} text-[12px] px-2 py-1 rounded-full`}
+																	 ${transaction.callCategory === "Scheduled"
+																					? "bg-[#F0FDF4] text-[#16A34A]"
+																					: "bg-[#DBEAFE] text-[#1E40AF]"
+																				} text-[12px] px-2 py-1 rounded-full`}
 																		>
 																			{transaction.callCategory}
 																		</p>
 																	)}
+
+																<span className="text-gray-400 text-xs sm:text-sm max-xm:hidden">
+																	•
+																</span>
+
+																{transaction?.failed && (
+																	<p className="text-red-500 text-xs sm:text-sm">Failed</p>
+																)}
+
 															</section>
 														</div>
 														<section className="flex flex-col justify-between items-center">
 															<span
-																className={`size-full flex items-center font-bold text-sm leading-4 w-fit whitespace-nowrap ${
-																	transaction?.type === "credit"
-																		? "text-green-500"
-																		: "text-red-500"
-																} `}
+																className={`size-full flex items-center font-bold text-sm leading-4 w-fit whitespace-nowrap ${transaction?.type === "credit"
+																	? "text-green-500"
+																	: "text-red-500"
+																	} `}
 															>
 																{transaction?.type === "credit"
 																	? `+ ₹${transaction?.amount?.toFixed(2)}`
@@ -587,9 +592,8 @@ const Withdraw: React.FC = () => {
 
 				<section className="hidden size-full lg:flex flex-col px-8 py-6">
 					<section
-						className={`grid grid-cols-1 items-center sticky ${
-							isStickyVisible ? "0" : "pt-[24px] border-none"
-						}  top-[76px] z-30 bg-white`}
+						className={`grid grid-cols-1 items-center sticky ${isStickyVisible ? "0" : "pt-[24px] border-none"
+							}  top-[76px] z-30 bg-white`}
 					>
 						{/* Sticky Balance and Recharge Section */}
 						<section className="flex flex-col gap-5 items-center justify-center md:items-start">
@@ -700,17 +704,16 @@ const Withdraw: React.FC = () => {
 											onClick={() => {
 												setBtn(filter as "all" | "credit" | "debit");
 											}}
-											className={`capitalize px-4 py-2 border-[1px] border-solid border-[#E5E7EB] rounded-full ${
-												filter === btn
-													? "bg-black text-white"
-													: "bg-white text-[#4B5563] hoverScaleDownEffect"
-											}`}
+											className={`capitalize px-4 py-2 border-[1px] border-solid border-[#E5E7EB] rounded-full ${filter === btn
+												? "bg-black text-white"
+												: "bg-white text-[#4B5563] hoverScaleDownEffect"
+												}`}
 										>
 											{filter === "all"
 												? filter
 												: filter === "credit"
-												? "Earnings"
-												: "Withdrawal"}
+													? "Earnings"
+													: "Withdrawal"}
 										</button>
 									))}
 								</div>
@@ -721,28 +724,24 @@ const Withdraw: React.FC = () => {
 						<section className="flex flex-col gap-3 border-[1px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg p-6 w-full">
 							<span>Total Earnings</span>
 							<span
-								className={`text-green-600 ${
-									isFetching ? "text-sm" : "text-[30px]"
-								} font-bold`}
-							>{`${
-								isFetching
-									? "Fetching..."
-									: `₹ ${userTransactions?.pages[0]?.totalEarnings?.toFixed(2)}`
-							} `}</span>
+								className={`text-green-600 ${isFetching ? "text-sm" : "text-[30px]"
+									} font-bold`}
+							>{`${isFetching
+								? "Fetching..."
+								: `₹ ${userTransactions?.pages[0]?.totalEarnings?.toFixed(2)}`
+								} `}</span>
 						</section>
 						<section className="flex flex-col gap-3 border-[1px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg p-6 w-full">
 							<span>Total Withdrawals</span>
 							<span
-								className={`text-[#EF4444] ${
-									isFetching ? "text-sm" : "text-[30px]"
-								} font-bold`}
-							>{`${
-								isFetching
-									? "Fetching..."
-									: `₹ ${userTransactions?.pages[0]?.totalWithdrawals?.toFixed(
-											2
-									  )}`
-							}`}</span>
+								className={`text-[#EF4444] ${isFetching ? "text-sm" : "text-[30px]"
+									} font-bold`}
+							>{`${isFetching
+								? "Fetching..."
+								: `₹ ${userTransactions?.pages[0]?.totalWithdrawals?.toFixed(
+									2
+								)}`
+								}`}</span>
 						</section>
 					</div>
 					<div className="flex flex-col gap-6 w-full border-[1px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)] rounded-lg p-6">
@@ -781,6 +780,9 @@ const Withdraw: React.FC = () => {
 												</th>
 												<th scope="col" className="px-6 py-3">
 													Amount
+												</th>
+												<th scope="col" className="px-6 py-3">
+													Status
 												</th>
 											</tr>
 										</thead>
@@ -823,29 +825,33 @@ const Withdraw: React.FC = () => {
 
 															<td className={`px-6 py-4 text-xs`}>
 																<span
-																	className={`px-2 py-1 rounded-full ${
-																		transaction?.type === "credit"
-																			? "text-[#15803D] bg-[#DCFCE7]"
-																			: "text-[#B91C1C] bg-[#FEE2E2]"
-																	} `}
+																	className={`px-2 py-1 rounded-full ${transaction?.type === "credit"
+																		? "text-[#15803D] bg-[#DCFCE7]"
+																		: "text-[#B91C1C] bg-[#FEE2E2]"
+																		} `}
 																>
-																	{`${
-																		transaction?.type === "credit"
-																			? "Earning"
-																			: "Withdrawal"
-																	}`}
+																	{`${transaction?.type === "credit"
+																		? "Earning"
+																		: "Withdrawal"
+																		}`}
 																</span>
 															</td>
 															<td
-																className={`px-6 py-4 text-sm ${
-																	transaction?.type === "credit"
-																		? "text-[#15803D]"
-																		: "text-[#B91C1C]"
-																}`}
+																className={`px-6 py-4 text-sm ${transaction?.type === "credit"
+																	? "text-[#15803D]"
+																	: "text-[#B91C1C]"
+																	}`}
 															>
 																{transaction?.type === "credit"
 																	? `+ ₹${transaction?.amount?.toFixed(2)}`
 																	: `- ₹${transaction?.amount?.toFixed(2)}`}
+															</td>
+															<td className={`px-6 py-4 text-sm text-[#6B7280]
+																${transaction?.failed ? "text-red-500" : "text-green-600"}
+															`}>
+																{
+																	transaction.failed ? "Failed" : "Success"
+																}
 															</td>
 														</tr>
 													));
