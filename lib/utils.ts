@@ -1039,8 +1039,6 @@ export const sendCallNotification = async (
 ) => {
 	const fcmToken = await fetchFCMToken(creatorPhone, "voip");
 
-	console.log(notificationType, fcmToken, callCategory);
-
 	if (fcmToken) {
 		try {
 			sendNotification(

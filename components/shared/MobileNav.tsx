@@ -110,7 +110,8 @@ const MobileNav = () => {
 										className="rounded-full w-12 h-12 min-w-12 max-w-12 object-cover bg-white"
 									/>
 									<div className="flex flex-col w-full items-start justify-center text-white">
-										<span className="text-lg capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap">
+										<span className="text-sm">{fullName}</span>
+										<span className="text-base capitalize max-w-[85%] overflow-hidden text-ellipsis whitespace-nowrap">
 											{currentUser?.phone?.replace(/(\+91)(\d+)/, "$1 $2") ||
 												`@${fullName}`}
 										</span>

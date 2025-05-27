@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
 	try {
 		const token = await tokenProvider(userId, userName, userImage, userPhone);
-		return NextResponse.json(token);
+		return NextResponse.json({ token: token });
 	} catch (error) {
 		Sentry.captureException(error);
 		console.error("Failed to create token:", error);

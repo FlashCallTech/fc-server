@@ -223,6 +223,7 @@ const MyCallUI = () => {
 		);
 
 		const startAutoDeclineCountdown = () => {
+			// eslint-disable-next-line react-hooks/exhaustive-deps
 			autoDeclineTimeout = setTimeout(async () => {
 				await setDoc(
 					sessionTriggeredRef,

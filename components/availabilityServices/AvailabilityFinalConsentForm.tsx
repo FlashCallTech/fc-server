@@ -140,7 +140,7 @@ const AvailabilityFinalConsentForm = ({
 					email: callDetails.email,
 					title: callDetails.title,
 					description: callDetails.description,
-					location,
+					meetingLink: callDetails.location,
 					startTime: callDetails.startTime,
 					endTime: callDetails.endTime,
 					attendees: callDetails.attendees,
