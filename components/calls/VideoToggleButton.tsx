@@ -1,7 +1,6 @@
 import { useCallStateHooks } from "@stream-io/video-react-sdk";
 import { video, videoOff } from "@/constants/icons";
 import { useEffect, useState } from "react";
-import PermissionsModal from "../meeting/PermissionsModalAudio";
 import PermissionsModalVideo from "../meeting/PermissionsModalVideo";
 
 export const VideoToggleButton = () => {
