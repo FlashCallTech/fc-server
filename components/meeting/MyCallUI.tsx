@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCalls, CallingState, Call } from "@stream-io/video-react-sdk";
 import MyIncomingCallUI from "./MyIncomingCallUI";
@@ -41,6 +41,8 @@ const MyCallUI = () => {
 	const [connecting, setConnecting] = useState(false);
 	const [connectingCall, setConnectingCall] = useState<Call | null>(null);
 	const [redirecting, setRedirecting] = useState(false);
+	const hasHandledInterruptedCallRef = useRef(false);
+
 	const { getFinalServices, resetServices } = useSelectedServiceContext();
 	let autoDeclineTimeout: NodeJS.Timeout;
 	const router = useRouter();
@@ -69,6 +71,9 @@ const MyCallUI = () => {
 	const handleInterruptedCallOnceLoaded = async (updatedCall: Call | null) => {
 		if (isCallLoading) return;
 		if (!updatedCall) return;
+		if (hasHandledInterruptedCallRef.current) return;
+
+		hasHandledInterruptedCallRef.current = true;
 
 		try {
 			const expertPhone = updatedCall.state?.members?.find(
@@ -135,6 +140,10 @@ const MyCallUI = () => {
 			handleInterruptedCallOnceLoaded(call);
 		}
 	}, [callId, isCallLoading, call, currentUser?._id, userType]);
+
+	useEffect(() => {
+		hasHandledInterruptedCallRef.current = false;
+	}, [callId]);
 
 	// Filter incoming and outgoing calls once
 	const incomingCalls = calls.filter(

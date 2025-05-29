@@ -128,6 +128,8 @@ const MeetingRoomScheduled = () => {
 	const [hasVisited, setHasVisited] = useState(false);
 	const firestore = getFirestore();
 
+	const countdownRef = useRef(false);
+
 	let callType: "scheduled" | "instant" =
 		call?.state?.custom?.type || "instant";
 
@@ -238,7 +240,7 @@ const MeetingRoomScheduled = () => {
 		}, 5000);
 
 		return () => clearTimeout(timeout);
-	}, [userType, call, participants]);
+	}, [userType, call, participants.length]);
 
 	useEffect(() => {
 		if (userType === "creator") {
@@ -266,7 +268,6 @@ const MeetingRoomScheduled = () => {
 
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout | null = null;
-
 		let countdownInterval: NodeJS.Timeout | null = null;
 
 		if (!hasVisited) {
@@ -274,7 +275,10 @@ const MeetingRoomScheduled = () => {
 			return;
 		}
 
-		if (participants.length !== 2) {
+		if (participants.length < 2) {
+			if (countdownRef.current) return;
+			countdownRef.current = true;
+
 			setShowCountdown(true);
 			setCountdown(countdownDuration);
 
@@ -282,34 +286,27 @@ const MeetingRoomScheduled = () => {
 			call?.microphone?.disable();
 
 			countdownInterval = setInterval(() => {
-				setCountdown((prevCountdown) => {
-					if (prevCountdown && prevCountdown > 1) {
-						return prevCountdown - 1;
-					} else {
-						return null;
-					}
-				});
+				setCountdown((prev) => (prev && prev > 1 ? prev - 1 : null));
 			}, 1000);
 
 			timeoutId = setTimeout(async () => {
 				await call?.endCall();
+				countdownRef.current = false;
 			}, countdownDuration * 1000);
 		} else {
-			if (timeoutId) {
-				clearTimeout(timeoutId);
-			}
-			if (countdownInterval) {
-				clearInterval(countdownInterval);
-			}
+			countdownRef.current = false;
 			setShowCountdown(false);
 			setCountdown(null);
+
+			if (timeoutId) clearTimeout(timeoutId);
+			if (countdownInterval) clearInterval(countdownInterval);
 		}
 
 		return () => {
 			if (timeoutId) clearTimeout(timeoutId);
 			if (countdownInterval) clearInterval(countdownInterval);
 		};
-	}, [participants, call, callType]);
+	}, [participants.length, call, callType]);
 
 	const toggleCamera = async () => {
 		if (call && call.camera) {

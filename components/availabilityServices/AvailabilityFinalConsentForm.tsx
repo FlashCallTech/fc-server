@@ -660,6 +660,7 @@ const AvailabilityFinalConsentForm = ({
 						type: service.type as string,
 						category: "Scheduled",
 						status: "Scheduled",
+						startedAt: callDetails.startsAt,
 						creator: String(clientUser?._id),
 						members: callDetails.members,
 						payoutTransactionId,
