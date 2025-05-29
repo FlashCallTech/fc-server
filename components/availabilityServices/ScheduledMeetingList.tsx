@@ -369,7 +369,7 @@ const ScheduledMeetingList = ({
 																viewBox="0 0 24 24"
 																strokeWidth={1.5}
 																stroke="#ffffff"
-																className="size-5 sm:hidden"
+																className="size-5 md:hidden"
 															>
 																<path
 																	strokeLinecap="round"
