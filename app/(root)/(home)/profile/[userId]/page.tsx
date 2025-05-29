@@ -18,6 +18,8 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import GetRandomImage from "@/utils/GetRandomImage";
+import EditProfile from "@/components/forms/EditProfile";
+import Link from "next/link";
 
 const UserProfilePage = () => {
 	const { currentUser, fetchingUser, userType, refreshCurrentUser } =
@@ -180,196 +182,240 @@ const UserProfilePage = () => {
 	const imageSrc = getImageSource(currentUser as clientUser | creatorUser);
 
 	return (
-		<div className="flex justify-start items-start flex-col gap-7 text-black lg:p-8">
+		<div className="flex justify-start items-center flex-col gap-7 text-black lg:p-8">
 			{isInitialState ? (
-				<section className="w-full h-full flex items-center justify-center">
+				<section className="size-full h-[calc(100vh-6rem)] flex flex-col gap-2 items-center justify-center">
 					<SinglePostLoader />
 				</section>
 			) : (
 				<>
-					<div className="flex xl:w-[60%] w-full rounded-lg flex-col items-center justify-center gap-10 p-8 lg:border-[1px] lg:shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
-						<section className="flex size-full items-center justify-start gap-4">
-							<Image
-								src={imageSrc}
-								alt="profile picture"
-								width={1000}
-								height={1000}
-								className="lg:size-20 size-14 rounded-full object-cover"
-							/>
-							<section className="flex w-full justify-between">
-								<section className="flex flex-col items-start justify-center">
-									<span className="font-bold text-xl overflow-hidden capitalize">
-										{userData.fullName ? userData.fullName : "guest"}
-									</span>
-									<span className="text-[#6B7280] text-sm font-medium text-ellipsis capitalize">
-										{userData.phone
-											? userData.phone.replace(
-													/(\+91)(\d+)/,
-													(match, p1, p2) => `${p1} ${p2}`
-											  )
-											: userData.username
-											? `@${userData.username}`
-											: "@guest"}
-									</span>
-								</section>
-								<section className="flex gap-2 justify-start items-center">
-									<DeleteAlert />
-									<button
-										className="flex gap-3 text-sm items-center rounded-full bg-black px-4 py-2 text-white hoverScaleDownEffect"
-										onClick={() => setEditData((prev) => !prev)}
-									>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											fill="none"
-											viewBox="0 0 24 24"
-											strokeWidth={2}
-											stroke="currentColor"
-											className="size-4"
+					{!editData ? (
+						<div className="flex xl:w-[60%] w-full rounded-lg flex-col items-center justify-center gap-10 p-8 lg:border-[1px] lg:shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-gradient-to-t from-[rgba(0,0,0,0.001)] to-[rgba(0,0,0,0.001)]">
+							<section className="flex size-full items-center justify-start gap-4">
+								<Image
+									src={imageSrc}
+									alt="profile picture"
+									width={1000}
+									height={1000}
+									className="lg:size-20 size-14 rounded-full object-cover"
+								/>
+								<section className="flex w-full justify-between">
+									<section className="flex flex-col items-start justify-center">
+										<span className="font-bold text-xl overflow-hidden capitalize">
+											{userData.fullName ? userData.fullName : "guest"}
+										</span>
+										<span className="text-[#6B7280] text-sm font-medium text-ellipsis capitalize">
+											{userData.phone
+												? userData.phone.replace(
+														/(\+91)(\d+)/,
+														(match, p1, p2) => `${p1} ${p2}`
+												  )
+												: userData.username
+												? `@${userData.username}`
+												: "@guest"}
+										</span>
+									</section>
+									<section className="flex gap-2 justify-start items-center">
+										<DeleteAlert />
+										<button
+											className="flex gap-3 text-sm items-center rounded-full bg-black px-4 py-2 text-white hoverScaleDownEffect"
+											onClick={() => setEditData((prev) => !prev)}
 										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-											/>
-										</svg>
-										<span className="hidden xl:block">Edit</span>
-									</button>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												viewBox="0 0 24 24"
+												strokeWidth={2}
+												stroke="currentColor"
+												className="size-4"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+												/>
+											</svg>
+											<span className="hidden xl:block">Edit</span>
+										</button>
+									</section>
 								</section>
 							</section>
-						</section>
 
-						{/* New section for displaying initial state details */}
-						<section className="flex text-sm flex-col gap-3 w-full text-[#4B5563] p-4 rounded-lg border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] mx-auto space-y-2">
-							<h2 className="text-lg font-semibold text-black">User Details</h2>
-							{initialState.fullName && (
-								<div className="flex justify-between w-full">
-									Full Name:
-									<span className="font-medium text-[#111827]">
-										{initialState.fullName}
-									</span>
-								</div>
-							)}
-							{initialState.firstName && (
-								<div className="flex justify-between w-full">
-									First Name:
-									<span className="font-medium text-[#111827]">
-										{initialState.firstName}
-									</span>
-								</div>
-							)}
-							{initialState.lastName && (
-								<div className="flex justify-between w-full">
-									Last Name:
-									<span className="font-medium text-[#111827]">
-										{initialState.lastName}
-									</span>
-								</div>
-							)}
-							{initialState.username && (
-								<div className="flex justify-between w-full">
-									Username:
-									<span className="font-medium text-[#111827]">
-										{initialState.username}
-									</span>
-								</div>
-							)}
-							{initialState.profession && (
-								<div className="flex justify-between w-full">
-									Profession:
-									<span className="font-medium text-[#111827]">
-										{initialState.profession}
-									</span>
-								</div>
-							)}
-							{initialState.phone && (
-								<div className="flex justify-between w-full">
-									Phone:
-									<span className="font-medium text-[#111827]">
-										{initialState.phone}
-									</span>
-								</div>
-							)}
-							{initialState.role && (
-								<div className="flex justify-between w-full">
-									Role:
-									<span className="font-medium text-[#111827]">
-										{initialState.role}
-									</span>
-								</div>
-							)}
-							{initialState.gender && (
-								<div className="flex justify-between w-full">
-									Gender:
-									<span className="font-medium text-[#111827]">
-										{initialState.gender}
-									</span>
-								</div>
-							)}
-							{initialState.dob && (
-								<div className="flex justify-between w-full">
-									Date of Birth:
-									<span className="font-medium text-[#111827]">
-										{initialState.dob}
-									</span>
-								</div>
-							)}
-							{initialState.referredBy && (
-								<div className="flex justify-between w-full">
-									Referred By:
-									<span className="font-medium text-[#111827]">
-										{initialState.referredBy}
-									</span>
-								</div>
-							)}
-						</section>
-					</div>
-					<div className="p-4 flex flex-col size-full items-start justify-start gap-7">
-						<Edit
-							isOpen={editData}
-							onClose={() => setEditData(false)}
-							userData={userData}
-							setUserData={handleUpdate}
-							initialState={initialState}
-							userType={userType}
-							pathname={pathname}
-							setSelectedFile={setSelectedFile}
-							selectedFile={selectedFile}
-							setSelectedMonth={setSelectedMonth}
-							setSelectedDate={setSelectedDate}
-							setSelectedYear={setSelectedYear}
-							selectedMonth={selectedMonth}
-							selectedDate={selectedDate}
-							selectedYear={selectedYear}
-							setSelectedColor={setSelectedColor}
-							selectedColor={selectedColor}
-							setLoadingThemes={setLoadingThemes}
-							loadingThemes={loadingThemes}
-							setUsernameError={setUsernameError}
-							usernameError={usernameError}
-							setLoading={setLoading}
-							loading={loading}
-							setFormError={setFormError}
-							formError={formError}
-							initialReferralValue={initialReferralValue}
-							setSelectedProfession={setSelectedProfession}
-							selectedProfession={selectedProfession}
-							setErrorMessage={setErrorMessage}
-							errorMessage={errorMessage}
-							setCustomProfession={setCustomProfession}
-							customProfession={customProfession}
-							setDialogOpen={setDialogOpen}
-							dialogOpen={dialogOpen}
-							setProfessions={setProfessions}
-							professions={professions}
-							setLoadingProfessions={setLoadingProfessions}
-							loadingProfessions={loadingProfessions}
-							setPredefinedColors={setPredefinedColors}
-							predefinedColors={predefinedColors}
-							form={form}
-							schema={schema}
-							global={currentUser?.global ?? false}
-						/>
-					</div>
+							{/* New section for displaying initial state details */}
+							<section className="flex text-sm flex-col gap-3 w-full text-[#4B5563] p-4 rounded-lg border-[1px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] mx-auto space-y-2">
+								<h2 className="text-lg font-semibold text-black">
+									User Details
+								</h2>
+								{initialState.fullName && (
+									<div className="flex justify-between w-full">
+										Full Name:
+										<span className="font-medium text-[#111827]">
+											{initialState.fullName}
+										</span>
+									</div>
+								)}
+								{initialState.firstName && (
+									<div className="flex justify-between w-full">
+										First Name:
+										<span className="font-medium text-[#111827]">
+											{initialState.firstName}
+										</span>
+									</div>
+								)}
+								{initialState.lastName && (
+									<div className="flex justify-between w-full">
+										Last Name:
+										<span className="font-medium text-[#111827]">
+											{initialState.lastName}
+										</span>
+									</div>
+								)}
+								{initialState.username && (
+									<div className="flex justify-between w-full">
+										Username:
+										<span className="font-medium text-[#111827]">
+											{initialState.username}
+										</span>
+									</div>
+								)}
+								{initialState.profession && (
+									<div className="flex justify-between w-full">
+										Profession:
+										<span className="font-medium text-[#111827]">
+											{initialState.profession}
+										</span>
+									</div>
+								)}
+								{initialState.phone && (
+									<div className="flex justify-between w-full">
+										Phone:
+										<span className="font-medium text-[#111827]">
+											{initialState.phone}
+										</span>
+									</div>
+								)}
+								{initialState.role && (
+									<div className="flex justify-between w-full">
+										Role:
+										<span className="font-medium text-[#111827]">
+											{initialState.role}
+										</span>
+									</div>
+								)}
+								{initialState.gender && (
+									<div className="flex justify-between w-full">
+										Gender:
+										<span className="font-medium text-[#111827]">
+											{initialState.gender}
+										</span>
+									</div>
+								)}
+								{initialState.dob && (
+									<div className="flex justify-between w-full">
+										Date of Birth:
+										<span className="font-medium text-[#111827]">
+											{initialState.dob}
+										</span>
+									</div>
+								)}
+								{initialState.referredBy && (
+									<div className="flex justify-between w-full">
+										Referred By:
+										<span className="font-medium text-[#111827]">
+											{initialState.referredBy}
+										</span>
+									</div>
+								)}
+							</section>
+						</div>
+					) : (
+						<>
+							<div className="xl:hidden px-4 flex flex-col w-full 2xl:max-w-[69%] items-start justify-center gap-7 mt-4">
+								<section
+									className={`sticky flex w-full items-center justify-between top-0 lg:top-[76px] bg-white z-30 px-2 lg:pl-0.5 p-4 pb-0 transition-all duration-300`}
+								>
+									<section className="flex items-center gap-4">
+										<button
+											className="text-xl font-bold hoverScaleDownEffect"
+											onClick={() => setEditData(false)}
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												viewBox="0 0 24 24"
+												strokeWidth={1.5}
+												stroke="currentColor"
+												className="size-6"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													d="M15.75 19.5 8.25 12l7.5-7.5"
+												/>
+											</svg>
+										</button>
+										<h1 className="text-xl md:text-2xl font-bold">
+											Edit Profile
+										</h1>
+									</section>
+								</section>
+								<EditProfile
+									userData={userData}
+									setUserData={handleUpdate}
+									initialState={initialState}
+									setEditData={setEditData}
+									userType={userType}
+								/>
+							</div>
+							<div className="hidden xl:flex p-4 flex-col size-full items-start justify-start gap-7">
+								<Edit
+									isOpen={editData}
+									onClose={() => setEditData(false)}
+									userData={userData}
+									setUserData={handleUpdate}
+									initialState={initialState}
+									userType={userType}
+									pathname={pathname}
+									setSelectedFile={setSelectedFile}
+									selectedFile={selectedFile}
+									setSelectedMonth={setSelectedMonth}
+									setSelectedDate={setSelectedDate}
+									setSelectedYear={setSelectedYear}
+									selectedMonth={selectedMonth}
+									selectedDate={selectedDate}
+									selectedYear={selectedYear}
+									setSelectedColor={setSelectedColor}
+									selectedColor={selectedColor}
+									setLoadingThemes={setLoadingThemes}
+									loadingThemes={loadingThemes}
+									setUsernameError={setUsernameError}
+									usernameError={usernameError}
+									setLoading={setLoading}
+									loading={loading}
+									setFormError={setFormError}
+									formError={formError}
+									initialReferralValue={initialReferralValue}
+									setSelectedProfession={setSelectedProfession}
+									selectedProfession={selectedProfession}
+									setErrorMessage={setErrorMessage}
+									errorMessage={errorMessage}
+									setCustomProfession={setCustomProfession}
+									customProfession={customProfession}
+									setDialogOpen={setDialogOpen}
+									dialogOpen={dialogOpen}
+									setProfessions={setProfessions}
+									professions={professions}
+									setLoadingProfessions={setLoadingProfessions}
+									loadingProfessions={loadingProfessions}
+									setPredefinedColors={setPredefinedColors}
+									predefinedColors={predefinedColors}
+									form={form}
+									schema={schema}
+									global={currentUser?.global ?? false}
+								/>
+							</div>
+						</>
+					)}
 				</>
 			)}
 		</div>

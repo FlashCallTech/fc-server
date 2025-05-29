@@ -385,27 +385,29 @@ const EditProfile = ({
 					} as UpdateCreatorParams
 				);
 			} else {
-				response = await updateUser(
-					userData.id!,
-					commonValues as UpdateUserParams
+				response = await axios.put(
+					`${backendBaseUrl}/client/updateUser/${userData.id}`,
+					{
+						...commonValues,
+					} as UpdateUserParams
 				);
 			}
 
-			if (response.error) {
+			if (response.data.error) {
 				console.log("Error Found");
 				// Display the error if an existing user is found
-				setFormError(response.error);
+				setFormError(response.data.error);
 				toast({
 					variant: "destructive",
 					title: "Unable to Edit Details",
-					description: `${response.error}`,
+					description: `${response.data.error}`,
 					toastStatus: "negative",
 				});
 			} else {
 				const updatedUser =
 					userType === "creator"
 						? response.data.updatedUser
-						: response.updatedUser;
+						: response.data.updatedUser;
 				const newUserDetails = {
 					...userData,
 					fullName: `${updatedUser.firstName} ${updatedUser.lastName}`,

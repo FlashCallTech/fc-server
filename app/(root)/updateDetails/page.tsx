@@ -62,7 +62,7 @@ const UpdateProfilePage = () => {
 
 	if (loading || fetchingUser)
 		return (
-			<section className="w-full h-screen flex items-center justify-center">
+			<section className="size-full h-[calc(100vh-6rem)] flex flex-col gap-2 items-center justify-center">
 				<SinglePostLoader />
 			</section>
 		);

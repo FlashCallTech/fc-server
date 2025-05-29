@@ -330,17 +330,19 @@ const Edit = ({
 						} as UpdateUserParams
 					);
 				} else {
-					response = await updateUser(
-						userData.id!,
-						commonValues as UpdateUserParams
+					response = await axios.put(
+						`${backendBaseUrl}/client/updateUser/${userData.id}`,
+						{
+							...commonValues,
+						} as UpdateUserParams
 					);
 				}
 			}
 
-			if (response.error) {
+			if (response.data.error) {
 				console.log("Error Found");
 				// Display the error if an existing user is found
-				setFormError(response.error);
+				setFormError(response.data.error);
 				// toast({
 				// 	variant: "destructive",
 				// 	title: "Unable to Edit Details",
@@ -353,7 +355,7 @@ const Edit = ({
 						? response.data.updatedUser
 						: global
 						? response.data.data
-						: response.updatedUser;
+						: response.data.updatedUser;
 				const newUserDetails = {
 					...userData,
 					fullName: `${updatedUser.firstName} ${updatedUser.lastName}`,
@@ -368,23 +370,10 @@ const Edit = ({
 				};
 
 				setUserData(newUserDetails);
-
-				// toast({
-				// 	variant: "destructive",
-				// 	title: "Details Edited Successfully",
-				// 	description: "Changes are now visible ...",
-				// 	toastStatus: "positive",
-				// });
 			}
 		} catch (error) {
 			Sentry.captureException(error);
 			console.error("Error updating user details:", error);
-			// toast({
-			// 	variant: "destructive",
-			// 	title: "Unable to Edit Details",
-			// 	description: "Try Again Editing your Details",
-			// 	toastStatus: "negative",
-			// });
 		} finally {
 			setLoading(false);
 			onClose();

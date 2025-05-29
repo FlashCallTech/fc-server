@@ -1047,8 +1047,10 @@ export const sendCallNotification = async (
 					? `Incoming ${callType} Call`
 					: `Missed ${callType} Call`,
 				notificationType !== "call.missed"
-					? `Call Request from ${clientUsername}`
-					: `Call from ${clientUsername}`,
+					? `Call Request from ${maskNumbers(
+							clientUsername || "Flashcall User"
+					  )}`
+					: `Call from ${maskNumbers(clientUsername || "Flashcall User")}`,
 				{
 					created_by_display_name: maskNumbers(
 						clientUsername || "Flashcall User"
@@ -1065,8 +1067,12 @@ export const sendCallNotification = async (
 					deviceToken: fcmToken.voip_token,
 					message: `${
 						notificationType !== "call.missed"
-							? `Incoming ${callType} Call Request from ${clientUsername}`
-							: `Missed ${callType} Call from ${clientUsername}`
+							? `Incoming ${callType} Call Request from ${maskNumbers(
+									clientUsername || "Flashcall User"
+							  )}`
+							: `Missed ${callType} Call from ${maskNumbers(
+									clientUsername || "Flashcall User"
+							  )}`
 					}`,
 					payload: {
 						created_by_display_name: maskNumbers(
@@ -1076,6 +1082,7 @@ export const sendCallNotification = async (
 						callType: call.type,
 						callId: call.id,
 						notificationType,
+						callCategory: callCategory || "PPM",
 					},
 				});
 			}
