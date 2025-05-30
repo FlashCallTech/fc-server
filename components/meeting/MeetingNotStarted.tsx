@@ -88,7 +88,7 @@ const MeetingNotStarted = ({
 			</div>
 
 			<div
-				className={`w-full md:max-w-[85%] mx-auto ${
+				className={`w-full md:max-w-[90%] mx-auto ${
 					videoCall
 						? "h-fit flex flex-col md:grid md:grid-cols-[2fr_1fr]"
 						: "flex flex-col h-full"
@@ -137,7 +137,7 @@ const MeetingNotStarted = ({
 						</div>
 					)}
 
-					<section className="w-full flex flex-wrap items-center justify-between gap-4">
+					<section className="w-full flex flex-wrap items-center max-m:justify-end m:justify-between gap-4">
 						<div className="flex items-center gap-2">
 							<AudioToggleButtonScheduled />
 							{videoCall && <VideoToggleButtonScheduled />}
@@ -145,14 +145,14 @@ const MeetingNotStarted = ({
 
 						{remainingTime && remainingTime !== "00:00:00" ? (
 							<button
-								className="max-xm:w-full xm:w-fit min-w-[7rem] flex items-center justify-center bg-red-500 px-4 py-2.5 rounded-full hoverScaleDownEffect"
+								className="max-m:w-full m:w-fit min-w-[7rem] flex items-center justify-center bg-red-500 px-4 py-2.5 rounded-full hoverScaleDownEffect"
 								onClick={leaveCall}
 							>
 								Leave
 							</button>
 						) : (
 							<button
-								className="w-fit min-w-[7rem] flex items-center justify-center bg-green-1 px-4 py-2.5 rounded-full hoverScaleDownEffect"
+								className="max-m:w-full m:w-fit min-w-[7rem] flex items-center justify-center bg-green-1 px-4 py-2.5 rounded-full hoverScaleDownEffect"
 								onClick={handleJoinCall}
 							>
 								{joiningCall ? (
@@ -232,44 +232,6 @@ const MeetingNotStarted = ({
 							<p className="text-xl font-bold text-gray-900">{remainingTime}</p>
 						</div>
 					</div>
-
-					{/* Other Details Section */}
-					{/* <section className="md:hidden w-full flex flex-wrap items-center justify-between gap-4">
-						<div className="flex items-center gap-2">
-							<AudioToggleButtonScheduled />
-							{videoCall && <VideoToggleButtonScheduled />}
-						</div>
-
-						{remainingTime && remainingTime !== "00:00:00" ? (
-							<button
-								className="max-xm:w-full xm:w-fit min-w-[7rem] flex items-center justify-center bg-red-500 px-4 py-2.5 rounded-full hoverScaleDownEffect"
-								onClick={leaveCall}
-							>
-								Leave
-							</button>
-						) : (
-							<button
-								className="w-fit min-w-[7rem] flex items-center justify-center bg-green-1 px-4 py-2.5 rounded-full hoverScaleDownEffect"
-								onClick={handleJoinCall}
-							>
-								{joiningCall ? (
-									<div className="flex items-center gap-2">
-										<Image
-											src="/icons/loading-circle.svg"
-											alt="Loading..."
-											width={1000}
-											height={1000}
-											className="size-6"
-											priority
-										/>
-										Joining ...
-									</div>
-								) : (
-									"Join Now"
-								)}
-							</button>
-						)}
-					</section> */}
 				</div>
 			</div>
 		</section>

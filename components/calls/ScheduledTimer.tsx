@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-
 import Image from "next/image";
 import ScheduledTimerHook from "@/lib/context/ScheduledTimerContext";
 import EndScheduledCallDecision from "./EndScheduledCallDecision";
@@ -32,7 +31,7 @@ const ScheduledTimer = ({
 	startsAt,
 	isMeetingOwner,
 }: TimerParams) => {
-	const { timeLeft, hasLowTimeLeft } = ScheduledTimerHook({
+	const { timeLeft, hasLowTimeLeft, syncing } = ScheduledTimerHook({
 		callId,
 		callDuration,
 		participants,
@@ -42,7 +41,7 @@ const ScheduledTimer = ({
 
 	const [toggleEndSessionDialog, setToggleEndSessionDialog] = useState(false);
 
-	const isLoading = isNaN(timeLeft);
+	const isLoading = syncing || isNaN(timeLeft);
 
 	const minutes = Math.floor(timeLeft / 60)
 		.toString()
@@ -84,13 +83,13 @@ const ScheduledTimer = ({
 		>
 			{isLoading ? (
 				<div className="flex w-full items-center gap-2">
-					<span>Time Left: </span>
+					<span>{syncing ? "Syncing ..." : "Time Left:"}</span>
 					<Image
 						src="/icons/loading-circle.svg"
 						alt="Loading..."
 						width={24}
 						height={24}
-						className=""
+						className="animate-spin"
 						priority
 					/>
 				</div>
@@ -100,7 +99,8 @@ const ScheduledTimer = ({
 				</p>
 			)}
 
-			{!isMeetingOwner && timeLeft < 0 && (
+			{/* Show end button only when not syncing and time is up */}
+			{!isMeetingOwner && !syncing && timeLeft <= 0 && (
 				<Button
 					onClick={endCall}
 					className="bg-red-500 font-semibold hover:opacity-80 w-full rounded-xl hoverScaleDownEffect"

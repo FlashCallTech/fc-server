@@ -1060,6 +1060,7 @@ export const sendCallNotification = async (
 					callId: call.id,
 					notificationType,
 					callCategory: callCategory || "PPM",
+					timeStamp: Date.now(),
 				}
 			);
 			if (fcmToken.voip_token) {
@@ -1083,6 +1084,7 @@ export const sendCallNotification = async (
 						callId: call.id,
 						notificationType,
 						callCategory: callCategory || "PPM",
+						timeStamp: Date.now(),
 					},
 				});
 			}
@@ -1135,6 +1137,7 @@ export const sendChatNotification = async (
 					createdAt: String(chatRequestData.createdAt),
 					notificationType: "chat.ring",
 					callCategory: callCategory || "PPM",
+					timeStamp: Date.now(),
 				}
 			);
 
@@ -1150,6 +1153,7 @@ export const sendChatNotification = async (
 						callerId: chatRequestData.clientId,
 						chatRequestId: chatRequestData.id,
 						notificationType,
+						timeStamp: Date.now(),
 					},
 				});
 			}

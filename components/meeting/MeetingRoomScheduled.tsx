@@ -13,7 +13,6 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Users } from "lucide-react";
 import EndCallButton from "../calls/EndCallButton";
-import { useToast } from "../ui/use-toast";
 import { VideoToggleButton } from "../calls/VideoToggleButton";
 import { AudioToggleButton } from "../calls/AudioToggleButton";
 import SinglePostLoader from "../shared/SinglePostLoader";
@@ -40,7 +39,6 @@ type CallLayoutType = "grid" | "speaker-bottom";
 
 const NoParticipantsView = () => (
 	<section className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center whitespace-nowrap flex flex-col items-center justify-center">
-		{/* <p className="text-white text-xl">No other participants in the call</p> */}
 		<div className="size-full flex items-center justify-center">
 			<h1
 				className="text-xl md:text-2xl font-semibold"
@@ -115,7 +113,6 @@ const MeetingRoomScheduled = () => {
 	const call = useCall();
 	const callEndedAt = useCallEndedAt();
 	const callHasEnded = !!callEndedAt;
-	const { toast } = useToast();
 	const isVideoCall = useMemo(() => call?.type === "default", [call]);
 
 	const callingState = useCallCallingState();
@@ -129,6 +126,8 @@ const MeetingRoomScheduled = () => {
 	const firestore = getFirestore();
 
 	const countdownRef = useRef(false);
+	const notificationSentRef = useRef(false);
+	const bothParticipantsJoinedOnceRef = useRef(false);
 
 	let callType: "scheduled" | "instant" =
 		call?.state?.custom?.type || "instant";
@@ -159,6 +158,12 @@ const MeetingRoomScheduled = () => {
 			setLayout("grid");
 		}
 	}, [isMobile]);
+
+	useEffect(() => {
+		if (participants.length >= 2) {
+			bothParticipantsJoinedOnceRef.current = true;
+		}
+	}, [participants.length]);
 
 	useEffect(() => {
 		const joinCall = async () => {
@@ -203,20 +208,25 @@ const MeetingRoomScheduled = () => {
 		const localSessionKey = `meeting_${call.id}_${currentUser._id}`;
 		const notificationSentKey = `${localSessionKey}_notificationSent`;
 
+		// If both participants have joined at some point, don't send notification anymore
+		if (bothParticipantsJoinedOnceRef.current) return;
+
 		const shouldSendNotification =
 			isMeetingOwner &&
-			participants.length < 2 &&
+			participants.length === 1 &&
 			participants[0]?.userId === currentUser._id &&
+			!notificationSentRef.current &&
 			!localStorage.getItem(notificationSentKey);
 
 		if (!shouldSendNotification) return;
 
 		const timeout = setTimeout(async () => {
-			// Re-check conditions in case something changed during delay
+			// Re-check before sending
 			if (
 				isMeetingOwner &&
-				participants.length < 2 &&
+				participants.length === 1 &&
 				participants[0]?.userId === currentUser._id &&
+				!notificationSentRef.current &&
 				!localStorage.getItem(notificationSentKey)
 			) {
 				try {
@@ -233,14 +243,15 @@ const MeetingRoomScheduled = () => {
 						"Scheduled"
 					);
 					localStorage.setItem(notificationSentKey, "true");
+					notificationSentRef.current = true;
 				} catch (err) {
 					console.error("Error sending call notification after delay", err);
 				}
 			}
-		}, 5000);
+		}, 2000);
 
 		return () => clearTimeout(timeout);
-	}, [userType, call, participants.length]);
+	}, [userType, call?.id, participants.length]);
 
 	useEffect(() => {
 		if (userType === "creator") {

@@ -26,7 +26,7 @@ const LeaveCallDecision = ({
 					side="bottom"
 					className="bg-white text-black rounded-t-xl p-5 flex flex-col items-start justify-between gap-7 max-h-fit w-full sm:max-w-[444px] mx-auto"
 				>
-					<SheetHeader className="flex flex-col items-start justify-center">
+					<SheetHeader className="flex flex-col items-start justify-center text-start">
 						<SheetTitle>Leaving the call?</SheetTitle>
 						<SheetDescription>
 							Proceeding further will disconnect you from the call.

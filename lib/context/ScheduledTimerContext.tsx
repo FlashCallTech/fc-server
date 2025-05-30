@@ -5,7 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 interface TimerParams {
 	callId: string;
-	callDuration: number;
+	callDuration: number; // in seconds
 	participants: number;
 	startsAt: Date | undefined;
 	handleCallRejected: () => Promise<void>;
@@ -18,8 +18,10 @@ const ScheduledTimerHook = ({
 	startsAt,
 	handleCallRejected,
 }: TimerParams) => {
+	console.log("✅ Scheduled Timer Hook Initialized");
+
 	const normalizedStartsAt = startsAt ? new Date(startsAt) : undefined;
-	const [timeLeft, setTimeLeft] = useState(callDuration || 0);
+	const [timeLeft, setTimeLeft] = useState(callDuration);
 	const [hasLowTimeLeft, setHasLowTimeLeft] = useState(false);
 	const [isTimerRunning, setIsTimerRunning] = useState(true);
 	const [endTime, setEndTime] = useState<Date | null>(null);
@@ -27,8 +29,10 @@ const ScheduledTimerHook = ({
 	const [totalTimeUtilized, setTotalTimeUtilized] = useState(0);
 	const [previousParticipants, setPreviousParticipants] =
 		useState(participants);
+	const [syncing, setSyncing] = useState(true);
 
 	const { toast } = useToast();
+
 	const pauseTimer = () => setIsTimerRunning(false);
 
 	const resumeTimer = () => {
@@ -39,7 +43,6 @@ const ScheduledTimerHook = ({
 		}
 	};
 
-	// Function to end the call
 	const endCall = async () => {
 		console.warn("Call ended as the time has expired.");
 		setIsTimerRunning(false);
@@ -55,7 +58,7 @@ const ScheduledTimerHook = ({
 				description: "The session time has expired.",
 				toastStatus: "negative",
 			});
-			// handleCallRejected();
+			// await handleCallRejected(); // uncomment if needed
 		} catch (error) {
 			console.error("Error ending the call:", error);
 		}
@@ -67,13 +70,9 @@ const ScheduledTimerHook = ({
 				const now = new Date();
 
 				if (!callId) {
-					console.warn("Timer not initialized as call id is not valid");
+					console.warn("Timer not initialized as call ID is missing.");
 					setIsTimerRunning(false);
 					return;
-				}
-
-				if (!callDuration || callDuration <= 0) {
-					throw new Error("Invalid call duration.");
 				}
 
 				const callDocRef = doc(db, "calls", callId);
@@ -87,47 +86,38 @@ const ScheduledTimerHook = ({
 
 					if (storedStartTime && storedEndTime) {
 						const end = new Date(storedEndTime);
+						const start = new Date(storedStartTime);
 
 						setEndTime(end);
-
-						if (storedStartTime !== undefined) {
-							setStartTime(storedStartTime);
-						}
-
-						if (storedTimeLeft !== undefined) {
-							setTimeLeft(storedTimeLeft);
-						}
+						setStartTime(start);
+						setTimeLeft(storedTimeLeft ?? callDuration);
+						setSyncing(false);
 
 						if (new Date() > end) {
 							endCall();
 						}
 					}
 				} else {
-					// Initialize Firebase document
 					const currentTime = new Date();
-					const calculatedEndTime = new Date(
-						(normalizedStartsAt
-							? normalizedStartsAt.getTime()
-							: currentTime.getTime()) +
-							callDuration * 1000
+					const fallbackStart = normalizedStartsAt ?? currentTime;
+					const fallbackEnd = new Date(
+						fallbackStart.getTime() + callDuration * 1000
 					);
 
 					await setDoc(callDocRef, {
 						callType: "scheduled",
 						status: "active",
-						startTime: normalizedStartsAt
-							? normalizedStartsAt.toISOString()
-							: currentTime.toISOString(),
-						endTime: calculatedEndTime.toISOString(),
-						timeLeft: normalizedStartsAt
-							? (now.getTime() - normalizedStartsAt.getTime()) / 1000
-							: (now.getTime() - currentTime.getTime()) / 1000 || callDuration,
+						startTime: fallbackStart.toISOString(),
+						endTime: fallbackEnd.toISOString(),
+						timeLeft: callDuration,
 						timeUtilized: 0,
 						joinedParticipants: participants,
 					});
 
-					setEndTime(calculatedEndTime);
+					setEndTime(fallbackEnd);
+					setStartTime(fallbackStart);
 					setTimeLeft(callDuration);
+					setSyncing(false);
 				}
 			} catch (error) {
 				console.error("Error initializing timer:", error);
@@ -138,19 +128,30 @@ const ScheduledTimerHook = ({
 	}, [callId, callDuration, participants]);
 
 	useEffect(() => {
-		if (!endTime || !callId || !startTime || !normalizedStartsAt) return;
+		if (!callId) return;
 
 		const updateTimeLeft = () => {
 			const now = new Date();
 
-			if (now > endTime) {
+			let effectiveStart = startTime ?? normalizedStartsAt ?? now;
+			let effectiveEnd =
+				endTime ?? new Date(effectiveStart.getTime() + callDuration * 1000);
+
+			if (!endTime) setEndTime(effectiveEnd);
+			if (!startTime) setStartTime(effectiveStart);
+
+			if (now > effectiveEnd) {
 				endCall();
 				return;
 			}
 
-			const remainingTime = (endTime.getTime() - now.getTime()) / 1000;
-			const elapsedTime = (now.getTime() - normalizedStartsAt.getTime()) / 1000;
-			setTimeLeft(Math.max(remainingTime, 0));
+			const remainingTime = Math.max(
+				(effectiveEnd.getTime() - now.getTime()) / 1000,
+				0
+			);
+			const elapsedTime = (now.getTime() - effectiveStart.getTime()) / 1000;
+
+			setTimeLeft(remainingTime);
 			setTotalTimeUtilized(elapsedTime);
 			setHasLowTimeLeft(remainingTime <= 300);
 
@@ -158,23 +159,24 @@ const ScheduledTimerHook = ({
 				const callDocRef = doc(db, "calls", callId);
 				if (participants !== previousParticipants) {
 					updateDoc(callDocRef, {
-						timeLeft: Math.max(remainingTime, 0),
+						timeLeft: remainingTime,
 						timeUtilized: elapsedTime,
 						joinedParticipants: participants,
 					});
 					setPreviousParticipants(participants);
 				} else {
 					updateDoc(callDocRef, {
-						timeLeft: Math.max(remainingTime, 0),
+						timeLeft: remainingTime,
 						timeUtilized: elapsedTime,
 					});
 				}
 			} catch (error) {
-				console.error("Error updating timer in Firestore:", error);
+				console.error("Error updating Firestore timer:", error);
 			}
 		};
 
-		updateTimeLeft();
+		updateTimeLeft(); // initial tick
+
 		const intervalId = setInterval(() => {
 			if (isTimerRunning) {
 				updateTimeLeft();
@@ -182,7 +184,7 @@ const ScheduledTimerHook = ({
 		}, 1000);
 
 		return () => clearInterval(intervalId);
-	}, [endTime, callId, isTimerRunning, participants]);
+	}, [callId, isTimerRunning, participants, startTime, endTime]);
 
 	return {
 		timeLeft,
@@ -190,6 +192,7 @@ const ScheduledTimerHook = ({
 		resumeTimer,
 		hasLowTimeLeft,
 		totalTimeUtilized,
+		syncing, // <- use this in UI
 	};
 };
 
