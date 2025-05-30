@@ -1089,7 +1089,7 @@ const AvailabilityFinalConsentForm = ({
 						alt="success"
 						height={150}
 						width={150}
-						className="size-[150px]"
+						className="size-[120px]"
 					/>
 					<span className="font-semibold text-lg">
 						Meeting scheduled for {formattedData.day}

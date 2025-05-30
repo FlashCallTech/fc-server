@@ -148,12 +148,6 @@ const ScheduledTimerHook = ({
 				return;
 			}
 
-			if (participants < 2) {
-				console.warn("Pausing timer due to invalid participants count.");
-				setIsTimerRunning(false);
-				return;
-			}
-
 			const remainingTime = (endTime.getTime() - now.getTime()) / 1000;
 			const elapsedTime = (now.getTime() - normalizedStartsAt.getTime()) / 1000;
 			setTimeLeft(Math.max(remainingTime, 0));
