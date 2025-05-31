@@ -1,22 +1,23 @@
 "use client";
 
 import { useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import { StreamCall, StreamTheme } from "@stream-io/video-react-sdk";
-// import { useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Loader } from "lucide-react";
 
 import { useGetCallById } from "@/hooks/useGetCallById";
-import MeetingSetup from "@/components/experiment/MeetingSetup";
-import MeetingRoom from "@/components/experiment/MeetingRoom";
+import { Alert } from "@/components/ui/alert";
+import MeetingSetup from "@/components/meeting/MeetingSetup";
+import MeetingRoom from "@/components/meeting/MeetingRoom";
 
 const MeetingPage = () => {
-	// const { id } = useParams();
-	const { call, isCallLoading } = useGetCallById(
-		"14fafb28-66ea-423e-a751-1268ee7bccdf"
-	);
+	const { id } = useParams();
+	const { isLoaded, user } = useUser();
+	const { call, isCallLoading } = useGetCallById(id);
 	const [isSetupComplete, setIsSetupComplete] = useState(false);
 
-	if (isCallLoading) return <Loader />;
+	if (!isLoaded || isCallLoading) return <Loader />;
 
 	if (!call)
 		return (
@@ -26,6 +27,12 @@ const MeetingPage = () => {
 		);
 
 	// get more info about custom call type:  https://getstream.io/video/docs/react/guides/configuring-call-types/
+	const notAllowed =
+		call.type === "invited" &&
+		(!user || !call.state.members.find((m) => m.user.id === user.id));
+
+	if (notAllowed)
+		return <Alert title="You are not allowed to join this meeting" />;
 
 	return (
 		<main className="h-screen w-full">

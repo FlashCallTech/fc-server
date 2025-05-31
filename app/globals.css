@@ -130,6 +130,10 @@ html {
 
 /* stream custom styles */
 
+.str-video__icon--ellipsis {
+	display: none;
+}
+
 .str-video__speaker-layout
 	.str-video__speaker-layout__participants-bar-wrapper
 	.str-video__speaker-layout__participants-bar {

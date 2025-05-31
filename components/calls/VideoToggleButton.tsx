@@ -12,23 +12,22 @@ export const VideoToggleButton = () => {
 	// Function to check camera permissions
 	const checkPermissions = async () => {
 		try {
-			const permissionStatus = await navigator.permissions.query({
-				name: "camera" as PermissionName,
-			});
-			setPermissionDenied(permissionStatus.state === "denied");
+			if (navigator.permissions) {
+				const result = await navigator.permissions.query({
+					name: "camera" as PermissionName,
+				});
 
-			// Listen to changes in permission state
-			permissionStatus.onchange = () => {
-				setPermissionDenied(permissionStatus.state === "denied");
-			};
-		} catch (error) {
-			// Fallback if permissions API is unavailable
-			try {
+				setPermissionDenied(result.state === "denied");
+
+				result.onchange = () => {
+					setPermissionDenied(result.state === "denied");
+				};
+			} else {
 				await navigator.mediaDevices.getUserMedia({ video: true });
 				setPermissionDenied(false);
-			} catch (err) {
-				setPermissionDenied(true);
 			}
+		} catch (err) {
+			setPermissionDenied(true);
 		}
 	};
 

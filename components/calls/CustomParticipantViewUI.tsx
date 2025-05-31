@@ -112,21 +112,6 @@ const CustomParticipantViewUI = () => {
 
 	return (
 		<>
-			{/* <span
-				className={`absolute w-full text-sm text-ellipsis overflow-hidden ${
-					expert?.user_id !== participant.userId
-						? "max-w-[85%] pb-2 bottom-0 left-3"
-						: "max-w-[55%] sm:max-w-[65%] bottom-1.5 left-2.5"
-				} overflow-scroll no-scrollbar`}
-			>
-				{participant.name.startsWith("+91")
-					? participant.name.replace(
-							/(\+91)(\d+)/,
-							(match, p1, p2) => `${p1} ${p2.replace(/(\d{5})$/, "xxxxx")}`
-					  )
-					: participant.name}
-			</span> */}
-
 			<PoorConnectionNotification />
 
 			{isLocalParticipant && (

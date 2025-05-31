@@ -1,6 +1,7 @@
 import React from "react";
 import { useEffect, useState, useMemo, useRef } from "react";
 import {
+	CallControls,
 	CallParticipantsList,
 	CallingState,
 	DeviceSettings,
@@ -35,7 +36,6 @@ type CallLayoutType = "grid" | "speaker-bottom";
 
 const NoParticipantsView = () => (
 	<section className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center whitespace-nowrap flex flex-col items-center justify-center">
-		{/* <p className="text-white text-xl">No other participants in the call</p> */}
 		<div className="size-full flex items-center justify-center">
 			<h1
 				className="text-xl md:text-2xl font-semibold"
@@ -115,6 +115,7 @@ const MeetingRoom = () => {
 
 	const callingState = useCallCallingState();
 	const participants = useParticipants();
+
 	const [layout, setLayout] = useState<CallLayoutType>("grid");
 	const [showCountdown, setShowCountdown] = useState(false);
 	const [countdown, setCountdown] = useState<number | null>(null);

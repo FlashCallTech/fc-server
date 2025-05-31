@@ -361,7 +361,6 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				})
 				.then(async () => {
 					localStorage.removeItem("hasVisitedFeedbackPage");
-
 					if (callType === "audio") {
 						trackEvent("BookCall_Audio_Initiated", {
 							Client_ID: clientUser._id,
