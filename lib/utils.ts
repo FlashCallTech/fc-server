@@ -1141,6 +1141,8 @@ export const sendChatNotification = async (
 				}
 			);
 
+			console.log('voip token: ', fcmToken.voip_token);
+
 			if (fcmToken.voip_token && notificationType !== "chat.missed") {
 				await axios.post(`${backendUrl}/send-notification`, {
 					deviceToken: fcmToken.voip_token,

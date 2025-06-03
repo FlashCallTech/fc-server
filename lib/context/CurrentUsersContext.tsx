@@ -47,7 +47,6 @@ interface CurrentUsersContextValue {
 	ongoingCallStatus: string;
 	setOngoingCallStatus: any;
 	region: string;
-	userFetched: boolean;
 	pendingNotifications: number;
 	setPendingNotifications: any;
 	setPreviousPendingNotifications: any;
@@ -81,11 +80,10 @@ export const CurrentUsersProvider = ({
 	const [creatorUser, setCreatorUser] = useState<creatorUser | null>(null);
 	const [currentTheme, setCurrentTheme] = useState("");
 	const [authenticationSheetOpen, setAuthenticationSheetOpen] = useState(false);
-	const [fetchingUser, setFetchingUser] = useState(false);
+	const [fetchingUser, setFetchingUser] = useState(true);
 	const [authToken, setAuthToken] = useState<string | null>(null);
 	const [creatorURL, setCreatorURL] = useState("");
 	const [ongoingCallStatus, setOngoingCallStatus] = useState("");
-	const [userFetched, setUserFetched] = useState(false);
 	const [pendingNotifications, setPendingNotifications] = useState(0);
 	const [previousPendingNotifications, setPreviousPendingNotifications] =
 		useState<number | null>(null);
@@ -607,21 +605,19 @@ export const CurrentUsersProvider = ({
 			}
 		} finally {
 			setFetchingUser(false);
-			setUserFetched(true);
 		}
 	};
 
 	const fetchGlobalCurrentUser = async (email: string) => {
 		try {
 			console.log("Fetching global client");
-			setFetchingUser(true);
-
 			if (email) {
 				const response = await axios.post(
 					`${backendBaseUrl}/client/getGlobalUserByEmail/${email}`
 				);
 
 				const data = response.data;
+				console.log('client: ', data);
 
 				if (data.role === "client") {
 					setClientUser(data);
@@ -629,46 +625,48 @@ export const CurrentUsersProvider = ({
 					setUserType("client");
 				}
 				localStorage.setItem("userType", data.role);
-			} else console.error("Email not provided");
+			}
 		} catch (error) {
 			console.error(error);
-		} finally {
-			setFetchingUser(false);
-			setUserFetched(true);
 		}
 	};
 
-	useEffect(() => {
-		if (!region) return;
-
-		if (region === "India") {
-			fetchCurrentUser();
-			return;
-		}
-
-		const unsubscribe = onAuthStateChanged(auth, (user) => {
-			if (user && user.email) {
-				fetchGlobalCurrentUser(user.email);
-			} else {
-				console.error("Unauthorized");
-				localStorage.removeItem("currentUserID");
-				setClientUser(null);
-				setCreatorUser(null);
-				setUserFetched(true);
+	const startAuthListener = async () => {
+		console.log('Starting the listener...');
+		const unsubscribe = onAuthStateChanged(auth, async (user) => {
+			try {
+				if (user?.email) {
+					await fetchGlobalCurrentUser(user.email);
+				} else {
+					console.error("Unauthorized");
+					localStorage.removeItem("currentUserID");
+					setClientUser(null);
+					setCreatorUser(null);
+				}
+			} catch (error) {
+				console.error(error);
+			} finally {
+				setFetchingUser(false);
 			}
 		});
 
 		return () => {
 			unsubscribe();
 		};
+	}
+
+	useEffect(() => {
+		console.log('Current region: ', region);
+
+		if (!region) return;
+		if (region === "India") fetchCurrentUser();
+		if (region === "Global") startAuthListener();
 	}, [region]);
 
 	const refreshCurrentUser = async () => {
 		if (region === "India") await fetchCurrentUser();
 		else {
-			const email = auth.currentUser?.email;
-			console.log("Email: ", email);
-			if (email) await fetchGlobalCurrentUser(email);
+			await startAuthListener();
 		}
 	};
 
@@ -748,7 +746,6 @@ export const CurrentUsersProvider = ({
 				ongoingCallStatus,
 				setOngoingCallStatus,
 				region,
-				userFetched,
 				pendingNotifications,
 				setPendingNotifications,
 				setPreviousPendingNotifications,
