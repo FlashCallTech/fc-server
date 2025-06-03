@@ -1153,6 +1153,7 @@ export const sendChatNotification = async (
 						callerId: chatRequestData.clientId,
 						chatRequestId: chatRequestData.id,
 						notificationType,
+						callCategory: callCategory || "PPM",
 						timeStamp: Date.now(),
 					},
 				});
