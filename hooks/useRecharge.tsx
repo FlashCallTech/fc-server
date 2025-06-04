@@ -151,7 +151,7 @@ const useRecharge = () => {
 		isCallRecharge?: boolean
 	): Promise<void> => {
 		setLoading(true);
-		
+
 		const rechargeAmount = Math.round(totalPayable * 100);
 		const currency = "INR";
 		const jsonHeaders = { "Content-Type": "application/json" };
@@ -178,35 +178,15 @@ const useRecharge = () => {
 				order_id: order.id,
 				handler: async (response: PaymentResponse) => {
 					try {
-						// Step 3: Create and validate payment
-						const paymentResponse = await fetch(`${backendBaseUrl}/order/create-payment`, {
-							method: "POST",
-							body: JSON.stringify({ order_id: response.razorpay_order_id }),
-							headers: jsonHeaders,
-						});
-						const paymentResult = await paymentResponse.json();
+						// Step 3: Call the API to handle the payment
+						await axios.post(`${backendBaseUrl}/order/handlePayment`, {
+							user_id: clientId,
+							response,
+							order_id: response.razorpay_order_id,
+							amount: totalPayable
+						})
 
-						await fetch(`${backendBaseUrl}/order/validate`, {
-							method: "POST",
-							body: JSON.stringify(response),
-							headers: jsonHeaders,
-						});
-
-						// Step 4: Credit wallet
-						await fetch(`${backendBaseUrl}/wallet/addMoney`, {
-							method: "POST",
-							body: JSON.stringify({
-								userId: clientId,
-								PG: "Razorpay",
-								userType: "Client",
-								amount: totalPayable,
-								category: "Recharge",
-								method: paymentResult.paymentMethod,
-							}),
-							headers: jsonHeaders,
-						});
-
-						// Step 5: Track success
+						// Step 4: Track success
 						trackEvent("Recharge_Successfull", {
 							Client_ID: clientId,
 							User_First_Seen,
@@ -219,7 +199,7 @@ const useRecharge = () => {
 						if (!isCallRecharge) router.push("/success");
 					} catch (error) {
 						Sentry.captureException(error);
-						console.error("Validation request failed:", error);
+						console.error("Payment Failed:", error);
 					}
 				},
 				prefill: {

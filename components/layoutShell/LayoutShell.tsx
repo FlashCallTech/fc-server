@@ -13,8 +13,6 @@ const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   const [isSplashVisible, setIsSplashVisible] = useState(true);
   const pathname = usePathname();
 
-  console.log('still fetching: ', fetchingUser);
-
   useEffect(() => {
     setIsMounted(true);
   }, []);

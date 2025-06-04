@@ -66,6 +66,7 @@ const AuthenticateViaOTP = ({
 	const [isSendingOTP, setIsSendingOTP] = useState(false);
 	const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
 	const [verificationSuccess, setVerificationSuccess] = useState(false);
+	const [isFetchingGlobalUser, setIsFetchingGlobalUser] = useState(false);
 
 	const firstLoginRef = useRef(false);
 	const [error, setError] = useState({});
@@ -303,7 +304,7 @@ const AuthenticateViaOTP = ({
 
 	const handleGoogleSignIn = async () => {
 		try {
-			console.log("Trying to sign in...");
+			setIsFetchingGlobalUser(true);
 			let result: any;
 			let email: string = "";
 
@@ -325,9 +326,6 @@ const AuthenticateViaOTP = ({
 				}
 				console.log(error);
 				throw new Error("Google Sign-In failed");
-			} finally {
-				setAuthenticationSheetOpen(false);
-				onOpenChange && onOpenChange(false);
 			}
 
 			if (!email) {
@@ -340,6 +338,9 @@ const AuthenticateViaOTP = ({
 
 			// Check if the user exists or create a new user
 			await handleUserExistenceAndCreation(email, result, payload);
+			await refreshCurrentUser();
+			setAuthenticationSheetOpen(false);
+			onOpenChange && onOpenChange(false);
 		} catch (error) {
 			console.error("Error during sign-in:", error);
 			await signOut(auth); // Sign out if an error occurs
@@ -349,6 +350,8 @@ const AuthenticateViaOTP = ({
 				description: "Try again later",
 				toastStatus: "negative",
 			});
+		} finally {
+			setIsFetchingGlobalUser(false);
 		}
 	};
 
@@ -361,17 +364,19 @@ const AuthenticateViaOTP = ({
 		let userExists = true;
 
 		try {
-			const response = await axios.post(
-				`${backendBaseUrl}/client/getGlobalUserByEmail/${email}`,
-				payload,
+			const response = await axios.get(
+				`${backendBaseUrl}/client/getGlobalUserByEmail`,
 				{
-					headers: { "Content-Type": "application/json" },
+					params: {
+						email,
+						fcmToken: payload.fcmToken, // Or just `fcmToken` if you have it separately
+					},
+					headers: {
+						"Content-Type": "application/json",
+					},
 				}
 			);
-			console.log("Existing User...");
-			console.log("currentUser...", response.data);
 			localStorage.setItem("currentUserID", response.data._id);
-			await refreshCurrentUser();
 		} catch (error: any) {
 			if (error.response?.status === 404) {
 				userExists = false;
@@ -388,7 +393,6 @@ const AuthenticateViaOTP = ({
 
 	// Helper function to create a new user
 	const createNewUser = async (result: any, email: string, payload: any) => {
-		console.log("Creating a new user...");
 		const newUser: CreateForeignUserParams = {
 			username: result.user.uid,
 			photo: GetRandomImage() || "",
@@ -412,10 +416,7 @@ const AuthenticateViaOTP = ({
 			);
 
 			if (createUserResponse.status === 201) {
-				console.log();
 				localStorage.setItem("currentUserID", createUserResponse.data._id);
-				console.log("New user created successfully.");
-				await refreshCurrentUser();
 			} else {
 				throw new Error("Failed to create user.");
 			}
@@ -503,15 +504,28 @@ const AuthenticateViaOTP = ({
 						<Button
 							className="w-[80%] p-2 text-black text-sm bg-white rounded-md flex items-center justify-center gap-2 border shadow-sm"
 							onClick={handleGoogleSignIn}
+							disabled={isFetchingGlobalUser}
 						>
-							<Image
-								src="/google.svg" // Replace with your Google logo image path
-								alt="Google Logo"
-								width={1000}
-								height={1000}
-								className="size-5"
-							/>
-							Continue with Google
+							{isFetchingGlobalUser ? (
+								<Image
+									src="/icons/loading-circle.svg"
+									alt="Loading..."
+									width={24}
+									height={24}
+									priority
+								/>
+							) : (
+								<>
+									<Image
+										src="/google.svg" // Replace with your Google logo image path
+										alt="Google Logo"
+										width={1000}
+										height={1000}
+										className="size-5"
+									/>
+									Continue with Google
+								</>
+							)}
 						</Button>
 					)}
 				</>

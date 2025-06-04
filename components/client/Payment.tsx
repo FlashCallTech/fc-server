@@ -20,7 +20,6 @@ import { creatorUser } from "@/types";
 import { trackEvent } from "@/lib/mixpanel";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import Script from "next/script";
 import { backendBaseUrl } from "@/lib/utils";
 import axios from "axios";
 import useRecharge from "@/hooks/useRecharge";

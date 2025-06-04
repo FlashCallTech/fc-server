@@ -612,12 +612,16 @@ export const CurrentUsersProvider = ({
 		try {
 			console.log("Fetching global client");
 			if (email) {
-				const response = await axios.post(
-					`${backendBaseUrl}/client/getGlobalUserByEmail/${email}`
+				const response = await axios.get(
+					`${backendBaseUrl}/client/getGlobalUserByEmail`,
+					{
+						params: {
+							email
+						}
+					}
 				);
 
 				const data = response.data;
-				console.log('client: ', data);
 
 				if (data.role === "client") {
 					setClientUser(data);
@@ -627,13 +631,13 @@ export const CurrentUsersProvider = ({
 				localStorage.setItem("userType", data.role);
 			}
 		} catch (error) {
-			console.error(error);
+			console.log("No user found");	
 		}
 	};
 
 	const startAuthListener = async () => {
-		console.log('Starting the listener...');
-		const unsubscribe = onAuthStateChanged(auth, async (user) => {
+		console.log('Starting the auth listener...');
+		onAuthStateChanged(auth, async (user) => {
 			try {
 				if (user?.email) {
 					await fetchGlobalCurrentUser(user.email);
@@ -649,15 +653,9 @@ export const CurrentUsersProvider = ({
 				setFetchingUser(false);
 			}
 		});
-
-		return () => {
-			unsubscribe();
-		};
 	}
 
 	useEffect(() => {
-		console.log('Current region: ', region);
-
 		if (!region) return;
 		if (region === "India") fetchCurrentUser();
 		if (region === "Global") startAuthListener();
