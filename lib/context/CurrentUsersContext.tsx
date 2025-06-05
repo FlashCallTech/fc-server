@@ -656,6 +656,7 @@ export const CurrentUsersProvider = ({
 	}
 
 	useEffect(() => {
+		console.log('Region: ', region);
 		if (!region) return;
 		if (region === "India") fetchCurrentUser();
 		if (region === "Global") startAuthListener();

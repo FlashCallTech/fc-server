@@ -37,11 +37,6 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
               <StreamVideoProvider>
                 {/* Now the context is available BEFORE LayoutShell renders */}
                 <LayoutShell>
-                  <Script
-                    src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD`}
-                  />
-                  <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-                  <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" />
                   {children}
                 </LayoutShell>
               </StreamVideoProvider>
