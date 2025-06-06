@@ -27,7 +27,7 @@ const UserProfilePage = () => {
 
 	const getInitialState = (): UpdateUserParams => ({
 		id: currentUser?._id ?? "",
-		fullName:
+		fullName: currentUser?.fullName ||
 			(currentUser?.firstName ?? "") + " " + (currentUser?.lastName ?? ""),
 		firstName: currentUser?.firstName ?? "",
 		lastName: currentUser?.lastName ?? "",

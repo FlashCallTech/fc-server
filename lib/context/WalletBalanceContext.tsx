@@ -54,14 +54,25 @@ export const WalletBalanceProvider = ({
 			try {
 				const userType = isCreator ? "creator" : "client";
 				const endpoint = currentUser.global
-					? `getGlobalUserByEmail/${currentUser.email}`
+					? `getGlobalUserByEmail`
 					: `getUser/${currentUser._id}`;
 
-				const method = currentUser.global ? "post" : "get";
+				const config = {
+					headers: {
+						"Content-Type": "application/json",
+					},
+					...(currentUser.global && {
+						params: {
+							email: currentUser.email,
+						},
+					}),
+				};
 
-				const response = await axios[method](
-					`${backendBaseUrl}/${userType}/${endpoint}`
+				const response = await axios.get(
+					`${backendBaseUrl}/${userType}/${endpoint}`,
+					config
 				);
+
 				const data = response.data;
 
 				// Only update if the wallet balance is different
@@ -103,9 +114,9 @@ export const WalletBalanceProvider = ({
 		const creatorId =
 			userType === "client"
 				? (() => {
-						const storedValue = localStorage.getItem("currentCreator");
-						return storedValue ? JSON.parse(storedValue)?._id : null;
-				  })()
+					const storedValue = localStorage.getItem("currentCreator");
+					return storedValue ? JSON.parse(storedValue)?._id : null;
+				})()
 				: currentUser?._id;
 
 		if (!creatorId) return;

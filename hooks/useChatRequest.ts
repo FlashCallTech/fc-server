@@ -89,14 +89,18 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 	};
 
 	const handleChat = async (creator: creatorUser, clientUser: clientUser, setChatState: any, discounts?: Service) => {
+		// Redirect to login page if user not logged in
 		if (!clientUser) router.push("sign-in");
 
+		// Fetch the chat rate
 		const chatRate = await getUserData(creator._id, clientUser.global ?? false);
 
+		// Get the max duration for the chat
 		let maxCallDuration = (walletBalance / chatRate) * 60;
 		maxCallDuration =
 			maxCallDuration > 3600 ? 3600 : Math.floor(maxCallDuration);
 
+		// If max duration is less than 300 seconds than show toast and redirect to recharge page
 		if (maxCallDuration < 300) {
 			trackEvent("MinimumBalance_NotAvailable", {
 				Client_ID: clientUser?._id,
@@ -115,6 +119,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			return;
 		}
 
+		// If minimum balance is there than track the event
 		trackEvent("MinimumBalance_Available", {
 			Client_ID: clientUser?._id,
 			User_First_Seen: clientUser?.createdAt?.toString().split("T")[0],
@@ -123,23 +128,30 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 			Walletbalance_Available: clientUser?.walletBalance,
 		});
 
+		// Create call ID and set in local storage
 		const callId = crypto.randomUUID();
 		localStorage.setItem("CallId", callId);
 
 		try {
+			// Open the waiting sheet
 			setSheetOpen(true);
+
+			// Get client and creator userchats doc
 			const userChatsDocRef = doc(db, "userchats", clientUser?._id);
 			const creatorChatsDocRef = doc(db, "userchats", creator?._id);
 
 			const userChatsDocSnapshot = await getDoc(userChatsDocRef);
 			const creatorChatsDocSnapshot = await getDoc(creatorChatsDocRef);
 
+			// Set the existing chat ID to null
 			let existingChatId = null;
 
+			// If userchats docs exists for both the users then check if they have an existing chat
 			if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
 				const userChatsData = userChatsDocSnapshot.data();
 				const creatorChatsData = creatorChatsDocSnapshot.data();
 
+				// Get existing chat between the users
 				const existingChat =
 					userChatsData.chats.find(
 						(chat: any) => chat.receiverId === creator?._id
@@ -147,11 +159,12 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					creatorChatsData.chats.find(
 						(chat: any) => chat.receiverId === clientUser?._id
 					);
-
+				
+				// Set the existing chat ID from the existing chat
 				if (existingChat) {
 					existingChatId = existingChat.chatId;
 				}
-			} else {
+			} else { // Create docs for both users in userchats collection
 				try {
 					await setDoc(
 						userChatsDocSnapshot.ref,
@@ -173,8 +186,10 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				}
 			}
 
+			// Set the chat ID as existing chat ID or new chat ID
 			const chatId = existingChatId || doc(chatRef).id;
 
+			// Create the messages doc with chat ID as doc ID
 			const messagesDocRef = doc(messagesRef, chatId);
 			const messagesDocSnapshot = await getDoc(messagesDocRef);
 			if (!messagesDocSnapshot.exists()) {
@@ -183,6 +198,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				})
 			}
 
+			// Create callTimer doc with chat ID as doc ID
 			const chatDocRef = doc(db, "callTimer", chatId as string);
 			const callDoc = await getDoc(chatDocRef);
 			if (callDoc.exists()) {
@@ -196,6 +212,8 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 					timeUtilized: 0,
 				});
 			}
+
+			// Set the chats doc with doc ID as chat Id
 			await setDoc(
 				doc(db, "chats", chatId),
 				{
@@ -205,13 +223,20 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				},
 				{ merge: true }
 			);
+
+			// Set chat in local storage
 			localStorage.setItem("chatId", chatId);
+
+			// Create a new chat request doc ref
 			const newChatRequestRef = doc(chatRequestsRef);
+
+			// Date formating for tracking events
 			const createdAtDate = clientUser?.createdAt
 				? new Date(clientUser.createdAt)
 				: new Date();
 			const formattedDate = createdAtDate.toISOString().split("T")[0];
 
+			// Chat request payload
 			const chatRequestData: any = {
 				id: newChatRequestRef.id,
 				callId,
@@ -230,8 +255,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				createdAt: Date.now(),
 				discounts: discounts ?? null,
 			};
-
-			console.log("discount...", discounts);
 
 			// Conditionally add fields if they exist
 			if (creator.fullName) {
@@ -260,9 +283,9 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 
 			await setDoc(newChatRequestRef, chatRequestData);
 
-
 			const docSnap = await getDoc(newChatRequestRef);
 
+			// If chat request doc created then send notification to the creator
 			if (docSnap.exists()) {
 				const chatRequestData = docSnap.data();
 				const fcmToken = await fetchFCMToken(creator.phone as string);
@@ -282,6 +305,7 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				console.log("No such document!");
 			}
 
+			// Timer to auto cancel call if not answered
 			const timer = setTimeout(async () => {
 				// Fetch the current status after 60 seconds
 				const latestDocSnap = await getDoc(chatRequestDoc);
@@ -292,7 +316,6 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 						// If the status is still "pending", update it to "ended"
 						await setDoc(chatRequestDoc, { status: "ended" }, { merge: true });
 					}
-					// localStorage.removeItem("chatRequestId");
 				}
 			}, 60000); // 60 seconds
 
