@@ -9,6 +9,8 @@ import { Rating, ThinStar } from "@smastrom/react-rating";
 import { clientUser, creatorUser } from "@/types";
 import NavLoader from "../shared/NavLoader";
 
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+
 const customStyles = {
 	itemShapes: ThinStar,
 	activeBoxColor: ["#e7040f", "#ff6300", "#ffde37", "#61bb00", "#19a974"],
@@ -45,14 +47,6 @@ const CustomButton1 = ({ content }: { content: string }) => {
 	);
 };
 
-// const CustomButton2 = ({ content }: { content: string }) => {
-// 	return (
-// 		<div className="w-full flex items-center justify-center gap-1 text-lg font-semibold max-w-[280px] px-4 py-2.5 bg-gradient-to-r from-[#49FF66] to-[#2C993D] rounded-full shadow border-b-4 border-black/25">
-// 			<span className="text-white">{content}</span>
-// 		</div>
-// 	);
-// };
-
 const Hero = ({
 	userType,
 	fetchingUser,
@@ -63,6 +57,7 @@ const Hero = ({
 	currentUser: clientUser | creatorUser | null;
 }) => {
 	const isMobile = useScreenSize();
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	return (
 		<section
@@ -143,26 +138,44 @@ const Hero = ({
 									</>
 								)}
 
-								<Link
-									href="#"
-									className="w-full max-w-[75%] sm:max-w-[180px] flex items-center justify-center gap-2 text-center border border-black rounded-full px-5 py-[15px] hoverScaleDownEffect"
-								>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										strokeWidth={1.5}
-										stroke="currentColor"
-										className="size-6"
+								<Dialog>
+									<DialogTrigger asChild>
+										<button className="w-full max-w-[75%] sm:max-w-[180px] flex items-center justify-center gap-2 text-center border border-black rounded-full px-5 py-[15px] hoverScaleDownEffect focus-visible:outline-none">
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												viewBox="0 0 24 24"
+												strokeWidth={1.5}
+												stroke="currentColor"
+												className="size-6"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
+												/>
+											</svg>
+											Watch Demo
+										</button>
+									</DialogTrigger>
+									<DialogContent
+										hideCloseButton={true}
+										removePadding={true}
+										className="max-w-3xl w-full"
 									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
-										/>
-									</svg>
-									Watch Demo
-								</Link>
+										<video
+											controls
+											autoPlay
+											className="rounded-lg w-full max-h-[80vh] focus-visible:outline-none"
+										>
+											<source
+												src="/web/videos/demoVideo.mp4"
+												type="video/mp4"
+											/>
+											Your browser does not support the video tag.
+										</video>
+									</DialogContent>
+								</Dialog>
 							</>
 						}
 					</div>
