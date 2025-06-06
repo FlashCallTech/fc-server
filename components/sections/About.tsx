@@ -32,7 +32,7 @@ const About = () => {
 	];
 
 	return (
-		<section className="w-full h-fit pb-10 md:pb-20 bg-white grid grid-cols-1 text-center md:text-start md:grid-cols-2 gap-10 items-center md:px-14 lg:px-24 max-md:px-4">
+		<section className="w-full h-fit py-10 md:py-0 md:pb-20 bg-white grid grid-cols-1 text-center md:text-start md:grid-cols-2 gap-10 items-center md:px-14 lg:px-24 max-md:px-4">
 			{/* heading and content */}{" "}
 			<h2 className="text-3xl md:text-4xl font-semibold !leading-relaxed">
 				Pay-per-minute chats boost your conversion by 5X, so stop scheduling

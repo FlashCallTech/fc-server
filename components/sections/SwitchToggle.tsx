@@ -37,7 +37,7 @@ const SwitchToggle = () => {
 					<p>Nitra Sahgal</p>
 					<span className="text-[#235BAF]">Astrologer</span>
 
-					<span className="mt-4 text-[#4B4B57] font-normal text-base text-center md:text-start">
+					<span className="mt-4 text-[#4B4B57] font-normal md:text-lg text-center md:text-start">
 						I have 10+ years of experience and a graduate in astrology from
 						Ranchi University. I help to give you clarity & insight regarding
 						your life and also to empower you with the spiritual knowledge of
