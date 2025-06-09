@@ -40,10 +40,6 @@ export const tokenProvider = async (
 		],
 	};
 
-	const users = {
-		[userId]: userData,
-	};
-
 	await streamClient.upsertUsers([userData]);
 
 	const expirationTime = Math.floor(Date.now() / 1000) + 3600;
