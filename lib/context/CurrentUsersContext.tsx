@@ -47,7 +47,7 @@ interface CurrentUsersContextValue {
 	updateCreatorURL: (url: any) => void;
 	ongoingCallStatus: string;
 	setOngoingCallStatus: any;
-	region: string | null;
+	region: string;
 	pendingNotifications: number;
 	setPendingNotifications: any;
 	setPreviousPendingNotifications: any;
@@ -76,7 +76,7 @@ export const CurrentUsersProvider = ({
 	region,
 }: {
 	children: ReactNode;
-	region: string | null;
+	region: string;
 }) => {
 	const [clientUser, setClientUser] = useState<clientUser | null>(null);
 	const [creatorUser, setCreatorUser] = useState<creatorUser | null>(null);
