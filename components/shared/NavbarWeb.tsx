@@ -5,18 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { clientUser, creatorUser } from "@/types";
-
-const NavLoader = () => {
-	return (
-		<div className="w-24 space-y-3">
-			<div className="grid grid-cols-3 gap-4">
-				<div className="h-2 bg-gray-300 rounded col-span-2"></div>
-				<div className="h-2 bg-gray-300 rounded col-span-1"></div>
-			</div>
-			<div className="h-2 bg-gray-300 rounded"></div>
-		</div>
-	);
-};
+import NavLoader from "./NavLoader";
 
 const useScreenSize = () => {
 	const [isMobile, setIsMobile] = useState(false);
@@ -89,15 +78,15 @@ const NavbarWeb = ({
 				) : (
 					<>
 						{/* Sign Up Button */}
-						<Link href="/authenticate?usertype=creator">
-							<Button className="min-w-[130px] bg-black text-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7">
-								For Creator
+						<Link href="/authenticate?usertype=creator" className="w-full">
+							<Button className="min-w-[130px] w-full bg-black text-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7">
+								Creator Login
 							</Button>
 						</Link>
 						{/* Login Button */}
-						<Link href="/discover">
-							<Button className="min-w-[130px] bg-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7">
-								Discover
+						<Link href="/discover" className="w-full">
+							<Button className="min-w-[130px] w-full bg-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7">
+								Connect With Creators
 							</Button>
 						</Link>
 					</>

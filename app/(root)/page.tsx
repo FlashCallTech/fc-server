@@ -30,7 +30,11 @@ const HomePage = () => {
 				/>
 			}
 			{/* Hero Section */}
-			<Hero />
+			<Hero
+				userType={userType}
+				fetchingUser={fetchingUser}
+				currentUser={currentUser}
+			/>
 			{/* About section */}
 			<About />
 			{/* Switch toggle section */}

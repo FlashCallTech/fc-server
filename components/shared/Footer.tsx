@@ -12,11 +12,12 @@ const Footer = () => {
 				<div className="w-full flex flex-col gap-4 items-center justify-center md:items-start">
 					{/* logo */}
 					<Image
-						src="/icons/logo_footer.png"
+						src="/icons/newLogo.png"
 						alt="logo"
-						width={500}
-						height={100}
-						className="rounded-xl w-[120px]"
+						width={1000}
+						height={1000}
+						className="w-[120px] h-[25px]"
+						priority
 					/>
 
 					<p className="text-center md:text-start text-[#4B4B57]">
@@ -68,7 +69,7 @@ const Footer = () => {
 						>
 							<Image
 								src="/icons/play.png"
-								alt="social logo"
+								alt="playstore logo"
 								width={500}
 								height={500}
 								className="size-full max-w-[165px] max-h-[60px] object-contain self-start"
@@ -81,7 +82,7 @@ const Footer = () => {
 						>
 							<Image
 								src="/icons/store.png"
-								alt="social logo"
+								alt="appstore logo"
 								width={500}
 								height={500}
 								className="size-full max-w-[165px] max-h-[60px] object-contain self-start"
