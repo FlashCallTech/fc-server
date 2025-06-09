@@ -58,20 +58,19 @@ const AuthenticateViaOTP = ({
 	onOpenChange?: (isOpen: boolean) => void;
 }) => {
 	const router = useRouter();
-	const { refreshCurrentUser, setAuthenticationSheetOpen, region } =
-		useCurrentUsersContext();
-
+	const { refreshCurrentUser, setAuthenticationSheetOpen, region, fetchingGlobalUser } = useCurrentUsersContext();
 	const [showOTP, setShowOTP] = useState(false);
 	const [phoneNumber, setPhoneNumber] = useState("");
 	const [isSendingOTP, setIsSendingOTP] = useState(false);
 	const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
 	const [verificationSuccess, setVerificationSuccess] = useState(false);
+	const [isLoggingThroughGoogle, setLoggingThroughGoogle] = useState(false);
+	const [waitToCloseSheet, setWaitToCloseSheet] = useState(false);
 
 	const firstLoginRef = useRef(false);
 	const [error, setError] = useState({});
 	const { toast } = useToast();
 	const { getDevicePlatform } = usePlatform();
-	const { fetchingGlobalUser } = useCurrentUsersContext();
 
 	const pathname = usePathname();
 
@@ -91,6 +90,14 @@ const AuthenticateViaOTP = ({
 			window.removeEventListener("resize", handleResize);
 		};
 	}, []);
+
+	useEffect(() => {
+	if (waitToCloseSheet && !fetchingGlobalUser) {
+		setAuthenticationSheetOpen(false);
+		onOpenChange && onOpenChange(false);
+		setWaitToCloseSheet(false); // reset
+	}
+}, [waitToCloseSheet, fetchingGlobalUser, onOpenChange, setAuthenticationSheetOpen]);
 
 	// SignUp form
 	const signUpForm = useForm<z.infer<typeof formSchema>>({
@@ -303,6 +310,7 @@ const AuthenticateViaOTP = ({
 	};
 
 	const handleGoogleSignIn = async () => {
+		setLoggingThroughGoogle(true);
 		try {
 			let result: any;
 			let email: string = "";
@@ -331,14 +339,8 @@ const AuthenticateViaOTP = ({
 				throw new Error("Email is not available after sign-in.");
 			}
 
-			// Fetch FCM Token
-			const fcmToken: any = await getFCMToken();
-			const payload = { fcmToken };
+			setWaitToCloseSheet(true);
 
-			// Check if the user exists or create a new user
-			// await handleUserExistenceAndCreation(email, result, payload);
-			setAuthenticationSheetOpen(false);
-			onOpenChange && onOpenChange(false);
 		} catch (error) {
 			console.error("Error during sign-in:", error);
 			await signOut(auth); // Sign out if an error occurs
@@ -348,77 +350,8 @@ const AuthenticateViaOTP = ({
 				description: "Try again later",
 				toastStatus: "negative",
 			});
-		}
-	};
-
-	// Helper function to check if the user exists and create if necessary
-	const handleUserExistenceAndCreation = async (
-		email: string,
-		result: any,
-		payload: any
-	) => {
-		let userExists = true;
-
-		try {
-			const response = await axios.get(
-				`${backendBaseUrl}/client/getGlobalUserByEmail`,
-				{
-					params: {
-						email,
-						fcmToken: payload.fcmToken, // Or just `fcmToken` if you have it separately
-					},
-					headers: {
-						"Content-Type": "application/json",
-					},
-				}
-			);
-			localStorage.setItem("currentUserID", response.data._id);
-		} catch (error: any) {
-			if (error.response?.status === 404) {
-				userExists = false;
-			} else {
-				throw error;
-			}
-		}
-
-		// If user does not exist, create a new one
-		if (!userExists) {
-			await createNewUser(result, email, payload);
-		}
-	};
-
-	// Helper function to create a new user
-	const createNewUser = async (result: any, email: string, payload: any) => {
-		const newUser: CreateForeignUserParams = {
-			username: result.user.uid,
-			photo: GetRandomImage() || "",
-			phone: result.user.phoneNumber ?? "",
-			fullName: result.user.displayName ?? "",
-			email,
-			role: "client",
-			bio: "",
-			walletBalance: 0,
-			global: true,
-			fcmToken: payload.fcmToken,
-		};
-
-		try {
-			const createUserResponse = await axios.post(
-				`${backendBaseUrl}/client/createGlobalUser`,
-				newUser,
-				{
-					headers: { "Content-Type": "application/json" },
-				}
-			);
-
-			if (createUserResponse.status === 201) {
-				localStorage.setItem("currentUserID", createUserResponse.data._id);
-			} else {
-				throw new Error("Failed to create user.");
-			}
-		} catch (error) {
-			console.error("Error during user creation:", error);
-			throw error; // Propagate the error to be handled in the main function
+		} finally {
+			setLoggingThroughGoogle(false);
 		}
 	};
 
@@ -500,9 +433,9 @@ const AuthenticateViaOTP = ({
 						<Button
 							className="w-[80%] p-2 text-black text-sm bg-white rounded-md flex items-center justify-center gap-2 border shadow-sm"
 							onClick={handleGoogleSignIn}
-							disabled={fetchingGlobalUser}
+							disabled={fetchingGlobalUser || isLoggingThroughGoogle}
 						>
-							{fetchingGlobalUser ? (
+							{fetchingGlobalUser || isLoggingThroughGoogle ? (
 								<Image
 									src="/icons/loading-circle.svg"
 									alt="Loading..."
