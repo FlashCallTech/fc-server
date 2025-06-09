@@ -10,7 +10,7 @@ import {
 	useRef,
 } from "react";
 
-import { clientUser, creatorUser } from "@/types";
+import { clientUser, CreateForeignUserParams, creatorUser } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import {
@@ -22,11 +22,12 @@ import {
 	setDoc,
 	updateDoc,
 } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { auth, db, getFCMToken } from "../firebase";
 import { useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { backendBaseUrl } from "../utils";
 import { onAuthStateChanged, signOut } from "firebase/auth";
+import GetRandomImage from "@/utils/GetRandomImage";
 
 interface CurrentUsersContextValue {
 	clientUser: clientUser | null;
@@ -46,11 +47,12 @@ interface CurrentUsersContextValue {
 	updateCreatorURL: (url: any) => void;
 	ongoingCallStatus: string;
 	setOngoingCallStatus: any;
-	region: string;
+	region: string | null;
 	pendingNotifications: number;
 	setPendingNotifications: any;
 	setPreviousPendingNotifications: any;
 	fetchNotificationsOnce: any;
+	fetchingGlobalUser: boolean;
 }
 
 // Create the context with a default value of null
@@ -74,7 +76,7 @@ export const CurrentUsersProvider = ({
 	region,
 }: {
 	children: ReactNode;
-	region: string;
+	region: string | null;
 }) => {
 	const [clientUser, setClientUser] = useState<clientUser | null>(null);
 	const [creatorUser, setCreatorUser] = useState<creatorUser | null>(null);
@@ -85,6 +87,7 @@ export const CurrentUsersProvider = ({
 	const [creatorURL, setCreatorURL] = useState("");
 	const [ongoingCallStatus, setOngoingCallStatus] = useState("");
 	const [pendingNotifications, setPendingNotifications] = useState(0);
+	const [fetchingGlobalUser, setFetchingGlobalUser] = useState(false);
 	const [previousPendingNotifications, setPreviousPendingNotifications] =
 		useState<number | null>(null);
 	const [userType, setUserType] = useState<string | null>(() => {
@@ -608,39 +611,50 @@ export const CurrentUsersProvider = ({
 		}
 	};
 
-	const fetchGlobalCurrentUser = async (email: string) => {
+	const fetchGlobalCurrentUser = async (user: any) => {
 		try {
-			console.log("Fetching global client");
-			if (email) {
-				const response = await axios.get(
-					`${backendBaseUrl}/client/getGlobalUserByEmail`,
-					{
-						params: {
-							email
-						}
-					}
-				);
+			setFetchingGlobalUser(true);
+			const fcmToken: any = await getFCMToken();
 
-				const data = response.data;
+			const globalUser: CreateForeignUserParams = {
+				username: user.uid,
+				photo: GetRandomImage() || "",
+				phone: user.phoneNumber ?? "",
+				fullName: user.displayName ?? "",
+				email: user.email,
+				role: "client",
+				bio: "",
+				walletBalance: 0,
+				global: true,
+				fcmToken: fcmToken,
+			};
 
-				if (data.role === "client") {
-					setClientUser(data);
-					setCreatorUser(null);
-					setUserType("client");
-				}
-				localStorage.setItem("userType", data.role);
+			const response = await axios.post(
+				`${backendBaseUrl}/client/getorCreateGlobalUser`, globalUser 
+			);
+
+			const data = response.data.client;
+
+			if (data.role === "client") {
+				localStorage.setItem('currectUserID', data._id);
+				setClientUser(data);
+				setCreatorUser(null);
+				setUserType("client");
 			}
+			localStorage.setItem("userType", data.role);
 		} catch (error) {
-			console.log("No user found");	
+			console.log("No user found");
+		} finally {
+			setFetchingUser(false);
+			setFetchingGlobalUser(false);
 		}
 	};
 
 	const startAuthListener = async () => {
-		console.log('Starting the auth listener...');
 		onAuthStateChanged(auth, async (user) => {
 			try {
-				if (user?.email) {
-					await fetchGlobalCurrentUser(user.email);
+				if (user) {
+					await fetchGlobalCurrentUser(user);
 				} else {
 					console.error("Unauthorized");
 					localStorage.removeItem("currentUserID");
@@ -656,7 +670,6 @@ export const CurrentUsersProvider = ({
 	}
 
 	useEffect(() => {
-		console.log('Region: ', region);
 		if (!region) return;
 		if (region === "India") fetchCurrentUser();
 		if (region === "Global") startAuthListener();
@@ -749,6 +762,7 @@ export const CurrentUsersProvider = ({
 				setPendingNotifications,
 				setPreviousPendingNotifications,
 				fetchNotificationsOnce,
+				fetchingGlobalUser,
 			}}
 		>
 			{children}

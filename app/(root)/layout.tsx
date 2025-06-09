@@ -11,7 +11,6 @@ import StreamVideoProvider from "@/providers/streamClientProvider";
 import { initMixpanel } from "@/lib/mixpanel";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
 import axios from "axios";
-import Script from "next/script";
 import LayoutShell from "@/components/layoutShell/LayoutShell";
 
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {

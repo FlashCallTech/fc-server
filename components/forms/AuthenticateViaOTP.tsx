@@ -66,12 +66,12 @@ const AuthenticateViaOTP = ({
 	const [isSendingOTP, setIsSendingOTP] = useState(false);
 	const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
 	const [verificationSuccess, setVerificationSuccess] = useState(false);
-	const [isFetchingGlobalUser, setIsFetchingGlobalUser] = useState(false);
 
 	const firstLoginRef = useRef(false);
 	const [error, setError] = useState({});
 	const { toast } = useToast();
 	const { getDevicePlatform } = usePlatform();
+	const { fetchingGlobalUser } = useCurrentUsersContext();
 
 	const pathname = usePathname();
 
@@ -304,7 +304,6 @@ const AuthenticateViaOTP = ({
 
 	const handleGoogleSignIn = async () => {
 		try {
-			setIsFetchingGlobalUser(true);
 			let result: any;
 			let email: string = "";
 
@@ -337,8 +336,7 @@ const AuthenticateViaOTP = ({
 			const payload = { fcmToken };
 
 			// Check if the user exists or create a new user
-			await handleUserExistenceAndCreation(email, result, payload);
-			await refreshCurrentUser();
+			// await handleUserExistenceAndCreation(email, result, payload);
 			setAuthenticationSheetOpen(false);
 			onOpenChange && onOpenChange(false);
 		} catch (error) {
@@ -350,8 +348,6 @@ const AuthenticateViaOTP = ({
 				description: "Try again later",
 				toastStatus: "negative",
 			});
-		} finally {
-			setIsFetchingGlobalUser(false);
 		}
 	};
 
@@ -504,9 +500,9 @@ const AuthenticateViaOTP = ({
 						<Button
 							className="w-[80%] p-2 text-black text-sm bg-white rounded-md flex items-center justify-center gap-2 border shadow-sm"
 							onClick={handleGoogleSignIn}
-							disabled={isFetchingGlobalUser}
+							disabled={fetchingGlobalUser}
 						>
-							{isFetchingGlobalUser ? (
+							{fetchingGlobalUser ? (
 								<Image
 									src="/icons/loading-circle.svg"
 									alt="Loading..."

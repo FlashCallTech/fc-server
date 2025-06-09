@@ -16,7 +16,6 @@ import { backendBaseUrl } from "../utils";
 
 interface WalletBalanceContextProps {
 	walletBalance: number;
-	isInitialized: boolean;
 	setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
 	updateWalletBalance: () => Promise<void>;
 }
@@ -42,14 +41,10 @@ export const WalletBalanceProvider = ({
 }) => {
 	const { currentUser, userType, fetchingUser } = useCurrentUsersContext();
 	const [walletBalance, setWalletBalance] = useState<number>(0);
-	const [isInitialized, setIsInitialized] = useState(false);
 
 	const isCreator = userType === "creator";
 
-	const isFirstRender = useRef(true);
-
 	const updateAndSetWalletBalance = async () => {
-		setIsInitialized(false);
 		if (currentUser?._id) {
 			try {
 				const userType = isCreator ? "creator" : "client";
@@ -84,26 +79,16 @@ export const WalletBalanceProvider = ({
 				console.error("Error fetching wallet balance:", error);
 				setWalletBalance(0); // Fallback to zero if there's an error
 			} finally {
-				setIsInitialized(true);
 			}
 		} else {
 			setWalletBalance(0); // No user, reset wallet balance
-			setIsInitialized(true);
 		}
 	};
 
 	// Handle initial render logic
 	useEffect(() => {
-		if (isFirstRender.current) {
-			isFirstRender.current = false;
-			if (currentUser) {
-				setWalletBalance(currentUser.walletBalance ?? 0);
-				setIsInitialized(true);
-			}
-		} else {
-			if (currentUser) {
-				updateAndSetWalletBalance();
-			}
+		if (currentUser) {
+			setWalletBalance(currentUser.walletBalance ?? 0);
 		}
 	}, [currentUser, fetchingUser]);
 
@@ -146,7 +131,6 @@ export const WalletBalanceProvider = ({
 		<WalletBalanceContext.Provider
 			value={{
 				walletBalance,
-				isInitialized,
 				setWalletBalance,
 				updateWalletBalance: updateAndSetWalletBalance,
 			}}

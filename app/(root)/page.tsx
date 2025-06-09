@@ -12,7 +12,6 @@ import Testimonials from "@/components/sections/Testimonials";
 import Footer from "@/components/shared/Footer";
 import NavbarWeb from "@/components/shared/NavbarWeb";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import Image from "next/image";
 import React from "react";
 
 const HomePage = () => {

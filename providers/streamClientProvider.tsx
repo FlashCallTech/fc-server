@@ -103,13 +103,15 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 		};
 	}, [currentUser, userId, fetchingUser, videoClient, fullName]);
 
-	return videoClient && currentUser ? (
-		<StreamVideo client={videoClient}>
-			<MyCallUI />
+	return (
+		<>
+			{videoClient && currentUser ? (
+				<StreamVideo client={videoClient}>
+					<MyCallUI />
+				</StreamVideo>
+			) : null}
 			{children}
-		</StreamVideo>
-	) : (
-		<>{children}</>
+		</>
 	);
 };
 
