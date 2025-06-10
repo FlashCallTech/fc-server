@@ -124,7 +124,7 @@ const CheckoutSheet: React.FC<CheckoutSheetProps> = ({
     }, [isOpen, amountToPay, paypalRef.current]);
 
     const PayPalContainer = (
-        <div className="w-full flex flex-col items-center bg-white rounded-xl p-8">
+        <div className="w-full flex flex-col items-center bg-white rounded-xl p-8 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-semibold mb-4">Pay with PayPal</h2>
             <div className="w-full relative">
                 {isProcessing && (
@@ -132,11 +132,15 @@ const CheckoutSheet: React.FC<CheckoutSheetProps> = ({
                         <span className="text-sm font-medium text-gray-600">Processing payment...</span>
                     </div>
                 )}
-                <div id="paypal-button-container" ref={paypalRef} className="w-full" />
+                <div
+                    id="paypal-button-container"
+                    ref={paypalRef}
+                    className="w-full max-h-[90vh] overflow-y-auto"
+                />
             </div>
-
         </div>
     );
+
 
     return isMobileView ? (
         <Sheet open={isOpen} onOpenChange={onOpenChange}>
