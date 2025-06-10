@@ -24,6 +24,8 @@ import { backendBaseUrl } from "@/lib/utils";
 import axios from "axios";
 import useRecharge from "@/hooks/useRecharge";
 import Image from "next/image";
+import Script from "next/script";
+import CheckoutSheet from "./Checkout";
 
 interface PaymentProps {
   callType?: string;
@@ -31,99 +33,99 @@ interface PaymentProps {
 
 const Payment: React.FC<PaymentProps> = ({ callType }) => {
   const [creator, setCreator] = useState<creatorUser>();
-  const [showPayPal, setShowPayPal] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
   const [pg, setPg] = useState<string>("");
   const { walletBalance } = useWalletBalanceContext();
   const { currentUser, userType, clientUser } = useCurrentUsersContext();
   const { pgHandler, loading } = useRecharge();
   const router = useRouter();
 
-  const handlePayPal = async (amountToPay: number): Promise<boolean> => {
-    return new Promise((resolve) => {
-      const paypal = (window as any).paypal;
-      if (paypal) {
-        paypal
-          .Buttons({
-            style: {
-              layout: "vertical", // Stack buttons vertically
-              color: "gold", // Button color
-              shape: "rect", // Button shape
-              label: "pay", // Label type
-              height: 50,
-              disableMaxWidth: true,
-            },
-            async createOrder(data: any, actions: any) {
-              try {
-                return await actions.order.create({
-                  purchase_units: [
-                    {
-                      amount: {
-                        currency_code: "USD",
-                        value: amountToPay,
-                      },
-                    },
-                  ],
-                  application_context: {
-                    shipping_preference: "NO_SHIPPING",
-                  },
-                });
-              } catch (error) {
-                console.error("PayPal order creation error:", error);
-                resolve(false);
-              }
-            },
-            async onApprove(data: any, actions: any) {
-              try {
-                const details = await actions.order.capture();
-                if (details.status === "COMPLETED") {
-                  await fetch(`${backendBaseUrl}/wallet/addMoney`, {
-                    method: "POST",
-                    body: JSON.stringify({
-                      userId: clientUser?._id,
-                      PG: "Paypal",
-                      userType: "Client",
-                      amount: Number(details.purchase_units[0].amount.value),
-                      category: "Recharge",
-                      global: true,
-                    }),
-                    headers: { "Content-Type": "application/json" },
-                  });
-                  trackEvent("Recharge_Page_Payment_Completed", {
-                    Client_ID: clientUser?._id,
-                    Creator_ID: creator?._id,
-                    Recharge_value: rechargeAmount,
-                    Walletbalace_Available: clientUser?.walletBalance,
-                    Order_ID: details.id,
-                  });
+  // const handlePayPal = async (amountToPay: number): Promise<boolean> => {
+  //   return new Promise((resolve) => {
+  //     const paypal = (window as any).paypal;
+  //     if (paypal) {
+  //       paypal
+  //         .Buttons({
+  //           style: {
+  //             layout: "vertical", // Stack buttons vertically
+  //             color: "gold", // Button color
+  //             shape: "rect", // Button shape
+  //             label: "pay", // Label type
+  //             height: 50,
+  //             disableMaxWidth: true,
+  //           },
+  //           async createOrder(data: any, actions: any) {
+  //             try {
+  //               return await actions.order.create({
+  //                 purchase_units: [
+  //                   {
+  //                     amount: {
+  //                       currency_code: "USD",
+  //                       value: amountToPay,
+  //                     },
+  //                   },
+  //                 ],
+  //                 application_context: {
+  //                   shipping_preference: "NO_SHIPPING",
+  //                 },
+  //               });
+  //             } catch (error) {
+  //               console.error("PayPal order creation error:", error);
+  //               resolve(false);
+  //             }
+  //           },
+  //           async onApprove(data: any, actions: any) {
+  //             try {
+  //               const details = await actions.order.capture();
+  //               if (details.status === "COMPLETED") {
+  //                 await fetch(`${backendBaseUrl}/wallet/addMoney`, {
+  //                   method: "POST",
+  //                   body: JSON.stringify({
+  //                     userId: clientUser?._id,
+  //                     PG: "Paypal",
+  //                     userType: "Client",
+  //                     amount: Number(details.purchase_units[0].amount.value),
+  //                     category: "Recharge",
+  //                     global: true,
+  //                   }),
+  //                   headers: { "Content-Type": "application/json" },
+  //                 });
+  //                 trackEvent("Recharge_Page_Payment_Completed", {
+  //                   Client_ID: clientUser?._id,
+  //                   Creator_ID: creator?._id,
+  //                   Recharge_value: rechargeAmount,
+  //                   Walletbalace_Available: clientUser?.walletBalance,
+  //                   Order_ID: details.id,
+  //                 });
 
-                  resolve(true);
-                } else {
-                  resolve(false);
-                }
-              } catch (error) {
-                console.error("PayPal capture error:", error);
-                resolve(false);
-              } finally {
-                setShowPayPal(false);
-                form.reset();
-              }
-            },
-            onCancel(data: any) {
-              console.warn("PayPal payment cancelled:", data);
-              resolve(false);
-            },
-            onError(err: any) {
-              console.error("PayPal payment error:", err);
-              resolve(false);
-            },
-          })
-          .render("#paypal-button-container");
-      } else {
-        console.error("PayPal SDK not loaded");
-        resolve(false);
-      }
-    });
-  };
+  //                 resolve(true);
+  //               } else {
+  //                 resolve(false);
+  //               }
+  //             } catch (error) {
+  //               console.error("PayPal capture error:", error);
+  //               resolve(false);
+  //             } finally {
+  //               setShowPayPal(false);
+  //               form.reset();
+  //             }
+  //           },
+  //           onCancel(data: any) {
+  //             console.warn("PayPal payment cancelled:", data);
+  //             resolve(false);
+  //           },
+  //           onError(err: any) {
+  //             console.error("PayPal payment error:", err);
+  //             resolve(false);
+  //           },
+  //         })
+  //         .render("#paypal-button-container");
+  //     } else {
+  //       console.error("PayPal SDK not loaded");
+  //       resolve(false);
+  //     }
+  //   });
+  // };
 
   useEffect(() => {
     const getPg = async () => {
@@ -257,12 +259,12 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
     localStorage.removeItem("cashfree_order_id");
 
     if (currentUser?.global) {
-      setShowPayPal(true);
-      const result = await handlePayPal(Number(rechargeAmount));
-      if (result) {
-        console.log('payment result received');
-        router.push('/success');
-      }
+      setShowCheckout(true);
+      // const result = await handlePayPal(Number(rechargeAmount));
+      // if (result) {
+      //   console.log('payment result received');
+      //   router.push('/success');
+      // }
     } else {
       pgHandler(
         pg,
@@ -345,105 +347,104 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
         </div>
 
         {/* Recharge Section */}
-        {!showPayPal &&
-          <section className="flex flex-col gap-5 items-start justify-center shadow border border-gray-100 p-5">
-            <h2 className="w-fit text-gray-500 font-normal leading-5">
-              Add Money
-            </h2>
-            <Form {...form}>
-              <form className="w-full flex items-center justify-center text-center text-3xl leading-7 font-bold text-green-1">
-                <span className="text-3xl">{`${currentUser?.global ? "$" : "₹"
-                  }`}</span>
+        <section className="flex flex-col gap-5 items-start justify-center shadow border border-gray-100 p-5">
+          <h2 className="w-fit text-gray-500 font-normal leading-5">
+            Add Money
+          </h2>
+          <Form {...form}>
+            <form className="w-full flex items-center justify-center text-center text-3xl leading-7 font-bold text-green-1">
+              <span className="text-3xl">{`${currentUser?.global ? "$" : "₹"
+                }`}</span>
 
-                <FormField
-                  control={form.control}
-                  name="rechargeAmount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0.00"
-                          min={0}
-                          {...field}
-                          className="max-w-28 placeholder:text-gray-300 text-3xl border-none outline-none ring-transparent hover:bg-transparent "
-                          pattern="\d*"
-                          disabled={loading}
-                          title="Amount must be a numeric value"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </form>
-
-              <section className="mx-auto">
-                {/* Display the amount due message if there's an amount due */}
-                {amountToBeDisplayed() !== undefined && (
-                  <p className="text-red-500">
-                    {`${currentUser?.global ? "$" : "₹"
-                      } ${amountToBeDisplayed()?.toFixed(2)}`}{" "}
-                    more required for 5 minutes of {callType}
-                  </p>
+              <FormField
+                control={form.control}
+                name="rechargeAmount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        min={0}
+                        {...field}
+                        className="max-w-28 placeholder:text-gray-300 text-3xl border-none outline-none ring-transparent hover:bg-transparent "
+                        pattern="\d*"
+                        disabled={loading}
+                        title="Amount must be a numeric value"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </section>
-              <div className="grid grid-cols-3 gap-6 md:gap-8 text-sm font-semibold leading-4 w-full">
-                {generateAmounts().map((amount, index) => (
-                  <button
-                    key={amount}
-                    className={`capitalize text-sm font-medium p-2.5 rounded-md border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${amount === form.getValues("rechargeAmount") &&
-                      "bg-green-1 text-white"
-                      }`}
-                    disabled={showPayPal || loading}
-                    onClick={() => {
-                      form.setValue("rechargeAmount", amount);
-                      tileClicked(index);
-                    }}
-                  >
-                    {`${currentUser?.global ? "$" : "₹"} ${amount}`}
-                  </button>
-                ))}
-              </div>
+              />
+            </form>
 
-              <Button
-                disabled={
-                  !currentUser ||
-                  !rechargeAmount ||
-                  rechargeAmount === "0" ||
-                  showPayPal ||
-                  loading
-                }
-                onClick={(event: any) =>
-                  form.handleSubmit((values) => onSubmit(event, values))(event)
-                }
-                className={`w-full max-w-md mt-2 bg-green-1 text-white mx-auto hoverScaleDownEffect
+            <section className="mx-auto">
+              {/* Display the amount due message if there's an amount due */}
+              {amountToBeDisplayed() !== undefined && (
+                <p className="text-red-500">
+                  {`${currentUser?.global ? "$" : "₹"
+                    } ${amountToBeDisplayed()?.toFixed(2)}`}{" "}
+                  more required for 5 minutes of {callType}
+                </p>
+              )}
+            </section>
+            <div className="grid grid-cols-3 gap-6 md:gap-8 text-sm font-semibold leading-4 w-full">
+              {generateAmounts().map((amount, index) => (
+                <button
+                  key={amount}
+                  className={`capitalize text-sm font-medium p-2.5 rounded-md border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${amount === form.getValues("rechargeAmount") &&
+                    "bg-green-1 text-white"
+                    }`}
+                  disabled={showCheckout || loading}
+                  onClick={() => {
+                    form.setValue("rechargeAmount", amount);
+                    tileClicked(index);
+                  }}
+                >
+                  {`${currentUser?.global ? "$" : "₹"} ${amount}`}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              disabled={
+                !currentUser ||
+                !rechargeAmount ||
+                rechargeAmount === "0" ||
+                showCheckout ||
+                loading
+              }
+              onClick={(event: any) =>
+                form.handleSubmit((values) => onSubmit(event, values))(event)
+              }
+              className={`w-full max-w-md mt-2 bg-green-1 text-white mx-auto hoverScaleDownEffect
                 ${(!rechargeAmount || rechargeAmount === "0") && "!cursor-not-allowed opacity-80"}
-                ${showPayPal ? 'hidden' : 'block'}`}
-              >
-                {loading ? (
-                  <Image
-                    src="/icons/loading-circle.svg"
-                    alt="Loading..."
-                    width={24}
-                    height={24}
-                    priority
-                  />
-                ) : ("Recharge")
-                }
-              </Button>
-            </Form>
-          </section>
-        }
-          <div className={`flex items-center justify-center shadow border border-gray-100 p-5 rounded-lg w-full 
+                `}
+            >
+              {loading ? (
+                <Image
+                  src="/icons/loading-circle.svg"
+                  alt="Loading..."
+                  width={24}
+                  height={24}
+                  priority
+                />
+              ) : ("Recharge")
+              }
+            </Button>
+          </Form>
+        </section>
+        {/* <div className={`flex items-center justify-center shadow border border-gray-100 p-5 rounded-lg w-full 
             ${showPayPal ? "block" : "hidden"}`
-          }>
-            <div
-              id="paypal-button-container"
-              className={`w-full ${showPayPal ? "block" : "hidden"}`}
-            ></div>
-          </div>
+        }>
+          <div
+            id="paypal-button-container"
+            className={`w-full ${showPayPal ? "block" : "hidden"}`}
+          ></div>
+        </div> */}
       </div>
+      <CheckoutSheet isOpen={showCheckout} onOpenChange={setShowCheckout} amountToPay={Number(rechargeAmount)} />
     </>
   );
 };

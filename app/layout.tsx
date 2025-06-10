@@ -60,7 +60,7 @@ export default function RootLayout({
 			</head>
 			<TooltipProvider>
 				<body className="overflow-y-scroll no-scrollbar">
-					<Script src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD&disable-funding=card&commit=true`} />
+					<Script src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD&commit=true`} />
 					<Script src="https://checkout.razorpay.com/v1/checkout.js" />
 					<Script src="https://sdk.cashfree.com/js/v3/cashfree.js" />
 					<Toaster />
