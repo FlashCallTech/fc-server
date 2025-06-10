@@ -60,12 +60,15 @@ const ClientSideDiscountheet = ({
 		true
 	);
 
+	console.log(servicesData);
+
 	useEffect(() => {
 		const flattenedServices =
 			servicesData?.pages.flatMap((page: any) => page.data) || [];
 		setUserServices(flattenedServices);
-		setIsEligible(!currentUser ? true : flattenedServices.length > 0);
-	}, [servicesData]);
+		!servicesLoading &&
+			setIsEligible(!currentUser ? true : flattenedServices.length > 0);
+	}, [currentUser, servicesData, servicesLoading, setIsEligible]);
 
 	useEffect(() => {
 		if (creatorId && !fetchingUser && servicesData && isEligible) {
@@ -80,7 +83,13 @@ const ClientSideDiscountheet = ({
 				}, 1500);
 			}
 		}
-	}, [creatorId, fetchingUser, servicesData, isEligible]);
+	}, [
+		creatorId,
+		fetchingUser,
+		servicesData,
+		isEligible,
+		setIsDiscountModalOpen,
+	]);
 
 	const onOpenChange = (open: boolean) => {
 		setIsDiscountModalOpen(open);
