@@ -169,7 +169,7 @@ const Hero = ({
 											className="rounded-lg w-full max-h-[80vh] focus-visible:outline-none"
 										>
 											<source
-												src="/web/videos/demoVideo.mp4"
+												src="https://dxvnlnyzij172.cloudfront.net/videos/demoVideo.mp4"
 												type="video/mp4"
 											/>
 											Your browser does not support the video tag.
