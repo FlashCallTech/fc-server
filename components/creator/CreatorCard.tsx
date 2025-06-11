@@ -38,6 +38,14 @@ const CreatorCard = () => {
 		isError,
 	} = useCreatorQuery(username as string);
 
+	const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+
+	useEffect(() => {
+		const ua = navigator.userAgent || navigator.vendor;
+		const isInApp = /Instagram|FBAN|FBAV|Messenger|Twitter/i.test(ua);
+		setIsInAppBrowser(isInApp);
+	}, []);
+
 	useEffect(() => {
 		let isMounted = true;
 
@@ -182,7 +190,7 @@ const CreatorCard = () => {
 		<React.Suspense fallback={<ContentLoading />}>
 			<OpenInBrowserAlert />
 			<section className="size-full grid grid-cols-1 items-start justify-center">
-				<CreatorDetails creator={creatorUser} />
+				<CreatorDetails creator={creatorUser} isInAppBrowser={isInAppBrowser} />
 			</section>
 		</React.Suspense>
 	);

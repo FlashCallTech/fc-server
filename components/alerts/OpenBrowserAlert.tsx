@@ -1,8 +1,21 @@
-import { useEffect, useState } from "react";
+"use client";
 
-const OpenInBrowserAlert = () => {
-	const [showBanner, setShowBanner] = useState(false);
+import { useEffect, useState } from "react";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { Copy, ExternalLink } from "lucide-react";
+
+const OpenInBrowserBanner = () => {
+	const [isInApp, setIsInApp] = useState(false);
 	const [isIOS, setIsIOS] = useState(false);
+	const [hasAutoRedirected, setHasAutoRedirected] = useState(false);
+	const { toast } = useToast();
 
 	useEffect(() => {
 		const ua = navigator.userAgent || navigator.vendor;
@@ -11,56 +24,111 @@ const OpenInBrowserAlert = () => {
 		const isFacebook = /FBAN|FBAV/i.test(ua);
 		const isMessenger = /Messenger/i.test(ua);
 		const isTwitter = /Twitter/i.test(ua);
-		const isInApp = isInstagram || isFacebook || isMessenger || isTwitter;
+		const inApp = isInstagram || isFacebook || isMessenger || isTwitter;
 
 		const isiOSDevice = /iPhone|iPad|iPod/i.test(ua);
 
-		if (isInApp) {
-			setShowBanner(true);
+		if (inApp) {
+			setIsInApp(true);
 			setIsIOS(isiOSDevice);
-		}
-	}, []);
 
-	const handleCopy = () => {
+			// Try auto-redirect only once for Android
+			if (!isiOSDevice && !hasAutoRedirected) {
+				tryAndroidIntentRedirect();
+			}
+		}
+	}, [hasAutoRedirected]);
+
+	const tryAndroidIntentRedirect = () => {
+		const host = window.location.host;
+		const path = window.location.pathname + window.location.search;
+		const intentURL = `intent://${host}${path}#Intent;scheme=https;package=com.android.chrome;end;`;
+
+		setHasAutoRedirected(true);
+		window.location.href = intentURL;
+	};
+
+	const handleManualRedirect = () => {
+		if (!isIOS) {
+			tryAndroidIntentRedirect();
+		}
+	};
+
+	const handleCopyLink = () => {
 		navigator.clipboard
 			.writeText(window.location.href)
-			.then(() => alert("Link copied! You can paste it in your browser."))
-			.catch(() => alert("Failed to copy. Please do it manually."));
+			.then(() => {
+				toast({
+					title: "Link copied!",
+					description: "Paste it in your browser to continue.",
+				});
+			})
+			.catch(() => {
+				toast({
+					title: "Failed to copy link",
+					description: "Please try manually.",
+					variant: "destructive",
+				});
+			});
 	};
 
-	const handleTryOpenExternally = () => {
-		const url = window.location.href;
-		const success = window.open(url, "_blank");
-
-		if (!success) {
-			alert("Please use the browser option in the menu to open this link.");
-		}
-	};
-
-	if (!showBanner) return null;
+	if (!isInApp) return null;
 
 	return (
-		<div className="fixed top-0 left-0 right-0 bg-yellow-100 text-sm text-black p-3 z-50 shadow-md flex flex-col items-center">
-			<p className="text-center">
-				You’re viewing this inside an in-app browser.
-				<br />
-				{isIOS
-					? "Tap the Safari icon in the bottom bar to open in your browser."
-					: "Tap the three dots or menu and choose 'Open in Browser'."}
-			</p>
-			<div className="flex gap-4 mt-2">
-				<button
-					className="underline font-semibold"
-					onClick={handleTryOpenExternally}
-				>
-					Try to Open in Browser
-				</button>
-				<button className="underline font-semibold" onClick={handleCopy}>
-					Copy Link
-				</button>
-			</div>
-		</div>
+		<Dialog open>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle className="text-yellow-800">Open in Browser</DialogTitle>
+				</DialogHeader>
+
+				<div className="space-y-3 text-sm text-yellow-900">
+					<p>
+						You’re currently inside an in-app browser (e.g. Instagram, Twitter,
+						etc.).
+					</p>
+					<p>
+						To use all features correctly, please open this link in your default
+						browser.
+					</p>
+
+					{isIOS ? (
+						<div className="bg-yellow-100 border border-yellow-300 rounded-md p-3">
+							<p className="font-medium">iOS instructions:</p>
+							<ul className="list-disc ml-5 mt-1 text-xs">
+								<li>Tap the share icon (square with arrow).</li>
+								<li>
+									Select <strong>“Open in Safari”</strong>.
+								</li>
+							</ul>
+						</div>
+					) : (
+						<div className="bg-yellow-100 border border-yellow-300 rounded-md p-3">
+							<p className="font-medium">Android instructions:</p>
+							<ul className="list-disc ml-5 mt-1 text-xs">
+								<li>Tap the 3-dot menu in the corner.</li>
+								<li>
+									Select <strong>“Open in Chrome”</strong> or your browser.
+								</li>
+							</ul>
+						</div>
+					)}
+				</div>
+
+				<div className="flex gap-3 justify-end mt-4">
+					<Button variant="outline" size="sm" onClick={handleCopyLink}>
+						<Copy className="w-4 h-4 mr-1" />
+						Copy Link
+					</Button>
+					{!isIOS && (
+						<Button variant="default" size="sm" onClick={handleManualRedirect}>
+							<ExternalLink className="w-4 h-4 mr-1" />
+							Try to Open
+						</Button>
+					)}
+				</div>
+			</DialogContent>
+		</Dialog>
 	);
 };
 
-export default OpenInBrowserAlert;
+export default OpenInBrowserBanner;
