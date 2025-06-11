@@ -8,6 +8,7 @@ import {
 	backendBaseUrl,
 } from "@/lib/utils";
 import axios from "axios";
+import OpenInBrowserAlert from "@/components/alerts/OpenBrowserAlert";
 
 export async function generateMetadata({
 	params,
@@ -89,6 +90,7 @@ export async function generateMetadata({
 const CreatorProfile = () => {
 	return (
 		<div className="flex items-start justify-start h-full">
+			<OpenInBrowserAlert />
 			<CreatorCard />
 		</div>
 	);
