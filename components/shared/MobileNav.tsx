@@ -161,7 +161,7 @@ const MobileNav = () => {
 											key={section.section}
 											value={section.section}
 										>
-											<AccordionTrigger className="text-white font-medium">
+											<AccordionTrigger className="text-white font-medium focus:outline-none">
 												{section.section}
 											</AccordionTrigger>
 											<AccordionContent className="flex flex-col gap-2 text-white">

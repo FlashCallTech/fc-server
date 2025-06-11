@@ -21,14 +21,14 @@ const HomePage = () => {
 	return (
 		<main className="grid grid-cols-1 items-center">
 			{/* Navbar Landing Page */}
-			{
-				<NavbarWeb
-					currentUser={currentUser}
-					handleSignout={handleSignout}
-					fetchingUser={fetchingUser}
-					userType={userType}
-				/>
-			}
+
+			<NavbarWeb
+				currentUser={currentUser}
+				handleSignout={handleSignout}
+				fetchingUser={fetchingUser}
+				userType={userType}
+			/>
+
 			{/* Hero Section */}
 			<Hero
 				userType={userType}

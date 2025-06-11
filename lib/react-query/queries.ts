@@ -749,9 +749,12 @@ export const useGetUniqueClients = (
 			if (transformedStatusFilter) {
 				params.statusFilter = transformedStatusFilter;
 			}
-			const response = await axios.get(`${backendBaseUrl}/calls/uniqueClients`, {
-				params,
-			});
+			const response = await axios.get(
+				`${backendBaseUrl}/calls/uniqueClients`,
+				{
+					params,
+				}
+			);
 			if (response.status === 200) {
 				return response.data;
 			} else {
@@ -786,12 +789,19 @@ export const useGetCallsByClientIdAndCreatorId = (
 	creatorId: string,
 	currentPage: number,
 	sort: string,
-	filter: string,
+	filter: string
 ) => {
 	const limit = 5;
 
 	return useQuery<GetCallsResponse, Error>({
-		queryKey: ["GET_CALLS_BY_CLIENTID_AND_CREATORID", clientId, creatorId, currentPage, sort, filter],
+		queryKey: [
+			"GET_CALLS_BY_CLIENTID_AND_CREATORID",
+			clientId,
+			creatorId,
+			currentPage,
+			sort,
+			filter,
+		],
 		queryFn: async () => {
 			const params = {
 				limit,
@@ -816,10 +826,7 @@ export const useGetCallsByClientIdAndCreatorId = (
 	} as any);
 };
 
-export const useGetNotes = (
-	clientId: string,
-	creatorId: string,
-) => {
+export const useGetNotes = (clientId: string, creatorId: string) => {
 	const limit = 10; // Define the limit per page
 
 	return useInfiniteQuery({
