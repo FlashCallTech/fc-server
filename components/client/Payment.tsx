@@ -260,11 +260,6 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
 
     if (currentUser?.global) {
       setShowCheckout(true);
-      // const result = await handlePayPal(Number(rechargeAmount));
-      // if (result) {
-      //   console.log('payment result received');
-      //   router.push('/success');
-      // }
     } else {
       pgHandler(
         pg,

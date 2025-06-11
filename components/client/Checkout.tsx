@@ -19,6 +19,7 @@ import usePlatform from "@/hooks/usePlatform";
 import { trackEvent } from "@/lib/mixpanel";
 import { backendBaseUrl } from "@/lib/utils";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
+import { useRouter } from "next/navigation";
 
 interface CheckoutSheetProps {
     isOpen: boolean;
@@ -36,6 +37,7 @@ const CheckoutSheet: React.FC<CheckoutSheetProps> = ({
     const [isProcessing, setIsProcessing] = useState(false);
     const paypalRef = useRef<HTMLDivElement>(null);
     const { clientUser } = useCurrentUsersContext();
+    const router = useRouter();
 
     // Responsive
     useEffect(() => {
@@ -105,7 +107,7 @@ const CheckoutSheet: React.FC<CheckoutSheetProps> = ({
                                 });
 
                                 onOpenChange(false);
-                                window.location.href = "/success";
+                                router.push('/success');
                             }
                         } catch (err) {
                             console.error("Payment processing error:", err);
