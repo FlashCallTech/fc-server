@@ -18,6 +18,7 @@ import { trackEvent } from "@/lib/mixpanel";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "../ui/use-toast";
+import OpenInBrowserAlert from "../alerts/OpenBrowserAlert";
 
 const CreatorCard = () => {
 	const { username } = useParams();
@@ -116,6 +117,7 @@ const CreatorCard = () => {
 		router,
 		lastCallTracked,
 		fetchingUser,
+		toast,
 	]);
 
 	useEffect(() => {
@@ -178,6 +180,7 @@ const CreatorCard = () => {
 
 	return (
 		<React.Suspense fallback={<ContentLoading />}>
+			<OpenInBrowserAlert />
 			<section className="size-full grid grid-cols-1 items-start justify-center">
 				<CreatorDetails creator={creatorUser} />
 			</section>
