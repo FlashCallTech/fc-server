@@ -163,17 +163,16 @@ const Hero = ({
 										removePadding={true}
 										className="max-w-3xl w-full"
 									>
-										<video
-											controls
-											autoPlay
-											className="rounded-lg w-full max-h-[80vh] focus-visible:outline-none"
-										>
-											<source
-												src="https://dxvnlnyzij172.cloudfront.net/videos/demoVideo.mp4"
-												type="video/mp4"
-											/>
-											Your browser does not support the video tag.
-										</video>
+										<iframe
+											width="100%"
+											height="500"
+											src="https://www.youtube.com/embed/KxjOpBRWgko?autoplay=1&controls=1"
+											title="YouTube video player"
+											frameBorder="0"
+											allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+											allowFullScreen
+											className="rounded-lg w-full max-h-[80vh]"
+										></iframe>
 									</DialogContent>
 								</Dialog>
 							</>
