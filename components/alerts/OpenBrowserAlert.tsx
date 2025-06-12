@@ -46,7 +46,7 @@ const OpenInBrowserBanner = () => {
 				setTimeout(() => {
 					setCheckedRedirect(true);
 					setShouldShowDialog(true);
-				}, 5000);
+				}, 2500);
 			} else {
 				// iOS: show dialog immediately
 				setCheckedRedirect(true);
