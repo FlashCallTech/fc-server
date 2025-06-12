@@ -134,15 +134,25 @@ const OpenInBrowserBanner = () => {
 					)}
 				</div>
 
-				<div className="flex gap-3 justify-end mt-4">
-					<Button variant="outline" size="sm" onClick={handleCopyLink}>
+				<div className="flex w-full gap-3 justify-between mt-4">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={handleCopyLink}
+						className="border border-gray-300 bg-black text-white hoverScaleDownEffect"
+					>
 						<Copy className="w-4 h-4 mr-1" />
 						Copy Link
 					</Button>
 					{!isIOS && (
-						<Button variant="default" size="sm" onClick={handleManualRedirect}>
+						<Button
+							variant="default"
+							size="sm"
+							onClick={handleManualRedirect}
+							className="border border-gray-300 bg-black text-white hoverScaleDownEffect"
+						>
 							<ExternalLink className="w-4 h-4 mr-1" />
-							Try to Open
+							Open In Browser
 						</Button>
 					)}
 				</div>
