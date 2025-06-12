@@ -64,6 +64,7 @@ const OpenInBrowserBanner = () => {
 				toast({
 					title: "Link copied!",
 					description: "Paste it in your browser to continue.",
+					toastStatus: "positive",
 				});
 			})
 			.catch(() => {
