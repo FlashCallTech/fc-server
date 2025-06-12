@@ -116,6 +116,7 @@ const CreatorCard = () => {
 		router,
 		lastCallTracked,
 		fetchingUser,
+		toast,
 	]);
 
 	useEffect(() => {

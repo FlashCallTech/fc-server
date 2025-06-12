@@ -227,7 +227,9 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 							userChatsData.chats[matchedIndex].creatorImg = creator.photo;
 							userChatsData.chats[matchedIndex].creatorName =
 								creator.fullName || maskPhoneNumber(creator.phone as string);
-							await updateDoc(userChatsDocRef, { chats: userChatsData.chats });
+							await updateDoc(userChatsDocRef, {
+								chats: userChatsData.chats,
+							});
 						}
 					}
 
@@ -371,7 +373,9 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						creatorChatsData.chats[matchedIndexCreator].clientName =
 							clientUser.fullName ||
 							maskPhoneNumber(clientUser.phone as string);
-						batch.update(creatorChatsDocRef, { chats: creatorChatsData.chats });
+						batch.update(creatorChatsDocRef, {
+							chats: creatorChatsData.chats,
+						});
 					}
 
 					// Commit both updates in one batch
