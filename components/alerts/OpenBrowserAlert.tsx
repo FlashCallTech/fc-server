@@ -15,6 +15,7 @@ const OpenInBrowserBanner = () => {
 	const [isInApp, setIsInApp] = useState(false);
 	const [isIOS, setIsIOS] = useState(false);
 	const [hasAutoRedirected, setHasAutoRedirected] = useState(false);
+	const [showDialog, setShowDialog] = useState(false);
 	const { toast } = useToast();
 
 	useEffect(() => {
@@ -32,9 +33,11 @@ const OpenInBrowserBanner = () => {
 			setIsInApp(true);
 			setIsIOS(isiOSDevice);
 
-			// Try auto-redirect only once for Android
 			if (!isiOSDevice && !hasAutoRedirected) {
 				tryAndroidIntentRedirect();
+			} else {
+				// Show dialog only if not auto-redirecting (iOS or already tried Android)
+				setShowDialog(true);
 			}
 		}
 	}, [hasAutoRedirected]);
@@ -72,13 +75,15 @@ const OpenInBrowserBanner = () => {
 			});
 	};
 
-	if (!isInApp) return null;
+	if (!isInApp || !showDialog) return null;
 
 	return (
 		<Dialog open>
-			<DialogContent>
+			<DialogContent className="bg-white rounded-xl shadow-xl sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle className="text-yellow-800">Open in Browser</DialogTitle>
+					<DialogTitle className="text-yellow-800 text-lg">
+						Open in Browser
+					</DialogTitle>
 				</DialogHeader>
 
 				<div className="space-y-3 text-sm text-yellow-900">
