@@ -18,7 +18,6 @@ import { trackEvent } from "@/lib/mixpanel";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "../ui/use-toast";
-import OpenInBrowserAlert from "../alerts/OpenBrowserAlert";
 
 const CreatorCard = () => {
 	const { username } = useParams();
@@ -37,14 +36,6 @@ const CreatorCard = () => {
 		isLoading,
 		isError,
 	} = useCreatorQuery(username as string);
-
-	const [isInAppBrowser, setIsInAppBrowser] = useState(false);
-
-	useEffect(() => {
-		const ua = navigator.userAgent || navigator.vendor;
-		const isInApp = /Instagram|FBAN|FBAV|Messenger|Twitter/i.test(ua);
-		setIsInAppBrowser(isInApp);
-	}, []);
 
 	useEffect(() => {
 		let isMounted = true;
@@ -188,23 +179,9 @@ const CreatorCard = () => {
 
 	return (
 		<React.Suspense fallback={<ContentLoading />}>
-			<OpenInBrowserAlert />
-			{isInAppBrowser ? (
-				<section className="absolute bg-white top-0 left-0 flex justify-center items-center h-[calc(100vh-6rem)] w-full z-40">
-					<Image
-						src="/icons/newLogo.png"
-						alt="Loading..."
-						width={500}
-						height={500}
-						className="w-36 animate-pulse"
-						priority
-					/>
-				</section>
-			) : (
-				<section className="size-full grid grid-cols-1 items-start justify-center">
-					<CreatorDetails creator={creatorUser} />
-				</section>
-			)}
+			<section className="size-full grid grid-cols-1 items-start justify-center">
+				<CreatorDetails creator={creatorUser} />
+			</section>
 		</React.Suspense>
 	);
 };

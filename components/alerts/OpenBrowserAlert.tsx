@@ -42,11 +42,11 @@ const OpenInBrowserBanner = () => {
 
 				window.location.href = intentURL;
 
-				// Fallback in case redirection fails (after short delay)
+				// Fallback in case redirection fails
 				setTimeout(() => {
 					setCheckedRedirect(true);
 					setShouldShowDialog(true);
-				}, 2000);
+				}, 5000);
 			} else {
 				// iOS: show dialog immediately
 				setCheckedRedirect(true);
@@ -86,7 +86,7 @@ const OpenInBrowserBanner = () => {
 			});
 	};
 
-	// ✅ Prevent dialog from rendering until we decide based on redirection
+	// Prevent dialog from rendering until we decide based on redirection
 	if (!isInApp || !checkedRedirect || !shouldShowDialog) return null;
 
 	return (
