@@ -189,9 +189,22 @@ const CreatorCard = () => {
 	return (
 		<React.Suspense fallback={<ContentLoading />}>
 			<OpenInBrowserAlert />
-			<section className="size-full grid grid-cols-1 items-start justify-center">
-				<CreatorDetails creator={creatorUser} isInAppBrowser={isInAppBrowser} />
-			</section>
+			{isInAppBrowser ? (
+				<section className="absolute bg-white top-0 left-0 flex justify-center items-center h-[calc(100vh-6rem)] w-full z-40">
+					<Image
+						src="/icons/newLogo.png"
+						alt="Loading..."
+						width={500}
+						height={500}
+						className="w-36 animate-pulse"
+						priority
+					/>
+				</section>
+			) : (
+				<section className="size-full grid grid-cols-1 items-start justify-center">
+					<CreatorDetails creator={creatorUser} />
+				</section>
+			)}
 		</React.Suspense>
 	);
 };
