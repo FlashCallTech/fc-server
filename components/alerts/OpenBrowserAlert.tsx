@@ -14,8 +14,8 @@ import { Copy, ExternalLink } from "lucide-react";
 const OpenInBrowserBanner = () => {
 	const [isInApp, setIsInApp] = useState(false);
 	const [isIOS, setIsIOS] = useState(false);
-	const [hasAutoRedirected, setHasAutoRedirected] = useState(false);
-	const [showDialog, setShowDialog] = useState(false);
+	const [shouldShowDialog, setShouldShowDialog] = useState(false);
+	const [checkedRedirect, setCheckedRedirect] = useState(false);
 	const { toast } = useToast();
 
 	useEffect(() => {
@@ -33,27 +33,35 @@ const OpenInBrowserBanner = () => {
 			setIsInApp(true);
 			setIsIOS(isiOSDevice);
 
-			if (!isiOSDevice && !hasAutoRedirected) {
-				tryAndroidIntentRedirect();
+			// Redirect for Android only
+			if (!isiOSDevice) {
+				// Prevent dialog from rendering while redirecting
+				const host = window.location.host;
+				const path = window.location.pathname + window.location.search;
+				const intentURL = `intent://${host}${path}#Intent;scheme=https;package=com.android.chrome;end;`;
+
+				window.location.href = intentURL;
+
+				// Fallback in case redirection fails (after short delay)
+				setTimeout(() => {
+					setCheckedRedirect(true);
+					setShouldShowDialog(true);
+				}, 2000);
 			} else {
-				// Show dialog only if not auto-redirecting (iOS or already tried Android)
-				setShowDialog(true);
+				// iOS: show dialog immediately
+				setCheckedRedirect(true);
+				setShouldShowDialog(true);
 			}
 		}
-	}, [hasAutoRedirected]);
-
-	const tryAndroidIntentRedirect = () => {
-		const host = window.location.host;
-		const path = window.location.pathname + window.location.search;
-		const intentURL = `intent://${host}${path}#Intent;scheme=https;package=com.android.chrome;end;`;
-
-		setHasAutoRedirected(true);
-		window.location.href = intentURL;
-	};
+	}, []);
 
 	const handleManualRedirect = () => {
 		if (!isIOS) {
-			tryAndroidIntentRedirect();
+			const host = window.location.host;
+			const path = window.location.pathname + window.location.search;
+			const intentURL = `intent://${host}${path}#Intent;scheme=https;package=com.android.chrome;end;`;
+
+			window.location.href = intentURL;
 		}
 	};
 
@@ -64,6 +72,7 @@ const OpenInBrowserBanner = () => {
 				toast({
 					title: "Link copied!",
 					description: "Paste it in your browser to continue.",
+					variant: "destructive",
 					toastStatus: "positive",
 				});
 			})
@@ -72,15 +81,20 @@ const OpenInBrowserBanner = () => {
 					title: "Failed to copy link",
 					description: "Please try manually.",
 					variant: "destructive",
+					toastStatus: "negative",
 				});
 			});
 	};
 
-	if (!isInApp || !showDialog) return null;
+	// ✅ Prevent dialog from rendering until we decide based on redirection
+	if (!isInApp || !checkedRedirect || !shouldShowDialog) return null;
 
 	return (
 		<Dialog open>
-			<DialogContent className="bg-white rounded-xl shadow-xl sm:max-w-md">
+			<DialogContent
+				className="bg-white rounded-xl shadow-xl w-[92%] sm:max-w-md"
+				hideCloseButton={true}
+			>
 				<DialogHeader>
 					<DialogTitle className="text-yellow-800 text-lg">
 						Open in Browser
