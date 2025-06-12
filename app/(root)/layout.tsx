@@ -15,8 +15,7 @@ import OpenInBrowserAlert from "../../components/alerts/OpenBrowserAlert";
 
 const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 	const [region, setRegion] = useState<"India" | "Global" | null>(null);
-
-	const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+	const [isInAppBrowser, setIsInAppBrowser] = useState<boolean | null>(null);
 
 	useEffect(() => {
 		const ua = navigator.userAgent || navigator.vendor;
@@ -35,26 +34,25 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 		axios.defaults.withCredentials = true;
 	}, []);
 
-	return (
-		<>
-			{isInAppBrowser ? (
-				<OpenInBrowserAlert />
-			) : (
-				<QueryProvider>
-					<CurrentUsersProvider region={region as string}>
-						<WalletBalanceProvider>
-							<ChatRequestProvider>
-								<SelectedServiceProvider>
-									<StreamVideoProvider>
-										<LayoutShell>{children}</LayoutShell>
-									</StreamVideoProvider>
-								</SelectedServiceProvider>
-							</ChatRequestProvider>
-						</WalletBalanceProvider>
-					</CurrentUsersProvider>
-				</QueryProvider>
-			)}
-		</>
+	// 🔒 Avoid rendering until detection completes
+	if (isInAppBrowser === null) return null;
+
+	return isInAppBrowser ? (
+		<OpenInBrowserAlert />
+	) : (
+		<QueryProvider>
+			<CurrentUsersProvider region={region as string}>
+				<WalletBalanceProvider>
+					<ChatRequestProvider>
+						<SelectedServiceProvider>
+							<StreamVideoProvider>
+								<LayoutShell>{children}</LayoutShell>
+							</StreamVideoProvider>
+						</SelectedServiceProvider>
+					</ChatRequestProvider>
+				</WalletBalanceProvider>
+			</CurrentUsersProvider>
+		</QueryProvider>
 	);
 };
 
