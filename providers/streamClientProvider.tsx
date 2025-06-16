@@ -15,9 +15,9 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 	const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(
 		null
 	);
+	const [timedOut, setTimedOut] = useState(false);
 	const { currentUser, fetchingUser } = useCurrentUsersContext();
 
-	// Memoize values to prevent unnecessary rerenders
 	const userId = useMemo(() => currentUser?._id, [currentUser?._id]);
 	const fullName = useMemo(() => {
 		return getDisplayName({
@@ -29,32 +29,38 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const initializationRef = useRef(false);
 
+	// Token with timeout
+	const getTokenWithTimeout = async (timeout = 5000) => {
+		return Promise.race([
+			tokenProvider(
+				userId!,
+				fullName,
+				currentUser?.photo,
+				currentUser?.phone,
+				currentUser?.global ?? false,
+				currentUser?.email ?? null
+			),
+			new Promise<string>((_, reject) =>
+				setTimeout(() => reject(new Error("tokenProvider timed out")), timeout)
+			),
+		]);
+	};
+
 	useEffect(() => {
 		let isMounted = true;
 
 		const initializeVideoClient = async (retries = 3) => {
-			if (initializationRef.current || !currentUser || !userId || videoClient)
+			if (initializationRef.current || !userId || !currentUser || videoClient)
 				return;
 
 			initializationRef.current = true;
 
 			try {
-				if (!API_KEY) throw new Error("Stream API key is missing");
+				if (!API_KEY) throw new Error("Missing Stream API key");
 
-				let attempts = 0;
-
-				while (attempts < retries) {
+				for (let attempt = 1; attempt <= retries; attempt++) {
 					try {
-						const token = await tokenProvider(
-							userId,
-							fullName,
-							currentUser.photo,
-							currentUser.phone,
-							currentUser.global ?? false,
-							currentUser.email ?? null
-						);
-
-						if (!token) throw new Error("Token was not generated successfully");
+						const token = await getTokenWithTimeout();
 
 						const client = new StreamVideoClient({
 							apiKey: API_KEY,
@@ -64,33 +70,28 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 								image: currentUser?.photo as string,
 								custom: {
 									phone: currentUser.global
-										? (currentUser.email as string)
-										: (currentUser?.phone as string),
+										? currentUser.email ?? ""
+										: currentUser.phone ?? "",
 								},
 							},
 							tokenProvider: async () => token,
 							options: {
 								timeout: 10000,
-								timeoutErrorMessage: "Connection Timed Out",
+								timeoutErrorMessage: "Connection timed out",
 							},
 						});
 
-						if (isMounted) {
-							setVideoClient(client);
-						}
+						if (isMounted) setVideoClient(client);
 						break;
-					} catch (error) {
-						attempts++;
+					} catch (err) {
 						console.error(
-							`Attempt ${attempts} failed to initialize StreamVideoClient:`,
-							error
+							`Attempt ${attempt} failed to initialize video client`,
+							err
 						);
-
-						if (attempts >= retries) {
-							Sentry.captureException(error);
-							throw new Error(
-								"Failed to initialize StreamVideoClient after retries"
-							);
+						if (attempt === retries) {
+							Sentry.captureException(err);
+						} else {
+							await new Promise((res) => setTimeout(res, 1000));
 						}
 					}
 				}
@@ -108,7 +109,17 @@ const StreamVideoProvider = ({ children }: { children: React.ReactNode }) => {
 		};
 	}, [fetchingUser, currentUser, userId, fullName, videoClient]);
 
-	const shouldShowSplash = fetchingUser || (currentUser && !videoClient);
+	// Splash fallback timeout
+	useEffect(() => {
+		const timeout = setTimeout(() => {
+			if (!videoClient) setTimedOut(true);
+		}, 10000); // 10s fallback
+
+		return () => clearTimeout(timeout);
+	}, [videoClient]);
+
+	const shouldShowSplash =
+		!timedOut && (fetchingUser || (currentUser && !videoClient));
 
 	if (shouldShowSplash) {
 		return (

@@ -42,10 +42,13 @@ export const tokenProvider = async (
 
 	await streamClient.upsertUsers([userData]);
 
-	const expirationTime = Math.floor(Date.now() / 1000) + 3600;
-	const issuedAt = Math.floor(Date.now() / 1000) - 60;
+	const now = Math.floor(Date.now() / 1000);
 
-	const token = streamClient.createToken(userId, expirationTime, issuedAt);
+	const token = streamClient.generateUserToken({
+		user_id: userId,
+		exp: now + 3600,
+		iat: now - 60,
+	});
 
 	return token;
 };

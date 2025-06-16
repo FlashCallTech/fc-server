@@ -630,13 +630,14 @@ export const CurrentUsersProvider = ({
 			};
 
 			const response = await axios.post(
-				`${backendBaseUrl}/client/getorCreateGlobalUser`, globalUser 
+				`${backendBaseUrl}/client/getorCreateGlobalUser`,
+				globalUser
 			);
 
 			const data = response.data.client;
 
 			if (data.role === "client") {
-				localStorage.setItem('currectUserID', data._id);
+				localStorage.setItem("currectUserID", data._id);
 				setClientUser(data);
 				setCreatorUser(null);
 				setUserType("client");
@@ -667,7 +668,7 @@ export const CurrentUsersProvider = ({
 				setFetchingUser(false);
 			}
 		});
-	}
+	};
 
 	useEffect(() => {
 		if (!region) return;
@@ -702,7 +703,7 @@ export const CurrentUsersProvider = ({
 		}
 
 		if (region === "India") {
-			const userAuthRef = doc(db, "authToken", currentUser.phone as string);
+			const userAuthRef = doc(db, "authToken", currentUser?.phone as string);
 
 			const unsubscribe = onSnapshot(
 				userAuthRef,
