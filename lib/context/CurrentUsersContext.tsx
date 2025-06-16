@@ -235,6 +235,7 @@ export const CurrentUsersProvider = ({
 			setClientUser(null);
 			setCreatorUser(null);
 		} else {
+			// Clear user data and local storage
 			localStorage.removeItem("currentUserID");
 			localStorage.removeItem("authToken");
 
@@ -253,8 +254,11 @@ export const CurrentUsersProvider = ({
 					loginStatus: false,
 				});
 			}
-			// Clear user data and local storage
-			await axios.post(`${backendBaseUrl}/user/endSession`);
+
+			await axios.post(`${backendBaseUrl}/user/endSession`, {
+				userId: currentUser?._id,
+				requestingFrom: "web",
+			});
 
 			setClientUser(null);
 			setCreatorUser(null);
@@ -711,7 +715,7 @@ export const CurrentUsersProvider = ({
 							const data = doc.data();
 
 							if (data?.token && data?.token !== authToken) {
-								// handleSignout();
+								handleSignout();
 								toast({
 									variant: "destructive",
 									title: "Another Session Detected",

@@ -46,7 +46,11 @@ const HomePage = () => {
 		);
 	}
 
-	return null;
+	return (
+		<div className="size-full h-[calc(100vh-6rem)] flex flex-col gap-2 items-center justify-center">
+			<SinglePostLoader />
+		</div>
+	);
 };
 
 export default HomePage;
