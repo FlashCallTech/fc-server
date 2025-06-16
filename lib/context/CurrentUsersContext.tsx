@@ -235,6 +235,7 @@ export const CurrentUsersProvider = ({
 			setClientUser(null);
 			setCreatorUser(null);
 		} else {
+			// Clear user data and local storage
 			localStorage.removeItem("currentUserID");
 			localStorage.removeItem("authToken");
 
@@ -253,8 +254,11 @@ export const CurrentUsersProvider = ({
 					loginStatus: false,
 				});
 			}
-			// Clear user data and local storage
-			await axios.post(`${backendBaseUrl}/user/endSession`);
+
+			await axios.post(`${backendBaseUrl}/user/endSession`, {
+				userId: currentUser?._id,
+				requestingFrom: "web",
+			});
 
 			setClientUser(null);
 			setCreatorUser(null);
@@ -630,13 +634,14 @@ export const CurrentUsersProvider = ({
 			};
 
 			const response = await axios.post(
-				`${backendBaseUrl}/client/getorCreateGlobalUser`, globalUser 
+				`${backendBaseUrl}/client/getorCreateGlobalUser`,
+				globalUser
 			);
 
 			const data = response.data.client;
 
 			if (data.role === "client") {
-				localStorage.setItem('currectUserID', data._id);
+				localStorage.setItem("currectUserID", data._id);
 				setClientUser(data);
 				setCreatorUser(null);
 				setUserType("client");
@@ -667,7 +672,7 @@ export const CurrentUsersProvider = ({
 				setFetchingUser(false);
 			}
 		});
-	}
+	};
 
 	useEffect(() => {
 		if (!region) return;
@@ -697,12 +702,10 @@ export const CurrentUsersProvider = ({
 	}, [router, userType, currentUser]);
 
 	useEffect(() => {
-		if (!currentUser || !region) {
-			return;
-		}
+		if (!currentUser || !region || !currentUser.phone || !db) return;
 
 		if (region === "India") {
-			const userAuthRef = doc(db, "authToken", currentUser.phone as string);
+			const userAuthRef = doc(db, "authToken", currentUser?.phone as string);
 
 			const unsubscribe = onSnapshot(
 				userAuthRef,
@@ -711,7 +714,7 @@ export const CurrentUsersProvider = ({
 						if (doc.exists()) {
 							const data = doc.data();
 
-							if (data?.token && data.token !== authToken) {
+							if (data?.token && data?.token !== authToken) {
 								handleSignout();
 								toast({
 									variant: "destructive",

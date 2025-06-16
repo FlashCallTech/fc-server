@@ -12,14 +12,21 @@ const HomePage = () => {
 	const router = useRouter();
 
 	useEffect(() => {
-		if (!fetchingUser && userType === "client") {
+		if (!fetchingUser) {
+			if (userType === "creator") {
+				return;
+			}
+
 			if (!currentUser) {
+				localStorage.setItem("userType", "client");
+				router.replace("/discover");
+			} else if (userType === "client") {
 				router.replace("/discover");
 			} else {
 				router.replace("/");
 			}
 		}
-	}, [userType, fetchingUser]);
+	}, [userType, fetchingUser, currentUser]);
 
 	if (fetchingUser) {
 		return (
@@ -39,8 +46,11 @@ const HomePage = () => {
 		);
 	}
 
-	// Fallback during redirection
-	return null;
+	return (
+		<div className="size-full h-[calc(100vh-6rem)] flex flex-col gap-2 items-center justify-center">
+			<SinglePostLoader />
+		</div>
+	);
 };
 
 export default HomePage;

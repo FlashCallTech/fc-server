@@ -34,7 +34,6 @@ const ClientRootLayout = ({ children }: { children: ReactNode }) => {
 		axios.defaults.withCredentials = true;
 	}, []);
 
-	// 🔒 Avoid rendering until detection completes
 	if (isInAppBrowser === null) return null;
 
 	return isInAppBrowser ? (

@@ -93,7 +93,7 @@ const DiscoverPage = () => {
 		if (!fetchingUser && currentUser && userType !== "client") {
 			router.replace("/home");
 		}
-	}, [currentUser, fetchingUser, router]);
+	}, [currentUser, fetchingUser, router, userType]);
 
 	useEffect(() => {
 		const storedScrollPosition = sessionStorage.getItem("scrollPosition");
