@@ -84,7 +84,7 @@ const NavbarWeb = ({
 							</Button>
 						</Link>
 						{/* Login Button */}
-						<Link href="/discover" className="w-full">
+						<Link href="/discover/all" className="w-full">
 							<Button className="min-w-[130px] w-full bg-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7">
 								Connect With Creators
 							</Button>

@@ -16,6 +16,7 @@ import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
 const useRecharge = () => {
 	const [loading, setLoading] = useState(false);
+	const [isProcessing, setIsProcessing] = useState(false);
 	const { toast } = useToast();
 	const router = useRouter();
 	const { updateWalletBalance } = useWalletBalanceContext();
@@ -177,6 +178,7 @@ const useRecharge = () => {
 				image: `https://backend.flashcall.me/icons/logo_icon.png`,
 				order_id: order.id,
 				handler: async (response: PaymentResponse) => {
+					setIsProcessing(true);
 					try {
 						// Step 3: Call the API to handle the payment
 						await axios.post(`${backendBaseUrl}/order/handlePayment`, {
@@ -196,10 +198,15 @@ const useRecharge = () => {
 							PG: "Razorpay",
 						});
 
+						updateWalletBalance();
+						setLoading(false);
+
 						if (!isCallRecharge) router.push("/success");
 					} catch (error) {
 						Sentry.captureException(error);
 						console.error("Payment Failed:", error);
+					} finally {
+						setIsProcessing(false);
 					}
 				},
 				prefill: {
@@ -210,9 +217,10 @@ const useRecharge = () => {
 
 			// Step 6: Open Razorpay modal
 			const rzp = new window.Razorpay(options);
-			rzp.on("payment.failed", (response: PaymentFailedResponse): void => {
-				alert(response.error.code);
-			});
+			// rzp.on("payment.failed", (response: PaymentFailedResponse): void => {
+			// 	setLoading(false);
+			// 	router.push("/failure");
+			// });
 			rzp.open();
 		} catch (error) {
 			Sentry.captureException(error);
@@ -240,13 +248,12 @@ const useRecharge = () => {
 				toastStatus: "negative",
 			});
 		} finally {
-			updateWalletBalance();
 			setLoading(false);
 		}
 	};
 
 
-	return { pgHandler, loading };
+	return { pgHandler, loading, isProcessing };
 };
 
 export default useRecharge;

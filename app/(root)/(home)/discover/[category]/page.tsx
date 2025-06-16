@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, Suspense, lazy } from "react";
 import { useInView } from "react-intersection-observer";
-import { usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { useToast } from "@/components/ui/use-toast";
 import { doc, getDoc } from "firebase/firestore";
@@ -14,12 +14,14 @@ import { Button } from "@/components/ui/button";
 import PostLoader from "@/components/shared/PostLoader";
 import SinglePostLoader from "@/components/shared/SinglePostLoader";
 import Image from "next/image";
+import { deslugify, slugify } from "@/utils/Slugify";
 
 const CreatorsGrid = lazy(() => import("@/components/creator/CreatorsGrid"));
 
 const DiscoverPage = () => {
 	const [loadingCard, setLoadingCard] = useState(false);
-	const [selectedProfession, setSelectedProfession] = useState("All");
+	const {category} = useParams();
+	const profession = deslugify(category as string);
 
 	const {
 		currentUser,
@@ -57,10 +59,10 @@ const DiscoverPage = () => {
 		isFetching,
 		isError,
 		isLoading,
-	} = useGetCreators(limit, selectedProfession);
+	} = useGetCreators(limit, profession);
 
 	const handleProfessionChange = (profession: string) => {
-		setSelectedProfession(profession);
+		router.push(`/discover/${slugify(profession)}`);
 	};
 
 	const handleCreatorCardClick = async (
@@ -120,12 +122,12 @@ const DiscoverPage = () => {
 		) {
 			toast({
 				variant: "destructive",
-				title: `No creators found in the ${selectedProfession} category`,
+				title: `No creators found in the ${category} category`,
 				description: "Try adjusting your filters",
 				toastStatus: "negative",
 			});
 		}
-	}, [creators, selectedProfession, isLoading]);
+	}, [creators, profession, isLoading]);
 
 	useEffect(() => {
 		localStorage.removeItem("creatorURL");
@@ -151,7 +153,7 @@ const DiscoverPage = () => {
 					<section className="grid grid-rows-[auto,1fr] grid-cols-1 size-full px-4 lg:px-0">
 						<section className="sticky top-0 lg:top-[76px] bg-white z-30">
 							<HomepageFilter
-								selectedProfession={selectedProfession}
+								selectedProfession={profession}
 								handleProfessionChange={handleProfessionChange}
 							/>
 						</section>
@@ -160,14 +162,14 @@ const DiscoverPage = () => {
 							<div className="size-full flex flex-col gap-4 items-center justify-center text-center text-gray-500">
 								<h2 className="text-2xl font-bold">No Creators Found</h2>
 								<p className="text-lg text-gray-400 px-5">
-									{selectedProfession !== "All"
-										? `No results found in the "${selectedProfession}" category.`
+									{category !== "All"
+										? `No results found in the "${category}" category.`
 										: "No creators are available at the moment. Please check back later."}
 								</p>
-								{selectedProfession !== "All" && (
+								{category !== "All" && (
 									<Button
 										className="px-6 py-2 rounded-lg bg-green-1 text-white font-semibold hoverScaleDownEffect"
-										onClick={() => setSelectedProfession("All")}
+										onClick={() => handleProfessionChange('All')}
 									>
 										Reset Filters
 									</Button>
