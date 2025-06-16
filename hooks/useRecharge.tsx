@@ -83,7 +83,7 @@ const useRecharge = () => {
 			const Cashfree = (window as any).Cashfree;
 
 			if (Cashfree) {
-				const cashfree = Cashfree({ mode: "production" });
+				const cashfree = Cashfree({ mode: process.env.NODE_ENV === 'development' ? 'sandbox' : 'production' });
 				const order_id =
 					localStorage.getItem("cashfree_order_id") || generateOrderId();
 				const options = {

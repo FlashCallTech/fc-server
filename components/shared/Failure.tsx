@@ -11,12 +11,12 @@ export type FailureProps = {
 
 // Update the Success component to use the defined props type
 const Failure = ({
-    redirect = "recharge",
+    redirect = "payment",
     event = "Sorry",
 }: FailureProps) => {
     const router = useRouter();
-    const { order_id, amount } = useParams();
-    const redirectURL = `/${redirect}?amount=${amount}`;
+    const { order_id } = useParams();
+    const redirectURL = `/${redirect}`;
     useEffect(() => {
         localStorage.setItem("cashfree_order_id", order_id as string);
         setTimeout(() => {

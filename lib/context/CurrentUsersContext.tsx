@@ -698,9 +698,7 @@ export const CurrentUsersProvider = ({
 	}, [router, userType, currentUser]);
 
 	useEffect(() => {
-		if (!currentUser || !region) {
-			return;
-		}
+		if (!currentUser || !region || !currentUser.phone || !db) return;
 
 		if (region === "India") {
 			const userAuthRef = doc(db, "authToken", currentUser?.phone as string);
@@ -712,8 +710,8 @@ export const CurrentUsersProvider = ({
 						if (doc.exists()) {
 							const data = doc.data();
 
-							if (data?.token && data.token !== authToken) {
-								handleSignout();
+							if (data?.token && data?.token !== authToken) {
+								// handleSignout();
 								toast({
 									variant: "destructive",
 									title: "Another Session Detected",
