@@ -122,45 +122,64 @@ export const useServices = () => {
 		services.chat,
 		userId,
 		isSyncedWithFirebase,
+		creatorUser,
 	]);
 
 	// Toggle handler with Firebase sync
-	const handleToggle = (
+	const handleToggle = async (
 		service: "myServices" | "videoCall" | "audioCall" | "chat"
 	) => {
 		if (services.isRestricted) return;
 
-		userToggledRef.current = true; // Prevent Firebase from resetting immediately
+		userToggledRef.current = true;
 
-		setServices((prev) => {
-			let updatedServices = { ...prev };
-			if (service === "myServices") {
-				const newState = !prev.myServices;
-				updatedServices = {
-					myServices: newState,
-					videoCall: newState,
-					audioCall: newState,
-					chat: newState,
-					isRestricted: false,
-				};
-			} else {
-				updatedServices[service] = !prev[service];
-				const isAnyServiceOn =
-					updatedServices.videoCall ||
-					updatedServices.audioCall ||
-					updatedServices.chat;
-				updatedServices.myServices = isAnyServiceOn;
+		let updatedServices = { ...services };
+
+		if (service === "myServices") {
+			const newState = !services.myServices;
+			updatedServices = {
+				myServices: newState,
+				videoCall: newState,
+				audioCall: newState,
+				chat: newState,
+				isRestricted: false,
+			};
+		} else {
+			updatedServices[service] = !services[service];
+			const isAnyServiceOn =
+				updatedServices.videoCall ||
+				updatedServices.audioCall ||
+				updatedServices.chat;
+			updatedServices.myServices = isAnyServiceOn;
+		}
+
+		setServices(updatedServices);
+
+		updateFirestoreCallServices(creatorUser, updatedServices);
+
+		if (creatorUser?._id) {
+			const updatePayload: Record<string, boolean> = {};
+
+			// Dynamically set keys based on what was toggled
+			if (service === "myServices" || service === "videoCall") {
+				updatePayload.videoAllowed = updatedServices.videoCall;
+			}
+			if (service === "myServices" || service === "audioCall") {
+				updatePayload.audioAllowed = updatedServices.audioCall;
+			}
+			if (service === "myServices" || service === "chat") {
+				updatePayload.chatAllowed = updatedServices.chat;
 			}
 
-			updateFirestoreCallServices(creatorUser, updatedServices);
+			await axios.put(
+				`${backendBaseUrl}/creator/updateUser/${creatorUser._id}`,
+				updatePayload
+			);
+		}
 
-			// Delay Firebase reset to prevent overwriting
-			setTimeout(() => {
-				userToggledRef.current = false;
-			}, 500);
-
-			return updatedServices;
-		});
+		setTimeout(() => {
+			userToggledRef.current = false;
+		}, 500);
 	};
 
 	return { services, handleToggle, setServices };
