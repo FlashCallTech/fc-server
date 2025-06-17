@@ -226,7 +226,7 @@ export const CurrentUsersProvider = ({
 	}, [creatorUser?._id]);
 
 	// Function to handle user signout
-	const handleSignout = async (shouldUpdateStat: boolean = true) => {
+	const handleSignout = async (shouldUpdateStatus: boolean = true) => {
 		if (!currentUser || !region) return;
 
 		if (region !== "India") {
@@ -242,7 +242,7 @@ export const CurrentUsersProvider = ({
 			localStorage.setItem("userType", "client");
 			setUserType("client");
 
-			if (shouldUpdateStat) {
+			if (shouldUpdateStatus) {
 				const creatorStatusDocRef = doc(
 					db,
 					"userStatus",
@@ -255,12 +255,13 @@ export const CurrentUsersProvider = ({
 						loginStatus: false,
 					});
 				}
-
-				await axios.post(`${backendBaseUrl}/user/endSession`, {
-					userId: currentUser?._id,
-					requestingFrom: "web",
-				});
 			}
+
+			await axios.post(`${backendBaseUrl}/user/endSession`, {
+				userId: currentUser?._id,
+				requestingFrom: "web",
+				shouldUpdateStatus: shouldUpdateStatus,
+			});
 
 			setClientUser(null);
 			setCreatorUser(null);
