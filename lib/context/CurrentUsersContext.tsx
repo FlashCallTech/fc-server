@@ -125,6 +125,18 @@ export const CurrentUsersProvider = ({
 	};
 
 	useEffect(() => {
+		if (!fetchingUser) {
+			if (!currentUser) {
+				localStorage.setItem("userType", "client");
+			} else if (userType === "creator") {
+				localStorage.setItem("userType", "creator");
+			} else {
+				localStorage.setItem("userType", "client");
+			}
+		}
+	}, [userType, fetchingUser, currentUser]);
+
+	useEffect(() => {
 		if (clientUser?._id) {
 			const unsubscribe = checkFirestoreSession(clientUser._id);
 			return () => {
@@ -226,7 +238,7 @@ export const CurrentUsersProvider = ({
 	}, [creatorUser?._id]);
 
 	// Function to handle user signout
-	const handleSignout = async () => {
+	const handleSignout = async (shouldUpdateStat: boolean = true) => {
 		if (!currentUser || !region) return;
 
 		if (region !== "India") {
@@ -242,23 +254,25 @@ export const CurrentUsersProvider = ({
 			localStorage.setItem("userType", "client");
 			setUserType("client");
 
-			const creatorStatusDocRef = doc(
-				db,
-				"userStatus",
-				currentUser?.phone as string
-			);
-			const creatorStatusDoc = await getDoc(creatorStatusDocRef);
-			if (creatorStatusDoc.exists()) {
-				await updateDoc(creatorStatusDocRef, {
-					status: "Offline",
-					loginStatus: false,
+			if (shouldUpdateStat) {
+				const creatorStatusDocRef = doc(
+					db,
+					"userStatus",
+					currentUser?.phone as string
+				);
+				const creatorStatusDoc = await getDoc(creatorStatusDocRef);
+				if (creatorStatusDoc.exists()) {
+					await updateDoc(creatorStatusDocRef, {
+						status: "Offline",
+						loginStatus: false,
+					});
+				}
+
+				await axios.post(`${backendBaseUrl}/user/endSession`, {
+					userId: currentUser?._id,
+					requestingFrom: "web",
 				});
 			}
-
-			await axios.post(`${backendBaseUrl}/user/endSession`, {
-				userId: currentUser?._id,
-				requestingFrom: "web",
-			});
 
 			setClientUser(null);
 			setCreatorUser(null);
@@ -715,7 +729,7 @@ export const CurrentUsersProvider = ({
 							const data = doc.data();
 
 							if (data?.token && data?.token !== authToken) {
-								handleSignout();
+								handleSignout(false);
 								toast({
 									variant: "destructive",
 									title: "Another Session Detected",

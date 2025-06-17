@@ -47,36 +47,52 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 		const creatorRef = doc(db, "services", creator._id);
 		const statusDocRef = doc(db, "userStatus", creator.phone);
 
+		let unsubscribeStatus: any;
+
 		const unsubscribeServices = onSnapshot(creatorRef, (doc) => {
 			const data = doc.data();
-			if (!data) return;
 
-			const services = data.services;
-			const hasActiveService =
-				services?.videoCall || services?.audioCall || services?.chat;
+			if (data) {
+				const services = data.services;
+				const hasActiveService =
+					services?.videoCall || services?.audioCall || services?.chat;
 
-			const unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
-				const statusData = statusDoc.data();
-				if (!statusData) return;
-
-				if (statusData.loginStatus === true) {
-					setStatus(
-						statusData.status === "Busy"
-							? "Busy"
-							: hasActiveService && statusData.status === "Online"
-							? "Online"
-							: "Offline"
-					);
-				} else {
-					setStatus("Offline");
+				if (unsubscribeStatus) {
+					unsubscribeStatus();
 				}
-			});
 
-			return () => unsubscribeStatus();
+				unsubscribeStatus = onSnapshot(statusDocRef, (statusDoc) => {
+					const statusData = statusDoc.data();
+					if (statusData) {
+						let newStatus = "Offline";
+
+						if (statusData.loginStatus) {
+							if (statusData.status === "Busy") {
+								newStatus = "Busy";
+							} else if (statusData.status === "Online" && hasActiveService) {
+								newStatus = "Online";
+							} else {
+								newStatus = "Offline";
+							}
+						} else {
+							newStatus = "Offline";
+						}
+
+						if (status !== newStatus) {
+							setStatus(newStatus);
+						}
+					}
+				});
+			}
 		});
 
-		return () => unsubscribeServices();
-	}, [creator._id, creator.phone]);
+		return () => {
+			unsubscribeServices();
+			if (unsubscribeStatus) {
+				unsubscribeStatus();
+			}
+		};
+	}, [creator?._id, creator?.phone, status]);
 
 	const getClampedText = (text: string) => {
 		if (!text) return;
@@ -132,26 +148,29 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 
 				{/* Rating, consultations */}
 				<div className="flex flex-col sm:flex-row items-start sm:items-center justify-start gap-2 mt-2 text-gray-600 w-full">
-  {rating > 0 ? (
-    <div className="flex items-center">
-      <Star size={16} className="text-[#F59E0B] fill-[#F59E0B]" />
-      <span className="ml-1 font-medium text-sm whitespace-nowrap">{rating}</span>
-    </div>
-  ) : (
-    <div className="text-xs rounded-full font-medium h-[28px] px-3 flex items-center justify-center whitespace-nowrap bg-[#FFEDD5] text-[#9A3412]">
-      New Consultant
-    </div>
-  )}
-  {consultations > 0 && (
-    <div className="flex items-center gap-2">
-      <div className="text-xs text-gray-300">|</div>
-      <span className="text-sm whitespace-nowrap">
-        {`${consultations} ${consultations === 1 ? "Consultation" : "Consultations"}`}
-      </span>
-    </div>
-  )}
-</div>
-
+					{rating > 0 ? (
+						<div className="flex items-center">
+							<Star size={16} className="text-[#F59E0B] fill-[#F59E0B]" />
+							<span className="ml-1 font-medium text-sm whitespace-nowrap">
+								{rating}
+							</span>
+						</div>
+					) : (
+						<div className="text-xs rounded-full font-medium h-[28px] px-3 flex items-center justify-center whitespace-nowrap bg-[#FFEDD5] text-[#9A3412]">
+							New Consultant
+						</div>
+					)}
+					{consultations > 0 && (
+						<div className="flex items-center gap-2">
+							<div className="text-xs text-gray-300">|</div>
+							<span className="text-sm whitespace-nowrap">
+								{`${consultations} ${
+									consultations === 1 ? "Consultation" : "Consultations"
+								}`}
+							</span>
+						</div>
+					)}
+				</div>
 
 				{/* Call Now, Book */}
 				<div className="mt-4 flex flex-col sm:flex-row gap-2 w-full">
