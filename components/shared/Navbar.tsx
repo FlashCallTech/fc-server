@@ -103,7 +103,7 @@ const Navbar = () => {
 		</Button>
 	);
 
-	if (userType === "creator") {
+	if (userType === "creator" && currentUser) {
 		return <CreatorNavbar />;
 	}
 

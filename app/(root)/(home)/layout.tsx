@@ -26,7 +26,7 @@ const useScreenSize = () => {
 
 const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 	const pathname = usePathname();
-	const { userType } = useCurrentUsersContext();
+	const { currentUser, userType } = useCurrentUsersContext();
 
 	const isMobile = useScreenSize();
 
@@ -42,7 +42,7 @@ const HomeLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
 	if (userType === "creator") {
 		return (
 			<main className="flex flex-row size-full">
-				<Sidebar />
+				{currentUser && <Sidebar />}
 				<div className="flex flex-col w-full">
 					{isMobile ? (
 						<Headroom>
