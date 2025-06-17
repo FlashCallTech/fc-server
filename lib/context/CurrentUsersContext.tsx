@@ -125,18 +125,6 @@ export const CurrentUsersProvider = ({
 	};
 
 	useEffect(() => {
-		if (!fetchingUser) {
-			if (!currentUser) {
-				localStorage.setItem("userType", "client");
-			} else if (userType === "creator") {
-				localStorage.setItem("userType", "creator");
-			} else {
-				localStorage.setItem("userType", "client");
-			}
-		}
-	}, [userType, fetchingUser, currentUser]);
-
-	useEffect(() => {
 		if (clientUser?._id) {
 			const unsubscribe = checkFirestoreSession(clientUser._id);
 			return () => {
