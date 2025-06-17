@@ -1,5 +1,5 @@
 import * as z from "zod";
-const usernameRegex = /^[a-zA-Z0-9_\-+]+$/;
+const usernameRegex = /^[a-z0-9_\-+]+$/;
 
 export const discountServiceFormSchema = z.object({
 	title: z.string().min(2, "Title must be at least 2 characters."),
@@ -92,7 +92,7 @@ export const UpdateProfileFormSchema = z.object({
 		.max(24, "Username must be at most 24 characters")
 		.regex(
 			usernameRegex,
-			"Username can only contain letters, numbers, underscores, and hyphens"
+			"Username can only contain lowercase letters, numbers, underscores, hyphens, and plus signs"
 		),
 	profession: z
 		.string()
@@ -121,7 +121,7 @@ export const UpdateProfileFormSchemaClient = z.object({
 		.max(24, "Username must be at most 24 characters")
 		.regex(
 			usernameRegex,
-			"Username can only contain letters, numbers, underscores, and hyphens"
+			"Username can only contain lowercase letters, numbers, underscores, hyphens, and plus signs"
 		),
 	profession: z.string().optional(),
 	referredBy: z.string().optional(),

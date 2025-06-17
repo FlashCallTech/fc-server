@@ -9,7 +9,7 @@ import { MongoServerError } from "mongodb";
 import { createReferralAction } from "./referral.actions";
 
 // Regular expression to validate username
-const usernameRegex = /^[a-zA-Z0-9_+-]+$/;
+const usernameRegex = /^[a-z0-9_\-+]+$/;
 
 // Function to validate username
 export const validateUsername = (username: string) => {
@@ -27,7 +27,7 @@ export async function createCreatorUser(user: CreateCreatorParams) {
 		if (!validateUsername(user.username)) {
 			return {
 				error:
-					"Username contains invalid characters. Only alphanumeric characters, underscores, and dashes are allowed.",
+					"Username contains invalid characters. Only lowercase letters, underscores, and dashes are allowed.",
 			};
 		}
 
@@ -173,7 +173,7 @@ export async function updateCreatorUser(
 		if (updates.username && !validateUsername(updates.username)) {
 			return {
 				error:
-					"Username contains invalid characters. Only alphanumeric characters, underscores, and dashes are allowed.",
+					"Username contains invalid characters. Only lowercase letters, underscores, and dashes are allowed.",
 			};
 		}
 
@@ -228,7 +228,7 @@ export async function updateCreatorUser(
 export async function deleteCreatorLink(userId: string, link: LinkType) {
 	try {
 		await connectToDatabase();
-		
+
 		const { title, url } = link;
 
 		// Update the creator document by pulling (removing) the matching link

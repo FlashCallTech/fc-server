@@ -28,6 +28,7 @@ import { db } from "@/lib/firebase";
 import { Timestamp } from "firebase/firestore"; // Import Timestamp
 import { useRouter } from "next/navigation";
 import { Input } from "../ui/input";
+import { trackPixelEvent } from "@/lib/analytics/pixel";
 
 interface params {
 	service: AvailabilityService;
@@ -702,6 +703,13 @@ const AvailabilityFinalConsentForm = ({
 				updateWalletBalance();
 
 				setIsSuccess(true);
+
+				trackPixelEvent("Scheduled Call Booked", {
+					clientId: clientUser?._id as string,
+					creatorId: creator?._id,
+					type: service.type,
+					rate: service.basePrice,
+				});
 
 				localStorage.removeItem("hasVisitedFeedbackPage");
 

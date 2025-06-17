@@ -565,7 +565,7 @@ export const isValidHexColor = (color: string): boolean => {
 };
 
 // Regular expression to validate username
-const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+const usernameRegex = /^[a-z0-9_\-+]+$/;
 
 // Function to validate username
 export const validateUsername = (username: string) => {
@@ -1141,7 +1141,7 @@ export const sendChatNotification = async (
 				}
 			);
 
-			console.log('voip token: ', fcmToken.voip_token);
+			console.log("voip token: ", fcmToken.voip_token);
 
 			if (fcmToken.voip_token && notificationType !== "chat.missed") {
 				await axios.post(`${backendUrl}/send-notification`, {
