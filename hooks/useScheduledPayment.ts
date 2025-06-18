@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { doc, increment, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import * as Sentry from "@sentry/nextjs";
+import { trackPixelEvent } from "@/lib/analytics/pixel";
 
 const useScheduledPayment = () => {
 	const [loading, setLoading] = useState(false);
@@ -101,10 +102,20 @@ const useScheduledPayment = () => {
 							amount: totalPayable,
 							transactionType: "credit",
 						};
+
 						await axios.post(
 							`${backendBaseUrl}/wallet/temporary/update`,
 							walletUpdatePayload
 						);
+
+						trackPixelEvent("Purchase Success", {
+							userId: clientId,
+							userType: "Client",
+							amount: totalPayable,
+							transactionType: "credit",
+							isWalletRecharge: false,
+							pg: "Razorpay",
+						});
 
 						setIsPaymentHandlerSuccess?.(true);
 						toast({
