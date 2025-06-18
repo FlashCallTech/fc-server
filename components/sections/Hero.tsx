@@ -140,7 +140,7 @@ const Hero = ({
 
 								<Dialog>
 									<DialogTrigger asChild>
-										<button className="w-full max-w-[75%] sm:max-w-[180px] flex items-center justify-center gap-2 text-center border border-black rounded-full px-5 py-[15px] hoverScaleDownEffect focus-visible:outline-none">
+										<button className="w-full max-w-[75%] sm:max-w-[250px] flex items-center justify-center gap-2 text-center border border-black rounded-full px-5 py-[15px] hoverScaleDownEffect focus-visible:outline-none">
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
 												fill="none"

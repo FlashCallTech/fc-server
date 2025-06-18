@@ -102,7 +102,6 @@ const useScheduledPayment = () => {
 							amount: totalPayable,
 							transactionType: "credit",
 						};
-
 						await axios.post(
 							`${backendBaseUrl}/wallet/temporary/update`,
 							walletUpdatePayload

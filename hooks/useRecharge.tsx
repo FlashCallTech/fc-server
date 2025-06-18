@@ -246,15 +246,6 @@ const useRecharge = () => {
 				PG: "Razorpay",
 			});
 
-			trackPixelEvent("Purchase Success", {
-				userId: clientId,
-				userType: "Client",
-				amount: totalPayable,
-				transactionType: "credit",
-				isWalletRecharge: isCallRecharge,
-				pg: "Razorpay",
-			});
-
 			// Show user-friendly feedback
 			router.push("/payment");
 			toast({
