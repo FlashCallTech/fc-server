@@ -13,8 +13,11 @@ import { doc, increment, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
-import { trackPixelEvent } from "@/lib/analytics/pixel";
 
+const loadPixelTracking = async () => {
+	const pixelModule = await import("@/lib/analytics/pixel");
+	return pixelModule.trackPixelEvent;
+};
 const useRecharge = () => {
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
@@ -202,13 +205,13 @@ const useRecharge = () => {
 							PG: "Razorpay",
 						});
 
-						trackPixelEvent("Purchase Success", {
-							userId: clientId,
-							userType: "Client",
-							amount: totalPayable,
-							transactionType: "credit",
-							isWalletRecharge: isCallRecharge,
-							pg: "Razorpay",
+						const trackPixelEvent = await loadPixelTracking();
+						trackPixelEvent("Recharge_Page_Proceed_Clicked", {
+							Client_ID: clientId,
+							User_First_Seen,
+							Creator_ID: creatorId,
+							Recharge_value: totalPayable,
+							Walletbalace_Available,
 						});
 
 						if (!isCallRecharge) router.push("/success");
