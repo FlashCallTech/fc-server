@@ -14,14 +14,12 @@ type FileUploaderProps = {
 	fieldChange: (url: string) => void;
 	mediaUrl: string;
 	onFileSelect: (file: File) => void;
-	creatorUser: any; // The creatorUser object is passed as props
 };
 
 const FileUploaderHome = ({
 	fieldChange,
 	mediaUrl,
 	onFileSelect,
-	creatorUser,
 }: FileUploaderProps) => {
 	const [newFileUrl, setNewFileUrl] = useState<string | null>(null); // New image preview
 	const [loading, setLoading] = useState(false);
@@ -55,14 +53,11 @@ const FileUploaderHome = ({
 
 				let fileName = "";
 				// Rename the file to have the .webp extension
-				if (creatorUser?._id) {
-					fileName = `${creatorUser._id}.webp`;
-				} else {
-					fileName = `${Date.now()}_${compressedFile.name.replace(
-						/\.[^.]+$/,
-						".webp"
-					)}`;
-				}
+
+				fileName = `${Date.now()}_${compressedFile.name.replace(
+					/\.[^.]+$/,
+					".webp"
+				)}`;
 
 				const fileStream = compressedFile.stream();
 
@@ -86,22 +81,6 @@ const FileUploaderHome = ({
 
 				// Generate CloudFront URL
 				const cloudFrontUrl = `https://dxvnlnyzij172.cloudfront.net/uploads/${fileName}`;
-
-				// Upload to Firebase Storage
-				if (creatorUser?._id) {
-					const firebaseStorageRef = ref(
-						storage,
-						`notifications/${creatorUser._id}`
-					);
-
-					const snapshot = await uploadBytes(
-						firebaseStorageRef,
-						compressedFile
-					);
-					const firebaseUrl = await getDownloadURL(snapshot.ref);
-
-					console.log("Firebase URL:", firebaseUrl);
-				}
 
 				// Update UI and state
 				setNewFileUrl(cloudFrontUrl);
