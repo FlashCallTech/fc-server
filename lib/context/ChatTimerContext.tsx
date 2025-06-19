@@ -42,7 +42,6 @@ export const ChatTimerProvider = ({ children, clientId, chatId }: ChatTimerProvi
 
 	useEffect(() => {
 		if (!chatId || !clientId || !walletBalance || !chat) {
-			console.log("Missing dependencies:", { chatId, clientId, walletBalance, chat });
 			return;
 		}
 

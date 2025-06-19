@@ -9,16 +9,18 @@ interface Chat {
     clientName: string;
     creatorId: string;
     clientId: string;
-    messages: {
-        senderId: string;
-        text: string;
-        createdAt: number;
-        img: string;
-        audio: string;
-        seen: boolean;
-        tip: string;
-        global?: boolean;
-    }[];
+}
+
+interface Messages {
+	senderId: string;
+	replyIndex: number;
+	text: string;
+	createdAt: number;
+	img: string;
+	audio: string;
+	seen: boolean;
+	tip: string;
+	global?: boolean;
 }
 
 interface Props {
@@ -41,6 +43,7 @@ interface Props {
     replyIndex: number | undefined;
     chat: Chat,
     discardReply: () => void;
+    messages: Messages[];
 }
 
 const ChatInput: React.FC<Props> = ({
@@ -60,6 +63,7 @@ const ChatInput: React.FC<Props> = ({
     replyIndex,
     chat,
     discardReply,
+    messages,
 }) => {
     const { currentUser, userType } = useCurrentUsersContext();
     const { getDevicePlatform } = usePlatform();
@@ -89,10 +93,10 @@ const ChatInput: React.FC<Props> = ({
                 <div className="relative flex w-full items-center gap-2 p-2 bg-gray-100 rounded-md">
                     <div className="flex w-full flex-col flex-1">
                         <span className="text-sm font-bold text-gray-600">
-                            {chat.messages[replyIndex]?.senderId === currentUser?._id ? "You" : userType === "client" ? chat.creatorName : chat.clientName}
+                            {messages[replyIndex]?.senderId === currentUser?._id ? "You" : userType === "client" ? chat.creatorName : chat.clientName}
                         </span>
                         <span className="text-sm text-gray-500 truncate block w-full">
-                            {chat.messages[replyIndex]?.text || 'Attachment'}
+                            {messages[replyIndex]?.text || 'Attachment'}
                         </span>
                     </div>
                     <button
