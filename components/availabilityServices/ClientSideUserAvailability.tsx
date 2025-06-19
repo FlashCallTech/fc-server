@@ -15,6 +15,7 @@ import {
 	useSelectedServiceContext,
 } from "@/lib/context/SelectedServiceContext";
 import { getCurrencySymbol } from "@/lib/utils";
+import { trackPixelEvent } from "@/lib/analytics/pixel";
 
 const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 	const [userServices, setUserServices] = useState<AvailabilityService[]>([]);
@@ -145,6 +146,12 @@ const ClientSideUserAvailability = ({ creator }: { creator: creatorUser }) => {
 				);
 			}
 			setClientSelectedService(service);
+			trackPixelEvent("BookCall_Scheduled_Clicked", {
+				clientId: currentUser?._id as string,
+				creatorId: creator?._id,
+				type: service.type,
+				rate: service.basePrice,
+			});
 			setIsSheetOpen(true);
 		}
 	};

@@ -150,7 +150,9 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 					{rating > 0 ? (
 						<div className="flex items-center">
 							<Star size={16} className="text-[#F59E0B] fill-[#F59E0B]" />
-							<span className="ml-1 font-medium text-sm whitespace-nowrap">{rating}</span>
+							<span className="ml-1 font-medium text-sm whitespace-nowrap">
+								{rating}
+							</span>
 						</div>
 					) : (
 						<div className="text-xs rounded-full font-medium h-[28px] px-3 flex items-center justify-center whitespace-nowrap bg-[#FFEDD5] text-[#9A3412]">
@@ -161,12 +163,13 @@ const CreatorsGrid = ({ creator }: { creator: creatorUser }) => {
 						<div className="flex items-center gap-2">
 							<div className="text-xs text-gray-300">|</div>
 							<span className="text-sm whitespace-nowrap">
-								{`${consultations} ${consultations === 1 ? "Consultation" : "Consultations"}`}
+								{`${consultations} ${
+									consultations === 1 ? "Consultation" : "Consultations"
+								}`}
 							</span>
 						</div>
 					)}
 				</div>
-
 
 				{/* Call Now, Book */}
 				<div className="mt-4 flex flex-col sm:flex-row gap-2 w-full">

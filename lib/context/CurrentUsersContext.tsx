@@ -226,7 +226,7 @@ export const CurrentUsersProvider = ({
 	}, [creatorUser?._id]);
 
 	// Function to handle user signout
-	const handleSignout = async () => {
+	const handleSignout = async (shouldUpdateStatus: boolean = true) => {
 		if (!currentUser || !region) return;
 
 		if (region !== "India") {
@@ -242,22 +242,25 @@ export const CurrentUsersProvider = ({
 			localStorage.setItem("userType", "client");
 			setUserType("client");
 
-			const creatorStatusDocRef = doc(
-				db,
-				"userStatus",
-				currentUser?.phone as string
-			);
-			const creatorStatusDoc = await getDoc(creatorStatusDocRef);
-			if (creatorStatusDoc.exists()) {
-				await updateDoc(creatorStatusDocRef, {
-					status: "Offline",
-					loginStatus: false,
-				});
+			if (shouldUpdateStatus) {
+				const creatorStatusDocRef = doc(
+					db,
+					"userStatus",
+					currentUser?.phone as string
+				);
+				const creatorStatusDoc = await getDoc(creatorStatusDocRef);
+				if (creatorStatusDoc.exists()) {
+					await updateDoc(creatorStatusDocRef, {
+						status: "Offline",
+						loginStatus: false,
+					});
+				}
 			}
 
 			await axios.post(`${backendBaseUrl}/user/endSession`, {
 				userId: currentUser?._id,
 				requestingFrom: "web",
+				shouldUpdateStatus: shouldUpdateStatus,
 			});
 
 			setClientUser(null);
@@ -715,7 +718,7 @@ export const CurrentUsersProvider = ({
 							const data = doc.data();
 
 							if (data?.token && data?.token !== authToken) {
-								handleSignout();
+								handleSignout(false);
 								toast({
 									variant: "destructive",
 									title: "Another Session Detected",

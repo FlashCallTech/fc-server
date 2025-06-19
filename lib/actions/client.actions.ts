@@ -9,7 +9,7 @@ import { addMoney } from "./wallet.actions";
 import { MongoServerError } from "mongodb";
 
 // Regular expression to validate username
-const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+const usernameRegex = /^[a-z0-9_\-+]+$/;
 
 // Function to validate username
 export const validateUsername = (username: string) => {
@@ -27,7 +27,7 @@ export async function createUser(user: CreateUserParams) {
 		if (!validateUsername(user.username)) {
 			return {
 				error:
-					"Username contains invalid characters. Only alphanumeric characters, underscores, and dashes are allowed.",
+					"Username contains invalid characters. Only lowercase letters, underscores, and dashes are allowed.",
 			};
 		}
 
@@ -110,7 +110,7 @@ export async function updateUser(userId: string, user: UpdateUserParams) {
 		if (!validateUsername(user.username)) {
 			return {
 				error:
-					"Username contains invalid characters. Only alphanumeric characters, underscores, and dashes are allowed.",
+					"Username contains invalid characters. Only lowercase letters, underscores, and dashes are allowed.",
 			};
 		}
 

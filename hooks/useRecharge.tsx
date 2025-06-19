@@ -14,6 +14,10 @@ import { db } from "@/lib/firebase";
 import * as Sentry from "@sentry/nextjs";
 import { useWalletBalanceContext } from "@/lib/context/WalletBalanceContext";
 
+const loadPixelTracking = async () => {
+	const pixelModule = await import("@/lib/analytics/pixel");
+	return pixelModule.trackPixelEvent;
+};
 const useRecharge = () => {
 	const [loading, setLoading] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
@@ -35,7 +39,7 @@ const useRecharge = () => {
 		User_First_Seen?: string,
 		Walletbalace_Available?: number,
 		creatorId?: string,
-		isCallRecharge?: boolean,
+		isCallRecharge?: boolean
 	) => {
 		trackEvent("Recharge_Page_Proceed_Clicked", {
 			Client_ID: clientId,
@@ -58,7 +62,7 @@ const useRecharge = () => {
 				User_First_Seen,
 				Walletbalace_Available,
 				creatorId,
-				isCallRecharge,
+				isCallRecharge
 			);
 		} else
 			cashfreeHandler(
@@ -67,7 +71,7 @@ const useRecharge = () => {
 				clientPhone,
 				User_First_Seen,
 				Walletbalace_Available,
-				creatorId,
+				creatorId
 			);
 	};
 
@@ -77,14 +81,17 @@ const useRecharge = () => {
 		clientPhone?: string,
 		User_First_Seen?: string,
 		Walletbalace_Available?: number,
-		creatorId?: string,
+		creatorId?: string
 	) => {
 		try {
 			// Access Cashfree from the global window object
 			const Cashfree = (window as any).Cashfree;
 
 			if (Cashfree) {
-				const cashfree = Cashfree({ mode: process.env.NODE_ENV === 'development' ? 'sandbox' : 'production' });
+				const cashfree = Cashfree({
+					mode:
+						process.env.NODE_ENV === "development" ? "sandbox" : "production",
+				});
 				const order_id =
 					localStorage.getItem("cashfree_order_id") || generateOrderId();
 				const options = {
@@ -158,13 +165,15 @@ const useRecharge = () => {
 		const jsonHeaders = { "Content-Type": "application/json" };
 
 		try {
-
 			// Step 1: Create Razorpay order
-			const orderResponse = await fetch(`${backendBaseUrl}/order/create-order`, {
-				method: "POST",
-				body: JSON.stringify({ amount: rechargeAmount, currency }),
-				headers: jsonHeaders,
-			});
+			const orderResponse = await fetch(
+				`${backendBaseUrl}/order/create-order`,
+				{
+					method: "POST",
+					body: JSON.stringify({ amount: rechargeAmount, currency }),
+					headers: jsonHeaders,
+				}
+			);
 
 			const order = await orderResponse.json();
 
@@ -185,8 +194,8 @@ const useRecharge = () => {
 							user_id: clientId,
 							response,
 							order_id: response.razorpay_order_id,
-							amount: totalPayable
-						})
+							amount: totalPayable,
+						});
 
 						// Step 4: Track success
 						trackEvent("Recharge_Successfull", {
@@ -196,6 +205,15 @@ const useRecharge = () => {
 							Recharge_value: totalPayable,
 							Walletbalace_Available,
 							PG: "Razorpay",
+						});
+
+						const trackPixelEvent = await loadPixelTracking();
+						trackPixelEvent("Recharge_Page_Proceed_Clicked", {
+							Client_ID: clientId,
+							User_First_Seen,
+							Creator_ID: creatorId,
+							Recharge_value: totalPayable,
+							Walletbalace_Available,
 						});
 
 						updateWalletBalance();

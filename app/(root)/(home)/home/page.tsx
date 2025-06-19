@@ -18,7 +18,6 @@ const HomePage = () => {
 			}
 
 			if (!currentUser) {
-				localStorage.setItem("userType", "client");
 				router.replace("/discover");
 			} else if (userType === "client") {
 				router.replace("/discover");
@@ -26,7 +25,7 @@ const HomePage = () => {
 				router.replace("/");
 			}
 		}
-	}, [userType, fetchingUser, currentUser]);
+	}, [userType, fetchingUser, currentUser, router]);
 
 	if (fetchingUser) {
 		return (

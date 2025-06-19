@@ -37,7 +37,6 @@ import {
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
 import FileUploader from "../uploaders/FileUploader";
-import { updateUser } from "@/lib/actions/client.actions";
 import { usePathname } from "next/navigation";
 import axios from "axios";
 import {

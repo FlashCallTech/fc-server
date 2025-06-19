@@ -776,21 +776,24 @@ const CreatorHome = () => {
 								<span className="text-black text-lg font-bold">
 									My Services
 								</span>
-								{/* <label className="relative inline-block w-14 h-6">
+								<label className="relative inline-block w-10 h-6 mr-2">
 									<input
 										disabled={services.isRestricted}
 										type="checkbox"
-										className={`${services.isRestricted && "!cursor-not-allowed"
-											} toggle-checkbox absolute w-0 h-0 opacity-0`}
+										className={`${
+											services.isRestricted && "!cursor-not-allowed"
+										} toggle-checkbox absolute w-0 h-0 opacity-0`}
 										checked={services.myServices}
 										onChange={() => handleToggle("myServices")}
 									/>
 									<p
-										className={`toggle-label block overflow-hidden h-6 rounded-full ${services.myServices ? "bg-green-600" : "bg-gray-500"
-											} ${services.isRestricted
+										className={`toggle-label block overflow-hidden h-6 rounded-full ${
+											services.myServices ? "bg-green-600" : "bg-gray-500"
+										} ${
+											services.isRestricted
 												? "!cursor-not-allowed"
 												: "cursor-pointer"
-											} servicesCheckbox`}
+										} servicesCheckbox`}
 										style={{
 											justifyContent: services.myServices
 												? "flex-end"
@@ -802,12 +805,12 @@ const CreatorHome = () => {
 											style={{
 												transition: "transform 0.3s",
 												transform: services.myServices
-													? "translateX(2.1rem)"
+													? "translateX(1.1rem)"
 													: "translateX(0)",
 											}}
 										/>
 									</p>
-								</label> */}
+								</label>
 							</div>
 
 							<ServicesCheckbox
@@ -823,8 +826,6 @@ const CreatorHome = () => {
 								globalPrices={globalPrices}
 							/>
 						</section>
-
-						{/* <DiscountServiceCards creator={creatorUser} /> */}
 
 						<CreatorLinks />
 
