@@ -72,7 +72,6 @@ const ProfileDialog = ({
 							fieldChange={handleImageUpload}
 							mediaUrl={creator?.photo || ""}
 							onFileSelect={(file) => console.log("File selected:", file)}
-							creatorUser={creator}
 						/>
 						{isChanged && (
 							<button
