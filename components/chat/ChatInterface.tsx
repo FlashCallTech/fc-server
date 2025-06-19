@@ -491,6 +491,7 @@ const ChatInterface: React.FC = () => {
 							replyIndex={replyIndex}
 							chat={chat}
 							discardReply={discardReply}
+							messages={messages}
 						/>
 					</div>
 				</div>
@@ -605,6 +606,7 @@ const ChatInterface: React.FC = () => {
 							replyIndex={replyIndex}
 							chat={chat}
 							discardReply={discardReply}
+							messages={messages}
 						/>
 					</div>
 				</div>

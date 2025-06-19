@@ -302,7 +302,7 @@ const PaymentSettings = () => {
 						toast({
 							variant: "destructive",
 							title: "Failed",
-							description: result,
+							description: result.message,
 							toastStatus: "negative",
 						});
 						setIsAddBankModalOpen(false);
