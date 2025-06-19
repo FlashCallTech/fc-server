@@ -67,14 +67,15 @@ const KYC: React.FC = () => {
           kycResponse.data.kyc_status === "COMPLETED" ||
           kycResponse.data.kyc_status === "FAILED"
         ) {
-          console.log("Inside Completed or Failed");
           setKycDone(kycResponse.data.kyc_status);
           setPanVerified(true);
           setAadhaarVerified(true);
           setLivelinessCheckVerified(true);
 
-          setPanNumber(kycResponse.data.pan.pan_number);
-          setAadhaarNumber(kycResponse.data.aadhaar.aadhaar_number);
+          kycResponse.data.pan.pan_number && setPanNumber(kycResponse.data.pan.pan_number);
+          kycResponse.data.aadhaar.aadhaar_number && setAadhaarNumber(kycResponse.data.aadhaar.aadhaar_number);
+          
+          
           if (kycResponse.data.reason) {
             setReason(kycResponse.data.reason);
           }

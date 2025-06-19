@@ -338,7 +338,6 @@ const PaymentSettings = () => {
 		};
 	}
 
-
 	const handleSaveBank = async () => {
 		let hasError = false;
 		const newErrors = {
@@ -396,6 +395,12 @@ const PaymentSettings = () => {
 				);
 
 				const result = await response.json();
+				console.log(result);
+
+				if(!response.ok) {
+					throw new Error(result.error);
+				}
+
 				if (result.data.account_status !== "VALID") {
 					console.error("Something wrong with Bank Details");
 					alert("Failed to save payment details.");
@@ -441,7 +446,11 @@ const PaymentSettings = () => {
 			} catch (error) {
 				Sentry.captureException(error);
 				console.error("Error saving payment details:", error);
-				alert("An error occurred while saving the payment details.");
+				toast({
+					title: "Bank Verification Failed",
+					description: String(error),
+					toastStatus: "negative",
+				});
 				setIsLoading(false);
 				setIsAddBankModalOpen(false);
 				setIsUPIModalOpen(false);
@@ -515,6 +524,7 @@ const PaymentSettings = () => {
 										setBankDetails({ ...bankDetails, upiId: e.target.value })
 									}
 									className="w-full border p-2 text-sm rounded-lg"
+									disabled={otpGenerated && !otpSubmitted}
 								/>
 								{errors.upiId && (
 									<p className="text-red-500 text-sm mt-1">{errors.upiId}</p>

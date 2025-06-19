@@ -123,7 +123,7 @@ const DeleteAlert = () => {
 					description: `Redirecting back to HomePage`,
 					toastStatus: "positive",
 				});
-				router.push("/home");
+				router.push("/discover/all");
 			} else {
 				console.error("Failed to delete user:", data.message);
 			}

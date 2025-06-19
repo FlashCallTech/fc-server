@@ -115,6 +115,7 @@ export type creatorUser = {
   global?: boolean;
   commission?: number;
   accessToken?: string;
+  isLoggedIn?: boolean;
 };
 
 export type CreateCreatorParams = {
