@@ -1411,3 +1411,16 @@ export const getCurrencySymbol = (
 	if (currencyArray?.includes("USD")) return "$";
 	return "₹";
 };
+
+export const fetchDefaultCommissionRate = async (): Promise<number> => {
+	try {
+		const response = await fetch(
+			"https://backend.flashcall.me/api/v1/defaultCommission"
+		);
+		const data = await response.json();
+
+		return data.rate;
+	} catch (error) {
+		return 20;
+	}
+};

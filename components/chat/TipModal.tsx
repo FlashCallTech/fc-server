@@ -20,7 +20,7 @@ import { useChatTimerContext } from "@/lib/context/ChatTimerContext";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
 import { doc, getDoc, increment, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { backendBaseUrl, fetchExchangeRate } from "@/lib/utils";
+import { backendBaseUrl, fetchDefaultCommissionRate, fetchExchangeRate } from "@/lib/utils";
 import axios from "axios";
 
 interface Props {
@@ -140,7 +140,7 @@ const TipModal: React.FC<Props> = ({
 				const data = response.data;
 				const activePg: string = await fetchActivePg(global);
 				const pgChargesRate: number = await fetchPgCharges(activePg);
-				const commissionRate = Number(data?.commission ?? 20);
+				const commissionRate = Number(data?.commission ?? await fetchDefaultCommissionRate());
 				const commissionAmt = Number(
 					global
 						? (

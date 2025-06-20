@@ -14,7 +14,7 @@ import { useToast } from "../ui/use-toast";
 import { creatorUser } from "@/types";
 import { success } from "@/constants/icons";
 import { useCurrentUsersContext } from "@/lib/context/CurrentUsersContext";
-import { backendBaseUrl, fetchExchangeRate } from "@/lib/utils";
+import { backendBaseUrl, fetchDefaultCommissionRate, fetchExchangeRate } from "@/lib/utils";
 import {
 	getFirestore,
 	doc,
@@ -206,7 +206,7 @@ const TipModal = ({
 			const data = response.data;
 			const activePg: string = await fetchActivePg(global);
 			const pgChargesRate: number = await fetchPgCharges(activePg);
-			const commissionRate = Number(data?.commission ?? 20);
+			const commissionRate = Number(data?.commission ?? await fetchDefaultCommissionRate());
 			const commissionAmt = Number(
 				global
 					? (
