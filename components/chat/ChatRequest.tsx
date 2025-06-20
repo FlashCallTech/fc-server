@@ -54,15 +54,6 @@ const ChatRequest = ({ chatRequest }: { chatRequest: any }) => {
 		};
 	}, [status]);
 
-	function maskPhoneNumber(phoneNumber: string) {
-		if (phoneNumber && phoneNumber.startsWith("+91")) {
-			let cleanedNumber = phoneNumber.replace("+91", "");
-			let maskedNumber =
-				cleanedNumber.substring(0, 2) + "*****" + cleanedNumber.substring(7);
-			return maskedNumber;
-		}
-	}
-
 	return (
 		<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
 			{/* Mobile Layout */}
