@@ -498,6 +498,7 @@ const ScheduledChatInterface: React.FC = () => {
 									replyIndex={replyIndex}
 									chat={chat}
 									discardReply={discardReply}
+									messages={messages}
 								/>
 							</div>
 						</div>
@@ -614,6 +615,7 @@ const ScheduledChatInterface: React.FC = () => {
 									replyIndex={replyIndex}
 									chat={chat}
 									discardReply={discardReply}
+									messages={messages}
 								/>
 							</div>
 						</div>
