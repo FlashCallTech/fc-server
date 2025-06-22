@@ -205,11 +205,13 @@ const useChatRequest = (onChatRequestUpdate?: any) => {
 				await updateDoc(chatDocRef, {
 					timeLeft: maxCallDuration,
 					timeUtilized: 0,
+					newChat: true,
 				});
 			} else {
 				await setDoc(chatDocRef, {
 					timeLeft: maxCallDuration,
 					timeUtilized: 0,
+					newChat: true,
 				});
 			}
 
