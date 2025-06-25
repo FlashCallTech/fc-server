@@ -211,7 +211,7 @@ const UserAvailability = ({ data, userId }: { data: any; userId: string }) => {
 
 		sourceSlots = sourceSlots.map((slot) => ({
 			...slot,
-			id: slot.id || uuidv4(),
+			id: uuidv4(),
 		}));
 
 		setValue(`weeklyAvailability.${sourceDayIndex}.slots`, sourceSlots);
