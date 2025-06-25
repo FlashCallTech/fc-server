@@ -340,28 +340,30 @@ const PaymentSettings = () => {
 
 
 	const handleSaveBank = async () => {
+		// Set has errors to false
 		let hasError = false;
+
+		// Clear new errors
 		const newErrors = {
 			upiId: "",
 			ifscCode: "",
 			accountNumber: "",
 		};
 
-		if (paymentMethod === "bankTransfer") {
-			if (!bankDetails.ifscCode) {
-				newErrors.ifscCode = "IFSC Code is required";
-				hasError = true;
-			} else if (!isValidIfscCode(bankDetails.ifscCode)) {
-				newErrors.ifscCode = "Not a valid IFSC Code";
-				hasError = true;
-			}
-			if (!bankDetails.accountNumber) {
-				newErrors.accountNumber = "Account Number is required";
-				hasError = true;
-			} else if (!isValidAccountNumber(bankDetails.accountNumber)) {
-				newErrors.accountNumber = "Not a valid Account Number";
-				hasError = true;
-			}
+		// Validation
+		if (!bankDetails.ifscCode) {
+			newErrors.ifscCode = "IFSC Code is required";
+			hasError = true;
+		} else if (!isValidIfscCode(bankDetails.ifscCode)) {
+			newErrors.ifscCode = "Not a valid IFSC Code";
+			hasError = true;
+		}
+		if (!bankDetails.accountNumber) {
+			newErrors.accountNumber = "Account Number is required";
+			hasError = true;
+		} else if (!isValidAccountNumber(bankDetails.accountNumber)) {
+			newErrors.accountNumber = "Not a valid Account Number";
+			hasError = true;
 		}
 
 		setErrors(newErrors);
@@ -396,6 +398,7 @@ const PaymentSettings = () => {
 				);
 
 				const result = await response.json();
+				if (!response.ok) throw new Error(result.error);
 				if (result.data.account_status !== "VALID") {
 					console.error("Something wrong with Bank Details");
 					alert("Failed to save payment details.");
@@ -438,10 +441,15 @@ const PaymentSettings = () => {
 					setIsUPIModalOpen(false);
 
 				}
-			} catch (error) {
+			} catch (error: any) {
 				Sentry.captureException(error);
 				console.error("Error saving payment details:", error);
-				alert("An error occurred while saving the payment details.");
+				toast({
+					variant: "destructive",
+					title: "Failed",
+					description: error.message,
+					toastStatus: "negative",
+				});
 				setIsLoading(false);
 				setIsAddBankModalOpen(false);
 				setIsUPIModalOpen(false);
