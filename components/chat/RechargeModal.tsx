@@ -179,7 +179,7 @@ const RechargeModal = ({
 			} else {
 				pgHandler(
 					pg,
-					currentUser as clientUser,
+					currentUser?._id as string,
 					Number(rechargeAmount),
 					currentUser?.phone,
 					currentUser?.createdAt?.toString().split("T")[0],
