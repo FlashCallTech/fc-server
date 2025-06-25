@@ -37,95 +37,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
   const [pg, setPg] = useState<string>("");
   const { walletBalance } = useWalletBalanceContext();
   const { currentUser, userType, clientUser } = useCurrentUsersContext();
-  const { pgHandler, loading } = useRecharge();
-  const router = useRouter();
-
-  // const handlePayPal = async (amountToPay: number): Promise<boolean> => {
-  //   return new Promise((resolve) => {
-  //     const paypal = (window as any).paypal;
-  //     if (paypal) {
-  //       paypal
-  //         .Buttons({
-  //           style: {
-  //             layout: "vertical", // Stack buttons vertically
-  //             color: "gold", // Button color
-  //             shape: "rect", // Button shape
-  //             label: "pay", // Label type
-  //             height: 50,
-  //             disableMaxWidth: true,
-  //           },
-  //           async createOrder(data: any, actions: any) {
-  //             try {
-  //               return await actions.order.create({
-  //                 purchase_units: [
-  //                   {
-  //                     amount: {
-  //                       currency_code: "USD",
-  //                       value: amountToPay,
-  //                     },
-  //                   },
-  //                 ],
-  //                 application_context: {
-  //                   shipping_preference: "NO_SHIPPING",
-  //                 },
-  //               });
-  //             } catch (error) {
-  //               console.error("PayPal order creation error:", error);
-  //               resolve(false);
-  //             }
-  //           },
-  //           async onApprove(data: any, actions: any) {
-  //             try {
-  //               const details = await actions.order.capture();
-  //               if (details.status === "COMPLETED") {
-  //                 await fetch(`${backendBaseUrl}/wallet/addMoney`, {
-  //                   method: "POST",
-  //                   body: JSON.stringify({
-  //                     userId: clientUser?._id,
-  //                     PG: "Paypal",
-  //                     userType: "Client",
-  //                     amount: Number(details.purchase_units[0].amount.value),
-  //                     category: "Recharge",
-  //                     global: true,
-  //                   }),
-  //                   headers: { "Content-Type": "application/json" },
-  //                 });
-  //                 trackEvent("Recharge_Page_Payment_Completed", {
-  //                   Client_ID: clientUser?._id,
-  //                   Creator_ID: creator?._id,
-  //                   Recharge_value: rechargeAmount,
-  //                   Walletbalace_Available: clientUser?.walletBalance,
-  //                   Order_ID: details.id,
-  //                 });
-
-  //                 resolve(true);
-  //               } else {
-  //                 resolve(false);
-  //               }
-  //             } catch (error) {
-  //               console.error("PayPal capture error:", error);
-  //               resolve(false);
-  //             } finally {
-  //               setShowPayPal(false);
-  //               form.reset();
-  //             }
-  //           },
-  //           onCancel(data: any) {
-  //             console.warn("PayPal payment cancelled:", data);
-  //             resolve(false);
-  //           },
-  //           onError(err: any) {
-  //             console.error("PayPal payment error:", err);
-  //             resolve(false);
-  //           },
-  //         })
-  //         .render("#paypal-button-container");
-  //     } else {
-  //       console.error("PayPal SDK not loaded");
-  //       resolve(false);
-  //     }
-  //   });
-  // };
+  const { pgHandler, loading, isProcessing } = useRecharge();
 
   useEffect(() => {
     const getPg = async () => {
@@ -391,7 +303,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
                   className={`capitalize text-sm font-medium p-2.5 rounded-md border border-gray-300 hoverScaleDownEffect hover:text-white hover:bg-green-1 ${amount === form.getValues("rechargeAmount") &&
                     "bg-green-1 text-white"
                     }`}
-                  disabled={showCheckout || loading}
+                  disabled={showCheckout || loading || isProcessing}
                   onClick={() => {
                     form.setValue("rechargeAmount", amount);
                     tileClicked(index);
@@ -408,7 +320,8 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
                 !rechargeAmount ||
                 rechargeAmount === "0" ||
                 showCheckout ||
-                loading
+                loading ||
+                isProcessing
               }
               onClick={(event: any) =>
                 form.handleSubmit((values) => onSubmit(event, values))(event)
@@ -417,7 +330,7 @@ const Payment: React.FC<PaymentProps> = ({ callType }) => {
                 ${(!rechargeAmount || rechargeAmount === "0") && "!cursor-not-allowed opacity-80"}
                 `}
             >
-              {loading ? (
+              {loading || isProcessing ? (
                 <Image
                   src="/icons/loading-circle.svg"
                   alt="Loading..."

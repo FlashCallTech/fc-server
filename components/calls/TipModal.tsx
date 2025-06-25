@@ -122,6 +122,7 @@ const TipModal = ({
 	}, []);
 
 	const clientId = currentUser?._id as string;
+	const clientPhone = currentUser?.phone as string;
 	const creatorId = creator?._id;
 
 	useEffect(() => {
@@ -210,17 +211,17 @@ const TipModal = ({
 			const commissionAmt = Number(
 				global
 					? (
-							((Number(rechargeAmount) * commissionRate) / 100) *
-							exchangeRate
-					  ).toFixed(2)
+						((Number(rechargeAmount) * commissionRate) / 100) *
+						exchangeRate
+					).toFixed(2)
 					: ((Number(rechargeAmount) * commissionRate) / 100).toFixed(2)
 			);
 			const pgChargesAmt = Number(
 				global
 					? (
-							((Number(rechargeAmount) * pgChargesRate) / 100) *
-							exchangeRate
-					  ).toFixed(2)
+						((Number(rechargeAmount) * pgChargesRate) / 100) *
+						exchangeRate
+					).toFixed(2)
 					: ((Number(rechargeAmount) * pgChargesRate) / 100).toFixed(2)
 			);
 			const gstAmt = Number((commissionAmt * 0.18).toFixed(2));
@@ -247,6 +248,10 @@ const TipModal = ({
 						category: "Tip",
 						global: currentUser?.global ?? false,
 						tipId,
+						clientId,
+						clientPhone: clientPhone,
+						creatorId,
+						creatorPhone: creator?.phone
 					}),
 					headers: { "Content-Type": "application/json" },
 				}),
@@ -261,6 +266,10 @@ const TipModal = ({
 						amount: amountAdded,
 						category: "Tip",
 						tipId,
+						clientId,
+						clientPhone: clientPhone,
+						creatorId,
+						creatorPhone: creator?.phone
 					}),
 					headers: { "Content-Type": "application/json" },
 				}),
@@ -380,9 +389,8 @@ const TipModal = ({
 				<SheetContent
 					onOpenAutoFocus={(e) => e.preventDefault()}
 					side="bottom"
-					className={`flex flex-col items-center justify-center ${
-						!loading ? "px-7 py-5" : "px-4"
-					}  border-none rounded-t-xl bg-white mx-auto overflow-scroll no-scrollbar min-h-[350px] max-h-fit w-full h-dvh sm:max-w-[444px]`}
+					className={`flex flex-col items-center justify-center ${!loading ? "px-7 py-5" : "px-4"
+						}  border-none rounded-t-xl bg-white mx-auto overflow-scroll no-scrollbar min-h-[350px] max-h-fit w-full h-dvh sm:max-w-[444px]`}
 				>
 					{loading ? (
 						<SinglePostLoader />
@@ -393,24 +401,20 @@ const TipModal = ({
 								<SheetDescription>
 									Balance Left
 									<span
-										className={`ml-2 ${
-											hasLowBalance ? "text-red-500" : "text-green-1"
-										}`}
+										className={`ml-2 ${hasLowBalance ? "text-red-500" : "text-green-1"
+											}`}
 									>
-										{`${
-											currentUser?.global ? "$" : "₹"
-										} ${adjustedWalletBalance.toFixed(2)}`}
+										{`${currentUser?.global ? "$" : "₹"
+											} ${adjustedWalletBalance.toFixed(2)}`}
 									</span>
 								</SheetDescription>
 							</SheetHeader>
 							<section
-								className={`grid ${
-									errorMessage ? "py-2 gap-2 " : "py-4 gap-4"
-								} w-full`}
+								className={`grid ${errorMessage ? "py-2 gap-2 " : "py-4 gap-4"
+									} w-full`}
 							>
-								<span className="text-sm">{`Enter Desired amount in ${
-									currentUser?.global ? "Dollars" : "INR"
-								}`}</span>
+								<span className="text-sm">{`Enter Desired amount in ${currentUser?.global ? "Dollars" : "INR"
+									}`}</span>
 								<section className="relative flex flex-col justify-center items-center">
 									<Input
 										id="rechargeAmount"
@@ -434,11 +438,10 @@ const TipModal = ({
 										</section>
 									) : (
 										<Button
-											className={`absolute right-2 bg-green-1 text-white hoverScaleDownEffect ${
-												(!rechargeAmount ||
+											className={`absolute right-2 bg-green-1 text-white hoverScaleDownEffect ${(!rechargeAmount ||
 													parseInt(rechargeAmount) > adjustedWalletBalance) &&
 												"cursor-not-allowed"
-											}`}
+												}`}
 											onClick={handleTransaction}
 											disabled={
 												!rechargeAmount ||
@@ -462,20 +465,18 @@ const TipModal = ({
 								<span className="text-sm">Predefined Options</span>
 								{
 									<div
-										className={`${
-											!isMobile
+										className={`${!isMobile
 												? "grid grid-cols-4 gap-4 mt-4 w-full"
 												: "flex justify-start items-center mt-4 space-x-4 w-full overflow-x-scroll overflow-y-hidden no-scrollbar"
-										}`}
+											}`}
 									>
 										{predefinedOptions.map((amount) => (
 											<Button
 												key={amount}
 												onClick={() => handlePredefinedAmountClick(amount)}
-												className={`w-20 bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${
-													rechargeAmount === amount &&
+												className={`w-20 bg-gray-200 hover:bg-gray-300 hoverScaleDownEffect ${rechargeAmount === amount &&
 													"bg-green-1 text-white hover:bg-green-1"
-												}`}
+													}`}
 											>
 												{`${currentUser?.global ? "$" : "₹"}${amount}`}
 											</Button>

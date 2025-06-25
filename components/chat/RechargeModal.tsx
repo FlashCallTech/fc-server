@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import * as Sentry from "@sentry/nextjs";
 import {
+	clientUser,
 	PaymentFailedResponse,
 	PaymentResponse,
 	RazorpayOptions,
@@ -112,6 +113,8 @@ const RechargeModal = ({
 											amount: Number(details.purchase_units[0].amount.value),
 											category: "Recharge",
 											global: true,
+											clientId: currentUser?._id,
+											clientPhone: currentUser?.phone,
 										}),
 										headers: { "Content-Type": "application/json" },
 									});
@@ -176,7 +179,7 @@ const RechargeModal = ({
 			} else {
 				pgHandler(
 					pg,
-					currentUser?._id as string,
+					currentUser as clientUser,
 					Number(rechargeAmount),
 					currentUser?.phone,
 					currentUser?.createdAt?.toString().split("T")[0],

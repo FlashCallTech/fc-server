@@ -4,6 +4,7 @@ import { backendBaseUrl } from "@/lib/utils";
 import { trackEvent } from "@/lib/mixpanel";
 import { useState } from "react";
 import {
+	clientUser,
 	PaymentFailedResponse,
 	PaymentResponse,
 	RazorpayOptions,
@@ -20,6 +21,7 @@ const loadPixelTracking = async () => {
 };
 const useRecharge = () => {
 	const [loading, setLoading] = useState(false);
+	const [isProcessing, setIsProcessing] = useState(false);
 	const { toast } = useToast();
 	const router = useRouter();
 	const { updateWalletBalance } = useWalletBalanceContext();
@@ -187,12 +189,14 @@ const useRecharge = () => {
 				order_id: order.id,
 				handler: async (response: PaymentResponse) => {
 					try {
+						setIsProcessing(true);
 						// Step 3: Call the API to handle the payment
 						await axios.post(`${backendBaseUrl}/order/handlePayment`, {
 							user_id: clientId,
 							response,
 							order_id: response.razorpay_order_id,
 							amount: totalPayable,
+							clientPhone,
 						});
 
 						// Step 4: Track success
@@ -218,6 +222,8 @@ const useRecharge = () => {
 					} catch (error) {
 						Sentry.captureException(error);
 						console.error("Payment Failed:", error);
+					} finally {
+						setIsProcessing(false)
 					}
 				},
 				prefill: {
@@ -263,7 +269,7 @@ const useRecharge = () => {
 		}
 	};
 
-	return { pgHandler, loading };
+	return { pgHandler, loading, isProcessing };
 };
 
 export default useRecharge;
