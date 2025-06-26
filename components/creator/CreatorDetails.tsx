@@ -187,298 +187,298 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 		return `Guest${Date.now().toString().slice(-6)}`; // Last 6 digits of timestamp
 	};
 
-	const handleHelp = async () => {
-		setLoading(true);
-		if (isModalOpen) return;
+	// const handleHelp = async () => {
+	// 	setLoading(true);
+	// 	if (isModalOpen) return;
 
-		if (!clientUser) {
-			!isMobile && setIsModalOpen(true);
-			const clientId = getClientId();
+	// 	if (!clientUser) {
+	// 		!isMobile && setIsModalOpen(true);
+	// 		const clientId = getClientId();
 
-			try {
-				const chatRef = collection(db, "chats");
-				const creatorChatsDocRef = doc(db, "userHelpChats", creator?._id);
-				const userChatsDocRef = doc(db, "userHelpChats", clientId as string);
+	// 		try {
+	// 			const chatRef = collection(db, "chats");
+	// 			const creatorChatsDocRef = doc(db, "userHelpChats", creator?._id);
+	// 			const userChatsDocRef = doc(db, "userHelpChats", clientId as string);
 
-				const [userChatsDocSnapshot, creatorChatsDocSnapshot] =
-					await Promise.all([
-						getDoc(userChatsDocRef),
-						getDoc(creatorChatsDocRef),
-					]);
+	// 			const [userChatsDocSnapshot, creatorChatsDocSnapshot] =
+	// 				await Promise.all([
+	// 					getDoc(userChatsDocRef),
+	// 					getDoc(creatorChatsDocRef),
+	// 				]);
 
-				let chatId = null;
-				let matchedIndex = -1;
+	// 			let chatId = null;
+	// 			let matchedIndex = -1;
 
-				if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
-					const userChatsData = userChatsDocSnapshot.data();
-					const creatorChatsData = creatorChatsDocSnapshot.data();
+	// 			if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
+	// 				const userChatsData = userChatsDocSnapshot.data();
+	// 				const creatorChatsData = creatorChatsDocSnapshot.data();
 
-					if (
-						userChatsData.chats &&
-						creatorChatsData &&
-						Array.isArray(userChatsData.chats) &&
-						Array.isArray(creatorChatsData.chats)
-					) {
-						matchedIndex = userChatsData.chats.findIndex(
-							(el: any) => el.receiverId === creator._id
-						);
+	// 				if (
+	// 					userChatsData.chats &&
+	// 					creatorChatsData &&
+	// 					Array.isArray(userChatsData.chats) &&
+	// 					Array.isArray(creatorChatsData.chats)
+	// 				) {
+	// 					matchedIndex = userChatsData.chats.findIndex(
+	// 						(el: any) => el.receiverId === creator._id
+	// 					);
 
-						if (matchedIndex !== -1) {
-							userChatsData.chats[matchedIndex].creatorImg = creator.photo;
-							userChatsData.chats[matchedIndex].creatorName =
-								creator.fullName || maskPhoneNumber(creator.phone as string);
-							await updateDoc(userChatsDocRef, {
-								chats: userChatsData.chats,
-							});
-						}
-					}
+	// 					if (matchedIndex !== -1) {
+	// 						userChatsData.chats[matchedIndex].creatorImg = creator.photo;
+	// 						userChatsData.chats[matchedIndex].creatorName =
+	// 							creator.fullName || maskPhoneNumber(creator.phone as string);
+	// 						await updateDoc(userChatsDocRef, {
+	// 							chats: userChatsData.chats,
+	// 						});
+	// 					}
+	// 				}
 
-					const userChat = userChatsData.chats?.find(
-						(chat: any) => chat.receiverId === creator?._id
-					);
-					const creatorChat = creatorChatsData.chats?.find(
-						(chat: any) => chat.receiverId === clientId
-					);
+	// 				const userChat = userChatsData.chats?.find(
+	// 					(chat: any) => chat.receiverId === creator?._id
+	// 				);
+	// 				const creatorChat = creatorChatsData.chats?.find(
+	// 					(chat: any) => chat.receiverId === clientId
+	// 				);
 
-					if (
-						userChat &&
-						creatorChat &&
-						userChat.chatId === creatorChat.chatId
-					) {
-						chatId = userChat.chatId;
-					}
-				}
+	// 				if (
+	// 					userChat &&
+	// 					creatorChat &&
+	// 					userChat.chatId === creatorChat.chatId
+	// 				) {
+	// 					chatId = userChat.chatId;
+	// 				}
+	// 			}
 
-				if (!userChatsDocSnapshot.exists()) {
-					await setDoc(userChatsDocSnapshot.ref, {
-						chats: [],
-					});
-				}
+	// 			if (!userChatsDocSnapshot.exists()) {
+	// 				await setDoc(userChatsDocSnapshot.ref, {
+	// 					chats: [],
+	// 				});
+	// 			}
 
-				if (!creatorChatsDocSnapshot.exists()) {
-					await setDoc(creatorChatsDocSnapshot.ref, {
-						chats: [],
-					});
-				}
+	// 			if (!creatorChatsDocSnapshot.exists()) {
+	// 				await setDoc(creatorChatsDocSnapshot.ref, {
+	// 					chats: [],
+	// 				});
+	// 			}
 
-				const chatData: any = {
-					creatorImg: creator.photo,
-				};
+	// 			const chatData: any = {
+	// 				creatorImg: creator.photo,
+	// 			};
 
-				if (!chatId) {
-					chatId = doc(chatRef).id;
-					(chatData.messages = []),
-						(chatData.creatorId = creator?._id),
-						(chatData.clientId = clientId),
-						(chatData.clientImg = GetRandomImage()),
-						(chatData.global = region === "India" ? false : true),
-						(chatData.createdAt = Date.now()),
-						(chatData.chatId = chatId);
-					chatData.clientName = getUniqueGuestName();
+	// 			if (!chatId) {
+	// 				chatId = doc(chatRef).id;
+	// 				(chatData.messages = []),
+	// 					(chatData.creatorId = creator?._id),
+	// 					(chatData.clientId = clientId),
+	// 					(chatData.clientImg = GetRandomImage()),
+	// 					(chatData.global = region === "India" ? false : true),
+	// 					(chatData.createdAt = Date.now()),
+	// 					(chatData.chatId = chatId);
+	// 				chatData.clientName = getUniqueGuestName();
 
-					const creatorChatUpdate = updateDoc(creatorChatsDocRef, {
-						chats: arrayUnion({
-							chatId: chatId,
-							clientName: chatData.clientName,
-							clientImg: GetRandomImage(),
-							receiverId: clientId,
-							updatedAt: Date.now(),
-						}),
-					});
+	// 				const creatorChatUpdate = updateDoc(creatorChatsDocRef, {
+	// 					chats: arrayUnion({
+	// 						chatId: chatId,
+	// 						clientName: chatData.clientName,
+	// 						clientImg: GetRandomImage(),
+	// 						receiverId: clientId,
+	// 						updatedAt: Date.now(),
+	// 					}),
+	// 				});
 
-					const clientChatUpdate = updateDoc(userChatsDocRef, {
-						chats: arrayUnion({
-							chatId: chatId,
-							creatorName:
-								creator.fullName || maskPhoneNumber(creator.phone as string),
-							creatorImg: creator.photo,
-							receiverId: creator._id,
-							updatedAt: Date.now(),
-						}),
-					});
-					await Promise.all([creatorChatUpdate, clientChatUpdate]);
-				}
+	// 				const clientChatUpdate = updateDoc(userChatsDocRef, {
+	// 					chats: arrayUnion({
+	// 						chatId: chatId,
+	// 						creatorName:
+	// 							creator.fullName || maskPhoneNumber(creator.phone as string),
+	// 						creatorImg: creator.photo,
+	// 						receiverId: creator._id,
+	// 						updatedAt: Date.now(),
+	// 					}),
+	// 				});
+	// 				await Promise.all([creatorChatUpdate, clientChatUpdate]);
+	// 			}
 
-				if (creator.fullName) {
-					chatData.creatorName = creator.fullName;
-				} else if (creator.phone) {
-					chatData.creatorName = maskPhoneNumber(creator.phone as string);
-				}
-				if (creator.phone) {
-					chatData.creatorPhone = creator.phone;
-				}
+	// 			if (creator.fullName) {
+	// 				chatData.creatorName = creator.fullName;
+	// 			} else if (creator.phone) {
+	// 				chatData.creatorName = maskPhoneNumber(creator.phone as string);
+	// 			}
+	// 			if (creator.phone) {
+	// 				chatData.creatorPhone = creator.phone;
+	// 			}
 
-				setChatId(chatId);
+	// 			setChatId(chatId);
 
-				await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
+	// 			await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
 
-				!loading && isMobile && router.push(`/helpChat/${chatId}`);
-			} catch (error) {
-				console.error("Error handling help chat:", error);
-				setIsModalOpen(false);
-				// Optionally, add error notification or additional error handling here.
-			} finally {
-				setLoading(false);
-			}
+	// 			!loading && isMobile && router.push(`/helpChat/${chatId}`);
+	// 		} catch (error) {
+	// 			console.error("Error handling help chat:", error);
+	// 			setIsModalOpen(false);
+	// 			// Optionally, add error notification or additional error handling here.
+	// 		} finally {
+	// 			setLoading(false);
+	// 		}
 
-			return;
-		}
+	// 		return;
+	// 	}
 
-		try {
-			!isMobile && setIsModalOpen(true);
-			const chatRef = collection(db, "chats");
-			const creatorChatsDocRef = doc(db, "userHelpChats", creator?._id);
-			const userChatsDocRef = doc(
-				db,
-				"userHelpChats",
-				clientUser?._id as string
-			);
+	// 	try {
+	// 		!isMobile && setIsModalOpen(true);
+	// 		const chatRef = collection(db, "chats");
+	// 		const creatorChatsDocRef = doc(db, "userHelpChats", creator?._id);
+	// 		const userChatsDocRef = doc(
+	// 			db,
+	// 			"userHelpChats",
+	// 			clientUser?._id as string
+	// 		);
 
-			const [userChatsDocSnapshot, creatorChatsDocSnapshot] = await Promise.all(
-				[getDoc(userChatsDocRef), getDoc(creatorChatsDocRef)]
-			);
+	// 		const [userChatsDocSnapshot, creatorChatsDocSnapshot] = await Promise.all(
+	// 			[getDoc(userChatsDocRef), getDoc(creatorChatsDocRef)]
+	// 		);
 
-			let chatId = null;
-			let matchedIndex = -1;
-			let matchedIndexCreator = -1;
+	// 		let chatId = null;
+	// 		let matchedIndex = -1;
+	// 		let matchedIndexCreator = -1;
 
-			if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
-				const userChatsData = userChatsDocSnapshot.data();
-				const creatorChatsData = creatorChatsDocSnapshot.data();
+	// 		if (userChatsDocSnapshot.exists() && creatorChatsDocSnapshot.exists()) {
+	// 			const userChatsData = userChatsDocSnapshot.data();
+	// 			const creatorChatsData = creatorChatsDocSnapshot.data();
 
-				if (
-					Array.isArray(userChatsData.chats) &&
-					Array.isArray(creatorChatsData.chats)
-				) {
-					const batch = writeBatch(db);
+	// 			if (
+	// 				Array.isArray(userChatsData.chats) &&
+	// 				Array.isArray(creatorChatsData.chats)
+	// 			) {
+	// 				const batch = writeBatch(db);
 
-					// Update userChatsDoc if a matching element is found
-					matchedIndex = userChatsData.chats.findIndex(
-						(el: any) => el.receiverId === creator._id
-					);
-					if (matchedIndex !== -1) {
-						userChatsData.chats[matchedIndex].creatorImg = creator.photo;
-						userChatsData.chats[matchedIndex].creatorName =
-							creator.fullName || maskPhoneNumber(creator.phone as string);
-						batch.update(userChatsDocRef, { chats: userChatsData.chats });
-					}
+	// 				// Update userChatsDoc if a matching element is found
+	// 				matchedIndex = userChatsData.chats.findIndex(
+	// 					(el: any) => el.receiverId === creator._id
+	// 				);
+	// 				if (matchedIndex !== -1) {
+	// 					userChatsData.chats[matchedIndex].creatorImg = creator.photo;
+	// 					userChatsData.chats[matchedIndex].creatorName =
+	// 						creator.fullName || maskPhoneNumber(creator.phone as string);
+	// 					batch.update(userChatsDocRef, { chats: userChatsData.chats });
+	// 				}
 
-					// Update creatorChatsDoc if a matching element is found
-					matchedIndexCreator = creatorChatsData.chats.findIndex(
-						(el: any) => el.receiverId === clientUser._id
-					);
-					if (matchedIndexCreator !== -1) {
-						creatorChatsData.chats[matchedIndexCreator].clientImg =
-							clientUser.photo || GetRandomImage();
-						creatorChatsData.chats[matchedIndexCreator].clientName =
-							clientUser.fullName ||
-							maskPhoneNumber(clientUser.phone as string);
-						batch.update(creatorChatsDocRef, {
-							chats: creatorChatsData.chats,
-						});
-					}
+	// 				// Update creatorChatsDoc if a matching element is found
+	// 				matchedIndexCreator = creatorChatsData.chats.findIndex(
+	// 					(el: any) => el.receiverId === clientUser._id
+	// 				);
+	// 				if (matchedIndexCreator !== -1) {
+	// 					creatorChatsData.chats[matchedIndexCreator].clientImg =
+	// 						clientUser.photo || GetRandomImage();
+	// 					creatorChatsData.chats[matchedIndexCreator].clientName =
+	// 						clientUser.fullName ||
+	// 						maskPhoneNumber(clientUser.phone as string);
+	// 					batch.update(creatorChatsDocRef, {
+	// 						chats: creatorChatsData.chats,
+	// 					});
+	// 				}
 
-					// Commit both updates in one batch
-					await batch.commit();
-				}
+	// 				// Commit both updates in one batch
+	// 				await batch.commit();
+	// 			}
 
-				const userChat = userChatsData.chats?.find(
-					(chat: any) => chat.receiverId === creator?._id
-				);
-				const creatorChat = creatorChatsData.chats?.find(
-					(chat: any) => chat.receiverId === clientUser?._id
-				);
+	// 			const userChat = userChatsData.chats?.find(
+	// 				(chat: any) => chat.receiverId === creator?._id
+	// 			);
+	// 			const creatorChat = creatorChatsData.chats?.find(
+	// 				(chat: any) => chat.receiverId === clientUser?._id
+	// 			);
 
-				if (userChat && creatorChat && userChat.chatId === creatorChat.chatId) {
-					chatId = userChat.chatId;
-				}
-			}
+	// 			if (userChat && creatorChat && userChat.chatId === creatorChat.chatId) {
+	// 				chatId = userChat.chatId;
+	// 			}
+	// 		}
 
-			if (!userChatsDocSnapshot.exists()) {
-				await setDoc(userChatsDocSnapshot.ref, {
-					chats: [],
-				});
-			}
+	// 		if (!userChatsDocSnapshot.exists()) {
+	// 			await setDoc(userChatsDocSnapshot.ref, {
+	// 				chats: [],
+	// 			});
+	// 		}
 
-			if (!creatorChatsDocSnapshot.exists()) {
-				await setDoc(creatorChatsDocSnapshot.ref, {
-					chats: [],
-				});
-			}
+	// 		if (!creatorChatsDocSnapshot.exists()) {
+	// 			await setDoc(creatorChatsDocSnapshot.ref, {
+	// 				chats: [],
+	// 			});
+	// 		}
 
-			const chatData: any = {
-				creatorImg: creator.photo,
-				clientImg: clientUser?.photo || GetRandomImage(),
-				clientId: clientUser?._id,
-			};
+	// 		const chatData: any = {
+	// 			creatorImg: creator.photo,
+	// 			clientImg: clientUser?.photo || GetRandomImage(),
+	// 			clientId: clientUser?._id,
+	// 		};
 
-			if (!chatId) {
-				chatId = doc(chatRef).id;
-				(chatData.messages = []),
-					(chatData.creatorId = creator?._id),
-					(chatData.global = clientUser?.global ?? false),
-					(chatData.createdAt = Date.now()),
-					(chatData.chatId = chatId);
-				const creatorChatUpdate = updateDoc(creatorChatsDocRef, {
-					chats: arrayUnion({
-						chatId: chatId,
-						clientName:
-							clientUser.fullName ||
-							maskPhoneNumber(clientUser.phone as string),
-						clientImg: clientUser.photo || GetRandomImage(),
-						receiverId: clientUser._id,
-						updatedAt: Date.now(),
-					}),
-				});
+	// 		if (!chatId) {
+	// 			chatId = doc(chatRef).id;
+	// 			(chatData.messages = []),
+	// 				(chatData.creatorId = creator?._id),
+	// 				(chatData.global = clientUser?.global ?? false),
+	// 				(chatData.createdAt = Date.now()),
+	// 				(chatData.chatId = chatId);
+	// 			const creatorChatUpdate = updateDoc(creatorChatsDocRef, {
+	// 				chats: arrayUnion({
+	// 					chatId: chatId,
+	// 					clientName:
+	// 						clientUser.fullName ||
+	// 						maskPhoneNumber(clientUser.phone as string),
+	// 					clientImg: clientUser.photo || GetRandomImage(),
+	// 					receiverId: clientUser._id,
+	// 					updatedAt: Date.now(),
+	// 				}),
+	// 			});
 
-				const clientChatUpdate = updateDoc(userChatsDocRef, {
-					chats: arrayUnion({
-						chatId: chatId,
-						creatorName:
-							creator.fullName || maskPhoneNumber(creator.phone as string),
-						creatorImg: creator.photo,
-						receiverId: creator._id,
-						updatedAt: Date.now(),
-					}),
-				});
-				await Promise.all([creatorChatUpdate, clientChatUpdate]);
-			}
+	// 			const clientChatUpdate = updateDoc(userChatsDocRef, {
+	// 				chats: arrayUnion({
+	// 					chatId: chatId,
+	// 					creatorName:
+	// 						creator.fullName || maskPhoneNumber(creator.phone as string),
+	// 					creatorImg: creator.photo,
+	// 					receiverId: creator._id,
+	// 					updatedAt: Date.now(),
+	// 				}),
+	// 			});
+	// 			await Promise.all([creatorChatUpdate, clientChatUpdate]);
+	// 		}
 
-			if (creator.fullName) {
-				chatData.creatorName = creator.fullName;
-			} else if (creator.phone) {
-				chatData.creatorName = maskPhoneNumber(creator.phone as string);
-			}
-			if (creator.phone) {
-				chatData.creatorPhone = creator.phone;
-			}
+	// 		if (creator.fullName) {
+	// 			chatData.creatorName = creator.fullName;
+	// 		} else if (creator.phone) {
+	// 			chatData.creatorName = maskPhoneNumber(creator.phone as string);
+	// 		}
+	// 		if (creator.phone) {
+	// 			chatData.creatorPhone = creator.phone;
+	// 		}
 
-			if (clientUser?.phone) {
-				chatData.clientPhone = clientUser.phone;
-			}
+	// 		if (clientUser?.phone) {
+	// 			chatData.clientPhone = clientUser.phone;
+	// 		}
 
-			if (clientUser?.email) {
-				chatData.clientEmail = clientUser.email;
-			}
+	// 		if (clientUser?.email) {
+	// 			chatData.clientEmail = clientUser.email;
+	// 		}
 
-			if (clientUser?.fullName) {
-				chatData.clientName = clientUser.fullName;
-			} else if (clientUser?.phone) {
-				chatData.clientName = maskPhoneNumber(clientUser.phone as string);
-			}
+	// 		if (clientUser?.fullName) {
+	// 			chatData.clientName = clientUser.fullName;
+	// 		} else if (clientUser?.phone) {
+	// 			chatData.clientName = maskPhoneNumber(clientUser.phone as string);
+	// 		}
 
-			setChatId(chatId);
+	// 		setChatId(chatId);
 
-			await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
+	// 		await setDoc(doc(db, "helpChat", chatId), chatData, { merge: true });
 
-			!loading && isMobile && router.push(`/helpChat/${chatId}`);
-		} catch (error) {
-			console.error("Error handling help chat:", error);
-			// Optionally, add error notification or additional error handling here.
-		} finally {
-			setLoading(false);
-		}
-	};
+	// 		!loading && isMobile && router.push(`/helpChat/${chatId}`);
+	// 	} catch (error) {
+	// 		console.error("Error handling help chat:", error);
+	// 		// Optionally, add error notification or additional error handling here.
+	// 	} finally {
+	// 		setLoading(false);
+	// 	}
+	// };
 
 	const closeModal = () => {
 		setChatId(null);
@@ -583,7 +583,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 								</div>
 							</section>
 						</section>
-						<button
+						{/* <button
 							onClick={handleHelp}
 							disabled={loading}
 							className={`fixed bottom-4 ${
@@ -608,7 +608,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 								/>
 							)}
 							<span>Contact Us</span>
-						</button>
+						</button> */}
 						{/* 2. Creator Info */}
 						<section className="size-full flex flex-col items-center justify-center overflow-hidden">
 							<p className="font-semibold text-2xl max-w-[92%] text-ellipsis whitespace-nowrap overflow-hidden capitalize">
@@ -764,7 +764,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					onOpenChange={setIsAuthSheetOpen}
 				/>
 			)}
-			{isModalOpen && (
+			{/* {isModalOpen && (
 				<DraggableWindow onClose={closeModal} creator={creator}>
 					<FloatingChat
 						setIsAuthSheetOpen={setIsAuthSheetOpen}
@@ -772,7 +772,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						chatId={chatId}
 					/>
 				</DraggableWindow>
-			)}
+			)} */}
 		</div>
 	);
 });
