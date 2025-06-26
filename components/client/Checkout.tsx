@@ -96,6 +96,7 @@ const CheckoutSheet: React.FC<CheckoutSheetProps> = ({
                                         amount: Number(details.purchase_units[0].amount.value),
                                         category: "Recharge",
                                         global: true,
+                                        clientId: clientUser?._id,
                                     }),
                                     headers: { "Content-Type": "application/json" },
                                 });

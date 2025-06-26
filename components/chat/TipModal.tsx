@@ -70,6 +70,7 @@ const TipModal: React.FC<Props> = ({
 	}, []);
 
 	const clientId = currentUser?._id as string;
+	const clientPhone = currentUser?.phone as string;
 	const creatorId = creator?._id;
 
 	useEffect(() => {
@@ -182,6 +183,10 @@ const TipModal: React.FC<Props> = ({
 							category: "Tip",
 							global: currentUser?.global ?? false,
 							tipId,
+							clientId,
+							clientPhone: clientPhone,
+							creatorId,
+							creatorPhone: creator?.phone
 						}),
 						headers: { "Content-Type": "application/json" },
 					}),
@@ -196,6 +201,10 @@ const TipModal: React.FC<Props> = ({
 							amount: amountAdded.toFixed(2),
 							category: "Tip",
 							tipId,
+							clientId,
+							clientPhone: clientPhone,
+							creatorId,
+							creatorPhone: creator?.phone
 						}),
 						headers: { "Content-Type": "application/json" },
 					}),

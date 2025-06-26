@@ -235,7 +235,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 	useEffect(() => {
 		let audio: HTMLAudioElement | null = null;
 
-		if (chatState === "pending") {
+		if (chatState === "pending" && isSheetOpen) {
 			audio = new Audio("/sounds/outgoing.mp3");
 			audio.loop = true;
 
@@ -257,7 +257,7 @@ const CallingOptions = memo(({ creator }: CallingOptions) => {
 				audio.currentTime = 0;
 			}
 		};
-	}, [chatState]);
+	}, [chatState, isSheetOpen]);
 
 	const createMeeting = async (callType: string, selectedOffer?: Service) => {
 		if (!client || !clientUser) {

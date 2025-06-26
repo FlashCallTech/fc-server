@@ -21,6 +21,7 @@ import { usePathname } from "next/navigation";
 import useRecharge from "@/hooks/useRecharge";
 import axios from "axios";
 import { trackEvent } from "@/lib/mixpanel";
+import { clientUser } from "@/types";
 
 const RechargeModal = ({
 	inTipModal,
@@ -120,6 +121,7 @@ const RechargeModal = ({
 											amount: Number(details.purchase_units[0].amount.value),
 											category: "Recharge",
 											global: true,
+											clientId: currentUser?._id
 										}),
 										headers: { "Content-Type": "application/json" },
 									});

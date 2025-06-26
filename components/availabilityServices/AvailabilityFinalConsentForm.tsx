@@ -53,7 +53,6 @@ const AvailabilityFinalConsentForm = ({
 	const [payUsingWallet, setPayUsingWallet] = useState(true);
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [isPaymentHandlerSuccess, setIsPaymentHandlerSuccess] = useState(false);
-	const [payoutTransactionId, setPayoutTransactionId] = useState();
 	const { clientUser, refreshCurrentUser, region } = useCurrentUsersContext();
 	const [email, setEmail] = useState(clientUser?.email || "");
 	const [emailChanged, setEmailChanged] = useState(false);
@@ -645,11 +644,17 @@ const AvailabilityFinalConsentForm = ({
 					amount: totalAmount.total,
 					callCategory: "Scheduled",
 					callType: service.type,
+					clientId: clientUser?._id,
+					clientPhone: clientUser?.phone,
+					creatorId: creator._id,
+					creatorPhone: creator.phone
 				});
+
+				const payoutTransactionId = response.data.result._id
 
 				if (service.type === "chat") {
 					await updateDoc(doc(db, "scheduledChats", callDetails.callId), {
-						payoutTransactionId: response.data.result._id,
+						payoutTransactionId
 					});
 				}
 
