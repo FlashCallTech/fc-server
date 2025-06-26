@@ -764,7 +764,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 					onOpenChange={setIsAuthSheetOpen}
 				/>
 			)}
-			{isModalOpen && (
+			{/* {isModalOpen && (
 				<DraggableWindow onClose={closeModal} creator={creator}>
 					<FloatingChat
 						setIsAuthSheetOpen={setIsAuthSheetOpen}
@@ -772,7 +772,7 @@ const CreatorDetails = memo(({ creator }: { creator: creatorUser }) => {
 						chatId={chatId}
 					/>
 				</DraggableWindow>
-			)}
+			)} */}
 		</div>
 	);
 });
