@@ -18,9 +18,9 @@ const HomePage = () => {
 			}
 
 			if (!currentUser) {
-				router.replace("/discover");
+				router.replace("/discover/all");
 			} else if (userType === "client") {
-				router.replace("/discover");
+				router.replace("/discover/all");
 			} else {
 				router.replace("/");
 			}

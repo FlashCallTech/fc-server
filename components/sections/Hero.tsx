@@ -92,7 +92,7 @@ const Hero = ({
 									<>
 										{currentUser ? (
 											<Link
-												href={userType === "creator" ? "/home" : "/discover"}
+												href={userType === "creator" ? "/home" : "/discover/all"}
 												className="w-full max-w-[75%] sm:max-w-[250px] flex items-center justify-center text-center gap-2 bg-black text-white rounded-full px-5 py-[15px] hoverScaleDownEffect"
 											>
 												{userType === "creator"

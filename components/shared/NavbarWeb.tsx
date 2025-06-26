@@ -62,7 +62,7 @@ const NavbarWeb = ({
 				{currentUser ? (
 					<>
 						{/* Home Button */}
-						<Link href={userType === "creator" ? "/home" : "/discover"}>
+						<Link href={userType === "creator" ? "/home" : "/discover/all"}>
 							<Button className="min-w-[130px] bg-black text-white rounded-full hoverScaleDownEffect text-sm border border-black md:!px-7">
 								Home
 							</Button>

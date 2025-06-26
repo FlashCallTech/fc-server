@@ -192,7 +192,7 @@ export const useGetCreators = (limit: number, profession: string) => {
 		queryKey: [QUERY_KEYS.GET_CREATORS, limit, profession],
 		queryFn: async ({ pageParam = 1 }) => {
 			const response = await axios.get(
-				`${backendBaseUrl}/creator/getUsersFiltered`,
+				`${backendBaseUrl}/creator/getCreatorsDiscover`,
 				{
 					params: {
 						page: pageParam,
